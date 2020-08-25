@@ -1,9 +1,9 @@
 const assert = require('assert');
 const _ = require('lodash');
-const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
+const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const taskCreds = require('./task-creds');
-const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
-const {Task, Worker, WorkerType, Provisioner} = require('./data');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const { Task, Worker, WorkerType, Provisioner } = require('./data');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -130,7 +130,7 @@ builder.declare({
     'not specified the queue may provide a default value.',
   ].join('\n'),
 }, async function(req, res) {
-  const {taskId} = req.params;
+  const { taskId } = req.params;
 
   let task;
   if (this.LRUcache.has(taskId)) {
@@ -147,7 +147,7 @@ builder.declare({
     return res.reportError('ResourceNotFound', [
       '`{{taskId}}` does not correspond to a task that exists.',
       'Are you sure this task has already been submitted?',
-    ].join('\n'), {taskId});
+    ].join('\n'), { taskId });
   }
 
   // Create task definition
@@ -222,7 +222,7 @@ builder.declare({
   // Find taskGroup and list of members
   let [
     taskGroups,
-    {continuationToken, rows},
+    { continuationToken, rows },
   ] = await Promise.all([
     this.db.fns.get_task_group(taskGroupId),
     paginateResults({
@@ -292,7 +292,7 @@ builder.declare({
   // Find task and list dependents
   let [
     task,
-    {continuationToken, rows},
+    { continuationToken, rows },
   ] = await Promise.all([
     Task.get(this.db, taskId),
     paginateResults({
@@ -306,7 +306,7 @@ builder.declare({
     return res.reportError(
       'ResourceNotFound',
       'Task with taskId: `{{taskId}}` was not found',
-      {taskId},
+      { taskId },
     );
   }
 
@@ -364,28 +364,28 @@ let patchAndValidateTaskDef = function(taskId, taskDef) {
     return {
       code: 'InputError',
       message: '`created` cannot be in the past (max 15min drift)',
-      details: {created: taskDef.created},
+      details: { created: taskDef.created },
     };
   }
   if (created.getTime() > new Date().getTime() + 15 * 60 * 1000) {
     return {
       code: 'InputError',
       message: '`created` cannot be in the future (max 15min drift)',
-      details: {created: taskDef.created},
+      details: { created: taskDef.created },
     };
   }
   if (created.getTime() > deadline.getTime()) {
     return {
       code: 'InputError',
       message: '`deadline` cannot be later than `created`',
-      details: {created: taskDef.created, deadline: taskDef.deadline},
+      details: { created: taskDef.created, deadline: taskDef.deadline },
     };
   }
   if (deadline.getTime() < new Date().getTime()) {
     return {
       code: 'InputError',
       message: '`deadline` cannot be in the past',
-      details: {deadline: taskDef.deadline},
+      details: { deadline: taskDef.deadline },
     };
   }
 
@@ -396,7 +396,7 @@ let patchAndValidateTaskDef = function(taskId, taskDef) {
     return {
       code: 'InputError',
       message: '`deadline` cannot be more than 5 days into the future',
-      details: {deadline: taskDef.deadline},
+      details: { deadline: taskDef.deadline },
     };
   }
 
@@ -412,7 +412,7 @@ let patchAndValidateTaskDef = function(taskId, taskDef) {
     return {
       code: 'InputError',
       message: '`expires` cannot be before `deadline`',
-      details: {deadline: taskDef.deadline, expires: taskDef.expires},
+      details: { deadline: taskDef.deadline, expires: taskDef.expires },
     };
   }
 
@@ -447,7 +447,7 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
         'Task group `{{taskGroupId}}` contains tasks with a schedulerId other',
         'than `{{schedulerId}}`. All tasks in the same task-group must have',
         'the same schedulerId.',
-      ].join('\n'), {taskGroupId, schedulerId});
+      ].join('\n'), { taskGroupId, schedulerId });
     return false;
   }
 
@@ -462,18 +462,18 @@ builder.declare({
   stability: APIBuilder.stability.stable,
   idempotent: true,
   category: 'Tasks',
-  scopes: {AllOf: [
-    {for: 'scope', in: 'scopes', each: '<scope>'},
-    {for: 'route', in: 'routes', each: 'queue:route:<route>'},
+  scopes: { AllOf: [
+    { for: 'scope', in: 'scopes', each: '<scope>' },
+    { for: 'route', in: 'routes', each: 'queue:route:<route>' },
     'queue:scheduler-id:<schedulerId>',
-    {AnyOf: [
+    { AnyOf: [
       {
         for: 'priority',
         in: 'priorities',
         each: 'queue:create-task:<priority>:<provisionerId>/<workerType>',
       },
-    ]},
-  ]},
+    ] },
+  ] },
   input: 'create-task-request.yml',
   output: 'task-status-response.yml',
   title: 'Create New Task',
@@ -544,7 +544,7 @@ builder.declare({
     return res.reportError('RequestConflict', [
       'taskId `{{taskId}}` already used by another task.',
       'This could be the result of faulty idempotency!',
-    ].join('\n'), {taskId});
+    ].join('\n'), { taskId });
   }
 
   // if the task has no dependencies, schedule a run immediately
@@ -572,15 +572,15 @@ builder.declare({
   // If first run isn't unscheduled or pending, all message must have been
   // published before, this can happen if we came from the catch-branch
   // (it's unlikely to happen). But no need to publish messages again
-  let runZeroState = (task.runs[0] || {state: 'unscheduled'}).state;
+  let runZeroState = (task.runs[0] || { state: 'unscheduled' }).state;
   if (runZeroState !== 'unscheduled' && runZeroState !== 'pending') {
-    return res.reply({status});
+    return res.reply({ status });
   }
 
   // Publish task-defined message, we want this arriving before the
   // task-pending message, so we have to await publication here
-  await this.publisher.taskDefined({status, task: taskPulseContents}, task.routes);
-  this.monitor.log.taskDefined({taskId});
+  await this.publisher.taskDefined({ status, task: taskPulseContents }, task.routes);
+  this.monitor.log.taskDefined({ taskId });
 
   // If first run is pending we publish messages about this
   if (runZeroState === 'pending') {
@@ -589,13 +589,13 @@ builder.declare({
       this.queueService.putPendingMessage(task, 0),
 
       // Put message in appropriate azure queue, and publish message to pulse
-      this.publisher.taskPending({status, task: taskPulseContents, runId: 0}, task.routes),
+      this.publisher.taskPending({ status, task: taskPulseContents, runId: 0 }, task.routes),
     ]);
-    this.monitor.log.taskPending({taskId, runId: 0});
+    this.monitor.log.taskPending({ taskId, runId: 0 });
   }
 
   // Reply
-  return res.reply({status});
+  return res.reply({ status });
 });
 
 /** Schedule previously defined tasks */
@@ -605,13 +605,13 @@ builder.declare({
   name: 'scheduleTask',
   stability: APIBuilder.stability.stable,
   category: 'Tasks',
-  scopes: {AnyOf: [
+  scopes: { AnyOf: [
     'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
-    {AllOf: [ // Legacy scopes
+    { AllOf: [ // Legacy scopes
       'queue:schedule-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
-    ]},
-  ]},
+    ] },
+  ] },
   input: undefined, // No input accepted
   output: 'task-status-response.yml',
   title: 'Schedule Defined Task',
@@ -640,7 +640,7 @@ builder.declare({
     return res.reportError(
       'ResourceNotFound',
       'taskId `{{taskId}}` not found. Are you sure it exists?',
-      {taskId},
+      { taskId },
     );
   }
 
@@ -665,7 +665,7 @@ builder.declare({
     );
   }
 
-  return res.reply({status});
+  return res.reply({ status });
 });
 
 /** Rerun a previously resolved task */
@@ -675,13 +675,13 @@ builder.declare({
   name: 'rerunTask',
   stability: APIBuilder.stability.stable,
   category: 'Tasks',
-  scopes: {AnyOf: [
+  scopes: { AnyOf: [
     'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',
-    {AllOf: [ // Legacy scopes
+    { AllOf: [ // Legacy scopes
       'queue:rerun-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
-    ]},
-  ]},
+    ] },
+  ] },
   input: undefined, // No input accepted
   output: 'task-status-response.yml',
   title: 'Rerun a Resolved Task',
@@ -763,10 +763,10 @@ builder.declare({
         runId: runId,
       }, task.routes),
     ]);
-    this.monitor.log.taskPending({taskId, runId});
+    this.monitor.log.taskPending({ taskId, runId });
   }
 
-  return res.reply({status});
+  return res.reply({ status });
 });
 
 /** Cancel a task */
@@ -776,13 +776,13 @@ builder.declare({
   name: 'cancelTask',
   stability: APIBuilder.stability.stable,
   category: 'Tasks',
-  scopes: {AnyOf: [
+  scopes: { AnyOf: [
     'queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',
-    {AllOf: [ // Legacy scopes
+    { AllOf: [ // Legacy scopes
       'queue:cancel-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
-    ]},
-  ]},
+    ] },
+  ] },
   input: undefined, // No input accepted
   output: 'task-status-response.yml',
   title: 'Cancel Task',
@@ -863,10 +863,10 @@ builder.declare({
       status,
       runId,
     }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
-    this.monitor.log.taskException({taskId, runId});
+    this.monitor.log.taskException({ taskId, runId });
   }
 
-  return res.reply({status});
+  return res.reply({ status });
 });
 
 // Hack to get promises that resolve after 20s without creating a setTimeout
@@ -888,10 +888,10 @@ builder.declare({
   name: 'claimWork',
   stability: APIBuilder.stability.stable,
   category: 'Worker Interface',
-  scopes: {AllOf: [
+  scopes: { AllOf: [
     'queue:claim-work:<provisionerId>/<workerType>',
     'queue:worker-id:<workerGroup>/<workerId>',
-  ]},
+  ] },
   input: 'claim-work-request.yml',
   output: 'claim-work-response.yml',
   title: 'Claim Work',
@@ -947,7 +947,7 @@ builder.declare({
     this.workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
   ]);
 
-  result.forEach(({runId, status: {taskId}}) => {
+  result.forEach(({ runId, status: { taskId } }) => {
     this.monitor.log.taskClaimed({
       provisionerId,
       workerType,
@@ -972,17 +972,17 @@ builder.declare({
   name: 'claimTask',
   stability: APIBuilder.stability.deprecated,
   category: 'Worker Interface',
-  scopes: {AnyOf: [
-    {AllOf: [
+  scopes: { AnyOf: [
+    { AllOf: [
       'queue:claim-task:<provisionerId>/<workerType>',
       'queue:worker-id:<workerGroup>/<workerId>',
-    ]},
-    {AllOf: [ // Legacy
+    ] },
+    { AllOf: [ // Legacy
       'queue:claim-task',
       'assume:worker-type:<provisionerId>/<workerType>',
       'assume:worker-id:<workerGroup>/<workerId>',
-    ]},
-  ]},
+    ] },
+  ] },
   input: 'task-claim-request.yml',
   output: 'task-claim-response.yml',
   title: 'Claim Task',
@@ -1076,13 +1076,13 @@ builder.declare({
   name: 'reclaimTask',
   stability: APIBuilder.stability.stable,
   category: 'Worker Interface',
-  scopes: {AnyOf: [
+  scopes: { AnyOf: [
     'queue:reclaim-task:<taskId>/<runId>',
-    {AllOf: [ // Legacy
+    { AllOf: [ // Legacy
       'queue:claim-task',
       'assume:worker-id:<workerGroup>/<workerId>',
-    ]},
-  ]},
+    ] },
+  ] },
   output: 'task-reclaim-response.yml',
   title: 'Reclaim task',
   description: [
@@ -1296,7 +1296,7 @@ let resolveTask = async function(req, res, taskId, runId, target) {
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
-    this.monitor.log.taskCompleted({taskId, runId});
+    this.monitor.log.taskCompleted({ taskId, runId });
   } else {
     await this.publisher.taskFailed({
       status,
@@ -1305,10 +1305,10 @@ let resolveTask = async function(req, res, taskId, runId, target) {
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
-    this.monitor.log.taskFailed({taskId, runId});
+    this.monitor.log.taskFailed({ taskId, runId });
   }
 
-  return res.reply({status});
+  return res.reply({ status });
 };
 
 /** Report task completed */
@@ -1318,13 +1318,13 @@ builder.declare({
   name: 'reportCompleted',
   stability: APIBuilder.stability.stable,
   category: 'Worker Interface',
-  scopes: {AnyOf: [
+  scopes: { AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
-    {AllOf: [ // Legacy
+    { AllOf: [ // Legacy
       'queue:resolve-task',
       'assume:worker-id:<workerGroup>/<workerId>',
-    ]},
-  ]},
+    ] },
+  ] },
   input: undefined, // No input at this point
   output: 'task-status-response.yml',
   title: 'Report Run Completed',
@@ -1348,13 +1348,13 @@ builder.declare({
   name: 'reportFailed',
   stability: APIBuilder.stability.stable,
   category: 'Worker Interface',
-  scopes: {AnyOf: [
+  scopes: { AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
-    {AllOf: [ // Legacy
+    { AllOf: [ // Legacy
       'queue:resolve-task',
       'assume:worker-id:<workerGroup>/<workerId>',
-    ]},
-  ]},
+    ] },
+  ] },
   input: undefined, // No input at this point
   output: 'task-status-response.yml',
   title: 'Report Run Failed',
@@ -1381,13 +1381,13 @@ builder.declare({
   name: 'reportException',
   stability: APIBuilder.stability.stable,
   category: 'Worker Interface',
-  scopes: {AnyOf: [
+  scopes: { AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
-    {AllOf: [ // Legacy
+    { AllOf: [ // Legacy
       'queue:resolve-task',
       'assume:worker-id:<workerGroup>/<workerId>',
-    ]},
-  ]},
+    ] },
+  ] },
   input: 'task-exception-request.yml',
   output: 'task-status-response.yml',
   title: 'Report Task Exception',
@@ -1491,7 +1491,7 @@ builder.declare({
         runId: runId + 1,
       }, task.routes),
     ]);
-    this.monitor.log.taskPending({taskId, runId: runId + 1});
+    this.monitor.log.taskPending({ taskId, runId: runId + 1 });
   } else {
     // Update dependency tracker, as the task is resolved (no new run)
     await this.queueService.putResolvedMessage(
@@ -1509,11 +1509,11 @@ builder.declare({
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
-    this.monitor.log.taskException({taskId, runId});
+    this.monitor.log.taskException({ taskId, runId });
   }
 
   // Reply to caller
-  return res.reply({status});
+  return res.reply({ status });
 });
 
 // Load artifacts.js so API end-points declared in that file is loaded
@@ -1545,10 +1545,10 @@ builder.declare({
   const continuation = req.query.continuationToken || null;
   const limit = Math.min(1000, parseInt(req.query.limit || 1000, 10));
 
-  const {rows: provisioners, continuationToken} = await Provisioner.getProvisioners(
+  const { rows: provisioners, continuationToken } = await Provisioner.getProvisioners(
     this.db,
     { expires: new Date() },
-    { query: {continuationToken: continuation, limit} },
+    { query: { continuationToken: continuation, limit } },
   );
   const result = {
     provisioners: provisioners.map(provisioner => provisioner.serialize()),
@@ -1598,11 +1598,11 @@ builder.declare({
   name: 'declareProvisioner',
   stability: APIBuilder.stability.experimental,
   category: 'Worker Metadata',
-  scopes: {AllOf: [{
+  scopes: { AllOf: [{
     for: 'property',
     in: 'properties',
     each: 'queue:declare-provisioner:<provisionerId>#<property>',
-  }]},
+  }] },
   output: 'provisioner-response.yml',
   input: 'update-provisioner-request.yml',
   title: 'Update a provisioner',
@@ -1620,7 +1620,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const provisionerId = req.params.provisionerId;
-  const {stability, description, expires, actions} = req.body;
+  const { stability, description, expires, actions } = req.body;
 
   await req.authorize({
     provisionerId,
@@ -1693,7 +1693,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const provisionerId = req.params.provisionerId;
-  const {rows: workerTypes, continuationToken} = await WorkerType.getWorkerTypes(
+  const { rows: workerTypes, continuationToken } = await WorkerType.getWorkerTypes(
     this.db,
     { provisionerId, expires: new Date() },
     { query: req.query },
@@ -1722,7 +1722,7 @@ builder.declare({
     'Get a worker-type from a provisioner.',
   ].join('\n'),
 }, async function(req, res) {
-  const {provisionerId, workerType} = req.params;
+  const { provisionerId, workerType } = req.params;
 
   const expires = new Date();
   const [wType, provisioner] = await Promise.all([
@@ -1740,7 +1740,7 @@ builder.declare({
   }
 
   const actions = provisioner.actions.filter(action => action.context === 'worker-type');
-  return res.reply(Object.assign({}, wType.serialize(), {actions}));
+  return res.reply(Object.assign({}, wType.serialize(), { actions }));
 });
 
 /** Update a worker-type */
@@ -1750,13 +1750,13 @@ builder.declare({
   name: 'declareWorkerType',
   stability: APIBuilder.stability.experimental,
   category: 'Worker Metadata',
-  scopes: {AllOf: [
+  scopes: { AllOf: [
     {
       for: 'property',
       in: 'properties',
       each: 'queue:declare-worker-type:<provisionerId>/<workerType>#<property>',
     },
-  ]},
+  ] },
   output: 'workertype-response.yml',
   input: 'update-workertype-request.yml',
   title: 'Update a worker-type',
@@ -1769,8 +1769,8 @@ builder.declare({
     '`queue:declare-worker-type:my-provisioner/highmem#description`.',
   ].join('\n'),
 }, async function(req, res) {
-  const {provisionerId, workerType} = req.params;
-  const {stability, description, expires} = req.body;
+  const { provisionerId, workerType } = req.params;
+  const { stability, description, expires } = req.body;
 
   await req.authorize({
     provisionerId,
@@ -1786,10 +1786,10 @@ builder.declare({
       description,
       expires,
     }),
-    this.workerInfo.upsertProvisioner({provisionerId}),
+    this.workerInfo.upsertProvisioner({ provisionerId }),
   ]);
   const actions = provisioner.actions.filter(action => action.context === 'worker-type');
-  return res.reply(Object.assign({}, wType.serialize(), {actions}));
+  return res.reply(Object.assign({}, wType.serialize(), { actions }));
 });
 
 /** List all active workerGroup/workerId of a workerType */
@@ -1823,7 +1823,7 @@ builder.declare({
   const workerType = req.params.workerType;
   const now = new Date();
 
-  const {rows: workers, continuationToken} = await Worker.getWorkers(
+  const { rows: workers, continuationToken } = await Worker.getWorkers(
     this.db,
     { provisionerId, workerType },
     { query: req.query },
@@ -1876,7 +1876,7 @@ builder.declare({
     'Get a worker from a worker-type.',
   ].join('\n'),
 }, async function(req, res) {
-  const {provisionerId, workerType, workerGroup, workerId} = req.params;
+  const { provisionerId, workerType, workerGroup, workerId } = req.params;
 
   const now = new Date();
   const [worker, wType, provisioner] = await Promise.all([
@@ -1902,7 +1902,7 @@ builder.declare({
   }
 
   const actions = provisioner.actions.filter(action => action.context === 'worker');
-  return res.reply(Object.assign({}, worker.serialize(), {actions}));
+  return res.reply(Object.assign({}, worker.serialize(), { actions }));
 });
 
 /** Quarantine a Worker */
@@ -1912,9 +1912,9 @@ builder.declare({
   name: 'quarantineWorker',
   stability: APIBuilder.stability.experimental,
   category: 'Worker Metadata',
-  scopes: {AllOf: [
+  scopes: { AllOf: [
     'queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>',
-  ]},
+  ] },
   input: 'quarantine-worker-request.yml',
   output: 'worker-response.yml',
   title: 'Quarantine a worker',
@@ -1923,8 +1923,8 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let result;
-  const {provisionerId, workerType, workerGroup, workerId} = req.params;
-  const {quarantineUntil} = req.body;
+  const { provisionerId, workerType, workerGroup, workerId } = req.params;
+  const { quarantineUntil } = req.body;
 
   const expires = new Date();
   let [worker, provisioner] = await Promise.all([
@@ -1945,11 +1945,11 @@ builder.declare({
     );
   }
 
-  result = await worker.update(this.db, {quarantineUntil});
+  result = await worker.update(this.db, { quarantineUntil });
   worker = Worker.fromDbRows(result);
 
   const actions = provisioner.actions.filter(action => action.context === 'worker');
-  return res.reply(Object.assign({}, worker.serialize(), {actions}));
+  return res.reply(Object.assign({}, worker.serialize(), { actions }));
 });
 
 /** Update a worker */
@@ -1959,13 +1959,13 @@ builder.declare({
   name: 'declareWorker',
   stability: APIBuilder.stability.experimental,
   category: 'Worker Metadata',
-  scopes: {AllOf: [
+  scopes: { AllOf: [
     {
       for: 'property',
       in: 'properties',
       each: 'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>',
     },
-  ]},
+  ] },
   output: 'worker-response.yml',
   input: 'update-worker-request.yml',
   title: 'Declare a worker',
@@ -1976,8 +1976,8 @@ builder.declare({
     'possessed.',
   ].join('\n'),
 }, async function(req, res) {
-  const {provisionerId, workerType, workerGroup, workerId} = req.params;
-  const {expires} = req.body;
+  const { provisionerId, workerType, workerGroup, workerId } = req.params;
+  const { expires } = req.body;
 
   await req.authorize({
     provisionerId,
@@ -1988,11 +1988,11 @@ builder.declare({
   });
 
   const [worker, _, provisioner] = await Promise.all([
-    this.workerInfo.upsertWorker({provisionerId, workerType, workerGroup, workerId, expires}),
-    this.workerInfo.upsertWorkerType({provisionerId, workerType}),
-    this.workerInfo.upsertProvisioner({provisionerId}),
+    this.workerInfo.upsertWorker({ provisionerId, workerType, workerGroup, workerId, expires }),
+    this.workerInfo.upsertWorkerType({ provisionerId, workerType }),
+    this.workerInfo.upsertProvisioner({ provisionerId }),
   ]);
 
   const actions = provisioner.actions.filter(action => action.context === 'worker');
-  return res.reply(Object.assign({}, worker.serialize(), {actions}));
+  return res.reply(Object.assign({}, worker.serialize(), { actions }));
 });

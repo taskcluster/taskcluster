@@ -31,7 +31,7 @@ suite(testing.suiteName(), function() {
       t.name || 'name',
       t.rank || 1,
       t.taskId || slug.nice(),
-      t.data || {data: true},
+      t.data || { data: true },
       t.expires || new Date(),
     );
   };
@@ -179,7 +179,7 @@ suite(testing.suiteName(), function() {
       const rows = await db.fns.get_indexed_task('name/space', 'name');
       assert.equal(rows[0].namespace, 'name/space');
       assert.equal(rows[0].name, 'name');
-      assert.deepEqual(rows[0].data, {data: true});
+      assert.deepEqual(rows[0].data, { data: true });
     });
 
     helper.dbTest('get_indexed_task does not omit expired indexed tasks', async function(db, isFake) {
@@ -243,7 +243,7 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].namespace, 'namespace/2');
       assert.equal(rows[0].name, 'name/2');
       assert.equal(rows[0].task_id.length, 22);
-      assert.deepEqual(rows[0].data, {data: true});
+      assert.deepEqual(rows[0].data, { data: true });
       assert.deepEqual(rows[0].expires, oneDay);
     });
 

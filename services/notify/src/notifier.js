@@ -29,7 +29,7 @@ class Notifier {
       transport,
       send: true,
       preview: false,
-      views: {root: path.join(__dirname, 'templates')},
+      views: { root: path.join(__dirname, 'templates') },
       juice: true,
       juiceResources: {
         webResources: {
@@ -55,7 +55,7 @@ class Notifier {
     this.hashCache = _.take(this.hashCache, 1000);
   }
 
-  async email({address, subject, content, link, replyTo, template}) {
+  async email({ address, subject, content, link, replyTo, template }) {
     if (this.isDuplicate(address, subject, content, link, replyTo)) {
       debug('Duplicate email send detected. Not attempting resend.');
       return;
@@ -90,15 +90,15 @@ class Notifier {
         to: address,
       },
       template: template || 'simple',
-      locals: {address, subject, content, formatted, link, rateLimit},
+      locals: { address, subject, content, formatted, link, rateLimit },
     });
     this.rateLimit.markEvent(address);
     this.markSent(address, subject, content, link, replyTo);
-    this.monitor.log.email({address});
+    this.monitor.log.email({ address });
     return res;
   }
 
-  async pulse({routingKey, message}) {
+  async pulse({ routingKey, message }) {
     if (this.isDuplicate(routingKey, message)) {
       debug('Duplicate pulse send detected. Not attempting resend.');
       return;
@@ -110,14 +110,14 @@ class Notifier {
     }
 
     debug(`Publishing message on ${routingKey}`);
-    const res = this.publisher.notify({message}, [routingKey]);
+    const res = this.publisher.notify({ message }, [routingKey]);
     this.markSent(routingKey, message);
-    this.monitor.log.pulse({routingKey});
+    this.monitor.log.pulse({ routingKey });
     return res;
   }
 
   async irc(messageRequest) {
-    const {channel, user, message} = messageRequest;
+    const { channel, user, message } = messageRequest;
     if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
       debug('irc channel ' + channel + ' invalid format. Not attempting to send.');
       return;
@@ -136,13 +136,13 @@ class Notifier {
     }
 
     debug(`Publishing message on irc for ${user || channel}.`);
-    const res = await this.publisher.ircRequest({channel, user, message});
+    const res = await this.publisher.ircRequest({ channel, user, message });
     this.markSent(channel, user, message);
-    this.monitor.log.irc({dest: user || channel});
+    this.monitor.log.irc({ dest: user || channel });
     return res;
   }
 
-  async matrix({roomId, format, formattedBody, body, notice, msgtype}) {
+  async matrix({ roomId, format, formattedBody, body, notice, msgtype }) {
     if (this.isDuplicate(roomId, format, formattedBody, body, msgtype)) {
       debug('Duplicate matrix send detected. Not attempting resend.');
       return;
@@ -153,9 +153,9 @@ class Notifier {
       return;
     }
 
-    await this._matrix.sendMessage({roomId, format, formattedBody, body, notice, msgtype});
+    await this._matrix.sendMessage({ roomId, format, formattedBody, body, notice, msgtype });
     this.markSent(roomId, format, formattedBody, body, msgtype);
-    this.monitor.log.matrix({dest: roomId});
+    this.monitor.log.matrix({ dest: roomId });
   }
 }
 

@@ -209,25 +209,25 @@ suite(testing.suiteName(), function() {
   };
 
   let failed = function(message) {
-    return {status: 'auth-failed', message};
+    return { status: 'auth-failed', message };
   };
 
   makeTest('simple credentials', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
     },
   }, success(['*']));
 
   makeTest('simple credentials with payload hash', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       payload: '{}',
     },
-  }, success(['*'], {hash: 'XtNvx1FqrUYVOLlne3l2WzcyRfj9QeC6YtmhMKKFMGY='}));
+  }, success(['*'], { hash: 'XtNvx1FqrUYVOLlne3l2WzcyRfj9QeC6YtmhMKKFMGY=' }));
 
   makeTest('simple credentials, empty ext', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
       },
     },
@@ -235,7 +235,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('simple credentials, unknown field in ext (forward-compat)', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         somefield: 'foo',
       },
@@ -262,14 +262,14 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: bad ext', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: 'abcd',
     },
   }, failed('Failed to parse ext'));
 
   makeTest('invalid: non-object ext.certificate', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         certificate: true,
       },
@@ -278,7 +278,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: bad ext.certificate.version', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         certificate: {
           version: 999,
@@ -293,7 +293,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: bad seed type', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         certificate: {
           version: 1,
@@ -308,7 +308,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: bad seed length', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         certificate: {
           version: 1,
@@ -323,7 +323,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: bad seed length', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         certificate: {
           version: 1,
@@ -338,7 +338,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: bad start type', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         certificate: {
           version: 1,
@@ -353,7 +353,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: bad expiry type', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         certificate: {
           version: 1,
@@ -368,7 +368,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: bad scopes type', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         certificate: {
           version: 1,
@@ -383,7 +383,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: bad scope type', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         certificate: {
           version: 1,
@@ -398,7 +398,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: bad scope format', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         certificate: {
           version: 1,
@@ -413,7 +413,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('authorized scopes', {
     authorization: {
-      credentials: {id: 'root'},
+      credentials: { id: 'root' },
       ext: {
         authorizedScopes: ['scope1:*', 'scope2'],
       },
@@ -422,7 +422,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: authorized scopes not satisfied by clientId', {
     authorization: {
-      credentials: {id: 'unpriv'},
+      credentials: { id: 'unpriv' },
       ext: {
         authorizedScopes: ['scope1:*', 'scope2'],
       },
@@ -444,7 +444,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: authorizedScopes not an array', {
     authorization: {
-      credentials: {id: 'unpriv'},
+      credentials: { id: 'unpriv' },
       ext: {
         authorizedScopes: 'scope1:*',
       },
@@ -453,7 +453,7 @@ suite(testing.suiteName(), function() {
 
   makeTest('invalid: authorizedScopes invalid scope', {
     authorization: {
-      credentials: {id: 'unpriv'},
+      credentials: { id: 'unpriv' },
       ext: {
         authorizedScopes: ['scope1\n**'],
       },
@@ -465,8 +465,8 @@ suite(testing.suiteName(), function() {
     scopes: ['tmpscope'],
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
-      ext: {certificate},
+      credentials: { id, key },
+      ext: { certificate },
     },
   }), success(['tmpscope']));
 
@@ -476,8 +476,8 @@ suite(testing.suiteName(), function() {
     id: 'root',
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
-      ext: {certificate},
+      credentials: { id, key },
+      ext: { certificate },
     },
   }), failed('ext.certificate.expiry < now'));
 
@@ -487,10 +487,10 @@ suite(testing.suiteName(), function() {
     scopes: ['tmpscope'],
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
-      ext: {certificate},
+      credentials: { id, key },
+      ext: { certificate },
     },
-  }), success(['tmpscope'], {expires: one_hour}));
+  }), success(['tmpscope'], { expires: one_hour }));
 
   testWithTemp('temporary credentials that expire after issuer give correct expiration', {
     expiry: three_hours,
@@ -498,10 +498,10 @@ suite(testing.suiteName(), function() {
     scopes: ['tmpscope'],
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
-      ext: {certificate},
+      credentials: { id, key },
+      ext: { certificate },
     },
-  }), success(['tmpscope'], {expires: two_hours}));
+  }), success(['tmpscope'], { expires: two_hours }));
 
   testWithTemp('invalid: postdated temporary credentials', {
     start: taskcluster.fromNow('1 hour'),
@@ -509,8 +509,8 @@ suite(testing.suiteName(), function() {
     id: 'root',
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
-      ext: {certificate},
+      credentials: { id, key },
+      ext: { certificate },
     },
   }), failed('ext.certificate.start > now'));
 
@@ -520,8 +520,8 @@ suite(testing.suiteName(), function() {
     id: 'root',
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
-      ext: {certificate},
+      credentials: { id, key },
+      ext: { certificate },
     },
   }), failed('ext.certificate cannot last longer than 31 days!'));
 
@@ -530,8 +530,8 @@ suite(testing.suiteName(), function() {
     signature: 'not the right one',
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
-      ext: {certificate},
+      credentials: { id, key },
+      ext: { certificate },
     },
   }), failed('ext.certificate.signature is not valid'));
 
@@ -540,8 +540,8 @@ suite(testing.suiteName(), function() {
     scopes: ['godlike'],
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
-      ext: {certificate},
+      credentials: { id, key },
+      ext: { certificate },
     },
   }), failed('ext.certificate issuer `unpriv` doesn\'t satisfy all certificate ' +
              'scopes godlike.  The temporary credentials were not generated correctly.'));
@@ -551,7 +551,7 @@ suite(testing.suiteName(), function() {
     scopes: ['scope1:*', 'scope2:*'],
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
+      credentials: { id, key },
       ext: {
         certificate,
         authorizedScopes: ['scope1:a', 'scope2:b'],
@@ -564,7 +564,7 @@ suite(testing.suiteName(), function() {
     scopes: ['scope2'],
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
+      credentials: { id, key },
       ext: {
         certificate,
         authorizedScopes: ['scope1', 'scope2'],
@@ -590,7 +590,7 @@ suite(testing.suiteName(), function() {
     scopes: ['scope999'],
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
+      credentials: { id, key },
       ext: {
         certificate,
         authorizedScopes: ['scope999'],
@@ -607,12 +607,12 @@ suite(testing.suiteName(), function() {
     issuer: 'root',
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
+      credentials: { id, key },
       ext: {
         certificate,
       },
     },
-  }), success(['tmpscope'], {clientId: 'my-temp-cred'}));
+  }), success(['tmpscope'], { clientId: 'my-temp-cred' }));
 
   testWithTemp('named temporary credentials with authorizedScopes', {
     id: 'my-temp-cred',
@@ -622,13 +622,13 @@ suite(testing.suiteName(), function() {
     issuer: 'root',
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
+      credentials: { id, key },
       ext: {
         certificate,
         authorizedScopes: ['scopes:1', 'scopes:2'],
       },
     },
-  }), success(['scopes:1', 'scopes:2'], {clientId: 'my-temp-cred'}));
+  }), success(['scopes:1', 'scopes:2'], { clientId: 'my-temp-cred' }));
 
   testWithTemp('invalid: named temporary credentials with issuer == clientId', {
     id: 'root',
@@ -638,7 +638,7 @@ suite(testing.suiteName(), function() {
     issuer: 'root',
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
+      credentials: { id, key },
       ext: {
         certificate,
       },
@@ -653,7 +653,7 @@ suite(testing.suiteName(), function() {
     issuer: 'root',
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
+      credentials: { id, key },
       ext: {
         certificate,
       },
@@ -669,7 +669,7 @@ suite(testing.suiteName(), function() {
     omitClientIdFromSig: true,
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
+      credentials: { id, key },
       ext: {
         certificate,
       },
@@ -684,7 +684,7 @@ suite(testing.suiteName(), function() {
     issuer: 'unpriv',
   }, (id, key, certificate) => ({
     authorization: {
-      credentials: {id, key},
+      credentials: { id, key },
       ext: {
         certificate,
       },
@@ -734,7 +734,7 @@ suite(testing.suiteName(), function() {
     id: 'root',
     scopes: ['scope3'],
   }, (id, key, certificate) => ({
-    bewit: {id, key, ext: {certificate}},
+    bewit: { id, key, ext: { certificate } },
   }), success(['scope3']));
 
   testWithTemp('bewit based on temporary creds and authorizedScopes', {
@@ -766,5 +766,5 @@ suite(testing.suiteName(), function() {
         certificate,
       },
     },
-  }), success(['scope3'], {clientId: 'root/temp-url'}));
+  }), success(['scope3'], { clientId: 'root/temp-url' }));
 });

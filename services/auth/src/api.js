@@ -1,17 +1,17 @@
-const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
+const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const scopeUtils = require('taskcluster-lib-scopes');
 const slugid = require('slugid');
 const _ = require('lodash');
 const signaturevalidator = require('./signaturevalidator');
 const ScopeResolver = require('./scoperesolver');
 const Hashids = require('hashids/cjs');
-const {modifyRoles} = require('../src/data');
+const { modifyRoles } = require('../src/data');
 
 /**
  * Helper to return a role as defined in the blob to one suitable for return.
  * This involves adding expandedRoles using the resolver.
  */
-const roleToJson = ({role_id, scopes, description, last_modified, created}, context) => ({
+const roleToJson = ({ role_id, scopes, description, last_modified, created }, context) => ({
   roleId: role_id,
   scopes,
   expandedScopes: context.resolver.resolve([`assume:${role_id}`]),
@@ -178,13 +178,13 @@ builder.declare({
     'get a result without a `continuationToken`.',
   ].join('\n'),
 }, async function(req, res) {
-  const {continuationToken, rows} = await paginateResults({
+  const { continuationToken, rows } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_clients(req.query.prefix, size, offset),
     maxLimit: 1000,
   });
 
-  res.reply({clients: rows.map(c => clientToJson(c, this)), continuationToken});
+  res.reply({ clients: rows.map(c => clientToJson(c, this)), continuationToken });
 });
 
 /** Get client */
@@ -219,7 +219,7 @@ builder.declare({
   scopes: {
     AllOf: [
       'auth:create-client:<clientId>',
-      {for: 'scope', in: 'scopes', each: '<scope>'},
+      { for: 'scope', in: 'scopes', each: '<scope>' },
     ],
   },
   stability: 'stable',
@@ -248,7 +248,7 @@ builder.declare({
     return res.reportError('InputError',
       'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
-      {clientId},
+      { clientId },
     );
   }
 
@@ -257,14 +257,14 @@ builder.declare({
   }
 
   // Check scopes
-  await req.authorize({clientId, scopes});
+  await req.authorize({ clientId, scopes });
 
   let accessToken = slugid.v4() + slugid.v4();
 
   await this.db.fns.create_client(
     clientId,
     input.description,
-    this.db.encrypt({value: Buffer.from(accessToken, 'utf8')}),
+    this.db.encrypt({ value: Buffer.from(accessToken, 'utf8') }),
     new Date(input.expires),
     false,
     JSON.stringify(scopes),
@@ -273,14 +273,14 @@ builder.declare({
 
   // Send pulse message
   await Promise.all([
-    this.publisher.clientCreated({clientId}),
+    this.publisher.clientCreated({ clientId }),
     this.resolver.reloadClient(clientId),
   ]);
 
   // Create result with access token
   let [client] = await this.db.fns.get_client(clientId);
   let result = clientToJson(client, this);
-  result.accessToken = this.db.decrypt({value: client.encrypted_access_token}).toString('utf8');
+  result.accessToken = this.db.decrypt({ value: client.encrypted_access_token }).toString('utf8');
   return res.reply(result);
 });
 
@@ -310,12 +310,12 @@ builder.declare({
     return res.reportError('InputError',
       'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
-      {clientId},
+      { clientId },
     );
   }
 
   // Check scopes
-  await req.authorize({clientId});
+  await req.authorize({ clientId });
 
   // Reset accessToken
   const accessToken = slugid.v4() + slugid.v4();
@@ -334,13 +334,13 @@ builder.declare({
 
   // Publish message on pulse to clear caches...
   await Promise.all([
-    this.publisher.clientUpdated({clientId}),
+    this.publisher.clientUpdated({ clientId }),
     this.resolver.reloadClient(clientId),
   ]);
 
   // Create result with access token
   let result = clientToJson(client, this);
-  result.accessToken = this.db.decrypt({value: client.encrypted_access_token}).toString('utf8');
+  result.accessToken = this.db.decrypt({ value: client.encrypted_access_token }).toString('utf8');
   return res.reply(result);
 });
 
@@ -355,7 +355,7 @@ builder.declare({
   scopes: {
     AllOf: [
       'auth:update-client:<clientId>',
-      {for: 'scope', in: 'scopesAdded', each: '<scope>'},
+      { for: 'scope', in: 'scopesAdded', each: '<scope>' },
     ],
   },
   stability: 'stable',
@@ -376,7 +376,7 @@ builder.declare({
     return res.reportError('InputError',
       'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
-      {clientId},
+      { clientId },
     );
   }
 
@@ -395,7 +395,7 @@ builder.declare({
   const scopesAdded = _.difference(input.scopes, client.scopes);
 
   // Check scopes
-  await req.authorize({clientId, scopesAdded});
+  await req.authorize({ clientId, scopesAdded });
 
   // Update client
   const [updated] = await this.db.fns.update_client(
@@ -413,7 +413,7 @@ builder.declare({
 
   // Publish message on pulse to clear caches...
   await Promise.all([
-    this.publisher.clientUpdated({clientId}),
+    this.publisher.clientUpdated({ clientId }),
     this.resolver.reloadClient(clientId),
   ]);
 
@@ -446,12 +446,12 @@ builder.declare({
     return res.reportError('InputError',
       'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
-      {clientId},
+      { clientId },
     );
   }
 
   // Check scopes
-  await req.authorize({clientId});
+  await req.authorize({ clientId });
 
   // Update client
   const [client] = await this.db.fns.update_client(
@@ -469,7 +469,7 @@ builder.declare({
 
   // Publish message on pulse to clear caches...
   await Promise.all([
-    this.publisher.clientUpdated({clientId}),
+    this.publisher.clientUpdated({ clientId }),
     this.resolver.reloadClient(clientId),
   ]);
 
@@ -501,12 +501,12 @@ builder.declare({
     return res.reportError('InputError',
       'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
-      {clientId},
+      { clientId },
     );
   }
 
   // Check scopes
-  await req.authorize({clientId});
+  await req.authorize({ clientId });
 
   // Update client
   const [client] = await this.db.fns.update_client(
@@ -524,7 +524,7 @@ builder.declare({
 
   // Publish message on pulse to clear caches...
   await Promise.all([
-    this.publisher.clientUpdated({clientId}),
+    this.publisher.clientUpdated({ clientId }),
     this.resolver.reloadClient(clientId),
   ]);
 
@@ -552,17 +552,17 @@ builder.declare({
     return res.reportError('InputError',
       'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
-      {clientId},
+      { clientId },
     );
   }
 
   // Check scopes
-  await req.authorize({clientId});
+  await req.authorize({ clientId });
 
   await this.db.fns.delete_client(clientId);
 
   await Promise.all([
-    this.publisher.clientDeleted({clientId}),
+    this.publisher.clientDeleted({ clientId }),
     this.resolver.reloadClient(clientId),
   ]);
 
@@ -677,7 +677,7 @@ builder.declare({
 
   // Load role
   let roles = await this.db.fns.get_roles();
-  let role = _.find(roles, {role_id: roleId});
+  let role = _.find(roles, { role_id: roleId });
 
   if (!role) {
     return res.reportError('ResourceNotFound', 'Role not found', {});
@@ -697,7 +697,7 @@ builder.declare({
   scopes: {
     AllOf: [
       'auth:create-role:<roleId>',
-      {for: 'scope', in: 'scopes', each: '<scope>'},
+      { for: 'scope', in: 'scopes', each: '<scope>' },
     ],
   },
   stability: 'stable',
@@ -722,7 +722,7 @@ builder.declare({
   }
 
   // Check scopes
-  await req.authorize({roleId, scopes: input.scopes});
+  await req.authorize({ roleId, scopes: input.scopes });
 
   input.scopes.sort(scopeUtils.scopeCompare);
 
@@ -737,7 +737,7 @@ builder.declare({
   // update Roles
   try {
     await modifyRoles(this.db, ({ roles }) => {
-      const existing = _.find(roles, {role_id: roleId});
+      const existing = _.find(roles, { role_id: roleId });
       if (existing) {
         // role exists and doesn't match this one -> RequestConflict
         if (existing.description !== input.description || !_.isEqual(existing.scopes, input.scopes)) {
@@ -760,11 +760,11 @@ builder.declare({
   } catch (err) {
     switch (err.code) {
       case 'InvalidScopeError':
-        return res.reportError('InputError', err.message, {scope: err.scope});
+        return res.reportError('InputError', err.message, { scope: err.scope });
       case 'DependencyCycleError':
-        return res.reportError('InputError', err.message, {cycle: err.cycle});
+        return res.reportError('InputError', err.message, { cycle: err.cycle });
       case 'RoleIdExists':
-        return res.reportError('RequestConflict', err.message, {roleId: err.roleId});
+        return res.reportError('RequestConflict', err.message, { roleId: err.roleId });
       default:
         throw err;
     }
@@ -772,7 +772,7 @@ builder.declare({
 
   // Send pulse message and reload
   await Promise.all([
-    this.publisher.roleCreated({roleId}),
+    this.publisher.roleCreated({ roleId }),
     this.resolver.reloadRoles(),
   ]);
 
@@ -791,7 +791,7 @@ builder.declare({
   scopes: {
     AllOf: [
       'auth:update-role:<roleId>',
-      {for: 'scope', in: 'scopesAdded', each: '<scope>'},
+      { for: 'scope', in: 'scopesAdded', each: '<scope>' },
     ],
   },
   stability: 'stable',
@@ -817,7 +817,7 @@ builder.declare({
   let role;
   try {
     await modifyRoles(this.db, async ({ roles }) => {
-      const i = _.findIndex(roles, {role_id: roleId});
+      const i = _.findIndex(roles, { role_id: roleId });
       if (i === -1) {
         const err = new Error(`Role with roleId '${roleId}' not found`);
         err.roleId = roleId;
@@ -829,13 +829,13 @@ builder.declare({
       // Check scopes
       const formerRoleScopes = this.resolver.resolve(role.scopes);
       const scopesAdded = input.scopes.filter(s => !scopeUtils.satisfiesExpression(formerRoleScopes, s));
-      await req.authorize({roleId, scopesAdded});
+      await req.authorize({ roleId, scopesAdded });
 
       // check that this updated role does not introduce a cycle, careful not to modify
       // the original yet (since azure-blob-storage caches it)
       ScopeResolver.validateRoles([
         ...roles.filter(r => r !== role),
-        Object.assign({}, role, {scopes: input.scopes}),
+        Object.assign({}, role, { scopes: input.scopes }),
       ]);
 
       // finish modification
@@ -846,11 +846,11 @@ builder.declare({
   } catch (err) {
     switch (err.code) {
       case 'InvalidScopeError':
-        return res.reportError('InputError', err.message, {scope: err.scope});
+        return res.reportError('InputError', err.message, { scope: err.scope });
       case 'DependencyCycleError':
-        return res.reportError('InputError', err.message, {cycle: err.cycle});
+        return res.reportError('InputError', err.message, { cycle: err.cycle });
       case 'RoleNotFound':
-        return res.reportError('ResourceNotFound', err.message, {roleId: err.roleId});
+        return res.reportError('ResourceNotFound', err.message, { roleId: err.roleId });
       default:
         throw err;
     }
@@ -858,7 +858,7 @@ builder.declare({
 
   // Publish message on pulse to clear caches...
   await Promise.all([
-    this.publisher.roleUpdated({roleId}),
+    this.publisher.roleUpdated({ roleId }),
     this.resolver.reloadRoles(),
   ]);
 
@@ -882,17 +882,17 @@ builder.declare({
   let roleId = req.params.roleId;
 
   // Check scopes
-  await req.authorize({roleId});
+  await req.authorize({ roleId });
 
   await modifyRoles(this.db, ({ roles }) => {
-    let i = _.findIndex(roles, {role_id: roleId});
+    let i = _.findIndex(roles, { role_id: roleId });
     if (i !== -1) {
       roles.splice(i, 1);
     }
   });
 
   await Promise.all([
-    this.publisher.roleDeleted({roleId}),
+    this.publisher.roleDeleted({ roleId }),
     this.resolver.reloadRoles(),
   ]);
 
@@ -915,7 +915,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let input = req.body;
-  return res.reply({scopes: this.resolver.resolve(input.scopes)});
+  return res.reply({ scopes: this.resolver.resolve(input.scopes) });
 });
 
 /** Get the request scopes */
@@ -933,7 +933,7 @@ builder.declare({
     'and roles).',
   ].join('\n'),
 }, async function(req, res) {
-  return res.reply({scopes: await req.scopes()});
+  return res.reply({ scopes: await req.scopes() });
 });
 
 // Load aws and azure API implementations, these loads API and declares methods
@@ -1010,17 +1010,17 @@ builder.declare({
     }),
     entry: {
       route: '/test-authenticate',
-      scopes: {AllOf: [
-        {for: 'scope', in: 'requiredScopes', each: '<scope>'},
-      ]},
+      scopes: { AllOf: [
+        { for: 'scope', in: 'requiredScopes', each: '<scope>' },
+      ] },
     },
   })(req, res, next));
-  await req.authorize({requiredScopes: req.body.requiredScopes || []});
+  await req.authorize({ requiredScopes: req.body.requiredScopes || [] });
   const [clientId, scopes] = await Promise.all([
     req.clientId(),
     req.scopes(),
   ]);
-  res.reply({clientId, scopes});
+  res.reply({ clientId, scopes });
 });
 
 builder.declare({
@@ -1065,15 +1065,15 @@ builder.declare({
     }),
     entry: {
       route: '/test-authenticate',
-      scopes: {AllOf: [
-        {for: 'scope', in: 'requiredScopes', each: '<scope>'},
-      ]},
+      scopes: { AllOf: [
+        { for: 'scope', in: 'requiredScopes', each: '<scope>' },
+      ] },
     },
   })(req, res, next));
-  await req.authorize({requiredScopes: ['test:authenticate-get']});
+  await req.authorize({ requiredScopes: ['test:authenticate-get'] });
   const [clientId, scopes] = await Promise.all([
     req.clientId(),
     req.scopes(),
   ]);
-  res.reply({clientId, scopes});
+  res.reply({ clientId, scopes });
 });

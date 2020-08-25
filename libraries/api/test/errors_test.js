@@ -1,6 +1,6 @@
 const request = require('superagent');
 const assert = require('assert');
-const {APIBuilder} = require('../');
+const { APIBuilder } = require('../');
 const helper = require('./helper');
 const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
@@ -12,14 +12,14 @@ suite(testing.suiteName(), function() {
   const builder = new APIBuilder({
     title: 'Test Api',
     description: 'Yet another test api',
-    errorCodes: {TooManyFoos: 472},
+    errorCodes: { TooManyFoos: 472 },
     serviceName: 'test',
     apiVersion: 'v1',
   });
 
   // Create a mock authentication server
   setup(async () => {
-    await helper.setupServer({builder});
+    await helper.setupServer({ builder });
   });
   teardown(helper.teardownServer);
 
@@ -35,7 +35,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     description: 'Place we can call to test something',
   }, function(req, res) {
-    res.reportError('InputError', 'Testing Error', {dee: 'tails'});
+    res.reportError('InputError', 'Testing Error', { dee: 'tails' });
   });
 
   test('InputError response', async function() {
@@ -69,7 +69,7 @@ suite(testing.suiteName(), function() {
     res.reportError(
       'TooManyFoos',
       'You can only have 3 foos.  These foos already exist:\n{{foos}}',
-      {foos: [1, 2, 3]});
+      { foos: [1, 2, 3] });
   });
 
   test('TooManyFoos response', async function() {
@@ -99,7 +99,7 @@ suite(testing.suiteName(), function() {
         requestInfo: {
           method: 'toomanyfoos',
           params: {},
-          payload: {foos: [4, 5]},
+          payload: { foos: [4, 5] },
           time: '<nowish>',
         },
       });
@@ -151,7 +151,7 @@ suite(testing.suiteName(), function() {
 
   test('InputValidationError response', async function() {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputvalidationerror');
-    return request.post(url).send({invalid: 'yep', secret: 's3kr!t'})
+    return request.post(url).send({ invalid: 'yep', secret: 's3kr!t' })
       .then(res => assert(false, 'should have failed!'))
       .catch(res => {
         assert.equal(res.status, 400);
@@ -163,7 +163,7 @@ suite(testing.suiteName(), function() {
         assert(_.isEqual(response.requestInfo, {
           method: 'InputValidationError',
           params: {},
-          payload: {invalid: 'yep', secret: '<HIDDEN>'},
+          payload: { invalid: 'yep', secret: '<HIDDEN>' },
         }));
       });
   });

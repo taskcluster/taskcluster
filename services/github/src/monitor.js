@@ -1,4 +1,4 @@
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 
 /**
  * For ease of debugging, the following top-level fields are shared by all

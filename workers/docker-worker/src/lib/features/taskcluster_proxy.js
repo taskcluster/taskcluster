@@ -6,7 +6,7 @@ grants a particular permission level based on the task scopes.
 const promiseRetry = require('promise-retry');
 const waitForPort = require('../wait_for_port');
 const http = require('http');
-const {version: workerVersion} = require('../../../package.json');
+const { version: workerVersion } = require('../../../package.json');
 
 // Alias used to link the proxy.
 const ALIAS = 'taskcluster';
@@ -74,7 +74,7 @@ class TaskclusterProxy {
     // with a more general purpose way of logging things from sidecar containers.
     let debugLevel = process.env.DEBUG || '';
     if (debugLevel.includes(this.featureName) || debugLevel === '*') {
-      let stream = await this.container.attach({stream: true, stdout: true, stderr: true});
+      let stream = await this.container.attach({ stream: true, stdout: true, stderr: true });
       stream.pipe(process.stdout);
     }
 
@@ -134,7 +134,7 @@ class TaskclusterProxy {
     });
 
     return {
-      links: [{name, alias: ALIAS}],
+      links: [{ name, alias: ALIAS }],
       env: {
         TASKCLUSTER_PROXY_URL: `http://${ALIAS}`,
       },

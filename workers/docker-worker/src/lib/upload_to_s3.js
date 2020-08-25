@@ -11,7 +11,7 @@ const _ = require('lodash');
 const pipe = require('promisepipe');
 const { Transform } = require('stream');
 
-let log = createLogger({source: 'uploadToS3'});
+let log = createLogger({ source: 'uploadToS3' });
 let debug = Debug('taskcluster-docker-worker:uploadToS3');
 
 // Upload an S3 artifact to the queue for the given taskId/runId.  Source can be
@@ -31,7 +31,7 @@ module.exports = async function uploadToS3 (
   let tmp = new temporary.File();
   debug(`created temporary file $${tmp.path} for ${artifactName}`);
 
-  let logDetails = {taskId, runId, artifactName};
+  let logDetails = { taskId, runId, artifactName };
   let digest;
   let size;
 
@@ -124,7 +124,7 @@ module.exports = async function uploadToS3 (
         });
 
         req.on('error', err => {
-          log(`Error uploading ${artifactName}`, _.defaults({err}, logDetails));
+          log(`Error uploading ${artifactName}`, _.defaults({ err }, logDetails));
           reject(err);
         });
 
@@ -132,7 +132,7 @@ module.exports = async function uploadToS3 (
 
         const readStream = fs.createReadStream(tmp.path);
         readStream.on('error', err => {
-          log(`Error reading temp file while uploading ${artifactName}`, _.defaults({err}, logDetails));
+          log(`Error reading temp file while uploading ${artifactName}`, _.defaults({ err }, logDetails));
           reject(err);
         });
 
@@ -153,10 +153,10 @@ module.exports = async function uploadToS3 (
     // case scenario should not be greater than maxTimeout, i.e.:
     //  2 * 1000 * Math.pow(factor, 10) <= 30000
     // Solving the equation for factor gives factor=1.311
-    }, {maxTimeout: 30000, factor: 1.311, randomize: true});
+    }, { maxTimeout: 30000, factor: 1.311, randomize: true });
   } finally {
     tmp.unlinkSync();
   }
 
-  return {digest, size};
+  return { digest, size };
 };

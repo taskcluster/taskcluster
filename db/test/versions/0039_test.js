@@ -8,7 +8,7 @@ suite(testing.suiteName(), function() {
   helper.withDbForVersion();
 
   test('authorization_codes table created / removed on upgrade and downgrade', async function() {
-    await testing.resetDb({testDbUrl: helper.dbUrl});
+    await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
     await helper.assertTable('authorization_codes_table_entities');

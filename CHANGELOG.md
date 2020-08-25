@@ -3,6 +3,68 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v37.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [#3216](https://github.com/taskcluster/taskcluster/issues/3216)
+The auth, github, hooks, index, and notify services no longer take Helm config `<service>.azure_account_id`, and auth no longer takes Helm config `auth.azure_account_key`, as these services no longer talk to Azure.
+
+▶ [minor] [#3216](https://github.com/taskcluster/taskcluster/issues/3216)
+The queue service no longer accepts the optional, and probably-unused, `queue.azure_report_chance` and `queue.azure_report_threshold` Helm configurations.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#3168](https://github.com/taskcluster/taskcluster/issues/3168)
+The worker-manager now supports a `scalingRatio` that determines how much worker capacity to spawn per pending task.
+The `scalingRatio` is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task.
+
+▶ [minor] [#3033](https://github.com/taskcluster/taskcluster/issues/3033)
+The worker-manager updates the `expires` timestamp for AWS workers that are set to expire in less than a day.
+Updating the `expires` timestamp is now handled in the worker-scanner scan() loop for all providers.
+
+▶ [patch] [bug 1637302](http://bugzil.la/1637302)
+Docker-worker now allows configuring which artifacts it should compress on upload.
+
+### USERS
+
+▶ [minor] [bug 1623749](http://bugzil.la/1623749)
+Docker-worker now allows features to be disabled in the worker config.
+
+▶ [minor] [bug 1623749](http://bugzil.la/1623749)
+Docker-worker now allows scopes for devices and privileged containers to be per-pool, rather than global.
+
+▶ [minor] [#2973](https://github.com/taskcluster/taskcluster/issues/2973)
+Support docker images from tasks with only a docker v1.2 manifest.
+
+▶ [minor] [#1986](https://github.com/taskcluster/taskcluster/issues/1986)
+The maximum length of the `hookGroupId` and `hookId` identifiers is now 1000.
+
+▶ [patch] [#3366](https://github.com/taskcluster/taskcluster/issues/3366)
+A serious bug in dependency handling, introduced in v35.0.0, has been fixed.  The issue occurred when a task on which more than 100 other tasks depend was resolved.  In this case, some, but not all, of the dependent tasks would be marked pending.
+
+▶ [patch] [bug 1637302](http://bugzil.la/1637302)
+Don't compress dmg files by default in docker worker.
+
+▶ [patch] [bug 1637302](http://bugzil.la/1637302)
+Don't compress dmg or zst files by default in generic worker.
+
+▶ [patch] [#2992](https://github.com/taskcluster/taskcluster/issues/2992)
+Private artifacts are now accessable via the UI.
+
+▶ [patch] [#3398](https://github.com/taskcluster/taskcluster/issues/3398)
+This version upgrades JSON-e to 4.1.0, and in particular the `$switch` operator can now be used in hook task templates and in `.taskcluster.yml` files and everywhere else Taskcluster uses JSON-e.
+
+### DEVELOPERS
+
+▶ [patch] [#3328](https://github.com/taskcluster/taskcluster/issues/3328)
+Database function compatbiility guarantees are now included in `db/fns.md` for reference by engineers writing database versions.
+Takcluster-lib-entities has been removed from the codebase, as no entities-style tables remain.
+
+### OTHER
+
+▶ Additional changes not described here: [#3178](https://github.com/taskcluster/taskcluster/issues/3178), [#3334](https://github.com/taskcluster/taskcluster/issues/3334), [#3337](https://github.com/taskcluster/taskcluster/issues/3337), [#3342](https://github.com/taskcluster/taskcluster/issues/3342), [#3344](https://github.com/taskcluster/taskcluster/issues/3344), [#2910](https://github.com/taskcluster/taskcluster/issues/2910).
+
 ## v36.0.0
 
 ### DEPLOYERS

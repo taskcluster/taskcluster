@@ -73,7 +73,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       sas: res.sas,
     });
     // This should not error since this is read-write
-    return table.insertEntity('TestTable', {PartitionKey: taskcluster.slugid(), RowKey: 'c'});
+    return table.insertEntity('TestTable', { PartitionKey: taskcluster.slugid(), RowKey: 'c' });
   });
 
   test('azureTableSAS (read-only)', async function() {
@@ -92,7 +92,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       sas: res.sas,
     });
     // This should not error since this is read-write
-    return table.insertEntity('TestTable', {PartitionKey: taskcluster.slugid(), RowKey: 'c'}).then(() => {
+    return table.insertEntity('TestTable', { PartitionKey: taskcluster.slugid(), RowKey: 'c' }).then(() => {
       assert(false, 'This should not have been allowed to write!');
     }, (err) => {
       assert.equal(err.code, 'ResourceNotFound', 'This should not be able to see the table at all.');
@@ -202,7 +202,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       sas: result.sas,
     });
 
-    result = await blob.putBlob('container-test', 'blobTest', {type: 'BlockBlob'});
+    result = await blob.putBlob('container-test', 'blobTest', { type: 'BlockBlob' });
     assert(result);
   });
 
@@ -234,7 +234,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     });
 
     try {
-      await blob.putBlob('container-test', 'blobTest', {type: 'BlockBlob'});
+      await blob.putBlob('container-test', 'blobTest', { type: 'BlockBlob' });
     } catch (error) {
       assert.equal(error.code, 'AuthorizationPermissionMismatch');
       return;

@@ -3,7 +3,7 @@ const cmd = require('./helper/cmd');
 const expires = require('./helper/expires');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 
 helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
@@ -36,7 +36,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       scopes: ['queue:create-artifact:custom'],
       payload: {
         image: 'centos:latest',
-        features: {taskclusterProxy: true},
+        features: { taskclusterProxy: true },
         artifacts: {},
         command: cmd(
           'curl --retry 5 -X POST ' +

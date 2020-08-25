@@ -1,9 +1,9 @@
-const {NullProvider} = require('./null');
-const {TestingProvider} = require('./testing');
-const {StaticProvider} = require('./static');
-const {GoogleProvider} = require('./google');
-const {AwsProvider} = require('./aws');
-const {AzureProvider} = require('./azure');
+const { NullProvider } = require('./null');
+const { TestingProvider } = require('./testing');
+const { StaticProvider } = require('./static');
+const { GoogleProvider } = require('./google');
+const { AwsProvider } = require('./aws');
+const { AzureProvider } = require('./azure');
 
 const PROVIDER_TYPES = {
   null: NullProvider,
@@ -19,14 +19,14 @@ const PROVIDER_TYPES = {
  * their providerType implementation as required
  */
 class Providers {
-  async setup({cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator}) {
+  async setup({ cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator }) {
     this._providers = {};
 
     if (cfg.providers['null-provider']) {
       throw new Error('Explicit configuration of the null-provider providerId is not allowed');
     }
 
-    const nullEntry = ['null-provider', {providerType: 'null'}];
+    const nullEntry = ['null-provider', { providerType: 'null' }];
     for (const [providerId, providerConfig] of Object.entries(cfg.providers).concat([nullEntry])) {
       if (providerConfig.providerType === 'null' && providerId !== 'null-provider') {
         throw new Error('Only the `null-provider` providerId may have providerType `null`');
@@ -84,4 +84,4 @@ class Providers {
   }
 }
 
-module.exports = {Providers};
+module.exports = { Providers };

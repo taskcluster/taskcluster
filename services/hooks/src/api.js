@@ -1,6 +1,6 @@
 const parser = require('cron-parser');
 const taskcluster = require('taskcluster-client');
-const {APIBuilder} = require('taskcluster-lib-api');
+const { APIBuilder } = require('taskcluster-lib-api');
 const { UNIQUE_VIOLATION, paginatedIterator } = require('taskcluster-lib-postgres');
 const nextDate = require('../src/nextdate');
 const _ = require('lodash');
@@ -44,7 +44,7 @@ builder.declare({
   hooks.forEach(hook => {
     groups.add(hook.hookGroupId);
   });
-  return res.reply({groups: Array.from(groups)});
+  return res.reply({ groups: Array.from(groups) });
 });
 
 /** Get hooks in a given group **/
@@ -69,7 +69,7 @@ builder.declare({
   if (hooks.length === 0) {
     return res.reportError('ResourceNotFound', 'No such group', {});
   }
-  return res.reply({hooks: hooks});
+  return res.reply({ hooks: hooks });
 });
 
 /** Get hook definition **/
@@ -116,7 +116,7 @@ builder.declare({
     'This method is deprecated in favor of listLastFires.',
   ].join('\n'),
 }, async function(req, res) {
-  const {hookGroupId, hookId} = req.params;
+  const { hookGroupId, hookId } = req.params;
 
   const hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
 
@@ -125,9 +125,9 @@ builder.declare({
   }
 
   // find the latest entry in the LastFire table for this hook
-  let latest = {task_create_time: new Date(1970, 1, 1)};
+  let latest = { task_create_time: new Date(1970, 1, 1) };
   const fetch = (size, offset) => this.db.fns.get_last_fires(hookGroupId, hookId, size, offset);
-  for await (let item of paginatedIterator({fetch})) {
+  for await (let item of paginatedIterator({ fetch })) {
     if (item.task_create_time > latest.task_create_time) {
       latest = item;
     }
@@ -136,7 +136,7 @@ builder.declare({
   let reply;
 
   if (!latest.hook_id) {
-    reply = {lastFire: {result: 'no-fire'}};
+    reply = { lastFire: { result: 'no-fire' } };
   } else if (latest.result === 'success') {
     reply = {
       lastFire: {
@@ -151,7 +151,7 @@ builder.declare({
     try {
       error = JSON.parse(latest.error);
     } catch (_) {
-      error = {message: latest.error};
+      error = { message: latest.error };
     }
     reply = {
       lastFire: {
@@ -178,7 +178,7 @@ builder.declare({
   route: '/hooks/:hookGroupId/:hookId',
   name: 'createHook',
   idempotent: true,
-  scopes: {AllOf:
+  scopes: { AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
   },
   input: 'create-hook-request.yml',
@@ -197,7 +197,7 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
   const hookDef = req.body;
-  const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
+  const ajv = new Ajv({ format: 'full', verbose: true, allErrors: true });
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -210,7 +210,7 @@ builder.declare({
   hookDef.hookGroupId = hookGroupId;
   hookDef.hookId = hookId;
 
-  await req.authorize({hookGroupId, hookId});
+  await req.authorize({ hookGroupId, hookId });
 
   // Validate cron-parser expressions
   for (let schedElement of hookDef.schedule) {
@@ -218,7 +218,7 @@ builder.declare({
       parser.parseExpression(schedElement);
     } catch (err) {
       return res.reportError('InputError',
-        '{{message}} in {{schedElement}}', {message: err.message, schedElement});
+        '{{message}} in {{schedElement}}', { message: err.message, schedElement });
     }
   }
 
@@ -252,7 +252,7 @@ builder.declare({
     const hook = _.defaults({}, hookDef, {
       bindings: [],
       triggerToken: taskcluster.slugid(),
-      lastFire: {result: 'no-fire'},
+      lastFire: { result: 'no-fire' },
       nextTaskId: taskcluster.slugid(),
       nextScheduledDate: nextDate(hookDef.schedule),
     });
@@ -281,7 +281,7 @@ builder.declare({
     }
   }
 
-  await this.publisher.hookCreated({hookGroupId, hookId});
+  await this.publisher.hookCreated({ hookGroupId, hookId });
 
   // Reply with the hook definition
   return res.reply(hookDef);
@@ -293,7 +293,7 @@ builder.declare({
   route: '/hooks/:hookGroupId/:hookId',
   name: 'updateHook',
   idempotent: true,
-  scopes: {AllOf:
+  scopes: { AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
   },
   input: 'create-hook-request.yml',
@@ -309,7 +309,7 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
   const hookDef = req.body;
-  const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
+  const ajv = new Ajv({ format: 'full', verbose: true, allErrors: true });
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -322,7 +322,7 @@ builder.declare({
   hookDef.hookGroupId = hookGroupId;
   hookDef.hookId = hookId;
 
-  await req.authorize({hookGroupId, hookId});
+  await req.authorize({ hookGroupId, hookId });
 
   let hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
 
@@ -352,7 +352,7 @@ builder.declare({
       parser.parseExpression(schedElement);
     } catch (err) {
       return res.reportError('InputError',
-        '{{message}} in {{schedElement}}', {message: err.message, schedElement});
+        '{{message}} in {{schedElement}}', { message: err.message, schedElement });
     }
   }
   hookDef.bindings = _.defaultTo(hookDef.bindings, hook.bindings);
@@ -383,7 +383,7 @@ builder.declare({
   );
 
   let definition = hookUtils.definition(hook);
-  await this.publisher.hookUpdated({hookGroupId, hookId});
+  await this.publisher.hookUpdated({ hookGroupId, hookId });
 
   return res.reply(definition);
 });
@@ -405,11 +405,11 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
 
-  await req.authorize({hookGroupId, hookId});
+  await req.authorize({ hookGroupId, hookId });
 
   // Remove the resource if it exists
   await this.db.fns.delete_hook(hookGroupId, hookId);
-  await this.publisher.hookDeleted({hookGroupId, hookId});
+  await this.publisher.hookDeleted({ hookGroupId, hookId });
 
   await this.db.fns.delete_last_fires(req.params.hookGroupId, req.params.hookId);
   return res.status(200).json({});
@@ -437,7 +437,7 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
 
-  await req.authorize({hookGroupId, hookId});
+  await req.authorize({ hookGroupId, hookId });
 
   const payload = req.body;
   const clientId = await req.clientId();
@@ -446,7 +446,7 @@ builder.declare({
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
-  return triggerHookCommon.call(this, {req, res, hook, payload, clientId, firedBy: 'triggerHook'});
+  return triggerHookCommon.call(this, { req, res, hook, payload, clientId, firedBy: 'triggerHook' });
 });
 
 /** Get secret token for a trigger **/
@@ -467,7 +467,7 @@ builder.declare({
 }, async function(req, res) {
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
-  await req.authorize({hookGroupId, hookId});
+  await req.authorize({ hookGroupId, hookId });
 
   const hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
 
@@ -499,7 +499,7 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
 
-  await req.authorize({hookGroupId, hookId});
+  await req.authorize({ hookGroupId, hookId });
 
   const hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
 
@@ -561,15 +561,15 @@ builder.declare({
     return res.reportError('AuthenticationFailed', 'invalid hook token', {});
   }
 
-  return triggerHookCommon.call(this, {req, res, hook, payload, firedBy: 'triggerHookWithToken'});
+  return triggerHookCommon.call(this, { req, res, hook, payload, firedBy: 'triggerHookWithToken' });
 });
 
 /**
  * Common implementation of triggerHook and triggerHookWithToken
  */
-const triggerHookCommon = async function({req, res, hook, payload, clientId, firedBy}) {
-  const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
-  const context = {firedBy, payload };
+const triggerHookCommon = async function({ req, res, hook, payload, clientId, firedBy }) {
+  const ajv = new Ajv({ format: 'full', verbose: true, allErrors: true });
+  const context = { firedBy, payload };
   if (clientId) {
     context.clientId = clientId;
   }
@@ -582,7 +582,7 @@ const triggerHookCommon = async function({req, res, hook, payload, clientId, fir
   let valid = validate(payload);
   if (!valid) {
     return res.reportError('InputError', '{{message}}', {
-      message: ajv.errorsText(validate.errors, {separator: '; '}),
+      message: ajv.errorsText(validate.errors, { separator: '; ' }),
     });
   }
 
@@ -605,7 +605,7 @@ const triggerHookCommon = async function({req, res, hook, payload, clientId, fir
         'InsufficientScopes',
         `The role \`hook-id:${hook.hookGroupId}/${hook.hookId}\` does not have sufficient scopes ` +
         `to create the task:\n\n${error.body.message}`,
-        {createTask: error.body.requestInfo});
+        { createTask: error.body.requestInfo });
     }
     return res.reportError(
       'InputError',
@@ -618,11 +618,11 @@ const triggerHookCommon = async function({req, res, hook, payload, clientId, fir
     return res.reportError(
       'InputError',
       'While firing hook:\n\n{{error}}',
-      {error: (error || 'unknown').toString()});
+      { error: (error || 'unknown').toString() });
   }
 };
 
-const isDeniedBinding = async ({bindings, denylist}) => {
+const isDeniedBinding = async ({ bindings, denylist }) => {
   for (let deny of denylist) {
     for (let binding of bindings) {
       const denyPattern = new RegExp(`^${deny}`);
@@ -651,11 +651,11 @@ builder.declare({
     'fired, including whether the hook was fired successfully or not',
   ].join('\n'),
 }, async function(req, res) {
-  const {hookGroupId, hookId} = req.params;
+  const { hookGroupId, hookId } = req.params;
   let lastFires = [];
 
   const fetch = (size, offset) => this.db.fns.get_last_fires(hookGroupId, hookId, size, offset);
-  for await (let row of paginatedIterator({fetch})) {
+  for await (let row of paginatedIterator({ fetch })) {
     const item = {
       hookGroupId: row.hook_group_id,
       hookId: row.hook_id,
@@ -671,5 +671,5 @@ builder.declare({
   if (lastFires.length === 0) {
     return res.reportError('ResourceNotFound', 'No such hook or never fired', {});
   }
-  return res.reply({lastFires: lastFires});
+  return res.reply({ lastFires: lastFires });
 });

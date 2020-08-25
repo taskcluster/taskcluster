@@ -5,7 +5,7 @@ const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const {LEVELS} = require('taskcluster-lib-monitor');
+const { LEVELS } = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -118,7 +118,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(takenUntil.getTime()).is.greaterThan(before.getTime() - 1);
 
     // check that the task was logged
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-claimed'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-claimed'), {
       Type: 'task-claimed',
       Logger: 'taskcluster.test.api',
       Fields: {
@@ -145,7 +145,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### reportCompleted');
     // Report completed with temp creds from claimWork
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.tasks[0].credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.tasks[0].credentials });
     await queue.reportCompleted(taskId, 0);
     helper.assertPulseMessage('task-completed');
   });
@@ -190,13 +190,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### reclaimTask');
     // Use temp creds from claimWork
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.tasks[0].credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.tasks[0].credentials });
     let r3 = await queue.reclaimTask(taskId, 0);
     let takenUntil2 = new Date(r3.takenUntil);
     assume(takenUntil2.getTime()).is.greaterThan(takenUntil.getTime() - 1);
 
     // check that the task was logged
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-reclaimed'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-reclaimed'), {
       Type: 'task-reclaimed',
       Logger: 'taskcluster.test.api',
       Fields: {
@@ -211,7 +211,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### reportCompleted');
     // Report completed with temp creds from reclaimTask
-    queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r3.credentials});
+    queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r3.credentials });
     await queue.reportCompleted(taskId, 0);
     helper.assertPulseMessage('task-completed');
   });
@@ -257,12 +257,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### reportCompleted');
     // Report completed with temp creds from claimWork
-    let queueA = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.tasks[0].credentials});
+    let queueA = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.tasks[0].credentials });
     await queueA.reportCompleted(taskIdA, 0);
 
     debug('### reportCompleted');
     // Report completed with temp creds from claimWork
-    let queueB = new helper.Queue({rootUrl: helper.rootUrl, credentials: r2.tasks[0].credentials});
+    let queueB = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r2.tasks[0].credentials });
     await queueB.reportCompleted(taskIdB, 0);
   });
 
@@ -295,7 +295,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### reportCompleted');
     // Report completed with temp creds from claimWork
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.tasks[0].credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.tasks[0].credentials });
     await queue.reportCompleted(taskId, 0);
   });
 });

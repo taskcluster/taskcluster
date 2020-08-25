@@ -4,17 +4,17 @@ let assert = require('assert');
 
 suite('component loader', () => {
   test('should load a single component with a static value', async () => {
-    let a = {a: 1};
+    let a = { a: 1 };
 
     let load = subject({
-      test: {setup: () => a},
+      test: { setup: () => a },
     });
 
     assume(await load('test')).equals(a);
   });
 
   test('should load a single component with setup function', async () => {
-    let a = {a: 1};
+    let a = { a: 1 };
 
     let load = subject({
       test: {
@@ -28,7 +28,7 @@ suite('component loader', () => {
   });
 
   test('should accept a virtual component', async () => {
-    let a = {a: 1};
+    let a = { a: 1 };
 
     let load = subject({
       test: {
@@ -47,7 +47,7 @@ suite('component loader', () => {
   });
 
   test('should accept a virtual component as array', async () => {
-    let a = {a: 1};
+    let a = { a: 1 };
 
     let load = subject({
       test: {
@@ -116,7 +116,7 @@ suite('component loader', () => {
     let components = {
       test: {
         setup: () => {
-          return {a: 1};
+          return { a: 1 };
         },
       },
     };
@@ -134,7 +134,7 @@ suite('component loader', () => {
     let load = subject({
       test: {
         setup: () => {
-          return {a: 1};
+          return { a: 1 };
         },
       },
     });
@@ -143,7 +143,7 @@ suite('component loader', () => {
   });
 
   test('should load a simple dependency', async () => {
-    let a = {a: 1};
+    let a = { a: 1 };
     let called = false;
 
     let load = subject({
@@ -277,15 +277,15 @@ suite('component loader', () => {
   });
 
   test('should load different types of static dependencies', async () => {
-    let a = {a: 1};
-    let b = {b: 2};
-    let c = {c: 2};
+    let a = { a: 1 };
+    let b = { b: 2 };
+    let c = { c: 2 };
     let load = subject({
-      string: {setup: () => 'a-string'},
-      object: {setup: () => a},
-      number: {setup: () => 123.456},
-      promise: {setup: () => Promise.resolve(b)},
-      func: {setup: ()=> () => { return c; }},
+      string: { setup: () => 'a-string' },
+      object: { setup: () => a },
+      number: { setup: () => 123.456 },
+      promise: { setup: () => Promise.resolve(b) },
+      func: { setup: ()=> () => { return c; } },
       base: {
         requires: ['string', 'object', 'number', 'promise', 'func'],
         setup: async deps => {
@@ -354,7 +354,7 @@ suite('component loader', () => {
   // validator
   let badDef = [
     ['def that is a string', 'this ought to fail'],
-    ['def with non-func setup property', {setup: 'hi'}],
+    ['def with non-func setup property', { setup: 'hi' }],
     ['def with missing setup property', {}],
     ['def with requires that is not array', {
       setup: () => {},
@@ -368,7 +368,7 @@ suite('component loader', () => {
   for (let x of badDef) {
     test('should fail on a ' + x[0], () => {
       try {
-        subject({a: x[1]});
+        subject({ a: x[1] });
         throw new Error();
       } catch (e) {
         if (!e.message.match(/^Invalid component definition:/)) {
@@ -380,7 +380,7 @@ suite('component loader', () => {
   }
 
   test('should handle sync vs async properly', async () => {
-    let rv = {a: 1};
+    let rv = { a: 1 };
     let orderCalled = [];
     let load = subject({
       dep1: {
@@ -446,7 +446,7 @@ suite('component loader', () => {
 
   test('should pass own name to setup', async () => {
     let load = subject({
-      testName: {setup: (_, ownName) => ownName},
+      testName: { setup: (_, ownName) => ownName },
     });
 
     assume(await load('testName')).equals('testName');

@@ -44,7 +44,7 @@ let schemas = function(options) {
       if (options.basePath) {
         filePath = path.join(options.basePath, filePath);
       }
-      let data = fs.readFileSync(filePath, {encoding: 'utf-8'});
+      let data = fs.readFileSync(filePath, { encoding: 'utf-8' });
       let json = JSON.parse(data);
 
       // Find schema

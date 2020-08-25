@@ -16,7 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/taskcluster/taskcluster/v36/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcsecrets"
 )
 
 var secrets *tcsecrets.Secrets

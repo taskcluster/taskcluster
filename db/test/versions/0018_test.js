@@ -12,7 +12,7 @@ suite(`${testing.suiteName()}`, function() {
   // so using tc-lib-entities, which has since been removed from the codebase.
 
   test('indexed_tasks table created / removed on upgrade and downgrade', async function() {
-    await testing.resetDb({testDbUrl: helper.dbUrl});
+    await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
     await helper.assertTable('indexed_tasks_entities');
@@ -26,7 +26,7 @@ suite(`${testing.suiteName()}`, function() {
   });
 
   test('namespaces table created / removed on upgrade and downgrade', async function() {
-    await testing.resetDb({testDbUrl: helper.dbUrl});
+    await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
     await helper.assertTable('namespaces_entities');

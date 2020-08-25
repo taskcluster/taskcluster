@@ -1,4 +1,4 @@
-module github.com/taskcluster/taskcluster/v36
+module github.com/taskcluster/taskcluster/v37
 
 go 1.13
 
@@ -48,9 +48,9 @@ require (
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
-	golang.org/x/net v0.0.0-20200707034311-ab3426394381
-	golang.org/x/sys v0.0.0-20200727154430-2d971f7391a4
+	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+	golang.org/x/net v0.0.0-20200822124328-c89045814202
+	golang.org/x/sys v0.0.0-20200819171115-d785dc25833f
 	golang.org/x/tools v0.0.0-20200728160517-2ad651e9e297
 	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.3.0

@@ -3,7 +3,7 @@ const helper = require('./helper');
 const nock = require('nock');
 const testing = require('taskcluster-lib-testing');
 const EC2RegionResolver = require('../src/ec2regionresolver');
-const {LEVELS} = require('taskcluster-lib-monitor');
+const { LEVELS } = require('taskcluster-lib-monitor');
 
 suite(testing.suiteName(), function() {
   helper.withAmazonIPRanges(false, () => false);
@@ -13,7 +13,7 @@ suite(testing.suiteName(), function() {
     monitor = await helper.load('monitor');
   });
 
-  const reqWithIp = ip => ({headers: {'x-client-ip': ip}});
+  const reqWithIp = ip => ({ headers: { 'x-client-ip': ip } });
 
   test('newly-constructed state returns null', function() {
     const res = new EC2RegionResolver(['us-west-1'], monitor);
@@ -39,11 +39,11 @@ suite(testing.suiteName(), function() {
     // fail once, then succeed
     nock('https://ip-ranges.amazonaws.com')
       .get('/ip-ranges.json')
-      .reply(500, '{}', {'Content-Type': 'application/json'});
+      .reply(500, '{}', { 'Content-Type': 'application/json' });
 
     nock('https://ip-ranges.amazonaws.com')
       .get('/ip-ranges.json')
-      .replyWithFile(200, __dirname + '/fake-ip-ranges.json', {'Content-Type': 'application/json'});
+      .replyWithFile(200, __dirname + '/fake-ip-ranges.json', { 'Content-Type': 'application/json' });
 
     const res = new EC2RegionResolver(['us-west-1', 'us-west-2'], monitor);
     res.start();
@@ -62,10 +62,10 @@ suite(testing.suiteName(), function() {
       nock.cleanAll();
     }
 
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'monitor.generic'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'monitor.generic'), {
       Logger: 'taskcluster.test',
       Type: 'monitor.generic',
-      Fields: {message: 'Failed to download AWS IP ranges (retrying): Error: Internal Server Error'},
+      Fields: { message: 'Failed to download AWS IP ranges (retrying): Error: Internal Server Error' },
       Severity: LEVELS.warning,
     });
   });

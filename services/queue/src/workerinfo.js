@@ -1,9 +1,9 @@
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const debug = require('debug')('workerinfo');
-const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 
-const {Provisioner, Worker, WorkerType} = require('./data');
+const { Provisioner, Worker, WorkerType } = require('./data');
 
 const DAY = 24 * 60 * 60 * 1000;
 const RECENT_TASKS_LIMIT = 20;
@@ -115,7 +115,7 @@ class WorkerInfo {
         let worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, expires);
 
         if (worker) {
-          let rows = await worker.update(this.db, {expires: newExpiration});
+          let rows = await worker.update(this.db, { expires: newExpiration });
           return Worker.fromDbRows(rows);
         }
 
@@ -171,12 +171,12 @@ class WorkerInfo {
 
     const recentTasks = [
       ...worker.recentTasks,
-      ...tasks.map(({status}) => ({taskId: status.taskId, runId: status.runs.length - 1})),
+      ...tasks.map(({ status }) => ({ taskId: status.taskId, runId: status.runs.length - 1 })),
     ].slice(-RECENT_TASKS_LIMIT);
-    await worker.update(this.db, {recentTasks});
+    await worker.update(this.db, { recentTasks });
   }
 
-  async upsertProvisioner({provisionerId, stability, description, actions, expires}) {
+  async upsertProvisioner({ provisionerId, stability, description, actions, expires }) {
     let provisioner = await Provisioner.get(this.db, provisionerId, new Date());
     let result;
     if (provisioner) {
@@ -209,7 +209,7 @@ class WorkerInfo {
     return result;
   }
 
-  async upsertWorkerType({provisionerId, workerType, stability, description, expires}) {
+  async upsertWorkerType({ provisionerId, workerType, stability, description, expires }) {
     let wType = await WorkerType.get(this.db, provisionerId, workerType, new Date());
     let result;
 
@@ -242,12 +242,12 @@ class WorkerInfo {
     return result;
   }
 
-  async upsertWorker({provisionerId, workerType, workerGroup, workerId, expires}) {
+  async upsertWorker({ provisionerId, workerType, workerGroup, workerId, expires }) {
     let worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, new Date());
     let result;
 
     if (worker) {
-      let rows = await worker.update(this.db, {expires});
+      let rows = await worker.update(this.db, { expires });
       result = Worker.fromDbRows(rows);
     } else {
       worker = Worker.fromApi(workerId, {

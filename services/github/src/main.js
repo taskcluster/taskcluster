@@ -7,19 +7,19 @@ const Ajv = require('ajv');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const loader = require('taskcluster-lib-loader');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 const libReferences = require('taskcluster-lib-references');
-const {App} = require('taskcluster-lib-app');
+const { App } = require('taskcluster-lib-app');
 const tcdb = require('taskcluster-db');
 const githubAuth = require('./github-auth');
-const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
+const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
 
 require('./monitor');
 
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({
+    setup: ({ profile }) => config({
       profile,
       serviceName: 'github',
     }),
@@ -27,7 +27,7 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => MonitorManager.setup({
+    setup: ({ process, profile, cfg }) => MonitorManager.setup({
       serviceName: 'github',
       processName: process,
       verify: profile !== 'production',
@@ -37,7 +37,7 @@ const load = loader({
 
   schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => new SchemaSet({
+    setup: ({ cfg }) => new SchemaSet({
       serviceName: 'github',
     }),
   },
@@ -54,7 +54,7 @@ const load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => libReferences.fromService({
+    setup: ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('github')],
     }).generateReferences(),
@@ -62,7 +62,7 @@ const load = loader({
 
   pulseClient: {
     requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => {
+    setup: ({ cfg, monitor }) => {
       return new Client({
         namespace: 'taskcluster-github',
         monitor: monitor.childMonitor('pulse-client'),
@@ -73,7 +73,7 @@ const load = loader({
 
   publisher: {
     requires: ['cfg', 'schemaset', 'pulseClient'],
-    setup: async ({cfg, pulseClient, schemaset}) => await exchanges.publisher({
+    setup: async ({ cfg, pulseClient, schemaset }) => await exchanges.publisher({
       rootUrl: cfg.taskcluster.rootUrl,
       schemaset,
       client: pulseClient,
@@ -82,17 +82,17 @@ const load = loader({
 
   github: {
     requires: ['cfg'],
-    setup: ({cfg}) => githubAuth({cfg}),
+    setup: ({ cfg }) => githubAuth({ cfg }),
   },
 
   intree: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => Intree.setup({cfg, schemaset}),
+    setup: ({ cfg, schemaset }) => Intree.setup({ cfg, schemaset }),
   },
 
   db: {
     requires: ["cfg", "process", "monitor"],
-    setup: ({cfg, process, monitor}) => tcdb.setup({
+    setup: ({ cfg, process, monitor }) => tcdb.setup({
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
       serviceName: 'github',
@@ -104,7 +104,7 @@ const load = loader({
   api: {
     requires: [
       'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv'],
-    setup: ({cfg, monitor, schemaset, github, publisher, db, ajv}) => builder.build({
+    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
         publisher,
@@ -121,7 +121,7 @@ const load = loader({
 
   server: {
     requires: ['cfg', 'api'],
-    setup: ({cfg, api}) => App({
+    setup: ({ cfg, api }) => App({
       port: cfg.server.port,
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,
@@ -132,7 +132,7 @@ const load = loader({
 
   syncInstallations: {
     requires: ['github', 'db', 'monitor'],
-    setup: ({github, db, monitor}, ownName) => {
+    setup: ({ github, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const gh = await github.getAppGithub();
         const installations = (await gh.apps.listInstallations({})).data;
@@ -180,14 +180,14 @@ const load = loader({
         deprecatedInitialStatusQueueName: cfg.app.deprecatedInitialStatusQueue,
         resultStatusQueueName: cfg.app.resultStatusQueue,
         initialStatusQueueName: cfg.app.initialStatusQueue,
-        context: {cfg, github, schemaset, db, publisher},
+        context: { cfg, github, schemaset, db, publisher },
         pulseClient,
       }),
   },
 
   worker: {
     requires: ['handlers'],
-    setup: async ({handlers}) => handlers.setup(),
+    setup: async ({ handlers }) => handlers.setup(),
   },
 }, {
   profile: process.env.NODE_ENV,

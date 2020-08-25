@@ -1,5 +1,5 @@
 const Debug = require('debug');
-const {DockerExecServer} = require('docker-exec-websocket-server');
+const { DockerExecServer } = require('docker-exec-websocket-server');
 const fs = require('mz/fs');
 const http = require('http');
 const https = require('https');
@@ -14,7 +14,7 @@ const streams = require('memory-streams');
 const waitForSocket = require('../wait_for_socket');
 const net = require('net');
 const express = require('express');
-const {makeDir, removeDir} = require('../util/fs');
+const { makeDir, removeDir } = require('../util/fs');
 const libUrls = require('taskcluster-lib-urls');
 const queryString = require('query-string');
 const util = require('util');
@@ -158,7 +158,7 @@ class WebsocketServer {
         readFile(task.runtime.ssl.key),
         readFile(task.runtime.ssl.certificate),
       ]);
-      httpServ = https.createServer({key, cert});
+      httpServ = https.createServer({ key, cert });
     } else {
       httpServ = http.createServer();
     }
@@ -197,7 +197,7 @@ class WebsocketServer {
       }
     }
 
-    return {httpServ, port};
+    return { httpServ, port };
   }
 
   async started(task) {
@@ -236,7 +236,7 @@ class WebsocketServer {
         res.status(200).json(displays);
       } catch (err) {
         debug('Failed to list displays: %j', err, err.stack);
-        res.status(500).json({message: 'internal error'});
+        res.status(500).json({ message: 'internal error' });
       }
     });
     // Make app handle requests
@@ -329,7 +329,7 @@ class WebsocketServer {
       this.semaphore.release(delay);
     });
 
-    task.runtime.log('create websocket server at ', {shellSocketUrl});
+    task.runtime.log('create websocket server at ', { shellSocketUrl });
 
     let expiration = new Date(
       Math.min(Date.now() + task.task.payload.maxRunTime,

@@ -1,5 +1,5 @@
 const path = require('path');
-const {omit} = require('lodash');
+const { omit } = require('lodash');
 const Method = require('../src/Method');
 const assert = require('assert').strict;
 
@@ -34,7 +34,7 @@ suite(path.basename(__filename), function() {
 
     test('mode must be valid', function() {
       assert.throws(
-        () => Method.fromYamlFileContent('testmethod', {...omit(method, ['mode']), mode: 'admin'}, 'file.yml'),
+        () => Method.fromYamlFileContent('testmethod', { ...omit(method, ['mode']), mode: 'admin' }, 'file.yml'),
         /missing or bad mode/);
     });
 
@@ -64,7 +64,7 @@ suite(path.basename(__filename), function() {
 
     test('extra props forbidden', function() {
       assert.throws(
-        () => Method.fromYamlFileContent('testmethod', {...method, uhoh: 10}, 'file.yml'),
+        () => Method.fromYamlFileContent('testmethod', { ...method, uhoh: 10 }, 'file.yml'),
         /unexpected properties/);
     });
   });

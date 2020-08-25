@@ -6,7 +6,7 @@ suite(testing.suiteName(), function() {
   suite('workerPoolId', function() {
     test('splitWorkerPoolId for valid workerPoolId', function() {
       assert.deepEqual(util.splitWorkerPoolId('provFoo/wtFoo'),
-        {provisionerId: 'provFoo', workerType: 'wtFoo'});
+        { provisionerId: 'provFoo', workerType: 'wtFoo' });
     });
 
     test('splitWorkerPoolId for invalid workerPoolId', function() {

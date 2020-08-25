@@ -10,7 +10,7 @@ class AZQueue {
   }
 
   async getMetadata(name) {
-    const [{azure_queue_count}] = await this.db.fns.azure_queue_count(name);
+    const [{ azure_queue_count }] = await this.db.fns.azure_queue_count(name);
 
     return {
       messageCount: azure_queue_count,
@@ -21,7 +21,7 @@ class AZQueue {
     // NOOP
   }
 
-  async putMessage(name, text, {visibilityTimeout, messageTTL}) {
+  async putMessage(name, text, { visibilityTimeout, messageTTL }) {
     await this.db.fns.azure_queue_put(
       name,
       text,
@@ -30,12 +30,12 @@ class AZQueue {
     );
   }
 
-  async getMessages(name, {visibilityTimeout, numberOfMessages}) {
+  async getMessages(name, { visibilityTimeout, numberOfMessages }) {
     const res = await this.db.fns.azure_queue_get(
       name,
       taskcluster.fromNow(`${visibilityTimeout} seconds`),
       numberOfMessages);
-    return res.map(({message_id, message_text, pop_receipt}) => ({
+    return res.map(({ message_id, message_text, pop_receipt }) => ({
       messageId: message_id,
       messageText: message_text,
       popReceipt: pop_receipt,
@@ -46,7 +46,7 @@ class AZQueue {
     await this.db.fns.azure_queue_delete(name, messageId, popReceipt);
   }
 
-  async updateMessage(name, messageText, messageId, popReceipt, {visibilityTimeout}) {
+  async updateMessage(name, messageText, messageId, popReceipt, { visibilityTimeout }) {
     await this.db.fns.azure_queue_update(
       name,
       messageText,
@@ -57,7 +57,7 @@ class AZQueue {
 
   async listQueues() {
     // stubbed out
-    return {queues: []};
+    return { queues: [] };
   }
 
   async deleteQueue(name) {

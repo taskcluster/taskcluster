@@ -11,12 +11,12 @@ suite(path.basename(__filename), function() {
     });
     test('not an object of objects', function() {
       assert.throws(
-        () => Relations.fromSerializable({test: []}, 'f'),
+        () => Relations.fromSerializable({ test: [] }, 'f'),
         /should define an object/);
     });
     test('table column values are not strings', function() {
       assert.throws(
-        () => Relations.fromSerializable({test: {name: []}}),
+        () => Relations.fromSerializable({ test: { name: [] } }),
         /should be a string/);
     });
   });

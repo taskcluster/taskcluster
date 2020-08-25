@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"testing"
 
-	tcclient "github.com/taskcluster/taskcluster/v36/clients/client-go"
-	"github.com/taskcluster/taskcluster/v36/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v36/internal/testrooturl"
+	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
+	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v37/internal/testrooturl"
 )
 
 func TestTcProxy(t *testing.T) {

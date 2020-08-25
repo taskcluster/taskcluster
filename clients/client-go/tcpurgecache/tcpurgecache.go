@@ -40,7 +40,7 @@ package tcpurgecache
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/v36/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
 )
 
 type PurgeCache tcclient.Client

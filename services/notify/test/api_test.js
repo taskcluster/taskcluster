@@ -31,9 +31,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('pulse', async function() {
-    await helper.apiClient.pulse({routingKey: 'notify-test', message: {test: 123}});
+    await helper.apiClient.pulse({ routingKey: 'notify-test', message: { test: 123 } });
     helper.assertPulseMessage('notification', m => (
-      _.isEqual(m.payload.message, {test: 123}) &&
+      _.isEqual(m.payload.message, { test: 123 }) &&
       _.isEqual(m.CCs, ['route.notify-test'])));
   });
 
@@ -41,15 +41,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.onPulsePublish(() => {
       throw new Error('uhoh');
     });
-    const apiClient = helper.apiClient.use({retries: 0});
+    const apiClient = helper.apiClient.use({ retries: 0 });
     await assert.rejects(
-      () => apiClient.pulse({routingKey: 'notify-test', message: {test: 456}}),
+      () => apiClient.pulse({ routingKey: 'notify-test', message: { test: 456 } }),
       err => err.statusCode === 500);
 
     const monitor = await helper.load('monitor');
     assert.equal(
       monitor.manager.messages.filter(
-        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
     monitor.manager.reset();
@@ -64,7 +64,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // Ensure sending notification to that address fails with appropriate error
     try {
-      await helper.apiClient.pulse({routingKey: 'notify-test', message: {test: 123}});
+      await helper.apiClient.pulse({ routingKey: 'notify-test', message: { test: 123 } });
     } catch(e) {
       assert(e.code, 'DenylistedAddress');
     }
@@ -77,7 +77,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       address: 'success@simulator.amazonses.com',
       subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
       content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes. <img src=x onerror=alert(1)//>',
-      link: {text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/Z-tDsP4jQ3OUTjN0Q6LNKQ&foo=bar'},
+      link: { text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/Z-tDsP4jQ3OUTjN0Q6LNKQ&foo=bar' },
     });
     await helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
@@ -96,7 +96,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         address: 'success@simulator.amazonses.com',
         subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
         content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes.',
-        link: {text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ'},
+        link: { text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ' },
       });
     } catch(e) {
       if (e.code !== "DenylistedAddress") {
@@ -131,9 +131,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('irc', async function() {
-    await helper.apiClient.irc({message: 'Does this work?', channel: '#taskcluster-test'});
+    await helper.apiClient.irc({ message: 'Does this work?', channel: '#taskcluster-test' });
     helper.assertPulseMessage('irc-request', m => {
-      const {channel, message} = m.payload;
+      const { channel, message } = m.payload;
       return _.isEqual(channel, '#taskcluster-test') &&
         _.isEqual(message, 'Does this work?');
     });
@@ -143,15 +143,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.onPulsePublish(() => {
       throw new Error('uhoh');
     });
-    const apiClient = helper.apiClient.use({retries: 0});
+    const apiClient = helper.apiClient.use({ retries: 0 });
     await assert.rejects(
-      () => apiClient.irc({message: 'no', channel: '#taskcluster-test'}),
+      () => apiClient.irc({ message: 'no', channel: '#taskcluster-test' }),
       err => err.statusCode === 500);
 
     const monitor = await helper.load('monitor');
     assert.equal(
       monitor.manager.messages.filter(
-        ({Type, Fields}) => Type === 'monitor.error' && Fields.message === 'uhoh',
+        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
       ).length,
       1);
     monitor.manager.reset();
@@ -165,7 +165,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
     // Ensure sending notification to that address fails with appropriate error
     try {
-      await helper.apiClient.irc({message: 'Does this work?', channel: '#taskcluster-test'});
+      await helper.apiClient.irc({ message: 'Does this work?', channel: '#taskcluster-test' });
     } catch(e) {
       if (e.code !== "DenylistedAddress") {
         throw e;
@@ -176,9 +176,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('does not send notifications to denylisted irc user', async function() {
-    await helper.apiClient.addDenylistAddress({notificationType: 'irc-user', notificationAddress: 'notify-me'});
+    await helper.apiClient.addDenylistAddress({ notificationType: 'irc-user', notificationAddress: 'notify-me' });
     try {
-      await helper.apiClient.irc({message: 'Does this work?', user: 'notify-me'});
+      await helper.apiClient.irc({ message: 'Does this work?', user: 'notify-me' });
     } catch(e) {
       if (e.code !== "DenylistedAddress") {
         throw e;
@@ -189,7 +189,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('matrix', async function() {
-    await helper.apiClient.matrix({body: 'Does this work?', roomId: '!foobar:baz.com', msgtype: 'm.text'});
+    await helper.apiClient.matrix({ body: 'Does this work?', roomId: '!foobar:baz.com', msgtype: 'm.text' });
     assert.equal(helper.matrixClient.sendEvent.callCount, 1);
     assert.equal(helper.matrixClient.sendEvent.args[0][0], '!foobar:baz.com');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'Does this work?');
@@ -200,7 +200,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('matrix (default msgtype)', async function() {
-    await helper.apiClient.matrix({body: 'Does this work?', roomId: '!foobar:baz.com'});
+    await helper.apiClient.matrix({ body: 'Does this work?', roomId: '!foobar:baz.com' });
     assert.equal(helper.matrixClient.sendEvent.callCount, 1);
     assert.equal(helper.matrixClient.sendEvent.args[0][0], '!foobar:baz.com');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'Does this work?');
@@ -212,7 +212,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   test('matrix (rejected)', async function() {
     try {
-      await helper.apiClient.matrix({body: 'Does this work?', roomId: '!rejected:baz.com'});
+      await helper.apiClient.matrix({ body: 'Does this work?', roomId: '!rejected:baz.com' });
       throw new Error('should have failed');
     } catch (err) {
       if (err.code !== 'InputError') {
@@ -224,9 +224,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('matrix (denylisted)', async function() {
-    await helper.apiClient.addDenylistAddress({notificationType: 'matrix-room', notificationAddress: '!foo:baz.com'});
+    await helper.apiClient.addDenylistAddress({ notificationType: 'matrix-room', notificationAddress: '!foo:baz.com' });
     try {
-      await helper.apiClient.matrix({body: 'Does this work?', roomId: '!foo:baz.com'});
+      await helper.apiClient.matrix({ body: 'Does this work?', roomId: '!foo:baz.com' });
       throw new Error('should have failed');
     } catch (err) {
       if (err.code !== 'DenylistedAddress') {

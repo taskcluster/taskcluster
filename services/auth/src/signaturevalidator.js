@@ -32,7 +32,7 @@ const parseExt = function(ext) {
 const limitClientWithExt = function(credentialName, issuingClientId, accessToken, scopes,
   expires, ext, expandScopes) {
   let issuingScopes = scopes;
-  let res = {scopes, expires, accessToken};
+  let res = { scopes, expires, accessToken };
 
   // Handle certificates
   if (ext.certificate) {
@@ -88,7 +88,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
     }
 
     // Validate certificate scopes are subset of client
-    if (!utils.satisfiesExpression(scopes, {AllOf: cert.scopes})) {
+    if (!utils.satisfiesExpression(scopes, { AllOf: cert.scopes })) {
       throw new Error('ext.certificate issuer `' + issuingClientId +
                       '` doesn\'t satisfy all certificate scopes ' +
                       cert.scopes.join(', ') + '.  The temporary ' +
@@ -151,7 +151,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
     }
 
     // Validate authorizedScopes scopes are satisfied by client (or temp) scopes
-    if (!utils.satisfiesExpression(res.scopes, {AllOf: ext.authorizedScopes})) {
+    if (!utils.satisfiesExpression(res.scopes, { AllOf: ext.authorizedScopes })) {
       throw new Error([
         'Supplied credentials do not satisfy authorizedScopes; credentials have scopes:',
         '',
@@ -234,11 +234,11 @@ const createSignatureValidator = function(options) {
     }
 
     let accessToken, scopes, expires;
-    ({clientId, expires, accessToken, scopes} = await options.clientLoader(issuingClientId));
+    ({ clientId, expires, accessToken, scopes } = await options.clientLoader(issuingClientId));
 
     // apply restrictions based on the ext field
     if (ext) {
-      ({scopes, expires, accessToken} = limitClientWithExt(
+      ({ scopes, expires, accessToken } = limitClientWithExt(
         credentialName, issuingClientId, accessToken,
         scopes, expires, ext, options.expandScopes));
     }

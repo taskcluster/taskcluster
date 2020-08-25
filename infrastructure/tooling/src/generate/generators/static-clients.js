@@ -1,6 +1,6 @@
 const _ = require('lodash');
-const {listServices, writeRepoJSON} = require('../../utils');
-const {scopeCompare, normalizeScopeSet} = require('taskcluster-lib-scopes');
+const { listServices, writeRepoJSON } = require('../../utils');
+const { scopeCompare, normalizeScopeSet } = require('taskcluster-lib-scopes');
 
 const SERVICES = listServices();
 
@@ -33,7 +33,7 @@ exports.tasks.push({
       scopes: ['*'],
     });
 
-    return {'static-clients': staticClients};
+    return { 'static-clients': staticClients };
   },
 });
 
@@ -43,7 +43,7 @@ exports.tasks.push({
   provides: [],
   run: async (requirements, utils) => {
     const staticClients = requirements['static-clients'];
-    const staticScopes = staticClients.map(({clientId, scopes}) => ({clientId, scopes}));
+    const staticScopes = staticClients.map(({ clientId, scopes }) => ({ clientId, scopes }));
 
     writeRepoJSON('services/auth/src/static-scopes.json', staticScopes);
   },

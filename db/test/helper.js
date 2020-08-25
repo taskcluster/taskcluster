@@ -1,10 +1,10 @@
 const assert = require('assert');
-const {Pool} = require('pg');
-const {WRITE} = require('taskcluster-lib-postgres');
-const {resetDb} = require('taskcluster-lib-testing');
+const { Pool } = require('pg');
+const { WRITE } = require('taskcluster-lib-postgres');
+const { resetDb } = require('taskcluster-lib-testing');
 const tcdb = require('taskcluster-db');
 const debug = require('debug')('db-helper');
-const {UNDEFINED_TABLE} = require('taskcluster-lib-postgres');
+const { UNDEFINED_TABLE } = require('taskcluster-lib-postgres');
 
 exports.dbUrl = process.env.TEST_DB_URL;
 assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests - see dev-docs/development-process.md for more information");
@@ -28,7 +28,7 @@ exports.withDbForVersion = function() {
   let dbs = {};
 
   suiteSetup('setup database', async function() {
-    pool = new Pool({connectionString: exports.dbUrl});
+    pool = new Pool({ connectionString: exports.dbUrl });
     exports.withDbClient = async (cb) => {
       const client = await pool.connect();
       try {
@@ -107,7 +107,7 @@ exports.withDbForVersion = function() {
       });
     };
 
-    await resetDb({testDbUrl: exports.dbUrl});
+    await resetDb({ testDbUrl: exports.dbUrl });
   });
 
   suiteTeardown('teardown database', async function() {
@@ -156,7 +156,7 @@ exports.withDbForProcs = function({ serviceName }) {
     exports.withDbClient = fn => db._withClient(WRITE, fn);
 
     // clear the DB and upgrade it to the latest version
-    await resetDb({testDbUrl: exports.dbUrl});
+    await resetDb({ testDbUrl: exports.dbUrl });
     await tcdb.upgrade({
       adminDbUrl: exports.dbUrl,
       usernamePrefix: 'test',

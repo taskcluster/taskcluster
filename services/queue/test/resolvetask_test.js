@@ -6,7 +6,7 @@ const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const {LEVELS} = require('taskcluster-lib-monitor');
+const { LEVELS } = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -70,10 +70,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       _.isEqual(m.payload.task.tags, taskDef.tags)));
     helper.clearPulseMessages();
 
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-completed'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-completed'), {
       Logger: 'taskcluster.test.api',
       Type: 'task-completed',
-      Fields: {taskId, runId: 0, v: 1},
+      Fields: { taskId, runId: 0, v: 1 },
       Severity: LEVELS.notice,
     });
 
@@ -86,7 +86,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Reporting task completed (using temp creds)');
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.credentials });
     await queue.reportCompleted(taskId, 0);
     helper.assertPulseMessage('task-completed', m => m.payload.status.runs[0].state === 'completed');
     helper.clearPulseMessages();
@@ -117,10 +117,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       _.isEqual(m.payload.task.tags, taskDef.tags)));
     helper.clearPulseMessages();
 
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-failed'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-failed'), {
       Logger: 'taskcluster.test.api',
       Type: 'task-failed',
-      Fields: {taskId, runId: 0, v: 1},
+      Fields: { taskId, runId: 0, v: 1 },
       Severity: LEVELS.notice,
     });
 
@@ -132,7 +132,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Reporting task failed (using temp creds)');
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.credentials });
     await queue.reportFailed(taskId, 0);
     helper.assertPulseMessage('task-failed', m => m.payload.status.runs[0].state === 'failed');
     helper.clearPulseMessages();
@@ -165,10 +165,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       _.isEqual(m.payload.task.tags, taskDef.tags)));
     helper.clearPulseMessages();
 
-    assert.deepEqual(monitor.manager.messages.find(({Type}) => Type === 'task-exception'), {
+    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-exception'), {
       Logger: 'taskcluster.test.api',
       Type: 'task-exception',
-      Fields: {taskId, runId: 0, v: 1},
+      Fields: { taskId, runId: 0, v: 1 },
       Severity: LEVELS.notice,
     });
 
@@ -183,12 +183,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Check status of task');
-    const {status: s2} = await helper.queue.status(taskId);
+    const { status: s2 } = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('malformed-payload');
 
     debug('### Reporting task exception (using temp creds)');
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.credentials });
     await queue.reportException(taskId, 0, {
       reason: 'malformed-payload',
     });
@@ -233,12 +233,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Check status of task');
-    const {status: s2} = await helper.queue.status(taskId);
+    const { status: s2 } = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('resource-unavailable');
 
     debug('### Reporting task exception (using temp creds)');
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.credentials });
     await queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
     });
@@ -284,12 +284,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Check status of task');
-    const {status: s2} = await helper.queue.status(taskId);
+    const { status: s2 } = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('internal-error');
 
     debug('### Reporting task exception (using temp creds)');
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.credentials });
     await queue.reportException(taskId, 0, {
       reason: 'internal-error',
     });
@@ -335,12 +335,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Check status of task');
-    const {status: s2} = await helper.queue.status(taskId);
+    const { status: s2 } = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('superseded');
 
     debug('### Reporting task exception (using temp creds)');
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.credentials });
     await queue.reportException(taskId, 0, {
       reason: 'superseded',
     });
@@ -369,7 +369,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     debug('### Check status of task');
-    const {status: s1} = await helper.queue.status(taskId);
+    const { status: s1 } = await helper.queue.status(taskId);
     assume(s1.runs[0].state).equals('exception');
     assume(s1.runs[0].reasonResolved).equals('malformed-payload');
 
@@ -385,7 +385,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     debug('### Check status of task (again)');
-    const {status: s2} = await helper.queue.status(taskId);
+    const { status: s2 } = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('malformed-payload');
   });

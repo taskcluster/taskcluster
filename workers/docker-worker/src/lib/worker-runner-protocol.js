@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {EventEmitter} = require('events');
+const { EventEmitter } = require('events');
 const split2 = require('split2');
 
 /**
@@ -126,7 +126,7 @@ class Protocol extends EventEmitter {
 
   _handleWelcome(msg) {
     this.remoteCapabilities = new Set(msg.capabilities);
-    this.send({type: 'hello', capabilities: [...this.localCapabilities]});
+    this.send({ type: 'hello', capabilities: [...this.localCapabilities] });
   }
 }
 

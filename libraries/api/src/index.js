@@ -4,7 +4,7 @@ const utils = require('./utils');
 const errors = require('./middleware/errors');
 const ScopeExpressionTemplate = require('./expressions');
 const API = require('./api');
-const {paginateResults} = require('./pagination');
+const { paginateResults } = require('./pagination');
 
 /**
  * A ping method, added automatically to every service

@@ -1,3 +1,3 @@
-const {References} = require('./references');
+const { References } = require('./references');
 
 module.exports = References;

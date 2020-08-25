@@ -1,7 +1,7 @@
 let assert = require('assert');
 const _ = require('lodash');
 const { paginateResults } = require('taskcluster-lib-api');
-const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 
 /** Regular expression for valid namespaces */
 exports.namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;
@@ -149,7 +149,7 @@ exports.taskUtils = {
         q.continuationToken = continuation;
       }
 
-      const {continuationToken, rows} = await paginateResults({
+      const { continuationToken, rows } = await paginateResults({
         query: q,
         fetch: (size, offset) => db.fns.get_indexed_tasks(
           namespace || namespace === '' ? namespace : null,
@@ -221,7 +221,7 @@ exports.namespaceUtils = {
         q.continuationToken = continuation;
       }
 
-      const {continuationToken, rows} = await paginateResults({
+      const { continuationToken, rows } = await paginateResults({
         query: q,
         fetch: (size, offset) => db.fns.get_index_namespaces(
           parent || parent === '' ? parent : null,

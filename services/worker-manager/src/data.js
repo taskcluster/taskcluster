@@ -1,7 +1,7 @@
 const _ = require('lodash');
-const {UNIQUE_VIOLATION} = require('taskcluster-lib-postgres');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const taskcluster = require('taskcluster-client');
-const {MAX_MODIFY_ATTEMPTS} = require('./util');
+const { MAX_MODIFY_ATTEMPTS } = require('./util');
 
 const makeError = (message, code, statusCode) => {
   const err = new Error(message);
@@ -64,7 +64,7 @@ class WorkerPool {
 
   // Expire worker pools with null-provider that no longer have any workers,
   // returning the list of worker pools expired.
-  static async expire({db, monitor}) {
+  static async expire({ db, monitor }) {
     const rows = await db.fns.expire_worker_pools();
     return rows.map(row => row.worker_pool_id);
   }
@@ -174,7 +174,7 @@ class WorkerPoolError {
   }
 
   // Expire worker pool errors reported before the specified time
-  static async expire({db, monitor}) {
+  static async expire({ db, monitor }) {
     return (await (db.fns.expire_worker_pool_errors(new Date())))[0].expire_worker_pool_errors;
   }
 
@@ -289,7 +289,7 @@ class Worker {
 
   // Expire workers,
   // returning the count of workers expired.
-  static async expire({db, monitor}) {
+  static async expire({ db, monitor }) {
     return (await db.fns.expire_workers(new Date()))[0].expire_workers;
   }
 

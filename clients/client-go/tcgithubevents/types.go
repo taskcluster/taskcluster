@@ -11,19 +11,6 @@ type (
 	GitHubPullRequestMessage struct {
 
 		// The GitHub `action` which triggered an event.
-		//
-		// Possible values:
-		//   * "assigned"
-		//   * "unassigned"
-		//   * "labeled"
-		//   * "unlabeled"
-		//   * "opened"
-		//   * "edited"
-		//   * "closed"
-		//   * "reopened"
-		//   * "synchronize"
-		//   * "review_requested"
-		//   * "review_request_removed"
 		Action string `json:"action"`
 
 		// The raw body of github event (for version 1)

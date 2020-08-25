@@ -26,17 +26,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await queue.deleteExpiredMessages();
 
     // the un-expired message is still present..
-    const result3 = await queue.getMessages('foo', {visibilityTimeout: 1, numberOfMessages: 2});
-    assert.deepEqual(result3.map(({messageText}) => messageText), ['bar-3']);
+    const result3 = await queue.getMessages('foo', { visibilityTimeout: 1, numberOfMessages: 2 });
+    assert.deepEqual(result3.map(({ messageText }) => messageText), ['bar-3']);
 
     // and now verify that the expired messages are not even in the table
     if (mock) {
       const queue = helper.db.queue.getQueueContent('foo');
-      assert.deepEqual(queue.map(({message_text}) => message_text), ['bar-3']);
+      assert.deepEqual(queue.map(({ message_text }) => message_text), ['bar-3']);
     } else {
       await helper.db._withClient('read', async client => {
         const res = await client.query('select message_text from azure_queue_messages');
-        assert.deepEqual(res.rows, [{message_text: 'bar-3'}]);
+        assert.deepEqual(res.rows, [{ message_text: 'bar-3' }]);
       });
     }
   });

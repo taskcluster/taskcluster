@@ -1,4 +1,4 @@
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 
 exports.monitor = MonitorManager.setup({
   serviceName: 'client',

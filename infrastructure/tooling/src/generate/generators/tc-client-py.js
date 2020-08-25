@@ -1,6 +1,6 @@
 const util = require('util');
 const path = require('path');
-const {writeRepoFile, REPO_ROOT} = require('../../utils');
+const { writeRepoFile, REPO_ROOT } = require('../../utils');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 
@@ -214,7 +214,7 @@ exports.tasks = [{
     const moduleDir = path.join(REPO_ROOT, 'clients', 'client-py', 'taskcluster', 'generated');
 
     // clean up the clients directory to eliminate any "leftovers"
-    utils.status({message: 'cleanup'});
+    utils.status({ message: 'cleanup' });
     await rimraf(moduleDir);
     await mkdirp(moduleDir);
     await mkdirp(path.join(moduleDir, 'aio'));
@@ -225,10 +225,10 @@ exports.tasks = [{
 
     const clientImporter = [];
 
-    for (let [className, {reference}] of Object.entries(apis)) {
+    for (let [className, { reference }] of Object.entries(apis)) {
       const moduleName = className.toLowerCase();
 
-      utils.status({message: `${className}`});
+      utils.status({ message: `${className}` });
       clientImporter.push(`from .${moduleName} import ${className}  # NOQA`);
       await generateStaticClient(
         className, reference,
@@ -240,7 +240,7 @@ exports.tasks = [{
         true);
     }
 
-    utils.status({message: 'client importers'});
+    utils.status({ message: 'client importers' });
     const clientImporterString = clientImporter.sort().join('\n');
     await writePyFile(path.join(moduleDir, '_client_importer.py'), clientImporterString);
     await writePyFile(path.join(moduleDir, 'aio', '_client_importer.py'), clientImporterString);

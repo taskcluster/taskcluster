@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const assert = require('assert');
-const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
+const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const urllib = require('url');
 const builder = require('./api');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
@@ -14,13 +14,13 @@ builder.declare({
   name: 'createArtifact',
   stability: APIBuilder.stability.stable,
   category: 'Artifacts',
-  scopes: {AnyOf: [
+  scopes: { AnyOf: [
     'queue:create-artifact:<taskId>/<runId>',
-    {AllOf: [
+    { AllOf: [
       'queue:create-artifact:<name>',
       'assume:worker-id:<workerGroup>/<workerId>',
-    ]},
-  ]},
+    ] },
+  ] },
   input: 'post-artifact-request.json#',
   output: 'post-artifact-response.json#',
   title: 'Create Artifact',
@@ -296,7 +296,7 @@ builder.declare({
     case 'reference':
     case 'error':
     // For 'reference' and 'error' the response is simple
-      return res.reply({storageType});
+      return res.reply({ storageType });
 
     default:
       throw new Error('Unknown storageType: ' + artifact.storageType);
@@ -610,7 +610,7 @@ builder.declare({
     return res.reportError(
       'ResourceNotFound',
       'No task with taskId: `{{taskId}}` found',
-      {taskId},
+      { taskId },
     );
   }
 
@@ -670,7 +670,7 @@ builder.declare({
     return res.reportError(
       'ResourceNotFound',
       'No task with taskId: `{{taskId}}` found',
-      {taskId},
+      { taskId },
     );
   }
 
@@ -679,7 +679,7 @@ builder.declare({
     return res.reportError(
       'ResourceNotFound',
       'Task with taskId: `{{taskId}}` does not have any runs',
-      {taskId},
+      { taskId },
     );
   }
 

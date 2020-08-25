@@ -205,7 +205,7 @@ async function buildDeviceBindings(runtime, devices, expandedScopes) {
     }
   }
 
-  return {deviceBindings, bindMounts};
+  return { deviceBindings, bindMounts };
 }
 
 class Reclaimer {
@@ -240,7 +240,7 @@ class Reclaimer {
     let nextClaim = takenFor / this.runtime.task.reclaimDivisor;
 
     // This is tricky ensure we have logs...
-    this.log('next claim', {time: nextClaim});
+    this.log('next claim', { time: nextClaim });
 
     // Figure out when we need to make the next claim...
     this.clearClaimTimeout();
@@ -279,7 +279,7 @@ class Reclaimer {
       this.claim.task = task;
     } catch (e) {
       let errorMessage = `Could not reclaim task. ${e.stack || e}`;
-      this.log('error reclaiming task', {error: errorMessage});
+      this.log('error reclaiming task', { error: errorMessage });
 
       // If this is not the primary claim, just stop trying to reclaim.  The task
       // will attempt to resolve it as superseded, and fail, but the primary task
@@ -418,7 +418,7 @@ class Task extends EventEmitter {
       rootUrl: this.runtime.rootUrl,
       credentials: this.runtime.taskcluster,
     });
-    let expandedScopes = (await auth.expandScopes({scopes: this.task.scopes})).scopes;
+    let expandedScopes = (await auth.expandScopes({ scopes: this.task.scopes })).scopes;
 
     if (linkInfo.links) {
       procConfig.create.HostConfig.Links = linkInfo.links.map(link => {
@@ -615,7 +615,7 @@ class Task extends EventEmitter {
       let retry = this.task.payload.onExitStatus.retry;
       if (retry && retry.includes(this.exitCode)) {
         taskState = 'retry';
-        reportDetails.push({reason: 'intermittent-task'});
+        reportDetails.push({ reason: 'intermittent-task' });
         reporter = queue.reportException;
       } else {
         reporter = queue.reportFailed;
@@ -666,20 +666,20 @@ class Task extends EventEmitter {
 
       try {
         let queue = this.createQueue(c.credentials);
-        await queue.reportException(taskId, runId, {reason});
+        await queue.reportException(taskId, runId, { reason });
 
         if (addArtifacts) {
           let task = c.task;
           // set the artifact expiration to match the task
           let expiration = task.expires || taskcluster.fromNow(task.deadline, '1 year');
-          let content = {'taskId': primaryTaskId, 'runId': primaryRunId};
+          let content = { 'taskId': primaryTaskId, 'runId': primaryRunId };
           let contentJson = JSON.stringify(content);
           await uploadToS3(queue, taskId, runId, contentJson,
             'public/superseded-by.json', expiration, {
               'content-type': 'application/json',
             });
 
-          supersedes.push({taskId, runId});
+          supersedes.push({ taskId, runId });
         }
       } catch (e) {
         // failing to resolve a non-primary claim is not a big deal: it will

@@ -2,7 +2,7 @@ const assert = require('assert');
 const settings = require('../settings');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 
 let worker;

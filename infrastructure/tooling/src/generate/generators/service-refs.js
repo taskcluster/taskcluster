@@ -4,7 +4,7 @@ const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const References = require('taskcluster-lib-references');
 const exec = util.promisify(require('child_process').execFile);
-const {REPO_ROOT, writeRepoJSON, listServices} = require('../../utils');
+const { REPO_ROOT, writeRepoJSON, listServices } = require('../../utils');
 
 /**
  * This file defines a few tasks that call generateReferences for all services,
@@ -32,9 +32,9 @@ SERVICES.forEach(name => {
       await mkdirp(genDir);
       await rimraf(svcDir);
 
-      const {stdout} = await exec('node', [`services/${name}/src/main`, 'generateReferences'], {
+      const { stdout } = await exec('node', [`services/${name}/src/main`, 'generateReferences'], {
         cwd: REPO_ROOT,
-        env: Object.assign({}, process.env, {NODE_ENV: 'production'}),
+        env: Object.assign({}, process.env, { NODE_ENV: 'production' }),
         maxBuffer: 10 * 1024 ** 2, // 10MB should be enough for anyone
       });
 
@@ -65,11 +65,11 @@ exports.tasks.push({
     const files = new Map();
     SERVICES.forEach(
       name => requirements[`refs-${name}`].forEach(
-        ({filename, content}) => files.set(filename, content)));
+        ({ filename, content }) => files.set(filename, content)));
     requirements['generic-worker-schemas'].forEach(
-      ({filename, content}) => files.set(filename, content));
+      ({ filename, content }) => files.set(filename, content));
     requirements['docker-worker-schemas'].forEach(
-      ({filename, content}) => files.set(filename, content));
+      ({ filename, content }) => files.set(filename, content));
 
     // add config-values-schema, mostly so that it can be referenced in the manual
     files.set('schemas/common/values.schema.json', requirements['config-values-schema']);
@@ -78,7 +78,7 @@ exports.tasks.push({
     // everything
     const references = References.fromSerializable({
       serializable: [...files.entries()].map(
-        ([filename, content]) => ({filename, content})),
+        ([filename, content]) => ({ filename, content })),
     });
 
     // sort the serializable output by filename to ensure consistency

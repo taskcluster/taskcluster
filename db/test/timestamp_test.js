@@ -3,7 +3,7 @@ const testing = require('taskcluster-lib-testing');
 const tcdb = require('taskcluster-db');
 
 suite(testing.suiteName(), function() {
-  const schema = tcdb.schema({useDbDirectory: true});
+  const schema = tcdb.schema({ useDbDirectory: true });
 
   test('DB has no timezone-less timestamp columns', function() {
     /* Postgres TIMESTAMP columns, by default, lack a timezone.  While it's possible to

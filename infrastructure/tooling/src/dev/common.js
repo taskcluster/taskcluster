@@ -1,4 +1,4 @@
-module.exports = ({userConfig, prompts, configTmpl}) => {
+module.exports = ({ userConfig, prompts, configTmpl }) => {
 
   prompts.push({
     type: 'input',

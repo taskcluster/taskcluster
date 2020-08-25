@@ -1,9 +1,9 @@
 const testing = require('taskcluster-lib-testing');
 const SchemaSet = require('taskcluster-lib-validate');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 const assert = require('assert');
 const path = require('path');
-const {App} = require('taskcluster-lib-app');
+const { App } = require('taskcluster-lib-app');
 
 let runningServer = null;
 
@@ -28,10 +28,10 @@ teardown(function() {
 /**
  * Set up a testing server on port 23525 serving the given API.
  */
-exports.setupServer = async ({builder, context}) => {
+exports.setupServer = async ({ builder, context }) => {
   testing.fakeauth.start({
     'client-with-aa-bb-dd': ['aa', 'bb', 'dd'],
-  }, {rootUrl});
+  }, { rootUrl });
   assert(runningServer === null);
 
   const schemaset = new SchemaSet({

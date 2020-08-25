@@ -4,7 +4,7 @@ const slugid = require('slugid');
 const _ = require('lodash');
 const request = require('superagent');
 const taskcluster = require('taskcluster-client');
-const {Netmask} = require('netmask');
+const { Netmask } = require('netmask');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
@@ -103,7 +103,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.putUrl).is.ok();
 
     debug('### Uploading to putUrl');
-    let res = await request.put(r1.putUrl).send({message: 'Hello World'});
+    let res = await request.put(r1.putUrl).send({ message: 'Hello World' });
     assume(res.ok).is.ok();
 
     debug('### Download Artifact (runId: 0)');
@@ -114,7 +114,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('Fetching artifact from: %s', url);
     res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
-    assume(res.body).to.be.eql({message: 'Hello World'});
+    assume(res.body).to.be.eql({ message: 'Hello World' });
 
     debug('### Download Artifact Signed URL (runId: 0)');
     url = helper.queue.buildSignedUrl(
@@ -124,7 +124,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('Fetching artifact from: %s', url);
     res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
-    assume(res.body).to.be.eql({message: 'Hello World'});
+    assume(res.body).to.be.eql({ message: 'Hello World' });
 
     debug('### Download Artifact (latest)');
     url = helper.queue.buildUrl(
@@ -134,7 +134,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('Fetching artifact from: %s', url);
     res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
-    assume(res.body).to.be.eql({message: 'Hello World'});
+    assume(res.body).to.be.eql({ message: 'Hello World' });
 
     debug('### List artifacts');
     const r2 = await helper.queue.listArtifacts(taskId, 0);
@@ -150,7 +150,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       taskId, 0, 'public/s3.json',
     );
     debug('Get ip-ranges from EC2');
-    const {body} = await request.get(AWS_IP_RANGES_URL);
+    const { body } = await request.get(AWS_IP_RANGES_URL);
     const ipRange = body.prefixes.filter(prefix => {
       return prefix.service === 'EC2' && prefix.region === 'us-east-1';
     })[0].ip_prefix;
@@ -191,13 +191,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    let {credentials} = await helper.queue.claimTask(taskId, 0, {
+    let { credentials } = await helper.queue.claimTask(taskId, 0, {
       workerGroup: 'my-worker-group',
       workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials });
     const r1 = await queue.createArtifact(taskId, 0, 'public/s3.json', {
       storageType: 's3',
       expires: taskcluster.fromNowJSON('1 day'),
@@ -206,7 +206,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.putUrl).is.ok();
 
     debug('### Uploading to putUrl');
-    let res = await request.put(r1.putUrl).send({message: 'Hello World'});
+    let res = await request.put(r1.putUrl).send({ message: 'Hello World' });
     assume(res.ok).is.ok();
 
     debug('### Download Artifact (runId: 0)');
@@ -217,7 +217,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('Fetching artifact from: %s', url);
     res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
-    assume(res.body).to.be.eql({message: 'Hello World'});
+    assume(res.body).to.be.eql({ message: 'Hello World' });
 
     debug('### Download Artifact Signed URL (runId: 0)');
     url = helper.queue.buildSignedUrl(
@@ -227,7 +227,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('Fetching artifact from: %s', url);
     res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
-    assume(res.body).to.be.eql({message: 'Hello World'});
+    assume(res.body).to.be.eql({ message: 'Hello World' });
 
     debug('### Download Artifact (latest)');
     url = helper.queue.buildUrl(
@@ -237,7 +237,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('Fetching artifact from: %s', url);
     res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
-    assume(res.body).to.be.eql({message: 'Hello World'});
+    assume(res.body).to.be.eql({ message: 'Hello World' });
 
     debug('### List artifacts');
     const r2 = await helper.queue.listArtifacts(taskId, 0);
@@ -253,7 +253,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       taskId, 0, 'public/s3.json',
     );
     debug('Get ip-ranges from EC2');
-    const {body} = await request.get(AWS_IP_RANGES_URL);
+    const { body } = await request.get(AWS_IP_RANGES_URL);
     const ipRange = body.prefixes.filter(prefix => {
       return prefix.service === 'EC2' && prefix.region === 'us-east-1';
     })[0].ip_prefix;
@@ -322,13 +322,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    let {credentials} = await helper.queue.claimTask(taskId, 0, {
+    let { credentials } = await helper.queue.claimTask(taskId, 0, {
       workerGroup: 'my-worker-group',
       workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials });
     await queue.createArtifact(taskId, 0, 'public/s3.json', {
       storageType: 's3',
       expires: taskcluster.fromNowJSON('1 day'),
@@ -343,13 +343,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    let {credentials} = await helper.queue.claimTask(taskId, 0, {
+    let { credentials } = await helper.queue.claimTask(taskId, 0, {
       workerGroup: 'my-worker-group',
       workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
-    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials});
+    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials });
     const r1 = await queue.createArtifact(taskId, 0, 'public/s3.json', {
       storageType: 's3',
       expires: taskcluster.fromNowJSON('12 day'),
@@ -358,7 +358,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.putUrl).is.ok();
 
     debug('### Uploading to putUrl');
-    let res = await request.put(r1.putUrl).send({message: 'Hello World'});
+    let res = await request.put(r1.putUrl).send({ message: 'Hello World' });
     assume(res.ok).is.ok();
 
     debug('### Download Artifact (runId: 0)');
@@ -369,7 +369,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('Fetching artifact from: %s', url);
     res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
-    assume(res.body).to.be.eql({message: 'Hello World'});
+    assume(res.body).to.be.eql({ message: 'Hello World' });
 
     debug('### List artifacts');
     const r2 = await helper.queue.listArtifacts(taskId, 0);
@@ -389,7 +389,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('Fetching artifact from: %s', url);
     res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
-    assume(res.body).to.be.eql({message: 'Hello World'});
+    assume(res.body).to.be.eql({ message: 'Hello World' });
 
     debug('### List artifacts');
     const r3 = await helper.queue.listArtifacts(taskId, 0);
@@ -801,7 +801,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.artifacts[1].contentType).equals('application/json');
 
     debug('### listArtifacts, limit = 1');
-    let r2 = await helper.queue.listArtifacts(taskId, 0, {limit: 1});
+    let r2 = await helper.queue.listArtifacts(taskId, 0, { limit: 1 });
     assume(r2.artifacts.length).equals(1);
     assume(r2.artifacts[0].contentType).equals('application/json');
     assert(r2.continuationToken, 'missing continuationToken');
@@ -822,7 +822,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r4.artifacts[1].contentType).equals('application/json');
 
     debug('### listLatestArtifacts, limit = 1');
-    let r5 = await helper.queue.listLatestArtifacts(taskId, {limit: 1});
+    let r5 = await helper.queue.listLatestArtifacts(taskId, { limit: 1 });
     assume(r5.artifacts.length).equals(1);
     assume(r5.artifacts[0].contentType).equals('application/json');
     assert(r5.continuationToken, 'missing continuationToken');

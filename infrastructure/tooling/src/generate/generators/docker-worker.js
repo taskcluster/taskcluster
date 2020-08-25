@@ -1,4 +1,4 @@
-const {readRepoYAML} = require('../../utils');
+const { readRepoYAML } = require('../../utils');
 
 exports.tasks = [];
 

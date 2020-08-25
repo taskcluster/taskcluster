@@ -1,6 +1,6 @@
-const {URL} = require('url');
+const { URL } = require('url');
 
-exports.makePgUrl = ({hostname, username, password, dbname}) => {
+exports.makePgUrl = ({ hostname, username, password, dbname }) => {
   const u = new URL('postgresql://');
   u.hostname = hostname;
   u.username = username;

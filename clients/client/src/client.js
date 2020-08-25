@@ -291,12 +291,12 @@ exports.createClient = function(reference, name) {
   };
 
   Client.prototype.use = function(optionsUpdates) {
-    let options = _.defaults({}, optionsUpdates, {rootUrl: this._options._trueRootUrl}, this._options);
+    let options = _.defaults({}, optionsUpdates, { rootUrl: this._options._trueRootUrl }, this._options);
     return new Client(options);
   };
 
-  Client.prototype.taskclusterPerRequestInstance = function({requestId, traceId}) {
-    return this.use({traceId});
+  Client.prototype.taskclusterPerRequestInstance = function({ requestId, traceId }) {
+    return this.use({ traceId });
   };
 
   // For each function entry create a method on the Client class
@@ -700,11 +700,11 @@ exports.config = function(options) {
 
 exports.fromEnvVars = function() {
   let results = {};
-  for (let {env, path} of [
-    {env: 'TASKCLUSTER_ROOT_URL', path: 'rootUrl'},
-    {env: 'TASKCLUSTER_CLIENT_ID', path: 'credentials.clientId'},
-    {env: 'TASKCLUSTER_ACCESS_TOKEN', path: 'credentials.accessToken'},
-    {env: 'TASKCLUSTER_CERTIFICATE', path: 'credentials.certificate'},
+  for (let { env, path } of [
+    { env: 'TASKCLUSTER_ROOT_URL', path: 'rootUrl' },
+    { env: 'TASKCLUSTER_CLIENT_ID', path: 'credentials.clientId' },
+    { env: 'TASKCLUSTER_ACCESS_TOKEN', path: 'credentials.accessToken' },
+    { env: 'TASKCLUSTER_CERTIFICATE', path: 'credentials.certificate' },
   ]) {
     if (process.env[env]) {
       _.set(results, path, process.env[env]);
@@ -868,7 +868,7 @@ exports.credentialInformation = function(rootUrl, credentials) {
     result.type = 'permanent';
   }
 
-  let anonClient = new exports.Auth({rootUrl});
+  let anonClient = new exports.Auth({ rootUrl });
   let clientLookup = anonClient.client(issuer).then(function(client) {
     let expires = new Date(client.expires);
     if (!result.expiry || result.expiry > expires) {
@@ -879,7 +879,7 @@ exports.credentialInformation = function(rootUrl, credentials) {
     }
   });
 
-  let credClient = new exports.Auth({rootUrl, credentials});
+  let credClient = new exports.Auth({ rootUrl, credentials });
   let scopeLookup = credClient.currentScopes().then(function(response) {
     result.scopes = response.scopes;
   });

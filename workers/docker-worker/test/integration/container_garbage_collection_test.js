@@ -7,7 +7,7 @@ const TestWorker = require('../testworker');
 const waitForEvent = require('../../src/lib/wait_for_event');
 const assert = require('assert');
 const sleep = require('./helper/sleep');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 
 let docker = new Docker();

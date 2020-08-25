@@ -16,7 +16,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const hookId = 'h';
 
   const makeHookEntities = async (...hooks) => {
-    for (let {hookId, bindings} of hooks) {
+    for (let { hookId, bindings } of hooks) {
       await helper.db.fns.create_hook(
         hookGroupId,
         hookId,
@@ -39,7 +39,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   };
 
   const makeQueueEntities = async (...queues) => {
-    for (let {hookId, bindings} of queues) {
+    for (let { hookId, bindings } of queues) {
       const queueName = `${hookGroupId}/${hookId}`;
       await helper.db.fns.create_hooks_queue(hookGroupId, hookId, queueName, JSON.stringify(bindings));
     }
@@ -47,7 +47,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const assertQueueEntities = async (...queues) => {
     const exp = queues.reduce(
-      (acc, {hookId, bindings}) => Object.assign(acc, {[`${hookGroupId}/${hookId}`]: bindings}), {});
+      (acc, { hookId, bindings }) => Object.assign(acc, { [`${hookGroupId}/${hookId}`]: bindings }), {});
     const got = {};
 
     const rows = await helper.db.fns.get_hooks_queues(null, null);
@@ -100,12 +100,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             err.code = 500;
             throw err;
           }
-          this.bindings.push({queueName, exchange, routingKeyPattern});
+          this.bindings.push({ queueName, exchange, routingKeyPattern });
         }
 
         async unbindQueue(queueName, exchange, routingKeyPattern) {
           assert(!this.failed);
-          this.unbindings.push({queueName, exchange, routingKeyPattern});
+          this.unbindings.push({ queueName, exchange, routingKeyPattern });
         }
       }
 
@@ -130,7 +130,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       helper.load.remove('listeners');
     });
 
-    const binding = (exchange, routingKeyPattern) => ({exchange, routingKeyPattern});
+    const binding = (exchange, routingKeyPattern) => ({ exchange, routingKeyPattern });
     const namedbinding = (name, exchange, routingKeyPattern) => ({
       queueName: `queue/undefined/${name}`,
       exchange,
@@ -231,9 +231,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('with a newly-minted hook creates listener, bindings', async function() {
-      const bindings = [{exchange: 'e', routingKeyPattern: 'foo.#'}];
+      const bindings = [{ exchange: 'e', routingKeyPattern: 'foo.#' }];
 
-      await makeHookEntities({hookId, bindings});
+      await makeHookEntities({ hookId, bindings });
 
       await hookListeners.reconcileConsumers();
 
@@ -246,14 +246,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       sinon.assert.calledWith(hookListeners.syncBindings,
         qn(hookGroupId, hookId), bindings, []);
 
-      await assertQueueEntities({hookId, bindings});
+      await assertQueueEntities({ hookId, bindings });
     });
 
     test('with bindings already in Queues', async function() {
-      const bindings = [{exchange: 'e', routingKeyPattern: 'foo.#'}];
+      const bindings = [{ exchange: 'e', routingKeyPattern: 'foo.#' }];
 
-      await makeHookEntities({hookId, bindings});
-      await makeQueueEntities({hookId, bindings});
+      await makeHookEntities({ hookId, bindings });
+      await makeQueueEntities({ hookId, bindings });
 
       await hookListeners.reconcileConsumers();
 
@@ -266,15 +266,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       sinon.assert.calledWith(hookListeners.syncBindings,
         qn(hookGroupId, hookId), bindings, bindings); // no change
 
-      await assertQueueEntities({hookId, bindings});
+      await assertQueueEntities({ hookId, bindings });
     });
 
     test('with changed bindings', async function() {
-      const bindings = [{exchange: 'e', routingKeyPattern: 'foo.#'}];
-      const newBindings = [{exchange: 'e2', routingKeyPattern: '#'}];
+      const bindings = [{ exchange: 'e', routingKeyPattern: 'foo.#' }];
+      const newBindings = [{ exchange: 'e2', routingKeyPattern: '#' }];
 
-      await makeHookEntities({hookId, bindings: newBindings});
-      await makeQueueEntities({hookId, bindings});
+      await makeHookEntities({ hookId, bindings: newBindings });
+      await makeQueueEntities({ hookId, bindings });
 
       await hookListeners.reconcileConsumers();
 
@@ -287,15 +287,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       sinon.assert.calledWith(hookListeners.syncBindings,
         qn(hookGroupId, hookId), newBindings, bindings);
 
-      await assertQueueEntities({hookId, bindings: newBindings});
+      await assertQueueEntities({ hookId, bindings: newBindings });
     });
 
     test('with deleted bindings and no listener', async function() {
-      const bindings = [{exchange: 'e', routingKeyPattern: 'foo.#'}];
+      const bindings = [{ exchange: 'e', routingKeyPattern: 'foo.#' }];
       const newBindings = [];
 
-      await makeHookEntities({hookId, bindings: newBindings});
-      await makeQueueEntities({hookId, bindings});
+      await makeHookEntities({ hookId, bindings: newBindings });
+      await makeQueueEntities({ hookId, bindings });
 
       await hookListeners.reconcileConsumers();
 
@@ -309,9 +309,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('with deleted hook and active listener', async function() {
-      const bindings = [{exchange: 'e', routingKeyPattern: 'foo.#'}];
+      const bindings = [{ exchange: 'e', routingKeyPattern: 'foo.#' }];
 
-      await makeQueueEntities({hookId, bindings});
+      await makeQueueEntities({ hookId, bindings });
       hookListeners.listeners[qn(hookGroupId, hookId)] = true;
 
       await hookListeners.reconcileConsumers();
@@ -343,26 +343,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('triggers hook with a pulse message', async () => {
-      await makeHookEntities({hookId, bindings: [{exchange: 'e', routingKeyPattern: 'rkp'}]});
+      await makeHookEntities({ hookId, bindings: [{ exchange: 'e', routingKeyPattern: 'rkp' }] });
       await hookListeners.reconcileConsumers();
 
       await helper.fakePulseMessage({
         exchange: 'e',
         routingKey: 'rkp',
         routes: [],
-        payload: {location: 'Orlando'},
+        payload: { location: 'Orlando' },
       });
 
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId,
         hookId,
-        context: {firedBy: 'pulseMessage', payload: {location: 'Orlando'}},
+        context: { firedBy: 'pulseMessage', payload: { location: 'Orlando' } },
         options: {},
       }]);
     });
 
     test('does nothing if the hook is gone', async () => {
-      await makeHookEntities({hookId, bindings: [{exchange: 'e', routingKeyPattern: 'rkp'}]});
+      await makeHookEntities({ hookId, bindings: [{ exchange: 'e', routingKeyPattern: 'rkp' }] });
       await hookListeners.reconcileConsumers();
 
       await deleteHookEntity(hookId);
@@ -371,13 +371,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         exchange: 'e',
         routingKey: 'rkp',
         routes: [],
-        payload: {location: 'Orlando'},
+        payload: { location: 'Orlando' },
       });
       assume(helper.creator.fireCalls).deep.equals([]);
     });
 
     test('does nothing if the hook is gone and reconciliation has occurred', async () => {
-      await makeHookEntities({hookId, bindings: [{exchange: 'e', routingKeyPattern: 'rkp'}]});
+      await makeHookEntities({ hookId, bindings: [{ exchange: 'e', routingKeyPattern: 'rkp' }] });
       await hookListeners.reconcileConsumers();
 
       await deleteHookEntity(hookId);

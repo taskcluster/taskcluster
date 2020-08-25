@@ -159,7 +159,7 @@ exports.tasks = [{
     // strip .md and .mdx extensions from those filenames..
     const files = Object.assign({},
       ...Object.entries(filesWithExtensions)
-        .map(([filename, value]) => ({[filename.replace(/\.mdx?/, '')]: value})));
+        .map(([filename, value]) => ({ [filename.replace(/\.mdx?/, '')]: value })));
     const [gettingStarted, resources, people] = ['README', 'resources', 'people'].map(fileName =>
       Object.assign(files[fileName], {
         name: fileName,

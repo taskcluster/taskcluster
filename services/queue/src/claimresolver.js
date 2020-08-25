@@ -1,7 +1,7 @@
 const assert = require('assert');
 const QueueService = require('./queueservice');
 const Iterate = require('taskcluster-lib-iterate');
-const {Task} = require('./data');
+const { Task } = require('./data');
 
 /**
  * Facade that handles resolution of claims by takenUntil, using the advisory
@@ -119,7 +119,7 @@ class ClaimResolver {
   }
 
   /** Handle advisory message about claim expiration */
-  async handleMessage({taskId, runId, takenUntil, remove}) {
+  async handleMessage({ taskId, runId, takenUntil, remove }) {
     const task = await Task.get(this.db, taskId);
 
     // If the task doesn't exist, we're done
@@ -162,7 +162,7 @@ class ClaimResolver {
           runId: runId + 1,
         }, task.routes),
       ]);
-      this.monitor.log.taskPending({taskId, runId: runId + 1});
+      this.monitor.log.taskPending({ taskId, runId: runId + 1 });
     } else {
       // Update dependencyTracker
       await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, task.schedulerId, 'exception');
@@ -174,7 +174,7 @@ class ClaimResolver {
         workerGroup: run.workerGroup,
         workerId: run.workerId,
       }, task.routes);
-      this.monitor.log.taskException({taskId, runId});
+      this.monitor.log.taskException({ taskId, runId });
     }
 
     return remove();

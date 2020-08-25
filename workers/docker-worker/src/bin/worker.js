@@ -14,7 +14,7 @@ const program = require('commander');
 const createLogger = require('../lib/log').createLogger;
 const Debug = require('debug');
 const _ = require('lodash');
-const {defaultMonitorManager} = require('../lib/monitor');
+const { defaultMonitorManager } = require('../lib/monitor');
 const Runtime = require('../lib/runtime');
 const TaskListener = require('../lib/task_listener');
 const ShutdownManager = require('../lib/shutdown_manager');
@@ -207,7 +207,7 @@ program.parse(process.argv);
 
   config.gc.addManager(config.volumeCache);
 
-  let runtime = new Runtime({...config, hostManager: host});
+  let runtime = new Runtime({ ...config, hostManager: host });
 
   runtime.imageManager = new ImageManager(runtime);
 

@@ -1,7 +1,7 @@
 const path = require('path');
 const cronstrue = require('cronstrue');
 const table = require('markdown-table');
-const {listServices, modifyRepoFile} = require('../../utils');
+const { listServices, modifyRepoFile } = require('../../utils');
 
 const SERVICES = listServices();
 
@@ -25,7 +25,7 @@ SERVICES.forEach(name => {
         }
       });
 
-      return {[`monitoring-hints-${name}`]: res};
+      return { [`monitoring-hints-${name}`]: res };
     },
   });
 });

@@ -1,5 +1,5 @@
 const os = require('os');
-const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgraph');
+const { TaskGraph, Lock, ConsoleRenderer, LogRenderer } = require('console-taskgraph');
 const generateReleaseTasks = require('./tasks');
 
 class Release {
@@ -30,7 +30,7 @@ class Release {
       },
       target: staging ? 'target-staging-release' : 'target-release',
       renderer: process.stdout.isTTY ?
-        new ConsoleRenderer({elideCompleted: true}) :
+        new ConsoleRenderer({ elideCompleted: true }) :
         new LogRenderer(),
     });
     if (this.cmdOptions.dryRun) {
@@ -58,4 +58,4 @@ const stagingRelease = async (options) => {
   await release.run(true);
 };
 
-module.exports = {release, stagingRelease, Release};
+module.exports = { release, stagingRelease, Release };

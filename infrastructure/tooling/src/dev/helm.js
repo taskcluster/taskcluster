@@ -1,5 +1,5 @@
-const {REPO_ROOT, readRepoYAML, execCommand} = require('../utils');
-const {TaskGraph} = require('console-taskgraph');
+const { REPO_ROOT, readRepoYAML, execCommand } = require('../utils');
+const { TaskGraph } = require('console-taskgraph');
 
 const resourceTypes = [
   'cronjob',
@@ -24,14 +24,14 @@ const actions = [
       }
 
       if (config.auth && config.auth.static_clients) {
-        if (config.auth.static_clients.some(({clientId, scopes}) => clientId.startsWith('static/taskcluster/') && scopes)) {
+        if (config.auth.static_clients.some(({ clientId, scopes }) => clientId.startsWith('static/taskcluster/') && scopes)) {
           throw new Error('`static/taskcluster/..` clients in auth.static_clients in `dev-config.yml` should not contain scopes');
         }
-        if (config.auth.static_clients.some(({clientId, scopes}) => !clientId.startsWith('static/taskcluster/') && !scopes)) {
+        if (config.auth.static_clients.some(({ clientId, scopes }) => !clientId.startsWith('static/taskcluster/') && !scopes)) {
           throw new Error('non-taskcluster static clients in auth.static_clients in `dev-config.yml` should scopes');
         }
       }
-      return {'dev-config': config};
+      return { 'dev-config': config };
     },
   },
   {
@@ -50,9 +50,9 @@ const actions = [
       if (!match) {
         throw new Error(`Could not determine helm version from: ${res}`);
       } else if (match[2].includes('v3')) {
-        return {'helm-version': 3};
+        return { 'helm-version': 3 };
       } else if (match[2].includes('v2')) {
-        return {'helm-version': 2};
+        return { 'helm-version': 2 };
       } else {
         throw new Error(`Must use supported helm version (2 or 3). You have ${match[2]}`);
       }
@@ -91,7 +91,7 @@ const actions = [
         ignoreReturn: true, // If it already exists, that is fine. we'll fail on switching to namespace
         utils,
       });
-      return {'dev-namespace': namespace};
+      return { 'dev-namespace': namespace };
     },
   },
   {
@@ -152,6 +152,6 @@ const actions = [
 
 module.exports = async action => {
   const target = action ? [`target-${action}`] : undefined;
-  const taskgraph = new TaskGraph(actions, {target});
+  const taskgraph = new TaskGraph(actions, { target });
   await taskgraph.run();
 };

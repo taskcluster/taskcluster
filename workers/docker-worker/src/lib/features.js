@@ -97,7 +97,7 @@ const features = {
 };
 
 // Basic sanity check for features
-_.forIn(features, ({title, description, defaults, module}) => {
+_.forIn(features, ({ title, description, defaults, module }) => {
   assert(typeof title === 'string', 'Expected title');
   assert(typeof description === 'string', 'Expected description');
   assert(typeof defaults === 'boolean', 'Expected a boolean default');

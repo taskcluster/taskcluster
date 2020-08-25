@@ -1,5 +1,5 @@
 const path = require('path');
-const {listServices, readRepoYAML} = require('../../utils');
+const { listServices, readRepoYAML } = require('../../utils');
 
 const SERVICES = listServices();
 

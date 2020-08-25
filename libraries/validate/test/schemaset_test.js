@@ -11,7 +11,7 @@ suite(testing.suiteName(), () => {
     return new SchemaSet({
       folder: 'test/schemas',
       serviceName: 'whatever',
-      constants: {'my-constant': 42},
+      constants: { 'my-constant': 42 },
     });
   };
 

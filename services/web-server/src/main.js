@@ -12,7 +12,7 @@ const { ApolloServer } = require('apollo-server-express');
 const taskcluster = require('taskcluster-client');
 const tcdb = require('taskcluster-db');
 const { Auth } = require('taskcluster-client');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 const createApp = require('./servers/createApp');
 const formatError = require('./servers/formatError');
 const clients = require('./clients');
@@ -109,7 +109,7 @@ const load = loader(
 
     generateReferences: {
       requires: ['cfg'],
-      setup: ({cfg}) => libReferences.fromService({
+      setup: ({ cfg }) => libReferences.fromService({
         references: [MonitorManager.reference('web-server')],
       }).generateReferences(),
     },
@@ -183,7 +183,7 @@ const load = loader(
 
     db: {
       requires: ['cfg', 'process', 'monitor'],
-      setup: ({cfg, process, monitor}) => tcdb.setup({
+      setup: ({ cfg, process, monitor }) => tcdb.setup({
         readDbUrl: cfg.postgres.readDbUrl,
         writeDbUrl: cfg.postgres.writeDbUrl,
         serviceName: 'web_server',
@@ -196,7 +196,7 @@ const load = loader(
 
     'cleanup-expire-auth-codes': {
       requires: ['cfg', 'db', 'monitor'],
-      setup: ({cfg, db, monitor}) => {
+      setup: ({ cfg, db, monitor }) => {
         return monitor.oneShot('cleanup-expire-authorization-codes', async () => {
           const delay = cfg.app.authorizationCodeExpirationDelay;
           const now = taskcluster.fromNow(delay);
@@ -210,7 +210,7 @@ const load = loader(
 
     'cleanup-expire-access-tokens': {
       requires: ['cfg', 'db', 'monitor'],
-      setup: ({cfg, db, monitor}) => {
+      setup: ({ cfg, db, monitor }) => {
         return monitor.oneShot('cleanup-expire-access-tokens', async () => {
           const delay = cfg.app.authorizationCodeExpirationDelay;
           const now = taskcluster.fromNow(delay);
@@ -224,7 +224,7 @@ const load = loader(
 
     'cleanup-session-storage': {
       requires: ['cfg', 'monitor', 'db'],
-      setup: ({cfg, monitor, db}) => {
+      setup: ({ cfg, monitor, db }) => {
         return monitor.oneShot('cleanup-expire-session-storage', async () => {
           debug('Expiring session storage entries');
           const count = (await db.fns.expire_sessions())[0].expire_sessions;

@@ -2,7 +2,7 @@ const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
 const _ = require('lodash');
-const {Worker} = require('../src/data');
+const { Worker } = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

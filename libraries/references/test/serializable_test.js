@@ -1,7 +1,7 @@
 const assert = require('assert');
 const References = require('..');
-const {makeSerializable} = require('../src/serializable');
-const {getCommonSchemas} = require('../src/common-schemas');
+const { makeSerializable } = require('../src/serializable');
+const { getCommonSchemas } = require('../src/common-schemas');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
 
@@ -51,7 +51,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('generates an abstract manifest', function() {
-    const serializable = makeSerializable({references});
+    const serializable = makeSerializable({ references });
     assert_file(serializable, 'references/manifest.json', {
       $schema: '/schemas/common/manifest-v3.json#',
       references: [
@@ -62,7 +62,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('generates an absolute manifest', function() {
-    const serializable = makeSerializable({references: references.asAbsolute(rootUrl)});
+    const serializable = makeSerializable({ references: references.asAbsolute(rootUrl) });
     assert_file(serializable, 'references/manifest.json', {
       $schema: rootUrl + '/schemas/common/manifest-v3.json#',
       references: [
@@ -73,7 +73,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('generates an absolute manifest for legacy rootUrl', function() {
-    const serializable = makeSerializable({references: references.asAbsolute(legacyRootUrl)});
+    const serializable = makeSerializable({ references: references.asAbsolute(legacyRootUrl) });
     assert_file(serializable, 'references/manifest.json', {
       $schema: 'https://schemas.taskcluster.net/common/manifest-v3.json#',
       references: [
@@ -84,7 +84,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('generates abstract schema filenames', function() {
-    const serializable = makeSerializable({references});
+    const serializable = makeSerializable({ references });
     assert_file(serializable, 'schemas/common/api-reference-v0.json', content => {
       assert.equal(content.$schema, '/schemas/common/metadata-metaschema.json#');
       assert.equal(content.$id, '/schemas/common/api-reference-v0.json#');
@@ -92,7 +92,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('generates absolute schema filenames', function() {
-    const serializable = makeSerializable({references: references.asAbsolute(rootUrl)});
+    const serializable = makeSerializable({ references: references.asAbsolute(rootUrl) });
     assert_file(serializable, 'schemas/common/api-reference-v0.json', content => {
       assert.equal(content.$schema, rootUrl + '/schemas/common/metadata-metaschema.json#');
       assert.equal(content.$id, rootUrl + '/schemas/common/api-reference-v0.json#');
@@ -100,7 +100,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('generates absolute schema filenames for legacy rootUrl', function() {
-    const serializable = makeSerializable({references: references.asAbsolute(legacyRootUrl)});
+    const serializable = makeSerializable({ references: references.asAbsolute(legacyRootUrl) });
     assert_file(serializable, 'schemas/common/api-reference-v0.json', content => {
       assert.equal(content.$schema, 'https://schemas.taskcluster.net/common/metadata-metaschema.json#');
       assert.equal(content.$id, 'https://schemas.taskcluster.net/common/api-reference-v0.json#');
@@ -108,7 +108,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('generates an API reference filename', function() {
-    const serializable = makeSerializable({references});
+    const serializable = makeSerializable({ references });
     assert_file(serializable, 'references/test/v1/api.json', {
       $schema: '/schemas/common/api-reference-v0.json#',
       title: 'test',
@@ -120,7 +120,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('generates an exchanges reference filename', function() {
-    const serializable = makeSerializable({references});
+    const serializable = makeSerializable({ references });
     assert_file(serializable, 'references/test2/v2/exchanges.json', {
       $schema: '/schemas/common/exchanges-reference-v0.json#',
       serviceName: 'test2',

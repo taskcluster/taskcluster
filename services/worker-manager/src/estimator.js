@@ -1,15 +1,15 @@
-const {splitWorkerPoolId} = require('./util');
+const { splitWorkerPoolId } = require('./util');
 
 class Estimator {
-  constructor({queue, monitor}) {
+  constructor({ queue, monitor }) {
     this.queue = queue;
     this.monitor = monitor;
   }
 
-  async simple({workerPoolId, minCapacity, maxCapacity, scalingRatio = 1.0, workerInfo}) {
-    const {provisionerId, workerType} = splitWorkerPoolId(workerPoolId);
-    const {pendingTasks} = await this.queue.pendingTasks(provisionerId, workerType);
-    const {existingCapacity, requestedCapacity = 0} = workerInfo;
+  async simple({ workerPoolId, minCapacity, maxCapacity, scalingRatio = 1.0, workerInfo }) {
+    const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);
+    const { pendingTasks } = await this.queue.pendingTasks(provisionerId, workerType);
+    const { existingCapacity, requestedCapacity = 0 } = workerInfo;
 
     // First we find the amount of capacity we want. This is a very simple approximation
     // We add existingCapacity here to represent existing workers and subtract it later.
@@ -45,7 +45,7 @@ class Estimator {
       overProvisioned = true;
     }
 
-    this.monitor.log.simpleEstimate(estimatorInfo, {level: overProvisioned ? 'err' : 'notice'});
+    this.monitor.log.simpleEstimate(estimatorInfo, { level: overProvisioned ? 'err' : 'notice' });
 
     if (overProvisioned) {
       this.monitor.reportError(new Error('Estimated existing capacity (pending and running) is much greater than max capacity'), estimatorInfo);

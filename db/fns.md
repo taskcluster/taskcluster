@@ -313,14 +313,6 @@ column is updated automatically, as is last_rotated if the access token is set.
 Indicate that this client has been recently used, updating its last_date_used field.
 Does nothing if the client does not exist.
 
-### deprecated methods
-
-* `clients_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `clients_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `clients_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `clients_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `clients_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
-
 ## github
 
 * [`create_github_build`](#create_github_build)
@@ -472,24 +464,6 @@ Only update the state of a build and update the `updated` timestamp
 * *Returns*: `void`
 
 Create a single integration.
-
-### deprecated methods
-
-* `taskcluster_check_runs_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_check_runs_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_check_runs_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_check_runs_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_check_runs_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_checks_to_tasks_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_checks_to_tasks_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_checks_to_tasks_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_checks_to_tasks_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_checks_to_tasks_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_integration_owners_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_integration_owners_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_integration_owners_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_integration_owners_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `taskcluster_integration_owners_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
 
 ## hooks
 
@@ -752,24 +726,6 @@ Returns the up-to-date hook row that have the same hook group id and hook id.
 
 Update bindings of a hooks queue. If no such queue exists,
 the return value is an empty set.
-
-### deprecated methods
-
-* `hooks_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `hooks_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `hooks_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `hooks_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `hooks_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
-* `last_fire_3_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `last_fire_3_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `last_fire_3_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `last_fire_3_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `last_fire_3_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
-* `queues_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `queues_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `queues_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `queues_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `queues_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
 
 ## index
 
@@ -1957,24 +1913,6 @@ All parameters must be supplied.
 Update a queue worker type's expires, last_date_active, description, and stability.
 All parameters must be supplied.
 
-### deprecated methods
-
-* `queue_provisioner_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `queue_provisioner_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `queue_provisioner_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `queue_provisioner_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `queue_provisioner_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
-* `queue_worker_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `queue_worker_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `queue_worker_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `queue_worker_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `queue_worker_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
-* `queue_worker_type_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `queue_worker_type_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `queue_worker_type_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `queue_worker_type_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `queue_worker_type_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
-
 ## secrets
 
 * [`delete_secret`](#delete_secret)
@@ -2034,14 +1972,6 @@ Fetch an individual secret to get the contents
 * *Returns*: `void`
 
 Store an encrypted secret whether it is new or being updated
-
-### deprecated methods
-
-* `secrets_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `secrets_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `secrets_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `secrets_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `secrets_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
 
 ## web_server
 
@@ -2241,24 +2171,6 @@ Removes a web session
 
 Touch a given session given a hashed session id and session `data`.
 If the hashed session id does not exist, then an error code `P0002` will be thrown.
-
-### deprecated methods
-
-* `access_token_table_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `access_token_table_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `access_token_table_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `access_token_table_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `access_token_table_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
-* `authorization_codes_table_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `authorization_codes_table_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `authorization_codes_table_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `authorization_codes_table_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `authorization_codes_table_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
-* `session_storage_table_entities_create(pk text, rk text, properties jsonb, overwrite boolean, version integer)` (compatibility guaranteed until v37.0.0)
-* `session_storage_table_entities_load(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `session_storage_table_entities_modify(partition_key text, row_key text, properties jsonb, version integer, old_etag uuid)` (compatibility guaranteed until v37.0.0)
-* `session_storage_table_entities_remove(partition_key text, row_key text)` (compatibility guaranteed until v37.0.0)
-* `session_storage_table_entities_scan(pk text, rk text, condition text, size integer, page integer)` (compatibility guaranteed until v37.0.0)
 
 ## worker_manager
 

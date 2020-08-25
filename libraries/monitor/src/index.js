@@ -1,5 +1,5 @@
 const MonitorManager = require('./monitormanager.js');
-const {LEVELS} = require('./logger');
+const { LEVELS } = require('./logger');
 
 require('./builtins');
 

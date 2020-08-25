@@ -1,4 +1,4 @@
-let {Netmask} = require('netmask');
+let { Netmask } = require('netmask');
 let requestIp = require('request-ip');
 let request = require('superagent');
 let assert = require('assert');
@@ -80,7 +80,7 @@ class EC2RegionResolver {
    */
   async _fetchIpRanges() {
     // Get IP ranges from AWS
-    let {body} = await request.get(AWS_IP_RANGES_URL);
+    let { body } = await request.get(AWS_IP_RANGES_URL);
     this._setIpRanges(body);
   }
 
@@ -105,7 +105,7 @@ class EC2RegionResolver {
     if (!/^(:?\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
       return null;
     }
-    for (let {range, region} of this.ipRanges) {
+    for (let { range, region } of this.ipRanges) {
       if (range.contains(ip)) {
         return region;
       }

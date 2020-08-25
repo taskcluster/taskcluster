@@ -14,7 +14,7 @@ const {
 
 const readFile = util.promisify(fs.readFile);
 
-module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
+module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Get ChangeLog',
     requires: ['release-version'],
@@ -54,14 +54,14 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
     ],
     locks: ['docker'],
     run: async (requirements, utils) => {
-      utils.step({title: 'Check Repository'});
+      utils.step({ title: 'Check Repository' });
 
       const tag = `taskcluster/websocktunnel:${requirements['release-version']}`;
       const provides = {
         'websocktunnel-docker-image': tag,
       };
 
-      utils.step({title: 'Building Websocktunnel'});
+      utils.step({ title: 'Building Websocktunnel' });
 
       const contextDir = path.join(baseDir, 'websocktunnel-build');
       await execCommand({
@@ -73,10 +73,10 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir: REPO_ROOT,
         logfile: path.join(logsDir, '/websocktunnel-build.log'),
         utils,
-        env: {CGO_ENABLED: '0', ...process.env},
+        env: { CGO_ENABLED: '0', ...process.env },
       });
 
-      utils.step({title: 'Building Docker Image'});
+      utils.step({ title: 'Building Docker Image' });
 
       fs.writeFileSync(
         path.join(contextDir, 'version.json'),
@@ -102,14 +102,14 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir: REPO_ROOT,
         logfile: path.join(logsDir, 'websocktunnel-docker-build.log'),
         utils,
-        env: {DOCKER_BUILDKIT: 1, ...process.env},
+        env: { DOCKER_BUILDKIT: 1, ...process.env },
       });
 
       if (cmdOptions.staging || !cmdOptions.push) {
         return provides;
       }
 
-      utils.step({title: 'Pushing Docker Image'});
+      utils.step({ title: 'Pushing Docker Image' });
 
       const dockerPushOptions = {};
       if (credentials.dockerUsername && credentials.dockerPassword) {
@@ -155,10 +155,10 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
       'github-release',
     ],
     run: async (requirements, utils) => {
-      const octokit = new Octokit({auth: `token ${credentials.ghToken}`});
+      const octokit = new Octokit({ auth: `token ${credentials.ghToken}` });
       const artifactsDir = requirements['clean-artifacts-dir'];
 
-      utils.status({message: `Create Release`});
+      utils.status({ message: `Create Release` });
       const release = await octokit.repos.createRelease({
         owner: 'taskcluster',
         repo: cmdOptions.staging ? 'staging-releases' : 'taskcluster',
@@ -168,7 +168,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         draft: cmdOptions.staging ? true : false,
         prerelease: false,
       });
-      const {upload_url} = release.data;
+      const { upload_url } = release.data;
 
       const files = requirements['client-shell-artifacts']
         .concat(requirements['generic-worker-artifacts'])
@@ -176,9 +176,9 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
         .concat(requirements['taskcluster-proxy-artifacts'])
-        .map(name => ({name, contentType: 'application/octet-stream'}));
-      for (let {name, contentType} of files) {
-        utils.status({message: `Upload Release asset ${name}`});
+        .map(name => ({ name, contentType: 'application/octet-stream' }));
+      for (let { name, contentType } of files) {
+        utils.status({ message: `Upload Release asset ${name}` });
         const data = await readFile(path.join(artifactsDir, name));
 
         /* Artifact uploads to GitHub seem to fail.. a lot.  So we retry each
@@ -200,7 +200,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
               throw err;
             }
             await new Promise(resolve => setTimeout(resolve, 5000));
-            utils.status({message: `Upload release asset ${name} - retrying after error`});
+            utils.status({ message: `Upload release asset ${name} - retrying after error` });
             continue;
           }
           break;
@@ -230,7 +230,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir: path.join(REPO_ROOT, 'clients/client'),
         apiToken: credentials.npmToken,
         logfile: path.join(logsDir, `publish-clients-client.log`),
-        utils});
+        utils });
     },
   });
 
@@ -260,7 +260,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         dir,
         apiToken: credentials.npmToken,
         logfile: path.join(logsDir, `publish-clients-client-web.log`),
-        utils});
+        utils });
     },
   });
 
@@ -282,7 +282,7 @@ module.exports = ({tasks, cmdOptions, credentials, baseDir, logsDir}) => {
         username: credentials.pypiUsername,
         password: credentials.pypiPassword,
         logfile: path.join(logsDir, 'publish-client-py.log'),
-        utils});
+        utils });
     },
   });
 

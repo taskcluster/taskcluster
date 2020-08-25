@@ -1,5 +1,5 @@
-const {scopeMatch} = require('./satisfaction');
-const {scopeCompare, normalizeScopeSet, mergeScopeSets} = require('./normalize');
+const { scopeMatch } = require('./satisfaction');
+const { scopeCompare, normalizeScopeSet, mergeScopeSets } = require('./normalize');
 
 /**
  * Finds scope intersections between two scope sets.

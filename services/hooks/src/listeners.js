@@ -79,12 +79,12 @@ class HookListeners {
       maxLength: 50,
       // we manage bindings manually in syncBindings
       bindings: [],
-    }, async ({payload}) => {
+    }, async ({ payload }) => {
       // Get a fresh copy of the hook and fire it, if it still exists
       const latestHook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
       if (latestHook) {
         try {
-          await this.taskcreator.fire(latestHook, {firedBy: 'pulseMessage', payload});
+          await this.taskcreator.fire(latestHook, { firedBy: 'pulseMessage', payload });
         } catch (err) {
           // any errors were already reported via the LastFire table, so they
           // can be safely ignored here
@@ -144,10 +144,10 @@ class HookListeners {
     // do any special error handling here.
     if (delBindings.length > 0) {
       await this.client.withChannel(async channel => {
-        for (let {exchange, routingKeyPattern} of delBindings) {
+        for (let { exchange, routingKeyPattern } of delBindings) {
           await channel.unbindQueue(fullQueueName, exchange, routingKeyPattern);
           result = result.filter(
-            ({exchange: e, routingKeyPattern: r}) => e !== exchange || r !== routingKeyPattern);
+            ({ exchange: e, routingKeyPattern: r }) => e !== exchange || r !== routingKeyPattern);
         }
       });
     }
@@ -155,12 +155,12 @@ class HookListeners {
     // We performe each of the bind operations in a distinct channel, as a failure of the operation
     // will invalidate the channel.  Failures are handled by simply not marking the binding
     // as complete and leaving if for the next reconciliation to try again.
-    for (let {exchange, routingKeyPattern} of addBindings) {
+    for (let { exchange, routingKeyPattern } of addBindings) {
       try {
         await this.client.withChannel(channel =>
           channel.bindQueue(fullQueueName, exchange, routingKeyPattern));
         // success! add that binding to the list
-        result.push({exchange, routingKeyPattern});
+        result.push({ exchange, routingKeyPattern });
       } catch (err) {
         if (err.code !== 404 && err.code !== 403) {
           throw err;
@@ -209,11 +209,11 @@ class HookListeners {
         continue;
       }
 
-      const {hookGroupId, hookId} = hook;
+      const { hookGroupId, hookId } = hook;
       const queueName = `${hookGroupId}/${hookId}`;
 
       try {
-        const queue = _.find(queues, {hookGroupId, hookId});
+        const queue = _.find(queues, { hookGroupId, hookId });
         if (queue) {
           if (!this.listeners[queue.queueName]) {
             await this.createListener(hookGroupId, hookId, queue.queueName);
@@ -249,7 +249,7 @@ class HookListeners {
         }
       } catch (err) {
         // report errors per hook, and continue on to try to reconcile the next hook.
-        this.monitor.reportError(err, {hookGroupId, hookId});
+        this.monitor.reportError(err, { hookGroupId, hookId });
       }
     }
 

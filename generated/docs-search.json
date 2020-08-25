@@ -2773,6 +2773,62 @@
   },
   {
     "element": "h1",
+    "id": "capabilities",
+    "path": "/reference/workers/docker-worker/capabilities",
+    "subtitle": null,
+    "title": "Capabilities"
+  },
+  {
+    "element": "h3",
+    "id": "cpu",
+    "path": "/reference/workers/docker-worker/capabilities",
+    "subtitle": "cpu",
+    "title": "Capabilities"
+  },
+  {
+    "element": "h2",
+    "id": "devices",
+    "path": "/reference/workers/docker-worker/capabilities",
+    "subtitle": "Devices",
+    "title": "Capabilities"
+  },
+  {
+    "element": "h3",
+    "id": "hostsharedmemory",
+    "path": "/reference/workers/docker-worker/capabilities",
+    "subtitle": "hostSharedMemory",
+    "title": "Capabilities"
+  },
+  {
+    "element": "h3",
+    "id": "kvm",
+    "path": "/reference/workers/docker-worker/capabilities",
+    "subtitle": "kvm",
+    "title": "Capabilities"
+  },
+  {
+    "element": "h3",
+    "id": "loopbackaudio",
+    "path": "/reference/workers/docker-worker/capabilities",
+    "subtitle": "loopbackAudio",
+    "title": "Capabilities"
+  },
+  {
+    "element": "h3",
+    "id": "loopbackvideo",
+    "path": "/reference/workers/docker-worker/capabilities",
+    "subtitle": "loopbackVideo",
+    "title": "Capabilities"
+  },
+  {
+    "element": "h2",
+    "id": "privileged",
+    "path": "/reference/workers/docker-worker/capabilities",
+    "subtitle": "Privileged",
+    "title": "Capabilities"
+  },
+  {
+    "element": "h1",
     "id": "deployment",
     "path": "/reference/workers/docker-worker/deployment",
     "subtitle": null,
@@ -2853,6 +2909,13 @@
     "id": "caches",
     "path": "/reference/workers/docker-worker/scopes",
     "subtitle": "Caches",
+    "title": "Scopes"
+  },
+  {
+    "element": "h2",
+    "id": "capabilities",
+    "path": "/reference/workers/docker-worker/scopes",
+    "subtitle": "Capabilities",
     "title": "Scopes"
   },
   {

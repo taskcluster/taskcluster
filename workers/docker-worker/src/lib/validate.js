@@ -7,7 +7,7 @@ const yaml = require('js-yaml');
 const assert = require('assert');
 const Ajv = require('ajv');
 const libUrls = require('taskcluster-lib-urls');
-const {renderConstants, checkRefs} = require('./util/validate_util');
+const { renderConstants, checkRefs } = require('./util/validate_util');
 const rootdir = require('app-root-dir');
 
 const ABSTRACT_SCHEMA_ROOT_URL = '';
@@ -40,7 +40,7 @@ class SchemaSet {
     }
 
     let walkErr;
-    walk.walkSync(path.resolve(this.cfg.folder), {listeners: {file: (root, stats) => {
+    walk.walkSync(path.resolve(this.cfg.folder), { listeners: { file: (root, stats) => {
       try {
         let name = path.relative(this.cfg.folder, path.join(root, stats.name));
 
@@ -67,7 +67,7 @@ class SchemaSet {
           walkErr = err;
         }
       }
-    }}});
+    } } });
     if (walkErr) {
       throw walkErr;
     }
@@ -129,7 +129,7 @@ class SchemaSet {
           '\nRejecting Schema: ',
           id,
           '\nErrors:\n  * ',
-          ajv.errorsText(ajv.errors, {separator: '\n  * '}),
+          ajv.errorsText(ajv.errors, { separator: '\n  * ' }),
         ].join('');
       }
       return null;

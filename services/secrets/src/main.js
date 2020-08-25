@@ -4,8 +4,8 @@ const tcdb = require('taskcluster-db');
 const builder = require('../src/api');
 const loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
-const {MonitorManager} = require('taskcluster-lib-monitor');
-const {App} = require('taskcluster-lib-app');
+const { MonitorManager } = require('taskcluster-lib-monitor');
+const { App } = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
 const config = require('taskcluster-lib-config');
 
@@ -14,7 +14,7 @@ let debug = Debug('secrets:server');
 let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({
+    setup: ({ profile }) => config({
       profile,
       serviceName: 'secrets',
     }),
@@ -22,7 +22,7 @@ let load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => MonitorManager.setup({
+    setup: ({ process, profile, cfg }) => MonitorManager.setup({
       serviceName: 'secrets',
       processName: process,
       verify: profile !== 'production',
@@ -32,14 +32,14 @@ let load = loader({
 
   schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => new SchemaSet({
+    setup: ({ cfg }) => new SchemaSet({
       serviceName: 'secrets',
     }),
   },
 
   db: {
     requires: ['cfg', 'process', 'monitor'],
-    setup: ({cfg, process, monitor}) => tcdb.setup({
+    setup: ({ cfg, process, monitor }) => tcdb.setup({
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
       azureCryptoKey: cfg.azure.cryptoKey,
@@ -52,7 +52,7 @@ let load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => libReferences.fromService({
+    setup: ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), MonitorManager.reference('secrets')],
     }).generateReferences(),
@@ -60,9 +60,9 @@ let load = loader({
 
   api: {
     requires: ['cfg', 'db', 'schemaset', 'monitor'],
-    setup: async ({cfg, db, schemaset, monitor}) => builder.build({
+    setup: async ({ cfg, db, schemaset, monitor }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {cfg, db},
+      context: { cfg, db },
       monitor: monitor.childMonitor('api'),
       schemaset,
     }),
@@ -70,7 +70,7 @@ let load = loader({
 
   server: {
     requires: ['cfg', 'api'],
-    setup: ({cfg, api}) => App({
+    setup: ({ cfg, api }) => App({
       port: Number(process.env.PORT || cfg.server.port),
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,
@@ -81,10 +81,10 @@ let load = loader({
 
   expire: {
     requires: ['cfg', 'db', 'monitor'],
-    setup: ({cfg, db, monitor}, ownName) => {
+    setup: ({ cfg, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Expiring secrets');
-        const [{expire_secrets: count}] = (await db.fns.expire_secrets());
+        const [{ expire_secrets: count }] = (await db.fns.expire_secrets());
         debug('Expired ' + count + ' secrets');
       });
     },

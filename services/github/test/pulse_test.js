@@ -17,8 +17,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
 
     github = await helper.load('github');
-    github.inst(5808).setUser({id: 14795478, email: 'someuser@github.com', username: 'TaskclusterRobot'});
-    github.inst(5808).setUser({id: 18102552, email: 'anotheruser@github.com', username: 'owlishDeveloper'});
+    github.inst(5808).setUser({ id: 14795478, email: 'someuser@github.com', username: 'TaskclusterRobot' });
+    github.inst(5808).setUser({ id: 18102552, email: 'anotheruser@github.com', username: 'owlishDeveloper' });
   });
 
   /**
@@ -53,7 +53,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             body: require('./data/webhooks/' + params.jsonFile).body,
             tasks_for: params.tasks_for,
             branch: params.branch,
-            ...params.action ? {action: params.action} : {},
+            ...params.action ? { action: params.action } : {},
           });
           return true;
         }

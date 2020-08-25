@@ -1,6 +1,6 @@
 const debug = require('debug')('docker-worker:async-dump');
-const {createHook} = require('async_hooks');
-const {stackTraceFilter} = require('mocha/lib/utils');
+const { createHook } = require('async_hooks');
+const { stackTraceFilter } = require('mocha/lib/utils');
 
 const allResources = new Map();
 
@@ -9,7 +9,7 @@ const filterStack = stackTraceFilter();
 
 const hook = createHook({
   init(asyncId, type, triggerAsyncId) {
-    allResources.set(asyncId, {type, triggerAsyncId, stack: (new Error()).stack});
+    allResources.set(asyncId, { type, triggerAsyncId, stack: (new Error()).stack });
   },
   destroy(asyncId) {
     allResources.delete(asyncId);

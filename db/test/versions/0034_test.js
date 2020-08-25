@@ -8,18 +8,18 @@ suite(testing.suiteName(), function() {
   helper.withDbForVersion();
 
   suiteSetup(async function() {
-    await testing.resetDb({testDbUrl: helper.dbUrl});
+    await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
   });
 
   const b64 = x => Buffer.from(x).toString('base64');
 
   const samples = [
-    {__bufchunks_val: 0},
-    {__bufchunks_val: 1, __buf0_val: ''},
-    {__bufchunks_val: 1, __buf0_val: b64('Hello')},
-    {__bufchunks_val: 1, __buf0_val: b64('uh\\oh')},
-    {__bufchunks_val: 2, __buf0_val: b64('Good'), __buf1_val: b64('Morning')},
+    { __bufchunks_val: 0 },
+    { __bufchunks_val: 1, __buf0_val: '' },
+    { __bufchunks_val: 1, __buf0_val: b64('Hello') },
+    { __bufchunks_val: 1, __buf0_val: b64('uh\\oh') },
+    { __bufchunks_val: 2, __buf0_val: b64('Good'), __buf1_val: b64('Morning') },
   ];
 
   const mkContainer = async (properties) => {
@@ -48,11 +48,11 @@ suite(testing.suiteName(), function() {
   };
 
   const container = { kid: 'azure', v: 0 };
-  entityToCryptoContainerV0('0 bufs', samples[0], {...container, ...samples[0]});
-  entityToCryptoContainerV0('empty', samples[1], {...container, ...samples[1]});
-  entityToCryptoContainerV0('simple string', samples[2], {...container, ...samples[2]});
-  entityToCryptoContainerV0('backslashy string', samples[3], {...container, ...samples[3]});
-  entityToCryptoContainerV0('multiple chunks', samples[4], {...container, ...samples[4]});
+  entityToCryptoContainerV0('0 bufs', samples[0], { ...container, ...samples[0] });
+  entityToCryptoContainerV0('empty', samples[1], { ...container, ...samples[1] });
+  entityToCryptoContainerV0('simple string', samples[2], { ...container, ...samples[2] });
+  entityToCryptoContainerV0('backslashy string', samples[3], { ...container, ...samples[3] });
+  entityToCryptoContainerV0('multiple chunks', samples[4], { ...container, ...samples[4] });
 
   const encryptedEntityBufEncode = (name, properties) => {
     test(`entity_buf_encode: ${name}`, async function() {

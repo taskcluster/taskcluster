@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {find} = require('lodash');
+const { find } = require('lodash');
 const MonitorManager = require('../src/monitormanager.js');
 const testing = require('taskcluster-lib-testing');
 
@@ -24,7 +24,7 @@ suite(testing.suiteName(), function() {
       fake: true,
       debug: true,
     });
-    monitor.log.auditLog({foo: {}, bar: 'hi'});
+    monitor.log.auditLog({ foo: {}, bar: 'hi' });
     assert.equal(monitor.manager.messages.length, 1);
   });
 
@@ -36,14 +36,14 @@ suite(testing.suiteName(), function() {
       debug: true,
       verify: true,
     });
-    monitor.log.auditLog({foo: {}, bar: 'hi'});
-    assert.throws(() => monitor.log.auditLog({foo: null}), /"auditLog" must include field "bar"/);
+    monitor.log.auditLog({ foo: {}, bar: 'hi' });
+    assert.throws(() => monitor.log.auditLog({ foo: null }), /"auditLog" must include field "bar"/);
   });
 
   test('can publish types', function() {
     const serviceName = 'taskcluster-testing-service';
     assert.equal(MonitorManager.reference(serviceName).serviceName, serviceName);
-    const ref = find(MonitorManager.reference(serviceName).types, {name: 'auditLog'});
+    const ref = find(MonitorManager.reference(serviceName).types, { name: 'auditLog' });
     assert.deepEqual(ref.type, 'audit');
     assert.deepEqual(ref.name, 'auditLog');
     assert.deepEqual(ref.title, 'whatever');

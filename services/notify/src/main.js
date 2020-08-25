@@ -1,14 +1,14 @@
 require('../../prelude');
 const aws = require('aws-sdk');
-const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
-const {App} = require('taskcluster-lib-app');
+const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
+const { App } = require('taskcluster-lib-app');
 const loader = require('taskcluster-lib-loader');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const libReferences = require('taskcluster-lib-references');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
-const {MonitorManager} = require('taskcluster-lib-monitor');
+const { MonitorManager } = require('taskcluster-lib-monitor');
 const builder = require('./api');
 const Notifier = require('./notifier');
 const RateLimit = require('./ratelimit');
@@ -26,7 +26,7 @@ require('./monitor');
 const load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({
+    setup: ({ profile }) => config({
       profile,
       serviceName: 'notify',
     }),
@@ -34,7 +34,7 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => MonitorManager.setup({
+    setup: ({ process, profile, cfg }) => MonitorManager.setup({
       serviceName: 'notify',
       processName: process,
       verify: profile !== 'production',
@@ -44,14 +44,14 @@ const load = loader({
 
   schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => new SchemaSet({
+    setup: ({ cfg }) => new SchemaSet({
       serviceName: 'notify',
     }),
   },
 
   reference: {
     requires: ['cfg'],
-    setup: ({cfg}) => exchanges.reference({
+    setup: ({ cfg }) => exchanges.reference({
       rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.pulse,
     }),
@@ -59,7 +59,7 @@ const load = loader({
 
   db: {
     requires: ['process', 'cfg', 'monitor'],
-    setup: ({process, cfg, monitor}) => tcdb.setup({
+    setup: ({ process, cfg, monitor }) => tcdb.setup({
       serviceName: 'notify',
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
@@ -70,7 +70,7 @@ const load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({cfg, schemaset}) => libReferences.fromService({
+    setup: ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('notify')],
     }).generateReferences(),
@@ -78,7 +78,7 @@ const load = loader({
 
   pulseClient: {
     requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) => {
+    setup: ({ cfg, monitor }) => {
       return new Client({
         namespace: 'taskcluster-notify',
         monitor: monitor.childMonitor('pulse-client'),
@@ -89,7 +89,7 @@ const load = loader({
 
   publisher: {
     requires: ['cfg', 'pulseClient', 'schemaset'],
-    setup: async ({cfg, pulseClient, schemaset}) => await exchanges.publisher({
+    setup: async ({ cfg, pulseClient, schemaset }) => await exchanges.publisher({
       rootUrl: cfg.taskcluster.rootUrl,
       client: pulseClient,
       schemaset,
@@ -98,7 +98,7 @@ const load = loader({
 
   queue: {
     requires: ['cfg'],
-    setup: ({cfg}) => new taskcluster.Queue({
+    setup: ({ cfg }) => new taskcluster.Queue({
       rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.taskcluster.credentials,
     }),
@@ -106,14 +106,14 @@ const load = loader({
 
   queueEvents: {
     requires: ['cfg'],
-    setup: ({cfg}) => new taskcluster.QueueEvents({
+    setup: ({ cfg }) => new taskcluster.QueueEvents({
       rootUrl: cfg.taskcluster.rootUrl,
     }),
   },
 
   rateLimit: {
     requires: ['cfg'],
-    setup: ({cfg}) => new RateLimit({
+    setup: ({ cfg }) => new RateLimit({
       count: cfg.app.maxMessageCount,
       time: cfg.app.maxMessageTime,
     }),
@@ -121,18 +121,18 @@ const load = loader({
 
   ses: {
     requires: ['cfg'],
-    setup: ({cfg}) => new aws.SES(cfg.aws),
+    setup: ({ cfg }) => new aws.SES(cfg.aws),
   },
 
   denier: {
     requires: ['cfg', 'db'],
-    setup: ({cfg, db}) =>
-      new Denier({emailBlacklist: cfg.app.emailBlacklist, db: db}),
+    setup: ({ cfg, db }) =>
+      new Denier({ emailBlacklist: cfg.app.emailBlacklist, db: db }),
   },
 
   matrixClient: {
     requires: ['cfg'],
-    setup: ({cfg}) => matrix.createClient({
+    setup: ({ cfg }) => matrix.createClient({
       ...cfg.matrix,
       localTimeoutMs: 60 * 1000, // We will timeout http requests after 60 seconds. By default this has no timeout.
     }),
@@ -140,7 +140,7 @@ const load = loader({
 
   matrix: {
     requires: ['cfg', 'matrixClient', 'monitor'],
-    setup: async ({cfg, matrixClient, monitor}) => {
+    setup: async ({ cfg, matrixClient, monitor }) => {
       let client = new MatrixBot({
         ...cfg.matrix,
         matrixClient,
@@ -155,7 +155,7 @@ const load = loader({
 
   notifier: {
     requires: ['cfg', 'publisher', 'rateLimit', 'ses', 'denier', 'monitor', 'matrix'],
-    setup: ({cfg, publisher, rateLimit, ses, denier, monitor, matrix}) => new Notifier({
+    setup: ({ cfg, publisher, rateLimit, ses, denier, monitor, matrix }) => new Notifier({
       denier,
       publisher,
       rateLimit,
@@ -168,7 +168,7 @@ const load = loader({
 
   irc: {
     requires: ['cfg', 'pulseClient', 'monitor', 'reference'],
-    setup: async ({cfg, pulseClient, monitor, reference}) => {
+    setup: async ({ cfg, pulseClient, monitor, reference }) => {
       let client = new IRC(_.merge(cfg.irc, {
         monitor: monitor.childMonitor('irc'),
         pulseClient,
@@ -182,7 +182,7 @@ const load = loader({
 
   handler: {
     requires: ['profile', 'cfg', 'monitor', 'notifier', 'pulseClient', 'queue', 'queueEvents'],
-    setup: async ({cfg, monitor, notifier, pulseClient, queue, queueEvents}) => {
+    setup: async ({ cfg, monitor, notifier, pulseClient, queue, queueEvents }) => {
       let handler = new Handler({
         rootUrl: cfg.taskcluster.rootUrl,
         notifier,
@@ -200,9 +200,9 @@ const load = loader({
 
   api: {
     requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'denier', 'db'],
-    setup: ({cfg, monitor, schemaset, notifier, denier, db}) => builder.build({
+    setup: ({ cfg, monitor, schemaset, notifier, denier, db }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {notifier, denier, db},
+      context: { notifier, denier, db },
       monitor: monitor.childMonitor('api'),
       schemaset,
     }),
@@ -210,7 +210,7 @@ const load = loader({
 
   server: {
     requires: ['cfg', 'api'],
-    setup: ({cfg, api}) => App({
+    setup: ({ cfg, api }) => App({
       ...cfg.server,
       apis: [api],
     }),

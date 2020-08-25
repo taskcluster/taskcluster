@@ -5,8 +5,8 @@ const sinon = require('sinon');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const {LEVELS} = require('taskcluster-lib-monitor');
-const {CHECKRUN_TEXT} = require('../src/constants');
+const { LEVELS } = require('taskcluster-lib-monitor');
+const { CHECKRUN_TEXT } = require('../src/constants');
 const utils = require('../src/utils');
 
 /**
@@ -23,13 +23,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const CUSTOM_CHECKRUN_TASKID = 'apple';
   const CUSTOM_CHECKRUN_TEXT = 'Hi there! This is your custom text';
   const CUSTOM_CHECKRUN_ANNOTATIONS = JSON.stringify([
-    {path: 'assets/css/main.css', start_line: 1, end_line: 2, annotation_level: 'notice', message: 'Hi there!'},
+    { path: 'assets/css/main.css', start_line: 1, end_line: 2, annotation_level: 'notice', message: 'Hi there!' },
   ]);
 
   let github = null;
   let handlers = null;
 
-  async function addBuild({state, taskGroupId}) {
+  async function addBuild({ state, taskGroupId }) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
     await helper.db.fns.create_github_build(
       'TaskclusterRobot',
@@ -45,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     );
   }
 
-  async function addCheckRun({taskGroupId, taskId}) {
+  async function addCheckRun({ taskGroupId, taskId }) {
     debug(`adding CheckRun row for task ${taskId} of group ${taskGroupId}`);
     await helper.db.fns.create_github_check(
       taskGroupId,
@@ -55,14 +55,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     );
   }
 
-  async function simulateExchangeMessage({taskGroupId, exchange, routingKey, taskId, state, reasonResolved}) {
+  async function simulateExchangeMessage({ taskGroupId, exchange, routingKey, taskId, state, reasonResolved }) {
     // set up to resolve when the handler has finished (even if it finishes with error)
     const handlerComplete = new Promise((resolve, reject) => {
       handlers.handlerComplete = resolve;
       handlers.handlerRejected = reject;
     });
 
-    debug(`publishing ${JSON.stringify({taskGroupId, exchange})}`);
+    debug(`publishing ${JSON.stringify({ taskGroupId, exchange })}`);
     const message = {
       exchange,
       routingKey,
@@ -124,7 +124,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             });
         }
       },
-      listTaskGroup: async () => ({tasks: []}),
+      listTaskGroup: async () => ({ tasks: [] }),
       use: () => ({
         getArtifact: async() => CUSTOM_CHECKRUN_TEXT,
       }),
@@ -135,7 +135,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     github.inst(5828).setRepoInfo({
       owner: 'TaskclusterRobot',
       repo: 'hooks-testing',
-      info: {default_branch: 'development'},
+      info: { default_branch: 'development' },
     });
   });
 
@@ -161,7 +161,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         fake: {
           createTask: async (taskId, taskDef) => {
             if (taskId === 'fail') {
-              const {message, ...errorProps} = taskDef;
+              const { message, ...errorProps } = taskDef;
               throw Object.assign(new Error(message), errorProps);
             }
             createdTasks.push(taskDef);
@@ -171,24 +171,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('does not call queue.createTask if given no tasks', async function() {
-      await handlers.realCreateTasks({scopes: [], tasks: []});
+      await handlers.realCreateTasks({ scopes: [], tasks: [] });
       assert.equal(createdTasks.length, 0);
     });
 
     test('calls queue.createTask in order', async function() {
-      await handlers.realCreateTasks({scopes: [], tasks: [
-        {taskId: 'aa', task: {payload: 'a'}},
-        {taskId: 'bb', task: {payload: 'b'}},
-        {taskId: 'cc', task: {payload: 'c'}},
-      ]});
-      assert.deepEqual(createdTasks.map(({payload}) => payload), ['a', 'b', 'c']);
+      await handlers.realCreateTasks({ scopes: [], tasks: [
+        { taskId: 'aa', task: { payload: 'a' } },
+        { taskId: 'bb', task: { payload: 'b' } },
+        { taskId: 'cc', task: { payload: 'c' } },
+      ] });
+      assert.deepEqual(createdTasks.map(({ payload }) => payload), ['a', 'b', 'c']);
     });
 
     test('propagates unknown errors', async function() {
       await assert.rejects(
-        handlers.realCreateTasks({scopes: [], tasks: [
-          {taskId: 'fail', task: {message: 'uhoh'}},
-        ]}),
+        handlers.realCreateTasks({ scopes: [], tasks: [
+          { taskId: 'fail', task: { message: 'uhoh' } },
+        ] }),
         err => err.message === 'uhoh',
       );
     });
@@ -243,7 +243,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     // opener -> pull_request.user.login (defaults to user)
     // headUser -> pull_request.head.user.login (defaults to user)
     // baseUser -> pull_request.base.user.login (defaults to hooks-testing)
-    async function simulateJobMessage({user, opener, headUser, baseUser, head, base, eventType = 'push'}) {
+    async function simulateJobMessage({ user, opener, headUser, baseUser, head, base, eventType = 'push' }) {
       // set up to resolve when the handler has finished (even if it finishes with error)
       const handlerComplete = new Promise((resolve, reject) => {
         handlers.handlerComplete = resolve;
@@ -298,7 +298,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         delete details['event.base.repo.branch'];
       }
 
-      debug(`publishing ${JSON.stringify({user, head, base, eventType})}`);
+      debug(`publishing ${JSON.stringify({ user, head, base, eventType })}`);
       const [eventBase, eventAction] = eventType.split('.');
       const exchange = {
         // 'tag' events arrive on the 'push' exchange..
@@ -336,9 +336,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: {version: 1, tasks: {}},
+        content: { version: 1, tasks: {} },
       });
-      await simulateJobMessage({user: 'TaskclusterRobot'});
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
 
       assert(github.inst(5828).repos.createCommitComment.calledOnce);
       let args = github.inst(5828).repos.createCommitComment.args;
@@ -353,9 +353,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: {version: 1, tasks: undefined},
+        content: { version: 1, tasks: undefined },
       });
-      await simulateJobMessage({user: 'TaskclusterRobot'});
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
 
       assert(github.inst(5828).repos.createCommitComment.notCalled);
     });
@@ -367,9 +367,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./data/yml/valid-yaml.json'),
       });
-      await simulateJobMessage({user: 'TaskclusterRobot'});
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
 
-      assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
+      assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
       let [build] = await helper.db.fns.get_github_build(taskGroupId);
@@ -398,9 +398,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         content: require('./data/yml/valid-yaml.json'),
       });
 
-      await simulateJobMessage({user: 'goodBuddy', eventType: 'pull_request.opened'});
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
 
-      assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
+      assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
       let [build] = await helper.db.fns.get_github_build(taskGroupId);
@@ -417,7 +417,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./data/yml/valid-yaml.json'),
       });
-      await simulateJobMessage({user: 'TaskclusterCollaborator', eventType: 'push'});
+      await simulateJobMessage({ user: 'TaskclusterCollaborator', eventType: 'push' });
 
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
@@ -438,10 +438,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await simulateJobMessage({
         user: 'TaskclusterRobotCollaborator',
         base: '0000000000000000000000000000000000000000',
-        eventType: 'tag'},
+        eventType: 'tag' },
       );
 
-      assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
+      assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
       let [build] = await helper.db.fns.get_github_build(taskGroupId);
@@ -458,7 +458,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./data/yml/invalid-yaml.json'),
       });
-      await simulateJobMessage({user: 'TaskclusterRobot'});
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
 
       assert(github.inst(5828).repos.createStatus.callCount === 0, 'Status was unexpectedly updated!');
       assert(github.inst(5828).repos.createCommitComment.calledOnce);
@@ -476,8 +476,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./data/yml/valid-yaml.json'),
       });
-      handlers.createTasks.rejects({body: {error: 'oh noes'}});
-      await simulateJobMessage({user: 'TaskclusterRobot'});
+      handlers.createTasks.rejects({ body: { error: 'oh noes' } });
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
 
       assert(github.inst(5828).repos.createCommitComment.calledOnce);
       let args = github.inst(5828).repos.createCommitComment.args;
@@ -488,7 +488,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     suite('PR permissions (collaborators)', function() {
-      const testPermissions = (name, {opener, headUser, succeed}) => {
+      const testPermissions = (name, { opener, headUser, succeed }) => {
         test(name, async function() {
           github.inst(5828).setRepoCollaborator({
             owner: 'TaskclusterRobot',
@@ -510,13 +510,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             owner: 'TaskclusterRobot',
             repo: 'hooks-testing',
             ref: 'development',
-            content: {version: 0, allowPullRequests: 'collaborators'},
+            content: { version: 0, allowPullRequests: 'collaborators' },
           });
 
-          await simulateJobMessage({opener, headUser, baseUser: 'hooks-testing', eventType: 'pull_request.opened'});
+          await simulateJobMessage({ opener, headUser, baseUser: 'hooks-testing', eventType: 'pull_request.opened' });
 
           if (succeed) {
-            assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
+            assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
           } else {
             assert(github.inst(5828).issues.createComment.calledOnce);
             let args = github.inst(5828).issues.createComment.args;
@@ -528,13 +528,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         });
       };
 
-      testPermissions('all from bad guy', {opener: 'badguy', headUser: 'badguy', succeed: false});
-      testPermissions('collaborator opens PR for non-collaborator', {opener: 'goodBuddy', headUser: 'badguy', succeed: false});
-      testPermissions('non-collaborator opens PR for collaborator', {opener: 'badguy', headUser: 'goodBuddy', succeed: false});
-      testPermissions('collaborator opens PR for self', {opener: 'goodBuddy', headUser: 'goodBuddy', succeed: true});
-      testPermissions('collaborator opens PR for friendly face', {opener: 'goodBuddy', headUser: 'friendlyFace', succeed: true});
-      testPermissions('collaborator opens PR for upstream repo', {opener: 'goodBuddy', headUser: 'hooks-testing', succeed: true});
-      testPermissions('collaborator opens PR for another repo', {opener: 'goodBuddy', headUser: 'some-other-repo', succeed: false});
+      testPermissions('all from bad guy', { opener: 'badguy', headUser: 'badguy', succeed: false });
+      testPermissions('collaborator opens PR for non-collaborator', { opener: 'goodBuddy', headUser: 'badguy', succeed: false });
+      testPermissions('non-collaborator opens PR for collaborator', { opener: 'badguy', headUser: 'goodBuddy', succeed: false });
+      testPermissions('collaborator opens PR for self', { opener: 'goodBuddy', headUser: 'goodBuddy', succeed: true });
+      testPermissions('collaborator opens PR for friendly face', { opener: 'goodBuddy', headUser: 'friendlyFace', succeed: true });
+      testPermissions('collaborator opens PR for upstream repo', { opener: 'goodBuddy', headUser: 'hooks-testing', succeed: true });
+      testPermissions('collaborator opens PR for another repo', { opener: 'goodBuddy', headUser: 'some-other-repo', succeed: false });
     });
 
     test('specifying allowPullRequests: public in the default branch allows all', async function() {
@@ -548,9 +548,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: {version: 0, allowPullRequests: 'public'},
+        content: { version: 0, allowPullRequests: 'public' },
       });
-      await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
+      await simulateJobMessage({ user: 'imbstack', eventType: 'pull_request.opened' });
 
       assert(github.inst(5828).issues.createComment.callCount === 0);
     });
@@ -566,9 +566,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: {version: 1, policy: {pullRequests: 'collaborators'}},
+        content: { version: 1, policy: { pullRequests: 'collaborators' } },
       });
-      await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
+      await simulateJobMessage({ user: 'imbstack', eventType: 'pull_request.opened' });
 
       assert(github.inst(5828).repos.createStatus.callCount === 0);
       assert(github.inst(5828).issues.createComment.callCount === 1);
@@ -581,7 +581,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./data/yml/valid-yaml.json'),
       });
-      await simulateJobMessage({user: 'imbstack', eventType: 'push'});
+      await simulateJobMessage({ user: 'imbstack', eventType: 'push' });
 
       assert(github.inst(5828).repos.createCommitComment.callCount === 0);
     });
@@ -600,7 +600,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ref: 'refs/tags/v1.2.3',
         sha: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
       });
-      await simulateJobMessage({user: 'imbstack', eventType: 'release'});
+      await simulateJobMessage({ user: 'imbstack', eventType: 'release' });
 
       assert(github.inst(5828).repos.createCommitComment.callCount === 0);
     });
@@ -637,7 +637,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }
 
     test('taskgroup success gets a success status', async function() {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-group-resolved',
@@ -649,7 +649,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('task failure gets a failure status', async function() {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-failed',
@@ -661,7 +661,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('task exception gets a failure status', async function() {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-exception',
@@ -681,7 +681,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     setup(function() {
-      sinon.stub(utils, "throttleRequest").returns({status: 404, response: {error: {text: "Resource not found"}}});
+      sinon.stub(utils, "throttleRequest").returns({ status: 404, response: { error: { text: "Resource not found" } } });
     });
 
     teardown(async function() {
@@ -734,8 +734,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }
 
     test('task success gets a success check result', async function() {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
-      await addCheckRun({taskGroupId: TASKGROUPID, taskId: TASKID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -748,8 +748,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('task failure gets a failure check result', async function() {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
-      await addCheckRun({taskGroupId: TASKGROUPID, taskId: TASKID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-failed',
@@ -762,8 +762,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('task exception gets a failure check result', async function() {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
-      await addCheckRun({taskGroupId: TASKGROUPID, taskId: TASKID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-exception',
@@ -776,7 +776,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('successful task started by decision task gets a success comment', async function() {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -789,7 +789,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('Undefined state/reasonResolved in the task exchange message -> neutral status, log error', async function() {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -801,19 +801,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await assertStatusCreate('neutral');
 
       const monitor = await helper.load('monitor');
-      assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
+      assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'monitor.error' && Severity === LEVELS.err));
       monitor.manager.reset();
     });
 
     test('successfully adds custom check run text from an artifact', async function () {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
-      await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
       sinon.stub(utils, "throttleRequest")
         .onFirstCall()
-        .returns({status: 200, text: CUSTOM_CHECKRUN_TEXT})
+        .returns({ status: 200, text: CUSTOM_CHECKRUN_TEXT })
         .onSecondCall()
-        .returns({status: 404});
+        .returns({ status: 404 });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -836,14 +836,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('fails to get custom check run text from an artifact - should log an error', async function () {
       // note: production code doesn't throw the error, just logs it, so the handlers is not interrupted
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
-      await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
       sinon.stub(utils, "throttleRequest")
         .onFirstCall()
-        .returns({status: 418, response: {error: {text: "I'm a tea pot"}}})
+        .returns({ status: 418, response: { error: { text: "I'm a tea pot" } } })
         .onSecondCall()
-        .returns({status: 404});
+        .returns({ status: 404 });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -853,20 +853,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         state: 'completed',
       });
       const monitor = await helper.load('monitor');
-      assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
+      assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'monitor.error' && Severity === LEVELS.err));
       monitor.manager.reset();
       sinon.restore();
     });
 
     test('successfully adds custom check run annotations from an artifact', async function () {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
-      await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
       sinon.stub(utils, "throttleRequest")
         .onFirstCall()
-        .returns({status: 404})
+        .returns({ status: 404 })
         .onSecondCall()
-        .returns({status: 200, text: CUSTOM_CHECKRUN_ANNOTATIONS});
+        .returns({ status: 200, text: CUSTOM_CHECKRUN_ANNOTATIONS });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -884,14 +884,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('fails to get custom check run annotations from an artifact - should log an error', async function () {
       // note: production code doesn't throw the error, just logs it, so the handlers is not interrupted
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
-      await addCheckRun({taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
       sinon.stub(utils, "throttleRequest")
         .onFirstCall()
-        .returns({status: 404})
+        .returns({ status: 404 })
         .onSecondCall()
-        .returns({status: 418, response: {error: {text: "I'm a tea pot"}}});
+        .returns({ status: 418, response: { error: { text: "I'm a tea pot" } } });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -901,7 +901,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         state: 'completed',
       });
       const monitor = await helper.load('monitor');
-      assert(monitor.manager.messages.some(({Type, Severity}) => Type === 'monitor.error' && Severity === LEVELS.err));
+      assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'monitor.error' && Severity === LEVELS.err));
       monitor.manager.reset();
       sinon.restore();
     });
@@ -938,7 +938,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }
 
     test('create pending status when task is defined', async function() {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-github/v1/task-group-creation-requested',
@@ -980,7 +980,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }
 
     test('create pending check result when task is defined', async function() {
-      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-defined',

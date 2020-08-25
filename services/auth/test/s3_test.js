@@ -22,7 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     helper.load.cfg('awsCredentials.allowedBuckets', [{
       accessKeyId: secret.awsAccessKeyId,
       secretAccessKey: secret.awsSecretAccessKey,
-      buckets: [secret.testBucket]}]);
+      buckets: [secret.testBucket] }]);
   });
 
   test('awsS3Credentials read-write folder1/folder2/', async () => {

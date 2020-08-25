@@ -1,5 +1,5 @@
 const path = require('path');
-const {listServices, readRepoYAML, writeRepoFile} = require('../../utils');
+const { listServices, readRepoYAML, writeRepoFile } = require('../../utils');
 const packageJson = require('../../../../../package.json');
 
 const SERVICES = listServices();
@@ -19,7 +19,7 @@ exports.tasks.push({
 
     for (const name of SERVICES) {
       const processes = await readRepoYAML(path.join('services', name, 'procs.yml'));
-      Object.entries(processes).forEach(([proc, {command}]) => {
+      Object.entries(processes).forEach(([proc, { command }]) => {
         procs[`${name}/${proc}`] = `exec ${command}`;
       });
     }
@@ -57,6 +57,6 @@ exports.tasks.push({
 
     await writeRepoFile('entrypoint', entrypointScript);
 
-    return {'entrypoint-script': entrypointScript};
+    return { 'entrypoint-script': entrypointScript };
   },
 });

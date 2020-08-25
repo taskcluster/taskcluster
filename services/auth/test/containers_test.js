@@ -1,7 +1,7 @@
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
-const {modifyRoles} = require('../src/data');
+const { modifyRoles } = require('../src/data');
 
 const sorted = (arr) => {
   arr.sort();

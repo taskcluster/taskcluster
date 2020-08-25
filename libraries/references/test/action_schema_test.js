@@ -1,4 +1,4 @@
-const {getCommonSchemas} = require('../src/common-schemas');
+const { getCommonSchemas } = require('../src/common-schemas');
 const libUrls = require('taskcluster-lib-urls');
 const References = require('..');
 const testing = require('taskcluster-lib-testing');

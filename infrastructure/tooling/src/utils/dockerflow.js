@@ -1,7 +1,7 @@
 /**
  * Generate DockerFlow version.json contents, given the results of gitDescribe
  */
-exports.dockerFlowVersion = ({gitDescription, revision}) => JSON.stringify({
+exports.dockerFlowVersion = ({ gitDescription, revision }) => JSON.stringify({
   version: gitDescription.slice(1),
   commit: revision,
   source: 'https://github.com/taskcluster/taskcluster',

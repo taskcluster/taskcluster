@@ -3,10 +3,10 @@ const slugid = require('slugid');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const uuid = require('uuid');
-const {google} = require('googleapis');
-const {ApiError, Provider} = require('./provider');
-const {CloudAPI} = require('./cloudapi');
-const {WorkerPool, Worker} = require('../data');
+const { google } = require('googleapis');
+const { ApiError, Provider } = require('./provider');
+const { CloudAPI } = require('./cloudapi');
+const { WorkerPool, Worker } = require('../data');
 
 class GoogleProvider extends Provider {
 
@@ -14,8 +14,8 @@ class GoogleProvider extends Provider {
     providerConfig,
     ...conf
   }) {
-    super({providerConfig, ...conf});
-    let {project, creds, workerServiceAccountId, apiRateLimits = {}, _backoffDelay = 1000} = providerConfig;
+    super({ providerConfig, ...conf });
+    let { project, creds, workerServiceAccountId, apiRateLimits = {}, _backoffDelay = 1000 } = providerConfig;
     this.configSchema = 'config-google';
 
     assert(project, 'Must provide a project to google providers');
@@ -35,12 +35,12 @@ class GoogleProvider extends Provider {
       intervalCapDefault: 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
       monitor: this.monitor,
       providerId: this.providerId,
-      errorHandler: ({err, tries}) => {
+      errorHandler: ({ err, tries }) => {
         if (err.code === 403) { // google hands out 403 for rate limiting; back off significantly
           // google's interval is 100 seconds so let's try once optimistically and a second time to get it for sure
-          return {backoff: _backoffDelay * 50, reason: 'rateLimit', level: 'notice'};
+          return { backoff: _backoffDelay * 50, reason: 'rateLimit', level: 'notice' };
         } else if (err.code === 403 || err.code >= 500) { // For 500s, let's take a shorter backoff
-          return {backoff: _backoffDelay * Math.pow(2, tries), reason: 'errors', level: 'warning'};
+          return { backoff: _backoffDelay * Math.pow(2, tries), reason: 'errors', level: 'warning' };
         }
         // If we don't want to do anything special here, just throw and let the
         // calling code figure out what to do
@@ -85,9 +85,9 @@ class GoogleProvider extends Provider {
     this.workerServiceAccountEmail = workerServiceAccount.email;
   }
 
-  async registerWorker({worker, workerPool, workerIdentityProof}) {
-    const {token} = workerIdentityProof;
-    const monitor = this.workerMonitor({worker});
+  async registerWorker({ worker, workerPool, workerIdentityProof }) {
+    const { token } = workerIdentityProof;
+    const monitor = this.workerMonitor({ worker });
 
     // use the same message for all errors here, so as not to give an attacker
     // extra information.
@@ -108,7 +108,7 @@ class GoogleProvider extends Provider {
     } catch (err) {
       // log the error message in case this is an issue with GCP, rather than an
       // invalid token.  In such a case, there should be many such log messages!
-      this.monitor.warning('Error validating GCP OAuth2 token', {error: err.toString()});
+      this.monitor.warning('Error validating GCP OAuth2 token', { error: err.toString() });
       throw error();
     }
     const dat = payload.google.compute_engine;
@@ -160,14 +160,14 @@ class GoogleProvider extends Provider {
     };
   }
 
-  async deprovision({workerPool}) {
+  async deprovision({ workerPool }) {
     // nothing to do: we just wait for workers to terminate themselves
   }
 
-  async removeResources({workerPool}) {
+  async removeResources({ workerPool }) {
   }
 
-  async removeWorker({worker, reason}) {
+  async removeWorker({ worker, reason }) {
     this.monitor.log.workerRemoved({
       workerPoolId: worker.workerPoolId,
       providerId: worker.providerId,
@@ -193,8 +193,8 @@ class GoogleProvider extends Provider {
     }
   }
 
-  async provision({workerPool, workerInfo}) {
-    const {workerPoolId} = workerPool;
+  async provision({ workerPool, workerInfo }) {
+    const { workerPoolId } = workerPool;
 
     if (!workerPool.providerData[this.providerId]) {
       await this.db.fns.update_worker_pool_provider_data(
@@ -211,7 +211,7 @@ class GoogleProvider extends Provider {
       return; // Nothing to do
     }
 
-    const {terminateAfter, reregistrationTimeout} = Provider.interpretLifecycle(workerPool.config);
+    const { terminateAfter, reregistrationTimeout } = Provider.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -240,7 +240,7 @@ class GoogleProvider extends Provider {
         ...cfg.disks || {},
       ];
       for (let disk of disks) {
-        disk.labels = {...disk.labels, ...labels};
+        disk.labels = { ...disk.labels, ...labels };
       }
 
       try {
@@ -353,36 +353,27 @@ class GoogleProvider extends Provider {
    * Called for every worker on a schedule so that we can update the state of
    * the worker locally
    */
-  async checkWorker({worker}) {
+  async checkWorker({ worker }) {
     const states = Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
-    const monitor = this.workerMonitor({worker});
+    const monitor = this.workerMonitor({ worker });
 
     let state = worker.state;
     try {
-      const {data} = await this._enqueue('get', () => this.compute.instances.get({
+      const { data } = await this._enqueue('get', () => this.compute.instances.get({
         project: worker.providerData.project,
         zone: worker.providerData.zone,
         instance: worker.workerId,
       }));
-      const {status} = data;
+      const { status } = data;
       monitor.debug(`instance status is ${status}`);
       if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
         this.seen[worker.workerPoolId] += worker.capacity || 1;
 
-        // If the worker will be expired soon but it still exists,
-        // update it to stick around a while longer. If this doesn't happen,
-        // long-lived instances become orphaned from the provider. We don't update
-        // this on every loop just to avoid the extra work when not needed
-        if (worker.expires < taskcluster.fromNow('1 day')) {
-          await worker.update(this.db, worker => {
-            worker.expires = taskcluster.fromNow('1 week');
-          });
-        }
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-          await this.removeWorker({worker, reason: 'terminateAfter time exceeded'});
+          await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
         }
       } else if (['TERMINATED', 'STOPPED'].includes(status)) {
         await this._enqueue('query', () => this.compute.instances.delete({
@@ -435,7 +426,7 @@ class GoogleProvider extends Provider {
    * Called after an iteration of the worker scanner
    */
   async scanCleanup() {
-    this.monitor.log.scanSeen({providerId: this.providerId, seen: this.seen});
+    this.monitor.log.scanSeen({ providerId: this.providerId, seen: this.seen });
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await WorkerPool.get(this.db, workerPoolId);
       if (!workerPool) {
@@ -443,7 +434,7 @@ class GoogleProvider extends Provider {
       }
 
       if (this.errors[workerPoolId].length) {
-        await Promise.all(this.errors[workerPoolId].map(error => this.reportError({workerPool, ...error})));
+        await Promise.all(this.errors[workerPoolId].map(error => this.reportError({ workerPool, ...error })));
       }
     }));
   }
@@ -460,7 +451,7 @@ class GoogleProvider extends Provider {
    * op: an object with keys `name` and optionally `region` or `zone` if it is a region or zone based operation
    * errors: a list that will have any errors found for that operation appended to it
    */
-  async handleOperation({op, errors, monitor}) {
+  async handleOperation({ op, errors, monitor }) {
     let operation;
     let opService;
     const args = {

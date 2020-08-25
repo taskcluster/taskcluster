@@ -1,7 +1,7 @@
-const {FakeCloud} = require('./fake');
+const { FakeCloud } = require('./fake');
 const assert = require('assert').strict;
 const slugid = require('slugid');
-const {google} = require('googleapis');
+const { google } = require('googleapis');
 
 const WORKER_SERVICE_ACCOUNT_ID = '12345';
 const PROJECT = 'testy';
@@ -25,7 +25,7 @@ class FakeGoogle extends FakeCloud {
     this.sinon.stub(google, 'auth');
     google.auth.fromJSON = creds => {
       assert.equal(creds.client_id, 'fake-creds');
-      return {fake: true};
+      return { fake: true };
     };
 
     // OAuth2 must be a constructor, so we have to use `function` here, but
@@ -35,7 +35,7 @@ class FakeGoogle extends FakeCloud {
       return self.oauth2;
     };
 
-    this.sinon.stub(google, 'compute').callsFake(({version, auth}) => {
+    this.sinon.stub(google, 'compute').callsFake(({ version, auth }) => {
       assert.equal(version, 'v1');
       assert(auth.fake);
       assert.deepEqual(auth.scopes, [
@@ -45,7 +45,7 @@ class FakeGoogle extends FakeCloud {
       return this.compute;
     });
 
-    this.sinon.stub(google, 'iam').callsFake(({version, auth}) => {
+    this.sinon.stub(google, 'iam').callsFake(({ version, auth }) => {
       assert.equal(version, 'v1');
       assert(auth.fake);
       assert.deepEqual(auth.scopes, [
@@ -81,13 +81,13 @@ class FakeGoogle extends FakeCloud {
   makeError(message, code) {
     const err = new Error(message);
     err.code = code;
-    err.errors = [{message}];
+    err.errors = [{ message }];
     return err;
   }
 }
 
 class FakeOAuth2 {
-  verifyIdToken({idToken, audience}) {
+  verifyIdToken({ idToken, audience }) {
     if (!idToken || !audience) {
       throw new Error('Must provide both idToken and audience');
     }
@@ -126,14 +126,14 @@ class Instances {
     this.instances = new Map();
   }
 
-  async get({project, zone, instance}) {
+  async get({ project, zone, instance }) {
     assert.equal(project, PROJECT);
     const key = `${zone}/${instance}`;
     const data = this.instances.get(key);
     if (!data) {
       throw this.fake.makeError('no such instance', 404);
     }
-    return {data};
+    return { data };
   }
 
   async insert(parameters) {
@@ -156,7 +156,7 @@ class Instances {
     };
   }
 
-  async delete({project, zone, instance}) {
+  async delete({ project, zone, instance }) {
     assert.equal(project, PROJECT);
     assert(zone);
     assert(instance);
@@ -177,7 +177,7 @@ class Instances {
   setFakeInstanceStatus(project, zone, instance, status) {
     assert.equal(project, PROJECT);
     const key = `${zone}/${instance}`;
-    this.instances.set(key, {status});
+    this.instances.set(key, { status });
   }
 }
 
@@ -186,9 +186,9 @@ class ServiceAccounts {
     this.fake = fake;
   }
 
-  async get({name}) {
+  async get({ name }) {
     const [_, proj, acct] = /^projects\/([^\/]*)\/serviceAccounts\/([^\/]*)$/.exec(name);
-    return {data: {email: `${proj}-${acct}@example.com`}};
+    return { data: { email: `${proj}-${acct}@example.com` } };
   }
 }
 
@@ -217,7 +217,7 @@ class Operations {
   }
 
   // https://cloud.google.com/compute/docs/reference/rest/v1/regionOperations
-  async get({project, operation, ...rest}) {
+  async get({ project, operation, ...rest }) {
     assert.equal(project, PROJECT);
     const key = this._key(rest, operation);
 
@@ -225,7 +225,7 @@ class Operations {
       throw this.fake.makeError('not found', 404);
     }
 
-    return {data: this.ops.get(key)};
+    return { data: this.ops.get(key) };
   }
 
   // fake utilities
@@ -235,24 +235,24 @@ class Operations {
    * neither depending on the operation scope (zonal, regional, global).  This
    * will overwrite an existing operation.  This returns the operation.
    */
-  fakeOperation({zone, region, error, status = 'RUNNING'}) {
+  fakeOperation({ zone, region, error, status = 'RUNNING' }) {
     const name = slugid.nice();
-    const key = this._key({zone, region}, name);
+    const key = this._key({ zone, region }, name);
 
     if (error) {
       assert(Array.isArray(error.errors));
     }
 
-    this.ops.set(key, {name, zone, status, error});
+    this.ops.set(key, { name, zone, status, error });
 
-    return {name, zone};
+    return { name, zone };
   }
 
   /**
    * Return true if the given operation exists
    */
-  fakeOperationExists({zone, region, name}) {
-    const key = this._key({zone, region}, name);
+  fakeOperationExists({ zone, region, name }) {
+    const key = this._key({ zone, region }, name);
 
     return this.ops.has(key);
   }

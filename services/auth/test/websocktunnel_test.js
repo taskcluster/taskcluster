@@ -19,7 +19,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assert.equal(resp.wstAudience, wstAudience);
     assert(new Date(resp.expires) > new Date());
 
-    const decoded = jwt.verify(resp.token, 'test-secret', {algorithms: ['HS256']});
+    const decoded = jwt.verify(resp.token, 'test-secret', { algorithms: ['HS256'] });
 
     assert.ok(decoded);
     assert.equal(decoded.tid, wstClient);

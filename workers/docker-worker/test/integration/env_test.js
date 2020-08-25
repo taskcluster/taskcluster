@@ -1,6 +1,6 @@
 const assert = require('assert');
 const testworker = require('../post_task');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 
 helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
@@ -13,7 +13,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     let result = await testworker({
       payload: {
         image: 'taskcluster/test-ubuntu',
-        env: {WOOTBAR: expected},
+        env: { WOOTBAR: expected },
         command: ['/bin/bash', '-c', 'echo $WOOTBAR'],
         maxRunTime: 5,
       },

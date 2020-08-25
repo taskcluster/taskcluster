@@ -10,7 +10,7 @@ const URL = require('url');
 const got = require('got');
 const WebSocket = require('ws');
 const poll = require('./helper/poll');
-const {suiteName} = require('taskcluster-lib-testing');
+const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 
 helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {
@@ -61,7 +61,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       queue.getLatestArtifact,
       taskId,
       'private/docker-worker-tests/display.html',
-      {expiration: 60 * 5});
+      { expiration: 60 * 5 });
 
     return poll(() => getWithoutRedirect(signedUrl), 45, 1000);
   }

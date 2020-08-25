@@ -21,18 +21,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const queue = new AZQueue({ db: helper.db });
 
     await queue.putMessage('foo', 'bar-1', { visibilityTimeout: 0, messageTTL: 100 });
-    const result1 = await queue.getMessages('foo', {visibilityTimeout: 10, numberOfMessages: 2});
-    assert.deepEqual(result1.map(({messageText}) => messageText), ['bar-1']);
+    const result1 = await queue.getMessages('foo', { visibilityTimeout: 10, numberOfMessages: 2 });
+    assert.deepEqual(result1.map(({ messageText }) => messageText), ['bar-1']);
 
     await queue.updateMessage(
       'foo',
       'bar-1a',
       result1[0].messageId,
       result1[0].popReceipt,
-      {visibilityTimeout: 0});
+      { visibilityTimeout: 0 });
 
     // new visibility timeout is 0, so the message should be gettable again (with new text)
-    const result2 = await queue.getMessages('foo', {visibilityTimeout: 0, numberOfMessages: 2});
-    assert.deepEqual(result2.map(({messageText}) => messageText), ['bar-1a']);
+    const result2 = await queue.getMessages('foo', { visibilityTimeout: 0, numberOfMessages: 2 });
+    assert.deepEqual(result2.map(({ messageText }) => messageText), ['bar-1a']);
   });
 });

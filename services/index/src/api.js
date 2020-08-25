@@ -1,4 +1,4 @@
-const {APIBuilder, paginateResults} = require('taskcluster-lib-api');
+const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const helpers = require('./helpers');
 
 /**
@@ -219,7 +219,7 @@ builder.declare({
   let namespace = req.params.namespace || '';
 
   // Authenticate request by providing parameters
-  await req.authorize({namespace});
+  await req.authorize({ namespace });
 
   // Parse date string
   input.expires = new Date(input.expires);
@@ -241,7 +241,7 @@ builder.declare({
   name: 'findArtifactFromTask',
   stability: APIBuilder.stability.stable,
   category: 'Index Service',
-  scopes: {if: 'private', then: 'queue:get-artifact:<name>'},
+  scopes: { if: 'private', then: 'queue:get-artifact:<name>' },
   title: 'Get Artifact From Indexed Task',
   description: [
     'Find a task by index path and redirect to the artifact on the most recent',

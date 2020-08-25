@@ -11,10 +11,10 @@ module.exports = {};
  *    schema:             url,   Url to the taskcluster config schema
  *  }
  **/
-module.exports.setup = async function({cfg, schemaset}) {
+module.exports.setup = async function({ cfg, schemaset }) {
   const validate = await schemaset.validator(cfg.taskcluster.rootUrl);
 
-  return function({config, payload, schema}) {
+  return function({ config, payload, schema }) {
     const version = config.version;
 
     const errors = validate(config, schema[version]);
