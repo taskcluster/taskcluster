@@ -18,8 +18,8 @@
   "devDependencies": {
     "@neutrinojs/karma": "9.0.0-rc.0",
     "@neutrinojs/library": "9.0.0-rc.0",
-    "@babel/plugin-proposal-class-properties": "^7.8.3",
-    "@babel/plugin-proposal-object-rest-spread": "^7.9.5",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-object-rest-spread": "^7.11.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "crypto-js": "^3.1.9-1",
