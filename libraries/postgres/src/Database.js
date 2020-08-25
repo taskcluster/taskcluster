@@ -147,6 +147,7 @@ class Database {
 
     await db._createExtensions();
     await db._checkDbSettings();
+    await db._checkVersion();
 
     try {
       // perform any necessary upgrades..
@@ -186,9 +187,7 @@ class Database {
         showProgress('...checking permissions');
         await Database._checkPermissions({ db, schema, usernamePrefix });
         showProgress('...checking table columns');
-        await Database._checkTableColumns({db, schema, usernamePrefix});
-        showProgress('...checking version');
-        await Database._checkVersion({db, schema});
+        await Database._checkTableColumns({ db, schema, usernamePrefix });
       }
     } finally {
       await db.close();
@@ -208,6 +207,7 @@ class Database {
 
     await db._createExtensions();
     await db._checkDbSettings();
+    await db._checkVersion();
 
     if (typeof toVersion !== 'number') {
       throw new Error('Target DB version must be an integer');
@@ -388,8 +388,8 @@ class Database {
     assert.deepEqual(current, schema.tables.get());
   }
 
-  async _checkVersion({db, schema}) {
-    await db._withClient('admin', async client => {
+  async _checkVersion() {
+    await this._withClient('admin', async client => {
       const version = await client.query(`
         SELECT current_setting('server_version_num');
       `);
