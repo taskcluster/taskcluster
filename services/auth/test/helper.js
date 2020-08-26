@@ -347,6 +347,10 @@ exports.withGcp = (mock, skipping) => {
         project_id: credentials.project_id,
       };
     } else {
+      // For testing, we expect a GCP service account defined with the "Service Account Token Creator"
+      // role.  In CI, this is the "auth-granter" service account in the "taskcluster-tests" project.
+      // It issues credentials for itself, so the allowedServiceAccounts must be (in order)
+      // [<service account email>, invalid@mozilla.com].
       const { credentials, allowedServiceAccounts } = await exports.load('gcp');
       exports.gcpAccount = {
         email: allowedServiceAccounts[0],
