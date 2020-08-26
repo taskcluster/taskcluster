@@ -561,7 +561,20 @@ async function statusHandler(message) {
           customCheckRunAnnotations = json;
         }
       } catch (e) {
-        await this.monitor.reportError(e);
+        if (e instanceof SyntaxError) {
+          let errorMessage = `Custom annotations artifact ${annotationsArtifactName} on task ${taskId} does not contain valid JSON.`;
+          await this.createExceptionComment({
+            debug,
+            instGithub,
+            organization,
+            repository,
+            sha,
+            error: new Error(errorMessage),
+          });
+        }
+        else{
+          await this.monitor.reportError(e);
+        }
       }
     }
 
