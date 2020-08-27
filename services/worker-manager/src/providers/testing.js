@@ -93,7 +93,6 @@ class TestingProvider extends Provider {
     await worker.update(this.db, worker => {
       worker.capacity = input.capacity;
     });
-    await worker.reload(this.db);
 
     return worker;
   }

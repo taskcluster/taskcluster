@@ -68,6 +68,30 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await provider.setup();
   });
 
+  test('updateWorker updates expires, capacity, secret', async function() {
+    let worker = Worker.fromApi(defaultWorker);
+    await worker.create(helper.db);
+
+    const expires = taskcluster.fromNow('1 day');
+    worker = await provider.updateWorker({
+      workerPool,
+      worker,
+      input: {
+        expires,
+        capacity: 7,
+        providerData: { staticSecret: 'new-secret' },
+      },
+    });
+
+    assert.equal(worker.expires.getTime(), expires.getTime());
+    assert.equal(worker.capacity, 7);
+
+    const rows = await helper.db.fns.get_worker_2(workerPoolId, workerGroup, workerId);
+    assert.deepEqual(rows.map(r => [r.worker_id, r.provider_data]), [
+      ['abc123', { staticSecret: 'new-secret' }],
+    ]);
+  });
+
   test('removeWorker marks the worker as stopped', async function() {
     const worker = Worker.fromApi(defaultWorker);
     await worker.create(helper.db);

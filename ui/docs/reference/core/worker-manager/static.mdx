@@ -27,7 +27,7 @@ The same secret must be provided by the worker when it calls `registerWorker` to
 ## Worker Management
 
 An existing worker can be modified with the `updateWorker` API call.
-This takes the same arguments as `createWorker`, and allows updating `capacity`, `expires`, and the `providerData`.
+This takes the same arguments as `createWorker`, and allows updating `capacity`, `expires`, and the `providerData.staticSecret`.
 
 An existing worker can be removed with the `removeWorker` API call.
 As with other providers, this will not actually remove record of the worker's existence.
