@@ -2,6 +2,18 @@
 
 The following are a set of general expectations for the Taskcluster team. While some of the management-related expectations will not apply directly to community contributors, they still provide good guidance as to behavioral norms and accepted practice.
 
+Table of Contents
+=================
+
+   * [Team Expectations](#team-expectations)
+      * [Accountability](#accountability)
+      * [Communications](#communications)
+      * [Planning and The Design Process: RFCs](#planning-and-the-design-process-rfcs)
+      * [Implementation and Review](#implementation-and-review)
+      * [Triage](#triage)
+      * [Dealing with outages](#dealing-with-outages)
+      * [See also](#see-also)
+
 ## Accountability
 
 1.  Team members should do their utmost to adhere to expectations laid out in this document. While these are guidelines, not hard-and-fast rules, breaking them should always be accompanied by a solid rationale, communicated to those affected or the team at large.
