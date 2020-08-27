@@ -22,13 +22,13 @@ Table of Contents
 ## Communications
 
 1.  The Taskcluster team operates in multiple timezones on 3 different continents. Finding meeting times that work for everyone is challenging. We try to keep whole-group meetings to a minimum, but smaller meetings for subsets of interested people are encouraged. Information that comes out of smaller meetings should be shared with the group via email, bug comment, or documentation update. Decisions that come out of meetings still need to weather the RFC process (see below).
-2.  The team commits to following relevant threads to stay informed. This includes bugmail and github notifications for important repositories like RFCs, minimum:
-  i. bugzilla NIs
-  ii. github PRs
-  iii. Slack notifications
-  iv. Element pings
-  v. calendar invites
-  vi. direct email
+2.  The team commits to following relevant channels to stay informed. This includes bugmail and github notifications for important repositories like RFCs, minimum:
+    * bugzilla NIs
+    * github PRs
+    * Slack notifications
+    * Element pings
+    * calendar invites
+    * direct email
 3.  When someone asks a question, give them the benefit of the doubt with the assumption that they’ve made an effort to figure it out. With that assumption, helpfully answer their question, rather than just directing them to the manual. “Being charitable” could describe this. This can be particularly challenging for community contributors, but the same logic applies.
 4.  Similarly, when you need help, do at least some upfront research, and try to keep questions specific. Explaining the context of your problem is extremely helpful.
 5.  We should switch to synchronous communication (vidyo) when asynchronous communication (email, bug comments) are artificially lengthening cycle times.
