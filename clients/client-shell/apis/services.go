@@ -1663,6 +1663,21 @@ var services = map[string]definitions.Service{
 				Input: "v1/create-worker-request.json#",
 			},
 			definitions.Entry{
+				Name:        "updateWorker",
+				Title:       "Update an existing Worker",
+				Description: "Update an existing worker.  The precise behavior of this method depends\non the provider implementing the given worker pool.  Some providers\ndo not support updating workers at all, and will return a 400 error.",
+				Stability:   "stable",
+				Method:      "post",
+				Route:       "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+				Args: []string{
+					"workerPoolId",
+					"workerGroup",
+					"workerId",
+				},
+				Query: []string{},
+				Input: "v1/create-worker-request.json#",
+			},
+			definitions.Entry{
 				Name:        "removeWorker",
 				Title:       "Remove a Worker",
 				Description: "Remove an existing worker.  The precise behavior of this method depends\non the provider implementing the given worker.  Some providers\ndo not support removing workers at all, and will return a 400 error.\nOthers may begin removing the worker, but it may remain available via\nthe API (perhaps even in state RUNNING) afterward.",

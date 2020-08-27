@@ -673,7 +673,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       helper.workerManager.worker(workerPoolId, 'wg-a', 's-3434'), { statusCode: 404 });
   });
 
-  suite('worker creation / removal', function() {
+  suite('worker creation / update / removal', function() {
     test('create a worker for a worker pool that does not exist', async function () {
       await assert.rejects(() =>
         helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
@@ -743,6 +743,48 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(worker.workerId, workerId);
       assert.equal(worker.providerId, providerId);
       assert.equal(worker.expires, expires.toJSON());
+    });
+
+    test('update a worker for a worker pool that does not exist', async function () {
+      await assert.rejects(() =>
+        helper.workerManager.updateWorker(workerPoolId, workerGroup, workerId, {
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+        }), new RegExp(`Worker pool ${workerPoolId} does not exist`));
+    });
+
+    test('update a worker for a worker pool with invalid providerId', async function () {
+      await createWorkerPool({ providerId: 'nosuch' });
+      await assert.rejects(() =>
+        helper.workerManager.updateWorker(workerPoolId, workerGroup, workerId, {
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+        }), /Provider nosuch for worker pool/);
+    });
+
+    test('update a worker for a provider that does not want it', async function () {
+      await createWorkerPool({});
+      await createWorker({});
+      await assert.rejects(() =>
+        helper.workerManager.updateWorker(workerPoolId, workerGroup, workerId, {
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+        }), /updating workers is not supported/);
+    });
+
+    test('update a worker for a provider that wants and appreciates it', async function () {
+      await createWorkerPool({
+        providerData: { allowUpdateWorker: true },
+      });
+      await createWorker({});
+      const worker = await helper.workerManager.updateWorker(
+        workerPoolId,
+        workerGroup,
+        workerId, {
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 2,
+        });
+      assert.deepEqual(worker.capacity, 2);
     });
 
     test('remove a worker that does not exist', async function () {

@@ -172,6 +172,19 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["createWorker"], *args, **kwargs)
 
+    async def updateWorker(self, *args, **kwargs):
+        """
+        Update an existing Worker
+
+        Update an existing worker.  The precise behavior of this method depends
+        on the provider implementing the given worker pool.  Some providers
+        do not support updating workers at all, and will return a 400 error.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["updateWorker"], *args, **kwargs)
+
     async def removeWorker(self, *args, **kwargs):
         """
         Remove a Worker
@@ -341,6 +354,15 @@ class WorkerManager(AsyncBaseClient):
             'output': 'v1/reregister-worker-response.json#',
             'route': '/worker/reregister',
             'stability': 'experimental',
+        },
+        "updateWorker": {
+            'args': ['workerPoolId', 'workerGroup', 'workerId'],
+            'input': 'v1/create-worker-request.json#',
+            'method': 'post',
+            'name': 'updateWorker',
+            'output': 'v1/worker-full.json#',
+            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
+            'stability': 'stable',
         },
         "updateWorkerPool": {
             'args': ['workerPoolId'],

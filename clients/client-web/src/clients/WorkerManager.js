@@ -22,6 +22,7 @@ export default class WorkerManager extends Client {
     this.listWorkersForWorkerGroup.entry = {"args":["workerPoolId","workerGroup"],"category":"Workers","method":"get","name":"listWorkersForWorkerGroup","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>:/<workerGroup>","stability":"stable","type":"function"}; // eslint-disable-line
     this.worker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","method":"get","name":"worker","output":true,"query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","input":true,"method":"put","name":"createWorker","output":true,"query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>","scopes":"worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.updateWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","input":true,"method":"post","name":"updateWorker","output":true,"query":[],"route":"/workers/<workerPoolId>:/<workerGroup>/<workerId>","scopes":"worker-manager:update-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.removeWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","method":"delete","name":"removeWorker","query":[],"route":"/workers/<workerPoolId>/<workerGroup>/<workerId>","scopes":"worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"category":"Workers","method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.registerWorker.entry = {"args":[],"category":"Worker Interface","input":true,"method":"post","name":"registerWorker","output":true,"query":[],"route":"/worker/register","stability":"stable","type":"function"}; // eslint-disable-line
@@ -138,6 +139,16 @@ export default class WorkerManager extends Client {
     this.validate(this.createWorker.entry, args);
 
     return this.request(this.createWorker.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Update an existing worker.  The precise behavior of this method depends
+  // on the provider implementing the given worker pool.  Some providers
+  // do not support updating workers at all, and will return a 400 error.
+  /* eslint-enable max-len */
+  updateWorker(...args) {
+    this.validate(this.updateWorker.entry, args);
+
+    return this.request(this.updateWorker.entry, args);
   }
   /* eslint-disable max-len */
   // Remove an existing worker.  The precise behavior of this method depends

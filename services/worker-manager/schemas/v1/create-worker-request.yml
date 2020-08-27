@@ -1,6 +1,6 @@
 $schema: "/schemas/common/metaschema.json#"
-title: Worker Creation Request
-description: Request to create a worker. Capacity will default to 1 if not specified.
+title: Worker Creation/Update Request
+description: Request to create or update a worker. Capacity will default to 1 if not specified.
 type: object
 properties:
   expires:

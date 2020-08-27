@@ -3281,6 +3281,26 @@ module.exports = {
             "workerId"
           ],
           "category": "Workers",
+          "description": "Update an existing worker.  The precise behavior of this method depends\non the provider implementing the given worker pool.  Some providers\ndo not support updating workers at all, and will return a 400 error.",
+          "input": "v1/create-worker-request.json#",
+          "method": "post",
+          "name": "updateWorker",
+          "output": "v1/worker-full.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:update-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "stable",
+          "title": "Update an existing Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "category": "Workers",
           "description": "Remove an existing worker.  The precise behavior of this method depends\non the provider implementing the given worker.  Some providers\ndo not support removing workers at all, and will return a 400 error.\nOthers may begin removing the worker, but it may remain available via\nthe API (perhaps even in state RUNNING) afterward.",
           "method": "delete",
           "name": "removeWorker",

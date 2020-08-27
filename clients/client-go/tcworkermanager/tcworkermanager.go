@@ -259,9 +259,23 @@ func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId s
 //   worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>
 //
 // See #createWorker
-func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, workerId string, payload *WorkerCreationRequest) (*WorkerFullDefinition, error) {
+func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, workerId string, payload *WorkerCreationUpdateRequest) (*WorkerFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
+	return responseObject.(*WorkerFullDefinition), err
+}
+
+// Update an existing worker.  The precise behavior of this method depends
+// on the provider implementing the given worker pool.  Some providers
+// do not support updating workers at all, and will return a 400 error.
+//
+// Required scopes:
+//   worker-manager:update-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+// See #updateWorker
+func (workerManager *WorkerManager) UpdateWorker(workerPoolId, workerGroup, workerId string, payload *WorkerCreationUpdateRequest) (*WorkerFullDefinition, error) {
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
 	return responseObject.(*WorkerFullDefinition), err
 }
 

@@ -36,15 +36,20 @@ Any other error will result in a 500 error response and an error reported via ta
 
 #### Creating and Removing
 
-The `createWorker` and `removeWorker` API methods allow users to create or destroy individual workers.
+The `createWorker`, `updateWorker`, and `removeWorker` API methods allow users to manipulate individual workers.
 Precisely what this means differs from provider to provider.
 Some providers may prohibit these operations entirely, while others (such as the static provider type) may require users to explicitly manage all workers.
 In some cases, `removeWorker` may be interpreted as a request to terminate a dynamically-created worker in a cloud provider.
+
+The default implementation of all three methods throws an ApiError that will result in a 500 error to the caller.
 
 The provider's `createWorker` method is called with `workerPool` (an instance of the WorkerPool Azure entity class), `workerGroup`, `workerId`, and `input`.
 The `input` matches the `create-worker-request.yml` schema, and that schema can be adjusted to allow provider-specific parameters.
 The return value should be an instance of the Worker azure entity class.
 [Idempotency](../../dev-docs/idempotency.md) of this method is the responsibilty of the provider.
+
+The provider's `updateWorker` method is called with `{workerPool, worker, input}` where `workerPool` is the WorkerPool instance, `worker` is the Worker instance and `input` is the same as for `createWorker`.
+The return value should be an instance of the Worker azure entity class.
 
 The provider's `removeWorker` method is called with an instance of the Worker Azure entity class and a reason.
 There are no restrictions on the state of that instance on return: it may still exist, and even have state RUNNING.
