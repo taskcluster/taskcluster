@@ -12,19 +12,23 @@ require (
 	github.com/deckarep/golang-set v1.7.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
+	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/elastic/go-sysinfo v1.3.0
 	github.com/fatih/camelcase v1.0.0
+	github.com/frankban/quicktest v1.10.0 // indirect
 	github.com/getsentry/raven-go v0.2.0
 	github.com/ghodss/yaml v1.0.0
+	github.com/golang/snappy v0.0.1 // indirect
+	github.com/google/go-cmp v0.5.0 // indirect
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.2
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/johncgriffin/overflow v0.0.0-20170615021017-4d914c927216
 	github.com/kr/text v0.2.0
 	github.com/mholt/archiver v3.1.1+incompatible
-	github.com/mholt/archiver/v3 v3.3.1-0.20200717210306-3719b73628d2 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mozilla-services/go-mozlogrus v2.0.0+incompatible
+	github.com/nwaples/rardecode v1.1.0 // indirect
 	github.com/pborman/uuid v1.2.0
 	github.com/peterbourgon/mergemap v0.0.0-20130613134717-e21c03b7a721
 	github.com/pierrec/lz4 v2.5.2+incompatible // indirect
@@ -42,8 +46,10 @@ require (
 	github.com/taskcluster/slugid-go v1.1.0
 	github.com/taskcluster/taskcluster-lib-urls v13.0.0+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
+	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
+	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	golang.org/x/sys v0.0.0-20200727154430-2d971f7391a4
