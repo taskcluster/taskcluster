@@ -15,6 +15,8 @@ let builder = new APIBuilder({
   apiVersion: 'v1',
   params: {
     workerPoolId: /^[a-zA-Z0-9-_]{1,38}\/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/,
+    workerGroup: /^([a-zA-Z0-9-_]{1,38})$/,
+    workerId: /^([a-zA-Z0-9-_]{1,38})$/,
   },
   context: [
     'cfg',

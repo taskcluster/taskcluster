@@ -709,6 +709,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         }), /creating workers is not supported/);
     });
 
+    test('create a worker with a too-long workerId', async function () {
+      const longWorkerId = 'a-really-long-worker-id-123456789123456789';
+      await assert.rejects(() =>
+        helper.workerManager.createWorker(workerPoolId, workerGroup, longWorkerId, {
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+        }), /workerId.*must match regular/);
+    });
+
+    test('create a worker with a too-long workerGroup', async function () {
+      const longWorkerGroup = 'a-really-long-worker-group-123456789123456789';
+      await assert.rejects(() =>
+        helper.workerManager.createWorker(workerPoolId, longWorkerGroup, workerId, {
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+        }), /workerGroup.*must match regular/);
+    });
+
     test('create a worker for a provider that does want it', async function () {
       await createWorkerPool({
         providerData: { allowCreateWorker: true },
