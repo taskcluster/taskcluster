@@ -31,7 +31,7 @@ Table of Contents
     * direct email
 3.  When someone asks a question, give them the benefit of the doubt with the assumption that they’ve made an effort to figure it out. With that assumption, helpfully answer their question, rather than just directing them to the manual. “Being charitable” could describe this. This can be particularly challenging for community contributors, but the same logic applies.
 4.  Similarly, when you need help, do at least some upfront research, and try to keep questions specific. Explaining the context of your problem is extremely helpful.
-5.  We should switch to synchronous communication (vidyo) when asynchronous communication (email, bug comments) are artificially lengthening cycle times.
+5.  We should switch to synchronous communication (zoom or other video chat) when asynchronous communication (email, bug comments) are artificially lengthening cycle times.
 6.  Team members who do not work in Mozilla Standard Time (US Pacific Time) should be explicit about when they are available for meetings. They are not expected to be available in their evenings unless they choose to make themselves available.
 7.  Interpersonal issues should be brought to management ASAP.
 8.  Don’t suggest you will simply re-implement something as a way of shutting down discussion about a particular issue.
