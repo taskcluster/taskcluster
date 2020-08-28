@@ -40,7 +40,7 @@ Table of Contents
 
 1.  Taskcluster manages major changes to the platform through "requests for comment", known as RFCs. These provide an open, transparent decision-making process and a way to track ideas from initial proposal through decision and implementation.
 2.  Taskcluster's RFCs are stored in the [taskcluster-rfcs repository](https://github.com/taskcluster/taskcluster-rfcs). The RFC process is documented in the [mechanics doc](https://github.com/taskcluster/taskcluster-rfcs/blob/master/mechanics.md).
-3.  RFCs should be written *after* establishing general agreement from the team about the issue and the direction to take.
+3.  RFCs should be written *after* establishing general agreement among the involved people about the issue and the direction to take.
 4.  Design decisions can be revisited for security reasons or if there are significant concerns.
 5.  Quick experiments can and should still happen in this model, but don't get too attached to them unless you are using them to strengthen a new or existing RFC. 30% reviews are a good way to gauge the appropriateness of a given experiment.
 6.  Security concerns are an important part of the RFC process, i.e. security cannot be left to the implementation and review phase.
