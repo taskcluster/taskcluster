@@ -47,7 +47,7 @@ Table of Contents
 
 ## Implementation and Review
 
-1.  New code should conform to the established [Taskcluster best practices](https://github.com/taskcluster/taskcluster/tree/master/dev-docs/best-practices). Best efforts should be made to bring existing code up to those standards when changes are made. If best practices don't exist for a given area or language, the author should establish some with reference to other similar Taskcluster sources or industry best practices.
+1.  New code should conform to the established [Taskcluster best practices](https://github.com/taskcluster/taskcluster/tree/main/dev-docs/best-practices). Best efforts should be made to bring existing code up to those standards when changes are made. If best practices don't exist for a given area or language, the author should establish some with reference to other similar Taskcluster sources or industry best practices.
 2.  For larger coding tasks, the author should seriously consider splitting it up and figuring out what can be committed from what has already been completed.
 3.  Github Pull Requests should be assigned to two alternative reviewers, of which only one is required to perform the review, unless either the author or the reviewer explicitly request additional review from another party in the PR conversation.
 4.  For PRs where the author does not have permission to merge the PR, the last reviewer to accept the changes should merge the PR on approval of the changes.
