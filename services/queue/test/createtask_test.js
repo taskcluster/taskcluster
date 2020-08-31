@@ -93,7 +93,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       _.isEqual(m.payload.task.tags, taskDef.tags)));
 
     debug('### Get task status');
-    const r2 = await helper.queue.status(taskId);
+    const r2 = helper.checkDates(await helper.queue.status(taskId));
     assume(r1.status).deep.equals(r2.status);
   });
 
@@ -272,7 +272,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status, r1.status));
     helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
 
-    const r2 = await helper.queue.status(taskId);
+    const r2 = helper.checkDates(await helper.queue.status(taskId));
     assume(r1.status).deep.equals(r2.status);
   });
 
@@ -290,7 +290,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status, r1.status));
     helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
 
-    const r2 = await helper.queue.status(taskId);
+    const r2 = helper.checkDates(await helper.queue.status(taskId));
     assume(r1.status).deep.equals(r2.status);
   });
 

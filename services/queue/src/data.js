@@ -135,6 +135,14 @@ class Task {
 
   // Return the task status structure
   status() {
+    // Some of the elements of the `runs` object are timestamps that were created
+    // by postgres, and its ISO6501 format is valid but differs from the JS .toJSON()
+    // format the TC API typically returns.  Because these are stored as simple strings
+    // in a JSON object in the DB, they are not automatically converted to Date objects
+    // when returned from a DB query. So, we reformat those timestamps here
+    // to ensure a uniform structure.
+    const ts = s => s ? new Date(s).toJSON() : s;
+
     return {
       taskId: this.taskId,
       provisionerId: this.provisionerId,
@@ -146,17 +154,18 @@ class Task {
       retriesLeft: this.retriesLeft,
       state: this.state(),
       runs: this.runs.map((run, runId) => {
-        return _.defaults({ runId }, _.pick(run, [
-          'state',
-          'reasonCreated',
-          'reasonResolved',
-          'workerGroup',
-          'workerId',
-          'takenUntil',
-          'scheduled',
-          'started',
-          'resolved',
-        ]));
+        return {
+          runId,
+          state: run.state,
+          reasonCreated: run.reasonCreated,
+          reasonResolved: run.reasonResolved,
+          workerGroup: run.workerGroup,
+          workerId: run.workerId,
+          takenUntil: ts(run.takenUntil),
+          scheduled: ts(run.scheduled),
+          started: ts(run.started),
+          resolved: ts(run.resolved),
+        };
       }),
     };
   }

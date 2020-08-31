@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-running');
 
     debug('### Fetch task status');
-    let r2 = await helper.queue.status(taskId);
+    let r2 = helper.checkDates(await helper.queue.status(taskId));
     assume(r2.status).deep.equals(r1.tasks[0].status);
 
     debug('### reportCompleted');
@@ -185,7 +185,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-running');
 
     debug('### Fetch task status');
-    let r2 = await helper.queue.status(taskId);
+    let r2 = helper.checkDates(await helper.queue.status(taskId));
     assume(r2.status).deep.equals(r1.tasks[0].status);
 
     debug('### reclaimTask');

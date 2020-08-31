@@ -390,7 +390,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Check B is still unscheduled');
-    let r3 = await helper.queue.status(taskIdB);
+    let r3 = helper.checkDates(await helper.queue.status(taskIdB));
     assume(r3.status.state).equals('unscheduled');
     helper.assertNoPulseMessage('task-pending'); // because of the self-dep
     helper.clearPulseMessages();
@@ -451,7 +451,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Wait and check that taskB is unscheduled');
     // wait long enough for the dependencyResolver to run (it's fake time anyway!)
     await new Promise(accept => setTimeout(accept, 2000));
-    let r3 = await helper.queue.status(taskIdB);
+    let r3 = helper.checkDates(await helper.queue.status(taskIdB));
     assume(r3.status.state).equals('unscheduled');
 
     await helper.stopPollingService();
@@ -481,7 +481,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Wait and check that taskB is unscheduled');
     // wait long enough for the dependencyResolver to run (it's fake time anyway!)
     await new Promise(accept => setTimeout(accept, 1000));
-    let r3 = await helper.queue.status(taskIdB);
+    let r3 = helper.checkDates(await helper.queue.status(taskIdB));
     assume(r3.status.state).equals('unscheduled');
 
     await helper.stopPollingService();
@@ -626,7 +626,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         if (seen.has(depTaskId)) {
           continue;
         }
-        const status = await helper.queue.status(depTaskId);
+        const status = helper.checkDates(await helper.queue.status(depTaskId));
         assert.equal(status.status.state, 'pending', `depTaskIds[${i}] = ${depTaskId} is not pending`);
         seen.add(depTaskId);
       }

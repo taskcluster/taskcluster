@@ -81,7 +81,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.stopPollingService();
 
     debug('### Validate task status');
-    const r2 = await helper.queue.status(taskId);
+    const r2 = helper.checkDates(await helper.queue.status(taskId));
     assume(r2.status.state).equals('exception');
   });
 
@@ -110,7 +110,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.stopPollingService();
 
     debug('### Validate task status');
-    const r2 = await helper.queue.status(taskId);
+    const r2 = helper.checkDates(await helper.queue.status(taskId));
     assume(r2.status.state).deep.equals('exception');
   });
 
@@ -146,7 +146,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.stopPollingService();
 
     debug('### Validate task status');
-    const r3 = await helper.queue.status(taskId);
+    const r3 = helper.checkDates(await helper.queue.status(taskId));
     assume(r3.status.state).deep.equals('exception');
   });
 
@@ -182,7 +182,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.stopPollingService();
 
     debug('### Validate task status');
-    const r4 = await helper.queue.status(taskId);
+    const r4 = helper.checkDates(await helper.queue.status(taskId));
     assume(r4.status).deep.equals(r3.status);
   });
 });

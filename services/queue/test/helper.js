@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const assert = require('assert');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const builder = require('../src/api');
@@ -279,6 +280,28 @@ helper.runExpiration = async component => {
  * Make a random workerType name
  */
 exports.makeWorkerType = () => `test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
+
+/**
+ * Check the date formats of a task status
+ */
+const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+exports.checkDates = ({ status }) => {
+  const chk = (d, n) => {
+    if (d !== undefined) {
+      assert(DATE_FORMAT.test(d), `Got invalid date ${d} for ${n}`);
+    }
+  };
+
+  chk(status.deadline, "status.deadline");
+  chk(status.expires, "status.expires");
+  for (let run of status.runs) {
+    chk(run.takenUntil, "run.takenUntil");
+    chk(run.scheduled, "run.scheduled");
+    chk(run.started, "run.started");
+    chk(run.resolved, "run.resolved");
+  }
+  return { status };
+};
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {

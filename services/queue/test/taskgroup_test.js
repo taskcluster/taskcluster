@@ -52,7 +52,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
 
     // Check taskA status (still pending)
-    const r2 = await helper.queue.status(taskIdA);
+    const r2 = helper.checkDates(await helper.queue.status(taskIdA));
     assume(r1.status).deep.equals(r2.status);
 
     debug('### Claim and resolve taskA');

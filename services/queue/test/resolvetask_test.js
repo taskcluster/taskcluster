@@ -183,7 +183,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Check status of task');
-    const { status: s2 } = await helper.queue.status(taskId);
+    const { status: s2 } = helper.checkDates(await helper.queue.status(taskId));
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('malformed-payload');
 
@@ -233,7 +233,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Check status of task');
-    const { status: s2 } = await helper.queue.status(taskId);
+    const { status: s2 } = helper.checkDates(await helper.queue.status(taskId));
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('resource-unavailable');
 
@@ -284,7 +284,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Check status of task');
-    const { status: s2 } = await helper.queue.status(taskId);
+    const { status: s2 } = helper.checkDates(await helper.queue.status(taskId));
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('internal-error');
 
@@ -335,7 +335,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Check status of task');
-    const { status: s2 } = await helper.queue.status(taskId);
+    const { status: s2 } = helper.checkDates(await helper.queue.status(taskId));
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('superseded');
 
@@ -369,7 +369,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     debug('### Check status of task');
-    const { status: s1 } = await helper.queue.status(taskId);
+    const { status: s1 } = helper.checkDates(await helper.queue.status(taskId));
     assume(s1.runs[0].state).equals('exception');
     assume(s1.runs[0].reasonResolved).equals('malformed-payload');
 
@@ -385,7 +385,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     debug('### Check status of task (again)');
-    const { status: s2 } = await helper.queue.status(taskId);
+    const { status: s2 } = helper.checkDates(await helper.queue.status(taskId));
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('malformed-payload');
   });

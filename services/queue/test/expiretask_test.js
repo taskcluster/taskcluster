@@ -54,7 +54,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const r3 = await helper.queue.reportCompleted(taskId, 0);
 
     debug('### Validate task status');
-    const r4 = await helper.queue.status(taskId);
+    const r4 = helper.checkDates(await helper.queue.status(taskId));
     assume(r4.status).deep.equals(r3.status);
 
     debug('### Expire tasks');
