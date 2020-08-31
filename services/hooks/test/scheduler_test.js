@@ -107,7 +107,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('calls handleHook only for past-due hooks', async () => {
       const handled = [];
-      scheduler.handleHook = async (hook) => handled.push(hook.hookId);
+      scheduler.handleHook = async function(hook) {
+        // check that context is set correctly..
+        assert.deepEqual(this, scheduler);
+        handled.push(hook.hookId);
+      };
       await scheduler.poll();
       handled.sort();
       assume(handled).eql(['pastHook', 'pastHookNotScheduled']);

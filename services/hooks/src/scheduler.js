@@ -70,7 +70,7 @@ class Scheduler extends events.EventEmitter {
     // Get all hooks that have a scheduled date that is earlier than now
     const hooks = (await this.db.fns.get_hooks(null, new Date(), null, null)).map(hookUtils.fromDb);
 
-    await hooks.map(this.handleHook);
+    await Promise.all(hooks.map(hook => this.handleHook(hook)));
   }
 
   /** Polls for hooks that need to be scheduled and handles them in a loop */
