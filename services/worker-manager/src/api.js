@@ -122,7 +122,7 @@ builder.declare({
   route: '/worker-pool/:workerPoolId(*)',
   name: 'updateWorkerPool',
   title: 'Update Worker Pool',
-  stability: APIBuilder.stability.stable,
+  stability: APIBuilder.stability.experimental,
   category: 'Worker Pools',
   input: 'update-worker-pool-request.yml',
   output: 'worker-pool-full.yml',

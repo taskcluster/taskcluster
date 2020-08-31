@@ -67,7 +67,7 @@ class WorkerManager(AsyncBaseClient):
         worker pool.  During that time, the worker pool can be updated again, such
         as to set its `providerId` to a real provider.
 
-        This method is ``stable``
+        This method is ``experimental``
         """
 
         return await self._makeApiCall(self.funcinfo["updateWorkerPool"], *args, **kwargs)
@@ -378,7 +378,7 @@ class WorkerManager(AsyncBaseClient):
             'name': 'updateWorkerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
-            'stability': 'stable',
+            'stability': 'experimental',
         },
         "worker": {
             'args': ['workerPoolId', 'workerGroup', 'workerId'],

@@ -3122,7 +3122,7 @@ module.exports = {
               "worker-manager:provider:<providerId>"
             ]
           },
-          "stability": "stable",
+          "stability": "experimental",
           "title": "Update Worker Pool",
           "type": "function"
         },

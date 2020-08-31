@@ -129,6 +129,8 @@ func (workerManager *WorkerManager) CreateWorkerPool(workerPoolId string, payloa
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // Given an existing worker pool definition, this will modify it and return
 // the new definition.
 //

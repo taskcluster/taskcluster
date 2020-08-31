@@ -1537,7 +1537,7 @@ var services = map[string]definitions.Service{
 				Name:        "updateWorkerPool",
 				Title:       "Update Worker Pool",
 				Description: "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
-				Stability:   "stable",
+				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/worker-pool/<workerPoolId>",
 				Args: []string{
