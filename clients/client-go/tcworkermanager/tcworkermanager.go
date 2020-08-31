@@ -251,9 +251,12 @@ func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId s
 	return responseObject.(*WorkerFullDefinition), err
 }
 
-// Create a new worker.  The precise behavior of this method depends
-// on the provider implementing the given worker pool.  Some providers
-// do not support creating workers at all, and will return a 400 error.
+// Create a new worker.  This is only useful for worker pools where the provider
+// does not create workers automatically, such as those with a `static` provider
+// type.  Providers that do not support creating workers will return a 400 error.
+// See the documentation for the individual providers, and in particular the
+// [static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+// for more information.
 //
 // Required scopes:
 //   worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>
@@ -265,9 +268,13 @@ func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, work
 	return responseObject.(*WorkerFullDefinition), err
 }
 
-// Update an existing worker.  The precise behavior of this method depends
-// on the provider implementing the given worker pool.  Some providers
-// do not support updating workers at all, and will return a 400 error.
+// Update an existing worker in-place.  Like `createWorker`, this is only useful for
+// worker pools where the provider does not create workers automatically.
+// This method allows updating all fields in the schema unless otherwise indicated
+// in the provider documentation.
+// See the documentation for the individual providers, and in particular the
+// [static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+// for more information.
 //
 // Required scopes:
 //   worker-manager:update-worker:<workerPoolId>/<workerGroup>/<workerId>

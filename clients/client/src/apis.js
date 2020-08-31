@@ -3261,7 +3261,7 @@ module.exports = {
             "workerId"
           ],
           "category": "Workers",
-          "description": "Create a new worker.  The precise behavior of this method depends\non the provider implementing the given worker pool.  Some providers\ndo not support creating workers at all, and will return a 400 error.",
+          "description": "Create a new worker.  This is only useful for worker pools where the provider\ndoes not create workers automatically, such as those with a `static` provider\ntype.  Providers that do not support creating workers will return a 400 error.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
           "input": "v1/create-worker-request.json#",
           "method": "put",
           "name": "createWorker",
@@ -3281,7 +3281,7 @@ module.exports = {
             "workerId"
           ],
           "category": "Workers",
-          "description": "Update an existing worker.  The precise behavior of this method depends\non the provider implementing the given worker pool.  Some providers\ndo not support updating workers at all, and will return a 400 error.",
+          "description": "Update an existing worker in-place.  Like `createWorker`, this is only useful for\nworker pools where the provider does not create workers automatically.\nThis method allows updating all fields in the schema unless otherwise indicated\nin the provider documentation.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
           "input": "v1/create-worker-request.json#",
           "method": "post",
           "name": "updateWorker",
