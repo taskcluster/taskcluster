@@ -65,7 +65,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.stopPollingService();
 
     debug('### Task status');
-    const r3 = await helper.queue.status(taskId);
+    const r3 = helper.checkDates(await helper.queue.status(taskId));
     assume(r3.status.state).equals('pending');
 
     debug('### Claim task (runId: 1)');
@@ -93,7 +93,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.stopPollingService();
 
     debug('### Task status (again)');
-    const r5 = await helper.queue.status(taskId);
+    const r5 = helper.checkDates(await helper.queue.status(taskId));
     // this time it's exception, since it's out of retries
     assume(r5.status.state).equals('exception');
   });
