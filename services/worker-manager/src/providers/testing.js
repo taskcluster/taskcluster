@@ -85,6 +85,18 @@ class TestingProvider extends Provider {
     return worker;
   }
 
+  async updateWorker({ workerPool, worker, input }) {
+    if (!workerPool.providerData.allowUpdateWorker) {
+      throw new ApiError('updating workers is not supported for testing provider');
+    }
+
+    await worker.update(this.db, worker => {
+      worker.capacity = input.capacity;
+    });
+
+    return worker;
+  }
+
   async removeWorker({ worker }) {
     if (!worker.providerData.allowRemoveWorker) {
       throw new ApiError('removing workers is not supported for testing provider');

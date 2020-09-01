@@ -252,8 +252,8 @@ type (
 		ProviderType string `json:"providerType"`
 	}
 
-	// Request to create a worker. Capacity will default to 1 if not specified.
-	WorkerCreationRequest struct {
+	// Request to create or update a worker. Capacity will default to 1 if not specified.
+	WorkerCreationUpdateRequest struct {
 
 		// Number of tasks this worker can handle at once
 		//

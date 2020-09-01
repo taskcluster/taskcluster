@@ -11,6 +11,9 @@ This is appropriate for cases where the workers are created outside of the Taskc
 
 ## Worker Creation
 
+This provider works differently from the cloud-based providers, because it does not create or destroy workers itself.
+It relies on users to do so.
+
 Each worker in a worker pool managed by a provider of this type must be created via the `workerManager.createWorker` API method.
 Unrecognized workers will not be given Taskcluster credentials.
 
@@ -20,6 +23,17 @@ The secret for each worker should be different, to ensure that worker identities
 
 The same secret must be provided by the worker when it calls `registerWorker` to get its credentials.
 [Worker-Runner](/docs/reference/workers/worker-runner) supports making such a call for you.
+
+## Worker Management
+
+An existing worker can be modified with the `updateWorker` API call.
+This takes the same arguments as `createWorker`, and allows updating `capacity`, `expires`, and the `providerData.staticSecret`.
+This is useful when it's necessary to rotate the static secret, or when the capacity of the worker changes.
+
+An existing worker can be removed with the `removeWorker` API call.
+As with other providers, this will not actually remove record of the worker's existence.
+Instead, it will mark the worker as STOPPED, in which state it will not be able to renew its worker credentials via `registerWorker`.
+Once the worker expires, it will be removed.
 
 ## Worker-Pool Configuration
 

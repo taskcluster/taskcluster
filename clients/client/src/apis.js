@@ -3122,7 +3122,7 @@ module.exports = {
               "worker-manager:provider:<providerId>"
             ]
           },
-          "stability": "stable",
+          "stability": "experimental",
           "title": "Update Worker Pool",
           "type": "function"
         },
@@ -3261,7 +3261,7 @@ module.exports = {
             "workerId"
           ],
           "category": "Workers",
-          "description": "Create a new worker.  The precise behavior of this method depends\non the provider implementing the given worker pool.  Some providers\ndo not support creating workers at all, and will return a 400 error.",
+          "description": "Create a new worker.  This is only useful for worker pools where the provider\ndoes not create workers automatically, such as those with a `static` provider\ntype.  Providers that do not support creating workers will return a 400 error.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
           "input": "v1/create-worker-request.json#",
           "method": "put",
           "name": "createWorker",
@@ -3272,6 +3272,26 @@ module.exports = {
           "scopes": "worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Create a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "category": "Workers",
+          "description": "Update an existing worker in-place.  Like `createWorker`, this is only useful for\nworker pools where the provider does not create workers automatically.\nThis method allows updating all fields in the schema unless otherwise indicated\nin the provider documentation.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
+          "input": "v1/create-worker-request.json#",
+          "method": "post",
+          "name": "updateWorker",
+          "output": "v1/worker-full.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:update-worker:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "stable",
+          "title": "Update an existing Worker",
           "type": "function"
         },
         {

@@ -44,6 +44,18 @@ class StaticProvider extends Provider {
     return worker;
   }
 
+  async updateWorker({ workerPool, worker, input }) {
+    await worker.update(this.db, worker => {
+      worker.expires = input.expires;
+      worker.capacity = input.capacity;
+      worker.providerData = {
+        ...worker.providerData,
+        staticSecret: input.providerData.staticSecret,
+      };
+    });
+    return worker;
+  }
+
   async removeWorker({ worker, reason }) {
     this.monitor.log.workerRemoved({
       workerPoolId: worker.workerPoolId,
@@ -52,13 +64,19 @@ class StaticProvider extends Provider {
       reason,
     });
 
-    await worker.remove();
+    await worker.update(this.db, worker => {
+      worker.state = Worker.states.STOPPED;
+    });
   }
 
   async registerWorker({ worker, workerPool, workerIdentityProof }) {
     const { staticSecret } = workerIdentityProof;
 
     // note that this can be called multiple times for the same worker..
+
+    if (worker.state !== Worker.states.RUNNING) {
+      throw new ApiError('worker is not running');
+    }
 
     if (!staticSecret) {
       throw new ApiError('missing staticSecret in workerIdentityProof');

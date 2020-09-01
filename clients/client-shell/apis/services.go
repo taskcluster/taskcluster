@@ -1537,7 +1537,7 @@ var services = map[string]definitions.Service{
 				Name:        "updateWorkerPool",
 				Title:       "Update Worker Pool",
 				Description: "Given an existing worker pool definition, this will modify it and return\nthe new definition.\n\nTo delete a worker pool, set its `providerId` to `\"null-provider\"`.\nAfter any existing workers have exited, a cleanup job will remove the\nworker pool.  During that time, the worker pool can be updated again, such\nas to set its `providerId` to a real provider.",
-				Stability:   "stable",
+				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/worker-pool/<workerPoolId>",
 				Args: []string{
@@ -1650,9 +1650,24 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "createWorker",
 				Title:       "Create a Worker",
-				Description: "Create a new worker.  The precise behavior of this method depends\non the provider implementing the given worker pool.  Some providers\ndo not support creating workers at all, and will return a 400 error.",
+				Description: "Create a new worker.  This is only useful for worker pools where the provider\ndoes not create workers automatically, such as those with a `static` provider\ntype.  Providers that do not support creating workers will return a 400 error.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
 				Stability:   "stable",
 				Method:      "put",
+				Route:       "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+				Args: []string{
+					"workerPoolId",
+					"workerGroup",
+					"workerId",
+				},
+				Query: []string{},
+				Input: "v1/create-worker-request.json#",
+			},
+			definitions.Entry{
+				Name:        "updateWorker",
+				Title:       "Update an existing Worker",
+				Description: "Update an existing worker in-place.  Like `createWorker`, this is only useful for\nworker pools where the provider does not create workers automatically.\nThis method allows updating all fields in the schema unless otherwise indicated\nin the provider documentation.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
+				Stability:   "stable",
+				Method:      "post",
 				Route:       "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
 				Args: []string{
 					"workerPoolId",

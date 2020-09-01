@@ -67,7 +67,7 @@ class WorkerManager(AsyncBaseClient):
         worker pool.  During that time, the worker pool can be updated again, such
         as to set its `providerId` to a real provider.
 
-        This method is ``stable``
+        This method is ``experimental``
         """
 
         return await self._makeApiCall(self.funcinfo["updateWorkerPool"], *args, **kwargs)
@@ -163,14 +163,34 @@ class WorkerManager(AsyncBaseClient):
         """
         Create a Worker
 
-        Create a new worker.  The precise behavior of this method depends
-        on the provider implementing the given worker pool.  Some providers
-        do not support creating workers at all, and will return a 400 error.
+        Create a new worker.  This is only useful for worker pools where the provider
+        does not create workers automatically, such as those with a `static` provider
+        type.  Providers that do not support creating workers will return a 400 error.
+        See the documentation for the individual providers, and in particular the
+        [static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+        for more information.
 
         This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["createWorker"], *args, **kwargs)
+
+    async def updateWorker(self, *args, **kwargs):
+        """
+        Update an existing Worker
+
+        Update an existing worker in-place.  Like `createWorker`, this is only useful for
+        worker pools where the provider does not create workers automatically.
+        This method allows updating all fields in the schema unless otherwise indicated
+        in the provider documentation.
+        See the documentation for the individual providers, and in particular the
+        [static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
+        for more information.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["updateWorker"], *args, **kwargs)
 
     async def removeWorker(self, *args, **kwargs):
         """
@@ -342,6 +362,15 @@ class WorkerManager(AsyncBaseClient):
             'route': '/worker/reregister',
             'stability': 'experimental',
         },
+        "updateWorker": {
+            'args': ['workerPoolId', 'workerGroup', 'workerId'],
+            'input': 'v1/create-worker-request.json#',
+            'method': 'post',
+            'name': 'updateWorker',
+            'output': 'v1/worker-full.json#',
+            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
+            'stability': 'stable',
+        },
         "updateWorkerPool": {
             'args': ['workerPoolId'],
             'input': 'v1/update-worker-pool-request.json#',
@@ -349,7 +378,7 @@ class WorkerManager(AsyncBaseClient):
             'name': 'updateWorkerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
-            'stability': 'stable',
+            'stability': 'experimental',
         },
         "worker": {
             'args': ['workerPoolId', 'workerGroup', 'workerId'],

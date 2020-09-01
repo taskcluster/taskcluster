@@ -122,7 +122,7 @@ builder.declare({
   route: '/worker-pool/:workerPoolId(*)',
   name: 'updateWorkerPool',
   title: 'Update Worker Pool',
-  stability: APIBuilder.stability.stable,
+  stability: APIBuilder.stability.experimental,
   category: 'Worker Pools',
   input: 'update-worker-pool-request.yml',
   output: 'worker-pool-full.yml',
@@ -431,9 +431,12 @@ builder.declare({
   scopes: 'worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>',
   cleanPayload: cleanCreatePayload,
   description: [
-    'Create a new worker.  The precise behavior of this method depends',
-    'on the provider implementing the given worker pool.  Some providers',
-    'do not support creating workers at all, and will return a 400 error.',
+    'Create a new worker.  This is only useful for worker pools where the provider',
+    'does not create workers automatically, such as those with a `static` provider',
+    'type.  Providers that do not support creating workers will return a 400 error.',
+    'See the documentation for the individual providers, and in particular the',
+    '[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)',
+    'for more information.',
   ].join('\n'),
 }, async function(req, res) {
   const { workerPoolId, workerGroup, workerId } = req.params;
@@ -472,6 +475,70 @@ builder.declare({
     return res.reportError('InputError', err.message, {});
   }
   assert(worker, 'Provider createWorker did not return a worker');
+
+  return res.reply(worker.serializable());
+});
+
+builder.declare({
+  method: 'post',
+  route: '/workers/:workerPoolId:/:workerGroup/:workerId',
+  name: 'updateWorker',
+  title: 'Update an existing Worker',
+  category: 'Workers',
+  stability: APIBuilder.stability.stable,
+  input: 'create-worker-request.yml',
+  output: 'worker-full.yml',
+  // note that this pattern relies on workerGroup and workerId not containing `/`
+  scopes: 'worker-manager:update-worker:<workerPoolId>/<workerGroup>/<workerId>',
+  cleanPayload: cleanCreatePayload,
+  description: [
+    'Update an existing worker in-place.  Like `createWorker`, this is only useful for',
+    'worker pools where the provider does not create workers automatically.',
+    'This method allows updating all fields in the schema unless otherwise indicated',
+    'in the provider documentation.',
+    'See the documentation for the individual providers, and in particular the',
+    '[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)',
+    'for more information.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { workerPoolId, workerGroup, workerId } = req.params;
+  const workerPool = await WorkerPool.get(this.db, workerPoolId);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound',
+      `Worker pool ${workerPoolId} does not exist`, {});
+  }
+
+  // NOTE: unlike in createWorker, we allow expires to be in the past,
+  // as a way of "immediately expiring" a worker.
+
+  const provider = this.providers.get(workerPool.providerId);
+  if (!provider) {
+    return res.reportError('ResourceNotFound',
+      `Provider ${workerPool.providerId} for worker pool ${workerPoolId} does not exist`, {});
+  }
+
+  let worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
+  if (!worker) {
+    return res.reportError('ResourceNotFound',
+      `Worker ${workerPoolId}/${workerGroup}/${workerId} does not exist`, {});
+  }
+
+  try {
+    worker = await provider.updateWorker({
+      workerPool,
+      worker,
+      input: {
+        capacity: 1,
+        ...req.body,
+      },
+    });
+  } catch (err) {
+    if (!(err instanceof ApiError)) {
+      throw err;
+    }
+    return res.reportError('InputError', err.message, {});
+  }
+  assert(worker, 'Provider updateWorker did not return a worker');
 
   return res.reply(worker.serializable());
 });

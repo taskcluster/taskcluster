@@ -2010,6 +2010,13 @@
   },
   {
     "element": "h2",
+    "id": "worker-management",
+    "path": "/reference/core/worker-manager/static",
+    "subtitle": "Worker Management",
+    "title": "Static Provider Type"
+  },
+  {
+    "element": "h2",
     "id": "worker-pool-configuration",
     "path": "/reference/core/worker-manager/static",
     "subtitle": "Worker-Pool Configuration",
