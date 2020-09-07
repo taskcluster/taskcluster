@@ -651,7 +651,6 @@ func ClaimWork() *TaskRun {
 
 func (task *TaskRun) validatePayload() *CommandExecutionError {
 	jsonPayload := task.Definition.Payload
-	log.Printf("JSON payload: %s", jsonPayload)
 	schemaLoader := gojsonschema.NewStringLoader(taskPayloadSchema())
 	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
@@ -659,6 +658,7 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		return MalformedPayloadError(err)
 	}
 	if !result.Valid() {
+		task.Errorf("Task payload for this worker type must conform to the following jsonschema:\n%s", taskPayloadSchema())
 		task.Error("TASK FAIL since the task payload is invalid. See errors:")
 		for _, desc := range result.Errors() {
 			task.Errorf("- %s", desc)
