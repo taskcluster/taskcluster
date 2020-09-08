@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -74,6 +75,26 @@ func TestEnvVarsMustBeStrings(t *testing.T) {
   "maxRunTime": 1200,
   "command": [`+rawHelloGoodbye()+`]
 }`))
+}
+
+func TestMalformedPayloadIncludesSchema(t *testing.T) {
+	defer setup(t)()
+	taskID := slugid.Nice()
+	td := testTask(t)
+	// invalid payload, that is still valid json
+	td.Payload = json.RawMessage(`{"a": "b"}`)
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
+	_, err := queue.CreateTask(taskID, td)
+	if err != nil {
+		t.Fatalf("Could not submit task: %v", err)
+	}
+	t.Logf("Scheduled task %v", taskID)
+	ensureResolution(t, taskID, "exception", "malformed-payload")
+	logtext := LogText(t)
+	// all worker schemas include a definition for "writableDirectoryCache" so let's use that
+	if !strings.Contains(logtext, `"writableDirectoryCache":`) {
+		t.Fatalf("Log does't include expected text: %v", logtext)
+	}
 }
 
 // Extra fields not allowed
