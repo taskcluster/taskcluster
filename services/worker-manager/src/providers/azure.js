@@ -695,13 +695,13 @@ class AzureProvider extends Provider {
       // 3. deleted outside of provider actions, should start removal
       if (state === states.REQUESTED) {
         // GETs and updates workers that have not registered every loop
-        return this.provisionResources({ worker, monitor });
+        return await this.provisionResources({ worker, monitor });
       } else if (state === states.STOPPING) {
         // continuing to stop
-        return this.removeWorker({ worker, reason: 'continuing removal' });
+        return await this.removeWorker({ worker, reason: 'continuing removal' });
       } else {
         // VM in unknown state not found, deleted outside provider
-        return this.removeWorker({ worker, reason: `vm in ${state} not found` });
+        return await this.removeWorker({ worker, reason: `vm in ${state} not found` });
       }
     };
 
@@ -770,7 +770,6 @@ class AzureProvider extends Provider {
         throw err;
       }
       monitor.debug({ message: `vm or state not found, in state ${state}` });
-
 
       // VM has not been found so we should update its state accordingly
       state = await changeNotFoundWorkerState(state);
