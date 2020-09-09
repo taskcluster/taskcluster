@@ -22,7 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   // Check the status code returned from a request containing some test data
-  function statusTest(testName, jsonFile, statusCode) {
+  function statusTest(testName, jsonFile, statusCode, installationId = 5808, check = () => {}) {
     test(testName, async function() {
       const filename = './test/data/webhooks/' + jsonFile;
       let request = JSON.parse(fs.readFileSync(filename));
@@ -36,12 +36,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           Fields: {
             eventId: request.headers['X-GitHub-Delivery'],
             eventType: request.headers['X-GitHub-Event'],
-            installationId: 5808,
+            installationId,
             v: 1,
           },
           Severity: LEVELS.notice,
         });
       }
+      await check();
     });
   }
 
@@ -51,6 +52,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   statusTest('Push', 'webhook.push.json', 204);
   statusTest('Release', 'webhook.release.json', 204);
   statusTest('Tag', 'webhook.tag_push.json', 204);
+
+  // Also should have data in the db after this one
+  statusTest('Installation', 'webhook.installation.json', 200, 11725878, async () => {
+    const result = await helper.db.fns.get_github_integration('imbstack');
+    assert.equal(result.length, 1);
+    assert.equal(result[0].owner, 'imbstack');
+    assert.equal(result[0].installation_id, 11725878);
+  });
 
   // Bad data: should all return 400 responses
   statusTest('Push without secret', 'webhook.push.no_secret.json', 400);

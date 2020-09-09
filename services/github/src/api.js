@@ -267,8 +267,8 @@ builder.declare({
         msg.branch = body.release.target_commitish;
         break;
 
-      case 'integration_installation':
-      // Creates a new entity or overwrites an existing one
+      case 'installation':
+        // Creates a new entity or overwrites an existing one
         await this.db.fns.upsert_github_integration(
           body.installation.account.login,
           body.installation.id,
