@@ -21,7 +21,8 @@ Once you've found an issue to work on and written a patch, submit a pull request
 Welcome to the team!
 
 Note that we use [all-contributors][all-contributors] to make sure everyone gets credit for their work on Taskcluster.
-You can add new people to the list using the [@all-contributors bot][all-contributors-bot]
+You can add new people to the list using the [@all-contributors bot][all-contributors-bot].
+To update the list manually, use the [all-contributors CLI][all-contributors-cli] (install it locally, not in the repo, with `npm install --global all-contributors-cli`).
 
 [participation]: https://www.mozilla.org/en-US/about/governance/policies/participation/
 [issues]: ../../issues
@@ -37,3 +38,4 @@ You can add new people to the list using the [@all-contributors bot][all-contrib
 [commit]: dev-docs/best-practices/commits.md
 [all-contributors]: https://allcontributors.org/
 [all-contributors-bot]: https://allcontributors.org/docs/en/bot/usage
+[all-contributors-cli]: https://allcontributors.org/docs/en/cli/usage
