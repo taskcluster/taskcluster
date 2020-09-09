@@ -1,4 +1,4 @@
-# Changlog Entries
+# Changelog Entries
 
 Changes that we want users to be aware of when updating should add a new snippet file in the `changelog/` directory.
 This directory contains "snippets" that will be combined into the Changelog of the next release.
