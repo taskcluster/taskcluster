@@ -63,7 +63,6 @@ const IGNORE = {
     'graceful-fs',
     'history',
     'hoist-non-react-statics',
-    'http-proxy',
     'is-callable',
     'is-regex',
     'iterall',
