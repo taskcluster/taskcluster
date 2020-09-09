@@ -688,6 +688,23 @@ class AzureProvider extends Provider {
   }
 
   async checkWorker({ worker }) {
+    const changeNotFoundWorkerState = async (state) => {
+      // VM has not been found, so it is either
+      // 1. still being created
+      // 2. already removed but other resources may need to be deleted
+      // 3. deleted outside of provider actions, should start removal
+      if (state === states.REQUESTED) {
+        // GETs and updates workers that have not registered every loop
+        return this.provisionResources({ worker, monitor });
+      } else if (state === states.STOPPING) {
+        // continuing to stop
+        return this.removeWorker({ worker, reason: 'continuing removal' });
+      } else {
+        // VM in unknown state not found, deleted outside provider
+        return this.removeWorker({ worker, reason: `vm in ${state} not found` });
+      }
+    };
+
     const monitor = this.workerMonitor({
       worker,
       extra: {
@@ -754,20 +771,9 @@ class AzureProvider extends Provider {
       }
       monitor.debug({ message: `vm or state not found, in state ${state}` });
 
-      // VM has not been found, so it is either
-      // 1. still being created
-      // 2. already removed but other resources may need to be deleted
-      // 3. deleted outside of provider actions, should start removal
-      if (state === states.REQUESTED) {
-        // GETs and updates workers that have not registered every loop
-        state = await this.provisionResources({ worker, monitor });
-      } else if (state === states.STOPPING) {
-        // continuing to stop
-        state = await this.removeWorker({ worker, reason: 'continuing removal' });
-      } else {
-        // VM in unknown state not found, deleted outside provider
-        state = await this.removeWorker({ worker, reason: `vm in ${state} not found` });
-      }
+
+      // VM has not been found so we should update its state accordingly
+      state = await changeNotFoundWorkerState(state);
     }
 
     monitor.debug(`setting state to ${state}`);
