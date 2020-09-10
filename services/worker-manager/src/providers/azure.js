@@ -21,9 +21,15 @@ const { CloudAPI } = require('./cloudapi');
 // Azure provisioning and VM power states
 // see here: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/states-lifecycle
 // same for linux: https://docs.microsoft.com/en-us/azure/virtual-machines/linux/states-lifecycle
-const successPowerStates = new Set(['PowerState/running', 'PowerState/starting']);
-const failPowerStates = new Set(['PowerState/stopping', 'PowerState/stopped', 'PowerState/deallocating', 'PowerState/deallocated']);
-const successProvisioningStates = new Set(['Succeeded', 'Creating', 'Updating']);
+const failPowerStates = new Set([
+  'PowerState/stopping',
+  'PowerState/stopped',
+  'PowerState/deallocating',
+  'PowerState/deallocated',
+]);
+
+// Provisioning states for any resource type.  See, for example,
+// https://docs.microsoft.com/en-us/rest/api/virtualnetwork/networkinterfaces/createorupdate#provisioningstate
 const failProvisioningStates = new Set(['Failed', 'Deleting', 'Canceled', 'Deallocating']);
 
 // only use alphanumeric characters for convenience
@@ -707,7 +713,6 @@ class AzureProvider extends Provider {
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
     let state = worker.state || states.REQUESTED;
     try {
-      const { provisioningState } = await this.fetchVmInfo(worker);
       // lets us get power states for the VM
       const instanceView = await this._enqueue('get', () => this.computeClient.virtualMachines.instanceView(
         worker.providerData.resourceGroupName,
@@ -715,38 +720,52 @@ class AzureProvider extends Provider {
       ));
       const powerStates = instanceView.statuses.map(i => i.code);
       monitor.debug({
-        message: 'fetched instance states',
+        message: 'fetched instance view',
         powerStates,
-        provisioningState,
       });
-      if (successProvisioningStates.has(provisioningState) &&
-          // fairly lame check, succeeds if we've ever been starting/running
-          _.some(powerStates, v => successPowerStates.has(v))
-      ) {
-        this.seen[worker.workerPoolId] += worker.capacity || 1;
 
-        if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-          state = await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
+      // count this worker as having been seen for later logging
+      this.seen[worker.workerPoolId] += worker.capacity || 1;
+
+      // See https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle
+      // for background on the VM lifecycle.
+      let isFailed = false;
+      let reason;
+
+      if (_.some(powerStates, state => failPowerStates.has(state))) {
+        // A VM can transition to one of failPowerStates through an Azure issue of some sort, by being
+        // manually terminated (e.g., in the web UI), or by being halted from within the VM.  In this
+        // case, we consider the worker failed and begin to remove it.
+        isFailed = true;
+        reason = `failed power state; powerStates=${powerStates.join(', ')}`;
+      }
+
+      if (!isFailed && state === states.REQUESTED) {
+        // It's possible for a newly-requested VM to be running (PowerState/running), but have failed
+        // provisioning.  In this case the VM isn't doing any work, but billing continues.  So, we want
+        // to catch this case and also consider it failed.  These state codes have the form
+        // `ProvisioningState/failed/<SomeCode>`.
+        let failedProvisioningCodes = powerStates
+          .filter(state => state.startsWith('ProvisioningState/failed/'))
+          .map(state => state.split('/')[2]);
+
+        // any failed-provisioning code is treated as a failure
+        if (failedProvisioningCodes.length > 0) {
+          isFailed = true;
+          reason = `failed provisioning power state; powerStates=${powerStates.join(', ')}`;
         }
-      } else if (failProvisioningStates.has(provisioningState) ||
-                // if the VM has ever been in a failing power state
-                _.some(powerStates, v => failPowerStates.has(v))
-      ) {
-        state = await this.removeWorker({
-          worker,
-          reason: `failed state; provisioningState=${provisioningState}, powerStates=${powerStates.join(', ')}`,
-        });
-      } else {
-        const { workerPoolId } = worker;
-        const workerPool = await WorkerPool.get(this.db, workerPoolId);
-        if (workerPool) {
-          await this.reportError({
-            workerPool,
-            kind: 'creation-error',
-            title: 'Encountered unknown VM provisioningState or powerStates',
-            description: `Unknown provisioningState ${provisioningState} or powerStates: ${powerStates.join(', ')}`,
-          });
-        }
+      }
+
+      if (!isFailed && worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
+        // If the worker has not checked in recently enough, we consider it failed regardless of the Azure lifecycle
+        isFailed = true;
+        reason = 'terminateAfter time exceeded';
+      }
+
+      if (isFailed) {
+        // On failure, call `removeWorker`, which works to remove the resources associated with the VM
+        // and eventually mark it as STOPPED
+        state = await this.removeWorker({ worker, reason });
       }
     } catch (err) {
       if (err.statusCode !== 404) {
