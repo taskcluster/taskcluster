@@ -295,7 +295,9 @@ class Reclaimer {
       if (e.statusCode === 409) {
         this.task.cancel('canceled', errorMessage);
       } else {
-        this.task.abort(errorMessage);
+        // if this is a permissions error, then this call is unlikely to work,
+        // but let's give it a shot!
+        this.task.abort('internal-error');
       }
 
       return;
