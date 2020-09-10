@@ -827,16 +827,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       sandbox.restore();
     });
 
-    const setState = async ({ state, provisioningState, powerState }) => {
+    const setState = async ({ state, powerStates }) => {
       await worker.update(helper.db, worker => {
         worker.state = state;
       });
-      if (provisioningState) {
-        fake.computeClient.virtualMachines.makeFakeResource('rgrp', baseProviderData.vm.name, { provisioningState });
-      }
-      if (powerState) {
+      if (powerStates) {
         fake.computeClient.virtualMachines.setFakeInstanceView('rgrp', baseProviderData.vm.name, {
-          statuses: [{ code: powerState }],
+          statuses: powerStates.map(code=>({ code })),
         });
       }
     };
@@ -852,7 +849,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('does nothing for still-running workers', async function() {
-      await setState({ state: 'running', provisioningState: 'Succeeded', powerState: 'PowerState/running' });
+      await setState({ state: 'running', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
       assert.equal(worker.state, 'running');
@@ -861,16 +858,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('calls provisionResources for requested workers that have no instanceView', async function() {
-      await setState({ state: 'requested', provisioningState: 'Succeeded', powerState: null });
-      await provider.checkWorker({ worker });
-      await worker.reload(helper.db);
-      assert.equal(worker.state, 'requested'); // registerWorker changes this, not checkWorker
-      assert(!provider.removeWorker.called);
-      assert(provider.provisionResources.called);
-    });
-
-    test('calls provisionResources for requested workers that have no vm', async function() {
-      await setState({ state: 'requested', provisioningState: null, powerState: null });
+      await setState({ state: 'requested', powerStates: null });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
       assert.equal(worker.state, 'requested'); // registerWorker changes this, not checkWorker
@@ -879,7 +867,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('does nothing for requested workers that are fully started', async function() {
-      await setState({ state: 'requested', provisioningState: 'Succeeded', powerState: 'PowerState/running' });
+      await setState({ state: 'requested', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
       assert.equal(worker.state, 'requested'); // registerWorker changes this, not checkWorker
@@ -888,7 +876,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('calls removeWorker() for a running worker that has no VM', async function() {
-      await setState({ state: 'running', provisioningState: 'Deleting', powerState: 'PowerState/running' });
+      await setState({ state: 'running', powerStates: ['ProvisioningState/deleting', 'PowerState/running'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
       assert(provider.removeWorker.called);
@@ -896,7 +884,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('remove unregistered workers after terminateAfter', async function() {
-      await setState({ state: 'requested', provisioningState: 'Succeeded', powerState: 'PowerState/running' });
+      await setState({ state: 'requested', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await worker.update(helper.db, worker => {
         worker.providerData.terminateAfter = Date.now() - 1000;
       });
@@ -908,7 +896,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('do not remove unregistered workers before terminateAfter', async function() {
-      await setState({ state: 'requested', provisioningState: 'Succeeded', powerState: 'PowerState/running' });
+      await setState({ state: 'requested', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await worker.update(helper.db, worker => {
         worker.providerData.terminateAfter = Date.now() + 1000;
       });
