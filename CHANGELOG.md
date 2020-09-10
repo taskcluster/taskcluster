@@ -3,6 +3,47 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v37.1.0
+
+### DEPLOYERS
+
+▶ [patch] [#3175](https://github.com/taskcluster/taskcluster/issues/3175)
+Taskcluster's Github integration has been updated to the new standard for webhooks detailed in [this post](https://developer.github.com/changes/2020-04-15-replacing-the-installation-and-installation-repositories-events/)
+
+▶ [patch] 
+The taskcluster-hooks-scheduler will no longer crash while trying to report errors firing hooks.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#3189](https://github.com/taskcluster/taskcluster/issues/3189)
+The `workerManager.removeWorker` API method now works correctly for the static provisioner, and a new `updateWorker` API method supports modifying workers after they have been created.
+
+▶ [patch] [#3483](https://github.com/taskcluster/taskcluster/issues/3483)
+Faced with an error reclaiming a task, docker-worker will now correctly call `reportException` with reason `internal-error`.
+
+▶ [patch] [#3456](https://github.com/taskcluster/taskcluster/issues/3456)
+The `workerManager.createWorker` API method now correctly limits the `workerGroup` and `workerId` properties as described in the worker schema (38 characters, no dots).
+
+### USERS
+
+▶ [minor] [bug 1563191](http://bugzil.la/1563191)
+generic-worker now logs the full task payload json schema if a task's payload fails json schema validation.
+
+▶ [patch] [#3355](https://github.com/taskcluster/taskcluster/issues/3355)
+The Taskcluster-GitHub service no longer throws errors on unknown pull-request actions in GitHub webhooks.
+
+▶ [patch] [#3464](https://github.com/taskcluster/taskcluster/issues/3464)
+Timestamps in the task status `runs` array are now formatted like all other timestamps in the Taskcluster API, without a trailing `+00:00`.
+
+### DEVELOPERS
+
+▶ [patch] [#3354](https://github.com/taskcluster/taskcluster/issues/3354)
+This release handles error from malformed github check artifacts.
+
+### OTHER
+
+▶ Additional changes not described here: [#3309](https://github.com/taskcluster/taskcluster/issues/3309), [#3458](https://github.com/taskcluster/taskcluster/issues/3458).
+
 ## v37.0.0
 
 ### DEPLOYERS
