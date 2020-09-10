@@ -13,7 +13,6 @@ const IGNORE = {
     'body-parser',
     'convert-source-map',
     'graphql-tag',
-    '@hapi/hoek',
     'har-validator',
     'is-buffer',
     'is-regex',
