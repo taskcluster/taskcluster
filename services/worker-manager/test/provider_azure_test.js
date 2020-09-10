@@ -875,8 +875,48 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('calls removeWorker() for a running worker that has no VM', async function() {
-      await setState({ state: 'running', powerStates: ['ProvisioningState/deleting', 'PowerState/running'] });
+    test('calls removeWorker() for a running worker that is stopping', async function() {
+      await setState({ state: 'running', powerStates: ['PowerState/stopping'] });
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+      assert(provider.removeWorker.called);
+      assert(!provider.provisionResources.called);
+    });
+
+    test('calls removeWorker() for a running worker that is stopped', async function() {
+      await setState({ state: 'running', powerStates: ['PowerState/stopped'] });
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+      assert(provider.removeWorker.called);
+      assert(!provider.provisionResources.called);
+    });
+
+    test('calls removeWorker() for a running worker that is deallocating', async function() {
+      await setState({ state: 'running', powerStates: ['PowerState/deallocating'] });
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+      assert(provider.removeWorker.called);
+      assert(!provider.provisionResources.called);
+    });
+
+    test('calls removeWorker() for a running worker that is deallocated', async function() {
+      await setState({ state: 'running', powerStates: ['PowerState/deallocated'] });
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+      assert(provider.removeWorker.called);
+      assert(!provider.provisionResources.called);
+    });
+
+    test('calls removeWorker() for a requested worker that has failed OS Provisioning', async function() {
+      await setState({ state: 'requested', powerStates: ['ProvisioningState/failed/OSProvisioningTimedOut'] });
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+      assert(provider.removeWorker.called);
+      assert(!provider.provisionResources.called);
+    });
+
+    test('calls removeWorker() for a requested worker that has failed with an internal error', async function() {
+      await setState({ state: 'requested', powerStates: ['ProvisioningState/failed/InternalOperationError'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
       assert(provider.removeWorker.called);
