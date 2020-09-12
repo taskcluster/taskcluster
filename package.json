@@ -70,7 +70,7 @@
     "netmask": "^1.0.5",
     "newrelic": "^6.4.2",
     "node-fetch": "^2.6.0",
-    "node-forge": "^0.9.1",
+    "node-forge": "^0.10.0",
     "nodemailer": "^6.0.0",
     "oauth2orize": "^1.11.0",
     "p-queue": "^6.1.1",
