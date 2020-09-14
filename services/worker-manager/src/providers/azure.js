@@ -675,7 +675,8 @@ class AzureProvider extends Provider {
           description: err.message,
         });
       }
-      return await this.removeWorker({ worker, reason: `VM Creation Error: ${err.message}` });
+      await this.removeWorker({ worker, reason: `VM Creation Error: ${err.message}` });
+      return Worker.states.STOPPING;
     }
   }
 
@@ -766,9 +767,9 @@ class AzureProvider extends Provider {
       }
 
       if (isFailed) {
-        // On failure, call `removeWorker`, which works to remove the resources associated with the VM
-        // and eventually mark it as STOPPED
-        state = await this.removeWorker({ worker, reason });
+        // On failure, call `removeWorker`, which logs and marks the worker as STOPPING
+        await this.removeWorker({ worker, reason });
+        state = states.STOPPING;
       }
     } catch (err) {
       if (err.statusCode !== 404) {
@@ -781,14 +782,16 @@ class AzureProvider extends Provider {
       // 2. already removed but other resources may need to be deleted
       // 3. deleted outside of provider actions, should start removal
       if (state === states.REQUESTED) {
-        // GETs and updates workers that have not registered every loop
+        // continue to try to provision this worker
         state = await this.provisionResources({ worker, monitor });
       } else if (state === states.STOPPING) {
-        // continuing to stop
-        state = await this.removeWorker({ worker, reason: 'continuing removal' });
+        // continuing to try to deprovision this worker
+        state = await this.deprovisionResources({ worker, monitor });
       } else {
-        // VM in unknown state not found, deleted outside provider
-        state = await this.removeWorker({ worker, reason: `vm in ${state} not found` });
+        // VM in unknown state not found, or deleted outside provider, so start
+        // removing it.
+        await this.removeWorker({ worker, reason: `vm in ${state} not found` });
+        state = states.STOPPING;
       }
     }
 
@@ -822,13 +825,13 @@ class AzureProvider extends Provider {
   }
 
   /*
-   * removeResource attempts to delete a resource and verify deletion
+   * deprovisionResource attempts to delete a resource and verify deletion
    * if the resource has been verified deleted
    *   * sets providerData[resourceType].id = false, signalling it has been deleted
    *   * returns true
    *
    */
-  async removeResource({ client, worker, resourceType, monitor, index = undefined }) {
+  async deprovisionResource({ client, worker, resourceType, monitor, index = undefined }) {
     if (!_.has(worker.providerData, resourceType)) {
       throw new Error(`Error removing worker: providerData does not contain resourceType ${resourceType}`);
     }
@@ -848,7 +851,7 @@ class AzureProvider extends Provider {
       resourceName: typeData.name,
     });
 
-    debug(`removeResource for ${resourceType} with index ${index}`);
+    debug(`deprovisionResource for ${resourceType} with index ${index}`);
 
     let shouldDelete = false;
     // lookup resource by name
@@ -915,7 +918,7 @@ class AzureProvider extends Provider {
   }
 
   /*
-   * removeWorker marks a worker for deletion and begins removal
+   * removeWorker marks a worker for deletion and begins removal.
    */
   async removeWorker({ worker, reason }) {
     this.monitor.log.workerRemoved({
@@ -925,13 +928,23 @@ class AzureProvider extends Provider {
       reason,
     });
 
-    const monitor = this.workerMonitor({
-      worker,
-      extra: {
-        resourceGroupName: worker.providerData.resourceGroupName,
-        vmName: worker.providerData.vm.name,
-      } });
+    // transition from either REQUESTED or RUNNING to STOPPING, and let the
+    // worker scanner take it from there.
+    await worker.update(this.db, worker => {
+      const now = new Date();
+      if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(worker.state)) {
+        worker.lastModified = now;
+        worker.state = Worker.states.STOPPING;
+      }
+    });
+  }
 
+  /*
+   * deprovisionResources removes resources corresponding to a VM,
+   * while the worker is in the STOPPING state.  Like provisionResources,
+   * it is called repeatedly in the worker-scanner until it is complete.
+   */
+  async deprovisionResources({ worker, monitor }) {
     let states = Worker.states;
     if (worker.state === states.STOPPED) {
       // we're done
@@ -941,13 +954,13 @@ class AzureProvider extends Provider {
     let state = states.STOPPING;
     // After we make the delete request we set id to false
     // some delete operations (i.e. VMs) take a long time though
-    // we use the result of removeResource to _ensure_ deletion has completed
+    // we use the result of deprovisionResource to _ensure_ deletion has completed
     // before moving on to the next step, so that we don't leak resources
     try {
       // VM must be deleted before disk
       // VM must be deleted before NIC
       // NIC must be deleted before IP
-      let vmDeleted = await this.removeResource({
+      let vmDeleted = await this.deprovisionResource({
         worker,
         client: this.computeClient.virtualMachines,
         resourceType: 'vm',
@@ -956,7 +969,7 @@ class AzureProvider extends Provider {
       if (!vmDeleted || worker.providerData.vm.id) {
         return state;
       }
-      let nicDeleted = await this.removeResource({
+      let nicDeleted = await this.deprovisionResource({
         worker,
         client: this.networkClient.networkInterfaces,
         resourceType: 'nic',
@@ -965,7 +978,7 @@ class AzureProvider extends Provider {
       if (!nicDeleted || worker.providerData.nic.id) {
         return state;
       }
-      let ipDeleted = await this.removeResource({
+      let ipDeleted = await this.deprovisionResource({
         worker,
         client: this.networkClient.publicIPAddresses,
         resourceType: 'ip',
@@ -978,7 +991,7 @@ class AzureProvider extends Provider {
       // handles deleting osDisks and dataDisks
       let disksDeleted = true;
       for (let i = 0; i < worker.providerData.disks.length; i++) {
-        let success = await this.removeResource({
+        let success = await this.deprovisionResource({
           worker,
           client: this.computeClient.disks,
           resourceType: 'disks',
