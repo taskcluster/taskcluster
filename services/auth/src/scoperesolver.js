@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const util = require('util');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 const events = require('events');
@@ -317,6 +318,11 @@ class ScopeResolver extends events.EventEmitter {
       let scopes = this.resolve(client.unexpandedScopes);
       client.scopes = scopes; // for createSignatureValidator compatibility
       client.expandedScopes = scopes;
+    }
+
+    // check for https://github.com/taskcluster/taskcluster/issues/3502
+    if (!Array.isArray(client.scopes)) {
+      assert(false, `Got non-array client.scopes=${util.inspect(client.scopes)} (see #3502)`);
     }
 
     if (client.updateLastUsed) {
