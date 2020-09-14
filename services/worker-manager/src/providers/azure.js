@@ -242,6 +242,7 @@ class AzureProvider extends Provider {
         subnet: {
           id: cfg.subnetId,
         },
+        ignoreFailedProvisioningStates: cfg.ignoreFailedProvisioningStates,
       };
 
       this.monitor.log.workerRequested({
@@ -744,10 +745,12 @@ class AzureProvider extends Provider {
         // It's possible for a newly-requested VM to be running (PowerState/running), but have failed
         // provisioning.  In this case the VM isn't doing any work, but billing continues.  So, we want
         // to catch this case and also consider it failed.  These state codes have the form
-        // `ProvisioningState/failed/<SomeCode>`.
+        // `ProvisioningState/failed/<SomeCode>`.  We allow the user to ignore specific codes.
+        let ignore = new Set(worker.providerData.ignoreFailedProvisioningStates || []);
         let failedProvisioningCodes = powerStates
           .filter(state => state.startsWith('ProvisioningState/failed/'))
-          .map(state => state.split('/')[2]);
+          .map(state => state.split('/')[2])
+          .filter(code => !ignore.has(code));
 
         // any failed-provisioning code is treated as a failure
         if (failedProvisioningCodes.length > 0) {

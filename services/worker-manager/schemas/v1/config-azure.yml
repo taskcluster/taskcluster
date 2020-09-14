@@ -56,6 +56,16 @@ properties:
             and this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.
             This property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.
             Instead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).
+        ignoreFailedProvisioningStates:
+          title: "Ignore failed provisioningStates"
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+          description: |
+            A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that
+            should be ignored and treated as success if the VM is running.  The most common choice is `["OSProvisioningTimedOut"]`, which ignores failure
+            to start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.
         location:
           title: Location
           type: string

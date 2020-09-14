@@ -915,7 +915,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('calls removeWorker() for a requested worker that has failed with an internal error', async function() {
+    test('does nothing for a requested worker that has failed OS Provisioning, if ignoring that', async function() {
+      await worker.update(helper.db, worker => {
+        worker.providerData.ignoreFailedProvisioningStates = ['OSProvisioningTimedOut', 'SomethingElse'];
+      });
+      await setState({ state: 'requested', powerStates: ['ProvisioningState/failed/OSProvisioningTimedOut'] });
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+      assert(!provider.removeWorker.called);
+      assert(!provider.provisionResources.called);
+    });
+
+    test('calls removeWorker() for a requested worker that has failed with an internal error that is not ignored', async function() {
+      await worker.update(helper.db, worker => {
+        worker.providerData.ignoreFailedProvisioningStates = ['OSProvisioningTimedOut', 'SomethingElse'];
+      });
       await setState({ state: 'requested', powerStates: ['ProvisioningState/failed/InternalOperationError'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);

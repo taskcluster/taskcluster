@@ -1058,6 +1058,15 @@
                 "title": "Hardware Profile",
                 "type": "object"
               },
+              "ignoreFailedProvisioningStates": {
+                "description": "A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that\nshould be ignored and treated as success if the VM is running.  The most common choice is `[\"OSProvisioningTimedOut\"]`, which ignores failure\nto start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.\n",
+                "items": {
+                  "type": "string"
+                },
+                "title": "Ignore failed provisioningStates",
+                "type": "array",
+                "uniqueItems": true
+              },
               "location": {
                 "description": "The Azure location this worker should be spawned in",
                 "title": "Location",
