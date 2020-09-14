@@ -951,8 +951,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         worker.providerData.terminateAfter = Date.now() - 1000;
       });
       await provider.checkWorker({ worker });
-      await worker.reload(helper.db);
-      assert.equal(worker.state, 'stopping');
       assert(provider.removeWorker.called);
       assert(!provider.provisionResources.called);
     });

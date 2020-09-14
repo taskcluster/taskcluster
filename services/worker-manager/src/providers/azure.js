@@ -388,10 +388,13 @@ class AzureProvider extends Provider {
       providerId: this.providerId,
       workerId: worker.workerId,
     });
-    monitor.debug('setting state to RUNNING');
+
+    monitor.debug('setting state to RUNNING if currently REQUESTED');
     await worker.update(this.db, worker => {
       worker.lastModified = new Date();
-      worker.state = Worker.states.RUNNING;
+      if (worker.state === Worker.states.REQUESTED) {
+        worker.state = Worker.states.RUNNING;
+      }
       worker.providerData.terminateAfter = expires.getTime();
     });
     const workerConfig = worker.providerData.workerConfig || {};
@@ -592,7 +595,7 @@ class AzureProvider extends Provider {
         monitor,
       });
       if (!worker.providerData.ip.id) {
-        return worker.state;
+        return;
       }
 
       // NIC
@@ -629,7 +632,7 @@ class AzureProvider extends Provider {
         monitor,
       });
       if (!worker.providerData.nic.id) {
-        return worker.state;
+        return;
       }
 
       // VM
@@ -658,11 +661,12 @@ class AzureProvider extends Provider {
         monitor,
       });
       if (!worker.providerData.vm.id) {
-        return worker.state;
+        return;
       }
-      // XXX note that this doesn't actually change the state to RUNNING
-      // (that happens in registerWorker)
-      return Worker.states.RUNNING;
+
+      // Here, the worker is full provisioned, but we do not mark it RUNNING until
+      // it calls registerWorker.
+      return;
     } catch (err) {
       const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
       // we create multiple resources in order to provision a VM
@@ -676,7 +680,6 @@ class AzureProvider extends Provider {
         });
       }
       await this.removeWorker({ worker, reason: `VM Creation Error: ${err.message}` });
-      return Worker.states.STOPPING;
     }
   }
 
@@ -713,7 +716,6 @@ class AzureProvider extends Provider {
     const states = Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
-    let state = worker.state || states.REQUESTED;
     try {
       // lets us get power states for the VM
       const instanceView = await this._enqueue('get', () => this.computeClient.virtualMachines.instanceView(
@@ -742,7 +744,7 @@ class AzureProvider extends Provider {
         reason = `failed power state; powerStates=${powerStates.join(', ')}`;
       }
 
-      if (!isFailed && state === states.REQUESTED) {
+      if (!isFailed && worker.state === states.REQUESTED) {
         // It's possible for a newly-requested VM to be running (PowerState/running), but have failed
         // provisioning.  In this case the VM isn't doing any work, but billing continues.  So, we want
         // to catch this case and also consider it failed.  These state codes have the form
@@ -769,40 +771,33 @@ class AzureProvider extends Provider {
       if (isFailed) {
         // On failure, call `removeWorker`, which logs and marks the worker as STOPPING
         await this.removeWorker({ worker, reason });
-        state = states.STOPPING;
       }
     } catch (err) {
       if (err.statusCode !== 404) {
         throw err;
       }
-      monitor.debug({ message: `vm or state not found, in state ${state}` });
+      monitor.debug({ message: `vm instance view not found, in state ${worker.state}` });
 
       // VM has not been found, so it is either
       // 1. still being created
       // 2. already removed but other resources may need to be deleted
       // 3. deleted outside of provider actions, should start removal
-      if (state === states.REQUESTED) {
+      if (worker.state === states.REQUESTED) {
         // continue to try to provision this worker
-        state = await this.provisionResources({ worker, monitor });
-      } else if (state === states.STOPPING) {
+        await this.provisionResources({ worker, monitor });
+      } else if (worker.state === states.STOPPING) {
         // continuing to try to deprovision this worker
-        state = await this.deprovisionResources({ worker, monitor });
+        await this.deprovisionResources({ worker, monitor });
       } else {
         // VM in unknown state not found, or deleted outside provider, so start
         // removing it.
-        await this.removeWorker({ worker, reason: `vm in ${state} not found` });
-        state = states.STOPPING;
+        await this.removeWorker({ worker, reason: `vm not found in state ${worker.state}` });
       }
     }
 
-    monitor.debug(`setting state to ${state}`);
     await worker.update(this.db, worker => {
       const now = new Date();
-      if (worker.state !== state) {
-        worker.lastModified = now;
-      }
       worker.lastChecked = now;
-      worker.state = state;
     });
   }
 
@@ -945,13 +940,6 @@ class AzureProvider extends Provider {
    * it is called repeatedly in the worker-scanner until it is complete.
    */
   async deprovisionResources({ worker, monitor }) {
-    let states = Worker.states;
-    if (worker.state === states.STOPPED) {
-      // we're done
-      return states.STOPPED;
-    }
-
-    let state = states.STOPPING;
     // After we make the delete request we set id to false
     // some delete operations (i.e. VMs) take a long time though
     // we use the result of deprovisionResource to _ensure_ deletion has completed
@@ -967,7 +955,7 @@ class AzureProvider extends Provider {
         monitor,
       });
       if (!vmDeleted || worker.providerData.vm.id) {
-        return state;
+        return;
       }
       let nicDeleted = await this.deprovisionResource({
         worker,
@@ -976,7 +964,7 @@ class AzureProvider extends Provider {
         monitor,
       });
       if (!nicDeleted || worker.providerData.nic.id) {
-        return state;
+        return;
       }
       let ipDeleted = await this.deprovisionResource({
         worker,
@@ -985,7 +973,7 @@ class AzureProvider extends Provider {
         monitor,
       });
       if (!ipDeleted || worker.providerData.ip.id) {
-        return state;
+        return;
       }
 
       // handles deleting osDisks and dataDisks
@@ -1004,17 +992,16 @@ class AzureProvider extends Provider {
       }
       // check for un-deleted disks
       if (!disksDeleted || _.some(worker.providerData.disks.map(i => i['id']))) {
-        return state;
+        return;
       }
 
       // change to stopped
-      state = states.STOPPED;
-      monitor.debug(`setting state to ${state}`);
+      monitor.debug(`setting state to STOPPED`);
       await worker.update(this.db, worker => {
         const now = new Date();
         worker.lastModified = now;
         worker.lastChecked = now;
-        worker.state = state;
+        worker.state = Worker.states.STOPPED;
       });
     } catch (err) {
       // if this is called directly and not via checkWorker may not exist
@@ -1032,7 +1019,6 @@ class AzureProvider extends Provider {
         WorkerPoolError: this.WorkerPoolError,
       });
     }
-    return state;
   }
 }
 
