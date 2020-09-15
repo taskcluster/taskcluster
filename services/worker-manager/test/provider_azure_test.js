@@ -672,61 +672,64 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.update(helper.db, worker => {
         worker.state = 'running';
       });
+
+      debug('removeWorker');
+      await provider.removeWorker({ worker, reason: 'test' });
       await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated', 'allocated'], vm: 'allocated' });
 
       debug('first call');
-      await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated', 'allocated'], vm: 'deleting' });
 
       debug('second call');
-      await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated', 'allocated'], vm: 'deleting' });
 
       debug('VM deleted');
       await fake.computeClient.virtualMachines.fakeFinishRequest('rgrp', vmName);
 
       debug('third call');
-      await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'allocated', nic: 'deleting', disks: ['allocated', 'allocated'], vm: 'none' });
 
       debug('fourth call');
-      await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'allocated', nic: 'deleting', disks: ['allocated', 'allocated'], vm: 'none' });
 
       debug('NIC deleted');
       await fake.networkClient.networkInterfaces.fakeFinishRequest('rgrp', nicName);
 
       debug('fifth call');
-      await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'deleting', nic: 'none', disks: ['allocated', 'allocated'], vm: 'none' });
 
       debug('sixth call');
-      await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'deleting', nic: 'none', disks: ['allocated', 'allocated'], vm: 'none' });
 
       debug('IP deleted');
       await fake.networkClient.publicIPAddresses.fakeFinishRequest('rgrp', ipName);
 
       debug('seventh call');
-      await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'none', nic: 'none', disks: ['deleting', 'deleting'], vm: 'none' });
 
       debug('eighth call');
-      await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'none', nic: 'none', disks: ['deleting', 'deleting'], vm: 'none' });
 
       debug('disks0 deleted');
       await fake.computeClient.disks.fakeFinishRequest('rgrp', 'disks0');
 
       debug('ninth call');
-      await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'none', nic: 'none', disks: ['none', 'deleting'], vm: 'none' });
 
       debug('disks1 deleted');
       await fake.computeClient.disks.fakeFinishRequest('rgrp', 'disks1');
 
       debug('tenth call');
-      await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'none', nic: 'none', disks: ['none', 'none'], vm: 'none' });
       assert.equal(worker.state, 'stopped');
     });
@@ -740,15 +743,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         worker.state = 'running';
       });
 
-      debug('first call');
+      debug('removeWorker');
       await provider.removeWorker({ worker, reason: 'test' });
+
+      debug('first call');
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated'], vm: 'deleting' });
 
       debug('removal fails');
       await fake.computeClient.virtualMachines.fakeFailRequest('rgrp', vmName, 'uhoh');
 
       debug('second call');
-      await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       // removeWorker doesn't care, keeps waiting
       await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated'], vm: 'deleting' });
     });
@@ -763,6 +769,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated'], vm: 'deleting' });
 
       // check that there's a request to delete the VM (by name)
@@ -779,6 +786,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       await provider.removeWorker({ worker, reason: 'test' });
+      await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ disks: ['deleting'] });
 
       // check that there's a request to delete the disk (by name)
@@ -943,8 +951,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         worker.providerData.terminateAfter = Date.now() - 1000;
       });
       await provider.checkWorker({ worker });
-      await worker.reload(helper.db);
-      assert(worker.state === 'stopped');
       assert(provider.removeWorker.called);
       assert(!provider.provisionResources.called);
     });
