@@ -487,7 +487,6 @@ suite(testing.suiteName(), function() {
       const rows = await db.fns.get_non_stopped_workers(null, null, null, null, null);
 
       assert.equal(rows.length, 6);
-      console.log(rows);
 
       i = 0;
       const nonStoppedIds = [0, 2, 4, 5, 6, 7];
