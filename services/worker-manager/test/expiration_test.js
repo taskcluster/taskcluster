@@ -92,7 +92,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('expireWorkerPoolErrors', function() {
+  suite('expireErrors', function() {
     const eid = taskcluster.slugid();
     const makeWPE = async values => {
       const now = new Date();
@@ -114,23 +114,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
 
     setup(function() {
-      helper.load.remove('expireWorkerPoolErrors');
+      helper.load.remove('expireErrors');
     });
 
     test('expire an empty set of errors', async function() {
-      await helper.load('expireWorkerPoolErrors');
+      await helper.load('expireErrors');
       assert.equal((await checkWPE()).length, 0);
     });
 
     test('active error', async function() {
       await makeWPE({ reported: taskcluster.fromNow('10 hours') });
-      await helper.load('expireWorkerPoolErrors');
+      await helper.load('expireErrors');
       assert.equal((await checkWPE()).length, 1);
     });
 
     test('old error', async function() {
       await makeWPE({ reported: taskcluster.fromNow('-10 hours') });
-      await helper.load('expireWorkerPoolErrors');
+      await helper.load('expireErrors');
       assert.equal((await checkWPE()).length, 0);
     });
   });
