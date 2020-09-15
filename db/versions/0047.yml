@@ -11,7 +11,6 @@ methods:
     serviceName: worker_manager
     args: worker_pool_id_in text, worker_group_in text, worker_id_in text, page_size_in integer, page_offset_in integer
     returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz)
-    # this adds the `order by` clause to the function definition in 0028.
     body: |-
       begin
         return query
