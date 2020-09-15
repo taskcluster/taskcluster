@@ -464,6 +464,49 @@ suite(testing.suiteName(), function() {
       assert.equal(rows.length, 1);
     });
 
+    helper.dbTest('get non-stopped workers', async function(db) {
+      const now = new Date();
+
+      let i = 0;
+      // we are randomly ordering the ids to make sure rows are actually coming back ordered accordingly
+      const randomOrderIds = [4, 6, 5, 3, 2, 7, 0, 1];
+      for (let state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
+        await create_worker(db, {
+          worker_pool_id: `wp/${randomOrderIds[i]}`,
+          worker_group: `group${randomOrderIds[i]}`,
+          worker_id: `id${randomOrderIds[i]}`,
+          created: now,
+          last_modified: now,
+          last_checked: now,
+          expires: now,
+          state,
+        });
+        i++;
+      }
+
+      const rows = await db.fns.get_non_stopped_workers(null, null, null, null, null);
+
+      assert.equal(rows.length, 6);
+      console.log(rows);
+
+      i = 0;
+      const nonStoppedIds = [0, 2, 4, 5, 6, 7];
+      for (let row of rows) {
+        assert.equal(row.worker_pool_id, `wp/${nonStoppedIds[i]}`);
+        assert.equal(row.worker_group, `group${nonStoppedIds[i]}`);
+        assert.equal(row.worker_id, `id${nonStoppedIds[i]}`);
+        assert.equal(row.provider_id, 'provider');
+        assert(row.state !== 'stopped');
+        assert.equal(row.created.toJSON(), now.toJSON());
+        assert.equal(row.expires.toJSON(), now.toJSON());
+        assert.equal(row.last_modified.toJSON(), now.toJSON());
+        assert.equal(row.last_checked.toJSON(), now.toJSON());
+        assert.equal(row.capacity, 1);
+        assert.deepEqual(row.provider_data, { providerdata: true });
+        i++;
+      }
+    });
+
     helper.dbTest('update_worker, change to a single field', async function(db) {
       const etag = await create_worker(db);
       await db.deprecatedFns.update_worker(
