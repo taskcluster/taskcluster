@@ -141,6 +141,7 @@
    * [`expire_worker_pool_errors`](#expire_worker_pool_errors)
    * [`expire_worker_pools`](#expire_worker_pools)
    * [`expire_workers`](#expire_workers)
+   * [`get_non_stopped_workers`](#get_non_stopped_workers)
    * [`get_worker_2`](#get_worker_2)
    * [`get_worker_pool_error`](#get_worker_pool_error)
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
@@ -2183,6 +2184,7 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`expire_worker_pool_errors`](#expire_worker_pool_errors)
 * [`expire_worker_pools`](#expire_worker_pools)
 * [`expire_workers`](#expire_workers)
+* [`get_non_stopped_workers`](#get_non_stopped_workers)
 * [`get_worker_2`](#get_worker_2)
 * [`get_worker_pool_error`](#get_worker_pool_error)
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
@@ -2306,6 +2308,33 @@ no previous_provider_ids.  Returns the worker pool ids that it deletes.
 
 Expire workers that come before `expires_in`.
 Returns a count of rows that have been deleted.
+
+### get_non_stopped_workers
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `worker_group text`
+  * `worker_id text`
+  * `provider_id text`
+  * `created timestamptz`
+  * `expires timestamptz`
+  * `state text`
+  * `provider_data jsonb`
+  * `capacity integer`
+  * `last_modified timestamptz`
+  * `last_checked timestamptz`
+
+Get non-stopped workers filtered by the optional arguments,
+ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset `page_offset`.
 
 ### get_worker_2
 
