@@ -49,7 +49,7 @@ class WorkerScanner {
   async scan() {
     await this.providers.forAll(p => p.scanPrepare());
 
-    const fetch = async (size, offset) => await this.db.fns.get_workers(null, null, null, null, size, offset);
+    const fetch = async (size, offset) => await this.db.fns.get_non_stopped_workers(null, null, null, size, offset);
     for await (let row of paginatedIterator({ fetch })) {
       const worker = Worker.fromDb(row);
       if (worker.state !== Worker.states.STOPPED) {
