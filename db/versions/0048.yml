@@ -1,0 +1,10 @@
+version: 48
+description: Add an index on state in the workers table
+migrationScript: |-
+  begin
+    create index workers_state_idx on workers (state);
+  end
+downgradeScript: |-
+  begin
+  end
+methods: []
