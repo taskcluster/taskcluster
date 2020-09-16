@@ -148,6 +148,7 @@
    * [`get_worker_pool_with_capacity`](#get_worker_pool_with_capacity)
    * [`get_worker_pools_with_capacity`](#get_worker_pools_with_capacity)
    * [`get_workers`](#get_workers)
+   * [`get_workers_without_provider_data`](#get_workers_without_provider_data)
    * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
    * [`update_worker_2`](#update_worker_2)
    * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
@@ -2191,6 +2192,7 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`get_worker_pool_with_capacity`](#get_worker_pool_with_capacity)
 * [`get_worker_pools_with_capacity`](#get_worker_pools_with_capacity)
 * [`get_workers`](#get_workers)
+* [`get_workers_without_provider_data`](#get_workers_without_provider_data)
 * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
 * [`update_worker_2`](#update_worker_2)
 * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
@@ -2465,6 +2467,33 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `last_checked timestamptz`
 
 Get existing workers filtered by the optional arguments,
+ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
+
+### get_workers_without_provider_data
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+  * `state_in text`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `worker_group text`
+  * `worker_id text`
+  * `provider_id text`
+  * `created timestamptz`
+  * `expires timestamptz`
+  * `state text`
+  * `capacity integer`
+  * `last_modified timestamptz`
+  * `last_checked timestamptz`
+
+Get existing workers (without their `provider_data`) filtered by the optional arguments,
 ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.

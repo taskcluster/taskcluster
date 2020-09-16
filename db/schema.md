@@ -509,4 +509,5 @@ CREATE TABLE workers (
 );
 ALTER TABLE workers
     ADD CONSTRAINT workers_pkey PRIMARY KEY (worker_pool_id, worker_group, worker_id);
+CREATE INDEX workers_state_idx ON workers USING btree (state);
 ```
