@@ -55,6 +55,10 @@ exports.withCfg = (mock, skipping) => {
     return;
   }
   suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
     exports.cfg = await exports.load('cfg');
 
     exports.load.save();
@@ -66,12 +70,20 @@ exports.withCfg = (mock, skipping) => {
       description: 'testing',
     })));
 
-    // override cfg.app.azureAccounts based on the azure secret
-    const sec = exports.secrets.get('azure');
-    exports.load.cfg('app.azureAccounts', { [sec.accountId]: sec.accessKey });
+    // override cfg.app.azureAccounts based on the azure secret, or mock it
+    if (mock) {
+      exports.load.cfg('app.azureAccounts', {});
+    } else {
+      const sec = exports.secrets.get('azure');
+      exports.load.cfg('app.azureAccounts', { [sec.accountId]: sec.accessKey });
+    }
   });
 
   suiteTeardown(async function() {
+    if (skipping()) {
+      return;
+    }
+
     exports.load.restore();
   });
 };
