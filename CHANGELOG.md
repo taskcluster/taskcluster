@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v37.2.0
+
+### DEPLOYERS
+
+▶ [patch] [#3513](https://github.com/taskcluster/taskcluster/issues/3513)
+Node has been upgraded to 12.18.4 to address CVE-2020-8201.
+
+▶ [patch] [#3501](https://github.com/taskcluster/taskcluster/issues/3501)
+The worker-manager `expire-errors` job now correctly runs the error expiration process.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#3347](https://github.com/taskcluster/taskcluster/issues/3347)
+The Azure provider now accepts an `ignoreFailedProvisioningStates` property in its launch configs which will cause it to ignore `ProvisioningState/failed/<code>` states on VMs.  This is specifically useful for ignoring OSProvisioningTimedOut when the Azure VM agent is not running.
+
+▶ [patch] [#3346](https://github.com/taskcluster/taskcluster/issues/3346)
+The Azure provider now looks only for well-understood failure-related states in the Azure API to determine when a worker has failed.  In cases where these measures miss an event, (re)registrationTimeouts will terminate the worker.
+
+▶ [patch] [#3058](https://github.com/taskcluster/taskcluster/issues/3058)
+The worker-manager's Azure provider now more accurately tracks the state of workers, and will not mark a worker RUNNING until it has called `registerWorker`.
+
+### OTHER
+
+▶ Additional changes not described here: [#3036](https://github.com/taskcluster/taskcluster/issues/3036), [#3502](https://github.com/taskcluster/taskcluster/issues/3502), [#3503](https://github.com/taskcluster/taskcluster/issues/3503).
+
 ## v37.1.0
 
 ### DEPLOYERS
