@@ -50,9 +50,12 @@ func ImageSetDirs() ([]os.FileInfo, error) {
 func main() {
 	ConfigureLogging()
 
+	// Take taskcluster connection details from TASKCLUSTER_* env variables
+	workerManager := tcworkermanager.NewFromEnv()
+
 	imageSetDirs, err := ImageSetDirs()
 	ExitOnError(err)
-	allWorkerPools, err := AllWorkerPools()
+	allWorkerPools, err := AllWorkerPools(workerManager)
 	ExitOnError(err)
 	workerPools, err := FilterWorkerPools(os.Args[1:], allWorkerPools)
 	ExitOnError(err)
@@ -63,8 +66,13 @@ func main() {
 	}
 
 	Title("Worker Pools")
-	for _, i := range workerPools.SortedNames() {
-		fmt.Println(i)
+	for _, workerPoolName := range workerPools.SortedNames() {
+		fmt.Println(workerPoolName)
+		workers, err := AllWorkerPoolWorkers(workerManager, workerPoolName)
+		ExitOnError(err)
+		for _, worker := range workers {
+			fmt.Println(worker.WorkerID)
+		}
 	}
 }
 
@@ -73,20 +81,18 @@ func main() {
 func Title(title string) {
 	fmt.Println("")
 	fmt.Println(title)
-	for _ = range title {
+	for range title {
 		fmt.Print("=")
 	}
 	fmt.Println("")
 }
 
-// AllWorkerPools queries Worker Manager (using taskcluster environment
-// variables to connect) for all worker pool full definitions
-func AllWorkerPools() (WorkerPools, error) {
-	workermanager := tcworkermanager.NewFromEnv()
+// AllWorkerPools fetches all Worker Pools from workerManager
+func AllWorkerPools(workerManager *tcworkermanager.WorkerManager) (WorkerPools, error) {
 	allWorkerPools := WorkerPools{}
 	continuationToken := ""
 	for {
-		workerPools, err := workermanager.ListWorkerPools(continuationToken, "")
+		workerPools, err := workerManager.ListWorkerPools(continuationToken, "")
 		if err != nil {
 			return nil, err
 		}
@@ -101,10 +107,31 @@ func AllWorkerPools() (WorkerPools, error) {
 	return allWorkerPools, nil
 }
 
+// AllWorkerPoolWorkers fetches all workers of worker pool workerPool from
+// workerManager
+func AllWorkerPoolWorkers(workerManager *tcworkermanager.WorkerManager, workerPool string) ([]tcworkermanager.WorkerFullDefinition, error) {
+	workers := []tcworkermanager.WorkerFullDefinition{}
+	continuationToken := ""
+	for {
+		workersSubset, err := workerManager.ListWorkersForWorkerPool(workerPool, continuationToken, "")
+		if err != nil {
+			return nil, err
+		}
+		for _, worker := range workersSubset.Workers {
+			workers = append(workers, worker)
+		}
+		continuationToken = workersSubset.ContinuationToken
+		if continuationToken == "" {
+			break
+		}
+	}
+	return workers, nil
+}
+
 // FilterWorkerPools takes a list of POSIX regular expressions and a set of
 // worker pool definitions, and returns the subset of worker pool definitions
-// whose name match one of the regular expressions. If args is nil or has no
-// elements, workerPools is returned.
+// whose name match one of the regular expressions. If regularExpressions is
+// nil or has no elements, workerPools is returned.
 func FilterWorkerPools(regularExpressions []string, workerPools WorkerPools) (WorkerPools, error) {
 	// If no regular expressions, return all worker pools.
 	if len(regularExpressions) == 0 {
