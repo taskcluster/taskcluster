@@ -69,7 +69,7 @@
     "prismjs": "^1.15.0",
     "prop-types": "^15.6.2",
     "qs": "^6.6.0",
-    "ramda": "^0.26.1",
+    "ramda": "^0.27.0",
     "react": "^16.8.6",
     "react-apollo": "^3.0.0",
     "react-copy-to-clipboard": "^5.0.1",
