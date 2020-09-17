@@ -81,7 +81,7 @@
     "passport-github": "^1.1.0",
     "pg": "^7.14.0",
     "quick-lru": "^4.0.0",
-    "ramda": "^0.26.0",
+    "ramda": "^0.27.0",
     "regex-escape": "^3.4.8",
     "request-ip": "^2.0.2",
     "rimraf": "^3.0.0",
