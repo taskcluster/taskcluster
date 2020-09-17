@@ -1,13 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
+	"sync"
 
 	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcworkermanager"
 )
@@ -60,19 +63,42 @@ func main() {
 	workerPools, err := FilterWorkerPools(os.Args[1:], allWorkerPools)
 	ExitOnError(err)
 
-	Title("Image sets")
-	for _, i := range imageSetDirs {
-		fmt.Println(i.Name())
-	}
+	workerPoolBuffers := make([]*bytes.Buffer{}, 0, len(workerPools))
+	var wg sync.WaitGroup
+	wg.Add(len(workerPools))
 
 	Title("Worker Pools")
 	for _, workerPoolName := range workerPools.SortedNames() {
-		fmt.Println(workerPoolName)
-		workers, err := AllWorkerPoolWorkers(workerManager, workerPoolName)
-		ExitOnError(err)
-		for _, worker := range workers {
-			fmt.Println(worker.WorkerID)
-		}
+		b := &bytes.Buffer{}
+		workerPoolBuffers = append(workerPoolBuffers, b)
+		fmt.Fprintln(b, workerPoolName)
+		go func(workerPool, b *bytes.Buffer) {
+			defer wg.Done()
+			FetchWorkerPool(workerManager, workerPool, name, b)
+		}(workerPool, b)
+	}
+	wg.Wait()
+	for _, b := range workerPoolBuffers {
+		fmt.Print(b.String())
+	}
+}
+
+func FetchWorkerPool(workerManager *tcworkermanager.WorkerManager, workerPool string, out io.Writer) {
+	workers, err := AllWorkerPoolWorkers(workerManager, workerPoolName)
+	ExitOnError(err)
+	workerPool := workerPools[workerPoolName]
+	switch workerPool.ProviderID {
+	case "community-tc-workers-aws":
+		LogAWS(out, workerPool.Config)
+	case "community-tc-workers-google":
+		LogGoogle(out, workerPool.Config)
+	case "static":
+		LogStatic(out, workerPool.Config)
+	default:
+		LogUnknown(out, workerPool.Config)
+	}
+	for _, worker := range workers {
+		fmt.Fprintln(out, worker.WorkerID)
 	}
 }
 
@@ -117,9 +143,7 @@ func AllWorkerPoolWorkers(workerManager *tcworkermanager.WorkerManager, workerPo
 		if err != nil {
 			return nil, err
 		}
-		for _, worker := range workersSubset.Workers {
-			workers = append(workers, worker)
-		}
+		workers = append(workers, workersSubset.Workers...)
 		continuationToken = workersSubset.ContinuationToken
 		if continuationToken == "" {
 			break
