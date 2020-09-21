@@ -108,7 +108,6 @@ const IGNORE = {
     'ws',
   ].includes(pkg),
   'workers/docker-worker/yarn.lock': pkg => [
-    'ajv',
     'brace-expansion',
     'chownr',
     'end-of-stream',
