@@ -1,5 +1,5 @@
 const assert = require('assert');
-const Docker = require('dockerode-promise');
+const Docker = require('dockerode');
 const dockerOpts = require('dockerode-options');
 const DockerWorker = require('../dockerworker');
 const fs = require('mz/fs');
