@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { string } from 'prop-types';
 import { hterm, lib } from 'hterm-umd';
-import { DockerExecClient } from 'docker-exec-websocket-server';
+import { DockerExecClient } from 'docker-exec-websocket-client';
 import { dial } from 'ws-shell';
 import withAlertOnClose from '../../utils/withAlertOnClose';
 
