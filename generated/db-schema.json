@@ -5115,7 +5115,7 @@
     },
     {
       "description": "Add an index on state in the workers table",
-      "downgradeScript": "begin\nend",
+      "downgradeScript": "begin\n  drop index workers_state_idx;\nend",
       "methods": {
         "get_workers_without_provider_data": {
           "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer",
