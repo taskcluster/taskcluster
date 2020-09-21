@@ -464,6 +464,40 @@ suite(testing.suiteName(), function() {
       assert.equal(rows.length, 1);
     });
 
+    helper.dbTest('get workers without provider_data', async function(db) {
+      const now = new Date();
+      for (let i = 0; i < 2; i++) {
+        await create_worker(db, {
+          worker_pool_id: `wp/${i}`,
+          worker_group: `group${i}`,
+          worker_id: `id${i}`,
+          created: now,
+          last_modified: now,
+          last_checked: now,
+          expires: now,
+        });
+      }
+
+      let rows = await db.fns.get_workers_without_provider_data(null, null, null, null, null, null);
+      assert.equal(rows.length, 2);
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+
+        assert(!row.provider_data);
+        assert.equal(row.worker_pool_id, `wp/${i}`);
+        assert.equal(row.worker_group, `group${i}`);
+        assert.equal(row.worker_id, `id${i}`);
+        assert.equal(row.provider_id, 'provider');
+        assert.equal(row.state, 'state');
+        assert.equal(row.created.toJSON(), now.toJSON());
+        assert.equal(row.expires.toJSON(), now.toJSON());
+        assert.equal(row.last_modified.toJSON(), now.toJSON());
+        assert.equal(row.last_checked.toJSON(), now.toJSON());
+        assert.equal(row.capacity, 1);
+      }
+    });
+
     helper.dbTest('get non-stopped workers', async function(db) {
       const now = new Date();
 

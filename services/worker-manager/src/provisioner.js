@@ -143,12 +143,10 @@ class Provisioner {
       };
 
       // Check the state of workers (state is updated by worker-scanner)
-      const fetch = async (size, offset) => await this.db.fns.get_workers(null, null, null, null, size, offset);
+      const fetch = async (size, offset) => await this.db.fns.get_non_stopped_workers(null, null, null, size, offset);
       for await (let row of paginatedIterator({ fetch })) {
         const worker = Worker.fromDb(row);
-        if (worker.state !== Worker.states.STOPPED) {
-          seen(worker);
-        }
+        seen(worker);
       }
 
       // We keep track of which providers are actively managing
