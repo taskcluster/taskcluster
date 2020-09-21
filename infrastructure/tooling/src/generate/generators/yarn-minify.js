@@ -111,7 +111,6 @@ const IGNORE = {
     'ajv',
     'brace-expansion',
     'chownr',
-    'debug',
     'end-of-stream',
     'glob',
     'inherits',
