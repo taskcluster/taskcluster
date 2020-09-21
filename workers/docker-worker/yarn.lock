@@ -526,6 +526,15 @@ diveSync@^0.3.0:
   dependencies:
     append ">=0.1.0"
 
+docker-exec-websocket-client@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/docker-exec-websocket-client/-/docker-exec-websocket-client-1.4.0.tgz#d6e4ebb879c040ace5e99f7478fffa2c71d087b9"
+  integrity sha512-rle9HF49Uau9G04cDnqIC1Q8M9Q6hrX6BuwZV4jk1+ciWLzfUt8A7dr5ISyxt4jAexTX+C4x9y0X15x12O+JpQ==
+  dependencies:
+    debug "^4.1.1"
+    through2 "^3.0.1"
+    ws "^7.1.2"
+
 docker-exec-websocket-server@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/docker-exec-websocket-server/-/docker-exec-websocket-server-2.0.0.tgz#c069727899180282a9f959558a969623228f3f62"

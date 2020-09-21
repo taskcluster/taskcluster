@@ -78,6 +78,7 @@
     "ws": "^7.1.2"
   },
   "devDependencies": {
+    "docker-exec-websocket-client": "^1.4.0",
     "taskcluster-lib-testing": "link:../../libraries/testing"
   }
 }
