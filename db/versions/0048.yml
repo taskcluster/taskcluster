@@ -6,6 +6,7 @@ migrationScript: |-
   end
 downgradeScript: |-
   begin
+    drop index workers_state_idx;
   end
 methods:
   get_workers_without_provider_data:
