@@ -114,7 +114,6 @@ const IGNORE = {
     'glob',
     'inherits',
     'ipaddr.js',
-    'js-yaml',
     'mime-types',
     'minimatch',
     'readable-stream',
