@@ -890,7 +890,7 @@ agent-base@^4.3.0:
   dependencies:
     es6-promisify "^5.0.0"
 
-ajv@^6.10.0, ajv@^6.10.2, ajv@^6.12.3, ajv@^6.5.5:
+ajv@^6.10.0, ajv@^6.10.2, ajv@^6.12.3:
   version "6.12.4"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.12.4.tgz#0614facc4522127fa713445c6bfd3ebd376e2234"
   integrity sha512-eienB2c9qVQs2KWexhkrdMLVDoIQCz5KSeLxwg9Lzk4DOfBtIK9PQwwufcsn1jjGuf9WZmqPMbGxOzfcuphJCQ==
@@ -3414,15 +3414,7 @@ har-schema@^2.0.0:
   resolved "https://registry.yarnpkg.com/har-schema/-/har-schema-2.0.0.tgz#a94c2224ebcac04782a0d9035521f24735b7ec92"
   integrity sha1-qUwiJOvKwEeCoNkDVSHyRzW37JI=
 
-har-validator@~5.1.0:
-  version "5.1.3"
-  resolved "https://registry.yarnpkg.com/har-validator/-/har-validator-5.1.3.tgz#1ef89ebd3e4996557675eed9893110dc350fa080"
-  integrity sha512-sNvOCzEQNr/qrvJgc3UG/kD4QtlHycrzwS+6mfTrrSq97BvaYcPZZI1ZSqGSPR73Cxn4LKTD4PttRwfU7jWq5g==
-  dependencies:
-    ajv "^6.5.5"
-    har-schema "^2.0.0"
-
-har-validator@~5.1.3:
+har-validator@~5.1.0, har-validator@~5.1.3:
   version "5.1.5"
   resolved "https://registry.yarnpkg.com/har-validator/-/har-validator-5.1.5.tgz#1f0803b9f8cb20c0fa13822df1ecddb36bde1efd"
   integrity sha512-nmT2T0lljbxdQZfspsno9hgrG3Uir6Ks5afism62poxqBM6sDnMEuPmzTq8XN0OEwqKLLdh1jQI3qyE66Nzb3w==
@@ -5184,12 +5176,13 @@ pascal-case@^3.1.1:
     tslib "^1.10.0"
 
 passport-auth0@^1.1.0:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/passport-auth0/-/passport-auth0-1.2.1.tgz#ff29c3c119ca1c58d227be39a1c65434d1ff379a"
-  integrity sha512-nruVLvQJycTuUfAY0jQa0PYljbuF9HQOq9TxoAs9lE/D9oKeve6wTjkJdZD1DDpzUKvS5BGMoPe1fL3HFX5STQ==
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/passport-auth0/-/passport-auth0-1.3.3.tgz#d377f9aea2f6e89af0318a6364a847e80966bb88"
+  integrity sha512-rcjT0fV6HnJuSb8REwREl42/K5LpGK+doekDgEQbtT/pNwLAjfobSMiQ3RbTP1CkiEcDVRucGucuDSfgqHX/Vg==
   dependencies:
     passport-oauth "^1.0.0"
-    request "^2.83.0"
+    passport-oauth2 "^1.5.0"
+    request "^2.88.0"
 
 passport-github@^1.1.0:
   version "1.1.0"
@@ -5207,7 +5200,7 @@ passport-oauth1@1.x.x:
     passport-strategy "1.x.x"
     utils-merge "1.x.x"
 
-passport-oauth2@1.x.x:
+passport-oauth2@1.x.x, passport-oauth2@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/passport-oauth2/-/passport-oauth2-1.5.0.tgz#64babbb54ac46a4dcab35e7f266ed5294e3c4108"
   integrity sha512-kqBt6vR/5VlCK8iCx1/KpY42kQ+NEHZwsSyt4Y6STiNjU+wWICG1i8ucc1FapXDGO15C5O5VZz7+7vRzrDPXXQ==
@@ -5838,7 +5831,7 @@ request-ip@^2.0.2:
     tunnel-agent "^0.6.0"
     uuid "^3.3.2"
 
-request@^2.65.0, request@^2.83.0:
+request@^2.65.0:
   version "2.88.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.88.0.tgz#9c2fca4f7d35b592efe57c7f0a55e81052124fef"
   integrity sha512-NAqBSrijGLZdM0WZNsInLJpkJokL72XYjUpnB0iwsRgxh7dB6COrHnTBNwN0E+lHDAJzu7kLAkDeY08z2/A0hg==
@@ -6957,9 +6950,9 @@ upper-case@^2.0.1:
     tslib "^1.10.0"
 
 uri-js@^4.2.2:
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/uri-js/-/uri-js-4.2.2.tgz#94c540e1ff772956e2299507c010aea6c8838eb0"
-  integrity sha512-KY9Frmirql91X2Qgjry0Wd4Y+YTdrdZheS8TFwvkbLWf/G5KNJDCh6pKL5OZctEW4+0Baa5idK2ZQuELRwPznQ==
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/uri-js/-/uri-js-4.4.0.tgz#aa714261de793e8a82347a7bcc9ce74e86f28602"
+  integrity sha512-B0yRTzYdUCCn9n+F4+Gh4yIDtMQcaJsmYBDsTSG8g/OejKBodLQ2IHfN3bM7jUsRXndopT7OIXWdYqc1fjmV6g==
   dependencies:
     punycode "^2.1.0"
 
