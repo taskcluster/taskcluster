@@ -34,7 +34,7 @@
     "dev-null": "^0.1.0",
     "diskspace": "^1.0.3",
     "diveSync": "^0.3.0",
-    "docker-exec-websocket-server": "^1.4.0",
+    "docker-exec-websocket-server": "^2.0.0",
     "docker-image-parser": "^1.0.0",
     "dockerode": "^3.2.1",
     "dockerode-options": "^0.2.0",
@@ -78,6 +78,7 @@
     "ws": "^7.1.2"
   },
   "devDependencies": {
+    "docker-exec-websocket-client": "^1.4.0",
     "taskcluster-lib-testing": "link:../../libraries/testing"
   }
 }
