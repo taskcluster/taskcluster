@@ -61,8 +61,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('create_last_fire/get_last_fires', async function(db) {
       const now = new Date();
       const taskId = slug.nice();
-      const etag = await create_last_fire(db, { task_id: taskId, task_create_time: now });
-      assert(etag);
+      await create_last_fire(db, { task_id: taskId, task_create_time: now });
 
       const rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
       assert.equal(rows.length, 1);
@@ -151,8 +150,7 @@ suite(testing.suiteName(), function() {
 
   suite(`${testing.suiteName()} - hooks_queues`, function() {
     helper.dbTest('create_queue/get_queues', async function(db) {
-      const etag = await create_hooks_queue(db, {});
-      assert(etag);
+      await create_hooks_queue(db, {});
 
       const rows = await db.fns.get_hooks_queues(10, 0);
       assert.equal(rows.length, 1);
@@ -221,9 +219,9 @@ suite(testing.suiteName(), function() {
       await db.fns.delete_last_fires('hook/group/id', 'hook-id');
     });
 
-    helper.dbTest('update_hooks_queue_bindings updates bindings and etag', async function(db) {
+    helper.dbTest('update_hooks_queue_bindings updates bindings', async function(db) {
       const bindings = [];
-      const etag = await create_hooks_queue(db, { bindings });
+      await create_hooks_queue(db, { bindings });
 
       bindings.push({ exchange: 'exchange', routingKeyPattern: 'routingKeyPattern' });
 
@@ -232,7 +230,6 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].hook_group_id, 'hook/group/id');
       assert.equal(rows[0].hook_id, 'hook-id');
       assert.equal(rows[0].queue_name, 'queue-name');
-      assert.notEqual(rows[0].etag, etag);
       assert.deepEqual(rows[0].bindings, bindings);
     });
   });
