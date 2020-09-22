@@ -125,11 +125,6 @@ array-flatten@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/array-flatten/-/array-flatten-1.1.1.tgz#9a5f699051b1e7073328f2a008968b64ea2955d2"
 
-asap@~2.0.3:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/asap/-/asap-2.0.6.tgz#e50347611d7e690943208bbdafebcbc2fb866d46"
-  integrity sha1-5QNHYR1+aQlDIIu9r+vLwvuGbUY=
-
 asn1@~0.2.0, asn1@~0.2.3:
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/asn1/-/asn1-0.2.4.tgz#8d2475dfab553bb33e77b54e59e880bb8ce23136"
@@ -441,10 +436,6 @@ debug@*, debug@^4.0.0, debug@^4.1.0, debug@^4.1.1:
   dependencies:
     ms "^2.1.1"
 
-debug@0.8.0:
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-0.8.0.tgz#0541ea91f0e503fdf0c5eed418a32550234967f0"
-
 debug@2.6.9:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
@@ -566,19 +557,12 @@ dockerode-options@^0.2.0:
   resolved "https://registry.yarnpkg.com/dockerode-options/-/dockerode-options-0.2.1.tgz#137cb809ece7ac5b5ad52b5f7e1cd798f3a3d0b4"
   integrity sha1-E3y4CeznrFta1StffhzXmPOj0LQ=
 
-dockerode-process@^0.6.1:
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/dockerode-process/-/dockerode-process-0.6.1.tgz#4318077d610b4a5812b09b7e0a568ed17d9ff5e3"
+dockerode-process@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/dockerode-process/-/dockerode-process-0.7.0.tgz#c7e552485a6d1b9597bc9669f7803756f934dea3"
+  integrity sha512-w8uMX7Sxn10JQQmtZkK6eBjpKV8A/rtjzjpty1f5wHWC2kLgrpxd8g3RqbwzrORUmKS45deoR3JT4Sn2XubbFw==
   dependencies:
-    debug "0.8.0"
-    dockerode-promise "0.1.0"
-    promise "~7.0.3"
-
-dockerode-promise@0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/dockerode-promise/-/dockerode-promise-0.1.0.tgz#343813b914b63aac6b329527a5d702994ef01145"
-  dependencies:
-    promise "^7.0.1"
+    debug "2.6.9"
 
 dockerode@^3.2.1:
   version "3.2.1"
@@ -752,11 +736,6 @@ extsprintf@1.0.2:
 extsprintf@^1.2.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/extsprintf/-/extsprintf-1.3.0.tgz#96918440e3041a7a414f8c52e3c574eb3c3e1e05"
-
-fast-deep-equal@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-2.0.1.tgz#7b05218ddf9667bf7f370bf7fdb2cb15fdd0aa49"
-  integrity sha1-ewUhjd+WZ79/Nwv3/bLLFf3Qqkk=
 
 fast-deep-equal@^3.1.1:
   version "3.1.3"
@@ -1794,19 +1773,6 @@ promise-retry@^1.1.1:
   dependencies:
     err-code "^1.0.0"
     retry "^0.10.0"
-
-promise@^7.0.1:
-  version "7.3.1"
-  resolved "https://registry.yarnpkg.com/promise/-/promise-7.3.1.tgz#064b72602b18f90f29192b8b1bc418ffd1ebd3bf"
-  integrity sha512-nolQXZ/4L+bP/UGlkfaIujX9BKxGwmQ9OT4mOt5yvy8iK1h3wqTEJCijzGANTCCl9nWjY41juyAn2K3Q1hLLTg==
-  dependencies:
-    asap "~2.0.3"
-
-promise@~7.0.3:
-  version "7.0.4"
-  resolved "https://registry.yarnpkg.com/promise/-/promise-7.0.4.tgz#363e84a4c36c8356b890fed62c91ce85d02ed539"
-  dependencies:
-    asap "~2.0.3"
 
 promisepipe@^3.0.0:
   version "3.0.0"
