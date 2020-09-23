@@ -50,7 +50,7 @@ class StaticProvider extends Provider {
       worker.capacity = input.capacity;
       worker.providerData = {
         ...worker.providerData,
-        staticSecret: input.providerData.staticSecret,
+        staticSecret: input.providerInfo.staticSecret,
       };
     });
     return worker;
