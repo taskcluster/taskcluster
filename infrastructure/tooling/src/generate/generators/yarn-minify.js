@@ -116,7 +116,6 @@ const IGNORE = {
     'ipaddr.js',
     'mime-types',
     'minimatch',
-    'readable-stream',
     'safe-buffer',
     'which',
   ].includes(pkg),
