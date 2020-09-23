@@ -19,7 +19,6 @@ const artifactUtils = {
       details: row.details,
       present: row.present,
       expires: row.expires,
-      etag: row.etag,
     };
   },
   // Create a serializable representation of this namespace suitable for response
