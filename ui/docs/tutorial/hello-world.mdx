@@ -19,13 +19,15 @@ The first thing you will need to know is the URL of the deployment (called a "[r
 The root URL for this deployment is `%root_url%`.
 </SiteSpecific>
 <SiteSpecific showIfNotSet={['root_url']}>
-See the [Root URLs](/docs/manual/using/root-urls) documentation for help finding a suitable root URL for experimentation.
+See [Finding a Taskcluster Deployment](/docs/tutorial/finding-tc) for help getting a root URL.
 </SiteSpecific>
 
 ## Signing In
 
 Once you've determined the rootUrl for your deployment, you'll need to visit it in a browser and click the "sign in" link.
 Sign in using whatever method best suits you.
+
+## Finding a Worker Pool
 
 Once you're signed in, you will need to figure out which, if any, worker pools you have permission to run tasks in.
 Click the userpic in the upper-right corner and choose "Account", and look for scopes beginning with `queue:create-task:`.
@@ -34,6 +36,12 @@ Look for one that seems general-purpose, or ask the folks who administer your de
 For example, you might see `queue:create-task:highest:tutorial/docker-worker`.
 This grants access to workerPool `tutorial/docker-worker`, also known as provisionerId `tutorial` and workerType `docker-worker`.
 If possible, choose one that is running docker-worker.
+
+<SiteSpecific>
+In this deployment, `%tutorial_worker_pool_id%` is a good choice.
+</SiteSpecific>
+
+## Creating a Task
 
 Now that you've got a worker pool in mind, go to "Create a task" on the navigation menu.
 What you see in the resulting text box is a bare-bones task description, looking something like this (the details may evolve as features are added):
@@ -58,8 +66,8 @@ metadata:
 ```
 
 Happily, this is already set up to print "hello world"!
-Update the provisionerId and workerType according to your discoveries above.
-Submit the task, and click the resulting task ID to load the task inspector while the task is scheduled and run.
+Update the provisionerId and workerType according to your discoveries above (the worker pool is in the form `provisionerId / workerType`).
+Submitting the task will load the task inspector while the task is scheduled and run.
 
 The fields in the task description are explained in greater detail throughout the rest of this documentation, but briefly:
 

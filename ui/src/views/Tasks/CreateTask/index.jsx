@@ -28,6 +28,7 @@ import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import SpeedDial from '../../../components/SpeedDial';
+import SiteSpecific from '../../../components/SiteSpecific';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import HelpView from '../../../components/HelpView';
 import Dashboard from '../../../components/Dashboard';
@@ -44,9 +45,12 @@ import createTaskQuery from '../createTask.graphql';
 import Button from '../../../components/Button';
 import db from '../../../utils/db';
 
+const tutorialWorkerPoolId =
+  window.env.SITE_SPECIFIC.tutorial_worker_pool_id ||
+  'proj-getting-started/tutorial';
 const defaultTask = {
-  provisionerId: 'proj-getting-started',
-  workerType: 'tutorial',
+  provisionerId: tutorialWorkerPoolId.split('/')[0],
+  workerType: tutorialWorkerPoolId.split('/')[1],
   schedulerId: UI_SCHEDULER_ID,
   created: new Date().toISOString(),
   deadline: toDate(addHours(new Date(), 3)).toISOString(),
@@ -325,6 +329,10 @@ export default class CreateTask extends Component {
                 : 'inspect the created task'}
               . Your task will be saved so you can come back and experiment with
               variations.
+              <SiteSpecific>
+                If you are just getting started, `%tutorial_worker_pool_id%` is
+                a good choice for `provisionerId` / `workerType`.
+              </SiteSpecific>
             </Typography>
           </HelpView>
         }>

@@ -1,0 +1,26 @@
+---
+title: Finding a Taskcluster Deployment
+---
+
+import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
+
+This tutorial is most useful if you have a Taskcluster deployment to work with.
+Taskcluster deployments are identified by their [root URL](/docs/manual/using/root-urls).
+
+<SiteSpecific>
+The root URL for this deployment is `%root_url%`.
+</SiteSpecific>
+<SiteSpecific showIfNotSet={['root_url']}>
+If you are already working with a Taskcluster deployment, use the scheme and hostname of that page as the root URL.
+In fact, you can find a version of this tutorial specifically tailored to that deployment at `/docs/tutorial` on that root URL.
+The Firefox CI deployment is publicly viewable, and you are welcome to explore it; its root URL is [https://firefox-ci-tc.services.mozilla.com/](https://firefox-ci-tc.services.mozilla.com/).
+Failing that, check in with the [Taskcluster developers](https://chat.mozilla.org/#/room/#taskcluster:mozilla.org) to get access to a deployment where you can experiment.
+</SiteSpecific>
+
+<TutorialNavigation links={[
+  {link: "finding-tasks", text: "I want to look at some real tasks"},
+  {link: "hello-world", text: "I have a root URL, let's run a task"},
+]}>
+On with the show!
+</TutorialNavigation>

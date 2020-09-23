@@ -3445,10 +3445,17 @@
   },
   {
     "element": "h1",
-    "id": "authenticating-to-taskcluster",
-    "path": "/tutorial/authenticate",
+    "id": "api-access",
+    "path": "/tutorial/apis",
     "subtitle": null,
-    "title": "Authenticating to Taskcluster"
+    "title": "API Access"
+  },
+  {
+    "element": "h2",
+    "id": "authenticating-to-taskcluster",
+    "path": "/tutorial/apis",
+    "subtitle": "Authenticating to Taskcluster",
+    "title": "API Access"
   },
   {
     "element": "h1",
@@ -3480,37 +3487,16 @@
   },
   {
     "element": "h1",
-    "id": "debugging-a-task",
-    "path": "/tutorial/debug-task",
-    "subtitle": null,
-    "title": "Debugging a Task"
-  },
-  {
-    "element": "h2",
-    "id": "debugging-locally",
-    "path": "/tutorial/debug-task",
-    "subtitle": "Debugging locally",
-    "title": "Debugging a Task"
-  },
-  {
-    "element": "h2",
-    "id": "debugging-with-taskcluster",
-    "path": "/tutorial/debug-task",
-    "subtitle": "Debugging with Taskcluster",
-    "title": "Debugging a Task"
-  },
-  {
-    "element": "h2",
-    "id": "using-the-shell",
-    "path": "/tutorial/debug-task",
-    "subtitle": "Using the Shell",
-    "title": "Debugging a Task"
-  },
-  {
-    "element": "h1",
     "id": "finding-tasks",
     "path": "/tutorial/finding-tasks",
     "subtitle": null,
+    "title": "Finding Tasks"
+  },
+  {
+    "element": "h2",
+    "id": "details",
+    "path": "/tutorial/finding-tasks",
+    "subtitle": "Details",
     "title": "Finding Tasks"
   },
   {
@@ -3518,6 +3504,20 @@
     "id": "hello-world",
     "path": "/tutorial/hello-world",
     "subtitle": null,
+    "title": "Hello, World"
+  },
+  {
+    "element": "h2",
+    "id": "creating-a-task",
+    "path": "/tutorial/hello-world",
+    "subtitle": "Creating a Task",
+    "title": "Hello, World"
+  },
+  {
+    "element": "h2",
+    "id": "finding-a-worker-pool",
+    "path": "/tutorial/hello-world",
+    "subtitle": "Finding a Worker Pool",
     "title": "Hello, World"
   },
   {
@@ -3536,16 +3536,51 @@
   },
   {
     "element": "h1",
-    "id": "what-is-taskcluster",
-    "path": "/tutorial/what-is-tc",
+    "id": "how-it-works",
+    "path": "/tutorial/how-it-works",
     "subtitle": null,
-    "title": "What is Taskcluster?"
+    "title": "How it Works"
   },
   {
     "element": "h2",
-    "id": "is-it-mozilla-specific",
+    "id": "and-more",
+    "path": "/tutorial/how-it-works",
+    "subtitle": "And More!",
+    "title": "How it Works"
+  },
+  {
+    "element": "h2",
+    "id": "hooks",
+    "path": "/tutorial/how-it-works",
+    "subtitle": "Hooks",
+    "title": "How it Works"
+  },
+  {
+    "element": "h2",
+    "id": "indexes",
+    "path": "/tutorial/how-it-works",
+    "subtitle": "Indexes",
+    "title": "How it Works"
+  },
+  {
+    "element": "h2",
+    "id": "tasks",
+    "path": "/tutorial/how-it-works",
+    "subtitle": "Tasks",
+    "title": "How it Works"
+  },
+  {
+    "element": "h2",
+    "id": "workers",
+    "path": "/tutorial/how-it-works",
+    "subtitle": "Workers",
+    "title": "How it Works"
+  },
+  {
+    "element": "h1",
+    "id": "what-is-taskcluster",
     "path": "/tutorial/what-is-tc",
-    "subtitle": "Is it Mozilla-specific?",
+    "subtitle": null,
     "title": "What is Taskcluster?"
   }
 ]

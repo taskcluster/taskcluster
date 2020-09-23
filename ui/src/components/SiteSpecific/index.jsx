@@ -24,6 +24,7 @@ const SITE_SPECIFIC_VARS = new Set([
   //   ui/docs/manual/deploying/ui.mdx
   // See that file for descriptions of each variable.
   'github_app_url',
+  'tutorial_worker_pool_id',
 ]);
 // apply a simple templating language here, translating
 // %IDENTIFIER% into a lookup of that identifier, and

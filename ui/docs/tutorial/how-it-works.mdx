@@ -1,0 +1,46 @@
+---
+title: How it Works
+---
+
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
+
+# How it Works
+
+## Tasks
+
+The single most important concept in Taskcluster is the Task.
+A task is a single piece of work -- building a binary, running a test suite, or even creating other tasks.
+Tasks have logs to show what they have done so far, and create [artifacts](/docs/manual/tasks/artifacts) containing the result of their execution.
+
+Tasks can be linked together by [dependencies](/docs/manual/tasks/dependencies); for example, a test task might depend on the build task that creates the binary to be tested.
+
+## Workers
+
+[Workers](/docs/manual/task-execution/workers) execute tasks.
+Workers are organized into [worker pools](/docs/manual/task-execution/worker-pools), collections of identical workers able to execute tasks in paralell.
+In many cases, worker pools use cloud services to [dymamically create and destroy workers](/docs/manual/task-execution/provisioning) as demand fluctuates, but Taskcluster also supports static, always-on workers.
+
+## Hooks
+
+While it's possible to create new tasks by [calling the Taskcluster API](/docs/tutorial/apis), Taskcluster can also be configured to create tasks for you.
+The [hooks service](/docs/reference/core/hooks) can create tasks based on flexible templates at scheduled times, in response to [pulse](/docs/manual/design/apis/pulse) messages, or in response to other API calls.
+For example, scheduled tasks can be used to [periodically refresh generated content](/docs/manual/using/scheduled-tasks).
+
+## Indexes
+
+A Taskcluster deployment can execute millions of tasks per day.
+To keep all these tasks straight, the [index service](/docs/reference/core/index) tracks tasks in a flexible, tree-structured way.
+In fact, if you want to [find some real tasks](/docs/tutorial/finding-tasks), that's the best place to start.
+
+## And More!
+
+That's just a start!
+The [manual](/docs/manual) and [reference](/docs/reference) contain the keys to lots more functionality that isn't mentioned here.
+
+<TutorialNavigation links={[
+  {link: "finding-tasks", text: "I want to see some real tasks"},
+  {link: "hello-world", text: "I want to create my own task"},
+  {link: "apis", text: "I want to call the Taskcluster APIs"},
+]}>
+Ready for more?
+</TutorialNavigation>

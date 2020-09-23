@@ -3897,20 +3897,10 @@
         ],
         "data": {
           "order": 1000,
-          "title": "API Tutorial"
+          "title": "API Access"
         },
         "name": "apis",
         "path": "tutorial/apis"
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "order": 1000,
-          "title": "Authenticating to Taskcluster"
-        },
-        "name": "authenticate",
-        "path": "tutorial/authenticate"
       },
       {
         "children": [
@@ -3922,16 +3912,6 @@
         },
         "name": "create-task-via-api",
         "path": "tutorial/create-task-via-api"
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "order": 1000,
-          "title": "Debugging a Task"
-        },
-        "name": "debug-task",
-        "path": "tutorial/debug-task"
       },
       {
         "children": [
@@ -3958,10 +3938,30 @@
         ],
         "data": {
           "order": 1000,
+          "title": "Finding a Taskcluster Deployment"
+        },
+        "name": "finding-tc",
+        "path": "tutorial/finding-tc"
+      },
+      {
+        "children": [
+        ],
+        "data": {
+          "order": 1000,
           "title": "Hello, World"
         },
         "name": "hello-world",
         "path": "tutorial/hello-world"
+      },
+      {
+        "children": [
+        ],
+        "data": {
+          "order": 1000,
+          "title": "How it Works"
+        },
+        "name": "how-it-works",
+        "path": "tutorial/how-it-works"
       },
       {
         "children": [
