@@ -5122,6 +5122,15 @@
           "returns": "void",
           "serviceName": "notify"
         },
+        "add_task_dependency": {
+          "args": "dependent_task_id_in text, required_task_id_in text, requires_in task_requires, expires_in timestamptz",
+          "body": "begin\n  insert\n  into task_dependencies (dependent_task_id, required_task_id, requires, satisfied, expires)\n  values (\n    dependent_task_id_in,\n    required_task_id_in,\n    requires_in,\n    false,\n    expires_in\n  )\n  on conflict do nothing;\nend",
+          "deprecated": false,
+          "description": "Create an un-satisfied task dependency between the two tasks, with the given\nrequirement style and expiration. If the dependency already exists, nothing\nhappens.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
         "create_hooks_queue": {
           "args": "hook_group_id_in text, hook_id_in text, queue_name_in text, bindings_in jsonb",
           "body": "begin\n  insert\n    into hooks_queues (hook_group_id, hook_id, queue_name, bindings)\n    values (hook_group_id_in, hook_id_in, queue_name_in, bindings_in);\n\n    return public.gen_random_uuid();\nend",

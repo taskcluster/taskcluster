@@ -1077,7 +1077,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * *Returns*: `void`
 
 Create an un-satisfied task dependency between the two tasks, with the given
-requirement style and expiration.  If the dependency already exists, nothing
+requirement style and expiration. If the dependency already exists, nothing
 happens.
 
 ### azure_queue_count

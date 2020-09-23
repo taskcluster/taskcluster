@@ -737,3 +737,25 @@ methods:
           false
         );
       end
+  add_task_dependency:
+    description: |-
+      Create an un-satisfied task dependency between the two tasks, with the given
+      requirement style and expiration. If the dependency already exists, nothing
+      happens.
+    mode: write
+    serviceName: queue
+    args: dependent_task_id_in text, required_task_id_in text, requires_in task_requires, expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        insert
+        into task_dependencies (dependent_task_id, required_task_id, requires, satisfied, expires)
+        values (
+          dependent_task_id_in,
+          required_task_id_in,
+          requires_in,
+          false,
+          expires_in
+        )
+        on conflict do nothing;
+      end
