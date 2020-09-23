@@ -3985,21 +3985,6 @@
         "data": {
           "followup": {
             "links": {
-              "reviews": "Submitting changes of Taskcluster itself for review"
-            }
-          },
-          "order": 1000,
-          "title": "Hacking on Taskcluster"
-        },
-        "name": "hack-tc",
-        "path": "tutorial/hack-tc"
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "followup": {
-            "links": {
               "apis": "I want to know how to call Taskcluster APIs",
               "finding-tasks": "I want to look at some real tasks"
             },
@@ -4032,16 +4017,6 @@
         "children": [
         ],
         "data": {
-          "order": 1000,
-          "title": "Taskcluster Reviews"
-        },
-        "name": "reviews",
-        "path": "tutorial/reviews"
-      },
-      {
-        "children": [
-        ],
-        "data": {
           "followup": {
             "links": {
               "hello-world": "Create a task to see Taskcluster in action!"
@@ -4059,7 +4034,6 @@
         "links": {
           "tutorial/apis": "I want to work with the Taskcluster APIs.",
           "tutorial/debug-task": "A task is failing and I want to debug it.",
-          "tutorial/hack-tc": "I want to hack on Taskcluster itself.",
           "tutorial/hello-world": "I want to run a task manually in Taskcluster.",
           "tutorial/what-is-tc": "I'm not sure - what is it?"
         },

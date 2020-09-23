@@ -3444,13 +3444,6 @@
     "title": "Welcome to Taskcluster!"
   },
   {
-    "element": "h2",
-    "id": "patches-welcome",
-    "path": "/tutorial",
-    "subtitle": "Patches Welcome!",
-    "title": "Welcome to Taskcluster!"
-  },
-  {
     "element": "h1",
     "id": "authenticating-to-taskcluster",
     "path": "/tutorial/authenticate",
@@ -3540,27 +3533,6 @@
     "path": "/tutorial/hello-world",
     "subtitle": "Signing In",
     "title": "Hello, World"
-  },
-  {
-    "element": "h1",
-    "id": "taskcluster-reviews",
-    "path": "/tutorial/reviews",
-    "subtitle": null,
-    "title": "Taskcluster Reviews"
-  },
-  {
-    "element": "h2",
-    "id": "bug-fixes-and-small-patches",
-    "path": "/tutorial/reviews",
-    "subtitle": "Bug Fixes and Small Patches",
-    "title": "Taskcluster Reviews"
-  },
-  {
-    "element": "h2",
-    "id": "large-scale-projects",
-    "path": "/tutorial/reviews",
-    "subtitle": "Large-Scale Projects",
-    "title": "Taskcluster Reviews"
   },
   {
     "element": "h1",
