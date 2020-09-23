@@ -40,10 +40,6 @@ export const docsPageTransition = shape({
 });
 
 export const docsPageMetadata = shape({
-  followup: shape({
-    subtext: string,
-    links: object,
-  }),
   filename: string,
   order: number,
   title: string,

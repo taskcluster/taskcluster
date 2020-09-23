@@ -1,12 +1,9 @@
 ---
 title: Monitor task status via API
-layout: default
-class: markdown
-followup:
-  links:
-    download-task-artifacts: Download task artifacts via API
 ---
+
 import SchemaTable from 'taskcluster-ui/components/SchemaTable'
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
 
 Holding the `taskId` to a task, we can fetch the task status, using the
 `queue.status(taskId)` API end-point. This returns an object where the `status`
@@ -102,3 +99,8 @@ The distinction is important as a task that is automatically _retried_ won't
 cause a task exception message to published on pulse. Whereas a message
 signaling that the task is resolved will be published on pulse before
 calling `task.rerunTask(taskId)` as any effect.
+
+<TutorialNavigation links={[
+  {link: "download-task-artifacts", text: "Download task artifacts via API"},
+]}>
+</TutorialNavigation>

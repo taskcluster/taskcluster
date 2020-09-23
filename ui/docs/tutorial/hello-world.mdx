@@ -1,11 +1,8 @@
 ---
 title: Hello, World
-followup:
-  subtext: Digging Deeper
-  links:
-    finding-tasks: I want to look at some real tasks
-    apis: I want to know how to call Taskcluster APIs
 ---
+
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
 
 import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
 
@@ -80,3 +77,10 @@ The log view shows the output of the task, including that from downloading the d
 Scrolling all the way to the bottom, you should see the greeting output by the `echo` command.
 
 You've run your first task!
+
+<TutorialNavigation links={[
+  {link: "finding-tasks", text: "I want to look at some real tasks"},
+  {link: "apis", text: "Let's call some Taskcluster APIs"},
+]}>
+Digging deeper..
+</TutorialNavigation>

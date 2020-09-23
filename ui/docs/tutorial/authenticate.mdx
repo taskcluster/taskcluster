@@ -1,14 +1,10 @@
 ---
 title: Authenticating to Taskcluster
-layout:             default
-class:              markdown
-followup:
-  links:
-    create-task-via-api: Create a task with createTask
 ---
 
 import Warning from 'taskcluster-ui/views/Documentation/components/Warning'
 import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
 
 # Authenticating to Taskcluster
 
@@ -39,3 +35,7 @@ $ ./taskcluster api auth currentScopes
     ]
 }
 ```
+<TutorialNavigation links={[
+  {link: "create-task-via-api", text: "Create a task with createTask"},
+]}>
+</TutorialNavigation>

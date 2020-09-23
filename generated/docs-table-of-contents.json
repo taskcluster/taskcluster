@@ -3896,13 +3896,6 @@
         "children": [
         ],
         "data": {
-          "class": "markdown",
-          "followup": {
-            "links": {
-              "authenticate": "Authenticate to the API"
-            }
-          },
-          "layout": "default",
           "order": 1000,
           "title": "API Tutorial"
         },
@@ -3913,13 +3906,6 @@
         "children": [
         ],
         "data": {
-          "class": "markdown",
-          "followup": {
-            "links": {
-              "create-task-via-api": "Create a task with createTask"
-            }
-          },
-          "layout": "default",
           "order": 1000,
           "title": "Authenticating to Taskcluster"
         },
@@ -3930,11 +3916,6 @@
         "children": [
         ],
         "data": {
-          "followup": {
-            "links": {
-              "monitor-task-status": "Monitor a Task's Status"
-            }
-          },
           "layout": "default",
           "order": 1000,
           "title": "Creating a task via API"
@@ -3956,13 +3937,6 @@
         "children": [
         ],
         "data": {
-          "class": "markdown",
-          "followup": {
-            "links": {
-              "/docs/reference": "API documentation for all Taskcluster services"
-            }
-          },
-          "layout": "default",
           "order": 1000,
           "title": "Download task artifacts via API"
         },
@@ -3983,13 +3957,6 @@
         "children": [
         ],
         "data": {
-          "followup": {
-            "links": {
-              "apis": "I want to know how to call Taskcluster APIs",
-              "finding-tasks": "I want to look at some real tasks"
-            },
-            "subtext": "Digging Deeper"
-          },
           "order": 1000,
           "title": "Hello, World"
         },
@@ -4000,13 +3967,6 @@
         "children": [
         ],
         "data": {
-          "class": "markdown",
-          "followup": {
-            "links": {
-              "download-task-artifacts": "Download task artifacts via API"
-            }
-          },
-          "layout": "default",
           "order": 1000,
           "title": "Monitor task status via API"
         },
@@ -4017,11 +3977,6 @@
         "children": [
         ],
         "data": {
-          "followup": {
-            "links": {
-              "hello-world": "Create a task to see Taskcluster in action!"
-            }
-          },
           "order": 1000,
           "title": "What is Taskcluster?"
         },
@@ -4030,16 +3985,8 @@
       }
     ],
     "data": {
-      "followup": {
-        "links": {
-          "tutorial/apis": "I want to work with the Taskcluster APIs.",
-          "tutorial/debug-task": "A task is failing and I want to debug it.",
-          "tutorial/hello-world": "I want to run a task manually in Taskcluster.",
-          "tutorial/what-is-tc": "I'm not sure - what is it?"
-        },
-        "subtext": "How do you want to use Taskcluster?"
-      },
-      "order": 1000
+      "order": 1000,
+      "titile": "Welcome to Taskcluster!"
     },
     "path": "tutorial"
   }

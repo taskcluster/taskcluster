@@ -1,11 +1,8 @@
 ---
 title: Download task artifacts via API
-layout: default
-class: markdown
-followup:
-  links:
-    '/docs/reference': API documentation for all Taskcluster services
 ---
+
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
 
 Once the task is resolved, we can list artifacts from
 runs of the task. A convenience method `queue.listLatestArtifacts` will list
@@ -110,3 +107,8 @@ If the artifact was private (ie. didn't start with `public/`) we could have
 constructed the `queue` object with credentials and used the auxiliary method
 `queue.buildSignedUrl` which works like `queue.buildUrl`, with the only
 difference that includes a signature in the query-string for the URL.
+
+<TutorialNavigation links={[
+  {link: "/docs/reference", text: "API documentation for all Taskcluster services"},
+]}>
+</TutorialNavigation>

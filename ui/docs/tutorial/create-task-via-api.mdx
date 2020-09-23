@@ -1,10 +1,9 @@
 ---
 title: Creating a task via API
 layout: default
-followup:
-  links:
-    monitor-task-status: Monitor a Task's Status
 ---
+
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
 
 # Creating a Task via API
 
@@ -247,3 +246,8 @@ the API docs lists a `Signature` property, like
 call methods in automatically generated client libraries. This allows for
 consistent and well-documented client libraries across all platforms.
 
+
+<TutorialNavigation links={[
+  {link: "monitor-task-status", text: "Monitor a task's status"},
+]}>
+</TutorialNavigation>

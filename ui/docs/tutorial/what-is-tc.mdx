@@ -1,9 +1,8 @@
 ---
 title: What is Taskcluster?
-followup:
-  links:
-    hello-world: Create a task to see Taskcluster in action!
 ---
+
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
 
 # What is Taskcluster?
 
@@ -34,3 +33,8 @@ These include
 
 In principle, no, Taskcluster could be useful to any organization with complex CI problems to solve.
 While we have built some Mozilla-specific integrations, the platform and many of the core services could be re-used without change in another organization.
+
+<TutorialNavigation links={[
+  {link: "hello-world", text: "Create a task to see Taskcluster in action"},
+]}>
+</TutorialNavigation>
