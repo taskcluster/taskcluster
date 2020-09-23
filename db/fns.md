@@ -409,7 +409,7 @@ Get a github build. The returned table will have one or zero rows.
   * `event_id text`
   * `etag uuid`
 
-Get github builds. 
+Get github builds.
 
 ### get_github_check_by_task_id
 
@@ -523,7 +523,7 @@ Returns the newly created hook.
   * `bindings_in jsonb`
 * *Returns*: `uuid`
 
-Create a new hooks queue.  Raises UNIQUE_VIOLATION if the hook already exists.
+Create a new hooks queue. Raises UNIQUE_VIOLATION if the hook already exists.
 
 ### create_last_fire
 
@@ -538,7 +538,7 @@ Create a new hooks queue.  Raises UNIQUE_VIOLATION if the hook already exists.
   * `error_in text`
 * *Returns*: `uuid`
 
-Create a new hook last fire.  Raises UNIQUE_VIOLATION if the hook already exists.
+Create a new hook last fire. Raises UNIQUE_VIOLATION if the hook already exists.
 
 ### delete_hook
 
@@ -1282,7 +1282,7 @@ Create a new queue worker.  Raises UNIQUE_VIOLATION if the worker already exists
   * `stability_in text`
 * *Returns*: `uuid`
 
-Create a new queue worker type.  Raises UNIQUE_VIOLATION if the worker type already exists.
+Create a new queue worker type. Raises UNIQUE_VIOLATION if the worker type already exists.
 
 ### create_task
 

@@ -43,8 +43,7 @@ CREATE TABLE access_tokens (
     identity text NOT NULL,
     identity_provider_id text NOT NULL,
     expires timestamp with time zone NOT NULL,
-    client_details jsonb NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    client_details jsonb NOT NULL
 );
 ALTER TABLE access_tokens
     ADD CONSTRAINT access_tokens_pkey PRIMARY KEY (hashed_access_token);
@@ -60,8 +59,7 @@ CREATE TABLE authorization_codes (
     identity text NOT NULL,
     identity_provider_id text NOT NULL,
     expires timestamp with time zone NOT NULL,
-    client_details jsonb NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    client_details jsonb NOT NULL
 );
 ALTER TABLE authorization_codes
     ADD CONSTRAINT authorization_codes_pkey PRIMARY KEY (code);
@@ -92,8 +90,7 @@ CREATE TABLE cache_purges (
     worker_type text NOT NULL,
     cache_name text NOT NULL,
     before timestamp with time zone NOT NULL,
-    expires timestamp with time zone NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    expires timestamp with time zone NOT NULL
 );
 ALTER TABLE cache_purges
     ADD CONSTRAINT cache_purges_pkey PRIMARY KEY (provisioner_id, worker_type, cache_name);
@@ -113,8 +110,7 @@ CREATE TABLE clients (
     last_modified timestamp with time zone NOT NULL,
     last_date_used timestamp with time zone NOT NULL,
     last_rotated timestamp with time zone NOT NULL,
-    delete_on_expiration boolean NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    delete_on_expiration boolean NOT NULL
 );
 ALTER TABLE clients
     ADD CONSTRAINT clients_pkey PRIMARY KEY (client_id);
@@ -125,8 +121,7 @@ ALTER TABLE clients
 ```sql
 CREATE TABLE denylisted_notifications (
     notification_type text NOT NULL,
-    notification_address text NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid()
+    notification_address text NOT NULL
 );
 ALTER TABLE denylisted_notifications
     ADD CONSTRAINT denylisted_notifications_pkey PRIMARY KEY (notification_type, notification_address);
@@ -156,8 +151,7 @@ CREATE TABLE github_builds (
     updated timestamp with time zone NOT NULL,
     installation_id integer NOT NULL,
     event_type text NOT NULL,
-    event_id text NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    event_id text NOT NULL
 );
 ALTER TABLE github_builds
     ADD CONSTRAINT github_builds_pkey PRIMARY KEY (task_group_id);
@@ -202,8 +196,7 @@ CREATE TABLE hooks (
     encrypted_trigger_token jsonb NOT NULL,
     encrypted_next_task_id jsonb NOT NULL,
     next_scheduled_date timestamp with time zone NOT NULL,
-    trigger_schema jsonb NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    trigger_schema jsonb NOT NULL
 );
 ALTER TABLE hooks
     ADD CONSTRAINT hooks_pkey PRIMARY KEY (hook_group_id, hook_id);
@@ -219,8 +212,7 @@ CREATE TABLE hooks_last_fires (
     task_id text NOT NULL,
     task_create_time timestamp with time zone NOT NULL,
     result text NOT NULL,
-    error text NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    error text NOT NULL
 );
 ALTER TABLE hooks_last_fires
     ADD CONSTRAINT hooks_last_fires_pkey PRIMARY KEY (hook_group_id, hook_id, task_id);
@@ -233,8 +225,7 @@ CREATE TABLE hooks_queues (
     hook_group_id text NOT NULL,
     hook_id text NOT NULL,
     queue_name text NOT NULL,
-    bindings jsonb NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    bindings jsonb NOT NULL
 );
 ALTER TABLE hooks_queues
     ADD CONSTRAINT hooks_queues_pkey PRIMARY KEY (hook_group_id, hook_id);
@@ -246,8 +237,7 @@ ALTER TABLE hooks_queues
 CREATE TABLE index_namespaces (
     parent text NOT NULL,
     name text NOT NULL,
-    expires timestamp with time zone NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    expires timestamp with time zone NOT NULL
 );
 ALTER TABLE index_namespaces
     ADD CONSTRAINT index_namespaces_pkey PRIMARY KEY (parent, name);
@@ -263,8 +253,7 @@ CREATE TABLE indexed_tasks (
     rank integer NOT NULL,
     task_id text NOT NULL,
     data jsonb NOT NULL,
-    expires timestamp with time zone NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    expires timestamp with time zone NOT NULL
 );
 ALTER TABLE indexed_tasks
     ADD CONSTRAINT indexed_tasks_pkey PRIMARY KEY (namespace, name);
@@ -282,8 +271,7 @@ CREATE TABLE queue_artifacts (
     content_type text NOT NULL,
     details jsonb NOT NULL,
     present boolean NOT NULL,
-    expires timestamp with time zone NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    expires timestamp with time zone NOT NULL
 );
 ALTER TABLE queue_artifacts
     ADD CONSTRAINT queue_artifacts_pkey PRIMARY KEY (task_id, run_id, name);
@@ -298,8 +286,7 @@ CREATE TABLE queue_provisioners (
     last_date_active timestamp with time zone NOT NULL,
     description text NOT NULL,
     stability text NOT NULL,
-    actions jsonb NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    actions jsonb NOT NULL
 );
 ALTER TABLE queue_provisioners
     ADD CONSTRAINT queue_provisioners_pkey PRIMARY KEY (provisioner_id);
@@ -314,8 +301,7 @@ CREATE TABLE queue_worker_types (
     expires timestamp with time zone NOT NULL,
     last_date_active timestamp with time zone NOT NULL,
     description text NOT NULL,
-    stability text NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    stability text NOT NULL
 );
 ALTER TABLE queue_worker_types
     ADD CONSTRAINT queue_worker_types_pkey PRIMARY KEY (provisioner_id, worker_type);
@@ -332,8 +318,7 @@ CREATE TABLE queue_workers (
     recent_tasks jsonb NOT NULL,
     quarantine_until timestamp with time zone NOT NULL,
     expires timestamp with time zone NOT NULL,
-    first_claim timestamp with time zone NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    first_claim timestamp with time zone NOT NULL
 );
 ALTER TABLE queue_workers
     ADD CONSTRAINT queue_workers_pkey PRIMARY KEY (provisioner_id, worker_type, worker_group, worker_id);
@@ -373,8 +358,7 @@ CREATE TABLE sessions (
     hashed_session_id text NOT NULL,
     encrypted_session_id jsonb NOT NULL,
     data jsonb NOT NULL,
-    expires timestamp with time zone NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    expires timestamp with time zone NOT NULL
 );
 ALTER TABLE sessions
     ADD CONSTRAINT sessions_pkey PRIMARY KEY (hashed_session_id);
@@ -388,8 +372,7 @@ CREATE TABLE task_dependencies (
     required_task_id text NOT NULL,
     requires public.task_requires NOT NULL,
     satisfied boolean NOT NULL,
-    expires timestamp with time zone NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    expires timestamp with time zone NOT NULL
 );
 ALTER TABLE task_dependencies
     ADD CONSTRAINT task_dependencies_pkey PRIMARY KEY (required_task_id, dependent_task_id);
@@ -402,8 +385,7 @@ CREATE INDEX task_dependencies_dependent_task_id_idx ON task_dependencies USING 
 CREATE TABLE task_groups (
     task_group_id text NOT NULL,
     scheduler_id text NOT NULL,
-    expires timestamp with time zone NOT NULL,
-    etag uuid NOT NULL
+    expires timestamp with time zone NOT NULL
 );
 ALTER TABLE task_groups
     ADD CONSTRAINT task_groups_pkey PRIMARY KEY (task_group_id);
@@ -434,8 +416,7 @@ CREATE TABLE tasks (
     extra jsonb NOT NULL,
     runs jsonb NOT NULL,
     taken_until timestamp with time zone,
-    ever_resolved boolean NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    ever_resolved boolean NOT NULL
 );
 ALTER TABLE tasks
     ADD CONSTRAINT tasks_pkey PRIMARY KEY (task_id);
@@ -461,8 +442,7 @@ CREATE TABLE worker_pool_errors (
     kind text NOT NULL,
     title text NOT NULL,
     description text NOT NULL,
-    extra jsonb,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    extra jsonb
 );
 ALTER TABLE worker_pool_errors
     ADD CONSTRAINT worker_pool_errors_pkey PRIMARY KEY (error_id);
@@ -482,8 +462,7 @@ CREATE TABLE worker_pools (
     last_modified timestamp with time zone NOT NULL,
     config jsonb NOT NULL,
     provider_data jsonb NOT NULL,
-    previous_provider_ids jsonb NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    previous_provider_ids jsonb NOT NULL
 );
 ALTER TABLE worker_pools
     ADD CONSTRAINT worker_pools_pkey PRIMARY KEY (worker_pool_id);
