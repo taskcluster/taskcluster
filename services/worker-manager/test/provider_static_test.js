@@ -79,7 +79,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       input: {
         expires,
         capacity: 7,
-        providerData: { staticSecret: 'new-secret' },
+        providerInfo: { staticSecret: 'new-secret' },
       },
     });
 
