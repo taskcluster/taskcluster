@@ -62,7 +62,7 @@
     "rimraf": "^2.2.8",
     "serialize-error": "^5.0.0",
     "slugid": "^2.0.0",
-    "source-map-support": "^0.4.0",
+    "source-map-support": "^0.5.0",
     "split2": "^2.1.0",
     "stateless-dns-server": "^0.2.1",
     "tar-fs": "^2.1.0",
