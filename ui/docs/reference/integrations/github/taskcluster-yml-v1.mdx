@@ -67,7 +67,7 @@ The `tasks` property in the YAML file is rendered using [JSON-e](https://github.
 
 * `as_slugid` - a function which, given a label, will generate a slugid. Multiple calls with the same label for the same event will generate the same slugid, but different slugids in different events.  Use this to generate taskIds, etc.
 
-* `taskcluster_root_url` - the rootUrl of the Taskcluster deployment in which the template is being rendered.
+* `taskcluster_root_url` - the [root URL](/docs/manual/using/root-urls) of the Taskcluster deployment in which the template is being rendered.
   This can be useful in cases where multiple Taskcluster deployments are configured for the same repository, or for generating URLs to other Taskcluster resources.
 
 Although the Github documentation does not make it clear, each ref that is updated in a `git push` operation triggers a distinct event.

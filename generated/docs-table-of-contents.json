@@ -1018,6 +1018,28 @@
             ],
             "data": {
               "order": 0,
+              "title": "Root URLs"
+            },
+            "name": "root-urls",
+            "next": {
+              "path": "manual/using/api",
+              "title": "Calling Taskcluster APIs"
+            },
+            "path": "manual/using/root-urls",
+            "prev": {
+              "path": "manual/using",
+              "title": "Using Taskcluster"
+            },
+            "up": {
+              "path": "manual/using",
+              "title": "Using Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1,
               "title": "Calling Taskcluster APIs"
             },
             "name": "api",
@@ -1027,8 +1049,8 @@
             },
             "path": "manual/using/api",
             "prev": {
-              "path": "manual/using",
-              "title": "Using Taskcluster"
+              "path": "manual/using/root-urls",
+              "title": "Root URLs"
             },
             "up": {
               "path": "manual/using",
@@ -1451,8 +1473,8 @@
         },
         "name": "using",
         "next": {
-          "path": "manual/using/api",
-          "title": "Calling Taskcluster APIs"
+          "path": "manual/using/root-urls",
+          "title": "Root URLs"
         },
         "path": "manual/using",
         "prev": {

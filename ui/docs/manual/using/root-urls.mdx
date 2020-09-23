@@ -1,0 +1,20 @@
+---
+title: Root URLs
+order: 0
+---
+
+import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+
+Every Taskcluster deployment is identified by a "Root URL", which is used to interact with the deployment.
+
+<SiteSpecific>
+The root URL for this deployment is `%root_url%`.
+</SiteSpecific>
+<SiteSpecific showIfNotSet={['root_url']}>
+If you have already been working with a Taskcluster deployment, use the scheme and hostname of that page as the root URL.
+Otherwise, check in with the [Taskcluster developers](https://chat.mozilla.org/#/room/#taskcluster:mozilla.org) to find a deployment where you can experiment.
+</SiteSpecific>
+
+Loading this URL in a browser presents the Taskcluster user interface, but other paths on this URL lead to documentation, APIs, schemas, and other resources.
+
+See the ["URL Structure" reference](/docs/reference/url-structure) for more information.

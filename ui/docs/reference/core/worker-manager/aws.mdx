@@ -13,7 +13,7 @@ AWS-based providers create workers dynamically in the EC2 service.
 The provider starts workers with a JSON object in user-data containing the following properties:
 
 * `workerPoolId` -- worker pool for this worker
-* `rootUrl` -- root URL for the Taskcluster deployment
+* `rootUrl` -- [root URL](/docs/manual/using/root-urls) for the Taskcluster deployment
 * `providerId` -- provider ID that started the worker
 * `workerGroup` -- the worker's region
 * `workerConfig` -- worker configuration supplied as part of the worker pool configuration (deprecated; use the result of `registerWorker` instead)

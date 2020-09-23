@@ -7,6 +7,8 @@ followup:
     apis: I want to know how to call Taskcluster APIs
 ---
 
+import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+
 # Hello, World
 
 Let's start by seeing Taskcluster in action.
@@ -14,8 +16,14 @@ Let's start by seeing Taskcluster in action.
 ## Finding Taskcluster
 
 Taskcluster is an application that organizations deploy to serve their needs, so following this portion of the tutorial might require some assistance from the people responsible for your deployment.
-The first thing you will need to know is the URL of the deployment (called a "rootUrl").
-That's probably the [origin of this page](/), but if you're reading this on `https://docs.taskcluster.net`, then you may need to do some investigation.
+The first thing you will need to know is the URL of the deployment (called a "[root URL](/docs/manual/using/root-urls)").
+
+<SiteSpecific>
+The root URL for this deployment is `%root_url%`.
+</SiteSpecific>
+<SiteSpecific showIfNotSet={['root_url']}>
+See the [Root URLs](/docs/manual/using/root-urls) documentation for help finding a suitable root URL for experimentation.
+</SiteSpecific>
 
 ## Signing In
 
