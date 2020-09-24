@@ -33,7 +33,6 @@ exports.taskUtils = {
       taskId: row.task_id,
       data: row.data,
       expires: row.expires,
-      etag: row.etag,
     };
   },
   // Create a serializable representation of this indexed task suitable for response
@@ -91,14 +90,14 @@ exports.taskUtils = {
       // Create namespace hierarchy
       await exports.namespaceUtils.ensureNamespace(db, namespace, expires);
 
-      const etag = (await db.fns.create_indexed_task(
+      await db.fns.create_indexed_task(
         namespace,
         name,
         input.rank,
         input.taskId,
         input.data,
         expires,
-      ))[0].create_indexed_task;
+      );
 
       return {
         namespace,
@@ -107,7 +106,6 @@ exports.taskUtils = {
         taskId: input.taskId,
         data: input.data,
         expires,
-        etag,
       };
     }
 
@@ -183,7 +181,6 @@ exports.namespaceUtils = {
       parent: row.parent,
       name: row.name,
       expires: row.expires,
-      etag: row.etag,
     };
   },
   // Create a serializable representation of this namespace suitable for response
