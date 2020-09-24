@@ -466,7 +466,6 @@ func (task *TaskRun) uploadArtifact(artifact TaskArtifact) *CommandExecutionErro
 	if err != nil {
 		switch t := err.(type) {
 		case *tcclient.APICallException:
-			log.Print(t.CallSummary.String())
 			switch rootCause := t.RootCause.(type) {
 			case httpbackoff.BadHttpResponseCode:
 				if rootCause.HttpResponseCode/100 == 5 {

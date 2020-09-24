@@ -112,8 +112,6 @@ func getLog(
 	writer.Header().Set("Access-Control-Allow-Origin", "*")
 	writer.Header().Set("Access-Control-Expose-Headers", "Transfer-Encoding")
 
-	log.Printf("%v", req.Header)
-
 	// Send headers so its clear what we are trying to do...
 	writer.WriteHeader(200)
 	log.Print("wrote headers...")
