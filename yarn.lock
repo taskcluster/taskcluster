@@ -2357,12 +2357,21 @@ doctypes@^1.1.0:
   resolved "https://registry.yarnpkg.com/doctypes/-/doctypes-1.1.0.tgz#ea80b106a87538774e8a3a4a5afe293de489e0a9"
   integrity sha1-6oCxBqh1OHdOijpKWv4pPeSJ4Kk=
 
-dom-serializer@0, dom-serializer@^0.2.1:
+dom-serializer@0:
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/dom-serializer/-/dom-serializer-0.2.2.tgz#1afb81f533717175d478655debc5e332d9f9bb51"
   integrity sha512-2/xPb3ORsQ42nHYiSunXkDjPLBaEj/xTwUO4B7XCZQTRk7EBtTOPaygh10YAAh2OI1Qrp6NWfpAhzswj0ydt9g==
   dependencies:
     domelementtype "^2.0.1"
+    entities "^2.0.0"
+
+dom-serializer@^1.0.1:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/dom-serializer/-/dom-serializer-1.1.0.tgz#5f7c828f1bfc44887dc2a315ab5c45691d544b58"
+  integrity sha512-ox7bvGXt2n+uLWtCRLybYx60IrOlWL/aCebWJk1T0d4m3y2tzf4U3ij9wBMUb6YJZpz06HCCYuyCDveE2xXmzQ==
+  dependencies:
+    domelementtype "^2.0.1"
+    domhandler "^3.0.0"
     entities "^2.0.0"
 
 dom-serializer@~0.1.0:
@@ -2390,10 +2399,10 @@ domhandler@^2.3.0:
   dependencies:
     domelementtype "1"
 
-domhandler@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/domhandler/-/domhandler-3.0.0.tgz#51cd13efca31da95bbb0c5bee3a48300e333b3e9"
-  integrity sha512-eKLdI5v9m67kbXQbJSNn1zjh0SDzvzWVWtX+qEI3eMjZw8daH9k8rlj1FZY9memPwjiskQFbe7vHVVJIAqoEhw==
+domhandler@^3.0.0, domhandler@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/domhandler/-/domhandler-3.1.0.tgz#d931d698a36079ff3612841b7e99eec15c678e42"
+  integrity sha512-kZFobjdGafS1wknD9t0Ft+NazYYDxXNbcjqQ5z43xTq2FC1NT0U2QjgAmfc0C1urfeGDOAN2xzcKjifSbBpywg==
   dependencies:
     domelementtype "^2.0.1"
 
@@ -2414,13 +2423,13 @@ domutils@^1.5.1:
     domelementtype "1"
 
 domutils@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/domutils/-/domutils-2.0.0.tgz#15b8278e37bfa8468d157478c58c367718133c08"
-  integrity sha512-n5SelJ1axbO636c2yUtOGia/IcJtVtlhQbFiVDBZHKV5ReJO1ViX7sFEemtuyoAnBxk5meNSYgA8V4s0271efg==
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/domutils/-/domutils-2.4.0.tgz#60b85585a0e96113dff3d04d735196bb2bba49e2"
+  integrity sha512-rP+tl0A3YekdmSpYOEtm4C/aSzwtEOU5XrkdoGwb+Hn/941f5S5kZwHr37AEIcBbPug3uxD8z9PKQZd1R/R/tg==
   dependencies:
-    dom-serializer "^0.2.1"
+    dom-serializer "^1.0.1"
     domelementtype "^2.0.1"
-    domhandler "^3.0.0"
+    domhandler "^3.1.0"
 
 dot-case@^3.0.3:
   version "3.0.3"
@@ -5973,9 +5982,9 @@ safe-buffer@^5.0.1, safe-buffer@^5.1.2, safe-buffer@~5.2.0:
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
 sanitize-html@^1.20.1:
-  version "1.27.4"
-  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-1.27.4.tgz#3864e7562fc708cefabcb0d51bbacde3411504cb"
-  integrity sha512-VvY1hxVvMXzSos/LzqeBl9/KYu3mkEOtl5NMwz6jER318dSHDCig0AOjZOtnoCwAC3HMs9LhfWkPCmQGttb4ng==
+  version "1.27.5"
+  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-1.27.5.tgz#6c8149462adb23e360e1bb71cc0bae7f08c823c7"
+  integrity sha512-M4M5iXDAUEcZKLXkmk90zSYWEtk5NH3JmojQxKxV371fnMh+x9t1rqdmXaGoyEHw3z/X/8vnFhKjGL5xFGOJ3A==
   dependencies:
     htmlparser2 "^4.1.0"
     lodash "^4.17.15"
