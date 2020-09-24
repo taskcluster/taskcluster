@@ -8,11 +8,7 @@ import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
 
 # Deploying Taskcluster
 
-A Taskcluster deployment is identified by a `rootUrl`, which defines the domain name on which the deployment can be accessed.
-
-<SiteSpecific>
-The root URL for this deployment is `%root_url%`.
-</SiteSpecific>
+A Taskcluster deployment is identified by a [`rootUrl`](/docs/manual/using/root-urls), which defines the domain name on which the deployment can be accessed.
 
 Taskcluster is deployed as a collection of interacting microservices within a Kubernetes cluster.
 The cluster has an [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) that routes various paths under the `rootUrl` to the appropriate services.

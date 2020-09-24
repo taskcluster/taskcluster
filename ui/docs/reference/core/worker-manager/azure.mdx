@@ -27,7 +27,7 @@ The provider starts workers with an instance attribute named `taskcluster` conta
 * `workerPoolId` -- worker pool for this worker
 * `providerId` -- provider ID that started the worker
 * `workerGroup` -- the `location` of the launchConfig used to start the worker
-* `rootUrl` -- root URL for the Taskcluster deployment
+* `rootUrl` -- [root URL](/docs/manual/using/root-urls) for the Taskcluster deployment
 * `workerConfig` -- worker configuration supplied as part of the worker pool configuration (deprecated; use the result of `registerWorker` instead)
 
 The worker's `workerId` is identical to its vmId, which can be retrieved from the Azure metadata service at `compute/vmId`.
@@ -49,7 +49,7 @@ The provider creates worker resources with the following labels. The tags `provi
  * `provider-id` - provider ID that started the worker
  * `worker-group` - the worker's workerGroup (currently equal to the providerId, but do not depend on this)
  * `worker-pool-id` - the worker's workerPoolId
- * `root-url` - root URL for the Taskcluster deployment
+ * `root-url` - [root URL](/docs/manual/using/root-urls) for the Taskcluster deployment
  * `managed-by` - `taskcluster`
  * `created-by` - `taskcluster-wm-<providerId>`
  * `owner` - the worker pool's owner

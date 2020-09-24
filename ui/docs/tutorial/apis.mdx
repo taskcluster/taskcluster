@@ -1,14 +1,44 @@
 ---
-title: API Tutorial
-layout: default
-class: markdown
-followup:
-  links:
-    authenticate: Authenticate to the API
+title: API Access
 ---
 
+# API Access
+
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning'
+import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
+
 This section shows you how to access Taskcluster APIs programmatically.  The
-examples use JavaScript (ES6) using the JavaScript [taskcluster
+examples use JavaScript and the JavaScript [taskcluster
 client](https://github.com/taskcluster/taskcluster/tree/main/clients/client) but apply to [other
-supported
-languages](/docs/manual/using/integration/libraries).
+supported languages](/docs/manual/using/integration/libraries) as well.
+
+## Authenticating to Taskcluster
+
+If you haven't already, try the "[Hello World](/docs/tutorial/hello-world)" tutorial to make
+sure that you can sign in to the Taskcluster UI.
+
+Once that's complete, you'll want to get some credentials.  See the advice in [Calling Taskcluster APIs](/docs/manual/using/api), which describes an easy way to do this with `taskcluster signin`.
+You will need to set [`TASKCLUSTER_ROOT_URL`](/docs/tutorial/finding-tc) appropriately to run this command.
+In the end, you should have the following three environment variables set:
+
+```bash
+export TASKCLUSTER_ROOT_URL=..
+export TASKCLUSTER_CLIENT_ID=..
+export TASKCLUSTER_ACCESS_TOKEN=..
+```
+
+You can test the results with the `taskcluster` tool, too:
+
+```bash
+$ ./taskcluster api auth currentScopes
+{
+    "scopes": [
+        "queue:create-task:proj-getting-started/tutorial"
+    ]
+}
+```
+<TutorialNavigation links={[
+  {link: "create-task-via-api", text: "Create a task with createTask"},
+]}>
+</TutorialNavigation>

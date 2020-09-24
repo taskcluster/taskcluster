@@ -1,5 +1,5 @@
 import React from 'react';
-import { string } from 'prop-types';
+import { arrayOf, string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import Paper from '@material-ui/core/Paper';
@@ -17,10 +17,14 @@ const styles = withStyles(theme => ({
   },
 }));
 const SITE_SPECIFIC_VARS = new Set([
+  // included automatically
+  'root_url',
+
   // WARNING: any changes to this list should be reflected
   //   ui/docs/manual/deploying/ui.mdx
   // See that file for descriptions of each variable.
   'github_app_url',
+  'tutorial_worker_pool_id',
 ]);
 // apply a simple templating language here, translating
 // %IDENTIFIER% into a lookup of that identifier, and
@@ -30,18 +34,36 @@ const SITE_SPECIFIC_VARS = new Set([
 // does not exist for docs.taskcluster.net), or a value from
 // SITE_SPECIFIC, as described above.
 //
+// THe sense of the component is reversed if `showIfNotSet` is
+// given; in this case, if all of the given variables are set,
+// the content will not be shown.  This is used to include a
+// box in cases when variables aren't available, as a kind of
+// "else clause".
+//
 // the result is rendered as Markdown.
-const SiteSpecific = ({ classes, children }) => {
+const SiteSpecific = ({ classes, showIfNotSet, children }) => {
   let rendered;
+  const variables = {
+    // omit TASKCLUSTER_ROOT_URL in DOCS_ONLY mode
+    ...(window.env.DOCS_ONLY
+      ? {}
+      : { root_url: window.env.TASKCLUSTER_ROOT_URL }),
+    ...(window.env.SITE_SPECIFIC || {}),
+  };
+
+  // bail out if the "showIf.." condition is not met
+  if (showIfNotSet) {
+    if (showIfNotSet.every(v => variables[v])) {
+      return null;
+    }
+  }
 
   try {
     rendered = children.replace(/%([a-zA-Z0-9_]+)%/g, (_, ident) => {
       let result;
 
-      if (ident === 'root_url') {
-        result = window.env.TASKCLUSTER_ROOT_URL;
-      } else if (SITE_SPECIFIC_VARS.has(ident)) {
-        result = window.env.SITE_SPECIFIC && window.env.SITE_SPECIFIC[ident];
+      if (SITE_SPECIFIC_VARS.has(ident)) {
+        result = variables[ident];
       } else {
         throw new Error(`No such site-specific variable ${ident}`);
       }
@@ -73,6 +95,7 @@ const SiteSpecific = ({ classes, children }) => {
 
 SiteSpecific.propTypes = {
   children: string.isRequired,
+  showIfNotSet: arrayOf(string),
 };
 
 export default styles(SiteSpecific);

@@ -1,25 +1,22 @@
 ---
-followup:
-  subtext: How do you want to use Taskcluster?
-  links:
-    tutorial/what-is-tc: I'm not sure - what is it?
-    tutorial/hello-world: I want to run a task manually in Taskcluster.
-    tutorial/debug-task: A task is failing and I want to debug it.
-    tutorial/apis: I want to work with the Taskcluster APIs.
-    tutorial/hack-tc: I want to hack on Taskcluster itself.
+title: Welcome to Taskcluster!
 ---
+
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
 
 # Welcome to Taskcluster!
 
 This tutorial is designed to help you learn what you need to know about
-Taskcluster to accomplish your goals. You can navigate it by answering the
-question at the bottom of each page, which will bring you to the most helpful
-information.
+Taskcluster to accomplish your goals.
 
-If you want a more comprehensive description of Taskcluster's design and
-operation, see the manual portion of this documentation.
+The [Taskcluster homepage](https://taskcluster.net) has a high-level overview
+of Taskcluster's features.  If you want a more comprehensive description of
+Taskcluster's design and operation, see the [manual](/docs/manual).
 
-## Patches Welcome!
-
-As you learn more, please feel welcome to [contribute](https://github.com/taskcluster/taskcluster) more choices and pathways to this tutorial.
-Especially if you did not find the information you were seeking, you are best able to decide where to add a new choice!
+<TutorialNavigation links={[
+  {link: "what-is-tc", text: "I'm not sure - what is it?"},
+  {link: "hello-world", text: "I want to run a task"},
+  {link: "apis", text: "I want to call the Taskcluster APIs"},
+]}>
+How do you want to use Taskcluster?
+</TutorialNavigation>

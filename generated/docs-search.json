@@ -3444,18 +3444,18 @@
     "title": "Welcome to Taskcluster!"
   },
   {
-    "element": "h2",
-    "id": "patches-welcome",
-    "path": "/tutorial",
-    "subtitle": "Patches Welcome!",
-    "title": "Welcome to Taskcluster!"
+    "element": "h1",
+    "id": "api-access",
+    "path": "/tutorial/apis",
+    "subtitle": null,
+    "title": "API Access"
   },
   {
-    "element": "h1",
+    "element": "h2",
     "id": "authenticating-to-taskcluster",
-    "path": "/tutorial/authenticate",
-    "subtitle": null,
-    "title": "Authenticating to Taskcluster"
+    "path": "/tutorial/apis",
+    "subtitle": "Authenticating to Taskcluster",
+    "title": "API Access"
   },
   {
     "element": "h1",
@@ -3487,37 +3487,16 @@
   },
   {
     "element": "h1",
-    "id": "debugging-a-task",
-    "path": "/tutorial/debug-task",
-    "subtitle": null,
-    "title": "Debugging a Task"
-  },
-  {
-    "element": "h2",
-    "id": "debugging-locally",
-    "path": "/tutorial/debug-task",
-    "subtitle": "Debugging locally",
-    "title": "Debugging a Task"
-  },
-  {
-    "element": "h2",
-    "id": "debugging-with-taskcluster",
-    "path": "/tutorial/debug-task",
-    "subtitle": "Debugging with Taskcluster",
-    "title": "Debugging a Task"
-  },
-  {
-    "element": "h2",
-    "id": "using-the-shell",
-    "path": "/tutorial/debug-task",
-    "subtitle": "Using the Shell",
-    "title": "Debugging a Task"
-  },
-  {
-    "element": "h1",
     "id": "finding-tasks",
     "path": "/tutorial/finding-tasks",
     "subtitle": null,
+    "title": "Finding Tasks"
+  },
+  {
+    "element": "h2",
+    "id": "details",
+    "path": "/tutorial/finding-tasks",
+    "subtitle": "Details",
     "title": "Finding Tasks"
   },
   {
@@ -3525,6 +3504,20 @@
     "id": "hello-world",
     "path": "/tutorial/hello-world",
     "subtitle": null,
+    "title": "Hello, World"
+  },
+  {
+    "element": "h2",
+    "id": "creating-a-task",
+    "path": "/tutorial/hello-world",
+    "subtitle": "Creating a Task",
+    "title": "Hello, World"
+  },
+  {
+    "element": "h2",
+    "id": "finding-a-worker-pool",
+    "path": "/tutorial/hello-world",
+    "subtitle": "Finding a Worker Pool",
     "title": "Hello, World"
   },
   {
@@ -3543,37 +3536,51 @@
   },
   {
     "element": "h1",
-    "id": "taskcluster-reviews",
-    "path": "/tutorial/reviews",
+    "id": "how-it-works",
+    "path": "/tutorial/how-it-works",
     "subtitle": null,
-    "title": "Taskcluster Reviews"
+    "title": "How it Works"
   },
   {
     "element": "h2",
-    "id": "bug-fixes-and-small-patches",
-    "path": "/tutorial/reviews",
-    "subtitle": "Bug Fixes and Small Patches",
-    "title": "Taskcluster Reviews"
+    "id": "and-more",
+    "path": "/tutorial/how-it-works",
+    "subtitle": "And More!",
+    "title": "How it Works"
   },
   {
     "element": "h2",
-    "id": "large-scale-projects",
-    "path": "/tutorial/reviews",
-    "subtitle": "Large-Scale Projects",
-    "title": "Taskcluster Reviews"
+    "id": "hooks",
+    "path": "/tutorial/how-it-works",
+    "subtitle": "Hooks",
+    "title": "How it Works"
+  },
+  {
+    "element": "h2",
+    "id": "indexes",
+    "path": "/tutorial/how-it-works",
+    "subtitle": "Indexes",
+    "title": "How it Works"
+  },
+  {
+    "element": "h2",
+    "id": "tasks",
+    "path": "/tutorial/how-it-works",
+    "subtitle": "Tasks",
+    "title": "How it Works"
+  },
+  {
+    "element": "h2",
+    "id": "workers",
+    "path": "/tutorial/how-it-works",
+    "subtitle": "Workers",
+    "title": "How it Works"
   },
   {
     "element": "h1",
     "id": "what-is-taskcluster",
     "path": "/tutorial/what-is-tc",
     "subtitle": null,
-    "title": "What is Taskcluster?"
-  },
-  {
-    "element": "h2",
-    "id": "is-it-mozilla-specific",
-    "path": "/tutorial/what-is-tc",
-    "subtitle": "Is it Mozilla-specific?",
     "title": "What is Taskcluster?"
   }
 ]

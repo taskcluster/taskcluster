@@ -2,12 +2,35 @@
 title: Finding Tasks
 ---
 
+import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
+
 # Finding Tasks
 
-The "table of contents" for Taskcluster tasks is the "task index", available on the navigation menu.
+The "table of contents" for Taskcluster tasks is the "task index".
+That's a good place to start looking for real tasks.
+
+The task index browser is available in the navigation sidebar of the Taskcluster web interface.
+The precise format of the index paths depends on the tasks being run on the Taskcluster deployment you are looking at.
+
+<SiteSpecific>
+For this deployment, you can browse the root of the index [here](%root_url%/tasks/index).
+</SiteSpecific>
+<SiteSpecific showIfNotSet={['root_url']}>
+The [Firefox-CI deployment](https://firefox-ci-tc.services.mozilla.com) of Taskcluster has lots of tasks.
+For example, as of this writing the latest builds of Firefox are at index path [gecko.v2.mozilla-release.latest.firefox](https://firefox-ci-tc.services.mozilla.com/tasks/index/gecko.v2.mozilla-release.latest.firefox).
+See [Finding a Taskcluster Deployment](/docs/tutorial/finding-tc) for help finding other deployments.
+</SiteSpecific>
+
+## Details
+
+Here's how it works.
 When a task completes successfully, it is added to the index at an "index route" given by any `task.routes` entries that begin with `index.`.
 (Actually, the Queue just [sends pulse messages to well-known exchanges](/docs/reference/platform/queue/exchanges).
 The Index listens to `index.*` for task completion, and indexes the tasks appropriately).
+Newer index entries overwrite older, allowing index paths like `latest` to always link to the most recent task.
 
-What that means is, you can use the task index to find tasks.
-The precise format of the index paths depends on the tasks being run on the Taskcluster deployment you are looking at.
+<TutorialNavigation links={[
+  {link: "hello-world", text: "OK, that's cool, but I want my own task"},
+]}>
+</TutorialNavigation>

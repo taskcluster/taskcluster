@@ -3,19 +3,22 @@ title: URL Structure
 order: 2
 ---
 
+import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+
 # URL Structure
 
 This section describes the structure of URLs used to access a Taskcluster deployment.
 
 ## RootUrl
 
-A Taskcluster `rootUrl` is a partial web address containing at least the scheme, host, and optionally a port. It cannot specify a path.
+A Taskcluster [`rootUrl`](/docs/manual/using/root-urls) is a partial web address containing at least the scheme, host, and optionally a port. It cannot specify a path.
 
-Example:
-
-```
-https://taskcluster.example.com
-```
+<SiteSpecific>
+The root URL for this deployment is `%root_url%`.
+</SiteSpecific>
+<SiteSpecific showIfNotSet={['root_url']}>
+For example, a company's root URL might be `https://taskcluster.example.com`.
+</SiteSpecific>
 
 Normally, a rootUrl has no trailing `/` characters.
 We suggest that libraries and tools be lenient and accept rootUrls containing a trailing `/`, but normalize to produce rootUrls without a trailing `/`.

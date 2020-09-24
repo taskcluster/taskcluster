@@ -1,6 +1,6 @@
 ---
 title: Calling Taskcluster APIs
-order: 0
+order: 1
 ---
 
 import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
@@ -9,7 +9,9 @@ import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
 
 Probably the most common way to integrate with Taskcluster is to call its API methods.
 The technical details of how these calls occur are documented in [Microservice APIs](/docs/manual/design/apis), and the individual API methods are in the [Reference](/docs/reference) section.
-But there are easier ways!
+You will need the [root URL](/docs/manual/using/root-urls) for the deployment you want to access.
+
+It's possible to call Taskcluster APIs with any HTTP client, but there are easier ways!
 
 ## Client Libraries
 
