@@ -57,7 +57,7 @@ payload:
     - /bin/bash
     - '-c'
     - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
-  maxRunTime: 600
+  maxRunTime: 1200
 metadata:
   name: Example Task
   description: Markdown description of **what** this task does
@@ -82,7 +82,7 @@ The fields in the task description are explained in greater detail throughout th
 In the task inspector, you will see your task description as executed, and indications of the task's status: pending, executing, and then finished.
 
 The log view shows the output of the task, including that from downloading the docker image.
-Scrolling all the way to the bottom, you should see the greeting output by the `echo` command.
+Following that, you should see "live" output of the for loop counting up to 600.
 
 You've run your first task!
 
