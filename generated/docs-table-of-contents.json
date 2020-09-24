@@ -3986,7 +3986,7 @@
     ],
     "data": {
       "order": 1000,
-      "titile": "Welcome to Taskcluster!"
+      "title": "Welcome to Taskcluster!"
     },
     "path": "tutorial"
   }
