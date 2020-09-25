@@ -557,6 +557,10 @@ class Database {
         // but don't verify the remote host.  The documentation describes ways to do
         // better.
         config.ssl = { rejectUnauthorized: false };
+      } else if (config.ssl === 'authorized') {
+        // For the custom `ssl=authorized` flag, reject unauthorized connections
+        // (this is equivalent to `config.ssl = true`)
+        config.ssl = { rejectUnauthorized: true };
       }
 
       const pool = new Pool({ ...config, ...connectOptions });
