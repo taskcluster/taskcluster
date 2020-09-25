@@ -8,7 +8,7 @@ MonitorManager.register({
   level: 'info',
   description: 'A worker pool\'s provisioning run has completed',
   fields: {
-    workerPoolId: 'The worker pool ID (provisionerId/workerType)',
+    workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
   },
 });
@@ -21,7 +21,7 @@ MonitorManager.register({
   level: 'notice',
   description: 'A worker has been requested from a cloud api',
   fields: {
-    workerPoolId: 'The worker pool ID (provisionerId/workerType)',
+    workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
     workerGroup: 'The worker group for this worker',
     workerId: 'The worker that was created',
@@ -36,7 +36,7 @@ MonitorManager.register({
   level: 'notice',
   description: 'A worker has been marked as running',
   fields: {
-    workerPoolId: 'The worker pool ID (provisionerId/workerType)',
+    workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that is running',
   },
@@ -50,7 +50,7 @@ MonitorManager.register({
   level: 'notice',
   description: 'A worker has been marked as stopped',
   fields: {
-    workerPoolId: 'The worker pool ID (provisionerId/workerType)',
+    workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that was stopped',
   },
@@ -67,7 +67,7 @@ MonitorManager.register({
     take some time.
   `,
   fields: {
-    workerPoolId: 'The worker pool ID (provisionerId/workerType)',
+    workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that is being removed',
     reason: 'The reason this worker is being removed',
@@ -82,7 +82,7 @@ MonitorManager.register({
   level: 'any',
   description: 'The simple estimator has decided that we need some number of instances.',
   fields: {
-    workerPoolId: 'The worker pool name (provisionerId/workerType)',
+    workerPoolId: 'The worker pool name',
     pendingTasks: 'The number of tasks the queue reports are pending for this worker pool',
     minCapacity: 'The minimum amount of capacity that should be running',
     maxCapacity: 'The maximum amount of capacity that should be running',
