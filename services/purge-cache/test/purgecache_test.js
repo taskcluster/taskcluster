@@ -86,16 +86,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('purgeRequest caching', async function() {
-    sinon.stub(helper.db.fns, 'purge_requests').callsFake(async (query) => []);
+    sinon.stub(helper.db.fns, 'purge_requests_wpid').callsFake(async (query) => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
       await helper.apiClient.purgeRequests('pp', 'wt', { since });
-      assert.equal(helper.db.fns.purge_requests.callCount, 1);
+      assert.equal(helper.db.fns.purge_requests_wpid.callCount, 1);
       await helper.apiClient.purgeRequests('pp', 'wt', { since });
       await helper.apiClient.purgeRequests('pp', 'wt', { since });
       await helper.apiClient.purgeRequests('pp', 'wt', { since });
       // not called again..
-      assert.equal(helper.db.fns.purge_requests.callCount, 1);
+      assert.equal(helper.db.fns.purge_requests_wpid.callCount, 1);
     } finally {
       sinon.restore();
     }
@@ -105,16 +105,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     // client retries could confuse the picture here, so don't do them
     const client = helper.apiClient.use({ retries: 0 });
 
-    sinon.stub(helper.db.fns, 'purge_requests')
+    sinon.stub(helper.db.fns, 'purge_requests_wpid')
       .onFirstCall().throws(new Error('uhoh'))
       .onSecondCall().callsFake(async (query) => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
       await assert.rejects(() => client.purgeRequests('pp', 'wt', { since }));
-      assert.equal(helper.db.fns.purge_requests.callCount, 1);
+      assert.equal(helper.db.fns.purge_requests_wpid.callCount, 1);
       await client.purgeRequests('pp', 'wt', { since });
       // Azure is called again due to error
-      assert.equal(helper.db.fns.purge_requests.callCount, 2);
+      assert.equal(helper.db.fns.purge_requests_wpid.callCount, 2);
     } finally {
       // clear out the logged error messages from the Azure failure
       const monitor = await helper.load('monitor');

@@ -5366,15 +5366,33 @@
         "all_purge_requests": {
           "args": "page_size_in integer, page_offset_in integer",
           "body": "begin\n  return query\n  select\n    split_part(cache_purges.worker_pool_id, '/', 1) as provisioner_id,\n    split_part(cache_purges.worker_pool_id, '/', 2) as worker_type,\n    cache_purges.cache_name,\n    cache_purges.before\n  from cache_purges\n  order by\n    cache_purges.worker_pool_id,\n    cache_purges.cache_name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "View all active purge requests.",
           "mode": "read",
           "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz)",
           "serviceName": "purge_cache"
         },
+        "all_purge_requests_wpid": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    cache_purges.worker_pool_id,\n    cache_purges.cache_name,\n    cache_purges.before\n  from cache_purges\n  order by\n    cache_purges.worker_pool_id,\n    cache_purges.cache_name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "View all active purge requests.",
+          "mode": "read",
+          "returns": "table (worker_pool_id text, cache_name text, before timestamptz)",
+          "serviceName": "purge_cache"
+        },
         "purge_cache": {
           "args": "provisioner_id_in text, worker_type_in text, cache_name_in text, before_in timestamptz, expires_in timestamptz",
           "body": "begin\n  insert into cache_purges(worker_pool_id, cache_name, before, expires)\n  values (\n    provisioner_id_in || '/' || worker_type_in,\n    cache_name_in,\n    before_in,\n    expires_in\n  ) on conflict (worker_pool_id, cache_name) do\n  update\n  set (before, expires) = (before_in, expires_in)\n  where\n    cache_purges.worker_pool_id = provisioner_id_in || '/' || worker_type_in and\n    cache_purges.cache_name = cache_name_in;\nend",
+          "deprecated": true,
+          "description": "Publish a request to purge caches with name `cache_name_in`\non `provisioner_id_in`/`worker_type_in` workers.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "purge_cache"
+        },
+        "purge_cache_wpid": {
+          "args": "worker_pool_id_in text, cache_name_in text, before_in timestamptz, expires_in timestamptz",
+          "body": "begin\n  insert into cache_purges(worker_pool_id, cache_name, before, expires)\n  values (\n    worker_pool_id_in,\n    cache_name_in,\n    before_in,\n    expires_in\n  ) on conflict (worker_pool_id, cache_name) do\n  update\n  set (before, expires) = (before_in, expires_in)\n  where\n    cache_purges.worker_pool_id = worker_pool_id_in and\n    cache_purges.cache_name = cache_name_in;\nend",
           "deprecated": false,
           "description": "Publish a request to purge caches with name `cache_name_in`\non `provisioner_id_in`/`worker_type_in` workers.",
           "mode": "write",
@@ -5384,10 +5402,19 @@
         "purge_requests": {
           "args": "provisioner_id_in text, worker_type_in text",
           "body": "begin\n  return query\n  select\n    split_part(cache_purges.worker_pool_id, '/', 1) as provisioner_id,\n    split_part(cache_purges.worker_pool_id, '/', 2) as worker_type,\n    cache_purges.cache_name,\n    cache_purges.before\n  from cache_purges\n  where\n    cache_purges.worker_pool_id = provisioner_id_in || '/' || worker_type_in;\nend",
-          "deprecated": false,
+          "deprecated": true,
           "description": "List the caches for this `provisioner_id_in`/`worker_type_in`.",
           "mode": "read",
           "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz)",
+          "serviceName": "purge_cache"
+        },
+        "purge_requests_wpid": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  return query\n  select\n    cache_purges.worker_pool_id,\n    cache_purges.cache_name,\n    cache_purges.before\n  from cache_purges\n  where\n    cache_purges.worker_pool_id = worker_pool_id_in;\nend",
+          "deprecated": false,
+          "description": "List the caches for this `provisioner_id_in`/`worker_type_in`.",
+          "mode": "read",
+          "returns": "table (worker_pool_id text, cache_name text, before timestamptz)",
           "serviceName": "purge_cache"
         }
       },
