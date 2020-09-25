@@ -443,7 +443,7 @@ async function requestArtifact(artifactName, { taskId, runId, debug, instGithub,
           errorMessage.concat("Make sure the artifact exists on the worker or other location.");
           break;
         default:
-          if (res.response && res.respones.error & res.response.error.message) {
+          if (res.response && res.response.error & res.response.error.message) {
             errorMessage.concat(res.response.error.message);
           }
           break;
