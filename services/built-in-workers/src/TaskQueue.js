@@ -3,10 +3,7 @@ class TaskQueue {
   constructor(cfg, queue, type) {
     assert(queue, 'Instance of taskcluster queue is required');
     this.queue = queue;
-    this.workerType = type;
-    this.provisionerId = cfg.worker.provisionerId;
-    this.workerGroup = cfg.worker.workerGroup;
-    this.workerId = type;
+    this.builtinType = type;
   }
 
   async runWorker() {
@@ -16,19 +13,20 @@ class TaskQueue {
   }
 
   async claimTask() {
-    let result = await this.queue.claimWork(this.provisionerId, this.workerType, {
+    let result = await this.queue.claimWork('built-in', this.builtinType, {
       tasks: 1,
-      workerGroup: this.workerGroup,
-      workerId: this.workerId,
+      workerGroup: 'built-in',
+      workerId: this.builtinType,
     });
     if (result.tasks.length === 0) {
       return ;
     }
     const task = result.tasks[0];
     if (Object.keys(task.task.payload).length === 0) {
-      if (task.task.workerType === 'succeed') {
+      const taskQueueId = `${task.task.provisionerId}/${task.task.workerType}`;
+      if (taskQueueId === 'built-in/succeed') {
         return await this.queue.reportCompleted(task.status.taskId, task.runId);
-      } else if (task.task.workerType === 'fail') {
+      } else if (taskQueueId === 'built-in/fail') {
         return await this.queue.reportFailed(task.status.taskId, task.runId);
       }
     } else {

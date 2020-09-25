@@ -15,10 +15,8 @@ suite(testing.suiteName(), function() {
             taskId: taskId,
           },
           runId: 0,
-          workerGroup: 'garbage-hybrid1999',
-          workerId: 'succeed',
           task: {
-            provisionerId: 'garbage-hybrid1999',
+            provisionerId: 'built-in',
             workerType: 'succeed',
             payload: {},
           },
@@ -39,10 +37,8 @@ suite(testing.suiteName(), function() {
             taskId: taskId,
           },
           runId: 0,
-          workerGroup: 'garbage-hybrid1999',
-          workerId: 'fail',
           task: {
-            provisionerId: 'garbage-hybrid1999',
+            provisionerId: 'built-in',
             workerType: 'fail',
             payload: {},
           },
@@ -63,10 +59,8 @@ suite(testing.suiteName(), function() {
             taskId: taskId,
           },
           runId: 0,
-          workerGroup: 'garbage-hybrid1999',
-          workerId: 'succeed',
           task: {
-            provisionerId: 'garbage-hybrid1999',
+            provisionerId: 'built-in',
             workerType: 'succeed',
             payload: {
               task: 'put',
@@ -92,10 +86,8 @@ suite(testing.suiteName(), function() {
             taskId: taskId,
           },
           runId: 0,
-          workerGroup: 'garbage-hybrid1999',
-          workerId: 'fail',
           task: {
-            provisionerId: 'garbage-hybrid1999',
+            provisionerId: 'built-in',
             workerType: 'fail',
             payload: {
               task: 'put',
