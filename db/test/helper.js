@@ -4,7 +4,7 @@ const { WRITE } = require('taskcluster-lib-postgres');
 const { resetDb } = require('taskcluster-lib-testing');
 const tcdb = require('taskcluster-db');
 const debug = require('debug')('db-helper');
-const { UNDEFINED_TABLE } = require('taskcluster-lib-postgres');
+const { UNDEFINED_TABLE, UNDEFINED_COLUMN } = require('taskcluster-lib-postgres');
 
 exports.dbUrl = process.env.TEST_DB_URL;
 assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests - see dev-docs/development-process.md for more information");
@@ -195,11 +195,31 @@ exports.assertTable = async name => {
 };
 
 /**
+ * Assert that the given column exists.
+ */
+exports.assertTableColumn = async (table, column) => {
+  await exports.withDbClient(async client => {
+    await client.query(`select ${column} from ${table}`);
+  });
+};
+
+/**
  * Assert that the given table does not exist (used to test table deletion in
  * downgrade scripts).
  */
 exports.assertNoTable = async name => {
   await exports.withDbClient(async client => {
     await assert.rejects(() => client.query(`select * from ${name}`), err => err.code === UNDEFINED_TABLE);
+  });
+};
+
+/**
+ * Assert that the given column does not exist.
+ */
+exports.assertNoTableColumn = async (table, column) => {
+  await exports.withDbClient(async client => {
+    await assert.rejects(
+      () => client.query(`select ${column} from ${table}`),
+      err => err.code === UNDEFINED_COLUMN);
   });
 };

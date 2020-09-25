@@ -15,8 +15,8 @@ suite(testing.suiteName(), function() {
     await helper.withDbClient(async client => {
       await client.query('delete from cache_purges');
       await client.query(
-        `insert into cache_purges (provisioner_id, worker_type, cache_name, before, expires) values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10)`,
-        samples.flatMap(s => [`${s.provisioner_id}`, `${s.worker_type}`, `${s.cache_name}`, s.before, s.expires]),
+        `insert into cache_purges (worker_pool_id, cache_name, before, expires) values ($1, $2, $3, $4), ($5, $6, $7, $8)`,
+        samples.flatMap(s => [`${s.provisioner_id}/${s.worker_type}`, `${s.cache_name}`, s.before, s.expires]),
       );
     });
   });
