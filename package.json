@@ -79,7 +79,7 @@
     "passport": "^0.4.0",
     "passport-auth0": "^1.1.0",
     "passport-github": "^1.1.0",
-    "pg": "^7.14.0",
+    "pg": "^8.0.0",
     "quick-lru": "^4.0.0",
     "ramda": "^0.27.0",
     "regex-escape": "^3.4.8",
