@@ -380,6 +380,7 @@ builder.declare({
     root: __dirname + '/../assets/',
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Content-Security-Policy': "default-source 'none'; style-source 'unsafe-inline'",
     },
   };
 
