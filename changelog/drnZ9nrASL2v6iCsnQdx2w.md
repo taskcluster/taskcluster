@@ -1,4 +1,4 @@
 audience: developers
 level: silent
 ---
-Add a link to community-tc-config repo in EXPECTATIONS.md
+EXPECTATIONS.md now contains a link to the mozilla/community-tc-config repository.
