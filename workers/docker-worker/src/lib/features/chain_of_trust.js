@@ -41,7 +41,7 @@ class ChainOfTrust {
   }
 
   async killed(task) {
-    if (task.isCanceled()) {return;}
+    if (task.isCanceled() || task.isAborted()) {return;}
 
     // Ensure the stream is completely written prior to uploading the temp file.
     await streamClosed(this.stream);
