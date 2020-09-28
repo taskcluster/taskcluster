@@ -236,6 +236,10 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 			proxyreq.Header[k] = v
 		}
 
+		if proxyreq.Header.Get("content-type") == "" {
+			proxyreq.Header.Set("content-type", "application/json")
+		}
+
 		// Refresh Authorization header with each call...
 		err = routes.Credentials.SignRequest(proxyreq)
 		if err != nil {

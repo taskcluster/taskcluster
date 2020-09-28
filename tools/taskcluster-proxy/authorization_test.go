@@ -545,3 +545,55 @@ func TestGetResponseBody(t *testing.T) {
 	testWithPermCreds(t, test("tester"), 200)
 	testWithTempCreds(t, test("test:temp-cred-issuer"), 200, "test:authenticate-get")
 }
+
+func TestRequestHeaders(t *testing.T) {
+	test := func(name string, scopes []string) IntegrationTest {
+		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+			fmt.Printf("-- %s --\n", name)
+
+			server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+				if req.Header.Get("content-type") != "application/json" {
+					t.Errorf("Missing or incorrect request header: %s", req.Header.Get("content-type"))
+				}
+				res.Header().Set("content-type", "application/json")
+				res.Write([]byte(`{"key": "this needs to be at least 14 bytes long. see above"}`))
+			}))
+			defer server.Close()
+
+			routes := NewRoutes(
+				tcclient.Client{
+					Authenticate: true,
+					RootURL:      server.URL,
+					Credentials: &tcclient.Credentials{
+						ClientID:    creds.ClientID,
+						AccessToken: creds.AccessToken,
+						Certificate: creds.Certificate,
+					},
+				},
+			)
+			if len(scopes) > 0 {
+				routes.Credentials.AuthorizedScopes = scopes
+			}
+
+			req, err := http.NewRequest(
+				"GET", "http://localhost:60024/api/auth/v1/whatever/",
+				new(bytes.Buffer),
+			)
+			if err != nil {
+				log.Fatal(err)
+			}
+			res := httptest.NewRecorder()
+
+			// Function to test
+			routes.APIHandler(res, req)
+			return res
+		}
+	}
+	// We always just return 200 from the test server but we try this with all of the different
+	// cases to try to make sure we send correct headers in all cases
+	testWithPermCreds(t, test("Test with perm creds without authorizedScopes", []string{}), 200)
+	testWithPermCreds(t, test("Test with perm creds with authorizedScopes", []string{"test:authenticate-get"}), 200)
+	testWithPermCreds(t, test("Test with perm creds with wrong authorizedScopes", []string{"test:something-else"}), 200)
+	testWithTempCreds(t, test("Test with temp creds without authorizedScopes", []string{}), 200, "test:authenticate-get")
+	testWithTempCreds(t, test("Test with temp creds with authorizedScopes", []string{"test:authenticate-get"}), 200, "test:authenticate-get")
+}
