@@ -95,6 +95,7 @@ This means that the connection could be intercepted by a MITM attack.
 An alternative syntax is `?sslcert=/path/to/client/cert&sslkey=/path/to/client/key&sslrootcert=/path/to/server/cert`, giving filenames for a client cert and key, and for a server cert.
 These files must be on the filesystem, making this form difficult to use in deployed services.
 We recommend configuring private IP access for services and using `?ssl=1`, and using a public IP with the full set of certificates and keys for the administrative access.
+In the unusual case that the database server's certificate contains a signed certificate for its hostname with a validation chain leading to a trusted root CA, use `?ssl=authorized`.
 
 Each service that requires database access has Helm properties `<service>.read_db_url` and `<service>.write_db_url`.
 Set these values to include the corresponding database users' credentials.

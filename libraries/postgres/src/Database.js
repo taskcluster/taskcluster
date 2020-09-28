@@ -8,6 +8,7 @@ const assert = require('assert').strict;
 const { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } = require('./constants');
 const { MonitorManager } = require('taskcluster-lib-monitor');
 const named = require('yesql').pg;
+const { parse: parseConnectionString } = require('pg-connection-string');
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -540,10 +541,29 @@ class Database {
   constructor({ urlsByMode, monitor, statementTimeout, poolSize, keyring }) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
     const makePool = dbUrl => {
-      // default to a max of 5 connections. For services running both a read
-      // and write pool, this is a maximum of 10 concurrent connections.  Other
-      // requests will be queued.
-      const pool = new Pool({ connectionString: dbUrl, max: poolSize || 5 });
+      const connectOptions = {
+        // default to a max of 5 connections. For services running both a read
+        // and write pool, this is a maximum of 10 concurrent connections.  Other
+        // requests will be queued.
+        max: poolSize || 5,
+      };
+
+      /// post-process the DB URL a little bit
+      let config = parseConnectionString(dbUrl);
+      if (config.ssl === true) {
+        // As of node-pg 8.x, SSL connections with `ssl=1` try to verify the SSL
+        // connection's certificate chain.  In most cases, this doesn't work, so
+        // we treat that configuration as node-pg 7.x did: use the SSL encryption,
+        // but don't verify the remote host.  The documentation describes ways to do
+        // better.
+        config.ssl = { rejectUnauthorized: false };
+      } else if (config.ssl === 'authorized') {
+        // For the custom `ssl=authorized` flag, reject unauthorized connections
+        // (this is equivalent to `config.ssl = true`)
+        config.ssl = { rejectUnauthorized: true };
+      }
+
+      const pool = new Pool({ ...config, ...connectOptions });
       // ignore errors from *idle* connections.  From the docs:
       //
       // > When a client is sitting idly in the pool it can still emit errors
