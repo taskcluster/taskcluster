@@ -1152,6 +1152,9 @@
         "public_artifact_bucket_cdn": {
           "type": "string"
         },
+        "sign_public_artifact_urls": {
+          "type": "boolean"
+        },
         "public_artifact_ec2_proxies": {
           "oneOf": [
             {

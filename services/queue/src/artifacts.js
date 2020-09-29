@@ -356,7 +356,11 @@ let replyWithArtifact = async function(taskId, runId, name, req, res) {
         skipCache = true;
       }
 
-      if (skipCache && skipCDN) {
+      if (this.signPublicArtifactURLs) {
+        url = await this.publicBucket.createSignedGetUrl(prefix, {
+          expires: 30 * 60,
+        });
+      } else if (skipCache && skipCDN) {
         url = this.publicBucket.createGetUrl(prefix, true);
       } else if (skipCache || !region) {
         url = this.publicBucket.createGetUrl(prefix, false);
