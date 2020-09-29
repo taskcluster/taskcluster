@@ -102,8 +102,7 @@
       "before": "timestamp with time zone not null",
       "cache_name": "text not null",
       "expires": "timestamp with time zone not null",
-      "provisioner_id": "text not null",
-      "worker_type": "text not null"
+      "worker_pool_id": "text not null"
     },
     "clients": {
       "client_id": "text not null",
@@ -5359,6 +5358,68 @@
       },
       "migrationScript": "begin\n  alter table clients drop column etag;\n  alter table github_builds drop column etag;\n  alter table hooks drop column etag;\n  alter table hooks_last_fires drop column etag;\n  alter table hooks_queues drop column etag;\n  alter table indexed_tasks drop column etag;\n  alter table denylisted_notifications drop column etag;\n  alter table cache_purges drop column etag;\n  alter table access_tokens drop column etag;\n  alter table authorization_codes drop column etag;\n  alter table sessions drop column etag;\n  alter table queue_provisioners drop column etag;\n  alter table queue_worker_types drop column etag;\n  alter table queue_workers drop column etag;\n  alter table task_groups drop column etag;\n  alter table task_dependencies drop column etag;\n  alter table queue_artifacts drop column etag;\n  alter table tasks drop column etag;\n  alter table worker_pool_errors drop column etag;\n  alter table worker_pools drop column etag;\n  alter table index_namespaces drop column etag;\nend",
       "version": 49
+    },
+    {
+      "description": "Use worker_pool_id instead of provisioner_id / worker_type for purge-cache",
+      "downgradeScript": "begin\n  lock table cache_purges;\n\n  alter table cache_purges drop constraint cache_purges_pkey;\n  alter table cache_purges add column provisioner_id text, add column worker_type text;\n  update cache_purges\n  set\n    provisioner_id = split_part(cache_purges.worker_pool_id, '/', 1),\n    worker_type = split_part(cache_purges.worker_pool_id, '/', 2);\n  alter table cache_purges drop column worker_pool_id;\n  alter table cache_purges alter column provisioner_id set not null;\n  alter table cache_purges alter column worker_type set not null;\n  alter table cache_purges add primary key (provisioner_id, worker_type, cache_name);\nend",
+      "methods": {
+        "all_purge_requests": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    split_part(cache_purges.worker_pool_id, '/', 1) as provisioner_id,\n    split_part(cache_purges.worker_pool_id, '/', 2) as worker_type,\n    cache_purges.cache_name,\n    cache_purges.before\n  from cache_purges\n  order by\n    cache_purges.worker_pool_id,\n    cache_purges.cache_name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": true,
+          "description": "View all active purge requests.",
+          "mode": "read",
+          "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz)",
+          "serviceName": "purge_cache"
+        },
+        "all_purge_requests_wpid": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    cache_purges.worker_pool_id,\n    cache_purges.cache_name,\n    cache_purges.before\n  from cache_purges\n  order by\n    cache_purges.worker_pool_id,\n    cache_purges.cache_name\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "View all active purge requests.",
+          "mode": "read",
+          "returns": "table (worker_pool_id text, cache_name text, before timestamptz)",
+          "serviceName": "purge_cache"
+        },
+        "purge_cache": {
+          "args": "provisioner_id_in text, worker_type_in text, cache_name_in text, before_in timestamptz, expires_in timestamptz",
+          "body": "begin\n  insert into cache_purges(worker_pool_id, cache_name, before, expires)\n  values (\n    provisioner_id_in || '/' || worker_type_in,\n    cache_name_in,\n    before_in,\n    expires_in\n  ) on conflict (worker_pool_id, cache_name) do\n  update\n  set (before, expires) = (before_in, expires_in)\n  where\n    cache_purges.worker_pool_id = provisioner_id_in || '/' || worker_type_in and\n    cache_purges.cache_name = cache_name_in;\nend",
+          "deprecated": true,
+          "description": "Publish a request to purge caches with name `cache_name_in`\non `provisioner_id_in`/`worker_type_in` workers.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "purge_cache"
+        },
+        "purge_cache_wpid": {
+          "args": "worker_pool_id_in text, cache_name_in text, before_in timestamptz, expires_in timestamptz",
+          "body": "begin\n  insert into cache_purges(worker_pool_id, cache_name, before, expires)\n  values (\n    worker_pool_id_in,\n    cache_name_in,\n    before_in,\n    expires_in\n  ) on conflict (worker_pool_id, cache_name) do\n  update\n  set (before, expires) = (before_in, expires_in)\n  where\n    cache_purges.worker_pool_id = worker_pool_id_in and\n    cache_purges.cache_name = cache_name_in;\nend",
+          "deprecated": false,
+          "description": "Publish a request to purge caches with name `cache_name_in`\non `provisioner_id_in`/`worker_type_in` workers.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "purge_cache"
+        },
+        "purge_requests": {
+          "args": "provisioner_id_in text, worker_type_in text",
+          "body": "begin\n  return query\n  select\n    split_part(cache_purges.worker_pool_id, '/', 1) as provisioner_id,\n    split_part(cache_purges.worker_pool_id, '/', 2) as worker_type,\n    cache_purges.cache_name,\n    cache_purges.before\n  from cache_purges\n  where\n    cache_purges.worker_pool_id = provisioner_id_in || '/' || worker_type_in;\nend",
+          "deprecated": true,
+          "description": "List the caches for this `provisioner_id_in`/`worker_type_in`.",
+          "mode": "read",
+          "returns": "table (provisioner_id text, worker_type text, cache_name text, before timestamptz)",
+          "serviceName": "purge_cache"
+        },
+        "purge_requests_wpid": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  return query\n  select\n    cache_purges.worker_pool_id,\n    cache_purges.cache_name,\n    cache_purges.before\n  from cache_purges\n  where\n    cache_purges.worker_pool_id = worker_pool_id_in;\nend",
+          "deprecated": false,
+          "description": "List the caches for this `provisioner_id_in`/`worker_type_in`.",
+          "mode": "read",
+          "returns": "table (worker_pool_id text, cache_name text, before timestamptz)",
+          "serviceName": "purge_cache"
+        }
+      },
+      "migrationScript": "begin\n  lock table cache_purges;\n\n  alter table cache_purges drop constraint cache_purges_pkey;\n  alter table cache_purges add column worker_pool_id text;\n  update cache_purges set worker_pool_id = provisioner_id || '/' || worker_type;\n  alter table cache_purges drop column provisioner_id, drop column worker_type;\n  alter table cache_purges alter column worker_pool_id set not null;\n  alter table cache_purges add primary key (worker_pool_id, cache_name);\nend",
+      "version": 50
     }
   ]
 }

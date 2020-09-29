@@ -86,14 +86,13 @@ CREATE INDEX azure_queue_messages_inserted ON azure_queue_messages USING btree (
 
 ```sql
 CREATE TABLE cache_purges (
-    provisioner_id text NOT NULL,
-    worker_type text NOT NULL,
     cache_name text NOT NULL,
     before timestamp with time zone NOT NULL,
-    expires timestamp with time zone NOT NULL
+    expires timestamp with time zone NOT NULL,
+    worker_pool_id text NOT NULL
 );
 ALTER TABLE cache_purges
-    ADD CONSTRAINT cache_purges_pkey PRIMARY KEY (provisioner_id, worker_type, cache_name);
+    ADD CONSTRAINT cache_purges_pkey PRIMARY KEY (worker_pool_id, cache_name);
 ```
 
 ## clients

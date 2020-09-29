@@ -11747,7 +11747,7 @@
             "pendingTasks": "The number of tasks the queue reports are pending for this worker pool",
             "requestedCapacity": "Amount of capacity that this estimator thinks we should add",
             "scalingRatio": "The ratio of workers to spawn per pending task for this worker pool.",
-            "workerPoolId": "The worker pool name (provisionerId/workerType)"
+            "workerPoolId": "The worker pool name"
           },
           "level": "any",
           "name": "simpleEstimate",
@@ -11786,7 +11786,7 @@
           "description": "A worker pool's provisioning run has completed",
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
-            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+            "workerPoolId": "The worker pool ID"
           },
           "level": "info",
           "name": "workerPoolProvisioned",
@@ -11800,7 +11800,7 @@
             "providerId": "The provider that did the work for this worker pool.",
             "reason": "The reason this worker is being removed",
             "workerId": "The worker that is being removed",
-            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+            "workerPoolId": "The worker pool ID"
           },
           "level": "notice",
           "name": "workerRemoved",
@@ -11814,7 +11814,7 @@
             "providerId": "The provider that did the work for this worker pool.",
             "workerGroup": "The worker group for this worker",
             "workerId": "The worker that was created",
-            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+            "workerPoolId": "The worker pool ID"
           },
           "level": "notice",
           "name": "workerRequested",
@@ -11827,7 +11827,7 @@
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
             "workerId": "The worker that is running",
-            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+            "workerPoolId": "The worker pool ID"
           },
           "level": "notice",
           "name": "workerRunning",
@@ -11840,7 +11840,7 @@
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
             "workerId": "The worker that was stopped",
-            "workerPoolId": "The worker pool ID (provisionerId/workerType)"
+            "workerPoolId": "The worker pool ID"
           },
           "level": "notice",
           "name": "workerStopped",

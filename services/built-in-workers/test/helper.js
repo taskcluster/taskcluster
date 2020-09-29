@@ -53,7 +53,10 @@ const stubbedQueue = () => {
         return task;
       },
       claimWork: async (provisionerId, workerType, payload) => {
-        return exports.claimableWork.pop();
+        const work = exports.claimableWork.pop();
+        work.workerGroup = payload.workerGroup;
+        work.workerId = payload.workerId;
+        return work;
       },
       reportCompleted: async (taskId, runId) => {
         exports.taskResolutions[taskId] = { completed: true };

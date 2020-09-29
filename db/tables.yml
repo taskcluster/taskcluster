@@ -84,8 +84,7 @@ denylisted_notifications:
   notification_type: text not null
   notification_address: text not null
 cache_purges:
-  provisioner_id: text not null
-  worker_type: text not null
+  worker_pool_id: text not null
   cache_name: text not null
   before: timestamp with time zone not null
   expires: timestamp with time zone not null

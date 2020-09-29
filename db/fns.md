@@ -54,10 +54,10 @@
    * [`delete_denylist_address`](#delete_denylist_address)
    * [`exists_denylist_address`](#exists_denylist_address)
  * [purge_cache functions](#purge_cache)
-   * [`all_purge_requests`](#all_purge_requests)
+   * [`all_purge_requests_wpid`](#all_purge_requests_wpid)
    * [`expire_cache_purges`](#expire_cache_purges)
-   * [`purge_cache`](#purge_cache)
-   * [`purge_requests`](#purge_requests)
+   * [`purge_cache_wpid`](#purge_cache_wpid)
+   * [`purge_requests_wpid`](#purge_requests_wpid)
  * [queue functions](#queue)
    * [`add_task_dependency`](#add_task_dependency)
    * [`azure_queue_count`](#azure_queue_count)
@@ -954,20 +954,19 @@ Returns a boolean indicating whether the denylist type/address exists.
 
 ## purge_cache
 
-* [`all_purge_requests`](#all_purge_requests)
+* [`all_purge_requests_wpid`](#all_purge_requests_wpid)
 * [`expire_cache_purges`](#expire_cache_purges)
-* [`purge_cache`](#purge_cache)
-* [`purge_requests`](#purge_requests)
+* [`purge_cache_wpid`](#purge_cache_wpid)
+* [`purge_requests_wpid`](#purge_requests_wpid)
 
-### all_purge_requests
+### all_purge_requests_wpid
 
 * *Mode*: read
 * *Arguments*:
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
-  * `provisioner_id text`
-  * `worker_type text`
+  * `worker_pool_id text`
   * `cache_name text`
   * `before timestamptz`
 
@@ -983,12 +982,11 @@ View all active purge requests.
 Expire cache purges that come before `expires_in`.
 Returns a count of rows that have been deleted.
 
-### purge_cache
+### purge_cache_wpid
 
 * *Mode*: write
 * *Arguments*:
-  * `provisioner_id_in text`
-  * `worker_type_in text`
+  * `worker_pool_id_in text`
   * `cache_name_in text`
   * `before_in timestamptz`
   * `expires_in timestamptz`
@@ -997,19 +995,23 @@ Returns a count of rows that have been deleted.
 Publish a request to purge caches with name `cache_name_in`
 on `provisioner_id_in`/`worker_type_in` workers.
 
-### purge_requests
+### purge_requests_wpid
 
 * *Mode*: read
 * *Arguments*:
-  * `provisioner_id_in text`
-  * `worker_type_in text`
+  * `worker_pool_id_in text`
 * *Returns*: `table`
-  * `provisioner_id text`
-  * `worker_type text`
+  * `worker_pool_id text`
   * `cache_name text`
   * `before timestamptz`
 
 List the caches for this `provisioner_id_in`/`worker_type_in`.
+
+### deprecated methods
+
+* `all_purge_requests(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v39.0.0)
+* `purge_cache(provisioner_id_in text, worker_type_in text, cache_name_in text, before_in timestamptz, expires_in timestamptz)` (compatibility guaranteed until v39.0.0)
+* `purge_requests(provisioner_id_in text, worker_type_in text)` (compatibility guaranteed until v39.0.0)
 
 ## queue
 

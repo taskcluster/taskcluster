@@ -3,6 +3,7 @@ const debug = require('debug')('purge-cache');
 const { APIBuilder } = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
 const { paginateResults } = require('taskcluster-lib-api');
+const { joinWorkerPoolId, splitWorkerPoolId } = require('./util');
 
 // Common patterns URL parameters
 const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
@@ -52,12 +53,13 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let { provisionerId, workerType } = req.params;
+  const workerPoolId = joinWorkerPoolId(provisionerId, workerType);
   let { cacheName } = req.body;
 
   debug(`Processing request for ${provisionerId}/${workerType}/${cacheName}.`);
 
   await req.authorize({ provisionerId, workerType, cacheName });
-  await this.db.fns.purge_cache(provisionerId, workerType, cacheName, new Date(), taskcluster.fromNow('1 day'));
+  await this.db.fns.purge_cache_wpid(workerPoolId, cacheName, new Date(), taskcluster.fromNow('1 day'));
   // Return 204
   res.reply();
 });
@@ -84,14 +86,15 @@ builder.declare({
   // openRequests
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.all_purge_requests(size, offset),
+    fetch: (size, offset) => this.db.fns.all_purge_requests_wpid(size, offset),
   });
   return res.reply({
     continuationToken: continuationToken || '',
     requests: _.map(rows, entry => {
+      const { provisionerId, workerType } = splitWorkerPoolId(entry.worker_pool_id);
       return {
-        provisionerId: entry.provisioner_id,
-        workerType: entry.worker_type,
+        provisionerId,
+        workerType,
         cacheName: entry.cache_name,
         before: entry.before.toJSON(),
       };
@@ -119,18 +122,18 @@ builder.declare({
 }, async function(req, res) {
 
   let { provisionerId, workerType } = req.params;
-  let cacheKey = `${provisionerId}/${workerType}`;
+  let workerPoolId = joinWorkerPoolId(provisionerId, workerType);
   let since = new Date(req.query.since || 0);
 
   // Cache the azure query for cacheTime seconds.  Note that if a second request
-  // for this cacheKey comes in while the first Azure query is still running, this
+  // for this task queue comes in while the first DB query is still running, this
   // will start another query.  This is slightly wasteful, but worthwhile for the
   // simpler implementation (see https://bugzilla.mozilla.org/show_bug.cgi?id=1599564
   // for an example of issues with a complex implementation)
-  let cacheCache = this.cachePurgeCache[cacheKey];
+  let cacheCache = this.cachePurgeCache[workerPoolId];
   if (!cacheCache || Date.now() - cacheCache.touched > this.cfg.app.cacheTime * 1000) {
-    cacheCache = this.cachePurgeCache[cacheKey] = {
-      reqs: await this.db.fns.purge_requests(provisionerId, workerType),
+    cacheCache = this.cachePurgeCache[workerPoolId] = {
+      reqs: await this.db.fns.purge_requests_wpid(workerPoolId),
       touched: Date.now(),
     };
   }
@@ -138,10 +141,11 @@ builder.declare({
   let { reqs: openRequests } = cacheCache;
   return res.reply({
     requests: _.reduce(openRequests, (l, entry) => {
+      const { provisionerId, workerType } = splitWorkerPoolId(entry.worker_pool_id);
       if (entry.before >= since) {
         l.push({
-          provisionerId: entry.provisioner_id,
-          workerType: entry.worker_type,
+          provisionerId,
+          workerType,
           cacheName: entry.cache_name,
           before: entry.before.toJSON(),
         });

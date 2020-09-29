@@ -10,9 +10,5 @@ defaults:
     level: !env:optional LEVEL
     errorConfig: !env:json:optional ERROR_CONFIG
 
-  worker:
-    provisionerId: "built-in"
-    workerGroup: "built-in"
-
   # new relic config (processed in services/prelude.js)
   newRelic: !env:json:optional NEW_RELIC
