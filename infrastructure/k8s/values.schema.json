@@ -1152,9 +1152,6 @@
         "public_artifact_bucket_cdn": {
           "type": "string"
         },
-        "sign_public_artifact_urls": {
-          "type": "boolean"
-        },
         "public_artifact_ec2_proxies": {
           "oneOf": [
             {
@@ -1174,6 +1171,9 @@
         },
         "read_db_url": {
           "type": "string"
+        },
+        "sign_public_artifact_urls": {
+          "type": "boolean"
         },
         "task_cache_max_size": {
           "type": "number"

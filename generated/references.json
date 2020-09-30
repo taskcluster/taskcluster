@@ -8750,6 +8750,9 @@
             "read_db_url": {
               "type": "string"
             },
+            "sign_public_artifact_urls": {
+              "type": "boolean"
+            },
             "task_cache_max_size": {
               "type": "number"
             },
