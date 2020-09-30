@@ -423,7 +423,7 @@ class Database {
     await this._withClient('admin', async client => {
       // check the DB collation by its behavior, rather than by name, as names seem to vary.
       for (const pair of ['aA', 'ab', 'Ab', 'aB', 'AB', '0a', '0A']) {
-        const res = await client.query(`select 1 where $1 > $2`, [pair[0], pair[1]]);
+        const res = await client.query(`select 1 where $1 >= $2`, [pair[0], pair[1]]);
         if (res.rows.length > 0) {
           const res = await client.query(`
             SELECT datcollate AS collation
@@ -433,7 +433,7 @@ class Database {
           throw new Error([
             'Postgres database must have default collation en_US.utf8 (and in particular sort',
             '`0` < `a` < `A` < `b` < `B`, for proper slugid ordering);',
-            `this database is using ${collation}, and sorts '${pair[0]}' > '${pair[1]}'.`,
+            `this database is using ${collation}, and sorts '${pair[0]}' >= '${pair[1]}'.`,
           ].join(' '));
         }
       }
