@@ -431,7 +431,8 @@ class Database {
             WHERE datname = current_database()`);
           const collation = res.rows[0].collation;
           throw new Error([
-            'Postgres database must have default collation en_US.utf8 (and in particular be case-insensitive for ASCII letters);',
+            'Postgres database must have default collation en_US.utf8 (and in particular sort',
+            '`0` < `a` < `A` < `b` < `B`, for proper slugid ordering);',
             `this database is using ${collation}, and sorts '${pair[0]}' > '${pair[1]}'.`,
           ].join(' '));
         }
