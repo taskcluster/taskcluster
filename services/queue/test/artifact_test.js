@@ -855,7 +855,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     withCleanLoaderState();
     suiteSetup(async () => {
       await helper.load('cfg');
-      helper.load.cfg('app.signPublicArtifactURLs', true);
+      helper.load.cfg('app.signPublicArtifactUrls', true);
     });
     helper.withDb(mock, skipping);
     helper.withPulse(mock, skipping);
