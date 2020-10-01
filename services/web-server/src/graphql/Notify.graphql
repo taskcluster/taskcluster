@@ -9,6 +9,7 @@ enum NotificationType {
   IRC_USER
   IRC_CHANNEL
   MATRIX_ROOM
+  SLACK_CHANNEL
 }
 
 input NotificationAddressInput {

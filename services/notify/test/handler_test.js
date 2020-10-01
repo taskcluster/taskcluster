@@ -8,6 +8,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.withDenier(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withFakeMatrix(mock, skipping);
+  helper.withFakeSlack(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
@@ -224,5 +225,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.equal(helper.matrixClient.sendEvent.callCount, 1);
     assert.equal(helper.matrixClient.sendEvent.args[0][0], '!rejected:mozilla.org');
     assert(monitor.manager.messages.find(m => m.Type === 'matrix-forbidden'));
+  });
+
+  test('slack', async () => {
+    const route = 'test-notify.slack-channel.C123456.on-any';
+    const task = makeTask([route]);
+    task.extra = { notify: { slackText: 'hey hey ${taskId}', slackBlocks: [{}], slackAttachments: [{}, {}] } };
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
+      payload: {
+        status: baseStatus,
+      },
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'doesnt-matter',
+      routes: [route],
+    });
+    assert.equal(helper.slackClient.chat.postMessage.callCount, 1);
+    assert.deepStrictEqual(helper.slackClient.chat.postMessage.args[0][0], {
+      channel: 'C123456',
+      text: `hey hey ${baseStatus.taskId}`,
+      blocks: [{}],
+      attachments: [{}, {}],
+    });
+    assert(monitor.manager.messages.find(m => m.Type === 'slack'));
   });
 });

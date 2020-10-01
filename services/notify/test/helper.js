@@ -260,6 +260,27 @@ exports.withFakeMatrix = (mock, skipping) => {
   });
 };
 
+exports.withFakeSlack = (mock, skipping) => {
+  const fakeSlackSend = () => sinon.fake(() => ({ ok: true }));
+
+  suiteSetup('withFakeSlack', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    exports.slackClient = {
+      chat: {
+        postMessage: fakeSlackSend(),
+      },
+    };
+    exports.load.inject('slackClient', exports.slackClient);
+  });
+
+  setup(function() {
+    exports.slackClient.chat.postMessage = fakeSlackSend();
+  });
+};
+
 exports.withPulse = (mock, skipping) => {
   withPulse({ helper: exports, skipping, namespace: 'taskcluster-notify' });
 };

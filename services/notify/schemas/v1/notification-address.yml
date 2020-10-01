@@ -12,6 +12,7 @@ properties:
       - "irc-user"
       - "irc-channel"
       - "matrix-room"
+      - "slack-channel"
   notificationAddress:
     type: string
 additionalProperties: false
