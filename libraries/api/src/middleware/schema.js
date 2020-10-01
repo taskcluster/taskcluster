@@ -46,7 +46,7 @@ const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, ent
     if (input) {
       if (!typeis(req, 'application/json')) {
         debug(
-          'Payload must have content-type application/json not ' + req.headers['content-type'] || 'none'
+          'Payload must have content-type application/json not ' + req.headers['content-type'] || 'none',
         );
       }
       const error = validator(req.body, input);
