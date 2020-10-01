@@ -328,7 +328,13 @@ let replyWithArtifact = async function(taskId, runId, name, req, res) {
     let prefix = artifact.details.prefix;
     let bucket = artifact.details.bucket;
 
-    if (bucket === this.publicBucket.bucket) {
+    if (this.signPublicArtifactUrls || bucket === this.privateBucket.bucket) {
+      let bucketObject = (bucket === this.privateBucket.bucket) ?
+        this.privateBucket : this.publicBucket;
+      url = await bucketObject.createSignedGetUrl(prefix, {
+        expires: 30 * 60,
+      });
+    } else if (bucket === this.publicBucket.bucket) {
 
       // We have some headers to skip the Cache (cloud-mirror) and to skip the
       // CDN (cloudfront) for those requests which require it
@@ -379,10 +385,6 @@ let replyWithArtifact = async function(taskId, runId, name, req, res) {
           pathname: cloudMirrorPath,
         });
       }
-    } else if (bucket === this.privateBucket.bucket) {
-      url = await this.privateBucket.createSignedGetUrl(prefix, {
-        expires: 30 * 60,
-      });
     }
     assert(url, 'Url should have been constructed!');
     return res.redirect(303, url);

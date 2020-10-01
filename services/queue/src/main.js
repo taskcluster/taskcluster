@@ -191,6 +191,7 @@ let load = loader({
         publisher: ctx.publisher,
         claimTimeout: ctx.cfg.app.claimTimeout,
         queueService: ctx.queueService,
+        signPublicArtifactUrls: !!ctx.cfg.app.signPublicArtifactUrls,
         publicBucket: ctx.publicArtifactBucket,
         privateBucket: ctx.privateArtifactBucket,
         regionResolver: ctx.regionResolver,

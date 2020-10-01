@@ -8,6 +8,7 @@ defaults:
     # S3 buckets where artifacts are stored
     publicArtifactBucket:         !env PUBLIC_ARTIFACT_BUCKET
     privateArtifactBucket:        !env PRIVATE_ARTIFACT_BUCKET
+    signPublicArtifactUrls:       !env:bool:optional SIGN_PUBLIC_ARTIFACT_URLS
 
     # Time delay before expiring artifacts, in readable format, see:
     # taskcluster.fromNow, notice this should be negative!

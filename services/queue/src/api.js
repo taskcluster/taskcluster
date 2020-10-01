@@ -93,6 +93,7 @@ let builder = new APIBuilder({
   context: [
     'db', // Database instance
     'taskGroupExpiresExtension', // Time delay before expiring a task-group
+    'signPublicArtifactUrls', // Whether to use AWS signed URLs for public artifacts
     'publicBucket', // bucket instance for public artifacts
     'privateBucket', // bucket instance for private artifacts
     'publisher', // publisher from base.Exchanges
