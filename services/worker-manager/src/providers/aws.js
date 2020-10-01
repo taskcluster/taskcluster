@@ -312,7 +312,7 @@ class AwsProvider extends Provider {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     const monitor = this.workerMonitor({ worker });
 
-    let state = worker.state;
+    let state;
     try {
       const region = worker.providerData.region;
       const instanceStatuses = (await this._enqueue(`${region}.describe`, () => this.ec2s[region].describeInstanceStatus({
@@ -362,8 +362,10 @@ class AwsProvider extends Provider {
     monitor.debug(`setting state to ${state}`);
     const now = new Date();
     await worker.update(this.db, worker => {
-      worker.state = state;
-      worker.lastModified = worker.state !== state ? now : null;
+      if (state !== undefined) {
+        worker.state = state;
+        worker.lastModified = now;
+      }
       worker.lastChecked = now;
     });
   }
