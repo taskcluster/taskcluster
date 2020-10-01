@@ -45,12 +45,9 @@ const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, ent
     // If input schema is defined we need to validate the input
     if (input) {
       if (!typeis(req, 'application/json')) {
-        return res.reportError(
-          'MalformedPayload',
-          'Payload must be JSON with content-type: application/json ' +
-          'got content-type: {{contentType}}', {
-            contentType: req.headers['content-type'] || null,
-          });
+        debug(
+          'Payload must have content-type application/json not ' + req.headers['content-type'] || 'none'
+        );
       }
       const error = validator(req.body, input);
       if (error) {
