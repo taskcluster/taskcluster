@@ -24,7 +24,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   test('worker lifecycle data race', async function() {
     const origTerminateAfter = Date.now() + 1800000;
     // First create a "requested worker"
-    const w = Worker.fromApi({
+    let w = Worker.fromApi({
       workerPoolId: 'foo/bar',
       workerGroup: 'abc',
       workerId: 'i-123',
@@ -32,16 +32,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       capacity: 1,
       providerData: { terminateAfter: origTerminateAfter }, // use a "normal" registrationTimeout value
     });
-    await w.create(helper.db);
+    w = await w.create(helper.db);
 
     // Now loop over the existing workers as we do in scanworker
     // we do an initial comparison to ensure they make sense up to this point
-    // etag isn't set in the create call so we delete it
     const fetched = Worker.fromDbRows(await helper.db.fns.get_non_stopped_workers_2(null, null, null, 10, 0));
-    const comp = _.cloneDeep(fetched);
-    delete comp.etag;
-    delete comp._properties.etag;
-    assert.deepEqual(comp, w);
+    assert.deepEqual(fetched, w);
 
     // now we update the worker as if registerWorker happened
     const now = new Date();
