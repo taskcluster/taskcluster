@@ -833,10 +833,12 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/286017?v=4",
       "profile": "https://factorialfive.org",
       "contributions": [
-        "code"
+        "code",
+        "staff"
       ]
     }
   ],
   "contributorsPerLine": 7,
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "none"
 }
