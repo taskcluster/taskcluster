@@ -816,6 +816,12 @@
         "read_db_url": {
           "type": "string"
         },
+        "slack_access_token": {
+          "type": "string"
+        },
+        "slack_api_url": {
+          "type": "string"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },

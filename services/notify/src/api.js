@@ -150,6 +150,35 @@ builder.declare({
 
 builder.declare({
   method: 'post',
+  route: '/slack',
+  name: 'slack',
+  scopes: 'notify:slack-channel:<channelId>',
+  input: 'slack-request.yml',
+  title: 'Post Slack Message',
+  category: 'Notifications',
+  description: [
+    'Post a message to a Slack channel.',
+    '',
+    'The `channelId` in the scopes is a Slack channel ID, starting with a capital C.',
+    '',
+    'The Slack app can post into public channels by default but will need to be added',
+    'to private channels before it can post messages there.',
+  ].join('\n'),
+}, async function(req, res) {
+  await req.authorize({
+    channelId: req.body.channelId,
+  });
+
+  if (await this.denier.isDenied('slack-channel', req.body.channelId)) {
+    return res.reportError('DenylistedAddress', `Slack channel ${req.body.channelId} is denylisted`, {});
+  }
+
+  await this.notifier.slack(req.body);
+  res.sendStatus(200);
+});
+
+builder.declare({
+  method: 'post',
   route: '/denylist/add',
   name: 'addDenylistAddress',
   scopes: 'notify:manage-denylist',

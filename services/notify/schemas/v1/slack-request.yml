@@ -1,0 +1,32 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Send Slack Message
+description: |
+  Request to send a message to a Slack channel. The most interesting field in
+  this request is the `blocks` field which allows you to specify advanced
+  display layout for messages. This is best understood via the Slack API
+  documentation.
+type: object
+properties:
+  channelId:
+    type: string
+    description: |
+      The unique Slack channel ID, such as `C123456GZ`.
+      In the app, this is the last section of the 'copy link' URL for a channel.
+  text:
+    type: string
+    description: |
+      The main message text. If no blocks are included, this is used as the
+      message text, otherwise this is used as alternative text and the blocks
+      are used.
+  blocks:
+    type: array
+    description: |
+      An array of Slack layout blocks. See https://api.slack.com/reference/block-kit/blocks.
+  attachments:
+    type: array
+    description: |
+      An array of Slack attachments. See https://api.slack.com/messaging/composing/layouts#attachments.
+additionalProperties: false
+required:
+  - channelId
+  - text

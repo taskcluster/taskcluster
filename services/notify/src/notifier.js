@@ -20,6 +20,7 @@ class Notifier {
     this.queueName = this.options.queueName;
     this.sender = options.sourceEmail;
     this._matrix = options.matrix;
+    this._slack = options.slack;
     this.monitor = options.monitor;
 
     const transport = nodemailer.createTransport({
@@ -156,6 +157,27 @@ class Notifier {
     await this._matrix.sendMessage({ roomId, format, formattedBody, body, notice, msgtype });
     this.markSent(roomId, format, formattedBody, body, msgtype);
     this.monitor.log.matrix({ dest: roomId });
+  }
+
+  async slack({ channelId, text, blocks, attachments }) {
+    if (!this._slack) {
+      this.monitor.warning(`Slack message sent to ${channelId} but Slack is not configured.`);
+      return;
+    }
+
+    if (this.isDuplicate('slack-channel', channelId, text)) {
+      debug('Duplicate slack message detected. Not attempting resend.');
+      return;
+    }
+
+    if (await this.options.denier.isDenied('slack-channel', channelId, text)) {
+      debug('Denylist slack: denylisted send detected, discarding the notification');
+      return;
+    }
+
+    await this._slack.sendMessage({ channelId, text, blocks, attachments });
+    this.markSent('slack-channel', channelId, text);
+    this.monitor.log.slack({ channelId });
   }
 }
 

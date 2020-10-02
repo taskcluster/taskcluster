@@ -7,6 +7,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeMatrix(mock, skipping);
+  helper.withFakeSlack(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
@@ -227,6 +228,31 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.apiClient.addDenylistAddress({ notificationType: 'matrix-room', notificationAddress: '!foo:baz.com' });
     try {
       await helper.apiClient.matrix({ body: 'Does this work?', roomId: '!foo:baz.com' });
+      throw new Error('should have failed');
+    } catch (err) {
+      if (err.code !== 'DenylistedAddress') {
+        throw err;
+      }
+    }
+  });
+
+  test('slack', async function() {
+    await helper.apiClient.slack({ channelId: 'C123456', text: 'Does this work?' });
+    assert.equal(helper.slackClient.chat.postMessage.callCount, 1);
+    assert.deepStrictEqual(helper.slackClient.chat.postMessage.args[0][0], {
+      attachments: undefined,
+      blocks: undefined,
+      channel: 'C123456',
+      text: 'Does this work?',
+    });
+    const monitor = await helper.load('monitor');
+    assert(monitor.manager.messages.find(m => m.Type === 'slack'));
+  });
+
+  test('slack (denylisted)', async function() {
+    await helper.apiClient.addDenylistAddress({ notificationType: 'slack-channel', notificationAddress: 'C123456' });
+    try {
+      await helper.apiClient.slack({ channelId: 'C123456', text: 'Does this work?' });
       throw new Error('should have failed');
     } catch (err) {
       if (err.code !== 'DenylistedAddress') {

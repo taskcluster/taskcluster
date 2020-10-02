@@ -1485,6 +1485,22 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Notifications",
+          "description": "Post a message to a Slack channel.\n\nThe `channelId` in the scopes is a Slack channel ID, starting with a capital C.\n\nThe Slack app can post into public channels by default but will need to be added\nto private channels before it can post messages there.",
+          "input": "v1/slack-request.json#",
+          "method": "post",
+          "name": "slack",
+          "query": [
+          ],
+          "route": "/slack",
+          "scopes": "notify:slack-channel:<channelId>",
+          "stability": "experimental",
+          "title": "Post Slack Message",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "category": "Denylist",
           "description": "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
           "input": "v1/notification-address.json#",

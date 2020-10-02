@@ -18,6 +18,8 @@ const exchanges = require('./exchanges');
 const IRC = require('./irc');
 const matrix = require('matrix-js-sdk');
 const MatrixBot = require('./matrix');
+const slack = require('@slack/web-api');
+const SlackBot = require('./slack');
 const tcdb = require('taskcluster-db');
 
 require('./monitor');
@@ -153,14 +155,38 @@ const load = loader({
     },
   },
 
+  slackClient: {
+    requires: ['cfg'],
+    setup: ({ cfg }) => cfg.slack.accessToken ?
+      new slack.WebClient(cfg.slack.accessToken, {
+        slackApiUrl: cfg.slack.apiUrl,
+      }) : null,
+  },
+
+  slack: {
+    requires: ['slackClient', 'monitor'],
+    setup({ slackClient, monitor }) {
+      if (!slackClient) {
+        return null;
+      }
+
+      let bot = new SlackBot({
+        slackClient,
+        monitor: monitor.childMonitor('slack'),
+      });
+      return bot;
+    },
+  },
+
   notifier: {
-    requires: ['cfg', 'publisher', 'rateLimit', 'ses', 'denier', 'monitor', 'matrix'],
-    setup: ({ cfg, publisher, rateLimit, ses, denier, monitor, matrix }) => new Notifier({
+    requires: ['cfg', 'publisher', 'rateLimit', 'ses', 'denier', 'monitor', 'matrix', 'slack'],
+    setup: ({ cfg, publisher, rateLimit, ses, denier, monitor, matrix, slack }) => new Notifier({
       denier,
       publisher,
       rateLimit,
       ses,
       matrix,
+      slack,
       sourceEmail: cfg.app.sourceEmail,
       monitor: monitor.childMonitor('notifier'),
     }),

@@ -132,6 +132,58 @@ class Handler {
             throw err;
           }
         }
+        case 'slack-channel': {
+          const channelId = route.slice(2, route.length - 1).join('.');
+
+          const emojiMap = {
+            pending: ':hourglass:',
+            running: ':hammer_and_wrench:',
+            completed: ':heavy_check_mark:',
+            failed: ':x:',
+            exception: ':heavy_exclamation_mark:',
+          };
+          const emoji = emojiMap[status.state] || ':question:';
+
+          let text = `${emoji} *<${href}|${task.metadata.name}>* transitioned to _${status.state}_`;
+          if (_.has(task, 'extra.notify.slackText')) {
+            text = this.renderMessage(task.extra.notify.slackText, { task, status, taskId });
+          }
+
+          // This uses Slack blocks format, see https://api.slack.com/messaging/composing/layouts.
+          let blocks = [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text,
+              },
+            },
+            {
+              type: 'context',
+              elements: [
+                {
+                  type: 'mrkdwn',
+                  text: `Part of task group *<${groupHref}|${task.taskGroupId}>*`,
+                },
+              ],
+            },
+          ];
+          if (_.has(task, 'extra.notify.slackBlocks')) {
+            blocks = this.renderMessage(task.extra.notify.slackBlocks, { task, status, taskId });
+          }
+
+          let attachments = [];
+          if (_.has(task, 'extra.notify.slackAttachments')) {
+            attachments = this.renderMessage(task.extra.notify.slackAttachments, { task, status, taskId });
+          }
+
+          return this.notifier.slack({
+            channelId,
+            text,
+            blocks,
+            attachments,
+          });
+        }
         case 'pulse': {
           return await this.notifier.pulse({
             routingKey: _.join(_.slice(route, 2, route.length - 1), '.'),

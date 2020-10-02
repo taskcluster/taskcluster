@@ -1,0 +1,28 @@
+---
+title: Slack Integration
+---
+
+# Slack Integration
+
+Taskcluster requires a Slack App in order to be able to post messages to Slack.
+
+## Creating the Slack App
+
+0. Nagivate to the [Slack App registry](https://api.slack.com/apps) and create a new app.
+0. On the new App, navigate to App Home and follow the wizard until you have a Bot token.
+    - You can add extra permissions here which allows the Slack bot to post in
+      channels it is not added to: `chat:write.public`.
+    - The Slack app must be added to all private channels manually.
+0. On the OAuth & Permissions page, press Install App to generate the bot token.in
+0. Copy the bot token down.
+
+## Taskcluster Configuration
+
+In the Helm templates, you'll need to set
+
+```yaml
+# The Slack API URL, optional, if you want to target a test server or similar.
+notify.slack_api_url: https://slack.com/api/
+# The Slack bot token used to post messages.
+notify.slack_access_token: xoxb-SomeRandomLettersHere
+```

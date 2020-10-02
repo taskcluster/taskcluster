@@ -60,6 +60,7 @@ type (
 		//   * "irc-user"
 		//   * "irc-channel"
 		//   * "matrix-room"
+		//   * "slack-channel"
 		NotificationType string `json:"notificationType"`
 	}
 
@@ -167,6 +168,28 @@ type (
 		// The fully qualified room name, such as `!whDRjjSmICCgrhFHsQ:mozilla.org`
 		// If you are using riot, you can find this under the advanced settings for a room.
 		RoomID string `json:"roomId"`
+	}
+
+	// Request to send a message to a Slack channel. The most interesting field in
+	// this request is the `blocks` field which allows you to specify advanced
+	// display layout for messages. This is best understood via the Slack API
+	// documentation.
+	SendSlackMessage struct {
+
+		// An array of Slack attachments. See https://api.slack.com/messaging/composing/layouts#attachments.
+		Attachments []interface{} `json:"attachments,omitempty"`
+
+		// An array of Slack layout blocks. See https://api.slack.com/reference/block-kit/blocks.
+		Blocks []interface{} `json:"blocks,omitempty"`
+
+		// The unique Slack channel ID, such as `C123456GZ`.
+		// In the app, this is the last section of the 'copy link' URL for a channel.
+		ChannelID string `json:"channelId"`
+
+		// The main message text. If no blocks are included, this is used as the
+		// message text, otherwise this is used as alternative text and the blocks
+		// are used.
+		Text string `json:"text"`
 	}
 )
 

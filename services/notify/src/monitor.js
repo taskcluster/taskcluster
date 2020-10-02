@@ -74,3 +74,15 @@ MonitorManager.register({
     roomId: 'The roomId that we were forbidden from.',
   },
 });
+
+MonitorManager.register({
+  name: 'slack',
+  title: 'Slack Message Sent',
+  type: 'slack',
+  version: 1,
+  level: 'info',
+  description: `A Slack message has been sent.`,
+  fields: {
+    channelId: 'The unique Slack channel ID.',
+  },
+});

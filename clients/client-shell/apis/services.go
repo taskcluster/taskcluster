@@ -863,6 +863,17 @@ var services = map[string]definitions.Service{
 				Input:       "v1/matrix-request.json#",
 			},
 			definitions.Entry{
+				Name:        "slack",
+				Title:       "Post Slack Message",
+				Description: "Post a message to a Slack channel.\n\nThe `channelId` in the scopes is a Slack channel ID, starting with a capital C.\n\nThe Slack app can post into public channels by default but will need to be added\nto private channels before it can post messages there.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/slack",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "v1/slack-request.json#",
+			},
+			definitions.Entry{
 				Name:        "addDenylistAddress",
 				Title:       "Denylist Given Address",
 				Description: "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",

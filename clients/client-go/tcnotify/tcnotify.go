@@ -179,6 +179,25 @@ func (notify *Notify) Matrix(payload *SendMatrixNoticeRequest) error {
 
 // Stability: *** EXPERIMENTAL ***
 //
+// Post a message to a Slack channel.
+//
+// The `channelId` in the scopes is a Slack channel ID, starting with a capital C.
+//
+// The Slack app can post into public channels by default but will need to be added
+// to private channels before it can post messages there.
+//
+// Required scopes:
+//   notify:slack-channel:<channelId>
+//
+// See #slack
+func (notify *Notify) Slack(payload *SendSlackMessage) error {
+	cd := tcclient.Client(*notify)
+	_, _, err := (&cd).APICall(payload, "POST", "/slack", nil, nil)
+	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
 // Add the given address to the notification denylist. The address
 // can be of either of the three supported address type namely pulse, email
 // or IRC(user or channel). Addresses in the denylist will be ignored
