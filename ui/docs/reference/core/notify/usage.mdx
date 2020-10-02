@@ -18,6 +18,8 @@ __Pulse:__ We can also send a Pulse message that is documented [on this page](/d
 
 __Matrix:__ If a deployment of taskcluster is configured with credentials for a Matrix instance, it can post in a similar way to irc as well. *Note: The taskcluster user must be invited to a room before it can post there*
 
+__Slack:__ If a Taskcluster deployment has Slack credentials, you can post to it likewise. *Note: Either the Slack App must be invited to channels, or granted `chat:write.public` and be posting to a public channel.*
+
 ### Filters
 
 __on-any:__ This does what it sounds like and will notify you of task-completion no matter how it ends. Unless the task was deliberately canceled.
@@ -41,12 +43,16 @@ But what you've really been waiting for is to know how to use this, so here's a 
     "notify.irc-user.<your-mozilla-irc-nick>.on-failed",
     "notify.irc-channel.<a-mozilla-irc-channel>.on-completed",
     "notify.pulse.<a-pulse-routing-key>.on-exception",
-    "notify.matrix-room.<a-matrix-roomId>.on-any"
+    "notify.matrix-room.<a-matrix-roomId>.on-any",
+    "notify.slack-channel.<a-slack-channelId>.on-any"
   ]
 }
 ```
 
 The `roomId` referenced by matrix is a full `!foo:bar.com` including the leading `!`.
+
+The `channelId` referenced by the Slack integration is the unique channel ID. If you copy a link to a channel, the
+channel ID will be the last URL segment. Public channels start with a capital C.
 
 ### Setting Custom Messages
 
@@ -68,6 +74,14 @@ __task.extra.notify.matrixFormattedBody:__ This is a rich message suitable to be
 __task.extra.notify.matrixFormat:__ The format for `formattedBody`. For instance, `org.matrix.custom.html`
 
 __task.extra.notify.matrixMsgtype:__ Which matrix `m.room.message` msgtype to use. Note that it is `Msgtype` and not `msgType` to match matrix naming scheme. Defaults to `m.notice`.
+
+__task.extra.notify.slackText:__ The simple text message which will be posted to the Slack channel. This field supports markdown.
+
+__task.extra.notify.slackBlocks:__ [Slack Blocks](https://api.slack.com/reference/block-kit/blocks) formatted content for the message. By default, blocks are rendered which include
+the `slackText`. If this is specified, `slackText` is only used for fallback rendering.
+
+__task.extra.notify.slackAttachments:__ Extra [Slack Attachments](https://api.slack.com/reference/messaging/attachments) which are displayed below the message. These are usually used for context.
+No attachments are rendered by default.
 
 __task.extra.notify.email.content:__ This should evaluate to a markdown string and is the body of an email
 
