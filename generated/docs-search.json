@@ -106,6 +106,13 @@
   },
   {
     "element": "h2",
+    "id": "slack-support",
+    "path": "/manual/deploying",
+    "subtitle": "Slack Support",
+    "title": "Deploying Taskcluster"
+  },
+  {
+    "element": "h2",
     "id": "testing-and-monitoring",
     "path": "/manual/deploying",
     "subtitle": "Testing and Monitoring",
@@ -327,6 +334,27 @@
     "path": "/manual/deploying/pulse",
     "subtitle": "Server Configuration Details",
     "title": null
+  },
+  {
+    "element": "h1",
+    "id": "slack-integration",
+    "path": "/manual/deploying/slack",
+    "subtitle": null,
+    "title": "Slack Integration"
+  },
+  {
+    "element": "h2",
+    "id": "creating-the-slack-app",
+    "path": "/manual/deploying/slack",
+    "subtitle": "Creating the Slack App",
+    "title": "Slack Integration"
+  },
+  {
+    "element": "h2",
+    "id": "taskcluster-configuration",
+    "path": "/manual/deploying/slack",
+    "subtitle": "Taskcluster Configuration",
+    "title": "Slack Integration"
   },
   {
     "element": "h1",

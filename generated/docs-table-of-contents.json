@@ -1695,13 +1695,35 @@
             },
             "name": "schema",
             "next": {
-              "path": "manual/deploying/smoketests",
-              "title": "Smoketests"
+              "path": "manual/deploying/slack",
+              "title": "Slack Integration"
             },
             "path": "manual/deploying/schema",
             "prev": {
               "path": "manual/deploying/pulse",
               "title": "Pulse"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Slack Integration"
+            },
+            "name": "slack",
+            "next": {
+              "path": "manual/deploying/smoketests",
+              "title": "Smoketests"
+            },
+            "path": "manual/deploying/slack",
+            "prev": {
+              "path": "manual/deploying/schema",
+              "title": "Helm Configuration Schema"
             },
             "up": {
               "path": "manual/deploying",
@@ -1722,8 +1744,8 @@
             },
             "path": "manual/deploying/smoketests",
             "prev": {
-              "path": "manual/deploying/schema",
-              "title": "Helm Configuration Schema"
+              "path": "manual/deploying/slack",
+              "title": "Slack Integration"
             },
             "up": {
               "path": "manual/deploying",
