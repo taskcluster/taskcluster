@@ -15,6 +15,7 @@ export default class Notify extends Client {
     this.pulse.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"pulse","query":[],"route":"/pulse","scopes":"notify:pulse:<routingKey>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.irc.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"irc","query":[],"route":"/irc","scopes":{"else":"notify:irc-user:<user>","if":"channelRequest","then":"notify:irc-channel:<channel>"},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.matrix.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"matrix","query":[],"route":"/matrix","scopes":"notify:matrix-room:<roomId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.slack.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"slack","query":[],"route":"/slack","scopes":"notify:slack-channel:<channelId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.addDenylistAddress.entry = {"args":[],"category":"Denylist","input":true,"method":"post","name":"addDenylistAddress","query":[],"route":"/denylist/add","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
     this.deleteDenylistAddress.entry = {"args":[],"category":"Denylist","input":true,"method":"delete","name":"deleteDenylistAddress","query":[],"route":"/denylist/delete","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listDenylist.entry = {"args":[],"category":"Denylist","method":"get","name":"listDenylist","output":true,"query":["continuationToken","limit"],"route":"/denylist/list","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -74,6 +75,17 @@ export default class Notify extends Client {
     this.validate(this.matrix.entry, args);
 
     return this.request(this.matrix.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Post a message to a Slack channel.
+  // The `channelId` in the scopes is a Slack channel ID, starting with a capital C.
+  // The Slack app can post into public channels by default but will need to be added
+  // to private channels before it can post messages there.
+  /* eslint-enable max-len */
+  slack(...args) {
+    this.validate(this.slack.entry, args);
+
+    return this.request(this.slack.entry, args);
   }
   /* eslint-disable max-len */
   // Add the given address to the notification denylist. The address

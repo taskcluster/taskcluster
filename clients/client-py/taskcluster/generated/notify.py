@@ -97,6 +97,22 @@ class Notify(BaseClient):
 
         return self._makeApiCall(self.funcinfo["matrix"], *args, **kwargs)
 
+    def slack(self, *args, **kwargs):
+        """
+        Post Slack Message
+
+        Post a message to a Slack channel.
+
+        The `channelId` in the scopes is a Slack channel ID, starting with a capital C.
+
+        The Slack app can post into public channels by default but will need to be added
+        to private channels before it can post messages there.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["slack"], *args, **kwargs)
+
     def addDenylistAddress(self, *args, **kwargs):
         """
         Denylist Given Address
@@ -206,6 +222,14 @@ class Notify(BaseClient):
             'method': 'post',
             'name': 'pulse',
             'route': '/pulse',
+            'stability': 'experimental',
+        },
+        "slack": {
+            'args': [],
+            'input': 'v1/slack-request.json#',
+            'method': 'post',
+            'name': 'slack',
+            'route': '/slack',
             'stability': 'experimental',
         },
     }

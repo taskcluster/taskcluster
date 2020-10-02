@@ -3952,6 +3952,39 @@
   },
   {
     "content": {
+      "$id": "/schemas/notify/v1/slack-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request to send a message to a Slack channel. The most interesting field in\nthis request is the `blocks` field which allows you to specify advanced\ndisplay layout for messages. This is best understood via the Slack API\ndocumentation.\n",
+      "properties": {
+        "attachments": {
+          "description": "An array of Slack attachments. See https://api.slack.com/messaging/composing/layouts#attachments.\n",
+          "type": "array"
+        },
+        "blocks": {
+          "description": "An array of Slack layout blocks. See https://api.slack.com/reference/block-kit/blocks.\n",
+          "type": "array"
+        },
+        "channelId": {
+          "description": "The unique Slack channel ID, such as `C123456GZ`.\nIn the app, this is the last section of the 'copy link' URL for a channel.\n",
+          "type": "string"
+        },
+        "text": {
+          "description": "The main message text. If no blocks are included, this is used as the\nmessage text, otherwise this is used as alternative text and the blocks\nare used.\n",
+          "type": "string"
+        }
+      },
+      "required": [
+        "channelId",
+        "text"
+      ],
+      "title": "Send Slack Message",
+      "type": "object"
+    },
+    "filename": "schemas/notify/v1/slack-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/notify/v1/pulse-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -4020,7 +4053,8 @@
             "pulse",
             "irc-user",
             "irc-channel",
-            "matrix-room"
+            "matrix-room",
+            "slack-channel"
           ],
           "type": "string"
         }
@@ -14944,6 +14978,17 @@
           "version": 1
         },
         {
+          "description": "A Slack message has been sent.",
+          "fields": {
+            "channelId": "The unique Slack channel ID."
+          },
+          "level": "info",
+          "name": "slack",
+          "title": "Slack Message Sent",
+          "type": "slack",
+          "version": 1
+        },
+        {
           "description": "A simple timekeeper for measuring arbitrary time spans.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -15104,6 +15149,22 @@
           "scopes": "notify:matrix-room:<roomId>",
           "stability": "experimental",
           "title": "Post Matrix Message",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Notifications",
+          "description": "Post a message to a Slack channel.\n\nThe `channelId` in the scopes is a Slack channel ID, starting with a capital C.\n\nThe Slack app can post into public channels by default but will need to be added\nto private channels before it can post messages there.",
+          "input": "v1/slack-request.json#",
+          "method": "post",
+          "name": "slack",
+          "query": [
+          ],
+          "route": "/slack",
+          "scopes": "notify:slack-channel:<channelId>",
+          "stability": "experimental",
+          "title": "Post Slack Message",
           "type": "function"
         },
         {
