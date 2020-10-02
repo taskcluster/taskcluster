@@ -5,8 +5,6 @@ const resourceTypes = [
   'cronjob',
   'deployment',
   'ingress',
-  'rolebinding',
-  'role',
   'secret',
   'serviceaccount',
   'service',

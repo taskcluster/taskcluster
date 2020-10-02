@@ -101,7 +101,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
   await rimraf(TMPL_DIR);
   await mkdirp(TMPL_DIR);
 
-  for (const resource of ['role', 'rolebinding', 'serviceaccount', 'secret']) {
+  for (const resource of ['serviceaccount', 'secret']) {
     const rendered = jsone(templates[resource], {
       projectName: `taskcluster-${name}`,
       labels: labels(`taskcluster-${name}`, 'secrets'),
