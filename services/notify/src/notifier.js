@@ -161,7 +161,7 @@ class Notifier {
 
   async slack({ channelId, text, blocks, attachments }) {
     if (!this._slack) {
-      debug('Slack is not configured.');
+      this.monitor.warning(`Slack message sent to ${channelId} but Slack is not configured.`);
       return;
     }
 
