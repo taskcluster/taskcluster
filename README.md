@@ -231,6 +231,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="http://www.manishgiri.net"><img src="https://avatars2.githubusercontent.com/u/11348778?v=4" width="100px;" alt=""/><br /><sub><b>Manish Giri</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Manish-Giri" title="Code">💻</a></td>
     <td align="center"><a href="https://tigeroakes.com"><img src="https://avatars3.githubusercontent.com/u/1782266?v=4" width="100px;" alt=""/><br /><sub><b>Tiger Oakes</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=NotWoods" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/ricky26"><img src="https://avatars2.githubusercontent.com/u/262786?v=4" width="100px;" alt=""/><br /><sub><b>Ricky Taylor</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=ricky26" title="Code">💻</a></td>
+    <td align="center"><a href="https://factorialfive.org"><img src="https://avatars0.githubusercontent.com/u/286017?v=4" width="100px;" alt=""/><br /><sub><b>John Whitlock</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=jwhitlock" title="Code">💻</a></td>
   </tr>
 </table>
 
