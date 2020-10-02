@@ -3,6 +3,50 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v37.3.0
+
+### DEPLOYERS
+
+▶ [minor] 
+A new queue deployment configuration variable `sign_public_artifact_urls` has been added which enables AWS URL signing for all S3 artifacts when true.
+
+▶ [minor] [#3606](https://github.com/taskcluster/taskcluster/issues/3606)
+Slack support has been added to the notifications service. You can now
+send notifications to Slack channels by using a
+`notify.slack.C123456.on-any` style route, or by using the new /slack
+API endpoint.
+
+▶ [patch] [#3588](https://github.com/taskcluster/taskcluster/issues/3588)
+Database URLs can now be specified in the configuration with `ssl=authorized`, in which case Taskcluster will validate the Postgres server's SSL/TLS certificate against trusted root CAs.  It is unusual for databases to be deployed with such certificates.  See [the documentation](https://docs.taskcluster.net/docs/manual/deploying/database#configuration) for details.
+
+▶ [patch] 
+The tutorial in the documentation has been updated and modified to offer better guidance for different deployments of Taskcluster.  The `ui.site_specific` configuration has a new, optional `tutorial_worker_pool_id` property (documented [here](http://docs.taskcluster.net/docs/manual/deploying/ui)) defining a worker pool for use by readers of the tutorial.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#3561](https://github.com/taskcluster/taskcluster/issues/3561)
+Bug fix: calls to workermanager.updateWorker for the static provider have been fixed.
+
+### USERS
+
+▶ [patch] [#3358](https://github.com/taskcluster/taskcluster/issues/3358)
+The "badge" SVGs provided by the GitHub service now render correctly instead of as black shapes.
+
+▶ [patch] [#3495](https://github.com/taskcluster/taskcluster/issues/3495)
+The web-based schema viewer now shows descriptions of each field.
+
+### DEVELOPERS
+
+▶ [minor] [#3579](https://github.com/taskcluster/taskcluster/issues/3579)
+The purge-cache, built-in, and worker-manager services now use taskQueueId internally, instead of provisionerId/workerType.
+
+▶ [patch] [#3473](https://github.com/taskcluster/taskcluster/issues/3473)
+Docker-worker has been ugpraded to use a newer version of dockerode, and no longer directly uses dockerode-promise.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1668111](http://bugzil.la/1668111), [#3035](https://github.com/taskcluster/taskcluster/issues/3035), [#3210](https://github.com/taskcluster/taskcluster/issues/3210), [#3287](https://github.com/taskcluster/taskcluster/issues/3287), [#3543](https://github.com/taskcluster/taskcluster/issues/3543), [#3544](https://github.com/taskcluster/taskcluster/issues/3544), [#3599](https://github.com/taskcluster/taskcluster/issues/3599), [#3525](https://github.com/taskcluster/taskcluster/issues/3525).
+
 ## v37.2.0
 
 ### DEPLOYERS
