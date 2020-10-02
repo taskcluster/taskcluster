@@ -518,7 +518,7 @@ suite(testing.suiteName(), function() {
         i++;
       }
 
-      const rows = await db.fns.get_non_stopped_workers(null, null, null, null, null);
+      const rows = await db.fns.get_non_stopped_workers_2(null, null, null, null, null);
 
       assert.equal(rows.length, 6);
 
@@ -536,6 +536,8 @@ suite(testing.suiteName(), function() {
         assert.equal(row.last_checked.toJSON(), now.toJSON());
         assert.equal(row.capacity, 1);
         assert.deepEqual(row.provider_data, { providerdata: true });
+        assert(row.secret !== undefined);
+        assert(row.etag !== undefined);
         i++;
       }
     });

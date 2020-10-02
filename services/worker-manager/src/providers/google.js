@@ -360,7 +360,7 @@ class GoogleProvider extends Provider {
 
     const monitor = this.workerMonitor({ worker });
 
-    let state = worker.state;
+    let state;
     try {
       const { data } = await this._enqueue('get', () => this.compute.instances.get({
         project: worker.providerData.project,
@@ -416,8 +416,10 @@ class GoogleProvider extends Provider {
     monitor.debug(`setting state to ${state}`);
     const now = new Date();
     await worker.update(this.db, worker => {
-      worker.state = state;
-      worker.lastModified = worker.state !== state ? now : null;
+      if (state !== undefined) {
+        worker.state = state;
+        worker.lastModified = now;
+      }
       worker.lastChecked = now;
     });
   }
