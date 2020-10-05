@@ -33,7 +33,7 @@ The script runs in a single transaction.
 The following checklist summarizes what needs to be written to modify the database.
 
 * [ ] new version file in `db/versions` that updates all impacted stored functions
-  * All DB functions must continue to function for two major Taskcluster versions after they are used.  See [db/fns.md](db/fns.md) to figure out which existing functions you must re-implement.
+  * All DB functions must continue to function for two major Taskcluster versions after they are used.  See [db/fns.md](fns.md) to figure out which existing functions you must re-implement.
   * For any DB functions that are being deprecated in this version, re-implement it such that it will continue working after the migration, and add `deprecated: true` in the re-implementation of that function.
 * [ ] any necessary updates in `db/access.yml`
 * [ ] new test script in `db/test/versions`
