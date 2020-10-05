@@ -37,6 +37,7 @@ module.exports = class User {
     let scopes = this.roles.map(role => 'assume:' + role);
     // the `login-identity:*` role defines what each user gets access to.
     scopes.push(`assume:login-identity:${this.identity}`);
+    scopes.push('assume:anonymous');
 
     return scopes;
   }
