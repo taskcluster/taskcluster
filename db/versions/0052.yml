@@ -1,0 +1,17 @@
+version: 52
+description: deprecate get_workers
+methods:
+  get_workers:
+    description: |-
+      Get existing workers filtered by the optional arguments,
+      ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer
+    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz)
+    deprecated: true
+    body: |-
+      begin
+      end
