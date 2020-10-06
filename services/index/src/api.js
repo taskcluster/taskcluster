@@ -35,6 +35,7 @@ builder.declare({
   method: 'get',
   route: '/task/:indexPath',
   name: 'findTask',
+  scopes: 'index:find-task:<indexPath>',
   stability: APIBuilder.stability.stable,
   category: 'Index Service',
   output: 'indexed-task-response.yml',
@@ -69,6 +70,11 @@ builder.declare({
   route: '/namespaces/:namespace?',
   query: paginateResults.query,
   name: 'listNamespaces',
+  scopes: {
+    if: 'namespace',
+    then: 'index:list-namespaces:<namespace>',
+    else: 'index:list-namespaces',
+  },
   stability: APIBuilder.stability.stable,
   output: 'list-namespaces-response.yml',
   category: 'Index Service',
@@ -103,6 +109,11 @@ builder.declare({
   method: 'post',
   route: '/namespaces/:namespace?',
   name: 'listNamespacesPost',
+  scopes: {
+    if: 'namespace',
+    then: 'index:list-namespaces-post:<namespace>',
+    else: 'index:list-namespaces-post',
+  },
   stability: 'deprecated',
   noPublish: true,
   input: 'list-namespaces-request.yml',
@@ -140,6 +151,11 @@ builder.declare({
   route: '/tasks/:namespace?',
   query: paginateResults.query,
   name: 'listTasks',
+  scopes: {
+    if: 'namespace',
+    then: 'index:list-tasks:<namespace>',
+    else: 'index:list-tasks',
+  },
   stability: APIBuilder.stability.stable,
   category: 'Index Service',
   output: 'list-tasks-response.yml',
@@ -174,6 +190,11 @@ builder.declare({
   method: 'post',
   route: '/tasks/:namespace?',
   name: 'listTasksPost',
+  scopes: {
+    if: 'namespace',
+    then: 'index:list-tasks-post:<namespace>',
+    else: 'index:list-tasks-post',
+  },
   stability: 'deprecated',
   noPublish: true,
   output: 'list-tasks-response.yml',
@@ -241,7 +262,7 @@ builder.declare({
   name: 'findArtifactFromTask',
   stability: APIBuilder.stability.stable,
   category: 'Index Service',
-  scopes: { if: 'private', then: 'queue:get-artifact:<name>' },
+  scopes: 'queue:get-artifact:<name>',
   title: 'Get Artifact From Indexed Task',
   description: [
     'Find a task by index path and redirect to the artifact on the most recent',
@@ -263,11 +284,6 @@ builder.declare({
   let that = this;
   let indexPath = req.params.indexPath || '';
   let artifactName = req.params.name;
-
-  await req.authorize({
-    private: !/^public\//.test(artifactName),
-    name: artifactName,
-  });
 
   // Get indexPath and ensure that we have a least one dot
   indexPath = indexPath.split('.');
