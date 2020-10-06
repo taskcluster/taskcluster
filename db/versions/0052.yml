@@ -2,6 +2,7 @@ version: 52
 description: deprecate get_workers
 methods:
   get_workers:
+    deprecated: true
     description: |-
       Get existing workers filtered by the optional arguments,
       ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
@@ -11,7 +12,28 @@ methods:
     serviceName: worker_manager
     args: worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer
     returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz)
-    deprecated: true
     body: |-
       begin
+        return query
+        select
+          workers.worker_pool_id,
+          workers.worker_group,
+          workers.worker_id,
+          workers.provider_id,
+          workers.created,
+          workers.expires,
+          workers.state,
+          workers.provider_data,
+          workers.capacity,
+          workers.last_modified,
+          workers.last_checked
+        from workers
+        where
+          (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+          (workers.worker_group = worker_group_in or worker_group_in is null) and
+          (workers.worker_id = worker_id_in or worker_id_in is null) and
+          (workers.state = state_in or state_in is null)
+        order by worker_pool_id, worker_group, worker_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
       end

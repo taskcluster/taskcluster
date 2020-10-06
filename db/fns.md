@@ -147,7 +147,6 @@
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
    * [`get_worker_pool_with_capacity`](#get_worker_pool_with_capacity)
    * [`get_worker_pools_with_capacity`](#get_worker_pools_with_capacity)
-   * [`get_workers`](#get_workers)
    * [`get_workers_without_provider_data`](#get_workers_without_provider_data)
    * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
    * [`update_worker_2`](#update_worker_2)
@@ -2193,7 +2192,6 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
 * [`get_worker_pool_with_capacity`](#get_worker_pool_with_capacity)
 * [`get_worker_pools_with_capacity`](#get_worker_pools_with_capacity)
-* [`get_workers`](#get_workers)
 * [`get_workers_without_provider_data`](#get_workers_without_provider_data)
 * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
 * [`update_worker_2`](#update_worker_2)
@@ -2447,34 +2445,6 @@ Get an existing worker pool.  The returned table will have one or (if no such wo
 Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
-### get_workers
-
-* *Mode*: read
-* *Arguments*:
-  * `worker_pool_id_in text`
-  * `worker_group_in text`
-  * `worker_id_in text`
-  * `state_in text`
-  * `page_size_in integer`
-  * `page_offset_in integer`
-* *Returns*: `table`
-  * `worker_pool_id text`
-  * `worker_group text`
-  * `worker_id text`
-  * `provider_id text`
-  * `created timestamptz`
-  * `expires timestamptz`
-  * `state text`
-  * `provider_data jsonb`
-  * `capacity integer`
-  * `last_modified timestamptz`
-  * `last_checked timestamptz`
-
-Get existing workers filtered by the optional arguments,
-ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
-If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset page_offset.
-
 ### get_workers_without_provider_data
 
 * *Mode*: read
@@ -2598,3 +2568,4 @@ the return value is an empty set.
 ### deprecated methods
 
 * `get_non_stopped_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v39.0.0)
+* `get_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v39.0.0)
