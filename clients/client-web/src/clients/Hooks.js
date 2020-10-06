@@ -11,7 +11,7 @@ export default class Hooks extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listHookGroups.entry = {"args":[],"category":"Hooks","method":"get","name":"listHookGroups","output":true,"query":[],"route":"/hooks","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listHookGroups.entry = {"args":[],"category":"Hooks","method":"get","name":"listHookGroups","output":true,"query":[],"route":"/hooks","scopes":"hooks:list-hook-groups","stability":"stable","type":"function"}; // eslint-disable-line
     this.listHooks.entry = {"args":["hookGroupId"],"category":"Hooks","method":"get","name":"listHooks","output":true,"query":[],"route":"/hooks/<hookGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.hook.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"get","name":"hook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.getHookStatus.entry = {"args":["hookGroupId","hookId"],"category":"Hook Status","method":"get","name":"getHookStatus","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/status","stability":"deprecated","type":"function"}; // eslint-disable-line
@@ -21,8 +21,8 @@ export default class Hooks extends Client {
     this.triggerHook.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","input":true,"method":"post","name":"triggerHook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/trigger","scopes":"hooks:trigger-hook:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.getTriggerToken.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"get","name":"getTriggerToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/token","scopes":"hooks:get-trigger-token:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.resetTriggerToken.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"post","name":"resetTriggerToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/token","scopes":"hooks:reset-trigger-token:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.triggerHookWithToken.entry = {"args":["hookGroupId","hookId","token"],"category":"Hooks","input":true,"method":"post","name":"triggerHookWithToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/trigger/<token>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listLastFires.entry = {"args":["hookGroupId","hookId"],"category":"Hook Status","method":"get","name":"listLastFires","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/last-fires","stability":"stable","type":"function"}; // eslint-disable-line
+    this.triggerHookWithToken.entry = {"args":["hookGroupId","hookId","token"],"category":"Hooks","input":true,"method":"post","name":"triggerHookWithToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/trigger/<token>","scopes":"hooks:trigger-hook:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listLastFires.entry = {"args":["hookGroupId","hookId"],"category":"Hook Status","method":"get","name":"listLastFires","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/last-fires","scopes":"hooks:list-last-fires:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

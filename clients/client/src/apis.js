@@ -1004,6 +1004,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks",
+          "scopes": "hooks:list-hook-groups",
           "stability": "stable",
           "title": "List hook groups",
           "type": "function"
@@ -1193,6 +1194,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
+          "scopes": "hooks:trigger-hook:<hookGroupId>/<hookId>",
           "stability": "stable",
           "title": "Trigger a hook with a token",
           "type": "function"
@@ -1210,6 +1212,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
+          "scopes": "hooks:list-last-fires:<hookGroupId>/<hookId>",
           "stability": "stable",
           "title": "Get information about recent hook fires",
           "type": "function"
@@ -1311,6 +1314,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<indexPath>",
+          "scopes": "index:find-task:<indexPath>",
           "stability": "stable",
           "title": "Find Indexed Task",
           "type": "function"
@@ -1329,6 +1333,11 @@ module.exports = {
             "limit"
           ],
           "route": "/namespaces/<namespace>",
+          "scopes": {
+            "else": "index:list-namespaces",
+            "if": "namespace",
+            "then": "index:list-namespaces:<namespace>"
+          },
           "stability": "stable",
           "title": "List Namespaces",
           "type": "function"
@@ -1347,6 +1356,11 @@ module.exports = {
             "limit"
           ],
           "route": "/tasks/<namespace>",
+          "scopes": {
+            "else": "index:list-tasks",
+            "if": "namespace",
+            "then": "index:list-tasks:<namespace>"
+          },
           "stability": "stable",
           "title": "List Tasks",
           "type": "function"
@@ -1381,10 +1395,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<indexPath>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": "queue:get-artifact:<name>"
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact From Indexed Task",
           "type": "function"
@@ -1662,6 +1673,7 @@ module.exports = {
             "limit"
           ],
           "route": "/purge-cache/list",
+          "scopes": "purge-cache:all-purge-requests",
           "stability": "stable",
           "title": "All Open Purge Requests",
           "type": "function"
@@ -1680,6 +1692,7 @@ module.exports = {
             "since"
           ],
           "route": "/purge-cache/<provisionerId>/<workerType>",
+          "scopes": "purge-cache:purge-requests:<provisionerId>/<workerType>",
           "stability": "stable",
           "title": "Open Purge Requests for a provisionerId/workerType pair",
           "type": "function"
@@ -1721,6 +1734,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>",
+          "scopes": "queue:get-task:<taskId>",
           "stability": "stable",
           "title": "Get Task Definition",
           "type": "function"
@@ -1737,6 +1751,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/status",
+          "scopes": "queue:status:<taskId>",
           "stability": "stable",
           "title": "Get task status",
           "type": "function"
@@ -1755,6 +1770,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task-group/<taskGroupId>/list",
+          "scopes": "queue:list-task-group:<taskGroupId>",
           "stability": "stable",
           "title": "List Task Group",
           "type": "function"
@@ -1773,6 +1789,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task/<taskId>/dependents",
+          "scopes": "queue:list-dependent-tasks:<taskId>",
           "stability": "stable",
           "title": "List Dependent Tasks",
           "type": "function"
@@ -2200,6 +2217,7 @@ module.exports = {
             "limit"
           ],
           "route": "/provisioners",
+          "scopes": "queue:list-provisioners",
           "stability": "experimental",
           "title": "Get a list of all active provisioners",
           "type": "function"
@@ -2216,6 +2234,7 @@ module.exports = {
           "query": [
           ],
           "route": "/provisioners/<provisionerId>",
+          "scopes": "queue:get-provisioner:<provisionerId>",
           "stability": "experimental",
           "title": "Get an active provisioner",
           "type": "function"
@@ -2277,6 +2296,7 @@ module.exports = {
             "limit"
           ],
           "route": "/provisioners/<provisionerId>/worker-types",
+          "scopes": "queue:list-worker-types:<provisionerId>",
           "stability": "experimental",
           "title": "Get a list of all active worker-types",
           "type": "function"
@@ -2294,6 +2314,7 @@ module.exports = {
           "query": [
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
+          "scopes": "queue:get-worker-type:<provisionerId>/<workerType>",
           "stability": "experimental",
           "title": "Get a worker-type",
           "type": "function"
@@ -2341,6 +2362,7 @@ module.exports = {
             "quarantined"
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
+          "scopes": "queue:list-workers:<provisionerId>/<workerType>",
           "stability": "experimental",
           "title": "Get a list of all active workers of a workerType",
           "type": "function"
@@ -2360,6 +2382,7 @@ module.exports = {
           "query": [
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
+          "scopes": "queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
           "stability": "experimental",
           "title": "Get a worker-type",
           "type": "function"
