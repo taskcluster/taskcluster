@@ -123,10 +123,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         const workerInfo = { existingCapacity: 0, requestedCapacity: 0 };
         await provider.provision({ workerPool, workerInfo });
         const workers = await Promise.all((await helper.getWorkers()).map(
-	  async w => await Worker.get(helper.db, {
-	    workerPoolId: w.workerPoolId,
-	    workerGroup: w.workerGroup,
-	    workerId: w.workerId})));
+          async w => await Worker.get(helper.db, {
+            workerPoolId: w.workerPoolId,
+            workerGroup: w.workerGroup,
+            workerId: w.workerId,
+          })));
         assert.equal(workers.length, expectedWorkers);
         await check(workers);
       });
