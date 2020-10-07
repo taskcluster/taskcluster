@@ -155,12 +155,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         requestedCapacity: 0,
       };
       await provider.provision({ workerPool, workerInfo });
-      const workers = await Promise.all((await helper.getWorkers()).map(
-        async w => await Worker.get(helper.db, {
-          workerPoolId: w.workerPoolId,
-          workerGroup: w.workerGroup,
-          workerId: w.workerId,
-        })));
+      const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
       const worker = workers[0];
 
@@ -338,12 +333,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         requestedCapacity: 0,
       };
       await provider.provision({ workerPool, workerInfo });
-      const workers = await Promise.all((await helper.getWorkers()).map(
-        async w => await Worker.get(helper.db, {
-          workerPoolId: w.workerPoolId,
-          workerGroup: w.workerGroup,
-          workerId: w.workerId,
-        })));
+      const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
       worker = workers[0];
 
@@ -366,12 +356,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     const assertProvisioningState = async (expectations) => {
       // re-fetch the worker, since it should have been updated
-      const workers = await Promise.all((await helper.getWorkers()).map(
-        async w => await Worker.get(helper.db, {
-          workerPoolId: w.workerPoolId,
-          workerGroup: w.workerGroup,
-          workerId: w.workerId,
-        })));
+      const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
       worker = workers[0];
 
@@ -584,12 +569,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         requestedCapacity: 0,
       };
       await provider.provision({ workerPool, workerInfo });
-      const workers = await Promise.all((await helper.getWorkers()).map(
-        async w => await Worker.get(helper.db, {
-          workerPoolId: w.workerPoolId,
-          workerGroup: w.workerGroup,
-          workerId: w.workerId,
-        })));
+      const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
       worker = workers[0];
 
@@ -600,12 +580,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     const assertRemovalState = async (expectations) => {
       // re-fetch the worker, since it should have been updated
-      const workers = await Promise.all((await helper.getWorkers()).map(
-        async w => await Worker.get(helper.db, {
-          workerPoolId: w.workerPoolId,
-          workerGroup: w.workerGroup,
-          workerId: w.workerId,
-        })));
+      const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
       worker = workers[0];
 
