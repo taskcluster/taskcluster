@@ -6,11 +6,11 @@ import (
 
 	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
 	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v37/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/provider/provider"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v37/tools/workerproto"
 )
 
 type GoogleProvider struct {

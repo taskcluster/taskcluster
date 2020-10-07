@@ -10,4 +10,5 @@ This directory contains executable tools associated with Taskcluster maintenance
 * [taskcluster-proxy](taskcluster-proxy#readme)
 * [Websocktunnel](websocktunnel#readme)
 * [Worker Runner](worker-runner#readme)
+* [Runner / Worker Protocol](workerproto#readme)
 <!-- TOC END -->
