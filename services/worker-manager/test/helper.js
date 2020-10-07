@@ -243,7 +243,15 @@ const stubbedNotify = () => {
  * Get all workers
  */
 exports.getWorkers = async () =>
-  (await exports.db.fns.get_workers(null, null, null, null, null, null)).map(r => Worker.fromDb(r));
+  Promise.all((await exports.db.fns.get_workers_without_provider_data(null, null, null, null, null, null)).map(
+    async r => {
+      const w = Worker.fromDb(r);
+      return await Worker.get(exports.db, {
+        workerPoolId: w.workerPoolId,
+        workerGroup: w.workerGroup,
+        workerId: w.workerId,
+      });
+    }));
 
 exports.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {

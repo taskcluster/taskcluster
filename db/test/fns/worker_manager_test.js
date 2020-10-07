@@ -415,44 +415,6 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_workers empty', async function(db) {
-      const rows = await db.fns.get_workers(null, null, null, null, null, null);
-      assert.deepEqual(rows, []);
-    });
-
-    helper.dbTest('get_workers full, pagination', async function(db) {
-      const now = new Date();
-      for (let i = 0; i < 10; i++) {
-        await create_worker(db, {
-          worker_pool_id: `wp/${i}`,
-          worker_group: `w/group${i}`,
-          worker_id: `w/id${i}`,
-          created: now,
-          last_modified: now,
-          last_checked: now,
-          expires: now,
-        });
-      }
-
-      let rows = await db.fns.get_workers(null, null, null, null, null, null);
-      assert.deepEqual(
-        rows.map(r => ({ worker_pool_id: r.worker_pool_id, worker_group: r.worker_group, worker_id: r.worker_id })),
-        _.range(10).map(i => ({ worker_pool_id: `wp/${i}`, worker_group: `w/group${i}`, worker_id: `w/id${i}` })));
-      assert.equal(rows[0].provider_id, 'provider');
-      assert.deepEqual(rows[0].created, now);
-      assert.deepEqual(rows[0].expires, now);
-      assert.equal(rows[0].state, 'state');
-      assert.deepEqual(rows[0].provider_data, { providerdata: true });
-      assert.equal(rows[0].capacity, 1);
-      assert.deepEqual(rows[0].last_modified, now);
-      assert.deepEqual(rows[0].last_checked, now);
-
-      rows = await db.fns.get_workers(null, null, null, null, 2, 4);
-      assert.deepEqual(
-        rows.map(r => ({ worker_pool_id: r.worker_pool_id, worker_group: r.worker_group, worker_id: r.worker_id })),
-        [4, 5].map(i => ({ worker_pool_id: `wp/${i}`, worker_group: `w/group${i}`, worker_id: `w/id${i}` })));
-    });
-
     helper.dbTest('expire_workers', async function(db) {
       await create_worker(db, { worker_pool_id: 'done', provider_id: 'null-provider', expires: fromNow('- 1 day') });
       await create_worker(db, { worker_pool_id: 'also-done', expires: fromNow('- 2 days') });
@@ -460,7 +422,7 @@ suite(testing.suiteName(), function() {
 
       const count = (await db.fns.expire_workers(fromNow()))[0].expire_workers;
       assert.equal(count, 2);
-      const rows = await db.fns.get_workers(null, null, null, null, null, null);
+      const rows = await db.fns.get_workers_without_provider_data(null, null, null, null, null, null);
       assert.equal(rows.length, 1);
     });
 
