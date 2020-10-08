@@ -208,6 +208,7 @@
       "config:base",
       "schedule:daily"
     ],
+    "dependencyDashboard": true,
     "rebaseConflictedPrs": false,
     "prHourlyLimit": 0,
     "prConcurrentLimit": 9,
