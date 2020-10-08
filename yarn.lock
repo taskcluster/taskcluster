@@ -1523,11 +1523,6 @@ bl@^4.0.1:
     inherits "^2.0.4"
     readable-stream "^3.4.0"
 
-bluebird@^3.0.0:
-  version "3.5.3"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.3.tgz#7d01c6f9616c9a51ab0f8c549a79dfe6ec33efa7"
-  integrity sha512-/qKPUQlaW1OyR51WeCPBvRnAlnZFUJkCSG5HzGnuIqhgyJtF+T94lFnn33eiazjRm2LAHVy2guNnaq48X9SJuw==
-
 bluebird@^3.1.1, bluebird@^3.5.2:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
@@ -7512,9 +7507,7 @@ zen-observable@^0.8.7:
   resolved "https://registry.yarnpkg.com/zen-observable/-/zen-observable-0.8.13.tgz#a9f1b9dbdfd2d60a08761ceac6a861427d44ae2e"
   integrity sha512-fa+6aDUVvavYsefZw0zaZ/v3ckEtMgCFi30sn91SEZea4y/6jQp05E3omjkX91zV6RVdn15fqnFZ6RKjRGbp2g==
 
-zurvan@^0.5.2:
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/zurvan/-/zurvan-0.5.2.tgz#ae4029c41b1604af1b5c544905ac0ca54c1c9207"
-  integrity sha1-rkApxBsWBK8bXFRJBawMpUwckgc=
-  optionalDependencies:
-    bluebird "^3.0.0"
+zurvan@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/zurvan/-/zurvan-0.8.0.tgz#46981ea86fa53403f6a21fcbe5d3e67d0ee3ca47"
+  integrity sha512-gX3KXVeBqBOQSewmqV81JrdR3W6XmcSljBeXa78KNTd6OIX+UdkZJ5caRV7zf8HwS/MjFO2f7x99QH8wgqXdXQ==

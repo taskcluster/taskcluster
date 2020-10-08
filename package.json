@@ -162,7 +162,7 @@
     "ws": "^7.2.1",
     "yarn-minify": "^1.0.1",
     "zen-observable": "^0.8.11",
-    "zurvan": "^0.5.2"
+    "zurvan": "^0.8.0"
   },
   "resolutions": {
     "mocha/mkdirp": "^0.5.1"
