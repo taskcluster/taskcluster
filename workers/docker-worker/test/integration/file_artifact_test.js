@@ -460,7 +460,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
 
     // Check that the artifacts have the right content encoding set
     // The text file should have gzip content-encoding
-    let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
+    let queue = new taskcluster.Queue(helper.optionsFromCiCreds());
     let url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/hello.txt');
     let resp = await got(url, { retries: 5 });
     assert.ok(resp.headers['content-encoding'] === 'gzip', `headers are: ${JSON.stringify(resp.headers)}`);
