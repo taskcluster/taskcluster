@@ -4,7 +4,7 @@ const split2 = require('split2');
 
 /**
  * This is an implementation of the worker-runner protocol as documented at
- * `internal/workerproto` in this repo.
+ * `tools/workerproto` in this repo.
  */
 
 /**

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/taskcluster/taskcluster/v37/internal/workerproto"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/errorreport"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/exit"
@@ -16,6 +15,7 @@ import (
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/secrets"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/worker"
+	"github.com/taskcluster/taskcluster/v37/tools/workerproto"
 )
 
 // Run the worker.  This embodies the execution of the start-worker command.

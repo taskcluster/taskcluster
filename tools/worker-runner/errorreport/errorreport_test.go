@@ -7,10 +7,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v37/internal/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v37/internal/workerproto/testing"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v37/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v37/tools/workerproto/testing"
 )
 
 func TestHandleMessage(t *testing.T) {

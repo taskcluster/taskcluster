@@ -3,7 +3,7 @@ package google
 import (
 	"testing"
 
-	ptesting "github.com/taskcluster/taskcluster/v37/internal/workerproto/testing"
+	ptesting "github.com/taskcluster/taskcluster/v37/tools/workerproto/testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/cfg"

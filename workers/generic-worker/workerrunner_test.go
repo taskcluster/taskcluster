@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v37/internal/workerproto"
-	wptesting "github.com/taskcluster/taskcluster/v37/internal/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v37/tools/workerproto"
+	wptesting "github.com/taskcluster/taskcluster/v37/tools/workerproto/testing"
 	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/graceful"
 	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/gwconfig"
 )

@@ -7,7 +7,7 @@ import (
 	"os"
 
 	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
-	"github.com/taskcluster/taskcluster/v37/internal/workerproto"
+	"github.com/taskcluster/taskcluster/v37/tools/workerproto"
 	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/graceful"
 )
 

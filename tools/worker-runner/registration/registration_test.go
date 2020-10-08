@@ -12,11 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
-	"github.com/taskcluster/taskcluster/v37/internal/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v37/internal/workerproto/testing"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v37/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v37/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v37/tools/workerproto/testing"
 )
 
 func TestRegisterWorker(t *testing.T) {
