@@ -51,6 +51,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       'queue:claim-task',
       'assume:worker-type:no-provisioner-extended-extended/test-worker-extended-extended',
       'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      'queue:get-task:' + taskId,
+      'queue:status:' + taskId,
     );
     // First runId is always 0, so we should be able to claim it here
     const before = new Date();
@@ -152,6 +154,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:claim-task',
       'assume:worker-id:my-worker-group/my-worker',
+      'queue:get-task:' + taskId,
+      'queue:status:' + taskId,
     );
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
@@ -169,6 +173,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:claim-task',
       'assume:worker-type:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:get-task:' + taskId,
+      'queue:status:' + taskId,
     );
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
