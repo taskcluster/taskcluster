@@ -11371,7 +11371,7 @@
               "type": "string"
             },
             "expires": {
-              "description": "The expiration time for the credentials used to make this request.\nThis should be treated as the latest time at which the authorization\nis valid.  For most cases, where the access being authorized occurs\nimmediately, this field can be ignored, as the value will always be\nin the future if the status is `auth-success`.\n",
+              "description": "The expiration time that the returned scopes are valid for.\nThis should be treated as the latest time at which the authorization\nis valid. For most cases, where the access being authorized occurs\nimmediately, this field can be ignored, as the value will always be\nin the future.\n",
               "format": "date-time",
               "type": "string"
             },
@@ -11395,7 +11395,7 @@
               "uniqueItems": true
             },
             "status": {
-              "description": "The kind of response, `auth-failed` or `auth-success`.\n",
+              "description": "The kind of response, `auth-failed`, `auth-success` or `no-auth`.\n",
               "enum": [
                 "auth-success"
               ],
@@ -11420,7 +11420,7 @@
               "type": "string"
             },
             "status": {
-              "description": "The kind of response, `auth-failed` or `auth-success`.\n",
+              "description": "The kind of response, `auth-failed`, `auth-success` or `no-auth`.\n",
               "enum": [
                 "auth-failed"
               ],
@@ -11432,6 +11432,47 @@
             "message"
           ],
           "title": "Authentication Failed Response",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "expires": {
+              "description": "The expiration time that the returned scopes are valid for.\nThis should be treated as the latest time at which the authorization\nis valid. For most cases, where the access being authorized occurs\nimmediately, this field can be ignored, as the value will always be\nin the future.\n",
+              "format": "date-time",
+              "type": "string"
+            },
+            "scheme": {
+              "description": "Authentication scheme the client used. Generally, you don't need to\nread this property unless `hash` is provided and you want to validate\nthe payload hash. Additional values may be added in the future.\n",
+              "enum": [
+                "none"
+              ],
+              "type": "string"
+            },
+            "scopes": {
+              "description": "List of scopes the client is authorized to access.  Scopes must be\ncomposed of printable ASCII characters and spaces.\n",
+              "items": {
+                "pattern": "^[ -~]*$",
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            },
+            "status": {
+              "description": "The kind of response, `auth-failed`, `auth-success` or `no-auth`.\n",
+              "enum": [
+                "no-auth"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "scheme",
+            "scopes",
+            "expires"
+          ],
+          "title": "No Authentication Response",
           "type": "object"
         }
       ],
@@ -11535,7 +11576,7 @@
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -11987,6 +12028,7 @@
             "limit"
           ],
           "route": "/providers",
+          "scopes": "worker-manager:list-providers",
           "stability": "stable",
           "title": "List Providers",
           "type": "function"
@@ -12066,6 +12108,7 @@
           "query": [
           ],
           "route": "/worker-pool/<workerPoolId>",
+          "scopes": "worker-manager:get-worker-pool:<workerPoolId>",
           "stability": "stable",
           "title": "Get Worker Pool",
           "type": "function"
@@ -12083,6 +12126,7 @@
             "limit"
           ],
           "route": "/worker-pools",
+          "scopes": "worker-manager:list-worker-pools",
           "stability": "stable",
           "title": "List All Worker Pools",
           "type": "function"
@@ -12124,6 +12168,7 @@
             "limit"
           ],
           "route": "/worker-pool-errors/<workerPoolId>",
+          "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
           "stability": "stable",
           "title": "List Worker Pool Errors",
           "type": "function"
@@ -12143,6 +12188,7 @@
             "limit"
           ],
           "route": "/workers/<workerPoolId>:/<workerGroup>",
+          "scopes": "worker-manager:list-workers:<workerPoolId>/<workerGroup>",
           "stability": "stable",
           "title": "Workers in a specific Worker Group in a Worker Pool",
           "type": "function"
@@ -12161,6 +12207,7 @@
           "query": [
           ],
           "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Get a Worker",
           "type": "function"
@@ -12237,6 +12284,7 @@
             "limit"
           ],
           "route": "/workers/<workerPoolId>",
+          "scopes": "worker-manager:list-workers:<workerPoolId>",
           "stability": "stable",
           "title": "Workers in a Worker Pool",
           "type": "function"
@@ -12538,7 +12586,7 @@
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -12799,6 +12847,7 @@
             "limit"
           ],
           "route": "/secrets",
+          "scopes": "secrets:list-secrets",
           "stability": "stable",
           "title": "List Secrets",
           "type": "function"
@@ -12821,7 +12870,7 @@
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -13735,6 +13784,7 @@
           "query": [
           ],
           "route": "/task/<taskId>",
+          "scopes": "queue:get-task:<taskId>",
           "stability": "stable",
           "title": "Get Task Definition",
           "type": "function"
@@ -13751,6 +13801,7 @@
           "query": [
           ],
           "route": "/task/<taskId>/status",
+          "scopes": "queue:status:<taskId>",
           "stability": "stable",
           "title": "Get task status",
           "type": "function"
@@ -13769,6 +13820,7 @@
             "limit"
           ],
           "route": "/task-group/<taskGroupId>/list",
+          "scopes": "queue:list-task-group:<taskGroupId>",
           "stability": "stable",
           "title": "List Task Group",
           "type": "function"
@@ -13787,6 +13839,7 @@
             "limit"
           ],
           "route": "/task/<taskId>/dependents",
+          "scopes": "queue:list-dependent-tasks:<taskId>",
           "stability": "stable",
           "title": "List Dependent Tasks",
           "type": "function"
@@ -14128,14 +14181,7 @@
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": {
-              "AllOf": [
-                "queue:get-artifact:<name>"
-              ]
-            }
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact from Run",
           "type": "function"
@@ -14152,14 +14198,7 @@
           "query": [
           ],
           "route": "/task/<taskId>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": {
-              "AllOf": [
-                "queue:get-artifact:<name>"
-              ]
-            }
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact from Latest Run",
           "type": "function"
@@ -14179,6 +14218,7 @@
             "limit"
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts",
+          "scopes": "queue:list-artifacts:<taskId>:<runId>",
           "stability": "stable",
           "title": "Get Artifacts from Run",
           "type": "function"
@@ -14197,6 +14237,7 @@
             "limit"
           ],
           "route": "/task/<taskId>/artifacts",
+          "scopes": "queue:list-artifacts:<taskId>",
           "stability": "stable",
           "title": "Get Artifacts from Latest Run",
           "type": "function"
@@ -14214,6 +14255,7 @@
             "limit"
           ],
           "route": "/provisioners",
+          "scopes": "queue:list-provisioners",
           "stability": "experimental",
           "title": "Get a list of all active provisioners",
           "type": "function"
@@ -14230,6 +14272,7 @@
           "query": [
           ],
           "route": "/provisioners/<provisionerId>",
+          "scopes": "queue:get-provisioner:<provisionerId>",
           "stability": "experimental",
           "title": "Get an active provisioner",
           "type": "function"
@@ -14273,6 +14316,7 @@
           "query": [
           ],
           "route": "/pending/<provisionerId>/<workerType>",
+          "scopes": "queue:pending-count:<provisionerId>/<workerType",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
           "type": "function"
@@ -14291,6 +14335,7 @@
             "limit"
           ],
           "route": "/provisioners/<provisionerId>/worker-types",
+          "scopes": "queue:list-worker-types:<provisionerId>",
           "stability": "experimental",
           "title": "Get a list of all active worker-types",
           "type": "function"
@@ -14308,6 +14353,7 @@
           "query": [
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
+          "scopes": "queue:get-worker-type:<provisionerId>/<workerType>",
           "stability": "experimental",
           "title": "Get a worker-type",
           "type": "function"
@@ -14355,6 +14401,7 @@
             "quarantined"
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
+          "scopes": "queue:list-workers:<provisionerId>/<workerType>",
           "stability": "experimental",
           "title": "Get a list of all active workers of a workerType",
           "type": "function"
@@ -14374,6 +14421,7 @@
           "query": [
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
+          "scopes": "queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
           "stability": "experimental",
           "title": "Get a worker-type",
           "type": "function"
@@ -14450,7 +14498,7 @@
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -14679,6 +14727,7 @@
             "limit"
           ],
           "route": "/purge-cache/list",
+          "scopes": "purge-cache:all-purge-requests",
           "stability": "stable",
           "title": "All Open Purge Requests",
           "type": "function"
@@ -14697,6 +14746,7 @@
             "since"
           ],
           "route": "/purge-cache/<provisionerId>/<workerType>",
+          "scopes": "purge-cache:purge-requests:<provisionerId>/<workerType>",
           "stability": "stable",
           "title": "Open Purge Requests for a provisionerId/workerType pair",
           "type": "function"
@@ -14719,7 +14769,7 @@
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -15272,7 +15322,7 @@
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -15514,6 +15564,7 @@
           "query": [
           ],
           "route": "/task/<indexPath>",
+          "scopes": "index:find-task:<indexPath>",
           "stability": "stable",
           "title": "Find Indexed Task",
           "type": "function"
@@ -15532,6 +15583,11 @@
             "limit"
           ],
           "route": "/namespaces/<namespace>",
+          "scopes": {
+            "else": "index:list-namespaces",
+            "if": "namespaceGiven",
+            "then": "index:list-namespaces:<namespace>"
+          },
           "stability": "stable",
           "title": "List Namespaces",
           "type": "function"
@@ -15550,6 +15606,11 @@
             "limit"
           ],
           "route": "/tasks/<namespace>",
+          "scopes": {
+            "else": "index:list-tasks",
+            "if": "namespaceGiven",
+            "then": "index:list-tasks:<namespace>"
+          },
           "stability": "stable",
           "title": "List Tasks",
           "type": "function"
@@ -15584,10 +15645,7 @@
           "query": [
           ],
           "route": "/task/<indexPath>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": "queue:get-artifact:<name>"
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact From Indexed Task",
           "type": "function"
@@ -15610,7 +15668,7 @@
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -15927,6 +15985,7 @@
           "query": [
           ],
           "route": "/hooks",
+          "scopes": "hooks:list-hook-groups",
           "stability": "stable",
           "title": "List hook groups",
           "type": "function"
@@ -15943,6 +16002,7 @@
           "query": [
           ],
           "route": "/hooks/<hookGroupId>",
+          "scopes": "hooks:list-hooks:<hookGroupId>",
           "stability": "stable",
           "title": "List hooks in a given group",
           "type": "function"
@@ -15960,6 +16020,7 @@
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>",
+          "scopes": "hooks:get:<hookGroupId>:<hookId>",
           "stability": "stable",
           "title": "Get hook definition",
           "type": "function"
@@ -15977,6 +16038,7 @@
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/status",
+          "scopes": "hooks:status:<hookGroupId>/<hookId>",
           "stability": "deprecated",
           "title": "Get hook status",
           "type": "function"
@@ -16116,6 +16178,7 @@
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
+          "scopes": "hooks:trigger-hook:<hookGroupId>/<hookId>",
           "stability": "stable",
           "title": "Trigger a hook with a token",
           "type": "function"
@@ -16133,6 +16196,7 @@
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
+          "scopes": "hooks:list-last-fires:<hookGroupId>/<hookId>",
           "stability": "stable",
           "title": "Get information about recent hook fires",
           "type": "function"
@@ -16155,7 +16219,7 @@
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -16561,6 +16625,7 @@
           "query": [
           ],
           "route": "/github",
+          "scopes": "github:consume-webhook",
           "stability": "stable",
           "title": "Consume GitHub WebHook",
           "type": "function"
@@ -16581,6 +16646,7 @@
             "sha"
           ],
           "route": "/builds",
+          "scopes": "github:list-builds",
           "stability": "stable",
           "title": "List of Builds",
           "type": "function"
@@ -16598,6 +16664,7 @@
           "query": [
           ],
           "route": "/repository/<owner>/<repo>/<branch>/badge.svg",
+          "scopes": "github:get-badge:<owner>:<repo>:<branch>",
           "stability": "experimental",
           "title": "Latest Build Status Badge",
           "type": "function"
@@ -16615,6 +16682,7 @@
           "query": [
           ],
           "route": "/repository/<owner>/<repo>",
+          "scopes": "github:get-repository:<owner>:<repo>",
           "stability": "experimental",
           "title": "Get Repository Info",
           "type": "function"
@@ -16632,6 +16700,7 @@
           "query": [
           ],
           "route": "/repository/<owner>/<repo>/<branch>/latest",
+          "scopes": "github:latest-status:<owner>:<repo>:<branch>",
           "stability": "stable",
           "title": "Latest Status for Branch",
           "type": "function"
@@ -16834,7 +16903,7 @@
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -17187,6 +17256,7 @@
             "limit"
           ],
           "route": "/clients/",
+          "scopes": "auth:list-clients",
           "stability": "stable",
           "title": "List Clients",
           "type": "function"
@@ -17203,6 +17273,7 @@
           "query": [
           ],
           "route": "/clients/<clientId>",
+          "scopes": "auth:get-client:<clientId>",
           "stability": "stable",
           "title": "Get Client",
           "type": "function"
@@ -17339,6 +17410,7 @@
           "query": [
           ],
           "route": "/roles/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Roles (no pagination)",
           "type": "function"
@@ -17356,6 +17428,7 @@
             "limit"
           ],
           "route": "/roles2/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Roles",
           "type": "function"
@@ -17373,6 +17446,7 @@
             "limit"
           ],
           "route": "/roleids/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Role IDs",
           "type": "function"
@@ -17389,6 +17463,7 @@
           "query": [
           ],
           "route": "/roles/<roleId>",
+          "scopes": "auth:get-role:<roleId>",
           "stability": "stable",
           "title": "Get Role",
           "type": "function"
@@ -17475,6 +17550,7 @@
           "query": [
           ],
           "route": "/scopes/expand",
+          "scopes": "auth:expand-scopes",
           "stability": "stable",
           "title": "Expand Scopes",
           "type": "function"
@@ -17490,6 +17566,7 @@
           "query": [
           ],
           "route": "/scopes/current",
+          "scopes": "auth:current-scopes",
           "stability": "stable",
           "title": "Get Current Scopes",
           "type": "function"

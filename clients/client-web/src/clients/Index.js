@@ -11,11 +11,11 @@ export default class Index extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.findTask.entry = {"args":["indexPath"],"category":"Index Service","method":"get","name":"findTask","output":true,"query":[],"route":"/task/<indexPath>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listNamespaces.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listNamespaces","output":true,"query":["continuationToken","limit"],"route":"/namespaces/<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listTasks.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listTasks","output":true,"query":["continuationToken","limit"],"route":"/tasks/<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.findTask.entry = {"args":["indexPath"],"category":"Index Service","method":"get","name":"findTask","output":true,"query":[],"route":"/task/<indexPath>","scopes":"index:find-task:<indexPath>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listNamespaces.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listNamespaces","output":true,"query":["continuationToken","limit"],"route":"/namespaces/<namespace>","scopes":{"else":"index:list-namespaces","if":"namespaceGiven","then":"index:list-namespaces:<namespace>"},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.listTasks.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listTasks","output":true,"query":["continuationToken","limit"],"route":"/tasks/<namespace>","scopes":{"else":"index:list-tasks","if":"namespaceGiven","then":"index:list-tasks:<namespace>"},"stability":"stable","type":"function"}; // eslint-disable-line
     this.insertTask.entry = {"args":["namespace"],"category":"Index Service","input":true,"method":"put","name":"insertTask","output":true,"query":[],"route":"/task/<namespace>","scopes":"index:insert-task:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.findArtifactFromTask.entry = {"args":["indexPath","name"],"category":"Index Service","method":"get","name":"findArtifactFromTask","query":[],"route":"/task/<indexPath>/artifacts/<name>","scopes":{"if":"private","then":"queue:get-artifact:<name>"},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.findArtifactFromTask.entry = {"args":["indexPath","name"],"category":"Index Service","method":"get","name":"findArtifactFromTask","query":[],"route":"/task/<indexPath>/artifacts/<name>","scopes":"queue:get-artifact:<name>","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

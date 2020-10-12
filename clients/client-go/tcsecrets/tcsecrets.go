@@ -169,6 +169,9 @@ func (secrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*url
 // If you are not interested in listing all the members at once, you may
 // use the query-string option `limit` to return fewer.
 //
+// Required scopes:
+//   secrets:list-secrets
+//
 // See #list
 func (secrets *Secrets) List(continuationToken, limit string) (*SecretsList, error) {
 	v := url.Values{}
@@ -181,4 +184,22 @@ func (secrets *Secrets) List(continuationToken, limit string) (*SecretsList, err
 	cd := tcclient.Client(*secrets)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/secrets", new(SecretsList), v)
 	return responseObject.(*SecretsList), err
+}
+
+// Returns a signed URL for List, valid for the specified duration.
+//
+// Required scopes:
+//   secrets:list-secrets
+//
+// See List for more details.
+func (secrets *Secrets) List_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*secrets)
+	return (&cd).SignedURL("/secrets", v, duration)
 }
