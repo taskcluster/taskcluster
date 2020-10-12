@@ -6,7 +6,7 @@ let hawk = require('@hapi/hawk');
 let libUrls = require('taskcluster-lib-urls');
 let taskcluster = require('taskcluster-client');
 
-exports.start = function(clients, { rootUrl } = {}) {
+exports.start = function(clients, { rootUrl, anonymousScopes } = {}) {
   assert(rootUrl, 'rootUrl option is required');
   const authPath = url.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk')).pathname;
   return nock(rootUrl, { encodedQueryParams: true, allowUnmocked: true })
@@ -23,7 +23,7 @@ exports.start = function(clients, { rootUrl } = {}) {
         clientId = authorization.id;
         scopes = clients[clientId];
         ext = authorization.ext;
-      } else {
+      } else if (/^\/.*[\?&]bewit\=/.test(body.resource)) {
         // The following is a hacky reproduction of the bewit logic in
         // https://github.com/hueniverse/hawk/blob/0833f99ba64558525995a7e21d4093da1f3e15fa/lib/server.js#L366-L383
         let bewitString = url.parse(body.resource, true).query.bewit;
@@ -38,6 +38,13 @@ exports.start = function(clients, { rootUrl } = {}) {
           scopes = clients[clientId];
           ext = bewitParts[3] || '';
         }
+      } else {
+        return {
+          status: 'no-auth',
+          scheme: 'none',
+          scopes: anonymousScopes || [],
+          expires: new Date(Date.now() + 15 * 60 * 1000),
+        };
       }
       if (ext) {
         ext = JSON.parse(Buffer.from(ext, 'base64').toString('utf-8'));
