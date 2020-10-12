@@ -97,7 +97,18 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('taskcluster.clientId', null);
     exports.load.cfg('taskcluster.accessToken', null);
 
-    fakeauth.start({ 'test-client': ['*'] }, { rootUrl });
+    fakeauth.start({
+      'test-client': ['*'],
+    }, {
+      rootUrl,
+      anonymousScopes: [
+        'github:consume-webhook',
+        'github:get-badge:*',
+        'github:get-repository:*',
+        'github:latest-status:*',
+        'github:list-builds',
+      ],
+    });
 
     const GithubClient = taskcluster.createClient(builder.reference());
 
