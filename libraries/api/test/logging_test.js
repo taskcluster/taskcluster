@@ -27,7 +27,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/require-some-scopes',
     name: 'requireSomeScopes',
-    title: 'Requre some scopse',
+    title: 'Require some scopes',
     description: 'Place we can call to test something',
     category: 'API Library',
     scopes: {
@@ -45,9 +45,10 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/require-no-scopes',
     name: 'requireNoScopes',
-    title: 'Requre no scopse',
+    title: 'Require no scopes',
     category: 'API Library',
     description: 'Place we can call to test something',
+    scopes: null,
   }, function(req, res) {
     res.reply({});
   });
@@ -56,7 +57,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/sometimes-require-no-scopes',
     name: 'sometimesRequireNoScopes',
-    title: 'Requre no scopes when private is false',
+    title: 'Require no scopes when private is false',
     description: 'Place we can call to test something',
     category: 'API Library',
     query: {
@@ -65,6 +66,8 @@ suite(testing.suiteName(), function() {
     scopes: {
       if: 'private',
       then: 'aa',
+      // TODO REMOVE THIS ELSE !!!!
+      else: { AllOf: [] },
     },
   }, async function(req, res) {
     await req.authorize({ private: req.query.private === '1' });
@@ -75,7 +78,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/require-extra-scopes',
     name: 'requireExtraScopes',
-    title: 'Requre extra scopse',
+    title: 'Require extra scopes',
     category: 'API Library',
     description: 'Place we can call to test something',
     scopes: 'XXXX',
@@ -91,8 +94,9 @@ suite(testing.suiteName(), function() {
     query: {
       foo: /abc*/,
     },
-    title: 'Bewit having endpoing',
+    title: 'Bewit having endpoint',
     description: 'Place we can call to test something',
+    scopes: null,
   }, function(req, res) {
     res.reply({});
   });
@@ -178,12 +182,12 @@ suite(testing.suiteName(), function() {
       Fields: {
         name: 'sometimesRequireNoScopes',
         apiVersion: 'v1',
-        clientId: '',
-        hasAuthed: false,
+        clientId: 'client-with-aa-bb-dd',
+        hasAuthed: true,
         method: 'GET',
-        public: true,
+        public: false,
         query: {
-          private: 0,
+          private: "0",
         },
         resource: '/sometimes-require-no-scopes',
         satisfyingScopes: [],
@@ -266,11 +270,8 @@ suite(testing.suiteName(), function() {
   });
 
   test('bewit is elided', async function() {
-    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/bewitiful?bewit=abc123&foo=abc');
-    const { header } = hawk.client.header(url, 'GET', {
-      credentials: { id: 'client-with-aa-bb-dd', key: 'ignored', algorithm: 'sha256' },
-    });
-    await request.get(url).set('Authorization', header);
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/bewitiful?bewit=Y2xpZW50LXdpdGgtYWEtYmItZGRcMTYwMjE3NTYxM1xyVUErZWE1TWxUaWlZR1Vaak5KbE5pTFhnNnhCbXdhRDFxbnozQU1HZ2hJPVw&foo=abc');
+    await request.get(url);
 
     assert.equal(helper.monitorManager.messages.length, 1);
     delete helper.monitorManager.messages[0].Fields.duration;

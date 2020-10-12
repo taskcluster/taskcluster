@@ -82,9 +82,8 @@ class APIBuilder {
    *   },
    *   name:     'identifierForLibraries',         // identifier for client libraries
    *   stability: base.API.stability.experimental, // API stability level
-   *   scopes:   ['admin', 'superuser'],           // Scopes for the request
-   *   scopes:   [['admin'], ['per1', 'per2']],    // Scopes in disjunctive form
-   *                                               // admin OR (per1 AND per2)
+   *   scopes:   {AllOf: ['admin', 'superuser']},  // scopes expression (mandatory)
+   *                                               // can be empty: null
    *   input:    'input-schema.yaml',              // optional, null if no input
    *   output:   'output-schema.yaml' || 'blob',   // optional, null if no output
    *   skipInputValidation:    true,               // defaults to false
@@ -113,6 +112,8 @@ class APIBuilder {
     ['name', 'method', 'route', 'title', 'description', 'category'].forEach(function(key) {
       assert(options[key], 'Option \'' + key + '\' must be provided');
     });
+    // unlike other options above, scopes is allowed to be null, but not undefined...
+    assert.notStrictEqual(options.scopes, undefined);
     // Default to experimental API end-points
     if (!options.stability) {
       options.stability = stability.experimental;

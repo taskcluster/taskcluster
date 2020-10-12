@@ -31,6 +31,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/inputerror',
     name: 'InputError',
+    scopes: null,
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
@@ -64,6 +65,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
+    scopes: null,
   }, function(req, res) {
     req.body.foos = [4, 5];
     res.reportError(
@@ -113,6 +115,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
+    scopes: null,
   }, function(req, res) {
     throw new Error('uhoh');
   });
@@ -146,6 +149,7 @@ suite(testing.suiteName(), function() {
       payload.secret = '<HIDDEN>';
       return payload;
     },
+    scopes: null,
   }, function(req, res) {
   });
 

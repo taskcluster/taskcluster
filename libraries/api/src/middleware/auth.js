@@ -70,9 +70,6 @@ const ErrorReply = require('../error-reply');
  * In this case if the parameter `foo` is a boolean and true, then the
  * object will be substituted with the scope expression specified
  * in `then`. No truthiness conversions will be done for you.
- * This is useful for allowing methods to be called
- * when certain cases happen such as an artifact beginning with the
- * string "public/".
  *
  * Params specified in `<...>` or the `in` part of the objects are allowed to
  * use dotted syntax to descend into params. Example:
@@ -127,16 +124,6 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
         message: 'Cannot use two authentication schemes at once ' +
                   'this request has both bewit in querystring and ' +
                   'and \'authorization\' header',
-      };
-    }
-
-    // If no authentication is provided, we just return valid with zero scopes
-    if ((!req.query || !req.query.bewit) &&
-        (!req.headers || !req.headers.authorization)) {
-      return {
-        status: 'no-auth',
-        scheme: 'none',
-        scopes: [],
       };
     }
 
@@ -204,7 +191,7 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
       req.scopes = async () => {
         // This lint can be disabled because authenticate() will always return the same value
         result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
-        if (result.status !== 'auth-success') {
+        if (result.status === 'auth-failed') {
           return [];
         }
         return result.scopes || [];
@@ -246,6 +233,7 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
         // occurs with getArtifact for a public artifact, for example)
         if (!scopeExpression) {
           req.public = true;
+          req.hasAuthed = true;
           return;
         }
 

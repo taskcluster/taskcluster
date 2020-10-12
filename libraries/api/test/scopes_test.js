@@ -17,6 +17,7 @@ suite(testing.suiteName(), function() {
       method: 'get',
       route: '/test/:myparam',
       name: 'noScopeOktestEP',
+      scopes: null,
       category: 'API Library',
       title: 'Test',
       description: 'Test',

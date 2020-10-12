@@ -239,6 +239,9 @@ suite(testing.suiteName(), function() {
       },
     ],
   });
+  const noAuthRequest = (url) => {
+    return request.get(url).set('x-taskcluster-trace-id', 'foo/bar');
+  };
 
   testEndpoint({
     method: 'get',
@@ -336,9 +339,9 @@ suite(testing.suiteName(), function() {
       },
       {
         label: 'insufficient scopes without auth has documented details',
-        shouldCallAuth: false,
+        shouldCallAuth: true,
         desiredStatus: 200,
-        tester: (auth, url) => request.get(url),
+        tester: (auth, url) => noAuthRequest(url),
       },
     ],
   });
@@ -384,7 +387,7 @@ suite(testing.suiteName(), function() {
       {
         shouldCallAuth: false,
         label: 'public unauthenticated endpoint',
-        tester: (auth, url) => request.get(url),
+        tester: (auth, url) => noAuthRequest(url),
       },
     ],
   });
@@ -579,6 +582,7 @@ suite(testing.suiteName(), function() {
         shouldCallAuth: false,
         tester: (auth, url) => request
           .get(url)
+          .set('x-taskcluster-trace-id', 'foo/bar')
           .send({
             public: true,
           }),
@@ -601,6 +605,7 @@ suite(testing.suiteName(), function() {
         desiredStatus: 403,
         tester: (auth, url) => request
           .get(url)
+          .set('x-taskcluster-trace-id', 'foo/bar')
           .send({
             public: false,
           }),
