@@ -34,6 +34,7 @@ module.exports = {
             "limit"
           ],
           "route": "/clients/",
+          "scopes": "auth:list-clients",
           "stability": "stable",
           "title": "List Clients",
           "type": "function"
@@ -50,6 +51,7 @@ module.exports = {
           "query": [
           ],
           "route": "/clients/<clientId>",
+          "scopes": "auth:get-client:<clientId>",
           "stability": "stable",
           "title": "Get Client",
           "type": "function"
@@ -186,6 +188,7 @@ module.exports = {
           "query": [
           ],
           "route": "/roles/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Roles (no pagination)",
           "type": "function"
@@ -203,6 +206,7 @@ module.exports = {
             "limit"
           ],
           "route": "/roles2/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Roles",
           "type": "function"
@@ -220,6 +224,7 @@ module.exports = {
             "limit"
           ],
           "route": "/roleids/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Role IDs",
           "type": "function"
@@ -236,6 +241,7 @@ module.exports = {
           "query": [
           ],
           "route": "/roles/<roleId>",
+          "scopes": "auth:get-role:<roleId>",
           "stability": "stable",
           "title": "Get Role",
           "type": "function"
@@ -337,6 +343,7 @@ module.exports = {
           "query": [
           ],
           "route": "/scopes/current",
+          "scopes": "auth:current-scopes",
           "stability": "stable",
           "title": "Get Current Scopes",
           "type": "function"
@@ -721,6 +728,7 @@ module.exports = {
           "query": [
           ],
           "route": "/github",
+          "scopes": "github:consume-webhook",
           "stability": "stable",
           "title": "Consume GitHub WebHook",
           "type": "function"
@@ -741,6 +749,7 @@ module.exports = {
             "sha"
           ],
           "route": "/builds",
+          "scopes": "github:list-builds",
           "stability": "stable",
           "title": "List of Builds",
           "type": "function"
@@ -758,6 +767,7 @@ module.exports = {
           "query": [
           ],
           "route": "/repository/<owner>/<repo>/<branch>/badge.svg",
+          "scopes": "github:get-badge:<owner>:<repo>:<branch>",
           "stability": "experimental",
           "title": "Latest Build Status Badge",
           "type": "function"
@@ -775,6 +785,7 @@ module.exports = {
           "query": [
           ],
           "route": "/repository/<owner>/<repo>",
+          "scopes": "github:get-repository:<owner>:<repo>",
           "stability": "experimental",
           "title": "Get Repository Info",
           "type": "function"
@@ -792,6 +803,7 @@ module.exports = {
           "query": [
           ],
           "route": "/repository/<owner>/<repo>/<branch>/latest",
+          "scopes": "github:latest-status:<owner>:<repo>:<branch>",
           "stability": "stable",
           "title": "Latest Status for Branch",
           "type": "function"
@@ -1004,6 +1016,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks",
+          "scopes": "hooks:list-hook-groups",
           "stability": "stable",
           "title": "List hook groups",
           "type": "function"
@@ -1020,6 +1033,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>",
+          "scopes": "hooks:list-hooks:<hookGroupId>",
           "stability": "stable",
           "title": "List hooks in a given group",
           "type": "function"
@@ -1037,6 +1051,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>",
+          "scopes": "hooks:get:<hookGroupId>:<hookId>",
           "stability": "stable",
           "title": "Get hook definition",
           "type": "function"
@@ -1054,6 +1069,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/status",
+          "scopes": "hooks:status:<hookGroupId>/<hookId>",
           "stability": "deprecated",
           "title": "Get hook status",
           "type": "function"
@@ -1193,6 +1209,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
+          "scopes": "hooks:trigger-hook:<hookGroupId>/<hookId>",
           "stability": "stable",
           "title": "Trigger a hook with a token",
           "type": "function"
@@ -1210,6 +1227,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
+          "scopes": "hooks:list-last-fires:<hookGroupId>/<hookId>",
           "stability": "stable",
           "title": "Get information about recent hook fires",
           "type": "function"
@@ -1311,6 +1329,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<indexPath>",
+          "scopes": "index:find-task:<indexPath>",
           "stability": "stable",
           "title": "Find Indexed Task",
           "type": "function"
@@ -1329,6 +1348,11 @@ module.exports = {
             "limit"
           ],
           "route": "/namespaces/<namespace>",
+          "scopes": {
+            "else": "index:list-namespaces",
+            "if": "namespaceGiven",
+            "then": "index:list-namespaces:<namespace>"
+          },
           "stability": "stable",
           "title": "List Namespaces",
           "type": "function"
@@ -1347,6 +1371,11 @@ module.exports = {
             "limit"
           ],
           "route": "/tasks/<namespace>",
+          "scopes": {
+            "else": "index:list-tasks",
+            "if": "namespaceGiven",
+            "then": "index:list-tasks:<namespace>"
+          },
           "stability": "stable",
           "title": "List Tasks",
           "type": "function"
@@ -1381,10 +1410,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<indexPath>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": "queue:get-artifact:<name>"
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact From Indexed Task",
           "type": "function"
@@ -1662,6 +1688,7 @@ module.exports = {
             "limit"
           ],
           "route": "/purge-cache/list",
+          "scopes": "purge-cache:all-purge-requests",
           "stability": "stable",
           "title": "All Open Purge Requests",
           "type": "function"
@@ -1680,6 +1707,7 @@ module.exports = {
             "since"
           ],
           "route": "/purge-cache/<provisionerId>/<workerType>",
+          "scopes": "purge-cache:purge-requests:<provisionerId>/<workerType>",
           "stability": "stable",
           "title": "Open Purge Requests for a provisionerId/workerType pair",
           "type": "function"
@@ -1721,6 +1749,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>",
+          "scopes": "queue:get-task:<taskId>",
           "stability": "stable",
           "title": "Get Task Definition",
           "type": "function"
@@ -1737,6 +1766,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/status",
+          "scopes": "queue:status:<taskId>",
           "stability": "stable",
           "title": "Get task status",
           "type": "function"
@@ -1755,6 +1785,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task-group/<taskGroupId>/list",
+          "scopes": "queue:list-task-group:<taskGroupId>",
           "stability": "stable",
           "title": "List Task Group",
           "type": "function"
@@ -1773,6 +1804,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task/<taskId>/dependents",
+          "scopes": "queue:list-dependent-tasks:<taskId>",
           "stability": "stable",
           "title": "List Dependent Tasks",
           "type": "function"
@@ -2114,14 +2146,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": {
-              "AllOf": [
-                "queue:get-artifact:<name>"
-              ]
-            }
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact from Run",
           "type": "function"
@@ -2138,14 +2163,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": {
-              "AllOf": [
-                "queue:get-artifact:<name>"
-              ]
-            }
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact from Latest Run",
           "type": "function"
@@ -2165,6 +2183,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts",
+          "scopes": "queue:list-artifacts:<taskId>:<runId>",
           "stability": "stable",
           "title": "Get Artifacts from Run",
           "type": "function"
@@ -2183,6 +2202,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task/<taskId>/artifacts",
+          "scopes": "queue:list-artifacts:<taskId>",
           "stability": "stable",
           "title": "Get Artifacts from Latest Run",
           "type": "function"
@@ -2200,6 +2220,7 @@ module.exports = {
             "limit"
           ],
           "route": "/provisioners",
+          "scopes": "queue:list-provisioners",
           "stability": "experimental",
           "title": "Get a list of all active provisioners",
           "type": "function"
@@ -2216,6 +2237,7 @@ module.exports = {
           "query": [
           ],
           "route": "/provisioners/<provisionerId>",
+          "scopes": "queue:get-provisioner:<provisionerId>",
           "stability": "experimental",
           "title": "Get an active provisioner",
           "type": "function"
@@ -2259,6 +2281,7 @@ module.exports = {
           "query": [
           ],
           "route": "/pending/<provisionerId>/<workerType>",
+          "scopes": "queue:pending-count:<provisionerId>/<workerType",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
           "type": "function"
@@ -2277,6 +2300,7 @@ module.exports = {
             "limit"
           ],
           "route": "/provisioners/<provisionerId>/worker-types",
+          "scopes": "queue:list-worker-types:<provisionerId>",
           "stability": "experimental",
           "title": "Get a list of all active worker-types",
           "type": "function"
@@ -2294,6 +2318,7 @@ module.exports = {
           "query": [
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
+          "scopes": "queue:get-worker-type:<provisionerId>/<workerType>",
           "stability": "experimental",
           "title": "Get a worker-type",
           "type": "function"
@@ -2341,6 +2366,7 @@ module.exports = {
             "quarantined"
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
+          "scopes": "queue:list-workers:<provisionerId>/<workerType>",
           "stability": "experimental",
           "title": "Get a list of all active workers of a workerType",
           "type": "function"
@@ -2360,6 +2386,7 @@ module.exports = {
           "query": [
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
+          "scopes": "queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
           "stability": "experimental",
           "title": "Get a worker-type",
           "type": "function"
@@ -3050,6 +3077,7 @@ module.exports = {
             "limit"
           ],
           "route": "/secrets",
+          "scopes": "secrets:list-secrets",
           "stability": "stable",
           "title": "List Secrets",
           "type": "function"
@@ -3092,6 +3120,7 @@ module.exports = {
             "limit"
           ],
           "route": "/providers",
+          "scopes": "worker-manager:list-providers",
           "stability": "stable",
           "title": "List Providers",
           "type": "function"
@@ -3171,6 +3200,7 @@ module.exports = {
           "query": [
           ],
           "route": "/worker-pool/<workerPoolId>",
+          "scopes": "worker-manager:get-worker-pool:<workerPoolId>",
           "stability": "stable",
           "title": "Get Worker Pool",
           "type": "function"
@@ -3188,6 +3218,7 @@ module.exports = {
             "limit"
           ],
           "route": "/worker-pools",
+          "scopes": "worker-manager:list-worker-pools",
           "stability": "stable",
           "title": "List All Worker Pools",
           "type": "function"
@@ -3229,6 +3260,7 @@ module.exports = {
             "limit"
           ],
           "route": "/worker-pool-errors/<workerPoolId>",
+          "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
           "stability": "stable",
           "title": "List Worker Pool Errors",
           "type": "function"
@@ -3248,6 +3280,7 @@ module.exports = {
             "limit"
           ],
           "route": "/workers/<workerPoolId>:/<workerGroup>",
+          "scopes": "worker-manager:list-workers:<workerPoolId>/<workerGroup>",
           "stability": "stable",
           "title": "Workers in a specific Worker Group in a Worker Pool",
           "type": "function"
@@ -3266,6 +3299,7 @@ module.exports = {
           "query": [
           ],
           "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Get a Worker",
           "type": "function"
@@ -3342,6 +3376,7 @@ module.exports = {
             "limit"
           ],
           "route": "/workers/<workerPoolId>",
+          "scopes": "worker-manager:list-workers:<workerPoolId>",
           "stability": "stable",
           "title": "Workers in a Worker Pool",
           "type": "function"

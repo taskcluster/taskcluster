@@ -115,6 +115,9 @@ func (auth *Auth) Ping() error {
 // keep calling `listClients` with the last `continuationToken` until you
 // get a result without a `continuationToken`.
 //
+// Required scopes:
+//   auth:list-clients
+//
 // See #listClients
 func (auth *Auth) ListClients(continuationToken, limit, prefix string) (*ListClientResponse, error) {
 	v := url.Values{}
@@ -132,13 +135,48 @@ func (auth *Auth) ListClients(continuationToken, limit, prefix string) (*ListCli
 	return responseObject.(*ListClientResponse), err
 }
 
+// Returns a signed URL for ListClients, valid for the specified duration.
+//
+// Required scopes:
+//   auth:list-clients
+//
+// See ListClients for more details.
+func (auth *Auth) ListClients_SignedURL(continuationToken, limit, prefix string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	if prefix != "" {
+		v.Add("prefix", prefix)
+	}
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/clients/", v, duration)
+}
+
 // Get information about a single client.
+//
+// Required scopes:
+//   auth:get-client:<clientId>
 //
 // See #client
 func (auth *Auth) Client(clientId string) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
+}
+
+// Returns a signed URL for Client, valid for the specified duration.
+//
+// Required scopes:
+//   auth:get-client:<clientId>
+//
+// See Client for more details.
+func (auth *Auth) Client_SignedURL(clientId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/clients/"+url.QueryEscape(clientId), nil, duration)
 }
 
 // Create a new client and get the `accessToken` for this client.
@@ -251,11 +289,25 @@ func (auth *Auth) DeleteClient(clientId string) error {
 //
 // To get paginated results, use `listRoles2`.
 //
+// Required scopes:
+//   auth:list-roles
+//
 // See #listRoles
 func (auth *Auth) ListRoles() (*GetAllRolesNoPagination, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles/", new(GetAllRolesNoPagination), nil)
 	return responseObject.(*GetAllRolesNoPagination), err
+}
+
+// Returns a signed URL for ListRoles, valid for the specified duration.
+//
+// Required scopes:
+//   auth:list-roles
+//
+// See ListRoles for more details.
+func (auth *Auth) ListRoles_SignedURL(duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/roles/", nil, duration)
 }
 
 // Get a list of all roles. Each role object also includes the list of
@@ -265,6 +317,9 @@ func (auth *Auth) ListRoles() (*GetAllRolesNoPagination, error) {
 // If no limit is given, all roles are returned. Since this
 // list may become long, callers can use the `limit` and `continuationToken`
 // query arguments to page through the responses.
+//
+// Required scopes:
+//   auth:list-roles
 //
 // See #listRoles2
 func (auth *Auth) ListRoles2(continuationToken, limit string) (*GetAllRolesResponse, error) {
@@ -280,11 +335,32 @@ func (auth *Auth) ListRoles2(continuationToken, limit string) (*GetAllRolesRespo
 	return responseObject.(*GetAllRolesResponse), err
 }
 
+// Returns a signed URL for ListRoles2, valid for the specified duration.
+//
+// Required scopes:
+//   auth:list-roles
+//
+// See ListRoles2 for more details.
+func (auth *Auth) ListRoles2_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/roles2/", v, duration)
+}
+
 // Get a list of all role IDs.
 //
 // If no limit is given, the roleIds of all roles are returned. Since this
 // list may become long, callers can use the `limit` and `continuationToken`
 // query arguments to page through the responses.
+//
+// Required scopes:
+//   auth:list-roles
 //
 // See #listRoleIds
 func (auth *Auth) ListRoleIds(continuationToken, limit string) (*GetRoleIdsResponse, error) {
@@ -300,14 +376,46 @@ func (auth *Auth) ListRoleIds(continuationToken, limit string) (*GetRoleIdsRespo
 	return responseObject.(*GetRoleIdsResponse), err
 }
 
+// Returns a signed URL for ListRoleIds, valid for the specified duration.
+//
+// Required scopes:
+//   auth:list-roles
+//
+// See ListRoleIds for more details.
+func (auth *Auth) ListRoleIds_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/roleids/", v, duration)
+}
+
 // Get information about a single role, including the set of scopes that the
 // role expands to.
+//
+// Required scopes:
+//   auth:get-role:<roleId>
 //
 // See #role
 func (auth *Auth) Role(roleId string) (*GetRoleResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), err
+}
+
+// Returns a signed URL for Role, valid for the specified duration.
+//
+// Required scopes:
+//   auth:get-role:<roleId>
+//
+// See Role for more details.
+func (auth *Auth) Role_SignedURL(roleId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/roles/"+url.QueryEscape(roleId), nil, duration)
 }
 
 // Create a new role.
@@ -379,11 +487,25 @@ func (auth *Auth) ExpandScopes(payload *SetOfScopes) (*SetOfScopes, error) {
 // of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,
 // and roles).
 //
+// Required scopes:
+//   auth:current-scopes
+//
 // See #currentScopes
 func (auth *Auth) CurrentScopes() (*SetOfScopes, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/scopes/current", new(SetOfScopes), nil)
 	return responseObject.(*SetOfScopes), err
+}
+
+// Returns a signed URL for CurrentScopes, valid for the specified duration.
+//
+// Required scopes:
+//   auth:current-scopes
+//
+// See CurrentScopes for more details.
+func (auth *Auth) CurrentScopes_SignedURL(duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/scopes/current", nil, duration)
 }
 
 // Get temporary AWS credentials for `read-write` or `read-only` access to
