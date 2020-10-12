@@ -208,8 +208,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return err.response;
     });
     assert.equal(res.statusCode, 303, 'Expected 303 redirect');
-    assert.equal(res.headers.location,
-      libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Fabc.zip`));
+    const location = res.headers.location.replace(/bewit=.*/, 'bewit=xyz');
+    assert.equal(location,
+      // Even public artifacts should now be signed, since the `anonymous` role can change over time.
+      // It is also probably just as cheap to sign the artifact as to calculate if the anonymous scopes
+      // are sufficient to access it, and signing it does no harm.
+      libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Fabc.zip?bewit=xyz`));
   });
 
   test('access private artifact (with * scope)', async function() {
