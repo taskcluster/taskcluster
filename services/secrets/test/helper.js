@@ -30,7 +30,7 @@ exports.withDb = (mock, skipping) => {
 let testClients = {
   'captain-write': ['secrets:set:captain:*'],
   'captain-read': ['secrets:get:captain:*'],
-  'captain-read-write': ['secrets:set:captain:*', 'secrets:get:captain:*'],
+  'captain-read-write': ['secrets:set:captain:*', 'secrets:get:captain:*', 'secrets:list-secrets'],
   'captain-read-limited': ['secrets:get:captain:limited/*'],
 };
 

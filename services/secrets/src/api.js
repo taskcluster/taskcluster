@@ -101,6 +101,7 @@ builder.declare({
   method: 'get',
   route: '/secrets',
   name: 'list',
+  scopes: 'secrets:list-secrets',
   output: 'secret-list.yml',
   title: 'List Secrets',
   stability: 'stable',
