@@ -418,7 +418,7 @@ suite(testing.suiteName(), function() {
         authorizedScopes: ['scope1:*', 'scope2'],
       },
     },
-  }, success(['scope1:*', 'scope2']));
+  }, success(['assume:anonymous', 'scope1:*', 'scope2']));
 
   makeTest('invalid: authorized scopes not satisfied by clientId', {
     authorization: {
@@ -468,7 +468,7 @@ suite(testing.suiteName(), function() {
       credentials: { id, key },
       ext: { certificate },
     },
-  }), success(['tmpscope']));
+  }), success(['assume:anonymous', 'tmpscope']));
 
   testWithTemp('invalid: expired temporary credentials', {
     start: taskcluster.fromNow('-2 hour'),
@@ -490,7 +490,7 @@ suite(testing.suiteName(), function() {
       credentials: { id, key },
       ext: { certificate },
     },
-  }), success(['tmpscope'], { expires: one_hour }));
+  }), success(['assume:anonymous', 'tmpscope'], { expires: one_hour }));
 
   testWithTemp('temporary credentials that expire after issuer give correct expiration', {
     expiry: three_hours,
@@ -501,7 +501,7 @@ suite(testing.suiteName(), function() {
       credentials: { id, key },
       ext: { certificate },
     },
-  }), success(['tmpscope'], { expires: two_hours }));
+  }), success(['assume:anonymous', 'tmpscope'], { expires: two_hours }));
 
   testWithTemp('invalid: postdated temporary credentials', {
     start: taskcluster.fromNow('1 hour'),
@@ -557,7 +557,7 @@ suite(testing.suiteName(), function() {
         authorizedScopes: ['scope1:a', 'scope2:b'],
       },
     },
-  }), success(['scope1:a', 'scope2:b']));
+  }), success(['assume:anonymous', 'scope1:a', 'scope2:b']));
 
   testWithTemp('invalid: temporary credentials with authorizedScopes not satisfied', {
     id: 'unpriv',
@@ -612,7 +612,7 @@ suite(testing.suiteName(), function() {
         certificate,
       },
     },
-  }), success(['tmpscope'], { clientId: 'my-temp-cred' }));
+  }), success(['assume:anonymous', 'tmpscope'], { clientId: 'my-temp-cred' }));
 
   testWithTemp('named temporary credentials with authorizedScopes', {
     id: 'my-temp-cred',
@@ -628,7 +628,7 @@ suite(testing.suiteName(), function() {
         authorizedScopes: ['scopes:1', 'scopes:2'],
       },
     },
-  }), success(['scopes:1', 'scopes:2'], { clientId: 'my-temp-cred' }));
+  }), success(['assume:anonymous', 'scopes:1', 'scopes:2'], { clientId: 'my-temp-cred' }));
 
   testWithTemp('invalid: named temporary credentials with issuer == clientId', {
     id: 'root',
@@ -705,7 +705,7 @@ suite(testing.suiteName(), function() {
         authorizedScopes: ['scope1:*'],
       },
     },
-  }, success(['scope1:*']));
+  }, success(['assume:anonymous', 'scope1:*']));
 
   makeTest('invalid: bewit with bad key', {
     bewit: {
@@ -735,7 +735,7 @@ suite(testing.suiteName(), function() {
     scopes: ['scope3'],
   }, (id, key, certificate) => ({
     bewit: { id, key, ext: { certificate } },
-  }), success(['scope3']));
+  }), success(['assume:anonymous', 'scope3']));
 
   testWithTemp('bewit based on temporary creds and authorizedScopes', {
     id: 'root',
@@ -749,7 +749,7 @@ suite(testing.suiteName(), function() {
         certificate,
       },
     },
-  }), success(['scope3']));
+  }), success(['assume:anonymous', 'scope3']));
 
   testWithTemp('bewit based on named temporary creds and authorizedScopes', {
     id: 'root/temp-url',
@@ -766,5 +766,5 @@ suite(testing.suiteName(), function() {
         certificate,
       },
     },
-  }), success(['scope3'], { clientId: 'root/temp-url' }));
+  }), success(['assume:anonymous', 'scope3'], { clientId: 'root/temp-url' }));
 });
