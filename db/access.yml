@@ -33,8 +33,8 @@ queue:
     queue_artifacts: write
     task_groups: write
     task_dependencies: write
+    task_queues: write
     queue_workers: write
-    queue_worker_types: write
     queue_provisioners: write
     azure_queue_messages: write
     tasks: write

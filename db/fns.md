@@ -71,30 +71,30 @@
    * [`claim_task`](#claim_task)
    * [`create_queue_artifact`](#create_queue_artifact)
    * [`create_queue_provisioner`](#create_queue_provisioner)
-   * [`create_queue_worker`](#create_queue_worker)
-   * [`create_queue_worker_type`](#create_queue_worker_type)
+   * [`create_queue_worker_tqid`](#create_queue_worker_tqid)
    * [`create_task`](#create_task)
+   * [`create_task_queue`](#create_task_queue)
    * [`delete_queue_artifact`](#delete_queue_artifact)
    * [`delete_queue_provisioner`](#delete_queue_provisioner)
    * [`delete_queue_worker_type`](#delete_queue_worker_type)
    * [`ensure_task_group`](#ensure_task_group)
    * [`expire_queue_provisioners`](#expire_queue_provisioners)
-   * [`expire_queue_worker_types`](#expire_queue_worker_types)
    * [`expire_queue_workers`](#expire_queue_workers)
    * [`expire_task_dependencies`](#expire_task_dependencies)
    * [`expire_task_groups`](#expire_task_groups)
+   * [`expire_task_queues`](#expire_task_queues)
    * [`expire_tasks`](#expire_tasks)
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts`](#get_queue_artifacts)
    * [`get_queue_provisioner`](#get_queue_provisioner)
    * [`get_queue_provisioners`](#get_queue_provisioners)
-   * [`get_queue_worker`](#get_queue_worker)
-   * [`get_queue_worker_type`](#get_queue_worker_type)
-   * [`get_queue_worker_types`](#get_queue_worker_types)
-   * [`get_queue_workers`](#get_queue_workers)
+   * [`get_queue_worker_tqid`](#get_queue_worker_tqid)
+   * [`get_queue_workers_tqid`](#get_queue_workers_tqid)
    * [`get_task`](#get_task)
    * [`get_task_group`](#get_task_group)
+   * [`get_task_queue`](#get_task_queue)
+   * [`get_task_queues`](#get_task_queues)
    * [`get_tasks_by_task_group`](#get_tasks_by_task_group)
    * [`is_task_blocked`](#is_task_blocked)
    * [`is_task_group_active`](#is_task_group_active)
@@ -109,8 +109,8 @@
    * [`schedule_task`](#schedule_task)
    * [`update_queue_artifact`](#update_queue_artifact)
    * [`update_queue_provisioner`](#update_queue_provisioner)
-   * [`update_queue_worker`](#update_queue_worker)
-   * [`update_queue_worker_type`](#update_queue_worker_type)
+   * [`update_queue_worker_tqid`](#update_queue_worker_tqid)
+   * [`update_task_queue`](#update_task_queue)
  * [secrets functions](#secrets)
    * [`delete_secret`](#delete_secret)
    * [`expire_secrets`](#expire_secrets)
@@ -1026,30 +1026,30 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`claim_task`](#claim_task)
 * [`create_queue_artifact`](#create_queue_artifact)
 * [`create_queue_provisioner`](#create_queue_provisioner)
-* [`create_queue_worker`](#create_queue_worker)
-* [`create_queue_worker_type`](#create_queue_worker_type)
+* [`create_queue_worker_tqid`](#create_queue_worker_tqid)
 * [`create_task`](#create_task)
+* [`create_task_queue`](#create_task_queue)
 * [`delete_queue_artifact`](#delete_queue_artifact)
 * [`delete_queue_provisioner`](#delete_queue_provisioner)
 * [`delete_queue_worker_type`](#delete_queue_worker_type)
 * [`ensure_task_group`](#ensure_task_group)
 * [`expire_queue_provisioners`](#expire_queue_provisioners)
-* [`expire_queue_worker_types`](#expire_queue_worker_types)
 * [`expire_queue_workers`](#expire_queue_workers)
 * [`expire_task_dependencies`](#expire_task_dependencies)
 * [`expire_task_groups`](#expire_task_groups)
+* [`expire_task_queues`](#expire_task_queues)
 * [`expire_tasks`](#expire_tasks)
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts`](#get_queue_artifacts)
 * [`get_queue_provisioner`](#get_queue_provisioner)
 * [`get_queue_provisioners`](#get_queue_provisioners)
-* [`get_queue_worker`](#get_queue_worker)
-* [`get_queue_worker_type`](#get_queue_worker_type)
-* [`get_queue_worker_types`](#get_queue_worker_types)
-* [`get_queue_workers`](#get_queue_workers)
+* [`get_queue_worker_tqid`](#get_queue_worker_tqid)
+* [`get_queue_workers_tqid`](#get_queue_workers_tqid)
 * [`get_task`](#get_task)
 * [`get_task_group`](#get_task_group)
+* [`get_task_queue`](#get_task_queue)
+* [`get_task_queues`](#get_task_queues)
 * [`get_tasks_by_task_group`](#get_tasks_by_task_group)
 * [`is_task_blocked`](#is_task_blocked)
 * [`is_task_group_active`](#is_task_group_active)
@@ -1064,8 +1064,8 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`schedule_task`](#schedule_task)
 * [`update_queue_artifact`](#update_queue_artifact)
 * [`update_queue_provisioner`](#update_queue_provisioner)
-* [`update_queue_worker`](#update_queue_worker)
-* [`update_queue_worker_type`](#update_queue_worker_type)
+* [`update_queue_worker_tqid`](#update_queue_worker_tqid)
+* [`update_task_queue`](#update_task_queue)
 
 ### add_task_dependency
 
@@ -1255,12 +1255,11 @@ Returns the newly created artifact.
 
 Create a new queue provisioner.  Raises UNIQUE_VIOLATION if the provisioner already exists.
 
-### create_queue_worker
+### create_queue_worker_tqid
 
 * *Mode*: write
 * *Arguments*:
-  * `provisioner_id_in text`
-  * `worker_type_in text`
+  * `task_queue_id_in text`
   * `worker_group_in text`
   * `worker_id_in text`
   * `quarantine_until_in timestamptz`
@@ -1270,20 +1269,6 @@ Create a new queue provisioner.  Raises UNIQUE_VIOLATION if the provisioner alre
 * *Returns*: `uuid`
 
 Create a new queue worker.  Raises UNIQUE_VIOLATION if the worker already exists.
-
-### create_queue_worker_type
-
-* *Mode*: write
-* *Arguments*:
-  * `provisioner_id_in text`
-  * `worker_type_in text`
-  * `expires_in timestamptz`
-  * `last_date_active_in timestamptz`
-  * `description_in text`
-  * `stability_in text`
-* *Returns*: `uuid`
-
-Create a new queue worker type. Raises UNIQUE_VIOLATION if the worker type already exists.
 
 ### create_task
 
@@ -1311,6 +1296,19 @@ Create a new queue worker type. Raises UNIQUE_VIOLATION if the worker type alrea
 
 Create a new task, without scheduling it, and with empty values
 for the status information.
+
+### create_task_queue
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `expires_in timestamptz`
+  * `last_date_active_in timestamptz`
+  * `description_in text`
+  * `stability_in text`
+* *Returns*: `uuid`
+
+Create a new task queue. Raises UNIQUE_VIOLATION if the task queue already exists.
 
 ### delete_queue_artifact
 
@@ -1371,16 +1369,6 @@ scheduler_id.
 Expire provisioners that come before `expires_in`.
 Returns a count of rows that have been deleted.
 
-### expire_queue_worker_types
-
-* *Mode*: write
-* *Arguments*:
-  * `expires_in timestamptz`
-* *Returns*: `integer`
-
-Expire queue worker types that come before `expires_in`.
-Returns a count of rows that have been deleted.
-
 ### expire_queue_workers
 
 * *Mode*: write
@@ -1409,6 +1397,16 @@ Returns a count of rows that have been deleted.
 * *Returns*: `integer`
 
 Delete task groups with expiration dates before `expires_in`.
+Returns a count of rows that have been deleted.
+
+### expire_task_queues
+
+* *Mode*: write
+* *Arguments*:
+  * `expires_in timestamptz`
+* *Returns*: `integer`
+
+Expire task queues that come before `expires_in`.
 Returns a count of rows that have been deleted.
 
 ### expire_tasks
@@ -1523,18 +1521,16 @@ Get queue provisioners ordered by `provisioner_id`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
-### get_queue_worker
+### get_queue_worker_tqid
 
 * *Mode*: read
 * *Arguments*:
-  * `provisioner_id_in text`
-  * `worker_type_in text`
+  * `task_queue_id_in text`
   * `worker_group_in text`
   * `worker_id_in text`
   * `expires_in timestamptz`
 * *Returns*: `table`
-  * `provisioner_id text`
-  * `worker_type text`
+  * `task_queue_id text`
   * `worker_group text`
   * `worker_id text`
   * `quarantine_until timestamptz`
@@ -1543,61 +1539,19 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `recent_tasks jsonb`
   * `etag uuid`
 
-Get a non-expired queue worker by provisioner_id, worker_type, worker_group, and worker_id.
+Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
 
-### get_queue_worker_type
+### get_queue_workers_tqid
 
 * *Mode*: read
 * *Arguments*:
-  * `provisioner_id_in text`
-  * `worker_type_in text`
-  * `expires_in timestamptz`
-* *Returns*: `table`
-  * `provisioner_id text`
-  * `worker_type text`
-  * `expires timestamptz`
-  * `last_date_active timestamptz`
-  * `description text`
-  * `stability text`
-  * `etag uuid`
-
-Get a non-expired queue worker type by provisioner_id and worker_type.
-
-### get_queue_worker_types
-
-* *Mode*: read
-* *Arguments*:
-  * `provisioner_id_in text`
-  * `worker_type_in text`
+  * `task_queue_id_in text`
   * `expires_in timestamptz`
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
-  * `provisioner_id text`
-  * `worker_type text`
-  * `expires timestamptz`
-  * `last_date_active timestamptz`
-  * `description text`
-  * `stability text`
-  * `etag uuid`
-
-Get queue worker types ordered by `provisioner_id` and `worker_type`.
-If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset page_offset.
-
-### get_queue_workers
-
-* *Mode*: read
-* *Arguments*:
-  * `provisioner_id_in text`
-  * `worker_type_in text`
-  * `expires_in timestamptz`
-  * `page_size_in integer`
-  * `page_offset_in integer`
-* *Returns*: `table`
-  * `provisioner_id text`
-  * `worker_type text`
+  * `task_queue_id text`
   * `worker_group text`
   * `worker_id text`
   * `quarantine_until timestamptz`
@@ -1606,7 +1560,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `recent_tasks jsonb`
   * `etag uuid`
 
-Get non-expired queue workers ordered by provisioner_id, worker_type, worker_group, and worker_id.
+Get non-expired queue workers ordered by task_queue_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
@@ -1653,6 +1607,42 @@ Get all properties of a task.  Note that all properties but `runs`,
   * `  expires timestamptz `
 
 Get a task group.
+
+### get_task_queue
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `expires_in timestamptz`
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `expires timestamptz`
+  * `last_date_active timestamptz`
+  * `description text`
+  * `stability text`
+  * `etag uuid`
+
+Get a non-expired task queue by task_queue_id.
+
+### get_task_queues
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `expires_in timestamptz`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `expires timestamptz`
+  * `last_date_active timestamptz`
+  * `description text`
+  * `stability text`
+  * `etag uuid`
+
+Get task queues ordered by `task_queue_id`.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
 
 ### get_tasks_by_task_group
 
@@ -1869,20 +1859,18 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
 Update a queue provisioner's expires, last_date_active, description, stability, and actions.
 All parameters must be supplied.
 
-### update_queue_worker
+### update_queue_worker_tqid
 
 * *Mode*: write
 * *Arguments*:
-  * `provisioner_id_in text`
-  * `worker_type_in text`
+  * `task_queue_id_in text`
   * `worker_group_in text`
   * `worker_id_in text`
   * `quarantine_until_in timestamptz`
   * `expires_in timestamptz`
   * `recent_tasks_in jsonb`
 * *Returns*: `table`
-  * `provisioner_id text`
-  * `worker_type text`
+  * `task_queue_id text`
   * `worker_group text`
   * `worker_id text`
   * `quarantine_until timestamptz`
@@ -1894,27 +1882,37 @@ All parameters must be supplied.
 Update a queue worker's quarantine_until, expires, and recent_tasks.
 All parameters must be supplied.
 
-### update_queue_worker_type
+### update_task_queue
 
 * *Mode*: write
 * *Arguments*:
-  * `provisioner_id_in text`
-  * `worker_type_in text`
+  * `task_queue_id_in text`
   * `expires_in timestamptz`
   * `last_date_active_in timestamptz`
   * `description_in text`
   * `stability_in text`
 * *Returns*: `table`
-  * `provisioner_id text`
-  * `worker_type text`
+  * `task_queue_id text`
   * `expires timestamptz`
   * `last_date_active timestamptz`
   * `description text`
   * `stability text`
   * `etag uuid`
 
-Update a queue worker type's expires, last_date_active, description, and stability.
+Update a task queue's expires, last_date_active, description, and stability.
 All parameters must be supplied.
+
+### deprecated methods
+
+* `create_queue_worker(provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, first_claim_in timestamptz, recent_tasks_in jsonb)` (compatibility guaranteed until v39.0.0)
+* `create_queue_worker_type(provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text)` (compatibility guaranteed until v39.0.0)
+* `expire_queue_worker_types(expires_in timestamptz)` (compatibility guaranteed until v39.0.0)
+* `get_queue_worker(provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v39.0.0)
+* `get_queue_worker_type(provisioner_id_in text, worker_type_in text, expires_in timestamptz)` (compatibility guaranteed until v39.0.0)
+* `get_queue_worker_types(provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v39.0.0)
+* `get_queue_workers(provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v39.0.0)
+* `update_queue_worker(provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, recent_tasks_in jsonb)` (compatibility guaranteed until v39.0.0)
+* `update_queue_worker_type(provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text)` (compatibility guaranteed until v39.0.0)
 
 ## secrets
 

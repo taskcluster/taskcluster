@@ -904,9 +904,8 @@ suite(testing.suiteName(), function() {
     const expires = taskcluster.fromNow('2 hours');
     const firstClaim = taskcluster.fromNow('0 hours');
     const create = async (db, options = {}) => {
-      await db.fns.create_queue_worker(
-        options.provisionerId || 'prov',
-        options.workerType || 'wt',
+      await db.fns.create_queue_worker_tqid(
+        options.taskQueueId || 'prov/wt',
         options.workerGroup || 'wg',
         options.workerId || 'wi',
         options.quarantineUntil || quarantineUntil,
@@ -919,15 +918,14 @@ suite(testing.suiteName(), function() {
     };
 
     helper.dbTest('no such queue worker', async function(db) {
-      const res = await db.fns.get_queue_worker('prov', 'wt', 'wg', 'wi', new Date());
+      const res = await db.fns.get_queue_worker_tqid('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('create_queue_worker / get_queue_worker', async function(db) {
+    helper.dbTest('create_queue_worker_tqid / get_queue_worker_tqid', async function(db) {
       await create(db);
-      const res = await db.fns.get_queue_worker('prov', 'wt', 'wg', 'wi', new Date());
-      assert.equal(res[0].provisioner_id, 'prov');
-      assert.equal(res[0].worker_type, 'wt');
+      const res = await db.fns.get_queue_worker_tqid('prov/wt', 'wg', 'wi', new Date());
+      assert.equal(res[0].task_queue_id, 'prov/wt');
       assert.equal(res[0].worker_group, 'wg');
       assert.deepEqual(res[0].quarantine_until, quarantineUntil);
       assert.deepEqual(res[0].expires, expires);
@@ -935,65 +933,65 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res[0].recent_tasks, [{ recent: "task" }]);
     });
 
-    helper.dbTest('get_queue_worker doesn\'t return expired workers', async function(db) {
+    helper.dbTest('get_queue_worker_tqid doesn\'t return expired workers', async function(db) {
       await create(db, { expires: taskcluster.fromNow('-2 hours') });
-      const res = await db.fns.get_queue_worker('prov', 'wt', 'wg', 'wi', new Date());
+      const res = await db.fns.get_queue_worker_tqid('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_worker returns expired quarantined workers', async function(db) {
+    helper.dbTest('get_queue_worker_tqid returns expired quarantined workers', async function(db) {
       await create(db, {
         expires: taskcluster.fromNow('-2 hours'),
         quarantineUntil: taskcluster.fromNow('2 hours'),
       });
-      const res = await db.fns.get_queue_worker('prov', 'wt', 'wg', 'wi', new Date());
+      const res = await db.fns.get_queue_worker_tqid('prov/wt', 'wg', 'wi', new Date());
       assert.equal(res.length, 1);
     });
 
-    helper.dbTest('get_queue_workers empty', async function(db) {
-      const res = await db.fns.get_queue_workers(null, null, null, null, null);
+    helper.dbTest('get_queue_workers_tqid empty', async function(db) {
+      const res = await db.fns.get_queue_workers_tqid(null, null, null, null);
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_workers null options', async function(db) {
+    helper.dbTest('get_queue_workers_tqid null options', async function(db) {
       await create(db);
-      const res = await db.fns.get_queue_workers(null, null, null, null, null);
+      const res = await db.fns.get_queue_workers_tqid(null, null, null, null);
       assert.equal(res.length, 1);
     });
 
-    helper.dbTest('get_queue_workers doesn\'t return expired workers', async function(db) {
+    helper.dbTest('get_queue_workers_tqid doesn\'t return expired workers', async function(db) {
       await create(db, { expires: taskcluster.fromNow('-2 hours') });
-      const res = await db.fns.get_queue_workers(new Date(), null, null, null, null);
+      const res = await db.fns.get_queue_workers_tqid(new Date(), null, null, null);
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_workers returns expired quarantined workers', async function(db) {
+    helper.dbTest('get_queue_workers_tqid returns expired quarantined workers', async function(db) {
       await create(db, {
         expires: taskcluster.fromNow('-2 hours'),
         quarantineUntil: taskcluster.fromNow('2 hours'),
       });
-      const res = await db.fns.get_queue_workers(new Date(), null, null, null, null);
+      const res = await db.fns.get_queue_workers_tqid(new Date(), null, null, null);
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_workers full results', async function(db) {
+    helper.dbTest('get_queue_workers_tqid full results', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, { workerId: `w/${i}` });
+        await create(db, { taskQueueId: `prov/w/${i}` });
       }
-      const res = await db.fns.get_queue_workers(null, null, null, null, null);
+      const res = await db.fns.get_queue_workers_tqid(null, null, null, null);
       assert.equal(res.length, 10);
-      assert.equal(res[3].worker_id, 'w/3');
-      assert.equal(res[4].worker_id, 'w/4');
-      assert.equal(res[5].worker_id, 'w/5');
+      assert.equal(res[3].task_queue_id, 'prov/w/3');
+      assert.equal(res[4].task_queue_id, 'prov/w/4');
+      assert.equal(res[5].task_queue_id, 'prov/w/5');
     });
 
-    helper.dbTest('get_queue_workers with pagination', async function(db) {
+    helper.dbTest('get_queue_workers_tqid with pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, { workerId: `w/${i}` });
+        await create(db, { taskQueueId: `prov/w/${i}` });
       }
       let results = [];
       while (true) {
-        const res = await db.fns.get_queue_workers(null, null, null, 2, results.length);
+        const res = await db.fns.get_queue_workers_tqid(null, null, 2, results.length);
         if (res.length === 0) {
           break;
         }
@@ -1001,16 +999,15 @@ suite(testing.suiteName(), function() {
       }
 
       assert.equal(results.length, 10);
-      assert.equal(results[3].worker_id, 'w/3');
-      assert.equal(results[4].worker_id, 'w/4');
-      assert.equal(results[5].worker_id, 'w/5');
+      assert.equal(results[3].task_queue_id, 'prov/w/3');
+      assert.equal(results[4].task_queue_id, 'prov/w/4');
+      assert.equal(results[5].task_queue_id, 'prov/w/5');
     });
 
-    helper.dbTest('update_queue_worker', async function(db) {
+    helper.dbTest('update_queue_worker_tqid', async function(db) {
       await create(db);
-      const res = await db.fns.update_queue_worker(
-        'prov',
-        'wt',
+      const res = await db.fns.update_queue_worker_tqid(
+        'prov/wt',
         'wg',
         'wi',
         new Date(0),
@@ -1026,7 +1023,7 @@ suite(testing.suiteName(), function() {
       await create(db, { expires: taskcluster.fromNow('-2 hours') });
       let res = await db.fns.expire_queue_workers(new Date());
       assert.equal(res[0].expire_queue_workers, 1);
-      res = await db.fns.get_queue_workers(null, null, null, null, null);
+      res = await db.fns.get_queue_workers_tqid(null, null, null, null);
       assert.equal(res.length, 0);
     });
 
@@ -1037,24 +1034,23 @@ suite(testing.suiteName(), function() {
       });
       let res = await db.fns.expire_queue_workers(new Date());
       assert.equal(res[0].expire_queue_workers, 0);
-      res = await db.fns.get_queue_workers(null, null, null, null, null);
+      res = await db.fns.get_queue_workers_tqid(null, null, null, null);
       assert.equal(res.length, 1);
     });
   });
 
-  suite('queue_worker_types', function() {
+  suite('task_queues', function() {
     setup('reset tables', async function() {
       await helper.withDbClient(async client => {
-        await client.query('truncate queue_worker_types');
+        await client.query('truncate task_queues');
       });
     });
 
     const expires = taskcluster.fromNow('2 hours');
     const lastDateActive = taskcluster.fromNow('0 hours');
     const create = async (db, options = {}) => {
-      await db.fns.create_queue_worker_type(
-        options.provisionerId || 'prov',
-        options.workerType || 'wt',
+      await db.fns.create_task_queue(
+        options.taskQueueId || 'prov/wt',
         options.expires || expires,
         options.lastDateActive || lastDateActive,
         options.description || 'desc',
@@ -1062,78 +1058,78 @@ suite(testing.suiteName(), function() {
       );
     };
 
-    helper.dbTest('no such queue worker type', async function(db) {
-      const res = await db.fns.get_queue_worker_type('prov', 'wt', new Date());
+    helper.dbTest('no such task queue', async function(db) {
+      const res = await db.fns.get_task_queue('prov/wt', new Date());
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('create_queue_worker_type / get_queue_worker_types', async function(db) {
+    helper.dbTest('create_task_queue / get_task_queues', async function(db) {
       await create(db);
-      const res = await db.fns.get_queue_worker_types('prov', 'wt', new Date(), null, null);
-      assert.equal(res[0].provisioner_id, 'prov');
-      assert.equal(res[0].worker_type, 'wt');
+      const res = await db.fns.get_task_queues('prov/wt', new Date(), null, null);
+      assert.equal(res[0].task_queue_id, 'prov/wt');
       assert.deepEqual(res[0].expires, expires);
       assert.deepEqual(res[0].last_date_active, lastDateActive);
       assert.deepEqual(res[0].description, 'desc');
     });
 
-    helper.dbTest('get_queue_worker_types doesn\'t return expired worker types', async function(db) {
+    helper.dbTest('get_task_queues doesn\'t return expired task_queues', async function(db) {
       await create(db, { expires: taskcluster.fromNow('-2 hours') });
-      const res = await db.fns.get_queue_worker_types('prov', 'wt', new Date(), null, null);
+      const res = await db.fns.get_task_queues('prov/wt', new Date(), null, null);
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_worker_types empty', async function(db) {
-      const res = await db.fns.get_queue_worker_types(null, null, null, null, null);
+    helper.dbTest('get_task_queues empty', async function(db) {
+      const res = await db.fns.get_task_queues(null, null, null, null);
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_worker_types null options', async function(db) {
+    helper.dbTest('get_task_queues null options', async function(db) {
       await create(db);
-      const res = await db.fns.get_queue_worker_types(null, null, null, null, null);
+      const res = await db.fns.get_task_queues(null, null, null, null);
       assert.equal(res.length, 1);
     });
 
+    /* TODO Review this test
     helper.dbTest('get_queue_worker_types doesn\'t return expired worker types', async function(db) {
       await create(db, { expires: taskcluster.fromNow('-2 hours') });
       const res = await db.fns.get_queue_worker_types(new Date(), null, null, null, null);
       assert.deepEqual(res, []);
     });
+    */
 
-    helper.dbTest('get_queue_worker_types full results', async function(db) {
+    helper.dbTest('get_task_queues full results', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, { workerType: `wt/${i}` });
+        await create(db, { taskQueueId: `prov/wt/${i}` });
       }
-      const res = await db.fns.get_queue_worker_types(null, null, null, null, null);
+      const res = await db.fns.get_task_queues(null, null, null, null);
       assert.equal(res.length, 10);
-      assert.equal(res[3].worker_type, 'wt/3');
-      assert.equal(res[4].worker_type, 'wt/4');
-      assert.equal(res[5].worker_type, 'wt/5');
+      assert.equal(res[3].task_queue_id, 'prov/wt/3');
+      assert.equal(res[4].task_queue_id, 'prov/wt/4');
+      assert.equal(res[5].task_queue_id, 'prov/wt/5');
     });
 
-    helper.dbTest('get_queue_worker_types with pagination', async function(db) {
+    helper.dbTest('get_task_queues with pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, { workerType: `wt/${i}` });
+        await create(db, { taskQueueId: `prov/wt/${i}` });
       }
       let result = [];
       while (true) {
-        const res = await db.fns.get_queue_worker_types(null, null, null, 2, result.length);
+        const res = await db.fns.get_task_queues(null, null, 2, result.length);
         result = result.concat(res);
         if (res.length === 0) {
           break;
         }
       }
       assert.equal(result.length, 10);
-      assert.equal(result[3].worker_type, 'wt/3');
-      assert.equal(result[4].worker_type, 'wt/4');
-      assert.equal(result[5].worker_type, 'wt/5');
+      assert.equal(result[3].task_queue_id, 'prov/wt/3');
+      assert.equal(result[4].task_queue_id, 'prov/wt/4');
+      assert.equal(result[5].task_queue_id, 'prov/wt/5');
     });
 
-    helper.dbTest('update_queue_worker_type', async function(db) {
+    helper.dbTest('update_task_queue', async function(db) {
       await create(db);
-      const res = await db.fns.update_queue_worker_type(
-        'prov',
-        'wt',
+      const res = await db.fns.update_task_queue(
+        'prov/wt',
         new Date(0),
         new Date(1),
         'new_desc',
@@ -1144,11 +1140,11 @@ suite(testing.suiteName(), function() {
       assert.equal(res[0].description, 'new_desc');
     });
 
-    helper.dbTest('expire_queue_worker_types deletes expired worker types', async function(db) {
+    helper.dbTest('expire_task_queues deletes expired worker types', async function(db) {
       await create(db, { expires: taskcluster.fromNow('-2 hours') });
-      let res = await db.fns.expire_queue_worker_types(new Date());
-      assert.equal(res[0].expire_queue_worker_types, 1);
-      res = await db.fns.get_queue_worker_types(null, null, null, null, null);
+      let res = await db.fns.expire_task_queues(new Date());
+      assert.equal(res[0].expire_task_queues, 1);
+      res = await db.fns.get_task_queues(null, null, null, null);
       assert.equal(res.length, 0);
     });
   });
