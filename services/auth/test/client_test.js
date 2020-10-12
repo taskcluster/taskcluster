@@ -21,7 +21,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('auth.client (no credentials)', async () => {
-    await helper.apiClient.client('static/taskcluster/root');
+    await helper.apiClient.createRole(
+      'anonymous',
+      {
+        description: 'global scopes for arbitrary requests',
+        scopes: [
+          'auth:get-client:static/taskcluster/root',
+        ],
+      },
+    );
     await (new helper.AuthClient({
       rootUrl: helper.rootUrl,
     })).client('static/taskcluster/root');
@@ -425,13 +433,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         clientId: 'static/taskcluster/root',
         accessToken: helper.rootAccessToken,
       },
-      authorizedScopes: ['myapi:a', 'myapi:b'],
+      authorizedScopes: ['myapi:a', 'myapi:b', 'auth:current-scopes'],
     });
     assumeScopesetsEqual(await auth.currentScopes(),
-      { scopes: ['myapi:a', 'myapi:b'] });
+      { scopes: ['assume:anonymous', 'auth:current-scopes', 'myapi:a', 'myapi:b'] });
   });
 
   test('auth.currentScopes with temp credentials', async () => {
+    await helper.apiClient.createRole(
+      'anonymous',
+      {
+        description: 'global scopes for arbitrary requests',
+        scopes: [
+          'auth:current-scopes',
+        ],
+      },
+    );
     let auth = new helper.AuthClient({
       rootUrl: helper.rootUrl,
       credentials: taskcluster.createTemporaryCredentials({
@@ -444,24 +461,33 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       }),
     });
     assumeScopesetsEqual(await auth.currentScopes(),
-      { scopes: ['myapi:x', 'myapi:y'] });
+      { scopes: ['assume:anonymous', 'auth:current-scopes', 'myapi:x', 'myapi:y'] });
   });
 
   test('auth.currentScopes with temp credentials and authorizedScopes', async () => {
+    await helper.apiClient.createRole(
+      'anonymous',
+      {
+        description: 'global scopes for arbitrary requests',
+        scopes: [
+          'auth:current-scopes',
+        ],
+      },
+    );
     let auth = new helper.AuthClient({
       rootUrl: helper.rootUrl,
       credentials: taskcluster.createTemporaryCredentials({
         expiry: taskcluster.fromNow('10 min'),
-        scopes: ['myapi:x', 'myapi:y'],
+        scopes: ['myapi:x', 'myapi:y', 'auth:current-scopes'],
         credentials: {
           clientId: 'static/taskcluster/root',
           accessToken: helper.rootAccessToken,
         },
       }),
-      authorizedScopes: ['myapi:x'],
+      authorizedScopes: ['myapi:x', 'auth:current-scopes'],
     });
     assumeScopesetsEqual(await auth.currentScopes(),
-      { scopes: ['myapi:x'] });
+      { scopes: ['assume:anonymous', 'myapi:x', 'auth:current-scopes'] });
   });
 
   suite('auth.listClients', function() {

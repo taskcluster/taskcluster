@@ -161,7 +161,7 @@ testServiceBuilder.declare({
   method: 'get',
   route: '/resource',
   name: 'resource',
-  scopes: { AllOf: ['myapi:resource'] },
+  scopes: 'myapi:resource',
   title: 'Get Resource',
   category: 'Auth Service',
   description: '...',
