@@ -66,8 +66,6 @@ suite(testing.suiteName(), function() {
     scopes: {
       if: 'private',
       then: 'aa',
-      // TODO REMOVE THIS ELSE !!!!
-      else: { AllOf: [] },
     },
   }, async function(req, res) {
     await req.authorize({ private: req.query.private === '1' });
@@ -108,31 +106,35 @@ suite(testing.suiteName(), function() {
     });
     await request.get(url).set('Authorization', header);
 
-    assert.equal(helper.monitorManager.messages.length, 1);
-    assert(helper.monitorManager.messages[0].Fields.duration > 0); // it exists..
-    delete helper.monitorManager.messages[0].Fields.duration;
-    assert(new Date(helper.monitorManager.messages[0].Fields.expires) > new Date());
-    delete helper.monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(helper.monitorManager.messages[0], {
-      Type: 'monitor.apiMethod',
-      Severity: LEVELS.notice,
-      Fields: {
-        name: 'requireSomeScopes',
-        apiVersion: 'v1',
-        clientId: 'client-with-aa-bb-dd',
-        // duration handled above
-        hasAuthed: true,
-        method: 'GET',
-        public: false,
-        query: {},
-        resource: '/require-some-scopes',
-        satisfyingScopes: ['aa', 'bb', 'dd'],
-        sourceIp: '::ffff:127.0.0.1',
-        statusCode: 200,
-        v: 1,
-      },
-      Logger: 'taskcluster.lib-api',
-    });
+    // We poll because the logging happens _after_ the response is sent
+    // so there's nothing to await
+    await testing.poll(async () => {
+      assert.equal(helper.monitorManager.messages.length, 1);
+      assert(helper.monitorManager.messages[0].Fields.duration > 0); // it exists..
+      delete helper.monitorManager.messages[0].Fields.duration;
+      assert(new Date(helper.monitorManager.messages[0].Fields.expires) > new Date());
+      delete helper.monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(helper.monitorManager.messages[0], {
+        Type: 'monitor.apiMethod',
+        Severity: LEVELS.notice,
+        Fields: {
+          name: 'requireSomeScopes',
+          apiVersion: 'v1',
+          clientId: 'client-with-aa-bb-dd',
+          // duration handled above
+          hasAuthed: true,
+          method: 'GET',
+          public: false,
+          query: {},
+          resource: '/require-some-scopes',
+          satisfyingScopes: ['aa', 'bb', 'dd'],
+          sourceIp: '::ffff:127.0.0.1',
+          statusCode: 200,
+          v: 1,
+        },
+        Logger: 'taskcluster.lib-api',
+      });
+    }, 3, 100);
   });
 
   test('scope-less api method is logged', async function() {
@@ -142,28 +144,32 @@ suite(testing.suiteName(), function() {
     });
     await request.get(url).set('Authorization', header);
 
-    assert.equal(helper.monitorManager.messages.length, 1);
-    delete helper.monitorManager.messages[0].Fields.duration;
-    delete helper.monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(helper.monitorManager.messages[0], {
-      Type: 'monitor.apiMethod',
-      Severity: LEVELS.notice,
-      Fields: {
-        name: 'requireNoScopes',
-        apiVersion: 'v1',
-        clientId: '',
-        hasAuthed: false,
-        method: 'GET',
-        public: true,
-        query: {},
-        resource: '/require-no-scopes',
-        satisfyingScopes: [],
-        sourceIp: '::ffff:127.0.0.1',
-        statusCode: 200,
-        v: 1,
-      },
-      Logger: 'taskcluster.lib-api',
-    });
+    // We poll because the logging happens _after_ the response is sent
+    // so there's nothing to await
+    await testing.poll(async () => {
+      assert.equal(helper.monitorManager.messages.length, 1);
+      delete helper.monitorManager.messages[0].Fields.duration;
+      delete helper.monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(helper.monitorManager.messages[0], {
+        Type: 'monitor.apiMethod',
+        Severity: LEVELS.notice,
+        Fields: {
+          name: 'requireNoScopes',
+          apiVersion: 'v1',
+          clientId: '',
+          hasAuthed: false,
+          method: 'GET',
+          public: true,
+          query: {},
+          resource: '/require-no-scopes',
+          satisfyingScopes: [],
+          sourceIp: '::ffff:127.0.0.1',
+          statusCode: 200,
+          v: 1,
+        },
+        Logger: 'taskcluster.lib-api',
+      });
+    }, 3, 100);
   });
 
   test('optionally scope-less api method is logged without scopes', async function() {
@@ -173,30 +179,32 @@ suite(testing.suiteName(), function() {
     });
     await request.get(url).set('Authorization', header);
 
-    assert.equal(helper.monitorManager.messages.length, 1);
-    delete helper.monitorManager.messages[0].Fields.duration;
-    delete helper.monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(helper.monitorManager.messages[0], {
-      Type: 'monitor.apiMethod',
-      Severity: LEVELS.notice,
-      Fields: {
-        name: 'sometimesRequireNoScopes',
-        apiVersion: 'v1',
-        clientId: 'client-with-aa-bb-dd',
-        hasAuthed: true,
-        method: 'GET',
-        public: false,
-        query: {
-          private: "0",
+    await testing.poll(async () => {
+      assert.equal(helper.monitorManager.messages.length, 1);
+      delete helper.monitorManager.messages[0].Fields.duration;
+      delete helper.monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(helper.monitorManager.messages[0], {
+        Type: 'monitor.apiMethod',
+        Severity: LEVELS.notice,
+        Fields: {
+          name: 'sometimesRequireNoScopes',
+          apiVersion: 'v1',
+          clientId: 'client-with-aa-bb-dd',
+          hasAuthed: true,
+          method: 'GET',
+          public: false,
+          query: {
+            private: "0",
+          },
+          resource: '/sometimes-require-no-scopes',
+          satisfyingScopes: [],
+          sourceIp: '::ffff:127.0.0.1',
+          statusCode: 200,
+          v: 1,
         },
-        resource: '/sometimes-require-no-scopes',
-        satisfyingScopes: [],
-        sourceIp: '::ffff:127.0.0.1',
-        statusCode: 200,
-        v: 1,
-      },
-      Logger: 'taskcluster.lib-api',
-    });
+        Logger: 'taskcluster.lib-api',
+      });
+    }, 3, 100);
   });
 
   test('optionally scope-less api method is logged with scopes', async function() {
@@ -206,30 +214,32 @@ suite(testing.suiteName(), function() {
     });
     await request.get(url).set('Authorization', header);
 
-    assert.equal(helper.monitorManager.messages.length, 1);
-    delete helper.monitorManager.messages[0].Fields.duration;
-    delete helper.monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(helper.monitorManager.messages[0], {
-      Type: 'monitor.apiMethod',
-      Severity: LEVELS.notice,
-      Fields: {
-        name: 'sometimesRequireNoScopes',
-        apiVersion: 'v1',
-        clientId: 'client-with-aa-bb-dd',
-        hasAuthed: true,
-        method: 'GET',
-        public: false,
-        query: {
-          private: 1,
+    await testing.poll(async () => {
+      assert.equal(helper.monitorManager.messages.length, 1);
+      delete helper.monitorManager.messages[0].Fields.duration;
+      delete helper.monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(helper.monitorManager.messages[0], {
+        Type: 'monitor.apiMethod',
+        Severity: LEVELS.notice,
+        Fields: {
+          name: 'sometimesRequireNoScopes',
+          apiVersion: 'v1',
+          clientId: 'client-with-aa-bb-dd',
+          hasAuthed: true,
+          method: 'GET',
+          public: false,
+          query: {
+            private: 1,
+          },
+          resource: '/sometimes-require-no-scopes',
+          satisfyingScopes: ['aa'],
+          sourceIp: '::ffff:127.0.0.1',
+          statusCode: 200,
+          v: 1,
         },
-        resource: '/sometimes-require-no-scopes',
-        satisfyingScopes: ['aa'],
-        sourceIp: '::ffff:127.0.0.1',
-        statusCode: 200,
-        v: 1,
-      },
-      Logger: 'taskcluster.lib-api',
-    });
+        Logger: 'taskcluster.lib-api',
+      });
+    }, 3, 100);
   });
 
   test('unauthorized api method is logged', async function() {
@@ -245,59 +255,63 @@ suite(testing.suiteName(), function() {
       }
     }
 
-    assert.equal(helper.monitorManager.messages.length, 1);
-    delete helper.monitorManager.messages[0].Fields.duration;
-    delete helper.monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(helper.monitorManager.messages[0], {
-      Type: 'monitor.apiMethod',
-      Severity: LEVELS.notice,
-      Fields: {
-        name: 'requireExtraScopes',
-        apiVersion: 'v1',
-        clientId: 'client-with-aa-bb-dd',
-        hasAuthed: true,
-        method: 'GET',
-        public: false,
-        query: {},
-        resource: '/require-extra-scopes',
-        satisfyingScopes: [],
-        sourceIp: '::ffff:127.0.0.1',
-        statusCode: 403,
-        v: 1,
-      },
-      Logger: 'taskcluster.lib-api',
-    });
+    await testing.poll(async () => {
+      assert.equal(helper.monitorManager.messages.length, 1);
+      delete helper.monitorManager.messages[0].Fields.duration;
+      delete helper.monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(helper.monitorManager.messages[0], {
+        Type: 'monitor.apiMethod',
+        Severity: LEVELS.notice,
+        Fields: {
+          name: 'requireExtraScopes',
+          apiVersion: 'v1',
+          clientId: 'client-with-aa-bb-dd',
+          hasAuthed: true,
+          method: 'GET',
+          public: false,
+          query: {},
+          resource: '/require-extra-scopes',
+          satisfyingScopes: [],
+          sourceIp: '::ffff:127.0.0.1',
+          statusCode: 403,
+          v: 1,
+        },
+        Logger: 'taskcluster.lib-api',
+      });
+    }, 3, 100);
   });
 
   test('bewit is elided', async function() {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/bewitiful?bewit=Y2xpZW50LXdpdGgtYWEtYmItZGRcMTYwMjE3NTYxM1xyVUErZWE1TWxUaWlZR1Vaak5KbE5pTFhnNnhCbXdhRDFxbnozQU1HZ2hJPVw&foo=abc');
     await request.get(url);
 
-    assert.equal(helper.monitorManager.messages.length, 1);
-    delete helper.monitorManager.messages[0].Fields.duration;
-    delete helper.monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(helper.monitorManager.messages[0], {
-      Type: 'monitor.apiMethod',
-      Severity: LEVELS.notice,
-      Fields: {
-        name: 'bewitiful',
-        apiVersion: 'v1',
-        clientId: '',
-        hasAuthed: false,
-        method: 'GET',
-        public: true,
-        query: {
-          foo: 'abc',
-          bewit: '...',
+    await testing.poll(async () => {
+      assert.equal(helper.monitorManager.messages.length, 1);
+      delete helper.monitorManager.messages[0].Fields.duration;
+      delete helper.monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(helper.monitorManager.messages[0], {
+        Type: 'monitor.apiMethod',
+        Severity: LEVELS.notice,
+        Fields: {
+          name: 'bewitiful',
+          apiVersion: 'v1',
+          clientId: '',
+          hasAuthed: false,
+          method: 'GET',
+          public: true,
+          query: {
+            foo: 'abc',
+            bewit: '...',
+          },
+          resource: '/bewitiful',
+          satisfyingScopes: [],
+          sourceIp: '::ffff:127.0.0.1',
+          statusCode: 200,
+          v: 1,
         },
-        resource: '/bewitiful',
-        satisfyingScopes: [],
-        sourceIp: '::ffff:127.0.0.1',
-        statusCode: 200,
-        v: 1,
-      },
-      Logger: 'taskcluster.lib-api',
-    });
+        Logger: 'taskcluster.lib-api',
+      });
+    }, 3, 100);
   });
 
   test('unknown query params are not logged', async function() {
@@ -313,28 +327,30 @@ suite(testing.suiteName(), function() {
       }
     }
 
-    assert.equal(helper.monitorManager.messages.length, 1);
-    delete helper.monitorManager.messages[0].Fields.duration;
-    delete helper.monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(helper.monitorManager.messages[0], {
-      Type: 'monitor.apiMethod',
-      Severity: LEVELS.notice,
-      Fields: {
-        name: 'bewitiful',
-        apiVersion: 'v1',
-        clientId: '',
-        hasAuthed: false,
-        method: 'GET',
-        public: true,
-        query: {},
-        resource: '/bewitiful',
-        satisfyingScopes: [],
-        sourceIp: '::ffff:127.0.0.1',
-        statusCode: 400,
-        v: 1,
-      },
-      Logger: 'taskcluster.lib-api',
-    });
+    await testing.poll(async () => {
+      assert.equal(helper.monitorManager.messages.length, 1);
+      delete helper.monitorManager.messages[0].Fields.duration;
+      delete helper.monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(helper.monitorManager.messages[0], {
+        Type: 'monitor.apiMethod',
+        Severity: LEVELS.notice,
+        Fields: {
+          name: 'bewitiful',
+          apiVersion: 'v1',
+          clientId: '',
+          hasAuthed: false,
+          method: 'GET',
+          public: true,
+          query: {},
+          resource: '/bewitiful',
+          satisfyingScopes: [],
+          sourceIp: '::ffff:127.0.0.1',
+          statusCode: 400,
+          v: 1,
+        },
+        Logger: 'taskcluster.lib-api',
+      });
+    }, 3, 100);
   });
 
   test('invalid query params are not logged', async function() {
@@ -350,27 +366,29 @@ suite(testing.suiteName(), function() {
       }
     }
 
-    assert.equal(helper.monitorManager.messages.length, 1);
-    delete helper.monitorManager.messages[0].Fields.duration;
-    delete helper.monitorManager.messages[0].Fields.expires;
-    assert.deepEqual(helper.monitorManager.messages[0], {
-      Type: 'monitor.apiMethod',
-      Severity: LEVELS.notice,
-      Fields: {
-        name: 'bewitiful',
-        apiVersion: 'v1',
-        clientId: '',
-        hasAuthed: false,
-        method: 'GET',
-        public: true,
-        query: {},
-        resource: '/bewitiful',
-        satisfyingScopes: [],
-        sourceIp: '::ffff:127.0.0.1',
-        statusCode: 400,
-        v: 1,
-      },
-      Logger: 'taskcluster.lib-api',
-    });
+    await testing.poll(async () => {
+      assert.equal(helper.monitorManager.messages.length, 1);
+      delete helper.monitorManager.messages[0].Fields.duration;
+      delete helper.monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(helper.monitorManager.messages[0], {
+        Type: 'monitor.apiMethod',
+        Severity: LEVELS.notice,
+        Fields: {
+          name: 'bewitiful',
+          apiVersion: 'v1',
+          clientId: '',
+          hasAuthed: false,
+          method: 'GET',
+          public: true,
+          query: {},
+          resource: '/bewitiful',
+          satisfyingScopes: [],
+          sourceIp: '::ffff:127.0.0.1',
+          statusCode: 400,
+          v: 1,
+        },
+        Logger: 'taskcluster.lib-api',
+      });
+    }, 3, 100);
   });
 });
