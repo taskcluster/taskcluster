@@ -6775,9 +6775,9 @@ taskcluster-lib-urls@^12.0.0:
   uid ""
 
 temporary@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/temporary/-/temporary-1.0.1.tgz#465690b78bcd9b47fbd6e3b555b51e86cbf0b5cf"
-  integrity sha512-HiDptG49o7ALYzcUfXJpPhoqerCMrI1uWestEkxuonBqKlPw7xOCUi11rXxAXJzQqAOgPPjWVNlX085TwUfKNQ==
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/temporary/-/temporary-1.1.0.tgz#76df5cab744623dd9c0b8b71f1c5a7dd5602bf9e"
+  integrity sha512-geB3U/E75RLr++koy9EBw4mZ1BCfxg72SYJQdQld1iRvka+fyijfbiXrVpWQB9bJKNsgAB4lIHOeJtVSvyiJiQ==
 
 test-exclude@^5.2.3:
   version "5.2.3"
