@@ -56,7 +56,6 @@ hooks:
   encrypted_next_task_id: jsonb not null
   next_scheduled_date: timestamp with time zone not null
   trigger_schema: jsonb not null
-  etag: uuid not null
 hooks_last_fires:
   hook_group_id: text not null
   hook_id: text not null

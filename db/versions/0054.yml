@@ -1,0 +1,11 @@
+version: 54
+description: Remove unnecessary etag column from the hooks table
+migrationScript: |-
+  begin
+    alter table hooks drop column etag;
+  end
+downgradeScript: |-
+  begin
+    alter table hooks add column etag uuid not null default public.gen_random_uuid();
+  end
+methods: []
