@@ -199,8 +199,7 @@ CREATE TABLE hooks (
     encrypted_trigger_token jsonb NOT NULL,
     encrypted_next_task_id jsonb NOT NULL,
     next_scheduled_date timestamp with time zone NOT NULL,
-    trigger_schema jsonb NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    trigger_schema jsonb NOT NULL
 );
 ALTER TABLE hooks
     ADD CONSTRAINT hooks_pkey PRIMARY KEY (hook_group_id, hook_id);
