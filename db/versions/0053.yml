@@ -1,0 +1,85 @@
+version: 53
+description: Remove unnecessary etag column from the github_builds table
+migrationScript: |-
+  begin
+    alter table github_builds drop column etag;
+  end
+downgradeScript: |-
+  begin
+    alter table github_builds add column etag uuid not null default public.gen_random_uuid();
+  end
+methods:
+  get_github_build:
+    description: |-
+      Get a github build. The returned table will have one or zero rows.
+    mode: read
+    serviceName: github
+    args: task_group_id_in text
+    returns: table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          github_builds.organization,
+          github_builds.repository,
+          github_builds.sha,
+          github_builds.task_group_id,
+          github_builds.state,
+          github_builds.created,
+          github_builds.updated,
+          github_builds.installation_id,
+          github_builds.event_type,
+          github_builds.event_id,
+          public.gen_random_uuid()
+        from github_builds
+        where github_builds.task_group_id = task_group_id_in;
+      end
+  get_github_builds:
+    description: |-
+      Get github builds.
+    mode: read
+    serviceName: github
+    args: page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text
+    returns: table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          github_builds.organization,
+          github_builds.repository,
+          github_builds.sha,
+          github_builds.task_group_id,
+          github_builds.state,
+          github_builds.created,
+          github_builds.updated,
+          github_builds.installation_id,
+          github_builds.event_type,
+          github_builds.event_id,
+          public.gen_random_uuid()
+        from github_builds
+        where
+          (organization_in is null or github_builds.organization = organization_in) and
+          (repository_in is null or github_builds.repository = repository_in) and
+          (sha_in is null or github_builds.sha = sha_in)
+        order by github_builds.updated asc
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  set_github_build_state:
+    description: |-
+      Only update the state of a build and update the `updated` timestamp
+    mode: write
+    serviceName: github
+    args: task_group_id_in text, state_in text
+    returns: void
+    body: |-
+      begin
+        update github_builds
+        set (state, updated) = (
+          state_in,
+          now()
+        ) where github_builds.task_group_id = task_group_id_in;
+        if not found then
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
