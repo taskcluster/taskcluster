@@ -64,7 +64,6 @@ hooks_last_fires:
   task_create_time: timestamp with time zone not null
   result: text not null
   error: text not null
-  etag: uuid not null
 hooks_queues:
   hook_group_id: text not null
   hook_id: text not null
