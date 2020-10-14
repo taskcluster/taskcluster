@@ -522,7 +522,7 @@ Returns the newly created hook.
   * `bindings_in jsonb`
 * *Returns*: `uuid`
 
-Create a new hooks queue.  Raises UNIQUE_VIOLATION if the hook already exists.
+Create a new hooks queue. Raises UNIQUE_VIOLATION if the hook already exists.
 
 ### create_last_fire
 

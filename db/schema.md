@@ -228,8 +228,7 @@ CREATE TABLE hooks_queues (
     hook_group_id text NOT NULL,
     hook_id text NOT NULL,
     queue_name text NOT NULL,
-    bindings jsonb NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    bindings jsonb NOT NULL
 );
 ALTER TABLE hooks_queues
     ADD CONSTRAINT hooks_queues_pkey PRIMARY KEY (hook_group_id, hook_id);

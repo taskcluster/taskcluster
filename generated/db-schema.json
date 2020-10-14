@@ -174,7 +174,6 @@
     },
     "hooks_queues": {
       "bindings": "jsonb not null",
-      "etag": "uuid not null",
       "hook_group_id": "text not null",
       "hook_id": "text not null",
       "queue_name": "text not null"
@@ -5305,6 +5304,50 @@
       },
       "migrationScript": "begin\n  alter table hooks_last_fires drop column etag;\nend",
       "version": 55
+    },
+    {
+      "description": "Remove unnecessary etag column from the hooks_queues table",
+      "downgradeScript": "begin\n  alter table hooks_queues add column etag uuid not null default public.gen_random_uuid();\nend",
+      "methods": {
+        "create_hooks_queue": {
+          "args": "hook_group_id_in text, hook_id_in text, queue_name_in text, bindings_in jsonb",
+          "body": "begin\n  insert\n    into hooks_queues (hook_group_id, hook_id, queue_name, bindings)\n    values (hook_group_id_in, hook_id_in, queue_name_in, bindings_in);\n    return public.gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "Create a new hooks queue. Raises UNIQUE_VIOLATION if the hook already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "hooks"
+        },
+        "delete_hooks_queue": {
+          "args": "hook_group_id_in text, hook_id_in text",
+          "body": "begin\n  delete from hooks_queues\n  where\n    hooks_queues.hook_group_id = hook_group_id_in and\n    hooks_queues.hook_id = hook_id_in;\nend",
+          "deprecated": false,
+          "description": "Delete a hooks queue.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "hooks"
+        },
+        "get_hooks_queues": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    hooks_queues.hook_group_id,\n    hooks_queues.hook_id,\n    hooks_queues.queue_name,\n    hooks_queues.bindings,\n    public.gen_random_uuid()\n  from hooks_queues\n  order by hook_group_id, hook_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get hooks queues ordered by `hook_group_id` and `hook_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "update_hooks_queue_bindings": {
+          "args": "hook_group_id_in text, hook_id_in text, bindings_in jsonb",
+          "body": "begin\n  return query update hooks_queues\n  set\n    bindings = bindings_in\n  where\n    hooks_queues.hook_group_id = hook_group_id_in and\n    hooks_queues.hook_id = hook_id_in\n  returning\n    hooks_queues.hook_group_id,\n    hooks_queues.hook_id,\n    hooks_queues.queue_name,\n    hooks_queues.bindings,\n    public.gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "Update bindings of a hooks queue. If no such queue exists,\nthe return value is an empty set.",
+          "mode": "write",
+          "returns": "table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)",
+          "serviceName": "hooks"
+        }
+      },
+      "migrationScript": "begin\n  alter table hooks_queues drop column etag;\nend",
+      "version": 56
     }
   ]
 }
