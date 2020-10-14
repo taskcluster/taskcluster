@@ -537,7 +537,7 @@ Create a new hooks queue.  Raises UNIQUE_VIOLATION if the hook already exists.
   * `error_in text`
 * *Returns*: `uuid`
 
-Create a new hook last fire.  Raises UNIQUE_VIOLATION if the hook already exists.
+Create a new hook last fire. Raises UNIQUE_VIOLATION if the hook already exists.
 
 ### delete_hook
 

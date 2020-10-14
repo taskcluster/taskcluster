@@ -215,8 +215,7 @@ CREATE TABLE hooks_last_fires (
     task_id text NOT NULL,
     task_create_time timestamp with time zone NOT NULL,
     result text NOT NULL,
-    error text NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    error text NOT NULL
 );
 ALTER TABLE hooks_last_fires
     ADD CONSTRAINT hooks_last_fires_pkey PRIMARY KEY (hook_group_id, hook_id, task_id);

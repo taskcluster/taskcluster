@@ -165,7 +165,6 @@
     },
     "hooks_last_fires": {
       "error": "text not null",
-      "etag": "uuid not null",
       "fired_by": "text not null",
       "hook_group_id": "text not null",
       "hook_id": "text not null",
@@ -5271,6 +5270,41 @@
       },
       "migrationScript": "begin\n  alter table hooks drop column etag;\nend",
       "version": 54
+    },
+    {
+      "description": "Remove unnecessary etag column from the hooks_last_fires table",
+      "downgradeScript": "begin\n  alter table hooks_last_fires add column etag uuid not null default public.gen_random_uuid();\nend",
+      "methods": {
+        "create_last_fire": {
+          "args": "hook_group_id_in text, hook_id_in text, fired_by_in text, task_id_in text, task_create_time_in timestamptz, result_in text, error_in text",
+          "body": "begin\n  insert\n    into hooks_last_fires (hook_group_id, hook_id, fired_by, task_id, task_create_time, result, error)\n    values (hook_group_id_in, hook_id_in, fired_by_in, task_id_in, task_create_time_in, result_in, error_in);\n    return public.gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "Create a new hook last fire. Raises UNIQUE_VIOLATION if the hook already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "hooks"
+        },
+        "get_last_fire": {
+          "args": "hook_group_id_in text, hook_id_in text, task_id_in text",
+          "body": "begin\n  return query\n  select\n    hooks_last_fires.hook_group_id,\n    hooks_last_fires.hook_id,\n    hooks_last_fires.fired_by,\n    hooks_last_fires.task_id,\n    hooks_last_fires.task_create_time,\n    hooks_last_fires.result,\n    hooks_last_fires.error,\n    public.gen_random_uuid()\n  from hooks_last_fires\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in and\n    hooks_last_fires.task_id = task_id_in;\nend",
+          "deprecated": false,
+          "description": "Get a hook last fire.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid)",
+          "serviceName": "hooks"
+        },
+        "get_last_fires": {
+          "args": "hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    hooks_last_fires.hook_group_id,\n    hooks_last_fires.hook_id,\n    hooks_last_fires.fired_by,\n    hooks_last_fires.task_id,\n    hooks_last_fires.task_create_time,\n    hooks_last_fires.result,\n    hooks_last_fires.error,\n    public.gen_random_uuid()\n  from hooks_last_fires\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in\n  order by hook_group_id, hook_id, task_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,\nordered by `hook_group_id`, `hook_id`, and  `worker_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid)",
+          "serviceName": "hooks"
+        }
+      },
+      "migrationScript": "begin\n  alter table hooks_last_fires drop column etag;\nend",
+      "version": 55
     }
   ]
 }
