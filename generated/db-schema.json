@@ -74,6 +74,7 @@
       "client_details": "jsonb not null",
       "client_id": "text not null",
       "encrypted_access_token": "jsonb not null",
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "hashed_access_token": "text not null",
       "identity": "text not null",
@@ -84,6 +85,7 @@
       "client_details": "jsonb not null",
       "client_id": "text not null",
       "code": "text not null",
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "identity": "text not null",
       "identity_provider_id": "text not null",
@@ -101,6 +103,7 @@
     "cache_purges": {
       "before": "timestamp with time zone not null",
       "cache_name": "text not null",
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "worker_pool_id": "text not null"
     },
@@ -118,6 +121,7 @@
       "scopes": "jsonb not null"
     },
     "denylisted_notifications": {
+      "etag": "uuid",
       "notification_address": "text not null",
       "notification_type": "text not null"
     },
@@ -127,6 +131,7 @@
     },
     "github_builds": {
       "created": "timestamp with time zone not null",
+      "etag": "uuid not null",
       "event_id": "text not null",
       "event_type": "text not null",
       "installation_id": "integer not null",
@@ -151,6 +156,7 @@
       "bindings": "jsonb not null",
       "encrypted_next_task_id": "jsonb not null",
       "encrypted_trigger_token": "jsonb not null",
+      "etag": "uuid not null",
       "hook_group_id": "text not null",
       "hook_id": "text not null",
       "metadata": "jsonb not null",
@@ -161,6 +167,7 @@
     },
     "hooks_last_fires": {
       "error": "text not null",
+      "etag": "uuid not null",
       "fired_by": "text not null",
       "hook_group_id": "text not null",
       "hook_id": "text not null",
@@ -170,17 +177,20 @@
     },
     "hooks_queues": {
       "bindings": "jsonb not null",
+      "etag": "uuid not null",
       "hook_group_id": "text not null",
       "hook_id": "text not null",
       "queue_name": "text not null"
     },
     "index_namespaces": {
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "name": "text not null",
       "parent": "text not null"
     },
     "indexed_tasks": {
       "data": "jsonb not null",
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "name": "text not null",
       "namespace": "text not null",
@@ -190,6 +200,7 @@
     "queue_artifacts": {
       "content_type": "text not null",
       "details": "jsonb not null",
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "name": "text not null",
       "present": "boolean not null",
@@ -200,6 +211,7 @@
     "queue_provisioners": {
       "actions": "jsonb not null",
       "description": "text not null",
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "last_date_active": "timestamp with time zone not null",
       "provisioner_id": "text not null",
@@ -207,6 +219,7 @@
     },
     "queue_worker_types": {
       "description": "text not null",
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "last_date_active": "timestamp with time zone not null",
       "provisioner_id": "text not null",
@@ -214,6 +227,7 @@
       "worker_type": "text not null"
     },
     "queue_workers": {
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "first_claim": "timestamp with time zone not null",
       "provisioner_id": "text not null",
@@ -239,17 +253,20 @@
     "sessions": {
       "data": "jsonb not null",
       "encrypted_session_id": "jsonb not null",
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "hashed_session_id": "text not null"
     },
     "task_dependencies": {
       "dependent_task_id": "text not null",
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "required_task_id": "text not null",
       "requires": "task_requires not null",
       "satisfied": "boolean not null"
     },
     "task_groups": {
+      "etag": "uuid not null",
       "expires": "timestamp with time zone not null",
       "scheduler_id": "text not null",
       "task_group_id": "text not null"
@@ -258,6 +275,7 @@
       "created": "timestamp with time zone not null",
       "deadline": "timestamp with time zone not null",
       "dependencies": "jsonb not null",
+      "etag": "uuid not null",
       "ever_resolved": "boolean not null",
       "expires": "timestamp with time zone not null",
       "extra": "jsonb not null",
@@ -281,6 +299,7 @@
     "worker_pool_errors": {
       "description": "text not null",
       "error_id": "text not null",
+      "etag": "uuid not null",
       "extra": "jsonb",
       "kind": "text not null",
       "reported": "timestamp with time zone not null",
@@ -292,6 +311,7 @@
       "created": "timestamp with time zone not null",
       "description": "text not null",
       "email_on_error": "boolean not null",
+      "etag": "uuid not null",
       "last_modified": "timestamp with time zone not null",
       "owner": "text not null",
       "previous_provider_ids": "jsonb not null",
@@ -5110,253 +5130,10 @@
     },
     {
       "description": "Remove unnecessary etag columns from DB tables",
-      "downgradeScript": "begin\n  alter table clients add column etag uuid not null default public.gen_random_uuid();\n  alter table github_builds add column etag uuid not null default public.gen_random_uuid();\n  alter table hooks add column etag uuid not null default public.gen_random_uuid();\n  alter table hooks_last_fires add column etag uuid not null default public.gen_random_uuid();\n  alter table hooks_queues add column etag uuid not null default public.gen_random_uuid();\n  alter table indexed_tasks add column etag uuid not null default public.gen_random_uuid();\n  alter table denylisted_notifications add column etag uuid not null default public.gen_random_uuid();\n  alter table cache_purges add column etag uuid not null default public.gen_random_uuid();\n  alter table access_tokens add column etag uuid not null default public.gen_random_uuid();\n  alter table authorization_codes add column etag uuid not null default public.gen_random_uuid();\n  alter table sessions add column etag uuid not null default public.gen_random_uuid();\n  alter table queue_provisioners add column etag uuid not null default public.gen_random_uuid();\n  alter table queue_worker_types add column etag uuid not null default public.gen_random_uuid();\n  alter table queue_workers add column etag uuid not null default public.gen_random_uuid();\n  alter table task_groups add column etag uuid not null default public.gen_random_uuid();\n  alter table task_dependencies add column etag uuid not null default public.gen_random_uuid();\n  alter table queue_artifacts add column etag uuid not null default public.gen_random_uuid();\n  alter table tasks add column etag uuid not null default public.gen_random_uuid();\n  alter table worker_pool_errors add column etag uuid not null default public.gen_random_uuid();\n  alter table worker_pools add column etag uuid not null default public.gen_random_uuid();\n  alter table index_namespaces add column etag uuid not null default public.gen_random_uuid();\nend",
+      "downgradeScript": "begin\n  alter table clients add column etag uuid not null default public.gen_random_uuid();\nend",
       "methods": {
-        "add_denylist_address": {
-          "args": "notification_type_in text, notification_address_in text",
-          "body": "begin\n  insert into denylisted_notifications(notification_type, notification_address)\n  values (\n    notification_type_in,\n    notification_address_in\n  ) on conflict do nothing;\nend",
-          "deprecated": false,
-          "description": "If the denylist address already exists, this is a no-op. Otherwise, add the denylist\naddress for the taskcluster-notify service, with a new random etag.",
-          "mode": "write",
-          "returns": "void",
-          "serviceName": "notify"
-        },
-        "add_task_dependency": {
-          "args": "dependent_task_id_in text, required_task_id_in text, requires_in task_requires, expires_in timestamptz",
-          "body": "begin\n  insert\n  into task_dependencies (dependent_task_id, required_task_id, requires, satisfied, expires)\n  values (\n    dependent_task_id_in,\n    required_task_id_in,\n    requires_in,\n    false,\n    expires_in\n  )\n  on conflict do nothing;\nend",
-          "deprecated": false,
-          "description": "Create an un-satisfied task dependency between the two tasks, with the given\nrequirement style and expiration. If the dependency already exists, nothing\nhappens.",
-          "mode": "write",
-          "returns": "void",
-          "serviceName": "queue"
-        },
-        "create_hooks_queue": {
-          "args": "hook_group_id_in text, hook_id_in text, queue_name_in text, bindings_in jsonb",
-          "body": "begin\n  insert\n    into hooks_queues (hook_group_id, hook_id, queue_name, bindings)\n    values (hook_group_id_in, hook_id_in, queue_name_in, bindings_in);\n\n    return public.gen_random_uuid();\nend",
-          "deprecated": false,
-          "description": "Create a new hooks queue. Raises UNIQUE_VIOLATION if the hook already exists.",
-          "mode": "write",
-          "returns": "uuid",
-          "serviceName": "hooks"
-        },
-        "create_last_fire": {
-          "args": "hook_group_id_in text, hook_id_in text, fired_by_in text, task_id_in text, task_create_time_in timestamptz, result_in text, error_in text",
-          "body": "begin\n  insert\n    into hooks_last_fires (hook_group_id, hook_id, fired_by, task_id, task_create_time, result, error)\n    values (hook_group_id_in, hook_id_in, fired_by_in, task_id_in, task_create_time_in, result_in, error_in);\n\n    return public.gen_random_uuid();\nend",
-          "deprecated": false,
-          "description": "Create a new hook last fire. Raises UNIQUE_VIOLATION if the hook already exists.",
-          "mode": "write",
-          "returns": "uuid",
-          "serviceName": "hooks"
-        },
-        "create_queue_provisioner": {
-          "args": "provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb",
-          "body": "begin\n  insert\n    into queue_provisioners (provisioner_id, expires, last_date_active, description, stability, actions)\n    values (provisioner_id_in, expires_in, last_date_active_in, description_in, stability_in, actions_in);\n    return public.gen_random_uuid();\nend",
-          "deprecated": false,
-          "description": "Create a new queue provisioner.  Raises UNIQUE_VIOLATION if the provisioner already exists.",
-          "mode": "write",
-          "returns": "uuid",
-          "serviceName": "queue"
-        },
-        "create_queue_worker": {
-          "args": "provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, first_claim_in timestamptz, recent_tasks_in jsonb",
-          "body": "begin\n  insert\n    into queue_workers (provisioner_id, worker_type, worker_group, worker_id, quarantine_until, expires, first_claim, recent_tasks)\n    values (provisioner_id_in, worker_type_in, worker_group_in, worker_id_in, quarantine_until_in, expires_in, first_claim_in, recent_tasks_in);\n    return public.gen_random_uuid();\nend",
-          "deprecated": false,
-          "description": "Create a new queue worker.  Raises UNIQUE_VIOLATION if the worker already exists.",
-          "mode": "write",
-          "returns": "uuid",
-          "serviceName": "queue"
-        },
-        "create_queue_worker_type": {
-          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text",
-          "body": "begin\n  insert\n    into queue_worker_types (provisioner_id, worker_type, expires, last_date_active, description, stability)\n    values (provisioner_id_in, worker_type_in, expires_in, last_date_active_in, description_in, stability_in);\n    return public.gen_random_uuid();\nend",
-          "deprecated": false,
-          "description": "Create a new queue worker type. Raises UNIQUE_VIOLATION if the worker type already exists.",
-          "mode": "write",
-          "returns": "uuid",
-          "serviceName": "queue"
-        },
-        "create_task": {
-          "args": "task_id text,\nprovisioner_id text,\nworker_type text,\nscheduler_id text,\ntask_group_id text,\ndependencies jsonb,\nrequires task_requires,\nroutes jsonb,\npriority task_priority,\nretries integer,\ncreated timestamptz,\ndeadline timestamptz,\nexpires timestamptz,\nscopes jsonb,\npayload jsonb,\nmetadata jsonb,\ntags jsonb,\nextra jsonb",
-          "body": "begin\n  insert\n  into tasks (\n    task_id,\n    provisioner_id,\n    worker_type,\n    scheduler_id,\n    task_group_id,\n    dependencies,\n    requires,\n    routes,\n    priority,\n    retries,\n    created,\n    deadline,\n    expires,\n    scopes,\n    payload,\n    metadata,\n    tags,\n    extra,\n    retries_left,\n    runs,\n    taken_until,\n    ever_resolved\n  )\n  values (\n    task_id,\n    provisioner_id,\n    worker_type,\n    scheduler_id,\n    task_group_id,\n    dependencies,\n    requires,\n    routes,\n    priority,\n    retries,\n    created,\n    deadline,\n    expires,\n    scopes,\n    payload,\n    metadata,\n    tags,\n    extra,\n    -- default values for the mutable bits\n    retries,\n    jsonb_build_array(),\n    null, -- not taken\n    false\n  );\nend",
-          "deprecated": false,
-          "description": "Create a new task, without scheduling it, and with empty values\nfor the status information.",
-          "mode": "write",
-          "returns": "void",
-          "serviceName": "queue"
-        },
-        "delete_hooks_queue": {
-          "args": "hook_group_id_in text, hook_id_in text",
-          "body": "begin\n  delete from hooks_queues\n  where\n    hooks_queues.hook_group_id = hook_group_id_in and\n    hooks_queues.hook_id = hook_id_in;\nend",
-          "deprecated": false,
-          "description": "Delete a hooks queue.",
-          "mode": "write",
-          "returns": "void",
-          "serviceName": "hooks"
-        },
-        "ensure_task_group": {
-          "args": "task_group_id_in text,\nscheduler_id_in text,\nexpires_in timestamptz",
-          "body": "declare\n  task_group task_groups%ROWTYPE;\nbegin\n  select *\n  from task_groups\n  where task_groups.task_group_id = task_group_id_in\n  for update\n  into task_group;\n\n  -- insert with expiration one hour later than given\n  if task_group.task_group_id is NULL then\n    begin\n      insert\n      into task_groups (task_group_id, scheduler_id, expires)\n      values (\n        task_group_id_in,\n        scheduler_id_in,\n        expires_in + interval '1 hour'\n      );\n      return;\n    exception\n      when unique_violation then\n        -- we raced with another call's insert, so get that inserted row\n        select *\n        from task_groups\n        where task_groups.task_group_id = task_group_id_in\n        for update\n        into task_group;\n    end;\n  end if;\n\n  if task_group.scheduler_id != scheduler_id_in then\n    raise exception 'task group exists with different scheduler_id'\n      using errcode = '23505';\n  end if;\n\n  -- if necessary, update the expires value\n  if expires_in > task_group.expires then\n    update task_groups\n    set expires = expires_in + interval '1 hour'\n    where task_groups.task_group_id = task_group_id_in;\n  end if;\nend",
-          "deprecated": false,
-          "description": "Ensure that the given task group exists, has the matching scheduler_id,\nand has an expiration greater than the given expiration.  Expiration is\nbumped by an hour at a time to avoid unnecessary updates.  This returns\n23505 (UNIQUE_VIOLATION) when the group exists with a different\nscheduler_id.",
-          "mode": "write",
-          "returns": "void",
-          "serviceName": "queue"
-        },
-        "get_github_build": {
-          "args": "task_group_id_in text",
-          "body": "begin\n  return query\n  select\n    github_builds.organization,\n    github_builds.repository,\n    github_builds.sha,\n    github_builds.task_group_id,\n    github_builds.state,\n    github_builds.created,\n    github_builds.updated,\n    github_builds.installation_id,\n    github_builds.event_type,\n    github_builds.event_id,\n    public.gen_random_uuid()\n  from github_builds\n  where github_builds.task_group_id = task_group_id_in;\nend",
-          "deprecated": false,
-          "description": "Get a github build. The returned table will have one or zero rows.",
-          "mode": "read",
-          "returns": "table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)",
-          "serviceName": "github"
-        },
-        "get_github_builds": {
-          "args": "page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text",
-          "body": "begin\n  return query\n  select\n    github_builds.organization,\n    github_builds.repository,\n    github_builds.sha,\n    github_builds.task_group_id,\n    github_builds.state,\n    github_builds.created,\n    github_builds.updated,\n    github_builds.installation_id,\n    github_builds.event_type,\n    github_builds.event_id,\n    public.gen_random_uuid()\n  from github_builds\n  where\n    (organization_in is null or github_builds.organization = organization_in) and\n    (repository_in is null or github_builds.repository = repository_in) and\n    (sha_in is null or github_builds.sha = sha_in)\n  order by github_builds.updated asc\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
-          "deprecated": false,
-          "description": "Get github builds.",
-          "mode": "read",
-          "returns": "table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)",
-          "serviceName": "github"
-        },
-        "get_hooks_queues": {
-          "args": "page_size_in integer, page_offset_in integer",
-          "body": "begin\n  return query\n  select\n    hooks_queues.hook_group_id,\n    hooks_queues.hook_id,\n    hooks_queues.queue_name,\n    hooks_queues.bindings,\n    public.gen_random_uuid()\n  from hooks_queues\n  order by hook_group_id, hook_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
-          "deprecated": false,
-          "description": "Get hooks queues ordered by `hook_group_id` and `hook_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
-          "mode": "read",
-          "returns": "table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)",
-          "serviceName": "hooks"
-        },
-        "get_last_fire": {
-          "args": "hook_group_id_in text, hook_id_in text, task_id_in text",
-          "body": "begin\n  return query\n  select\n    hooks_last_fires.hook_group_id,\n    hooks_last_fires.hook_id,\n    hooks_last_fires.fired_by,\n    hooks_last_fires.task_id,\n    hooks_last_fires.task_create_time,\n    hooks_last_fires.result,\n    hooks_last_fires.error,\n    public.gen_random_uuid()\n  from hooks_last_fires\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in and\n    hooks_last_fires.task_id = task_id_in;\nend",
-          "deprecated": false,
-          "description": "Get a hook last fire.",
-          "mode": "read",
-          "returns": "table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid)",
-          "serviceName": "hooks"
-        },
-        "get_last_fires": {
-          "args": "hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer",
-          "body": "begin\n  return query\n  select\n    hooks_last_fires.hook_group_id,\n    hooks_last_fires.hook_id,\n    hooks_last_fires.fired_by,\n    hooks_last_fires.task_id,\n    hooks_last_fires.task_create_time,\n    hooks_last_fires.result,\n    hooks_last_fires.error,\n    public.gen_random_uuid()\n  from hooks_last_fires\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in\n  order by hook_group_id, hook_id, task_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
-          "deprecated": false,
-          "description": "Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,\nordered by `hook_group_id`, `hook_id`, and  `worker_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
-          "mode": "read",
-          "returns": "table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid)",
-          "serviceName": "hooks"
-        },
-        "get_queue_provisioner": {
-          "args": "provisioner_id_in text, expires_in timestamptz",
-          "body": "begin\n  return query\n  select\n    queue_provisioners.provisioner_id,\n    queue_provisioners.expires,\n    queue_provisioners.last_date_active,\n    queue_provisioners.description,\n    queue_provisioners.stability,\n    queue_provisioners.actions,\n    public.gen_random_uuid()\n  from queue_provisioners\n  where\n    queue_provisioners.provisioner_id = provisioner_id_in and\n    queue_provisioners.expires > expires_in;\n  end",
-          "deprecated": false,
-          "description": "Get a queue provisioner by provisioner_id.",
-          "mode": "read",
-          "returns": "table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)",
-          "serviceName": "queue"
-        },
-        "get_queue_provisioners": {
-          "args": "expires_in timestamptz, page_size_in integer, page_offset_in integer",
-          "body": "begin\n  return query\n  select\n    queue_provisioners.provisioner_id,\n    queue_provisioners.expires,\n    queue_provisioners.last_date_active,\n    queue_provisioners.description,\n    queue_provisioners.stability,\n    queue_provisioners.actions,\n    public.gen_random_uuid()\n  from queue_provisioners\n  where (queue_provisioners.expires > expires_in or expires_in is null)\n  order by provisioner_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
-          "deprecated": false,
-          "description": "Get queue provisioners ordered by `provisioner_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
-          "mode": "read",
-          "returns": "table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)",
-          "serviceName": "queue"
-        },
-        "get_queue_worker": {
-          "args": "provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
-          "body": "begin\n  return query\n  select\n    queue_workers.provisioner_id,\n    queue_workers.worker_type,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    public.gen_random_uuid()\n  from queue_workers\n  where\n    queue_workers.provisioner_id = provisioner_id_in and\n    queue_workers.worker_type = worker_type_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in and\n    (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);\n  end",
-          "deprecated": false,
-          "description": "Get a non-expired queue worker by provisioner_id, worker_type, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.",
-          "mode": "read",
-          "returns": "table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
-          "serviceName": "queue"
-        },
-        "get_queue_worker_type": {
-          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz",
-          "body": "begin\n  return query\n  select\n    queue_worker_types.provisioner_id,\n    queue_worker_types.worker_type,\n    queue_worker_types.expires,\n    queue_worker_types.last_date_active,\n    queue_worker_types.description,\n    queue_worker_types.stability,\n    public.gen_random_uuid()\n  from queue_worker_types\n  where\n    queue_worker_types.provisioner_id = provisioner_id_in and\n    queue_worker_types.worker_type = worker_type_in and\n    queue_worker_types.expires > expires_in;\n  end",
-          "deprecated": false,
-          "description": "Get a non-expired queue worker type by provisioner_id and worker_type.",
-          "mode": "read",
-          "returns": "table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
-          "serviceName": "queue"
-        },
-        "get_queue_worker_types": {
-          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
-          "body": "begin\n  return query\n  select\n    queue_worker_types.provisioner_id,\n    queue_worker_types.worker_type,\n    queue_worker_types.expires,\n    queue_worker_types.last_date_active,\n    queue_worker_types.description,\n    queue_worker_types.stability,\n    public.gen_random_uuid()\n  from queue_worker_types\n  where\n    (queue_worker_types.provisioner_id = provisioner_id_in or provisioner_id_in is null) and\n    (queue_worker_types.worker_type = worker_type_in or worker_type_in is null) and\n    (queue_worker_types.expires > expires_in or expires_in is null)\n  order by provisioner_id, worker_type\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
-          "deprecated": false,
-          "description": "Get queue worker types ordered by `provisioner_id` and `worker_type`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
-          "mode": "read",
-          "returns": "table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
-          "serviceName": "queue"
-        },
-        "get_queue_workers": {
-          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
-          "body": "begin\n  return query\n  select\n    queue_workers.provisioner_id,\n    queue_workers.worker_type,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    public.gen_random_uuid()\n  from queue_workers\n  where\n    (queue_workers.provisioner_id = provisioner_id_in or get_queue_workers.provisioner_id_in is null) and\n    (queue_workers.worker_type = worker_type_in or get_queue_workers.worker_type_in is null) and\n    ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers.expires_in is null)\n  order by provisioner_id, worker_type, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
-          "deprecated": false,
-          "description": "Get non-expired queue workers ordered by provisioner_id, worker_type, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
-          "mode": "read",
-          "returns": "table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
-          "serviceName": "queue"
-        },
-        "purge_cache": {
-          "args": "provisioner_id_in text, worker_type_in text, cache_name_in text, before_in timestamptz, expires_in timestamptz",
-          "body": "begin\n  insert into cache_purges(provisioner_id, worker_type, cache_name, before, expires)\n  values (\n    provisioner_id_in,\n    worker_type_in,\n    cache_name_in,\n    before_in,\n    expires_in\n  ) on conflict (provisioner_id, worker_type, cache_name) do\n  update\n  set (before, expires) = (before_in, expires_in)\n  where cache_purges.provisioner_id = provisioner_id_in and cache_purges.worker_type = worker_type_in and cache_purges.cache_name = cache_name_in;\nend",
-          "deprecated": false,
-          "description": "Publish a request to purge caches with name `cache_name_in`\non `provisioner_id_in`/`worker_type_in` workers.",
-          "mode": "write",
-          "returns": "void",
-          "serviceName": "purge_cache"
-        },
-        "set_github_build_state": {
-          "args": "task_group_id_in text, state_in text",
-          "body": "begin\n  update github_builds\n  set (state, updated) = (\n    state_in,\n    now()\n  ) where github_builds.task_group_id = task_group_id_in;\n  if not found then\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
-          "deprecated": false,
-          "description": "Only update the state of a build and update the `updated` timestamp",
-          "mode": "write",
-          "returns": "void",
-          "serviceName": "github"
-        },
-        "update_hooks_queue_bindings": {
-          "args": "hook_group_id_in text, hook_id_in text, bindings_in jsonb",
-          "body": "begin\n  return query update hooks_queues\n  set\n    bindings = bindings_in\n  where\n    hooks_queues.hook_group_id = hook_group_id_in and\n    hooks_queues.hook_id = hook_id_in\n  returning\n    hooks_queues.hook_group_id,\n    hooks_queues.hook_id,\n    hooks_queues.queue_name,\n    hooks_queues.bindings,\n    public.gen_random_uuid();\nend",
-          "deprecated": false,
-          "description": "Update bindings of a hooks queue. If no such queue exists,\nthe return value is an empty set.",
-          "mode": "write",
-          "returns": "table(hook_group_id text, hook_id text, queue_name text, bindings jsonb, etag uuid)",
-          "serviceName": "hooks"
-        },
-        "update_queue_provisioner": {
-          "args": "provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb",
-          "body": "declare\n  new_etag uuid := public.gen_random_uuid();\nbegin\n  return query update queue_provisioners\n  set\n    expires = expires_in,\n    last_date_active = last_date_active_in,\n    description = description_in,\n    stability = stability_in,\n    actions = actions_in\n  where\n    queue_provisioners.provisioner_id = provisioner_id_in\n  returning\n    queue_provisioners.provisioner_id,\n    queue_provisioners.expires,\n    queue_provisioners.last_date_active,\n    queue_provisioners.description,\n    queue_provisioners.stability,\n    queue_provisioners.actions,\n    public.gen_random_uuid();\nend",
-          "deprecated": false,
-          "description": "Update a queue provisioner's expires, last_date_active, description, stability, and actions.\nAll parameters must be supplied.",
-          "mode": "write",
-          "returns": "table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)",
-          "serviceName": "queue"
-        },
-        "update_queue_worker": {
-          "args": "provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, recent_tasks_in jsonb",
-          "body": "begin\n  return query update queue_workers\n  set\n    quarantine_until = quarantine_until_in,\n    expires = expires_in,\n    recent_tasks = recent_tasks_in\n  where\n    queue_workers.provisioner_id = provisioner_id_in and\n    queue_workers.worker_type = worker_type_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in\n  returning\n    queue_workers.provisioner_id,\n    queue_workers.worker_type,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    public.gen_random_uuid();\nend",
-          "deprecated": false,
-          "description": "Update a queue worker's quarantine_until, expires, and recent_tasks.\nAll parameters must be supplied.",
-          "mode": "write",
-          "returns": "table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
-          "serviceName": "queue"
-        },
-        "update_queue_worker_type": {
-          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text",
-          "body": "begin\n  return query update queue_worker_types\n  set\n    expires = expires_in,\n    last_date_active = last_date_active_in,\n    description = description_in,\n    stability = stability_in\n  where\n    queue_worker_types.provisioner_id = provisioner_id_in and\n    queue_worker_types.worker_type = worker_type_in\n  returning\n    queue_worker_types.provisioner_id,\n    queue_worker_types.worker_type,\n    queue_worker_types.expires,\n    queue_worker_types.last_date_active,\n    queue_worker_types.description,\n    queue_worker_types.stability,\n    public.gen_random_uuid();\nend",
-          "deprecated": false,
-          "description": "Update a queue worker type's expires, last_date_active, description, and stability.\nAll parameters must be supplied.",
-          "mode": "write",
-          "returns": "table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
-          "serviceName": "queue"
-        }
       },
-      "migrationScript": "begin\n  alter table clients drop column etag;\n  alter table github_builds drop column etag;\n  alter table hooks drop column etag;\n  alter table hooks_last_fires drop column etag;\n  alter table hooks_queues drop column etag;\n  alter table indexed_tasks drop column etag;\n  alter table denylisted_notifications drop column etag;\n  alter table cache_purges drop column etag;\n  alter table access_tokens drop column etag;\n  alter table authorization_codes drop column etag;\n  alter table sessions drop column etag;\n  alter table queue_provisioners drop column etag;\n  alter table queue_worker_types drop column etag;\n  alter table queue_workers drop column etag;\n  alter table task_groups drop column etag;\n  alter table task_dependencies drop column etag;\n  alter table queue_artifacts drop column etag;\n  alter table tasks drop column etag;\n  alter table worker_pool_errors drop column etag;\n  alter table worker_pools drop column etag;\n  alter table index_namespaces drop column etag;\nend",
+      "migrationScript": "begin\n  alter table clients drop column etag;\nend",
       "version": 49
     },
     {
