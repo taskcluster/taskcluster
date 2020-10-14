@@ -37,6 +37,7 @@ github_builds:
   installation_id: integer not null
   event_type: text not null
   event_id: text not null
+  etag: uuid not null
 github_integrations:
   installation_id: integer not null
   owner: text not null
@@ -56,6 +57,7 @@ hooks:
   encrypted_next_task_id: jsonb not null
   next_scheduled_date: timestamp with time zone not null
   trigger_schema: jsonb not null
+  etag: uuid not null
 hooks_last_fires:
   hook_group_id: text not null
   hook_id: text not null
@@ -64,11 +66,13 @@ hooks_last_fires:
   task_create_time: timestamp with time zone not null
   result: text not null
   error: text not null
+  etag: uuid not null
 hooks_queues:
   hook_group_id: text not null
   hook_id: text not null
   queue_name: text not null
   bindings: jsonb not null
+  etag: uuid not null
 indexed_tasks:
   namespace: text not null
   name: text not null
@@ -76,18 +80,22 @@ indexed_tasks:
   task_id: text not null
   data: jsonb not null
   expires: timestamp with time zone not null
+  etag: uuid not null
 index_namespaces:
   parent: text not null
   name: text not null
   expires: timestamp with time zone not null
+  etag: uuid not null
 denylisted_notifications:
   notification_type: text not null
   notification_address: text not null
+  etag: uuid
 cache_purges:
   worker_pool_id: text not null
   cache_name: text not null
   before: timestamp with time zone not null
   expires: timestamp with time zone not null
+  etag: uuid not null
 secrets:
   name: text not null
   encrypted_secret: jsonb not null
@@ -101,6 +109,7 @@ access_tokens:
   identity_provider_id: text not null
   expires: timestamp with time zone not null
   client_details: jsonb not null
+  etag: uuid not null
 authorization_codes:
   code: text not null
   client_id: text not null
@@ -109,6 +118,7 @@ authorization_codes:
   identity_provider_id: text not null
   expires: timestamp with time zone not null
   client_details: jsonb not null
+  etag: uuid not null
 github_access_tokens:
   user_id: text not null
   encrypted_access_token: jsonb not null
@@ -117,6 +127,7 @@ sessions:
   encrypted_session_id: jsonb not null
   data: jsonb not null
   expires: timestamp with time zone not null
+  etag: uuid not null
 worker_pool_errors:
   error_id: text not null
   worker_pool_id: text not null
@@ -125,6 +136,7 @@ worker_pool_errors:
   kind: text not null
   description: text not null
   extra: jsonb
+  etag: uuid not null
 worker_pools:
   worker_pool_id: text not null
   provider_id: text not null
@@ -136,6 +148,7 @@ worker_pools:
   config: jsonb not null
   provider_data: jsonb not null
   previous_provider_ids: jsonb not null
+  etag: uuid not null
 workers:
   worker_pool_id: text not null
   worker_group: text not null
@@ -155,6 +168,7 @@ tasks:
   created: timestamp with time zone not null
   deadline: timestamp with time zone not null
   dependencies: jsonb not null
+  etag: uuid not null
   expires: timestamp with time zone not null
   extra: jsonb not null
   metadata: jsonb not null
@@ -182,16 +196,19 @@ queue_artifacts:
   details: jsonb not null
   expires: timestamp with time zone not null
   present: boolean not null
+  etag: uuid not null
 task_groups:
   expires: timestamp with time zone not null
   scheduler_id: text not null
   task_group_id: text not null
+  etag: uuid not null
 task_dependencies:
   dependent_task_id: text not null
   required_task_id: text not null
   expires: timestamp with time zone not null
   requires: task_requires not null
   satisfied: boolean not null
+  etag: uuid not null
 queue_workers:
   provisioner_id: text not null
   worker_type: text not null
@@ -201,6 +218,7 @@ queue_workers:
   quarantine_until: timestamp with time zone not null
   expires: timestamp with time zone not null
   first_claim: timestamp with time zone not null
+  etag: uuid not null
 queue_worker_types:
   provisioner_id: text not null
   worker_type: text not null
@@ -208,6 +226,7 @@ queue_worker_types:
   last_date_active: timestamp with time zone not null
   description: text not null
   stability: text not null
+  etag: uuid not null
 queue_provisioners:
   provisioner_id: text not null
   expires: timestamp with time zone not null
@@ -215,6 +234,7 @@ queue_provisioners:
   description: text not null
   stability: text not null
   actions: jsonb not null
+  etag: uuid not null
 
 # This table is used by tc-lib-azqueue to emulate the Azure Storage API's Queue functionality.
 azure_queue_messages:
