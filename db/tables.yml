@@ -69,7 +69,6 @@ hooks_queues:
   hook_id: text not null
   queue_name: text not null
   bindings: jsonb not null
-  etag: uuid not null
 indexed_tasks:
   namespace: text not null
   name: text not null
