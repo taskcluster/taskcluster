@@ -408,7 +408,7 @@ Get a github build. The returned table will have one or zero rows.
   * `event_id text`
   * `etag uuid`
 
-Get github builds. 
+Get github builds.
 
 ### get_github_check_by_task_id
 

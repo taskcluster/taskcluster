@@ -131,7 +131,6 @@
     },
     "github_builds": {
       "created": "timestamp with time zone not null",
-      "etag": "uuid not null",
       "event_id": "text not null",
       "event_type": "text not null",
       "installation_id": "integer not null",
@@ -5230,6 +5229,41 @@
         }
       },
       "version": 52
+    },
+    {
+      "description": "Remove unnecessary etag column from the github_builds table",
+      "downgradeScript": "begin\n  alter table github_builds add column etag uuid not null default public.gen_random_uuid();\nend",
+      "methods": {
+        "get_github_build": {
+          "args": "task_group_id_in text",
+          "body": "begin\n  return query\n  select\n    github_builds.organization,\n    github_builds.repository,\n    github_builds.sha,\n    github_builds.task_group_id,\n    github_builds.state,\n    github_builds.created,\n    github_builds.updated,\n    github_builds.installation_id,\n    github_builds.event_type,\n    github_builds.event_id,\n    public.gen_random_uuid()\n  from github_builds\n  where github_builds.task_group_id = task_group_id_in;\nend",
+          "deprecated": false,
+          "description": "Get a github build. The returned table will have one or zero rows.",
+          "mode": "read",
+          "returns": "table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)",
+          "serviceName": "github"
+        },
+        "get_github_builds": {
+          "args": "page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text",
+          "body": "begin\n  return query\n  select\n    github_builds.organization,\n    github_builds.repository,\n    github_builds.sha,\n    github_builds.task_group_id,\n    github_builds.state,\n    github_builds.created,\n    github_builds.updated,\n    github_builds.installation_id,\n    github_builds.event_type,\n    github_builds.event_id,\n    public.gen_random_uuid()\n  from github_builds\n  where\n    (organization_in is null or github_builds.organization = organization_in) and\n    (repository_in is null or github_builds.repository = repository_in) and\n    (sha_in is null or github_builds.sha = sha_in)\n  order by github_builds.updated asc\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get github builds.",
+          "mode": "read",
+          "returns": "table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, etag uuid)",
+          "serviceName": "github"
+        },
+        "set_github_build_state": {
+          "args": "task_group_id_in text, state_in text",
+          "body": "begin\n  update github_builds\n  set (state, updated) = (\n    state_in,\n    now()\n  ) where github_builds.task_group_id = task_group_id_in;\n  if not found then\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Only update the state of a build and update the `updated` timestamp",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "github"
+        }
+      },
+      "migrationScript": "begin\n  alter table github_builds drop column etag;\nend",
+      "version": 53
     }
   ]
 }

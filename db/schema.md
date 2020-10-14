@@ -154,8 +154,7 @@ CREATE TABLE github_builds (
     updated timestamp with time zone NOT NULL,
     installation_id integer NOT NULL,
     event_type text NOT NULL,
-    event_id text NOT NULL,
-    etag uuid DEFAULT public.gen_random_uuid() NOT NULL
+    event_id text NOT NULL
 );
 ALTER TABLE github_builds
     ADD CONSTRAINT github_builds_pkey PRIMARY KEY (task_group_id);
