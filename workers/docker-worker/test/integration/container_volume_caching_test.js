@@ -25,8 +25,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
   let purgeCache;
 
   setup(() => {
-    taskcluster.config(helper.optionsFromCiCreds());
-    purgeCache = new taskcluster.PurgeCache();
+    purgeCache = new taskcluster.PurgeCache(helper.optionsFromCiCreds());
   });
 
   teardown(() => {

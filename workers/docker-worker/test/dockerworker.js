@@ -7,7 +7,6 @@ let DockerProc = require('dockerode-process');
 let dockerUtils = require('dockerode-process/utils');
 let pipe = require('promisepipe');
 let Debug = require('debug');
-let taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 
 const debug = Debug('dockerworker');
@@ -26,7 +25,6 @@ let COPIED_ENV = [
 
 class DockerWorker {
   constructor(provisionerId, workerType, workerId, features) {
-    taskcluster.config(helper.optionsFromCiCreds());
     this.provisionerId = provisionerId;
     this.workerType = workerType;
     this.workerId = workerId;

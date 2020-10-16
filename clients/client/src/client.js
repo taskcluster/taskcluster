@@ -207,7 +207,7 @@ exports.createClient = function(reference, name) {
     this._options.rootUrl = this._options.rootUrl.replace(/\/$/, '');
     this._options._trueRootUrl = this._options.rootUrl.replace(/\/$/, ''); // Useful for buildUrl/buildSignedUrl in certain cases
 
-    this._options.serviceDiscoveryScheme = options.serviceDiscoveryScheme || DEFAULT_SERVICE_DISCOVERY_SCHEME;
+    this._options.serviceDiscoveryScheme = this._options.serviceDiscoveryScheme || DEFAULT_SERVICE_DISCOVERY_SCHEME;
     if (!SERVICE_DISCOVERY_SCHEMES.includes(this._options.serviceDiscoveryScheme)) {
       throw new Error(`Invalid Taskcluster client service discovery scheme: ${this._options.serviceDiscoveryScheme}`);
     }
