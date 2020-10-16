@@ -192,7 +192,7 @@ suite(testing.suiteName(), function() {
           clientId: 'client-with-aa-bb-dd',
           hasAuthed: true,
           method: 'GET',
-          public: false,
+          public: true,
           query: {
             private: "0",
           },
