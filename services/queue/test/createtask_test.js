@@ -84,7 +84,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Wait for defined message');
     helper.assertPulseMessage('task-defined', m => (
-      _.isEqual(m.payload.status, r1.status) &&
+      _.isEqual(m.payload.status.state, 'unscheduled') &&
       _.isEqual(m.payload.task.tags, taskDef.tags)));
 
     debug('### Wait for pending message');
@@ -269,7 +269,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Creating task');
     const r1 = await helper.queue.createTask(taskId, taskDef);
-    helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status, r1.status));
+    helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status.state, 'unscheduled'));
     helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
 
     const r2 = helper.checkDates(await helper.queue.status(taskId));
@@ -287,7 +287,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Creating task');
     const r1 = await helper.queue.createTask(taskId, taskDef);
-    helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status, r1.status));
+    helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status.state, 'unscheduled'));
     helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
 
     const r2 = helper.checkDates(await helper.queue.status(taskId));
