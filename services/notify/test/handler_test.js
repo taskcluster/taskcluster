@@ -80,7 +80,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   ['canceled', 'deadline-exceeded'].forEach(reasonResolved => {
     test(`does not publish for ${reasonResolved}`, async () => {
-      const route = 'test-notify.pulse.notify-test.on-any';
+      const route = 'test-notify.pulse.notify-test.on-transition';
       helper.queue.addTask(baseStatus.taskId, makeTask([route]));
       const status = _.cloneDeep(baseStatus);
       status.state = 'exception';
@@ -101,13 +101,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('pulse', async () => {
-    const route = 'test-notify.pulse.notify-test.on-any';
+    const route = 'test-notify.pulse.notify-test.on-transition';
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));
     await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },
-      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      exchange: 'exchange/taskcluster-queue/v1/task-defined',
       routingKey: 'doesnt-matter',
       routes: [route],
     });
@@ -115,7 +115,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('pulse denylisted', async () => {
-    const route = 'test-notify.pulse.notify-test-denied.on-any';
+    const route = 'test-notify.pulse.notify-test-denied.on-transition';
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));
     await helper.fakePulseMessage({
       payload: {
@@ -129,13 +129,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('email', async () => {
-    const route = 'test-notify.email.success@simulator.amazonses.com.on-any';
+    const route = 'test-notify.email.success@simulator.amazonses.com.on-transition';
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));
     await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },
-      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      exchange: 'exchange/taskcluster-queue/v1/task-failed',
       routingKey: 'doesnt-matter',
       routes: [route],
     });
@@ -145,7 +145,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('irc', async () => {
-    const route = 'test-notify.irc-channel.#taskcluster-test.on-any';
+    const route = 'test-notify.irc-channel.#taskcluster-test.on-transition';
     const task = makeTask([route]);
     task.extra = { notify: { ircChannelMessage: 'it worked with taskid ${status.taskId}' } };
     helper.queue.addTask(baseStatus.taskId, task);
@@ -165,7 +165,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('matrix', async () => {
-    const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-any';
+    const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
     task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>', matrixMsgtype: 'm.text' } };
     helper.queue.addTask(baseStatus.taskId, task);
@@ -173,7 +173,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       payload: {
         status: baseStatus,
       },
-      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      exchange: 'exchange/taskcluster-queue/v1/task-running',
       routingKey: 'doesnt-matter',
       routes: [route],
     });
@@ -188,7 +188,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('matrix (default notice)', async () => {
-    const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-any';
+    const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
     task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>' } };
     helper.queue.addTask(baseStatus.taskId, task);
@@ -196,7 +196,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       payload: {
         status: baseStatus,
       },
-      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      exchange: 'exchange/taskcluster-queue/v1/task-exception',
       routingKey: 'doesnt-matter',
       routes: [route],
     });
@@ -211,7 +211,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('matrix (rejected)', async () => {
-    const route = 'test-notify.matrix-room.!rejected:mozilla.org.on-any';
+    const route = 'test-notify.matrix-room.!rejected:mozilla.org.on-transition';
     const task = makeTask([route]);
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
@@ -228,7 +228,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('slack', async () => {
-    const route = 'test-notify.slack-channel.C123456.on-any';
+    const route = 'test-notify.slack-channel.C123456.on-transition';
     const task = makeTask([route]);
     task.extra = { notify: { slackText: 'hey hey ${taskId}', slackBlocks: [{}], slackAttachments: [{}, {}] } };
     helper.queue.addTask(baseStatus.taskId, task);
