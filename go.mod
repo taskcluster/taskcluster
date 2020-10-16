@@ -3,7 +3,7 @@ module github.com/taskcluster/taskcluster/v37
 go 1.13
 
 require (
-	github.com/Flaque/filet v0.0.0-20190209224823-fc4d33cfcf93
+	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/Microsoft/go-winio v0.4.14
 	github.com/aws/aws-sdk-go v1.33.5
 	github.com/cenkalti/backoff/v3 v3.2.2
