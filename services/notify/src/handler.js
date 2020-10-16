@@ -71,7 +71,7 @@ class Handler {
     let taskId = status.taskId;
     let task = await this.queue.task(taskId);
     let href = libUrls.ui(this.rootUrl, `tasks/${taskId}`);
-    let groupHref = libUrls.ui(this.rootUrl, `groups/${taskId}/tasks`);
+    let groupHref = libUrls.ui(this.rootUrl, `tasks/groups/${taskId}/tasks`);
     let runCount = status.runs.length;
 
     await Promise.allSettled(message.routes.map(async entry => {
