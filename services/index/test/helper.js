@@ -70,7 +70,16 @@ exports.withServer = (mock, skipping) => {
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
     exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    fakeauth.start({ 'test-client': ['*'] }, { rootUrl: helper.rootUrl });
+    fakeauth.start({
+      'test-client': ['*'],
+    }, {
+      rootUrl: helper.rootUrl,
+      anonymousScopes: [
+        'queue:get-artifact:public/*',
+        'index:list-tasks',
+        'index:list-namespaces',
+      ],
+    });
 
     helper.Index = taskcluster.createClient(builder.reference());
 
