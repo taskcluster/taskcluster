@@ -35,6 +35,7 @@ builder.declare({
   method: 'get',
   route: '/task/:indexPath',
   name: 'findTask',
+  scopes: 'index:find-task:<indexPath>',
   stability: APIBuilder.stability.stable,
   category: 'Index Service',
   output: 'indexed-task-response.yml',
@@ -69,6 +70,11 @@ builder.declare({
   route: '/namespaces/:namespace?',
   query: paginateResults.query,
   name: 'listNamespaces',
+  scopes: {
+    if: 'namespaceGiven',
+    then: 'index:list-namespaces:<namespace>',
+    else: 'index:list-namespaces',
+  },
   stability: APIBuilder.stability.stable,
   output: 'list-namespaces-response.yml',
   category: 'Index Service',
@@ -84,6 +90,10 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let namespace = req.params.namespace || '';
+  await req.authorize({
+    namespace,
+    namespaceGiven: namespace !== '',
+  });
 
   // Query with given namespace
   const { continuationToken, rows } = await helpers.namespaceUtils.getNamespaces(
@@ -103,6 +113,11 @@ builder.declare({
   method: 'post',
   route: '/namespaces/:namespace?',
   name: 'listNamespacesPost',
+  scopes: {
+    if: 'namespaceGiven',
+    then: 'index:list-namespaces-post:<namespace>',
+    else: 'index:list-namespaces-post',
+  },
   stability: 'deprecated',
   noPublish: true,
   input: 'list-namespaces-request.yml',
@@ -120,6 +135,10 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let namespace = req.params.namespace || '';
+  await req.authorize({
+    namespace,
+    namespaceGiven: namespace !== '',
+  });
 
   // Query with given namespace
   const { continuationToken, rows } = await helpers.namespaceUtils.getNamespaces(
@@ -140,6 +159,11 @@ builder.declare({
   route: '/tasks/:namespace?',
   query: paginateResults.query,
   name: 'listTasks',
+  scopes: {
+    if: 'namespaceGiven',
+    then: 'index:list-tasks:<namespace>',
+    else: 'index:list-tasks',
+  },
   stability: APIBuilder.stability.stable,
   category: 'Index Service',
   output: 'list-tasks-response.yml',
@@ -158,6 +182,10 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const namespace = req.params.namespace || '';
+  await req.authorize({
+    namespace,
+    namespaceGiven: namespace !== '',
+  });
   const { continuationToken, rows } = await helpers.taskUtils.getIndexedTasks(
     this.db,
     { namespace },
@@ -174,6 +202,11 @@ builder.declare({
   method: 'post',
   route: '/tasks/:namespace?',
   name: 'listTasksPost',
+  scopes: {
+    if: 'namespaceGiven',
+    then: 'index:list-tasks-post:<namespace>',
+    else: 'index:list-tasks-post',
+  },
   stability: 'deprecated',
   noPublish: true,
   output: 'list-tasks-response.yml',
@@ -184,6 +217,10 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const namespace = req.params.namespace || '';
+  await req.authorize({
+    namespace,
+    namespaceGiven: namespace !== '',
+  });
   const { continuationToken, rows } = await helpers.taskUtils.getIndexedTasks(
     this.db,
     { namespace },
@@ -241,7 +278,7 @@ builder.declare({
   name: 'findArtifactFromTask',
   stability: APIBuilder.stability.stable,
   category: 'Index Service',
-  scopes: { if: 'private', then: 'queue:get-artifact:<name>' },
+  scopes: 'queue:get-artifact:<name>',
   title: 'Get Artifact From Indexed Task',
   description: [
     'Find a task by index path and redirect to the artifact on the most recent',
@@ -264,11 +301,6 @@ builder.declare({
   let indexPath = req.params.indexPath || '';
   let artifactName = req.params.name;
 
-  await req.authorize({
-    private: !/^public\//.test(artifactName),
-    name: artifactName,
-  });
-
   // Get indexPath and ensure that we have a least one dot
   indexPath = indexPath.split('.');
 
@@ -285,20 +317,13 @@ builder.declare({
 
   // Build signed url for artifact
   let url;
-  if (/^public\//.test(artifactName)) {
-    url = that.queue.externalBuildUrl(
-      that.queue.getLatestArtifact,
-      task.taskId,
-      artifactName,
-    );
-  } else {
-    url = that.queue.externalBuildSignedUrl(
-      that.queue.getLatestArtifact,
-      task.taskId,
-      artifactName, {
-        expiration: 15 * 60,
-      });
-  }
+  url = that.queue.externalBuildSignedUrl(
+    that.queue.getLatestArtifact,
+    task.taskId,
+    artifactName, {
+      expiration: 15 * 60,
+    },
+  );
   // Redirect to artifact
   return res.redirect(303, url);
 });
