@@ -63,6 +63,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:scheduler-id:my-scheduler-extended-extended',
       'queue:route:*',
+      'queue:status:' + taskId,
     );
 
     debug('### Create task');
@@ -265,6 +266,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:scheduler-id:-',
+      'queue:status:' + taskId,
     );
 
     debug('### Creating task');
@@ -283,6 +285,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:scheduler-id:-',
+      'queue:status:' + taskId,
     );
 
     debug('### Creating task');

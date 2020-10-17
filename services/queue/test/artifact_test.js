@@ -103,6 +103,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       helper.scopes(
         'queue:create-artifact:public/s3.json',
         'assume:worker-id:my-worker-group/my-worker',
+        'queue:get-artifact:public/*',
+        'queue:list-artifacts:' + taskId,
+        'queue:list-artifacts:' + taskId + ':0',
       );
       const r1 = await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
         storageType: 's3',
