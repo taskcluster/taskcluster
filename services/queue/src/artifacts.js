@@ -417,12 +417,7 @@ builder.declare({
   name: 'getArtifact',
   stability: APIBuilder.stability.stable,
   category: 'Artifacts',
-  scopes: {
-    if: 'private',
-    then: {
-      AllOf: ['queue:get-artifact:<name>'],
-    },
-  },
+  scopes: 'queue:get-artifact:<name>',
   title: 'Get Artifact from Run',
   description: [
     'Get artifact by `<name>` from a specific run.',
@@ -506,11 +501,6 @@ builder.declare({
   let runId = parseInt(req.params.runId, 10);
   let name = req.params.name;
 
-  await req.authorize({
-    private: !/^public\//.test(name),
-    name,
-  });
-
   return replyWithArtifact.call(this, taskId, runId, name, req, res);
 });
 
@@ -521,12 +511,7 @@ builder.declare({
   name: 'getLatestArtifact',
   stability: APIBuilder.stability.stable,
   category: 'Artifacts',
-  scopes: {
-    if: 'private',
-    then: {
-      AllOf: ['queue:get-artifact:<name>'],
-    },
-  },
+  scopes: 'queue:get-artifact:<name>',
   title: 'Get Artifact from Latest Run',
   description: [
     'Get artifact by `<name>` from the last run of a task.',
@@ -548,11 +533,6 @@ builder.declare({
 }, async function(req, res) {
   let taskId = req.params.taskId;
   let name = req.params.name;
-
-  await req.authorize({
-    private: !/^public\//.test(name),
-    name,
-  });
 
   // Load task status structure from table
   let task = await Task.get(this.db, taskId);
@@ -580,6 +560,7 @@ builder.declare({
   route: '/task/:taskId/runs/:runId/artifacts',
   query: paginateResults.query,
   name: 'listArtifacts',
+  scopes: 'queue:list-artifacts:<taskId>:<runId>',
   stability: APIBuilder.stability.stable,
   category: 'Artifacts',
   output: 'list-artifacts-response.json#',
@@ -644,6 +625,7 @@ builder.declare({
   method: 'get',
   route: '/task/:taskId/artifacts',
   name: 'listLatestArtifacts',
+  scopes: 'queue:list-artifacts:<taskId>',
   query: paginateResults.query,
   stability: APIBuilder.stability.stable,
   output: 'list-artifacts-response.json#',
