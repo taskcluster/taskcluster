@@ -107,11 +107,11 @@ To declare an API method, call `builder.declare(options, handler)` with the foll
  * `stability` - API stability level, defaulting to experimental (see below)
  * `input` - the schema against which the input payload will be validated. This should be the path to the file
    containing the schema in `schemas/<version>`, i.e. `schema.yaml`
- * `skipInputValidation` - if true, don't do input validation (but include the schema in documentation)
+ * `skipInputValidation` - if `true`, don't do input validation (but include the schema in documentation)
  * `output` - the schema against which the output payload will be validated. This should be the path to the file
    containing the schema in `schemas/<version>`, i.e. `schema.yaml`.  If the value is 'blob', the output of the
    method should be interpreted as a stream of bytes and not a JSON document
- * `skipOutputValidation` - if true, don't do output validation (but include the schema in documentation)
+ * `skipOutputValidation` - if `true`, don't do output validation (but include the schema in documentation)
  * `cleanPayload` - a function taking and returning a payload, which will "clean" any values that should
    not appear in error messages (for example, removing secrets)
 

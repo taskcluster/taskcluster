@@ -24,7 +24,7 @@ MonitorManager.register({
     statusCode: 'The http status code that the endpoint resolved with.',
     duration: 'The duration in ms of the call.',
     public: 'True if the endpoint requires no scopes.',
-    hasAuthed: 'Will be true if the request had req.authorize() called on it.',
+    hasAuthed: 'Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).',
     clientId: 'The clientId that made the request, if there was one.',
     expires: 'The expiration date of the credentials, if the header was authenticated.',
     sourceIp: 'The API method caller\'s IP',

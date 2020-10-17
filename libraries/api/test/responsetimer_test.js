@@ -26,6 +26,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
+    scopes: null,
   }, function(req, res) {
     res.status(200).send(req.params.myparam);
   });
@@ -37,6 +38,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
+    scopes: null,
   }, function(req, res) {
     res.status(404).send(req.params.name);
   });
@@ -48,6 +50,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
+    scopes: null,
   }, function(req, res) {
     res.status(500).send(req.params.name);
   });
