@@ -324,8 +324,7 @@ suite(testing.suiteName(), function() {
           } else {
             assert(err.message.match(/This request requires Taskcluster/));
           }
-
-          return res.reply({});
+          return res.reportError('InsufficientScopes', 'Insufficient scopes as intended');
         }
         throw err;
       }
@@ -335,13 +334,13 @@ suite(testing.suiteName(), function() {
       {
         label: 'insufficient scopes with auth has documented details',
         id: 'nobody',
-        desiredStatus: 200,
+        desiredStatus: 403,
         tester: (auth, url) => requestWithHawk(url, auth),
       },
       {
         label: 'insufficient scopes without auth has documented details',
         shouldCallAuth: true,
-        desiredStatus: 200,
+        desiredStatus: 403,
         tester: (auth, url) => noAuthRequest(url),
       },
     ],

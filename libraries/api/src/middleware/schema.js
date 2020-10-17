@@ -68,7 +68,7 @@ const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, ent
         req.tcContext.monitor.reportError(new Error('API method implementation called res.send twice'));
         return;
       }
-      if (!req.public && !req.hasAuthed) {
+      if (!req.public && !req.satisfyingScopes) {
         throw new Error('Deferred auth was never checked!');
       }
       // If we're supposed to validate outgoing messages and output schema is
