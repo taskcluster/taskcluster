@@ -295,14 +295,11 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
       // substituting the request parameters by default
       if (!entry.scopes) {
         req.public = true; // No need to check auth if there are no scopes
-        next();
-      } else {
+      } else if (useUrlParams) {
         // If url parameters is enough to parameterize we do it automatically
-        if (useUrlParams) {
-          await req.authorize(req.params);
-        }
-        next();
+        await req.authorize(req.params);
       }
+      next();
     } catch (err) {
       return next(err);
     }
