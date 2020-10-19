@@ -205,8 +205,7 @@
   },
   "renovate": {
     "extends": [
-      "config:base",
-      "schedule:daily"
+      "config:base"
     ],
     "dependencyDashboard": true,
     "rebaseConflictedPrs": false,
