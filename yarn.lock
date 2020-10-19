@@ -584,6 +584,11 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
+"@tootallnate/once@1":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
+  integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
+
 "@types/accepts@*", "@types/accepts@^1.3.5":
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/@types/accepts/-/accepts-1.3.5.tgz#c34bec115cfc746e04fe5a059df4ce7e7b391575"
@@ -3748,6 +3753,15 @@ http-errors@~1.7.2:
     statuses ">= 1.5.0 < 2"
     toidentifier "1.0.0"
 
+http-proxy-agent@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/http-proxy-agent/-/http-proxy-agent-4.0.1.tgz#8a8c8ef7f5932ccf953c296ca8291b95aa74aa3a"
+  integrity sha512-k0zdNgqWTGA6aeIRVpvfVob4fL52dTfaehylg0Y4UvSySvOq/Y+BOyPrgpUrA7HylqvU8vIZGsRuXmspskV0Tg==
+  dependencies:
+    "@tootallnate/once" "1"
+    agent-base "6"
+    debug "4"
+
 http-signature@~1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/http-signature/-/http-signature-1.2.0.tgz#9aecd925114772f3d95b65a60abb8f7c18fbace1"
@@ -4301,13 +4315,15 @@ jwa@^2.0.0:
     safe-buffer "^5.0.1"
 
 jwks-rsa@^1.2.1:
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-1.10.0.tgz#48d55f168eb731ed730a86c732068e03e16b3c22"
-  integrity sha512-ix1h4R1+dNTmeUDo+oLpHjVrql34SR89sw9lAVXmKICj3DVUszhhMIwTM8PzhQ+58I4hDnk7x5mxA1SWiGZPDg==
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-1.10.1.tgz#fa56b2c67de504ea2ad19adafbcd7162274d19b1"
+  integrity sha512-UmjOsATVu7eQr17wbBCS+BSoz5LFtl57PtNXHbHFeT1WKomHykCHtn7c8inWVI7tpnsy6CZ1KOMJTgipFwXPig==
   dependencies:
     "@types/express-jwt" "0.0.42"
     axios "^0.19.2"
     debug "^4.1.0"
+    http-proxy-agent "^4.0.1"
+    https-proxy-agent "^5.0.0"
     jsonwebtoken "^8.5.1"
     limiter "^1.1.5"
     lru-memoizer "^2.1.2"
