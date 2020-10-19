@@ -25,6 +25,7 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
 	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/mocktc"
 )
@@ -334,7 +335,6 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 type Test struct {
 	t                  *testing.T
 	Config             *gwconfig.Config
-	Provider           Provider
 	OldInternalPUTPort uint16
 	OldInternalGETPort uint16
 	OldConfigureForGCP bool
@@ -476,7 +476,6 @@ func GWTest(t *testing.T) *Test {
 	return &Test{
 		t:                  t,
 		Config:             testConfig,
-		Provider:           NO_PROVIDER,
 		OldInternalPUTPort: internalPUTPort,
 		OldInternalGETPort: internalGETPort,
 		srv:                srv,
@@ -485,18 +484,16 @@ func GWTest(t *testing.T) *Test {
 }
 
 func (gwtest *Test) Setup() error {
-	configFile := &gwconfig.File{
+	configFile = &gwconfig.File{
 		Path: filepath.Join(testdataDir, gwtest.t.Name(), "generic-worker.config"),
 	}
-	if gwtest.Provider == NO_PROVIDER {
-		err := configFile.Persist(gwtest.Config)
-		if err != nil {
-			gwtest.t.Fatalf("Could not persist config file: %v", err)
-		}
+
+	err := fileutil.WriteToFileAsJSON(gwtest.Config, configFile.Path)
+	if err != nil {
+		gwtest.t.Fatalf("Could not write config file: %v", err)
 	}
-	var err error
-	configProvider, err = loadConfig(configFile, gwtest.Provider)
-	return err
+
+	return loadConfig(configFile)
 }
 
 func (gwtest *Test) Teardown() {

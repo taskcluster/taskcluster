@@ -17,7 +17,6 @@ const (
 	WORKER_SHUTDOWN             ExitCode = 72
 	INVALID_CONFIG              ExitCode = 73
 	CANT_CREATE_ED25519_KEYPAIR ExitCode = 75
-	CANT_SAVE_CONFIG            ExitCode = 76
 	CANT_CONNECT_PROTOCOL_PIPE  ExitCode = 78
 )
 
@@ -261,9 +260,7 @@ and reports back results to the queue.
     72     The worker is running on spot infrastructure in AWS EC2 and has been served a
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.` + exitCode74() + `
-    75     Not able to create an ed25519 key pair.
-    76     Not able to save generic-worker config file after fetching it from AWS provisioner
-           or Google Cloud metadata.` + exitCode77() + `
+    75     Not able to create an ed25519 key pair.` + exitCode77() + `
     78     Not able to connect to --worker-runner-protocol-pipe.
 `
 }

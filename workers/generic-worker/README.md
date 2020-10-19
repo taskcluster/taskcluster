@@ -250,8 +250,6 @@ and reports back results to the queue.
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.
     75     Not able to create an ed25519 key pair.
-    76     Not able to save generic-worker config file after fetching it from AWS provisioner
-           or Google Cloud metadata.
     77     Not able to apply required file access permissions to the generic-worker config
            file so that task users can't read from or write to it.
     78     Not able to connect to --worker-runner-protocol-pipe.

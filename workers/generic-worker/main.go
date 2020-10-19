@@ -55,7 +55,7 @@ var (
 	taskContext    = &TaskContext{}
 	config         *gwconfig.Config
 	serviceFactory tc.ServiceFactory
-	configProvider gwconfig.Provider
+	configFile     *gwconfig.File
 	Features       []Feature
 
 	logName   = "public/logs/live_backing.log"
@@ -133,38 +133,16 @@ func main() {
 			}
 		}
 
+		serviceFactory = &tc.ClientFactory{}
 		initializeWorkerRunnerProtocol(os.Stdin, os.Stdout, withWorkerRunner)
 
 		configFileAbs, err := filepath.Abs(arguments["--config"].(string))
 		exitOnError(CANT_LOAD_CONFIG, err, "Cannot determine absolute path location for generic-worker config file '%v'", arguments["--config"])
 
-		configFile := &gwconfig.File{
+		configFile = &gwconfig.File{
 			Path: configFileAbs,
 		}
-
-		var provider Provider = NO_PROVIDER
-
-		serviceFactory = &tc.ClientFactory{}
-
-		configProvider, err = loadConfig(configFile, provider)
-
-		// We need to persist the generic-worker config file if we fetched it
-		// over the network.
-		//
-		// We persist the config _before_ checking for an error from the
-		// loadConfig function call, so that if there was an error, we can see
-		// what the processed config looked like before the error occurred.
-		//
-		// Note, we only persist the config file if the file doesn't already
-		// exist. We don't want to overwrite an existing user-provided config.
-		// The full config is logged (with secrets obfuscated) in the server
-		// logs, so this should provide a reliable way to inspect what config
-		// was in the case of an unexpected failure, including default values
-		// for config settings not provided in the user-supplied config file.
-		if configFile.DoesNotExist() {
-			errPersist := configFile.Persist(config)
-			exitOnError(CANT_SAVE_CONFIG, errPersist, "Not able to persist config file %v", configFile)
-		}
+		err = loadConfig(configFile)
 		exitOnError(CANT_LOAD_CONFIG, err, "Error loading configuration")
 
 		// Config known to be loaded successfully at this point...
@@ -214,12 +192,8 @@ func main() {
 	}
 }
 
-func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider, error) {
-
-	configProvider, err := ConfigProvider(configFile, provider)
-	if err != nil {
-		return nil, err
-	}
+func loadConfig(configFile *gwconfig.File) error {
+	var err error
 
 	// first assign defaults
 
@@ -251,16 +225,10 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 		},
 	}
 
-	if configFile.DoesNotExist() {
-		// apply values from provider
-		err = configProvider.UpdateConfig(config)
-	} else {
-		// apply values from config file
-		err = configFile.UpdateConfig(config)
-	}
-
+	// apply values from config file
+	err = configFile.UpdateConfig(config)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Add useful worker config to worker metadata
@@ -295,17 +263,7 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 		"workerId":        config.WorkerID,
 		"workerType":      config.WorkerType,
 	}
-	return configProvider, nil
-}
-
-func ConfigProvider(configFile *gwconfig.File, provider Provider) (gwconfig.Provider, error) {
-	var configProvider gwconfig.Provider
-	switch provider {
-	default:
-		configProvider = configFile
-	}
-
-	return configProvider, nil
+	return nil
 }
 
 var exposer expose.Exposer
@@ -546,7 +504,7 @@ func RunWorker() (exitCode ExitCode) {
 }
 
 func deploymentIDUpdated() bool {
-	latestDeploymentID, err := configProvider.NewestDeploymentID()
+	latestDeploymentID, err := configFile.NewestDeploymentID()
 	switch {
 	case err != nil:
 		log.Printf("%v", err)
