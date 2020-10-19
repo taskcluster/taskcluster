@@ -84,23 +84,7 @@
     "@azure/ms-rest-js" "^2.0.4"
     tslib "^1.10.0"
 
-"@azure/ms-rest-js@^2.0.4":
-  version "2.0.8"
-  resolved "https://registry.yarnpkg.com/@azure/ms-rest-js/-/ms-rest-js-2.0.8.tgz#f84304fba29e699fc7a391ce47af2824af4f585e"
-  integrity sha512-PO4pnYaF66IAB/RWbhrTprGyhOzDzsgcbT7z8k3O38JKlwifbrhW+8M0fzx0ScZnaacP8rZyBazYMUF9P12c0g==
-  dependencies:
-    "@types/node-fetch" "^2.3.7"
-    "@types/tunnel" "0.0.1"
-    abort-controller "^3.0.0"
-    form-data "^2.5.0"
-    node-fetch "^2.6.0"
-    tough-cookie "^3.0.1"
-    tslib "^1.10.0"
-    tunnel "0.0.6"
-    uuid "^3.3.2"
-    xml2js "^0.4.19"
-
-"@azure/ms-rest-js@^2.0.5":
+"@azure/ms-rest-js@^2.0.4", "@azure/ms-rest-js@^2.0.5":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@azure/ms-rest-js/-/ms-rest-js-2.1.0.tgz#41bc541984983b5242dfbcf699ea281acd045946"
   integrity sha512-4BXLVImYRt+jcUmEJ5LUWglI8RBNVQndY6IcyvQ4U8O4kIXdmlRz3cJdA/RpXf5rKT38KOoTO2T6Z1f6Z1HDBg==
