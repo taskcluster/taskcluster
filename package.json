@@ -205,14 +205,14 @@
   },
   "renovate": {
     "extends": [
-      "config:base",
-      "schedule:daily"
+      "config:base"
     ],
     "dependencyDashboard": true,
     "rebaseConflictedPrs": false,
     "prHourlyLimit": 0,
     "prConcurrentLimit": 9,
     "rangeStrategy": "update-lockfile",
+    "semanticCommits": "disabled",
     "packageRules": [
       {
         "packageNames": [
