@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v37.4.0
+
+### GENERAL
+
+▶ [patch] [#3659](https://github.com/taskcluster/taskcluster/issues/3659)
+Slack and Email notifications' Task Group URLs are now correct (containing `/tasks`).
+
+▶ [patch] [#3639](https://github.com/taskcluster/taskcluster/issues/3639)
+`taskDefined` messages will now always have an unscheduled status.
+
+### USERS
+
+▶ [patch] [#3631](https://github.com/taskcluster/taskcluster/issues/3631)
+Calling a JS Client constructor with no arguments works again -- assuming that any necessary configuration was passed to `taskcluster.config(..)`.
+
+### DEVELOPERS
+
+▶ [minor] [#3538](https://github.com/taskcluster/taskcluster/issues/3538)
+DB function `get_workers` is now deprecated.
+
+▶ [patch] [#3619](https://github.com/taskcluster/taskcluster/issues/3619)
+The `tools/workerproto` Go package is now available for external use, and its API is considered stable (in other words, breaking changes will result in a major version bump).
+
+### OTHER
+
+▶ Additional change not described here: [#3591](https://github.com/taskcluster/taskcluster/issues/3591).
+
 ## v37.3.0
 
 ### DEPLOYERS
