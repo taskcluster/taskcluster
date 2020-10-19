@@ -326,7 +326,7 @@ func TestAPICallGET(t *testing.T) {
 }
 
 func TestAPICallPOST(t *testing.T) {
-	test := func(scopes []string) IntegrationTest {
+	test := func(scopes []string, sendContentType bool) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 			// Test setup
@@ -352,7 +352,9 @@ func TestAPICallPOST(t *testing.T) {
 				"http://localhost:60024/auth/v1/test-authenticate",
 				bytes.NewBufferString(`{"clientScopes": ["test:*", "auth:create-client:test:*"], "requiredScopes": ["test:authenticate-post"]}`),
 			)
-			req.Header["content-type"] = []string{"application/json"}
+			if sendContentType {
+				req.Header["Content-Type"] = []string{"application/json"}
+			}
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -365,19 +367,22 @@ func TestAPICallPOST(t *testing.T) {
 	}
 
 	t.Run("Test with perm creds without authorizedScopes", func(t *testing.T) {
-		testWithPermCreds(t, test([]string{}), 200)
+		testWithPermCreds(t, test([]string{}, true), 200)
+	})
+	t.Run("Test with perm creds without Content-Type header", func(t *testing.T) {
+		testWithPermCreds(t, test([]string{}, false), 200)
 	})
 	t.Run("Test with perm creds with authorizedScopes", func(t *testing.T) {
-		testWithPermCreds(t, test([]string{"test:authenticate-post"}), 200)
+		testWithPermCreds(t, test([]string{"test:authenticate-post"}, true), 200)
 	})
 	t.Run("Test with perm creds with wrong authorizedScopes", func(t *testing.T) {
-		testWithPermCreds(t, test([]string{"test:something-else"}), 403)
+		testWithPermCreds(t, test([]string{"test:something-else"}, true), 403)
 	})
 	t.Run("Test with temp creds without authorizedScopes", func(t *testing.T) {
-		testWithTempCreds(t, test([]string{}), 200, "test:authenticate-post")
+		testWithTempCreds(t, test([]string{}, true), 200, "test:authenticate-post")
 	})
 	t.Run("Test with temp creds with authorizedScopes", func(t *testing.T) {
-		testWithTempCreds(t, test([]string{"test:authenticate-post"}), 200, "test:authenticate-post")
+		testWithTempCreds(t, test([]string{"test:authenticate-post"}, true), 200, "test:authenticate-post")
 	})
 }
 
