@@ -219,7 +219,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   test('link for clickable badges when no such thing exists', async function() {
     await assert.rejects(() => got(
       helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'unknownRepo', 'nosuch'),
-      { followRedirect: false }), err => err.statusCode === 404);
+      { followRedirect: false }), err => err.response.statusCode === 404);
   });
 
   test('simple status creation', async function() {
