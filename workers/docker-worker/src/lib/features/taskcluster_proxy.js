@@ -70,13 +70,9 @@ class TaskclusterProxy {
     // Terrible hack to get container promise proxy.
     this.container = docker.getContainer(this.container.id);
 
-    // XXX: Temporary work around to get errors from the container.  Replace this
-    // with a more general purpose way of logging things from sidecar containers.
-    let debugLevel = process.env.DEBUG || '';
-    if (debugLevel.includes(this.featureName) || debugLevel === '*') {
-      let stream = await this.container.attach({ stream: true, stdout: true, stderr: true });
-      stream.pipe(process.stdout);
-    }
+    // Stream output from the container to the worker logs.
+    let stream = await this.container.attach({ stream: true, stdout: true, stderr: true });
+    stream.pipe(process.stdout);
 
     await this.container.start({});
 

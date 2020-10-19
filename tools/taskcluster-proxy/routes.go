@@ -145,7 +145,6 @@ func (routes *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 	routes.lock.RLock()
 	defer routes.lock.RUnlock()
 
-	fmt.Printf("root handler %s\n", req.URL)
 	targetPath, err := routes.services.ConvertPath(req.URL)
 
 	// Unkown service which we are trying to hit...
@@ -167,7 +166,6 @@ func (routes *Routes) APIHandler(res http.ResponseWriter, req *http.Request) {
 	defer routes.lock.RUnlock()
 
 	rawPath := req.URL.EscapedPath()
-	fmt.Printf("api handler %s\n", rawPath)
 
 	query := req.URL.RawQuery
 	if query != "" {
@@ -234,6 +232,13 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 		}
 		for k, v := range req.Header {
 			proxyreq.Header[k] = v
+		}
+
+		// for compatibility, if there is no request Content-Type and the body
+		// has nonzero length, we add a Content-Type header.  See #3521.
+		if _, ok := req.Header["Content-Type"]; !ok && len(body) != 0 {
+			log.Printf("Adding missing Content-Type header (#3521)")
+			proxyreq.Header["Content-Type"] = []string{"application/json"}
 		}
 
 		// Refresh Authorization header with each call...
