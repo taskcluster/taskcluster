@@ -145,7 +145,6 @@ func (routes *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 	routes.lock.RLock()
 	defer routes.lock.RUnlock()
 
-	fmt.Printf("root handler %s\n", req.URL)
 	targetPath, err := routes.services.ConvertPath(req.URL)
 
 	// Unkown service which we are trying to hit...
@@ -167,7 +166,6 @@ func (routes *Routes) APIHandler(res http.ResponseWriter, req *http.Request) {
 	defer routes.lock.RUnlock()
 
 	rawPath := req.URL.EscapedPath()
-	fmt.Printf("api handler %s\n", rawPath)
 
 	query := req.URL.RawQuery
 	if query != "" {
