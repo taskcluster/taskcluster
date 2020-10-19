@@ -32,8 +32,7 @@ and reports back results to the queue.
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
                                             [--with-worker-runner]
-                                            [--worker-runner-protocol-pipe PIPE]
-                                            [--configure-for-azure]` + installServiceSummary() + `
+                                            [--worker-runner-protocol-pipe PIPE]` + installServiceSummary() + `
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE` + customTargetsSummary() + `
     generic-worker --help
@@ -66,10 +65,7 @@ and reports back results to the queue.
                                             worker-runner, passing the same value as given for
                                             'worker.protocolPipe' in the runner configuration.
                                             This specifies a named pipe that is used for
-                                            communication between the two processes.
-    --configure-for-azure                   This will create the CONFIG-FILE for an Azure
-                                            installation by querying the Azure environment
-                                            and setting appropriate values.` + platformCommandLineParameters() + `
+                                            communication between the two processes.` + platformCommandLineParameters() + `
     --file PRIVATE-KEY-FILE                 The path to the file to write the private key
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,

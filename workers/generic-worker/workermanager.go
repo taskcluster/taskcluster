@@ -23,7 +23,6 @@ type Provider uint
 
 const (
 	NO_PROVIDER = iota
-	AZURE_PROVIDER
 )
 
 func (userData *WorkerManagerUserData) UpdateConfig(c *gwconfig.Config, providerType interface{}) error {
