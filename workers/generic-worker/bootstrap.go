@@ -15,11 +15,11 @@ import (
 
 // BootstrapConfig is the data structure used by generic-worker to provide
 // elementary bootstrapping of the worker host environment dynamically on the
-// worker's first run. The data is either provided by the AWS Provisioner
-// (userData property of worker type definition) or by Worker Manager
+// worker's first run. The data is either provided by Worker Manager
 // (config.workerConfig property of worker pool).
 //
-// Since AWS Provisioner and Worker Manager provide a single JSON object for
+// TODO: not true!
+// Since Worker Manager provides a single JSON object for
 // worker configuration, generic-worker interprets only the `genericWorker`
 // property of this object, to allow other systems on the worker to store
 // other information that they need in the same JSON object.
@@ -30,6 +30,7 @@ type BootstrapConfig struct {
 	GenericWorker json.RawMessage `json:"genericWorker"`
 }
 
+// TODO ???
 // PublicHostSetup is the data structure that is passed into AWS userdata by
 // the provisioner via the userData property/properties of the worker type
 // definition. Since this data is included in the worker type definition, it
@@ -67,6 +68,7 @@ func Bootstrap(c *gwconfig.Config, workerConfig *BootstrapConfig, secretPrefix s
 	// are included.
 	publicHostSetup, err := workerConfig.PublicHostSetup()
 	if err != nil {
+		// TODO: AWS?
 		return fmt.Errorf("Error retrieving/interpreting host setup from /data/genericWorker in AWS userdata: %v", err)
 	}
 
@@ -82,6 +84,7 @@ func Bootstrap(c *gwconfig.Config, workerConfig *BootstrapConfig, secretPrefix s
 		return nil
 	})
 	if err != nil {
+		// TODO: AWS?
 		return fmt.Errorf("Error applying /data/genericWorker/config from AWS userdata to config: %v", err)
 	}
 

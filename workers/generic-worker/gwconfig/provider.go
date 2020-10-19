@@ -1,7 +1,7 @@
 package gwconfig
 
 // gwconfig.Provider is an interface for configuring generic-worker.
-// Implementors include AWSProvisioner, AWSProvider, GCPConfigProvider, and
+// Implementors include GCPConfigProvider, and
 // gwconfig.File for configuring generic-worker from a local file.
 type Provider interface {
 	// NewestDeploymentID fetches the latest/newest/most-recent deployment ID.

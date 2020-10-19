@@ -50,8 +50,6 @@ var (
 	cwd = CwdOrPanic()
 	// workerReady becomes true when it is able to call queue.claimWork for the first time
 	workerReady = false
-	// Whether we are running in AWS
-	configureForAWS bool
 	// Whether we are running in GCP
 	configureForGCP bool
 	// Whether we are running in Azure
@@ -124,7 +122,6 @@ func main() {
 		fmt.Println(taskPayloadSchema())
 
 	case arguments["run"]:
-		configureForAWS = arguments["--configure-for-aws"].(bool)
 		configureForGCP = arguments["--configure-for-gcp"].(bool)
 		configureForAzure = arguments["--configure-for-azure"].(bool)
 
@@ -154,8 +151,6 @@ func main() {
 
 		var provider Provider = NO_PROVIDER
 		switch {
-		case configureForAWS:
-			provider = AWS_PROVIDER
 		case configureForGCP:
 			provider = GCP_PROVIDER
 		case configureForAzure:
@@ -167,9 +162,8 @@ func main() {
 		configProvider, err = loadConfig(configFile, provider)
 
 		// We need to persist the generic-worker config file if we fetched it
-		// over the network, for example if the config is fetched from the AWS
-		// Provider (--configure-for-aws) or from the Google Cloud service
-		// (--configure-for-gcp).
+		// over the network, for example if the config is fetched from the Google
+		// Cloud service (--configure-for-gcp).
 		//
 		// We persist the config _before_ checking for an error from the
 		// loadConfig function call, so that if there was an error, we can see
@@ -321,12 +315,6 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 func ConfigProvider(configFile *gwconfig.File, provider Provider) (gwconfig.Provider, error) {
 	var configProvider gwconfig.Provider
 	switch provider {
-	case AWS_PROVIDER:
-		var err error
-		configProvider, err = InferAWSConfigProvider()
-		if err != nil {
-			return nil, err
-		}
 	case GCP_PROVIDER:
 		configProvider = &GCPConfigProvider{}
 	case AZURE_PROVIDER:
@@ -1103,19 +1091,6 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	// with the reason `worker-shutdown`. Upon such report the queue will
 	// resolve the run as exception and create a new run, if the task has
 	// additional retries left.
-	if configureForAWS {
-		stopHandlingAWSWorkerShutdown := handleAWSWorkerShutdown(func() {
-			_ = task.StatusManager.Abort(
-				&CommandExecutionError{
-					Cause:      fmt.Errorf("AWS has issued a spot termination - need to abort task"),
-					Reason:     workerShutdown,
-					TaskStatus: aborted,
-				},
-			)
-		})
-		defer stopHandlingAWSWorkerShutdown()
-	}
-
 	stopHandlingGracefulTermination := graceful.OnTerminationRequest(func(finishTasks bool) {
 		if !finishTasks {
 			_ = task.StatusManager.Abort(
