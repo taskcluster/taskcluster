@@ -33,7 +33,7 @@ and reports back results to the queue.
     generic-worker run                      [--config         CONFIG-FILE]
                                             [--with-worker-runner]
                                             [--worker-runner-protocol-pipe PIPE]
-                                            [--configure-for-gcp | --configure-for-azure]` + installServiceSummary() + `
+                                            [--configure-for-azure]` + installServiceSummary() + `
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE` + customTargetsSummary() + `
     generic-worker --help
@@ -69,9 +69,6 @@ and reports back results to the queue.
                                             communication between the two processes.
     --configure-for-azure                   This will create the CONFIG-FILE for an Azure
                                             installation by querying the Azure environment
-                                            and setting appropriate values.
-    --configure-for-gcp                     This will create the CONFIG-FILE for a GCP
-                                            installation by querying the GCP environment
                                             and setting appropriate values.` + platformCommandLineParameters() + `
     --file PRIVATE-KEY-FILE                 The path to the file to write the private key
                                             to. The parent directory must already exist.
@@ -218,12 +215,6 @@ and reports back results to the queue.
                                             [default: "test-worker-group"]
           workerLocation                    If a non-empty string, task commands will have environment variable
                                             TASKCLUSTER_WORKER_LOCATION set to the value provided.
-
-                                            If an empty string, and --configure-for-gcp is specified,
-                                            TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
-                                            string containing the JSON object:
-                                            {"cloud":"google","region":"<REGION>","zone":"<ZONE>"}
-                                            See: https://github.com/taskcluster/taskcluster/tree/main/tools/worker-runner#google
 
                                             Otherwise TASKCLUSTER_WORKER_LOCATION environment
                                             variable will not be implicitly set in task commands.
