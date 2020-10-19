@@ -212,6 +212,7 @@
     "prHourlyLimit": 0,
     "prConcurrentLimit": 9,
     "rangeStrategy": "update-lockfile",
+    "semanticCommits": "disabled",
     "packageRules": [
       {
         "packageNames": [
