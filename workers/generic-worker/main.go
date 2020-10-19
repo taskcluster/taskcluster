@@ -388,7 +388,9 @@ func HandleCrash(r interface{}) {
 	log.Print(string(debug.Stack()))
 	log.Print(" *********** PANIC occurred! *********** ")
 	log.Printf("%v", r)
-	errorreport.Send(WorkerRunnerProtocol, r, debugInfo)
+	if WorkerRunnerProtocol != nil {
+		errorreport.Send(WorkerRunnerProtocol, r, debugInfo)
+	}
 	ReportCrashToSentry(r)
 }
 
