@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-built-in-workers",
-  "version": "37.5.0",
+  "version": "37.5.1",
   "private": true,
   "scripts": {
     "coverage": "c8 yarn test",
