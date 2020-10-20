@@ -3,6 +3,32 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v37.5.0
+
+### GENERAL
+
+▶ [minor] [#3640](https://github.com/taskcluster/taskcluster/issues/3640)
+Notify routes can now include `on-defined`, `on-pending` and `on-running`.
+
+`on-any` is now deprecated and there are two new alternatives:
+- `on-transition` for any state transition.
+- `on-resolved` for terminal states (completed, failed and exception).
+
+▶ [patch] 
+taskcluster-web-server is now equipped with the anonymous role. This will allow
+it to assign the anonymous role to users who successfuly login.
+
+### USERS
+
+▶ [minor] [#3521](https://github.com/taskcluster/taskcluster/issues/3521)
+Taskcluster-proxy now adds a `Content-Type` header to proxied requests lacking one.  While this behavior is not desirable, it matches the behavior of older versions and real tasks depend on it.  A future version of Taskcluster will drop this behavior.
+
+When this occurs, the worker will log a message containing the string "Adding missing Content-Type header".  Use this logging to find tasks that fail to include the `Content-Type` header and adjust accordingly.
+
+### OTHER
+
+▶ Additional change not described here: [#3679](https://github.com/taskcluster/taskcluster/issues/3679).
+
 ## v37.4.0
 
 ### GENERAL
