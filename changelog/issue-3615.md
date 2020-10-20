@@ -56,3 +56,9 @@ least one scope, to enable the following:
   scopes to role `anonymous`
 * Pick and choose specific "public" endpoints to make available to anonymous
   requests
+
+
+Performance testing (refer to
+https://github.com/taskcluster/taskcluster/issues/3698 for more details):
+* CPU has seen an increase of 0%-15%
+* Memory has seen no increase
