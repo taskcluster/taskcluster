@@ -29,7 +29,6 @@ const IGNORE = {
     'subscriptions-transport-ws',
     'tslib',
     '@types/node',
-    'uuid',
     'zen-observable',
   ].includes(pkg),
   'ui/yarn.lock': pkg => [
