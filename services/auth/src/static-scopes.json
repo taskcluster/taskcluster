@@ -2,6 +2,7 @@
   {
     "clientId": "static/taskcluster/built-in-workers",
     "scopes": [
+      "assume:anonymous",
       "assume:worker-id:built-in/*",
       "queue:claim-work:built-in/*",
       "queue:resolve-task",
@@ -11,6 +12,7 @@
   {
     "clientId": "static/taskcluster/github",
     "scopes": [
+      "assume:anonymous",
       "assume:repo:github.com/*",
       "assume:scheduler-id:taskcluster-github/*",
       "queue:route:checks",
@@ -21,6 +23,7 @@
   {
     "clientId": "static/taskcluster/hooks",
     "scopes": [
+      "assume:anonymous",
       "assume:hook-id:*",
       "notify:email:*",
       "queue:create-task:*"
@@ -29,6 +32,7 @@
   {
     "clientId": "static/taskcluster/index",
     "scopes": [
+      "assume:anonymous",
       "queue:get-artifact:*"
     ]
   },
@@ -56,6 +60,7 @@
   {
     "clientId": "static/taskcluster/web-server",
     "scopes": [
+      "assume:anonymous",
       "assume:github-org-admin:*",
       "assume:github-team:*",
       "assume:login-identity:*",
@@ -78,6 +83,7 @@
   {
     "clientId": "static/taskcluster/worker-manager",
     "scopes": [
+      "assume:anonymous",
       "assume:worker-id:*",
       "assume:worker-pool:*",
       "assume:worker-type:*",
