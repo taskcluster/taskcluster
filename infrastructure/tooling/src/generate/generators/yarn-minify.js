@@ -31,7 +31,6 @@ const IGNORE = {
   ].includes(pkg),
   'ui/yarn.lock': pkg => [
     'acorn',
-    'ajv',
     'array-includes',
     'async',
     'bluebird',
