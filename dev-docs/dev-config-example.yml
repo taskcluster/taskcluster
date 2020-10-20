@@ -9,7 +9,6 @@ forceSSL: false
 trustProxy: true
 nodeEnv: production
 meta: {}
-errorConfig: {}
 auth:
   static_clients:
     - clientId: static/taskcluster/built-in-workers

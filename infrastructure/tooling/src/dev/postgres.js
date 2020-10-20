@@ -58,6 +58,11 @@ const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
 const postgresResources = async ({ userConfig, answer, configTmpl }) => {
   let servicesNeedingUrls = [];
   for (const [name, cfg] of Object.entries(configTmpl)) {
+    // only examine services in configTmpl..
+    if (!cfg.read_db_url) {
+      continue;
+    }
+
     if (!userConfig[name]) {
       userConfig[name] = {};
     }

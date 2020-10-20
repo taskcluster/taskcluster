@@ -402,7 +402,6 @@ exports.tasks.push({
       trustProxy: true,
       nodeEnv: 'production',
       meta: {},
-      errorConfig: {},
     };
 
     const currentRelease = await readRepoYAML(path.join('infrastructure', 'tooling', 'current-release.yml'));
