@@ -11,16 +11,6 @@ const azureResources = async ({ userConfig, answer, configTmpl }) => {
 
   delete userConfig.azureAccountId;
 
-  /* TODO: rewrite these in-place
-
-  for (const [service, cfg] of Object.entries(configTmpl)) {
-    if (cfg.azure_crypto_key && !userConfig[service].azure_crypto_key) {
-      userConfig[service].azure_crypto_key = Buffer.from((slugid.v4() + slugid.v4()).slice(0, 32)).toString('base64');
-      userConfig[service].azure_signing_key = slugid.v4() + slugid.v4();
-    }
-  }
-  */
-
   return userConfig;
 };
 

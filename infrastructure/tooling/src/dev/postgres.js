@@ -56,27 +56,50 @@ const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
 };
 
 const postgresResources = async ({ userConfig, answer, configTmpl }) => {
-  let servicesNeedingConfig = [];
+  let servicesNeedingUrls = [];
   for (const [name, cfg] of Object.entries(configTmpl)) {
     if (!userConfig[name]) {
       userConfig[name] = {};
     }
-    if (cfg.db_crypto_keys !== undefined && !userConfig[name].db_crypto_keys) {
-      userConfig[name].db_crypto_keys = [{
-        id: 'dev-init',
-        algo: 'aes-256',
-        key: crypto.randomBytes(32).toString('base64'),
-      }];
+
+    // set up crypto keys, including migrating from azure_{crypto,signing}_key
+
+    if (cfg.db_crypto_keys !== undefined) {
+      if (!userConfig[name].db_crypto_keys) {
+        userConfig[name].db_crypto_keys = [{
+          id: 'dev-init',
+          algo: 'aes-256',
+          key: crypto.randomBytes(32).toString('base64'),
+        }];
+      }
+
+      if (userConfig[name].azure_crypto_key) {
+        userConfig[name].db_crypto_keys.unshift({
+          id: 'azure',
+          algo: 'aes-256',
+          key: userConfig[name].azure_crypto_key,
+        });
+        delete userConfig[name].azure_crypto_key;
+      }
+    } else {
+      // this service doesn't use encrypted columns..
+      delete userConfig[name].azure_crypto_key;
     }
+
+    // signing is no longer supported in any service
+    delete userConfig[name].azure_signing_key;
+
+    // check for the *_db_url parameters
+
     if (cfg.read_db_url !== undefined && !userConfig[name].read_db_url) {
-      servicesNeedingConfig.push(name);
+      servicesNeedingUrls.push(name);
     } else if (cfg.write_db_url !== undefined && !userConfig[name].write_db_url) {
-      servicesNeedingConfig.push(name);
+      servicesNeedingUrls.push(name);
     }
   }
 
   // if all services are set up, there's nothing to do..
-  if (servicesNeedingConfig.length === 0) {
+  if (servicesNeedingUrls.length === 0) {
     return userConfig;
   }
 
@@ -95,7 +118,7 @@ const postgresResources = async ({ userConfig, answer, configTmpl }) => {
   await client.connect();
 
   try {
-    for (let serviceName of servicesNeedingConfig) {
+    for (let serviceName of servicesNeedingUrls) {
       const username = `${dbAdminUsername}_${serviceName}`;
       const password = `${slugid.v4()}${slugid.v4()}`;
       const url = makePgUrl({
