@@ -15,3 +15,4 @@
 - auth:reset-access-token:github/*
 - auth:update-client:github/*
 - assume:login-identity:*
+- assume:anonymous

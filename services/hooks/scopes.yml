@@ -1,3 +1,4 @@
 - assume:hook-id:*
 - notify:email:*
 - queue:create-task:*
+- assume:anonymous

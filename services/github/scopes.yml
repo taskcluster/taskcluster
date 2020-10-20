@@ -3,3 +3,4 @@
 - queue:route:statuses
 - queue:route:checks
 - assume:scheduler-id:taskcluster-github/*
+- assume:anonymous

@@ -1,1 +1,2 @@
 - queue:get-artifact:*
+- assume:anonymous

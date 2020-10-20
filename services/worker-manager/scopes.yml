@@ -9,3 +9,4 @@
 - queue:worker-id:*
 - worker-manager:remove-worker:*
 - worker-manager:reregister-worker:*
+- assume:anonymous

@@ -2,3 +2,4 @@
 - assume:worker-id:built-in/*
 - queue:worker-id:built-in/*
 - queue:resolve-task
+- assume:anonymous
