@@ -215,10 +215,9 @@
     "semanticCommits": "disabled",
     "packageRules": [
       {
-        "packageNames": [
-          "aws-sdk",
-          "golang.org/x/sys",
-          "golang.org/x/tools"
+        "packagePatterns": [
+          "^aws-sdk$",
+          "^golang\.org/x/.*"
         ],
         "schedule": [
           "after 9pm on sunday"
