@@ -17,7 +17,6 @@ const (
 	WORKER_SHUTDOWN             ExitCode = 72
 	INVALID_CONFIG              ExitCode = 73
 	CANT_CREATE_ED25519_KEYPAIR ExitCode = 75
-	CANT_SAVE_CONFIG            ExitCode = 76
 	CANT_CONNECT_PROTOCOL_PIPE  ExitCode = 78
 )
 
@@ -32,8 +31,7 @@ and reports back results to the queue.
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
                                             [--with-worker-runner]
-                                            [--worker-runner-protocol-pipe PIPE]
-                                            [--configure-for-aws | --configure-for-gcp | --configure-for-azure]` + installServiceSummary() + `
+                                            [--worker-runner-protocol-pipe PIPE]` + installServiceSummary() + `
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE` + customTargetsSummary() + `
     generic-worker --help
@@ -66,20 +64,7 @@ and reports back results to the queue.
                                             worker-runner, passing the same value as given for
                                             'worker.protocolPipe' in the runner configuration.
                                             This specifies a named pipe that is used for
-                                            communication between the two processes.
-    --configure-for-aws                     Use this option when installing or running a worker
-                                            that is spawned by the AWS provisioner. It will cause
-                                            the worker to query the EC2 metadata service when it
-                                            is run, in order to retrieve data that will allow it
-                                            to self-configure, based on AWS metadata, information
-                                            from the provisioner, and the worker type definition
-                                            that the provisioner holds for the worker type.
-    --configure-for-azure                   This will create the CONFIG-FILE for an Azure
-                                            installation by querying the Azure environment
-                                            and setting appropriate values.
-    --configure-for-gcp                     This will create the CONFIG-FILE for a GCP
-                                            installation by querying the GCP environment
-                                            and setting appropriate values.` + platformCommandLineParameters() + `
+                                            communication between the two processes.` + platformCommandLineParameters() + `
     --file PRIVATE-KEY-FILE                 The path to the file to write the private key
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,
@@ -226,18 +211,6 @@ and reports back results to the queue.
           workerLocation                    If a non-empty string, task commands will have environment variable
                                             TASKCLUSTER_WORKER_LOCATION set to the value provided.
 
-                                            If an empty string, and --configure-for-aws is specified,
-                                            TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
-                                            string containing the JSON object:
-                                            {"cloud":"aws","region":"<REGION>","availabilityZone":"<AZ>"}
-                                            See: https://github.com/taskcluster/taskcluster/tree/main/tools/worker-runner#aws
-
-                                            If an empty string, and --configure-for-gcp is specified,
-                                            TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
-                                            string containing the JSON object:
-                                            {"cloud":"google","region":"<REGION>","zone":"<ZONE>"}
-                                            See: https://github.com/taskcluster/taskcluster/tree/main/tools/worker-runner#google
-
                                             Otherwise TASKCLUSTER_WORKER_LOCATION environment
                                             variable will not be implicitly set in task commands.
                                             [default: ""]
@@ -287,9 +260,7 @@ and reports back results to the queue.
     72     The worker is running on spot infrastructure in AWS EC2 and has been served a
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.` + exitCode74() + `
-    75     Not able to create an ed25519 key pair.
-    76     Not able to save generic-worker config file after fetching it from AWS provisioner
-           or Google Cloud metadata.` + exitCode77() + `
+    75     Not able to create an ed25519 key pair.` + exitCode77() + `
     78     Not able to connect to --worker-runner-protocol-pipe.
 `
 }

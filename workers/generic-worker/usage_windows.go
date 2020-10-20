@@ -8,8 +8,7 @@ func installServiceSummary() string {
 	return `
     generic-worker install service          [--nssm           NSSM-EXE]
                                             [--service-name   SERVICE-NAME]
-                                            [--config         CONFIG-FILE]
-                                            [--configure-for-aws | --configure-for-gcp]`
+                                            [--config         CONFIG-FILE]`
 }
 
 func customTargetsSummary() string {

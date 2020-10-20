@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"path/filepath"
-	"strconv"
 )
 
 func helloGoodbye() [][]string {
@@ -32,15 +31,6 @@ func returnExitCode(exitCode uint) [][]string {
 			"/bin/bash",
 			"-c",
 			fmt.Sprintf("exit %d", exitCode),
-		},
-	}
-}
-
-func sleep(seconds uint) [][]string {
-	return [][]string{
-		{
-			"sleep",
-			strconv.Itoa(int(seconds)),
 		},
 	}
 }

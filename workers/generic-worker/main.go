@@ -50,18 +50,12 @@ var (
 	cwd = CwdOrPanic()
 	// workerReady becomes true when it is able to call queue.claimWork for the first time
 	workerReady = false
-	// Whether we are running in AWS
-	configureForAWS bool
-	// Whether we are running in GCP
-	configureForGCP bool
-	// Whether we are running in Azure
-	configureForAzure bool
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
 	taskContext    = &TaskContext{}
 	config         *gwconfig.Config
 	serviceFactory tc.ServiceFactory
-	configProvider gwconfig.Provider
+	configFile     *gwconfig.File
 	Features       []Feature
 
 	logName   = "public/logs/live_backing.log"
@@ -124,10 +118,6 @@ func main() {
 		fmt.Println(taskPayloadSchema())
 
 	case arguments["run"]:
-		configureForAWS = arguments["--configure-for-aws"].(bool)
-		configureForGCP = arguments["--configure-for-gcp"].(bool)
-		configureForAzure = arguments["--configure-for-azure"].(bool)
-
 		withWorkerRunner := arguments["--with-worker-runner"].(bool)
 		if withWorkerRunner {
 			// redirect stdio to the protocol pipe, if given; eventually this will
@@ -143,48 +133,16 @@ func main() {
 			}
 		}
 
+		serviceFactory = &tc.ClientFactory{}
 		initializeWorkerRunnerProtocol(os.Stdin, os.Stdout, withWorkerRunner)
 
 		configFileAbs, err := filepath.Abs(arguments["--config"].(string))
 		exitOnError(CANT_LOAD_CONFIG, err, "Cannot determine absolute path location for generic-worker config file '%v'", arguments["--config"])
 
-		configFile := &gwconfig.File{
+		configFile = &gwconfig.File{
 			Path: configFileAbs,
 		}
-
-		var provider Provider = NO_PROVIDER
-		switch {
-		case configureForAWS:
-			provider = AWS_PROVIDER
-		case configureForGCP:
-			provider = GCP_PROVIDER
-		case configureForAzure:
-			provider = AZURE_PROVIDER
-		}
-
-		serviceFactory = &tc.ClientFactory{}
-
-		configProvider, err = loadConfig(configFile, provider)
-
-		// We need to persist the generic-worker config file if we fetched it
-		// over the network, for example if the config is fetched from the AWS
-		// Provider (--configure-for-aws) or from the Google Cloud service
-		// (--configure-for-gcp).
-		//
-		// We persist the config _before_ checking for an error from the
-		// loadConfig function call, so that if there was an error, we can see
-		// what the processed config looked like before the error occurred.
-		//
-		// Note, we only persist the config file if the file doesn't already
-		// exist. We don't want to overwrite an existing user-provided config.
-		// The full config is logged (with secrets obfuscated) in the server
-		// logs, so this should provide a reliable way to inspect what config
-		// was in the case of an unexpected failure, including default values
-		// for config settings not provided in the user-supplied config file.
-		if configFile.DoesNotExist() {
-			errPersist := configFile.Persist(config)
-			exitOnError(CANT_SAVE_CONFIG, errPersist, "Not able to persist config file %v", configFile)
-		}
+		err = loadConfig(configFile)
 		exitOnError(CANT_LOAD_CONFIG, err, "Error loading configuration")
 
 		// Config known to be loaded successfully at this point...
@@ -234,12 +192,8 @@ func main() {
 	}
 }
 
-func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider, error) {
-
-	configProvider, err := ConfigProvider(configFile, provider)
-	if err != nil {
-		return nil, err
-	}
+func loadConfig(configFile *gwconfig.File) error {
+	var err error
 
 	// first assign defaults
 
@@ -271,16 +225,10 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 		},
 	}
 
-	if configFile.DoesNotExist() {
-		// apply values from provider
-		err = configProvider.UpdateConfig(config)
-	} else {
-		// apply values from config file
-		err = configFile.UpdateConfig(config)
-	}
-
+	// apply values from config file
+	err = configFile.UpdateConfig(config)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Add useful worker config to worker metadata
@@ -315,27 +263,7 @@ func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider
 		"workerId":        config.WorkerID,
 		"workerType":      config.WorkerType,
 	}
-	return configProvider, nil
-}
-
-func ConfigProvider(configFile *gwconfig.File, provider Provider) (gwconfig.Provider, error) {
-	var configProvider gwconfig.Provider
-	switch provider {
-	case AWS_PROVIDER:
-		var err error
-		configProvider, err = InferAWSConfigProvider()
-		if err != nil {
-			return nil, err
-		}
-	case GCP_PROVIDER:
-		configProvider = &GCPConfigProvider{}
-	case AZURE_PROVIDER:
-		configProvider = &AzureConfigProvider{}
-	default:
-		configProvider = configFile
-	}
-
-	return configProvider, nil
+	return nil
 }
 
 var exposer expose.Exposer
@@ -388,7 +316,9 @@ func HandleCrash(r interface{}) {
 	log.Print(string(debug.Stack()))
 	log.Print(" *********** PANIC occurred! *********** ")
 	log.Printf("%v", r)
-	errorreport.Send(WorkerRunnerProtocol, r, debugInfo)
+	if WorkerRunnerProtocol != nil {
+		errorreport.Send(WorkerRunnerProtocol, r, debugInfo)
+	}
 	ReportCrashToSentry(r)
 }
 
@@ -574,7 +504,7 @@ func RunWorker() (exitCode ExitCode) {
 }
 
 func deploymentIDUpdated() bool {
-	latestDeploymentID, err := configProvider.NewestDeploymentID()
+	latestDeploymentID, err := configFile.NewestDeploymentID()
 	switch {
 	case err != nil:
 		log.Printf("%v", err)
@@ -1101,19 +1031,6 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	// with the reason `worker-shutdown`. Upon such report the queue will
 	// resolve the run as exception and create a new run, if the task has
 	// additional retries left.
-	if configureForAWS {
-		stopHandlingAWSWorkerShutdown := handleAWSWorkerShutdown(func() {
-			_ = task.StatusManager.Abort(
-				&CommandExecutionError{
-					Cause:      fmt.Errorf("AWS has issued a spot termination - need to abort task"),
-					Reason:     workerShutdown,
-					TaskStatus: aborted,
-				},
-			)
-		})
-		defer stopHandlingAWSWorkerShutdown()
-	}
-
 	stopHandlingGracefulTermination := graceful.OnTerminationRequest(func(finishTasks bool) {
 		if !finishTasks {
 			_ = task.StatusManager.Abort(

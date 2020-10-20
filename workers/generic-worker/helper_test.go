@@ -25,8 +25,8 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
 	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/mockec2"
 	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/mocktc"
 )
 
@@ -210,25 +210,6 @@ func submitAndAssert(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload Ge
 	return taskID
 }
 
-func checkSHA256OfFile(t *testing.T, path string, SHA256 string) {
-	f, err := os.Open(path)
-	if err != nil {
-		t.Fatalf("Could not open file %v: %v", path, err)
-	}
-	defer f.Close()
-
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		t.Fatalf("Error reading from file %v: %v", path, err)
-	}
-	actualSHA256 := fmt.Sprintf("%x", h.Sum(nil))
-	if actualSHA256 != SHA256 {
-		t.Fatalf("Expected SHA256 of %v to be %v but was %v", path, SHA256, actualSHA256)
-	} else {
-		t.Logf("SHA256 of %v correct (%v = %v)", path, SHA256, actualSHA256)
-	}
-}
-
 func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
 	b, err := json.Marshal(x)
 	if err != nil {
@@ -351,30 +332,14 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 	return
 }
 
-func ExpectError(t *testing.T, errorText string, err error) {
-	if err == nil || !strings.Contains(err.Error(), errorText) {
-		t.Fatalf("Was expecting error to include %q but got: %v", errorText, err)
-	}
-}
-
-func ExpectNoError(t *testing.T, err error) {
-	if err != nil {
-		t.Fatalf("Was expecting no error but got: %v", err)
-	}
-}
-
 type Test struct {
-	t                     *testing.T
-	Config                *gwconfig.Config
-	Provider              Provider
-	OldInternalPUTPort    uint16
-	OldInternalGETPort    uint16
-	OldEC2MetadataBaseURL string
-	OldConfigureForAWS    bool
-	OldConfigureForGCP    bool
-	OldConfigureForAzure  bool
-	srv                   *http.Server
-	router                *mux.Router
+	t                  *testing.T
+	Config             *gwconfig.Config
+	OldInternalPUTPort uint16
+	OldInternalGETPort uint16
+	OldConfigureForGCP bool
+	srv                *http.Server
+	router             *mux.Router
 }
 
 func GWTest(t *testing.T) *Test {
@@ -509,51 +474,31 @@ func GWTest(t *testing.T) *Test {
 	internalGETPort = 30583
 
 	return &Test{
-		t:                     t,
-		Config:                testConfig,
-		Provider:              NO_PROVIDER,
-		OldInternalPUTPort:    internalPUTPort,
-		OldInternalGETPort:    internalGETPort,
-		OldEC2MetadataBaseURL: EC2MetadataBaseURL,
-		OldConfigureForAWS:    configureForAWS,
-		OldConfigureForGCP:    configureForGCP,
-		OldConfigureForAzure:  configureForAzure,
-		srv:                   srv,
-		router:                r,
+		t:                  t,
+		Config:             testConfig,
+		OldInternalPUTPort: internalPUTPort,
+		OldInternalGETPort: internalGETPort,
+		srv:                srv,
+		router:             r,
 	}
-}
-
-func (gwtest *Test) MockEC2() *mockec2.Metadata {
-	mockec2 := mockec2.New(&gwtest.Config.PublicConfig, "test-provider", nil)
-	mockec2.RegisterService(gwtest.router)
-	gwtest.Provider = AWS_PROVIDER
-	EC2MetadataBaseURL = "http://localhost:13243/latest"
-	configureForAWS = true
-	return mockec2
 }
 
 func (gwtest *Test) Setup() error {
-	configFile := &gwconfig.File{
+	configFile = &gwconfig.File{
 		Path: filepath.Join(testdataDir, gwtest.t.Name(), "generic-worker.config"),
 	}
-	if gwtest.Provider == NO_PROVIDER {
-		err := configFile.Persist(gwtest.Config)
-		if err != nil {
-			gwtest.t.Fatalf("Could not persist config file: %v", err)
-		}
+
+	err := fileutil.WriteToFileAsJSON(gwtest.Config, configFile.Path)
+	if err != nil {
+		gwtest.t.Fatalf("Could not write config file: %v", err)
 	}
-	var err error
-	configProvider, err = loadConfig(configFile, gwtest.Provider)
-	return err
+
+	return loadConfig(configFile)
 }
 
 func (gwtest *Test) Teardown() {
 	internalPUTPort = gwtest.OldInternalPUTPort
 	internalGETPort = gwtest.OldInternalGETPort
-	EC2MetadataBaseURL = gwtest.OldEC2MetadataBaseURL
-	configureForAWS = gwtest.OldConfigureForAWS
-	configureForGCP = gwtest.OldConfigureForGCP
-	configureForAzure = gwtest.OldConfigureForAzure
 	gwtest.t.Logf("Removing test directory %v...", filepath.Join(testdataDir, gwtest.t.Name()))
 	err := os.RemoveAll(filepath.Join(testdataDir, gwtest.t.Name()))
 	if err != nil {
