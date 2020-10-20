@@ -82,14 +82,16 @@ const postgresResources = async ({ userConfig, answer, configTmpl }) => {
 
   const { dbAdminUsername, dbAdminPassword, dbName, dbPublicIp, dbPrivateIp } =
     Object.assign({}, userConfig.meta || {}, answer.meta || {});
-  const adminDbUrl = makePgUrl({
-    hostname: dbPublicIp,
-    username: dbAdminUsername,
-    password: dbAdminPassword,
-    dbname: dbName,
-  });
 
-  const client = new Client({ connectionString: adminDbUrl });
+  const client = new Client({
+    host: dbPublicIp,
+    user: dbAdminUsername,
+    password: dbAdminPassword,
+    database: dbName,
+    // Cloud SQL servers support TLS but not cert validation, so don't
+    // try to validate it.
+    ssl: { rejectUnauthorized: false },
+  });
   await client.connect();
 
   try {
