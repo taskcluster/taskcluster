@@ -5,7 +5,7 @@
   "engine-strict": true,
   "engines": {
     "node": "12.18.4",
-    "yarn": "^1.22.5"
+    "yarn": "^1.22.10"
   },
   "description": "Docker task host for linux.",
   "bin": {
