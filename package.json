@@ -217,7 +217,7 @@
       {
         "packagePatterns": [
           "^aws-sdk$",
-          "^golang\.org/x/.*"
+          "^golang.org/x/.*"
         ],
         "schedule": [
           "after 9pm on sunday"
