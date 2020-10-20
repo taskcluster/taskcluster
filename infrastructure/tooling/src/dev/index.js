@@ -6,7 +6,7 @@ const { readRepoYAML, writeRepoYAML } = require('../utils');
 const inquirer = require('inquirer');
 const commonPrompts = require('./common');
 const { rabbitPrompts, rabbitResources } = require('./rabbit');
-const { azurePrompts, azureResources } = require('./azure');
+const { azureResources } = require('./azure');
 const { postgresPrompts, postgresResources } = require('./postgres');
 const { k8sResources } = require('./k8s');
 const awsResources = require('./aws');
@@ -38,7 +38,6 @@ const init = async (options) => {
   await commonPrompts({ userConfig, prompts, configTmpl });
   await rabbitPrompts({ userConfig, prompts, configTmpl });
   await postgresPrompts({ userConfig, prompts, configTmpl });
-  await azurePrompts({ userConfig, prompts, configTmpl });
 
   let answer = await inquirer.prompt(prompts);
 
