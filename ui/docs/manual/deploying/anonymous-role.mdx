@@ -54,3 +54,8 @@ A "public" deployment of Taskcluster, allowing unauthenticated read-only access,
   - `worker-manager:list-worker-pool-errors:*`
   - `worker-manager:list-worker-pools`
   - `worker-manager:list-workers:*`
+
+## Private Deployments
+
+In order to disallow access to unauthenticated APIs, leave the `anonymous` role empty. Alternatively, pick and
+choose specific unauthenticated APIs to make available to anonymous requests.
