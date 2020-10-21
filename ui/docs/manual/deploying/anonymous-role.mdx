@@ -1,0 +1,56 @@
+---
+title: Anonymous Role
+---
+
+# Anonymous Role
+
+A single scope `assume:anonymous` will be granted for all calls (with or without credentials).
+The `anonymous` role is aimed at private Taskcluster installations. With this, it will
+be possible to prevent any useful access to the Taskcluster deployment without credentials
+allowing for greater administrator control over "public" endpoints.
+
+## Public endpoints
+
+All unauthenticated API calls are granted the scope `assume:anonymous`.
+In order to have all unauthenticated API calls public, grant the `anonymous` role the following scopes:
+
+  - `auth:current-scopes`
+  - `auth:expand-scopes`
+  - `auth:get-client:*`
+  - `auth:get-role:*`
+  - `auth:list-clients`
+  - `auth:list-roles`
+  - `github:get-badge:*`
+  - `github:get-repository:*`
+  - `github:latest-status:*`
+  - `github:list-builds`
+  - `hooks:get:*`
+  - `hooks:list-hooks:*`
+  - `hooks:list-last-fires:*`
+  - `hooks:status:*`
+  - `index:find-task:*`
+  - `index:list-namespaces:*`
+  - `index:list-tasks:*`
+  - `index:list-tasks-post:*`,
+  - `purge-cache:all-purge-requests`
+  - `purge-cache:purge-requests:*`
+  - `queue:get-artifact:public/*`
+  - `queue:get-provisioner:*`
+  - `queue:get-task:*`
+  - `queue:get-worker-type:*`
+  - `queue:get-worker:*`
+  - `queue:list-artifacts:*`
+  - `queue:list-dependent-tasks:*`
+  - `queue:list-provisioners`
+  - `queue:list-task-group:*`
+  - `queue:list-worker-types:*`
+  - `queue:list-workers:*`
+  - `queue:pending-count:*`
+  - `queue:status:*`
+  - `secrets:list-secrets`
+  - `worker-manager:get-worker-pool:*`
+  - `worker-manager:get-worker:*`
+  - `worker-manager:list-providers`
+  - `worker-manager:list-worker-pool-errors:*`
+  - `worker-manager:list-worker-pools`
+  - `worker-manager:list-workers:*`
