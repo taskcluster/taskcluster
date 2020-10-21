@@ -190,7 +190,7 @@ builder.declare({
   method: 'post',
   route: '/tasks/:namespace?',
   name: 'listTasksPost',
-  scopes: 'index:list-tasks-post:<namespace>',
+  scopes: 'index:list-tasks:<namespace>',
   stability: 'deprecated',
   noPublish: true,
   output: 'list-tasks-response.yml',
