@@ -137,8 +137,7 @@ func (index *Index) FindTask_SignedURL(indexPath string, duration time.Duration)
 // object.
 //
 // Required scopes:
-//   If namespaceGiven:
-//     index:list-namespaces:<namespace>
+//   index:list-namespaces:<namespace>
 //
 // See #listNamespaces
 func (index *Index) ListNamespaces(namespace, continuationToken, limit string) (*ListNamespacesResponse, error) {
@@ -157,8 +156,7 @@ func (index *Index) ListNamespaces(namespace, continuationToken, limit string) (
 // Returns a signed URL for ListNamespaces, valid for the specified duration.
 //
 // Required scopes:
-//   If namespaceGiven:
-//     index:list-namespaces:<namespace>
+//   index:list-namespaces:<namespace>
 //
 // See ListNamespaces for more details.
 func (index *Index) ListNamespaces_SignedURL(namespace, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -185,8 +183,7 @@ func (index *Index) ListNamespaces_SignedURL(namespace, continuationToken, limit
 // services, as that makes little sense.
 //
 // Required scopes:
-//   If namespaceGiven:
-//     index:list-tasks:<namespace>
+//   index:list-tasks:<namespace>
 //
 // See #listTasks
 func (index *Index) ListTasks(namespace, continuationToken, limit string) (*ListTasksResponse, error) {
@@ -205,8 +202,7 @@ func (index *Index) ListTasks(namespace, continuationToken, limit string) (*List
 // Returns a signed URL for ListTasks, valid for the specified duration.
 //
 // Required scopes:
-//   If namespaceGiven:
-//     index:list-tasks:<namespace>
+//   index:list-tasks:<namespace>
 //
 // See ListTasks for more details.
 func (index *Index) ListTasks_SignedURL(namespace, continuationToken, limit string, duration time.Duration) (*url.URL, error) {

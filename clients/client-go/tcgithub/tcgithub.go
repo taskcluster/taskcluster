@@ -110,9 +110,6 @@ func (github *Github) Ping() error {
 // Capture a GitHub event and publish it via pulse, if it's a push,
 // release or pull request.
 //
-// Required scopes:
-//   github:consume-webhook
-//
 // See #githubWebHookConsumer
 func (github *Github) GithubWebHookConsumer() error {
 	cd := tcclient.Client(*github)

@@ -103,7 +103,7 @@ func (hooks *Hooks) Ping() error {
 // This endpoint will return a list of all hook groups with at least one hook.
 //
 // Required scopes:
-//   hooks:list-hook-groups
+//   hooks:list-hooks:
 //
 // See #listHookGroups
 func (hooks *Hooks) ListHookGroups() (*HookGroups, error) {
@@ -115,7 +115,7 @@ func (hooks *Hooks) ListHookGroups() (*HookGroups, error) {
 // Returns a signed URL for ListHookGroups, valid for the specified duration.
 //
 // Required scopes:
-//   hooks:list-hook-groups
+//   hooks:list-hooks:
 //
 // See ListHookGroups for more details.
 func (hooks *Hooks) ListHookGroups_SignedURL(duration time.Duration) (*url.URL, error) {
@@ -302,9 +302,6 @@ func (hooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerToken
 // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
 // provided as the `payload` property of the JSON-e context used to render the
 // task template.
-//
-// Required scopes:
-//   hooks:trigger-hook:<hookGroupId>/<hookId>
 //
 // See #triggerHookWithToken
 func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerHookRequest) (*TriggerHookResponse, error) {

@@ -148,6 +148,20 @@
   },
   {
     "element": "h1",
+    "id": "anonymous-role",
+    "path": "/manual/deploying/anonymous-role",
+    "subtitle": null,
+    "title": "Anonymous Role"
+  },
+  {
+    "element": "h2",
+    "id": "public-endpoints",
+    "path": "/manual/deploying/anonymous-role",
+    "subtitle": "Public endpoints",
+    "title": "Anonymous Role"
+  },
+  {
+    "element": "h1",
     "id": "backups-and-restores",
     "path": "/manual/deploying/backups",
     "subtitle": null,

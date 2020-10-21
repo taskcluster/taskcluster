@@ -11,7 +11,7 @@ export default class Github extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.githubWebHookConsumer.entry = {"args":[],"category":"Github Service","method":"post","name":"githubWebHookConsumer","query":[],"route":"/github","scopes":"github:consume-webhook","stability":"stable","type":"function"}; // eslint-disable-line
+    this.githubWebHookConsumer.entry = {"args":[],"category":"Github Service","method":"post","name":"githubWebHookConsumer","query":[],"route":"/github","stability":"stable","type":"function"}; // eslint-disable-line
     this.builds.entry = {"args":[],"category":"Github Service","method":"get","name":"builds","output":true,"query":["continuationToken","limit","organization","repository","sha"],"route":"/builds","scopes":"github:list-builds","stability":"stable","type":"function"}; // eslint-disable-line
     this.badge.entry = {"args":["owner","repo","branch"],"category":"Github Service","method":"get","name":"badge","query":[],"route":"/repository/<owner>/<repo>/<branch>/badge.svg","scopes":"github:get-badge:<owner>:<repo>:<branch>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.repository.entry = {"args":["owner","repo"],"category":"Github Service","method":"get","name":"repository","output":true,"query":[],"route":"/repository/<owner>/<repo>","scopes":"github:get-repository:<owner>:<repo>","stability":"experimental","type":"function"}; // eslint-disable-line

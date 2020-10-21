@@ -729,7 +729,6 @@ module.exports = {
           "query": [
           ],
           "route": "/github",
-          "scopes": "github:consume-webhook",
           "stability": "stable",
           "title": "Consume GitHub WebHook",
           "type": "function"
@@ -1017,7 +1016,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks",
-          "scopes": "hooks:list-hook-groups",
+          "scopes": "hooks:list-hooks:",
           "stability": "stable",
           "title": "List hook groups",
           "type": "function"
@@ -1210,7 +1209,6 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
-          "scopes": "hooks:trigger-hook:<hookGroupId>/<hookId>",
           "stability": "stable",
           "title": "Trigger a hook with a token",
           "type": "function"
@@ -1349,11 +1347,7 @@ module.exports = {
             "limit"
           ],
           "route": "/namespaces/<namespace>",
-          "scopes": {
-            "else": "index:list-namespaces",
-            "if": "namespaceGiven",
-            "then": "index:list-namespaces:<namespace>"
-          },
+          "scopes": "index:list-namespaces:<namespace>",
           "stability": "stable",
           "title": "List Namespaces",
           "type": "function"
@@ -1372,11 +1366,7 @@ module.exports = {
             "limit"
           ],
           "route": "/tasks/<namespace>",
-          "scopes": {
-            "else": "index:list-tasks",
-            "if": "namespaceGiven",
-            "then": "index:list-tasks:<namespace>"
-          },
+          "scopes": "index:list-tasks:<namespace>",
           "stability": "stable",
           "title": "List Tasks",
           "type": "function"
