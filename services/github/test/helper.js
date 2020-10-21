@@ -102,7 +102,6 @@ exports.withServer = (mock, skipping) => {
     }, {
       rootUrl,
       anonymousScopes: [
-        'github:consume-webhook',
         'github:get-badge:*',
         'github:get-repository:*',
         'github:latest-status:*',

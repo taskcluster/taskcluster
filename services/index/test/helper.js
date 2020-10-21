@@ -76,8 +76,8 @@ exports.withServer = (mock, skipping) => {
       rootUrl: helper.rootUrl,
       anonymousScopes: [
         'queue:get-artifact:public/*',
-        'index:list-tasks',
-        'index:list-namespaces',
+        'index:list-tasks:*',
+        'index:list-namespaces:*',
       ],
     });
 
