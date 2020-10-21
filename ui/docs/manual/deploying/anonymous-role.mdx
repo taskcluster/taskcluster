@@ -12,7 +12,8 @@ allowing for greater administrator control over "public" endpoints.
 ## Public Deployments
 
 All unauthenticated API calls are granted the scope `assume:anonymous`.
-In order to have all unauthenticated API calls public, grant the `anonymous` role the following scopes:
+In order to allow unauthenticated API, grant the relevant scopes to the `anonymous` role.
+A "public" deployment of Taskcluster, allowing unauthenticated read-only access, would grant the following scopes:
 
   - `auth:current-scopes`
   - `auth:expand-scopes`
