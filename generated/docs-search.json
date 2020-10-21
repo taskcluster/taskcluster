@@ -155,9 +155,16 @@
   },
   {
     "element": "h2",
-    "id": "public-endpoints",
+    "id": "private-deployments",
     "path": "/manual/deploying/anonymous-role",
-    "subtitle": "Public endpoints",
+    "subtitle": "Private Deployments",
+    "title": "Anonymous Role"
+  },
+  {
+    "element": "h2",
+    "id": "public-deployments",
+    "path": "/manual/deploying/anonymous-role",
+    "subtitle": "Public Deployments",
     "title": "Anonymous Role"
   },
   {
