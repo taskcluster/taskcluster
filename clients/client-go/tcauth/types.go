@@ -28,6 +28,10 @@ type (
 
 		// The kind of response, `auth-failed`, `auth-success` or `no-auth`.
 		//
+		// `auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).
+		// `auth-failed`: request failed to authenticate (e.g., invalid credentials).
+		// `no-auth`: request provided no credentials/bewit.
+		//
 		// Possible values:
 		//   * "auth-failed"
 		Status string `json:"status"`
@@ -74,6 +78,10 @@ type (
 		Scopes []string `json:"scopes"`
 
 		// The kind of response, `auth-failed`, `auth-success` or `no-auth`.
+		//
+		// `auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).
+		// `auth-failed`: request failed to authenticate (e.g., invalid credentials).
+		// `no-auth`: request provided no credentials/bewit.
 		//
 		// Possible values:
 		//   * "auth-success"
@@ -549,6 +557,10 @@ type (
 		Scopes []string `json:"scopes"`
 
 		// The kind of response, `auth-failed`, `auth-success` or `no-auth`.
+		//
+		// `auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).
+		// `auth-failed`: request failed to authenticate (e.g., invalid credentials).
+		// `no-auth`: request provided no credentials/bewit.
 		//
 		// Possible values:
 		//   * "no-auth"
