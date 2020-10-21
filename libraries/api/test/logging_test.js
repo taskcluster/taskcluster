@@ -130,7 +130,7 @@ suite(testing.suiteName(), function() {
           satisfyingScopes: ['aa', 'bb', 'dd'],
           sourceIp: '::ffff:127.0.0.1',
           statusCode: 200,
-          v: 1,
+          v: 2,
         },
         Logger: 'taskcluster.lib-api',
       });
@@ -165,7 +165,7 @@ suite(testing.suiteName(), function() {
           satisfyingScopes: [],
           sourceIp: '::ffff:127.0.0.1',
           statusCode: 200,
-          v: 1,
+          v: 2,
         },
         Logger: 'taskcluster.lib-api',
       });
@@ -200,7 +200,7 @@ suite(testing.suiteName(), function() {
           satisfyingScopes: [],
           sourceIp: '::ffff:127.0.0.1',
           statusCode: 200,
-          v: 1,
+          v: 2,
         },
         Logger: 'taskcluster.lib-api',
       });
@@ -235,7 +235,7 @@ suite(testing.suiteName(), function() {
           satisfyingScopes: ['aa'],
           sourceIp: '::ffff:127.0.0.1',
           statusCode: 200,
-          v: 1,
+          v: 2,
         },
         Logger: 'taskcluster.lib-api',
       });
@@ -274,7 +274,7 @@ suite(testing.suiteName(), function() {
           satisfyingScopes: [],
           sourceIp: '::ffff:127.0.0.1',
           statusCode: 403,
-          v: 1,
+          v: 2,
         },
         Logger: 'taskcluster.lib-api',
       });
@@ -307,7 +307,7 @@ suite(testing.suiteName(), function() {
           satisfyingScopes: [],
           sourceIp: '::ffff:127.0.0.1',
           statusCode: 200,
-          v: 1,
+          v: 2,
         },
         Logger: 'taskcluster.lib-api',
       });
@@ -346,7 +346,7 @@ suite(testing.suiteName(), function() {
           satisfyingScopes: [],
           sourceIp: '::ffff:127.0.0.1',
           statusCode: 400,
-          v: 1,
+          v: 2,
         },
         Logger: 'taskcluster.lib-api',
       });
@@ -385,7 +385,7 @@ suite(testing.suiteName(), function() {
           satisfyingScopes: [],
           sourceIp: '::ffff:127.0.0.1',
           statusCode: 400,
-          v: 1,
+          v: 2,
         },
         Logger: 'taskcluster.lib-api',
       });
