@@ -177,10 +177,6 @@
       "title": "Configuration options for auth",
       "type": "object"
     },
-    "azureAccountId": {
-      "description": "An azure storage account for this deployment. Note this is a _storage_ account, not a billing one.",
-      "type": "string"
-    },
     "built_in_workers": {
       "additionalProperties": false,
       "properties": {
@@ -1822,7 +1818,6 @@
     "dockerImage",
     "pulseHostname",
     "pulseVhost",
-    "azureAccountId",
     "forceSSL",
     "trustProxy",
     "nodeEnv",

@@ -53,24 +53,6 @@
     "@azure/ms-rest-js" "^2.0.4"
     tslib "^1.10.0"
 
-"@azure/arm-resources@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@azure/arm-resources/-/arm-resources-2.1.0.tgz#bb7a3faca0c717656bef93c6f81ff6a9d1d8fa8b"
-  integrity sha512-WpBQt3QwfulWAgss7r6apfKswc6SS8Z005AhQalx618757dX+0kTiizL5XipDZFWq/nlCN2fFv9ba1m4v5x2tg==
-  dependencies:
-    "@azure/ms-rest-azure-js" "^2.0.1"
-    "@azure/ms-rest-js" "^2.0.4"
-    tslib "^1.10.0"
-
-"@azure/arm-storage@^11.0.0":
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/@azure/arm-storage/-/arm-storage-11.0.0.tgz#9445b42d65a6f97c2337ab3e4cabeecaa79b99bb"
-  integrity sha512-E8n5J9jG+Bt767yfgyeRl9TS8MScEStZ/38eAvmpAqFes6BDyfvpfpPJLUDfg9fo3JoDoUD1w5dUjepiNlKh8Q==
-  dependencies:
-    "@azure/ms-rest-azure-js" "^2.0.1"
-    "@azure/ms-rest-js" "^2.0.4"
-    tslib "^1.10.0"
-
 "@azure/ms-rest-azure-env@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@azure/ms-rest-azure-env/-/ms-rest-azure-env-2.0.0.tgz#45809f89763a480924e21d3c620cd40866771625"
