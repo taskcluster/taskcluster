@@ -140,7 +140,7 @@ const render = (compiledTemplate, params) => {
         switch (typeof params[value]) {
           case 'string': return params[value];
           case 'number': return params[value].toString();
-          case 'undefined': return '';  // translate undefined to an empty string
+          case 'undefined': return ''; // translate undefined to an empty string
           default:
             throw new Error(`Scope expression template expected parameter '${value}' to be a string, number, or undefined`);
         }
