@@ -11573,10 +11573,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -11590,7 +11590,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -12583,10 +12583,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -12600,7 +12600,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -12867,10 +12867,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -12884,7 +12884,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -14495,10 +14495,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -14512,7 +14512,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -14766,10 +14766,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -14783,7 +14783,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -15319,10 +15319,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -15336,7 +15336,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -15657,10 +15657,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -15674,7 +15674,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -16207,10 +16207,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -16224,7 +16224,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -16890,10 +16890,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but `false` if req.authenticate() has not been called (for example when no scopes are required), or if the request has invalid credentials (`auth-failed`). It does *not* imply authorization (i.e. scope satisfaction not guaranteed).",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -16907,7 +16907,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",

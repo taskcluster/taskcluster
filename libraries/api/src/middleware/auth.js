@@ -251,7 +251,7 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
 
         // Test that we have scope intersection, and hence, is authorized
         const satisfyingScopes = scopes.scopesSatisfying(result.scopes, scopeExpression);
-        req.hasAuthed = true;
+        req.authenticated = true;
 
         if (!satisfyingScopes) {
           const clientId = await req.clientId();
@@ -288,7 +288,7 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
         req.satisfyingScopes = satisfyingScopes;
       };
 
-      req.hasAuthed = false;
+      req.authenticated = false;
       req.public = false;
 
       // If authentication is deferred or satisfied, then we proceed,
