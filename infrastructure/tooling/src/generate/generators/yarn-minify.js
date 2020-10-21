@@ -16,7 +16,6 @@ const IGNORE = {
     'har-validator',
     'is-buffer',
     'is-regex',
-    'lodash',
     'mime',
     'mime-db',
     'mock-fs',
@@ -28,7 +27,6 @@ const IGNORE = {
     'signal-exit',
     'subscriptions-transport-ws',
     'tslib',
-    '@types/node',
     'zen-observable',
   ].includes(pkg),
   'ui/yarn.lock': pkg => [

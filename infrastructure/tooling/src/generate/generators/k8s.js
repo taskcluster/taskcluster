@@ -28,7 +28,6 @@ const SHARED_CONFIG = {
   taskcluster_root_url: '.Values.rootUrl',
   pulse_hostname: '.Values.pulseHostname',
   pulse_vhost: '.Values.pulseVhost',
-  azure_account_id: '.Values.azureAccountId',
   force_ssl: '.Values.forceSSL',
   trust_proxy: '.Values.trustProxy',
   node_env: '.Values.nodeEnv',
@@ -333,10 +332,6 @@ exports.tasks.push({
           type: 'string',
           description: 'The vhost this deployment will use on the rabbitmq cluster',
         },
-        azureAccountId: {
-          type: 'string',
-          description: 'An azure storage account for this deployment. Note this is a _storage_ account, not a billing one.',
-        },
 
         useKubernetesDnsServiceDiscovery: {
           type: 'boolean',
@@ -390,7 +385,7 @@ exports.tasks.push({
           additionalProperties: { type: 'string' },
         },
       },
-      required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'azureAccountId', 'forceSSL', 'trustProxy', 'nodeEnv', 'useKubernetesDnsServiceDiscovery'],
+      required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'forceSSL', 'trustProxy', 'nodeEnv', 'useKubernetesDnsServiceDiscovery'],
       aditionalProperties: false,
     };
 
@@ -403,12 +398,10 @@ exports.tasks.push({
       ingressCertName: '...',
       pulseHostname: '...',
       pulseVhost: '...',
-      azureAccountId: '...',
       forceSSL: false,
       trustProxy: true,
       nodeEnv: 'production',
       meta: {},
-      errorConfig: {},
     };
 
     const currentRelease = await readRepoYAML(path.join('infrastructure', 'tooling', 'current-release.yml'));
