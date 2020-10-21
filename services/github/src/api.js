@@ -187,7 +187,7 @@ builder.declare({
   method: 'post',
   route: '/github',
   name: 'githubWebHookConsumer',
-  scopes: 'github:consume-webhook',
+  scopes: null,
   title: 'Consume GitHub WebHook',
   category: 'Github Service',
   stability: 'stable',

@@ -930,7 +930,6 @@ builder.declare({
   method: 'get',
   route: '/scopes/current',
   name: 'currentScopes',
-  // Not sure if this needs to be scope free or not
   scopes: 'auth:current-scopes',
   output: 'scopeset.yml',
   category: 'Scopes and Auth',
