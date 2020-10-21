@@ -9,8 +9,8 @@ unauthenticated API calls are now granted the scope `assume:anonymous`.
 Additionally, most previously unprotected endpoints are now guarded by at
 least one scope, to enable the following:
 
-* To maintain current behavior, the `anonymous` will need to be granted to some scopes. Refer to
-`the [anonymous scope section](https://docs.taskcluster.net/docs/manual/design/apis/hawk/authorized-scopes) in the docs.
+* To maintain current behavior, some scopes will need to be granted to the `anonymous`role. Refer to
+`the [anonymous role section](https://docs.taskcluster.net/docs/manual/deploying/anonymous-role) in the docs.
 * To entirely lock down the cluster from anonymous access, do not grant any
   scopes to role `anonymous`
 * Pick and choose specific "public" endpoints to make available to anonymous
