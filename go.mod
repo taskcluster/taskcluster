@@ -28,7 +28,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mozilla-services/go-mozlogrus v2.0.0+incompatible
 	github.com/nwaples/rardecode v1.1.0 // indirect
-	github.com/pborman/uuid v1.2.0
+	github.com/pborman/uuid v1.2.1
 	github.com/peterbourgon/mergemap v0.0.0-20130613134717-e21c03b7a721
 	github.com/pierrec/lz4 v2.5.2+incompatible // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
