@@ -2,7 +2,7 @@ let url = require('url');
 let assert = require('assert');
 let debug = require('debug')('taskcluster-lib-testing:FakeAuth');
 let nock = require('nock');
-let hawk = require('@hapi/hawk');
+let hawk = require('hawk');
 let libUrls = require('taskcluster-lib-urls');
 let taskcluster = require('taskcluster-client');
 

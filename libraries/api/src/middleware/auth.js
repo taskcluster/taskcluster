@@ -1,4 +1,4 @@
-const hawk = require('@hapi/hawk');
+const hawk = require('hawk');
 const assert = require('assert');
 const scopes = require('taskcluster-lib-scopes');
 const crypto = require('crypto');
