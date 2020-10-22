@@ -19,7 +19,7 @@ require (
 	github.com/getsentry/raven-go v0.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/gorilla/mux v1.7.4
+	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/iancoleman/strcase v0.1.2
 	github.com/johncgriffin/overflow v0.0.0-20170615021017-4d914c927216
