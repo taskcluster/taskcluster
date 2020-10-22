@@ -30,7 +30,7 @@ const parseExt = function(ext) {
  * modified (otherwise it returns the original).
  */
 const limitClientWithExt = function(credentialName, issuingClientId, accessToken, scopes,
-  expires, ext, expandScopes) {
+  expires, ext) {
   let issuingScopes = scopes;
   let res = { scopes, expires, accessToken };
 
@@ -238,7 +238,7 @@ const createSignatureValidator = function(options) {
     if (ext) {
       ({ scopes, expires, accessToken } = limitClientWithExt(
         credentialName, issuingClientId, accessToken,
-        scopes, expires, ext, options.expandScopes));
+        scopes, expires, ext));
     }
 
     // Implicitly grant all clients the anonymous role
@@ -293,7 +293,7 @@ const createSignatureValidator = function(options) {
 
         credentials = authResult.credentials;
         attributes = authResult.artifacts; // Hawk uses "artifacts" and "attributes"
-      } else if (/^\/.*[\?&]bewit\=/.test(req.resource)) {
+      } else if (/^\/.*[\?&]bewit\=/.test(req.resource)) { // using regex because query parsing is disabled
         // Bewit present
         authResult = await hawk.uri.authenticate({
           method: req.method.toUpperCase(),

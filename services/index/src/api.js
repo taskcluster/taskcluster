@@ -88,7 +88,6 @@ builder.declare({
   let namespace = req.params.namespace || '';
   await req.authorize({
     namespace,
-    namespaceGiven: namespace !== '',
   });
 
   // Query with given namespace
@@ -129,7 +128,6 @@ builder.declare({
   let namespace = req.params.namespace || '';
   await req.authorize({
     namespace,
-    namespaceGiven: namespace !== '',
   });
 
   // Query with given namespace
@@ -172,7 +170,6 @@ builder.declare({
   const namespace = req.params.namespace || '';
   await req.authorize({
     namespace,
-    namespaceGiven: namespace !== '',
   });
   const { continuationToken, rows } = await helpers.taskUtils.getIndexedTasks(
     this.db,
@@ -203,7 +200,6 @@ builder.declare({
   const namespace = req.params.namespace || '';
   await req.authorize({
     namespace,
-    namespaceGiven: namespace !== '',
   });
   const { continuationToken, rows } = await helpers.taskUtils.getIndexedTasks(
     this.db,
