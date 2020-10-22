@@ -127,8 +127,5 @@
   "optionalDependencies": {
     "bufferutil": "^4.0.0",
     "utf-8-validate": "^5.0.0"
-  },
-  "resolutions": {
-    "@mdx-js/runtime/**/acorn": "^8.0.0"
   }
 }
