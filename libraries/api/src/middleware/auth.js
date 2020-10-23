@@ -179,7 +179,8 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
     scopeTemplate = new ScopeExpressionTemplate(entry.scopes);
     // Write route parameters into {[param]: ''}
     // if these are valid parameters, then we can parameterize using req.params
-    let [, params] = utils.cleanRouteAndParams(entry.route);
+    let [, params, optionalParams] = utils.cleanRouteAndParams(entry.route);
+    params = params.filter(param => !optionalParams.includes(param));
     params = Object.assign({}, ...params.map(p => ({ [p]: '' })));
     useUrlParams = scopeTemplate.validate(params);
   }

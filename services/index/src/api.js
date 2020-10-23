@@ -86,9 +86,6 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let namespace = req.params.namespace || '';
-  await req.authorize({
-    namespace,
-  });
 
   // Query with given namespace
   const { continuationToken, rows } = await helpers.namespaceUtils.getNamespaces(

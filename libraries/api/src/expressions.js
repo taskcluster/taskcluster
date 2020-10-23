@@ -137,13 +137,10 @@ const render = (compiledTemplate, params) => {
   if (ctmpl instanceof Array) {
     return ctmpl.map((value, i) => {
       if (i % 2 === 1) {
-        switch (typeof params[value]) {
-          case 'string': return params[value];
-          case 'number': return params[value].toString();
-          case 'undefined': return ''; // translate undefined to an empty string
-          default:
-            throw new Error(`Scope expression template expected parameter '${value}' to be a string, number, or undefined`);
+        if (typeof params[value] !== 'string' && typeof params[value] !== 'number') {
+          throw new Error(`Scope expression template expected parameter '${value}' to be a string or number`);
         }
+        return params[value];
       }
       return value;
     }).join('');
