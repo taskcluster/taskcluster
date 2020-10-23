@@ -2,13 +2,14 @@ const _ = require('lodash');
 const { Pool } = require('pg');
 const pg = require('pg');
 const crypto = require('crypto');
-const { dollarQuote, annotateError } = require('./util');
+const { annotateError } = require('./util');
 const Keyring = require('./Keyring');
 const assert = require('assert').strict;
 const { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } = require('./constants');
 const { MonitorManager } = require('taskcluster-lib-monitor');
 const named = require('yesql').pg;
 const { parse: parseConnectionString } = require('pg-connection-string');
+const { runMigration, runDowngrade } = require('./migration');
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -163,7 +164,9 @@ class Database {
         for (let v = dbVersion + 1; v <= stopAt; v++) {
           showProgress(`upgrading database to version ${v}`);
           const version = schema.getVersion(v);
-          await db._doUpgrade({ version, showProgress, usernamePrefix });
+          await db._withClient('admin', async client => {
+            await runMigration({ client, version, showProgress, usernamePrefix });
+          });
           showProgress(`upgrade to version ${v} successful`);
         }
       } else {
@@ -228,7 +231,16 @@ class Database {
           showProgress(`downgrading database from version ${v} to version ${v - 1}`);
           const fromVersion = schema.getVersion(v);
           const toVersion = v === 1 ? { version: 0, methods: [] } : schema.getVersion(v - 1);
-          await db._doDowngrade({ schema, fromVersion, toVersion, showProgress, usernamePrefix });
+          await db._withClient('admin', async client => {
+            await runDowngrade({
+              client,
+              schema,
+              fromVersion,
+              toVersion,
+              showProgress,
+              usernamePrefix,
+            });
+          });
           showProgress(`downgrade to version ${v - 1} successful`);
         }
       } else {
@@ -436,102 +448,6 @@ class Database {
             `this database is using ${collation}, and sorts '${pair[0]}' >= '${pair[1]}'.`,
           ].join(' '));
         }
-      }
-    });
-  }
-
-  async _doUpgrade({ version, showProgress, usernamePrefix }) {
-    await this._withClient('admin', async client => {
-      await client.query('begin');
-
-      try {
-        if (version.version === 1) {
-          await client.query('create table if not exists tcversion as select 0 as version');
-        }
-
-        // check the version and lock it to prevent other things from changing it
-        const res = await client.query('select version from tcversion for update');
-        if (res.rowCount !== 1 || res.rows[0].version !== version.version - 1) {
-          throw Error('Multiple DB upgrades running simultaneously');
-        }
-        if (version.migrationScript) {
-          showProgress('..running migration script');
-          const migrationScript = version.migrationScript
-            .replace(/\$db_user_prefix\$/g, usernamePrefix);
-          await client.query(`DO ${dollarQuote(migrationScript)}`);
-        }
-        showProgress('..defining methods');
-        for (let [methodName, { args, body, returns, deprecated }] of Object.entries(version.methods)) {
-          if (deprecated && !args && !returns && !body) {
-            continue; // This allows just deprecating without changing a method
-          }
-          await client.query(`create or replace function
-          "${methodName}"(${args})
-          returns ${returns}
-          as ${dollarQuote(body)}
-          language plpgsql`);
-        }
-        showProgress('..updating version');
-        await client.query('update tcversion set version = $1', [version.version]);
-        showProgress('..committing transaction');
-        await client.query('commit');
-      } catch (err) {
-        await client.query('rollback');
-        throw err;
-      }
-    });
-  }
-
-  async _doDowngrade({ schema, fromVersion, toVersion, showProgress, usernamePrefix }) {
-    assert.equal(fromVersion.version, toVersion.version + 1);
-    await this._withClient('admin', async client => {
-      await client.query('begin');
-
-      try {
-        // check the version and lock it to prevent other things from changing it
-        const res = await client.query('select version from tcversion for update');
-        if (res.rowCount !== 1 || res.rows[0].version !== fromVersion.version) {
-          throw Error('Multiple DB modifications running simultaneously');
-        }
-        if (fromVersion.downgradeScript) {
-          showProgress('..running downgrade script');
-          const downgradeScript = fromVersion.downgradeScript
-            .replace(/\$db_user_prefix\$/g, usernamePrefix);
-          await client.query(`DO ${dollarQuote(downgradeScript)}`);
-        }
-
-        // either find the most recent definition of each function,
-        // or drop the function if it was not defined before fromVersion
-        showProgress('..redefining methods');
-        for (let [methodName, { args }] of Object.entries(fromVersion.methods)) {
-          let foundMethod = false;
-          for (let ver = toVersion.version; ver > 0; ver--) {
-            const version = schema.getVersion(ver);
-            if (methodName in version.methods) {
-              const { args, body, returns } = version.methods[methodName];
-              showProgress(`   using ${methodName} from db version ${version.version}`);
-              await client.query(`create or replace function
-                "${methodName}"(${args})
-                returns ${returns}
-                as ${dollarQuote(body)}
-                language plpgsql`);
-              foundMethod = true;
-              break;
-            }
-          }
-          if (!foundMethod) {
-            showProgress(`   dropping ${methodName}`);
-            await client.query(`drop function "${methodName}"(${args})`);
-          }
-        }
-
-        showProgress('..updating version');
-        await client.query('update tcversion set version = $1', [toVersion.version]);
-        showProgress('..committing transaction');
-        await client.query('commit');
-      } catch (err) {
-        await client.query('rollback');
-        throw err;
       }
     });
   }
