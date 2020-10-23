@@ -1,18 +1,31 @@
 const helper = require('./helper');
+const debug = require('debug');
 const {
   Schema,
   Database,
+  ignorePgErrors,
   READ,
   DUPLICATE_OBJECT,
   UNDEFINED_COLUMN,
   UNDEFINED_TABLE,
+  UNDEFINED_FUNCTION,
 } = require('..');
 const path = require('path');
+const testing = require('taskcluster-lib-testing');
 const assert = require('assert').strict;
-const { runMigration, runDowngrade } = require('../src/migration');
+const { dollarQuote } = require('../src/util');
+const {
+  runMigration,
+  runOnlineMigration,
+  runDowngrade,
+  runOnlineDowngrade,
+  runOnlineBatches,
+} = require('../src/migration');
 
 helper.dbSuite(path.basename(__filename), function() {
   let db;
+
+  const showProgress = debug('showProgress');
 
   const createUsers = async db => {
     await db._withClient('admin', async client => {
@@ -86,7 +99,7 @@ helper.dbSuite(path.basename(__filename), function() {
             end`,
             methods: {},
           },
-          showProgress: () => {},
+          showProgress,
           usernamePrefix: 'test',
         });
       });
@@ -112,7 +125,7 @@ helper.dbSuite(path.basename(__filename), function() {
               end`,
               methods: {},
             },
-            showProgress: () => {},
+            showProgress,
             usernamePrefix: 'test',
           });
         });
@@ -141,7 +154,7 @@ helper.dbSuite(path.basename(__filename), function() {
               body: 'begin end',
             } },
           },
-          showProgress: () => {},
+          showProgress,
           usernamePrefix: 'test',
         });
       });
@@ -159,13 +172,210 @@ helper.dbSuite(path.basename(__filename), function() {
               },
             },
           },
-          showProgress: () => {},
+          showProgress,
           usernamePrefix: 'test',
         });
       });
 
       assert.equal(await db.currentVersion(), 2);
     });
+  });
+
+  suite('runOnlineMigration/runOnlineDowngrade', function() {
+    suiteSetup(async function() {
+      db = new Database({ urlsByMode: { admin: helper.dbUrl } });
+      await createUsers(db);
+    });
+
+    setup(async function() {
+      runOnlineBatches.resetHooks();
+      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
+      await db._withClient('admin', async client => {
+        await client.query('create table tcversion as select 1 as version');
+        for (let v of [0, 1, 2, 3]) {
+          for (let fn of [
+            `online_migration_v${v}_batch`,
+            `online_migration_v${v}_is_complete`,
+            `online_downgrade_v${v}_batch`,
+            `online_downgrade_v${v}_is_complete`,
+          ]) {
+            await ignorePgErrors(client.query(`drop function ${fn}`), UNDEFINED_FUNCTION);
+          }
+        }
+      });
+    });
+
+    teardown(async function() {
+      await db._withClient('admin', async client => {
+        await ignorePgErrors(client.query('drop table online_test'), UNDEFINED_TABLE);
+      });
+    });
+
+    const mkBatchFn = async ({ client, name, body }) => {
+      await client.query(
+        `create or replace function ${name}(batch_size_in integer, state_in jsonb)
+        returns table (count integer, state jsonb)
+        as ${dollarQuote(body)}
+        language plpgsql`);
+    };
+
+    const mkIsCompleteFn = async ({ client, name, body }) => {
+      await client.query(
+        `create or replace function ${name}()
+        returns boolean
+        as ${dollarQuote(body)}
+        language plpgsql`);
+    };
+
+    test('does nothing when there is no batch function', async function() {
+      await db._withClient('admin', async client => {
+        await runOnlineMigration({ client, showProgress, version: { version: 1 } });
+      });
+      // just doesn't throw anything..
+    });
+
+    test('does nothing when the online migration is already complete', async function() {
+      await db._withClient('admin', async client => {
+        await mkBatchFn({
+          client,
+          name: 'online_migration_v1_batch',
+          body: `begin
+            raise exception 'uhoh' using hint = 'intentional error', errcode = '0A000';
+          end`,
+        });
+        await mkIsCompleteFn({
+          client,
+          name: 'online_migration_v1_is_complete',
+          body: `begin
+            return true;
+          end`,
+        });
+        await runOnlineMigration({ client, showProgress, version: { version: 1 } });
+      });
+      // just doesn't throw anything..
+    });
+
+    test('runs a real migration', async function() {
+      await db._withClient('admin', async client => {
+        await client.query(`
+          create table online_test as
+          select
+            generate_series as positive, null::integer as negative
+          from generate_series(1, 100000)`);
+        await client.query(`alter table online_test add primary key (positive)`);
+        await mkBatchFn({
+          client,
+          name: 'online_migration_v1_batch',
+          body: `declare
+            last_positive integer;
+            count integer;
+            row record;
+          begin
+            last_positive := state -> last_positive;
+            count := 0;
+
+            for row in
+              select *
+              from online_test
+              where
+                (last_positive is null or positive > last_positive) and
+                negative is null
+              order by positive
+              limit batch_size_in
+            loop
+              update online_test
+              set negative = -positive
+              where positive = row.positive;
+
+              count := count + 1;
+              last_positive := row.positive;
+            end loop;
+
+            return query select
+              count,
+              jsonb_build_object('last_positive', last_positive) as state;
+          end`,
+        });
+        await mkIsCompleteFn({
+          client,
+          name: 'online_migration_v1_is_complete',
+          body: `begin
+            perform * from online_test where negative is null limit 1;
+            return not found;
+          end`,
+        });
+        await runOnlineMigration({ client, showProgress, version: { version: 1 } });
+
+        // check that it migrated correctly..
+        await db._withClient('admin', async client => {
+          const res = await client.query(`
+            select * from online_test
+            where negative != -positive
+          `);
+          assert.deepEqual(res.rows, []);
+        });
+      });
+    });
+
+    test('batch function that just does one item per iteration', testing.runWithFakeTime(async function() {
+      let itemsComplete = 0;
+      runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
+        if (itemsComplete >= 1000) {
+          return { state, count: 0 };
+        }
+        itemsComplete += 1;
+        await testing.sleep(100);
+        return { state, count: 1 };
+      });
+      runOnlineBatches.setHook('isComplete', async () => itemsComplete >= 1000);
+
+      await runOnlineMigration({ showProgress, version: { version: 1 } });
+
+      assert.equal(itemsComplete, 1000);
+    }, { maxTime: Infinity }));
+
+    test('batch function that returns 0 items early', testing.runWithFakeTime(async function() {
+      let itemsComplete = 0;
+      let isCompleteCalls = 0;
+      runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
+        state.counter = (state.counter || 0) + 1;
+        if (state.counter === 100 || itemsComplete >= 1000) {
+          // this will trigger an isComplete call, and if not complete, starts over with
+          // a fresh state
+          return { state, count: 0 };
+        }
+        itemsComplete += 1;
+        await testing.sleep(100);
+        return { state, count: 1 };
+      });
+      runOnlineBatches.setHook('isComplete', async () => {
+        isCompleteCalls++;
+        return (itemsComplete >= 1000);
+      });
+
+      await runOnlineMigration({ showProgress, version: { version: 1 } });
+
+      assert.equal(itemsComplete, 1000);
+      assert.equal(isCompleteCalls, 12);
+    }, { maxTime: Infinity }));
+
+    test('(downgrade) batch function that just does more items than requested per iteration', testing.runWithFakeTime(async function() {
+      let itemsComplete = 0;
+      runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
+        if (itemsComplete >= 1000) {
+          return { state, count: 0 };
+        }
+        batchSize = Math.max(batchSize + 2, 1000 - itemsComplete);
+        itemsComplete += batchSize;
+        await testing.sleep(batchSize * 10); // one item takes 10ms (fake time)
+        return { state, count: batchSize };
+      });
+      runOnlineBatches.setHook('isComplete', async () => itemsComplete >= 1000);
+
+      await runOnlineDowngrade({ showProgress, version: { version: 1 } });
+
+      assert.equal(itemsComplete, 1000);
+    }));
   });
 
   suite('runDowngrade', function() {
@@ -246,7 +456,7 @@ helper.dbSuite(path.basename(__filename), function() {
           await runMigration({
             client,
             version,
-            showProgress: () => {},
+            showProgress,
             usernamePrefix: 'test',
           });
         });
@@ -261,7 +471,7 @@ helper.dbSuite(path.basename(__filename), function() {
           schema,
           fromVersion: schema.getVersion(3),
           toVersion: schema.getVersion(2),
-          showProgress: () => {},
+          showProgress,
           usernamePrefix: 'test',
         });
       });
@@ -289,7 +499,7 @@ helper.dbSuite(path.basename(__filename), function() {
               end`,
             },
             toVersion: schema.getVersion(2),
-            showProgress: () => {},
+            showProgress,
             usernamePrefix: 'test',
           }),
           err => err.code === UNDEFINED_TABLE);
@@ -306,7 +516,7 @@ helper.dbSuite(path.basename(__filename), function() {
         await runMigration({
           client,
           version: schema.getVersion(4),
-          showProgress: () => {},
+          showProgress,
           usernamePrefix: 'test',
         });
       });
@@ -317,7 +527,7 @@ helper.dbSuite(path.basename(__filename), function() {
           schema,
           fromVersion: schema.getVersion(4),
           toVersion: schema.getVersion(3),
-          showProgress: () => {},
+          showProgress,
           usernamePrefix: 'test',
         });
       });

@@ -9,7 +9,7 @@ const { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } = require('./constants'
 const { MonitorManager } = require('taskcluster-lib-monitor');
 const named = require('yesql').pg;
 const { parse: parseConnectionString } = require('pg-connection-string');
-const { runMigration, runDowngrade } = require('./migration');
+const { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade } = require('./migration');
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -159,18 +159,21 @@ class Database {
       if (stopAt > latestVersion) {
         throw new Error(`no such version ${stopAt}; latest known version is ${latestVersion}`);
       }
-      if (dbVersion < stopAt) {
-        // run each of the upgrade scripts
-        for (let v = dbVersion + 1; v <= stopAt; v++) {
-          showProgress(`upgrading database to version ${v}`);
-          const version = schema.getVersion(v);
-          await db._withClient('admin', async client => {
-            await runMigration({ client, version, showProgress, usernamePrefix });
-          });
-          showProgress(`upgrade to version ${v} successful`);
-        }
-      } else {
-        showProgress('No database upgrades required');
+
+      // start by running the previous version's online migration, to ensure it finished
+      await db._withClient('admin', async client => {
+        await runOnlineMigration({ client, showProgress, versionNum: dbVersion });
+      });
+
+      // run each of the upgrade scripts
+      for (let v = dbVersion + 1; v <= stopAt; v++) {
+        showProgress(`upgrading database to version ${v}`);
+        const version = schema.getVersion(v);
+        await db._withClient('admin', async client => {
+          await runMigration({ client, version, showProgress, usernamePrefix });
+          await runOnlineMigration({ client, showProgress, versionNum: v });
+        });
+        showProgress(`upgrade to version ${v} successful`);
       }
 
       showProgress('...updating users');
@@ -232,6 +235,8 @@ class Database {
           const fromVersion = schema.getVersion(v);
           const toVersion = v === 1 ? { version: 0, methods: [] } : schema.getVersion(v - 1);
           await db._withClient('admin', async client => {
+            // always run the fromVersion's online downgrade first, before its downgrade script
+            await runOnlineDowngrade({ client, showProgress, versionNum: fromVersion.version });
             await runDowngrade({
               client,
               schema,
