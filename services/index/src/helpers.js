@@ -84,29 +84,38 @@ exports.taskUtils = {
     let expires = new Date(input.expires);
 
     // Attempt to load indexed task
-    const task = exports.taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
+    let task = exports.taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
 
     if (!task) {
       // Create namespace hierarchy
       await exports.namespaceUtils.ensureNamespace(db, namespace, expires);
 
-      await db.fns.create_indexed_task(
-        namespace,
-        name,
-        input.rank,
-        input.taskId,
-        input.data,
-        expires,
-      );
-
-      return {
-        namespace,
-        name,
-        rank: input.rank,
-        taskId: input.taskId,
-        data: input.data,
-        expires,
-      };
+      // Create indexed task
+      try {
+        await db.fns.create_indexed_task(
+          namespace,
+          name,
+          input.rank,
+          input.taskId,
+          input.data,
+          expires,
+        );
+        return {
+          namespace,
+          name,
+          rank: input.rank,
+          taskId: input.taskId,
+          data: input.data,
+          expires,
+        };
+      } catch (err) {
+        // Load indexed task if it was constructed while we waited
+        if (err && err.code === UNIQUE_VIOLATION) {
+          task = exports.taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
+        } else {
+          throw err;
+        }
+      }
     }
 
     // Update if we prefer input over what we have
