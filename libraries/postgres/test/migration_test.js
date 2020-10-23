@@ -132,6 +132,7 @@ helper.dbSuite(path.basename(__filename), function() {
           version: {
             version: 1,
             methods: { foo_bar: {
+              name: 'foo_bar',
               description: 'whatever',
               mode: 'read',
               serviceName: 'baz',
@@ -151,7 +152,12 @@ helper.dbSuite(path.basename(__filename), function() {
           client,
           version: {
             version: 2,
-            methods: { foo_bar: { deprecated: true } },
+            methods: {
+              foo_bar: {
+                name: 'foo_bar',
+                deprecated: true,
+              },
+            },
           },
           showProgress: () => {},
           usernamePrefix: 'test',
@@ -235,7 +241,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     setup(async function() {
       db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
-      for (let version of [v1, v2, v3]) {
+      for (let version of [schema.getVersion(1), schema.getVersion(2), schema.getVersion(3)]) {
         await db._withClient('admin', async client => {
           await runMigration({
             client,
@@ -253,8 +259,8 @@ helper.dbSuite(path.basename(__filename), function() {
         await runDowngrade({
           client,
           schema,
-          fromVersion: v3,
-          toVersion: v2,
+          fromVersion: schema.getVersion(3),
+          toVersion: schema.getVersion(2),
           showProgress: () => {},
           usernamePrefix: 'test',
         });
@@ -277,12 +283,12 @@ helper.dbSuite(path.basename(__filename), function() {
             client,
             schema,
             fromVersion: {
-              ...v3,
+              ...schema.getVersion(3),
               downgradeScript: `begin
                 drop table NOSUCHTABLE;
               end`,
             },
-            toVersion: v2,
+            toVersion: schema.getVersion(2),
             showProgress: () => {},
             usernamePrefix: 'test',
           }),
@@ -299,7 +305,7 @@ helper.dbSuite(path.basename(__filename), function() {
       await db._withClient('admin', async client => {
         await runMigration({
           client,
-          version: v4,
+          version: schema.getVersion(4),
           showProgress: () => {},
           usernamePrefix: 'test',
         });
@@ -309,8 +315,8 @@ helper.dbSuite(path.basename(__filename), function() {
         await runDowngrade({
           client,
           schema,
-          fromVersion: v4,
-          toVersion: v3,
+          fromVersion: schema.getVersion(4),
+          toVersion: schema.getVersion(3),
           showProgress: () => {},
           usernamePrefix: 'test',
         });
