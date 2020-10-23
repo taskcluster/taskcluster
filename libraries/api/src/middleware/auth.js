@@ -180,6 +180,10 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
     // Write route parameters into {[param]: ''}
     // if these are valid parameters, then we can parameterize using req.params
     let [, params, optionalParams] = utils.cleanRouteAndParams(entry.route);
+    // We can only decide to useUrlParams if all params are required params.
+    // Otherwise if they are not provided the scope checking will fail.
+    // This means all endpoints with optional params that get included in the
+    // scope expression must call req.authorize.
     params = params.filter(param => !optionalParams.includes(param));
     params = Object.assign({}, ...params.map(p => ({ [p]: '' })));
     useUrlParams = scopeTemplate.validate(params);
