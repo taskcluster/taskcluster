@@ -324,7 +324,7 @@ suite(testing.suiteName(), function() {
           } else {
             assert(err.message.match(/This request requires Taskcluster/));
           }
-          return res.reply({});
+          return res.reportError('InsufficientScopes', 'Insufficient scopes as intended');
         }
         throw err;
       }
