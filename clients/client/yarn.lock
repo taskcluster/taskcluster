@@ -31,17 +31,6 @@
   dependencies:
     "@hapi/boom" "7.x.x"
 
-"@hapi/hawk@^7.1.2":
-  version "7.1.2"
-  resolved "https://registry.yarnpkg.com/@hapi/hawk/-/hawk-7.1.2.tgz#aa4b0340b3adedf9cb457983e861683f5a1a41e6"
-  integrity sha512-+r52MvVab7AIuRv9A/Lvei9dIEi21aD9w2rje5Qbu1+0ntdsK6pCVEfkCILgIczGsmPAmFJFTOnvAYg1YFPLng==
-  dependencies:
-    "@hapi/b64" "4.x.x"
-    "@hapi/boom" "7.x.x"
-    "@hapi/cryptiles" "4.x.x"
-    "@hapi/hoek" "8.x.x"
-    "@hapi/sntp" "3.x.x"
-
 "@hapi/hoek@8.x.x", "@hapi/hoek@^8.3.1":
   version "8.5.1"
   resolved "https://registry.yarnpkg.com/@hapi/hoek/-/hoek-8.5.1.tgz#fde96064ca446dec8c55a8c2f130957b070c6e06"
@@ -339,6 +328,17 @@ has@^1.0.3:
   integrity sha512-f2dvO0VU6Oej7RkWJGrehjbzMAjFp5/VKPp5tTpWIV4JHHZK1/BxbFRtf/siA2SWTe09caDmVtYYzWEIbBS4zw==
   dependencies:
     function-bind "^1.1.1"
+
+hawk@^7.1.2:
+  version "7.1.2"
+  resolved "https://registry.yarnpkg.com/hawk/-/hawk-7.1.2.tgz#559c9be58be7d3c6869a62ef66c813bf17b82376"
+  integrity sha512-Pa8cMp2f/pFUF9B7cJuBHrF8PYPQmVXe2CfxyrgUmmfRNHMHuQOBpIFHk/eCFrHLVqLlAf2kU7BRxks7814TmA==
+  dependencies:
+    "@hapi/b64" "4.x.x"
+    "@hapi/boom" "7.x.x"
+    "@hapi/cryptiles" "4.x.x"
+    "@hapi/hoek" "8.x.x"
+    "@hapi/sntp" "3.x.x"
 
 he@1.2.0:
   version "1.2.0"
