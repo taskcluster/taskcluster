@@ -19,6 +19,7 @@ tests_require = [
     'tox',
     'coverage',
     'python-dateutil',
+    'subprocess32; python_version=="2.7"',
 ]
 
 # requests has a policy of not breaking apis between major versions
@@ -29,6 +30,10 @@ install_requires = [
     'slugid>=2',
     'taskcluster-urls>=12.1.0',
     'six>=1.10.0',
+
+    # python-3 only
+    'aiohttp>=2.0.0,!=3.7.0; python_version>="3.6"',
+    'async_timeout>=2.0.0; python_version>="3.6"',
 ]
 
 # from http://testrun.org/tox/latest/example/basic.html
@@ -54,18 +59,8 @@ class Tox(TestCommand):
         errno = tox.cmdline(args=args)
         sys.exit(errno)
 
-if sys.version_info.major == 2:
-    tests_require.extend([
-        'subprocess32',
-    ])
-elif sys.version_info[:2] < (3, 5):
+if sys.version_info[0] == 3 and sys.version_info[:2] < (3, 5):
     raise Exception('This library does not support Python 3 versions below 3.5')
-elif sys.version_info[:2] >= (3, 5):
-    install_requires.extend([
-        # 3.7.0 is broken - see https://github.com/taskcluster/taskcluster/issues/3767
-        'aiohttp>=2.0.0,!=3.7.0',
-        'async_timeout>=2.0.0',
-    ])
 
 if sys.version_info.major == 2:
     with open('README.md') as f:
