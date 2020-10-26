@@ -32,7 +32,7 @@
     "content-security-policy": "^0.3.0",
     "cors": "^2.8.4",
     "cron-parser": "2.16.3",
-    "dataloader": "^1.4.0",
+    "dataloader": "^2.0.0",
     "debug": "^4.1.1",
     "deepmerge": "^4.0.0",
     "ejs": "^2.6.1",
