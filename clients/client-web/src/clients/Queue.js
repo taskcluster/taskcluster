@@ -33,7 +33,7 @@ export default class Queue extends Client {
     this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"experimental","type":"function"}; // eslint-disable-line
     this.getProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"getProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":"queue:get-provisioner:<provisionerId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.declareProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","input":true,"method":"put","name":"declareProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":{"AllOf":[{"each":"queue:declare-provisioner:<provisionerId>#<property>","for":"property","in":"properties"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.pendingTasks.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<provisionerId>/<workerType>","scopes":"queue:pending-count:<provisionerId>/<workerType","stability":"stable","type":"function"}; // eslint-disable-line
+    this.pendingTasks.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<provisionerId>/<workerType>","scopes":"queue:pending-count:<provisionerId>/<workerType>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkerTypes.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/provisioners/<provisionerId>/worker-types","scopes":"queue:list-worker-types:<provisionerId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.getWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"getWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":"queue:get-worker-type:<provisionerId>/<workerType>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.declareWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","input":true,"method":"put","name":"declareWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":{"AllOf":[{"each":"queue:declare-worker-type:<provisionerId>/<workerType>#<property>","for":"property","in":"properties"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
@@ -326,10 +326,12 @@ export default class Queue extends Client {
   }
   /* eslint-disable max-len */
   // Get artifact by `<name>` from a specific run.
-  // **Public Artifacts**, in-order to get an artifact you need the scope
+  // **Artifact Access**, in order to get an artifact you need the scope
   // `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
-  // But if the artifact `name` starts with `public/`, authentication and
-  // authorization is not necessary to fetch the artifact.
+  // To allow access to fetch artifacts with a client like `curl` or a web
+  // browser, without using Taskcluster credentials, include a scope in the
+  // `anonymous` role.  The convention is to include
+  // `queue:get-artifact:public/*`.
   // **API Clients**, this method will redirect you to the artifact, if it is
   // stored externally. Either way, the response may not be JSON. So API
   // client users might want to generate a signed URL for this end-point and
@@ -398,10 +400,12 @@ export default class Queue extends Client {
   }
   /* eslint-disable max-len */
   // Get artifact by `<name>` from the last run of a task.
-  // **Public Artifacts**, in-order to get an artifact you need the scope
+  // **Artifact Access**, in order to get an artifact you need the scope
   // `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
-  // But if the artifact `name` starts with `public/`, authentication and
-  // authorization is not necessary to fetch the artifact.
+  // To allow access to fetch artifacts with a client like `curl` or a web
+  // browser, without using Taskcluster credentials, include a scope in the
+  // `anonymous` role.  The convention is to include
+  // `queue:get-artifact:public/*`.
   // **API Clients**, this method will redirect you to the artifact, if it is
   // stored externally. Either way, the response may not be JSON. So API
   // client users might want to generate a signed URL for this end-point and

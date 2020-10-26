@@ -613,7 +613,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       );
       debug('Fetching artifact from unsigned URL %s', url);
       await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
-        res = await getWith303Redirect(url);
+        let res = await getWith303Redirect(url);
         assume(res.ok).is.ok();
       });
     });

@@ -59,3 +59,6 @@ A "public" deployment of Taskcluster, allowing unauthenticated read-only access,
 
 In order to disallow access to unauthenticated APIs, leave the `anonymous` role empty. Alternatively, pick and
 choose specific unauthenticated APIs to make available to anonymous requests.
+
+Note that in the case of a private deployment, you will want to ensure that the `queue.signPublicArtifactUrls` deployment configuration is true.
+Otherwise, artifacts with a `public/` prefix will redirect to an un-signed S3 bucket URL.

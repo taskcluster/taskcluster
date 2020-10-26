@@ -594,10 +594,12 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArti
 
 // Get artifact by `<name>` from a specific run.
 //
-// **Public Artifacts**, in-order to get an artifact you need the scope
+// **Artifact Access**, in order to get an artifact you need the scope
 // `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
-// But if the artifact `name` starts with `public/`, authentication and
-// authorization is not necessary to fetch the artifact.
+// To allow access to fetch artifacts with a client like `curl` or a web
+// browser, without using Taskcluster credentials, include a scope in the
+// `anonymous` role.  The convention is to include
+// `queue:get-artifact:public/*`.
 //
 // **API Clients**, this method will redirect you to the artifact, if it is
 // stored externally. Either way, the response may not be JSON. So API
@@ -691,10 +693,12 @@ func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration t
 
 // Get artifact by `<name>` from the last run of a task.
 //
-// **Public Artifacts**, in-order to get an artifact you need the scope
+// **Artifact Access**, in order to get an artifact you need the scope
 // `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
-// But if the artifact `name` starts with `public/`, authentication and
-// authorization is not necessary to fetch the artifact.
+// To allow access to fetch artifacts with a client like `curl` or a web
+// browser, without using Taskcluster credentials, include a scope in the
+// `anonymous` role.  The convention is to include
+// `queue:get-artifact:public/*`.
 //
 // **API Clients**, this method will redirect you to the artifact, if it is
 // stored externally. Either way, the response may not be JSON. So API
@@ -926,7 +930,7 @@ func (queue *Queue) DeclareProvisioner(provisionerId string, payload *Provisione
 // It is, however, a solid estimate of the number of pending tasks.
 //
 // Required scopes:
-//   queue:pending-count:<provisionerId>/<workerType
+//   queue:pending-count:<provisionerId>/<workerType>
 //
 // See #pendingTasks
 func (queue *Queue) PendingTasks(provisionerId, workerType string) (*CountPendingTasksResponse, error) {
@@ -938,7 +942,7 @@ func (queue *Queue) PendingTasks(provisionerId, workerType string) (*CountPendin
 // Returns a signed URL for PendingTasks, valid for the specified duration.
 //
 // Required scopes:
-//   queue:pending-count:<provisionerId>/<workerType
+//   queue:pending-count:<provisionerId>/<workerType>
 //
 // See PendingTasks for more details.
 func (queue *Queue) PendingTasks_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
