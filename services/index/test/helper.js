@@ -72,14 +72,7 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
     fakeauth.start({
       'test-client': ['*'],
-    }, {
-      rootUrl: helper.rootUrl,
-      anonymousScopes: [
-        'queue:get-artifact:public/*',
-        'index:list-tasks:*',
-        'index:list-namespaces:*',
-      ],
-    });
+    }, { rootUrl: helper.rootUrl });
 
     helper.Index = taskcluster.createClient(builder.reference());
 
