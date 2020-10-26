@@ -382,6 +382,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('listHookGroups', function() {
     subSkip();
+
+    test('without scopes', async function() {
+      const client = new helper.Hooks({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.listHookGroups(),
+        err => err.code === 'InsufficientScopes');
+    });
+
     test('returns valid groups', async () => {
       const input = ['foo', 'bar', 'baz', 'qux'];
       for (let i = 0; i < input.length; i++) {
@@ -397,6 +405,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('listHooks', function() {
     subSkip();
+
+    test('without scopes', async function() {
+      const client = new helper.Hooks({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.listHooks('foo'),
+        err => err.code === 'InsufficientScopes');
+    });
+
     test('lists hooks in the given group only', async () => {
       const input = ['foo', 'bar', 'baz', 'qux'];
       for (let i = 0; i < input.length; i++) {
@@ -413,6 +429,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('hook', function() {
     subSkip();
+
+    test('without scopes', async function() {
+      const client = new helper.Hooks({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.hook('gp', 'hk'),
+        err => err.code === 'InsufficientScopes');
+    });
+
     test('returns a hook', async () => {
       await helper.hooks.createHook('gp', 'hk', hookWithTriggerSchema);
       const r1 = await helper.hooks.hook('gp', 'hk');
@@ -445,6 +469,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('getHookStatus', function() {
     subSkip();
+
+    test('without scopes', async function() {
+      const client = new helper.Hooks({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.getHookStatus('gp', 'hk'),
+        err => err.code === 'InsufficientScopes');
+    });
+
     test('returns "no-fire" for a non-scheduled, non-fired task', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r1 = await helper.hooks.getHookStatus('foo', 'bar');
@@ -784,6 +816,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       if (mock) {
         creator.fakeCreate = true;
       }
+    });
+
+    test('without scopes', async function() {
+      const client = new helper.Hooks({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.listLastFires('gp', 'hk'),
+        err => err.code === 'InsufficientScopes');
     });
 
     test('lists lastfires for a given hookGroupId and hookId', async () => {
