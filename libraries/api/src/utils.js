@@ -1,4 +1,9 @@
-/** Return [route, params] from route */
+/**
+ * Return [route, params, optionalParams] from route.  `route` is the input
+ * route rewritten to use `<..>` syntax for the parameters.  `params`
+ * is the full list of parameters.  And `optionalParams` is the list of
+ * parameters with a `?` suffix, making them optional.
+ */
 exports.cleanRouteAndParams = (route) => {
   // Find parameters for entry
   const params = [];
