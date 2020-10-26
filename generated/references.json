@@ -11395,7 +11395,7 @@
               "uniqueItems": true
             },
             "status": {
-              "description": "The kind of response, `auth-failed`, `auth-success` or `no-auth`.\n\n`auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).\n`auth-failed`: request failed to authenticate (e.g., invalid credentials).\n`no-auth`: request provided no credentials/bewit.\n",
+              "description": "If `auth-success`, the request has successfully authenticated. \nThis does not imply authorization (i.e. scope satisfaction not guaranteed).\n",
               "enum": [
                 "auth-success"
               ],
@@ -11420,7 +11420,7 @@
               "type": "string"
             },
             "status": {
-              "description": "The kind of response, `auth-failed`, `auth-success` or `no-auth`.\n\n`auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).\n`auth-failed`: request failed to authenticate (e.g., invalid credentials).\n`no-auth`: request provided no credentials/bewit.\n",
+              "description": "If `auth-failed`, the request failed to authenticate (e.g., invalid credentials).\n",
               "enum": [
                 "auth-failed"
               ],
@@ -11459,7 +11459,7 @@
               "uniqueItems": true
             },
             "status": {
-              "description": "The kind of response, `auth-failed`, `auth-success` or `no-auth`.\n\n`auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).\n`auth-failed`: request failed to authenticate (e.g., invalid credentials).\n`no-auth`: request provided no credentials/bewit.\n",
+              "description": "If `no-auth`, the request provided no credentials or bewit.\n",
               "enum": [
                 "no-auth"
               ],

@@ -26,11 +26,7 @@ type (
 		// Message saying why the authentication failed.
 		Message string `json:"message"`
 
-		// The kind of response, `auth-failed`, `auth-success` or `no-auth`.
-		//
-		// `auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).
-		// `auth-failed`: request failed to authenticate (e.g., invalid credentials).
-		// `no-auth`: request provided no credentials/bewit.
+		// If `auth-failed`, the request failed to authenticate (e.g., invalid credentials).
 		//
 		// Possible values:
 		//   * "auth-failed"
@@ -77,11 +73,8 @@ type (
 		// Syntax:     ^[ -~]*$
 		Scopes []string `json:"scopes"`
 
-		// The kind of response, `auth-failed`, `auth-success` or `no-auth`.
-		//
-		// `auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).
-		// `auth-failed`: request failed to authenticate (e.g., invalid credentials).
-		// `no-auth`: request provided no credentials/bewit.
+		// If `auth-success`, the request has successfully authenticated.
+		// This does not imply authorization (i.e. scope satisfaction not guaranteed).
 		//
 		// Possible values:
 		//   * "auth-success"
@@ -556,11 +549,7 @@ type (
 		// Syntax:     ^[ -~]*$
 		Scopes []string `json:"scopes"`
 
-		// The kind of response, `auth-failed`, `auth-success` or `no-auth`.
-		//
-		// `auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).
-		// `auth-failed`: request failed to authenticate (e.g., invalid credentials).
-		// `no-auth`: request provided no credentials/bewit.
+		// If `no-auth`, the request provided no credentials or bewit.
 		//
 		// Possible values:
 		//   * "no-auth"

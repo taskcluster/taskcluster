@@ -8,11 +8,8 @@ oneOf:
     properties:
       status:
         description: |
-          The kind of response, `auth-failed`, `auth-success` or `no-auth`.
-
-          `auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).
-          `auth-failed`: request failed to authenticate (e.g., invalid credentials).
-          `no-auth`: request provided no credentials/bewit.
+          If `auth-success`, the request has successfully authenticated. 
+          This does not imply authorization (i.e. scope satisfaction not guaranteed).
         type:                 string
         enum:
           - auth-success
@@ -69,11 +66,7 @@ oneOf:
     properties:
       status:
         description: |
-          The kind of response, `auth-failed`, `auth-success` or `no-auth`.
-
-          `auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).
-          `auth-failed`: request failed to authenticate (e.g., invalid credentials).
-          `no-auth`: request provided no credentials/bewit.
+          If `auth-failed`, the request failed to authenticate (e.g., invalid credentials).
         type:                 string
         enum:
           - auth-failed
@@ -90,11 +83,7 @@ oneOf:
     properties:
       status:
         description: |
-          The kind of response, `auth-failed`, `auth-success` or `no-auth`.
-
-          `auth-success`: request has successfully authenticated. it does not imply authorization (i.e. scope satisfaction not guaranteed).
-          `auth-failed`: request failed to authenticate (e.g., invalid credentials).
-          `no-auth`: request provided no credentials/bewit.
+          If `no-auth`, the request provided no credentials or bewit.
         type:                 string
         enum:
           - no-auth
