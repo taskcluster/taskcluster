@@ -450,7 +450,7 @@ const createTheme = isDarkTheme => {
           maxWidth: 500,
         },
       },
-      MuiExpansionPanelSummary: {
+      MuiAccordionSummary: {
         root: {
           '&$focused': {
             backgroundColor: THEME.TEN_PERCENT_WHITE,
