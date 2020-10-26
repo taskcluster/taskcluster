@@ -167,15 +167,7 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
     fakeauth.start({
       'test-client': ['*'],
-    }, {
-      rootUrl: helper.rootUrl,
-      anonymousScopes: [
-        'queue:scheduler-id:my-scheduler',
-        'queue:get-artifact:public/*',
-        'queue:get-task:*',
-        'queue:status:*',
-      ],
-    });
+    }, { rootUrl: helper.rootUrl });
 
     // the workClaimer needs to use `test-client` too, so feed it the right
     // input..

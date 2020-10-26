@@ -197,6 +197,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       await get404(url);
     });
 
+    test('Listing artifacts without scopes', async function() {
+      const taskId = slugid.nice();
+
+      helper.scopes('none');
+      await assert.rejects(
+        () => helper.queue.listArtifacts(taskId, 0),
+        err => err.code === 'InsufficientScopes');
+      await assert.rejects(
+        () => helper.queue.listLatestArtifacts(taskId),
+        err => err.code === 'InsufficientScopes');
+    });
+
     test('Post S3 artifact (with temp creds)', async () => {
       const taskId = slugid.v4();
       debug('### Creating task');

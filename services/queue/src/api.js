@@ -1650,7 +1650,7 @@ builder.declare({
   method: 'get',
   route: '/pending/:provisionerId/:workerType',
   name: 'pendingTasks',
-  scopes: 'queue:pending-count:<provisionerId>/<workerType',
+  scopes: 'queue:pending-count:<provisionerId>/<workerType>',
   stability: APIBuilder.stability.stable,
   category: 'Worker Metadata',
   output: 'pending-tasks-response.yml',
