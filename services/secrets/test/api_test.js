@@ -252,4 +252,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     list.secrets.sort();
     assert.deepEqual(list, { secrets: ['captain:hidden/1', 'captain:limited/1'] });
   });
+
+  test('Listing secrets requires scopes', async () => {
+    const client = await helper.client('none');
+
+    await assert.rejects(
+      () => client.list(),
+      err => err.code === 'InsufficientScopes');
+  });
 });
