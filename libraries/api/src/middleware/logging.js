@@ -83,6 +83,11 @@ const logRequest = ({ builder, entry }) => {
         resource: req.path,
         query,
         method: req.method,
+        // These two fields will only be populated when the request
+        // is authenticated. This means that even if a request
+        // has some sort of header or bewit, this will be blank
+        // if the endpoint has `null` for scopes. This includes
+        // cases where a scope expression evaluates to `null`.
         clientId: req.authenticated ? await req.clientId() : '',
         expires: req.authenticated ? await req.expires() : '',
         sourceIp: req.ip,

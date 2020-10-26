@@ -189,6 +189,12 @@ suite(testing.suiteName(), function() {
         Fields: {
           name: 'sometimesRequireNoScopes',
           apiVersion: 'v1',
+          // it may be surprising that there is no clientId here
+          // even though the request has an Authorization header. This
+          // is because the scope expression evaluates to `null` in this
+          // case meaning that the request is never authenticated.
+          // We prefer to say nothing rather than log a potentially
+          // incorrect clientId.
           clientId: '',
           authenticated: false,
           method: 'GET',
