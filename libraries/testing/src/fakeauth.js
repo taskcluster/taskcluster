@@ -6,7 +6,9 @@ let hawk = require('@hapi/hawk');
 let libUrls = require('taskcluster-lib-urls');
 let taskcluster = require('taskcluster-client');
 
-exports.start = function(clients, { rootUrl, anonymousScopes } = {}) {
+let anonymousScopes = [];
+
+exports.start = function(clients, { rootUrl, anonymousScopes: anonScopes } = {}) {
   assert(rootUrl, 'rootUrl option is required');
   const authPath = url.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk')).pathname;
   return nock(rootUrl, { encodedQueryParams: true, allowUnmocked: true })
@@ -42,7 +44,8 @@ exports.start = function(clients, { rootUrl, anonymousScopes } = {}) {
         return {
           status: 'no-auth',
           scheme: 'none',
-          scopes: anonymousScopes || [],
+          // TODO: remove anonScopes once queue and index are rewritten
+          scopes: anonScopes || anonymousScopes,
           expires: new Date(Date.now() + 15 * 60 * 1000),
         };
       }
@@ -82,4 +85,15 @@ exports.stop = function() {
   // all nock interceptors, not just the one we installed.  See
   // https://github.com/pgte/nock/issues/438
   nock.cleanAll();
+};
+
+// run the enclosed function with `anonymousScopes` set to a new value
+exports.withAnonymousScopes = async (scopes, fn) => {
+  const saved = anonymousScopes;
+  try {
+    anonymousScopes = scopes;
+    return await fn();
+  } finally {
+    anonymousScopes = saved;
+  }
 };

@@ -125,6 +125,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(builds.builds[3].organization, 'ghi789');
   });
 
+  test('all builds without scopes', async function() {
+    const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
+    await assert.rejects(
+      () => client.builds(),
+      err => err.code === 'InsufficientScopes');
+  });
+
   test('org builds', async function() {
     let builds = await helper.apiClient.builds({ organization: 'abc123' });
     assert.equal(builds.builds.length, 3);
@@ -177,49 +184,84 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.deepEqual(result, { installed: false });
   });
 
+  test('repository() without scopes', async function() {
+    const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
+    await assert.rejects(
+      () => client.repository('a', 'b'),
+      err => err.code === 'InsufficientScopes');
+  });
+
   test('build badges - status:failure', async function() {
-    let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'coolRepo', 'master'));
-    assert.equal(res.headers['content-length'], 8615);
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'coolRepo', 'master'));
+      assert.equal(res.headers['content-length'], 8615);
+    });
   });
 
   test('build badges - status: success', async function() {
-    let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'awesomeRepo', 'master'));
-    assert.equal(res.headers['content-length'], 9189);
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'awesomeRepo', 'master'));
+      assert.equal(res.headers['content-length'], 9189);
+    });
   });
 
   test('build badges - error', async function() {
-    let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'errorRepo', 'master'));
-    assert.equal(res.headers['content-length'], 4268);
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'errorRepo', 'master'));
+      assert.equal(res.headers['content-length'], 4268);
+    });
   });
 
   test('build badges - no such status', async function() {
-    let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'unknownRepo', 'master'));
-    assert.equal(res.headers['content-length'], 7873);
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'unknownRepo', 'master'));
+      assert.equal(res.headers['content-length'], 7873);
+    });
   });
 
   test('build badges - new repo (no info yet)', async function() {
-    let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'nonTCGHRepo', 'master'));
-    assert.equal(res.headers['content-length'], 7873);
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'nonTCGHRepo', 'master'));
+      assert.equal(res.headers['content-length'], 7873);
+    });
+  });
+
+  test('build badges without scopes', async function() {
+    const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
+    await assert.rejects(
+      () => client.badge('a', 'b', 'c'),
+      err => err.code === 'InsufficientScopes');
   });
 
   test('link for clickable badges', async function() {
     let res;
 
-    // check if the function returns a correct link
-    try {
-      res = await got(
-        helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'awesomeRepo', 'master'),
-        { followRedirect: false });
-    } catch (e) {
-      console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
-    }
-    assert.equal(res.body, 'Found. Redirecting to Wonderland');
+    await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
+      // check if the function returns a correct link
+      try {
+        res = await got(
+          helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'awesomeRepo', 'master'),
+          { followRedirect: false });
+      } catch (e) {
+        console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
+      }
+      assert.equal(res.body, 'Found. Redirecting to Wonderland');
+    });
   });
 
   test('link for clickable badges when no such thing exists', async function() {
-    await assert.rejects(() => got(
-      helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'unknownRepo', 'nosuch'),
-      { followRedirect: false }), err => err.statusCode === 404);
+    await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
+      await assert.rejects(() => got(
+        helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'unknownRepo', 'nosuch'),
+        { followRedirect: false }), err => err.statusCode === 404);
+    });
+  });
+
+  test('latest link without scopes', async function() {
+    const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
+    await assert.rejects(
+      () => client.latest('a', 'b', 'c'),
+      err => err.code === 'InsufficientScopes');
   });
 
   test('simple status creation', async function() {
