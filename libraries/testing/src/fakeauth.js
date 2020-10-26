@@ -8,7 +8,7 @@ let taskcluster = require('taskcluster-client');
 
 let anonymousScopes = [];
 
-exports.start = function(clients, { rootUrl, anonymousScopes: anonScopes } = {}) {
+exports.start = function(clients, { rootUrl } = {}) {
   assert(rootUrl, 'rootUrl option is required');
   const authPath = url.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk')).pathname;
   return nock(rootUrl, { encodedQueryParams: true, allowUnmocked: true })
@@ -44,8 +44,7 @@ exports.start = function(clients, { rootUrl, anonymousScopes: anonScopes } = {})
         return {
           status: 'no-auth',
           scheme: 'none',
-          // TODO: remove anonScopes once queue and index are rewritten
-          scopes: anonScopes || anonymousScopes,
+          scopes: anonymousScopes,
           expires: new Date(Date.now() + 15 * 60 * 1000),
         };
       }
