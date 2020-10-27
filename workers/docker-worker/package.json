@@ -52,7 +52,7 @@
     "mkdirp": "^1.0.3",
     "mocha": "^8.0.0",
     "mz": "^2.0.0",
-    "nock": "^11.3.5",
+    "nock": "^13.0.0",
     "object-factory": "^0.1.2",
     "promise-retry": "^1.1.1",
     "promisepipe": "^3.0.0",

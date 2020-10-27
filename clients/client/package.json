@@ -20,7 +20,7 @@
   "devDependencies": {
     "http-proxy": "^1.18.0",
     "mocha": "^8.0.0",
-    "nock": "^11.0.0"
+    "nock": "^13.0.0"
   },
   "engines": {
     "node": ">=v8.17.0"
