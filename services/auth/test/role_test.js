@@ -221,9 +221,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     ].sort());
   });
 
+  test('getRole without scopes', async () => {
+    helper.setupScopes('none');
+    assert.rejects(
+      () => helper.apiClient.role('thing-id:' + clientId),
+      err => err.code === 'InsufficientScopes');
+  });
+
   test('listRoles', async () => {
     let roles = await helper.apiClient.listRoles();
     assert(roles.some(role => role.roleId === `thing-id:${clientId}`));
+  });
+
+  test('listRoles without scopes', async () => {
+    helper.setupScopes('none');
+    assert.rejects(
+      () => helper.apiClient.listRoles(),
+      err => err.code === 'InsufficientScopes');
   });
 
   test('listRoleIds', async () => {
@@ -247,6 +261,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
 
     assert(result.roleIds.some(roleId => roleId === `thing-id:${clientId}`));
     assert(result.roleIds.length === 4);
+  });
+
+  test('listRoleIds without scopes', async () => {
+    helper.setupScopes('none');
+    assert.rejects(
+      () => helper.apiClient.listRoleIds(),
+      err => err.code === 'InsufficientScopes');
   });
 
   test('listRoleIds (limit, [continuationToken])', async () => {

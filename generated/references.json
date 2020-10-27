@@ -11366,7 +11366,7 @@
               "type": "string"
             },
             "expires": {
-              "description": "The expiration time for the credentials used to make this request.\nThis should be treated as the latest time at which the authorization\nis valid.  For most cases, where the access being authorized occurs\nimmediately, this field can be ignored, as the value will always be\nin the future if the status is `auth-success`.\n",
+              "description": "The expiration time that the returned scopes are valid for.\nThis should be treated as the latest time at which the authorization\nis valid. For most cases, where the access being authorized occurs\nimmediately, this field can be ignored, as the value will always be\nin the future.\n",
               "format": "date-time",
               "type": "string"
             },
@@ -11390,7 +11390,7 @@
               "uniqueItems": true
             },
             "status": {
-              "description": "The kind of response, `auth-failed` or `auth-success`.\n",
+              "description": "If `auth-success`, the request has successfully authenticated. \nThis does not imply authorization (i.e. scope satisfaction not guaranteed).\n",
               "enum": [
                 "auth-success"
               ],
@@ -11415,7 +11415,7 @@
               "type": "string"
             },
             "status": {
-              "description": "The kind of response, `auth-failed` or `auth-success`.\n",
+              "description": "If `auth-failed`, the request failed to authenticate (e.g., invalid credentials).\n",
               "enum": [
                 "auth-failed"
               ],
@@ -11427,6 +11427,47 @@
             "message"
           ],
           "title": "Authentication Failed Response",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "expires": {
+              "description": "The expiration time that the returned scopes are valid for.\nThis should be treated as the latest time at which the authorization\nis valid. For most cases, where the access being authorized occurs\nimmediately, this field can be ignored, as the value will always be\nin the future.\n",
+              "format": "date-time",
+              "type": "string"
+            },
+            "scheme": {
+              "description": "Authentication scheme the client used. Generally, you don't need to\nread this property unless `hash` is provided and you want to validate\nthe payload hash. Additional values may be added in the future.\n",
+              "enum": [
+                "none"
+              ],
+              "type": "string"
+            },
+            "scopes": {
+              "description": "List of scopes the client is authorized to access.  Scopes must be\ncomposed of printable ASCII characters and spaces.\n",
+              "items": {
+                "pattern": "^[ -~]*$",
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            },
+            "status": {
+              "description": "If `no-auth`, the request provided no credentials or bewit.\n",
+              "enum": [
+                "no-auth"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "scheme",
+            "scopes",
+            "expires"
+          ],
+          "title": "No Authentication Response",
           "type": "object"
         }
       ],
@@ -11527,10 +11568,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -11544,7 +11585,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -11982,6 +12023,7 @@
             "limit"
           ],
           "route": "/providers",
+          "scopes": "worker-manager:list-providers",
           "stability": "stable",
           "title": "List Providers",
           "type": "function"
@@ -12061,6 +12103,7 @@
           "query": [
           ],
           "route": "/worker-pool/<workerPoolId>",
+          "scopes": "worker-manager:get-worker-pool:<workerPoolId>",
           "stability": "stable",
           "title": "Get Worker Pool",
           "type": "function"
@@ -12078,6 +12121,7 @@
             "limit"
           ],
           "route": "/worker-pools",
+          "scopes": "worker-manager:list-worker-pools",
           "stability": "stable",
           "title": "List All Worker Pools",
           "type": "function"
@@ -12119,6 +12163,7 @@
             "limit"
           ],
           "route": "/worker-pool-errors/<workerPoolId>",
+          "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
           "stability": "stable",
           "title": "List Worker Pool Errors",
           "type": "function"
@@ -12138,6 +12183,7 @@
             "limit"
           ],
           "route": "/workers/<workerPoolId>:/<workerGroup>",
+          "scopes": "worker-manager:list-workers:<workerPoolId>/<workerGroup>",
           "stability": "stable",
           "title": "Workers in a specific Worker Group in a Worker Pool",
           "type": "function"
@@ -12156,6 +12202,7 @@
           "query": [
           ],
           "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Get a Worker",
           "type": "function"
@@ -12232,6 +12279,7 @@
             "limit"
           ],
           "route": "/workers/<workerPoolId>",
+          "scopes": "worker-manager:list-workers:<workerPoolId>",
           "stability": "stable",
           "title": "Workers in a Worker Pool",
           "type": "function"
@@ -12530,10 +12578,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -12547,7 +12595,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -12794,6 +12842,7 @@
             "limit"
           ],
           "route": "/secrets",
+          "scopes": "secrets:list-secrets",
           "stability": "stable",
           "title": "List Secrets",
           "type": "function"
@@ -12813,10 +12862,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -12830,7 +12879,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -13730,6 +13779,7 @@
           "query": [
           ],
           "route": "/task/<taskId>",
+          "scopes": "queue:get-task:<taskId>",
           "stability": "stable",
           "title": "Get Task Definition",
           "type": "function"
@@ -13746,6 +13796,7 @@
           "query": [
           ],
           "route": "/task/<taskId>/status",
+          "scopes": "queue:status:<taskId>",
           "stability": "stable",
           "title": "Get task status",
           "type": "function"
@@ -13764,6 +13815,7 @@
             "limit"
           ],
           "route": "/task-group/<taskGroupId>/list",
+          "scopes": "queue:list-task-group:<taskGroupId>",
           "stability": "stable",
           "title": "List Task Group",
           "type": "function"
@@ -13782,6 +13834,7 @@
             "limit"
           ],
           "route": "/task/<taskId>/dependents",
+          "scopes": "queue:list-dependent-tasks:<taskId>",
           "stability": "stable",
           "title": "List Dependent Tasks",
           "type": "function"
@@ -14117,20 +14170,13 @@
             "name"
           ],
           "category": "Artifacts",
-          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with an HTTP client that can handle responses correctly.\n\n**Downloading artifacts**\nThere are some special considerations for those http clients which download\nartifacts.  This api endpoint is designed to be compatible with an HTTP 1.1\ncompliant client, but has extra features to ensure the download is valid.\nIt is strongly recommend that consumers use either taskcluster-lib-artifact (JS),\ntaskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with\nartifacts.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3\n\nThe following important headers are set on responses to this method for Blob artifacts\n\n* x-taskcluster-location-content-sha256: the SHA256 of the artifact\n*after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-content-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-transfer-sha256: the SHA256 of the artifact\n*before* any content-encoding is undone.  This is the SHA256 of what is sent over\nthe wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-content-encoding: the content-encoding used.  It will either\nbe `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact\nwas created and no content-negotiation occurs\n* x-taskcluster-location-content-type: the content-type of the artifact\n\n**Caching**, artifacts may be cached in data centers closer to the\nworkers in-order to reduce bandwidth costs. This can lead to longer\nresponse times. Caching can be skipped by setting the header\n`x-taskcluster-skip-cache: true`, this should only be used for resources\nwhere request volume is known to be low, and caching not useful.\n(This feature may be disabled in the future, use is sparingly!)",
+          "description": "Get artifact by `<name>` from a specific run.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with an HTTP client that can handle responses correctly.\n\n**Downloading artifacts**\nThere are some special considerations for those http clients which download\nartifacts.  This api endpoint is designed to be compatible with an HTTP 1.1\ncompliant client, but has extra features to ensure the download is valid.\nIt is strongly recommend that consumers use either taskcluster-lib-artifact (JS),\ntaskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with\nartifacts.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3\n\nThe following important headers are set on responses to this method for Blob artifacts\n\n* x-taskcluster-location-content-sha256: the SHA256 of the artifact\n*after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-content-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-transfer-sha256: the SHA256 of the artifact\n*before* any content-encoding is undone.  This is the SHA256 of what is sent over\nthe wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-content-encoding: the content-encoding used.  It will either\nbe `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact\nwas created and no content-negotiation occurs\n* x-taskcluster-location-content-type: the content-type of the artifact\n\n**Caching**, artifacts may be cached in data centers closer to the\nworkers in-order to reduce bandwidth costs. This can lead to longer\nresponse times. Caching can be skipped by setting the header\n`x-taskcluster-skip-cache: true`, this should only be used for resources\nwhere request volume is known to be low, and caching not useful.\n(This feature may be disabled in the future, use is sparingly!)",
           "method": "get",
           "name": "getArtifact",
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": {
-              "AllOf": [
-                "queue:get-artifact:<name>"
-              ]
-            }
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact from Run",
           "type": "function"
@@ -14141,20 +14187,13 @@
             "name"
           ],
           "category": "Artifacts",
-          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
+          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
           "method": "get",
           "name": "getLatestArtifact",
           "query": [
           ],
           "route": "/task/<taskId>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": {
-              "AllOf": [
-                "queue:get-artifact:<name>"
-              ]
-            }
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact from Latest Run",
           "type": "function"
@@ -14174,6 +14213,7 @@
             "limit"
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts",
+          "scopes": "queue:list-artifacts:<taskId>:<runId>",
           "stability": "stable",
           "title": "Get Artifacts from Run",
           "type": "function"
@@ -14192,6 +14232,7 @@
             "limit"
           ],
           "route": "/task/<taskId>/artifacts",
+          "scopes": "queue:list-artifacts:<taskId>",
           "stability": "stable",
           "title": "Get Artifacts from Latest Run",
           "type": "function"
@@ -14209,6 +14250,7 @@
             "limit"
           ],
           "route": "/provisioners",
+          "scopes": "queue:list-provisioners",
           "stability": "experimental",
           "title": "Get a list of all active provisioners",
           "type": "function"
@@ -14225,6 +14267,7 @@
           "query": [
           ],
           "route": "/provisioners/<provisionerId>",
+          "scopes": "queue:get-provisioner:<provisionerId>",
           "stability": "experimental",
           "title": "Get an active provisioner",
           "type": "function"
@@ -14268,6 +14311,7 @@
           "query": [
           ],
           "route": "/pending/<provisionerId>/<workerType>",
+          "scopes": "queue:pending-count:<provisionerId>/<workerType>",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
           "type": "function"
@@ -14286,6 +14330,7 @@
             "limit"
           ],
           "route": "/provisioners/<provisionerId>/worker-types",
+          "scopes": "queue:list-worker-types:<provisionerId>",
           "stability": "experimental",
           "title": "Get a list of all active worker-types",
           "type": "function"
@@ -14303,6 +14348,7 @@
           "query": [
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
+          "scopes": "queue:get-worker-type:<provisionerId>/<workerType>",
           "stability": "experimental",
           "title": "Get a worker-type",
           "type": "function"
@@ -14350,6 +14396,7 @@
             "quarantined"
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
+          "scopes": "queue:list-workers:<provisionerId>/<workerType>",
           "stability": "experimental",
           "title": "Get a list of all active workers of a workerType",
           "type": "function"
@@ -14369,6 +14416,7 @@
           "query": [
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
+          "scopes": "queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
           "stability": "experimental",
           "title": "Get a worker-type",
           "type": "function"
@@ -14442,10 +14490,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -14459,7 +14507,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -14674,6 +14722,7 @@
             "limit"
           ],
           "route": "/purge-cache/list",
+          "scopes": "purge-cache:all-purge-requests",
           "stability": "stable",
           "title": "All Open Purge Requests",
           "type": "function"
@@ -14692,6 +14741,7 @@
             "since"
           ],
           "route": "/purge-cache/<provisionerId>/<workerType>",
+          "scopes": "purge-cache:purge-requests:<provisionerId>/<workerType>",
           "stability": "stable",
           "title": "Open Purge Requests for a provisionerId/workerType pair",
           "type": "function"
@@ -14711,10 +14761,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -14728,7 +14778,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -15264,10 +15314,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -15281,7 +15331,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -15509,6 +15559,7 @@
           "query": [
           ],
           "route": "/task/<indexPath>",
+          "scopes": "index:find-task:<indexPath>",
           "stability": "stable",
           "title": "Find Indexed Task",
           "type": "function"
@@ -15527,6 +15578,7 @@
             "limit"
           ],
           "route": "/namespaces/<namespace>",
+          "scopes": "index:list-namespaces:<namespace>",
           "stability": "stable",
           "title": "List Namespaces",
           "type": "function"
@@ -15545,6 +15597,7 @@
             "limit"
           ],
           "route": "/tasks/<namespace>",
+          "scopes": "index:list-tasks:<namespace>",
           "stability": "stable",
           "title": "List Tasks",
           "type": "function"
@@ -15579,10 +15632,7 @@
           "query": [
           ],
           "route": "/task/<indexPath>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": "queue:get-artifact:<name>"
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact From Indexed Task",
           "type": "function"
@@ -15602,10 +15652,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -15619,7 +15669,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -15922,6 +15972,7 @@
           "query": [
           ],
           "route": "/hooks",
+          "scopes": "hooks:list-hooks:",
           "stability": "stable",
           "title": "List hook groups",
           "type": "function"
@@ -15938,6 +15989,7 @@
           "query": [
           ],
           "route": "/hooks/<hookGroupId>",
+          "scopes": "hooks:list-hooks:<hookGroupId>",
           "stability": "stable",
           "title": "List hooks in a given group",
           "type": "function"
@@ -15955,6 +16007,7 @@
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>",
+          "scopes": "hooks:get:<hookGroupId>:<hookId>",
           "stability": "stable",
           "title": "Get hook definition",
           "type": "function"
@@ -15972,6 +16025,7 @@
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/status",
+          "scopes": "hooks:status:<hookGroupId>/<hookId>",
           "stability": "deprecated",
           "title": "Get hook status",
           "type": "function"
@@ -16128,6 +16182,7 @@
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
+          "scopes": "hooks:list-last-fires:<hookGroupId>/<hookId>",
           "stability": "stable",
           "title": "Get information about recent hook fires",
           "type": "function"
@@ -16147,10 +16202,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -16164,7 +16219,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -16576,6 +16631,7 @@
             "sha"
           ],
           "route": "/builds",
+          "scopes": "github:list-builds",
           "stability": "stable",
           "title": "List of Builds",
           "type": "function"
@@ -16593,6 +16649,7 @@
           "query": [
           ],
           "route": "/repository/<owner>/<repo>/<branch>/badge.svg",
+          "scopes": "github:get-badge:<owner>:<repo>:<branch>",
           "stability": "experimental",
           "title": "Latest Build Status Badge",
           "type": "function"
@@ -16610,6 +16667,7 @@
           "query": [
           ],
           "route": "/repository/<owner>/<repo>",
+          "scopes": "github:get-repository:<owner>:<repo>",
           "stability": "experimental",
           "title": "Get Repository Info",
           "type": "function"
@@ -16627,6 +16685,7 @@
           "query": [
           ],
           "route": "/repository/<owner>/<repo>/<branch>/latest",
+          "scopes": "github:latest-status:<owner>:<repo>:<branch>",
           "stability": "stable",
           "title": "Latest Status for Branch",
           "type": "function"
@@ -16826,10 +16885,10 @@
           "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
             "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
             "clientId": "The clientId that made the request, if there was one.",
             "duration": "The duration in ms of the call.",
             "expires": "The expiration date of the credentials, if the header was authenticated.",
-            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
             "method": "The http method of the request.",
             "name": "The name of the API method",
             "public": "True if the endpoint requires no scopes.",
@@ -16843,7 +16902,7 @@
           "name": "apiMethod",
           "title": "API Method Report",
           "type": "monitor.apiMethod",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A timer for calls to aws services.",
@@ -17182,6 +17241,7 @@
             "limit"
           ],
           "route": "/clients/",
+          "scopes": "auth:list-clients",
           "stability": "stable",
           "title": "List Clients",
           "type": "function"
@@ -17198,6 +17258,7 @@
           "query": [
           ],
           "route": "/clients/<clientId>",
+          "scopes": "auth:get-client:<clientId>",
           "stability": "stable",
           "title": "Get Client",
           "type": "function"
@@ -17334,6 +17395,7 @@
           "query": [
           ],
           "route": "/roles/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Roles (no pagination)",
           "type": "function"
@@ -17351,6 +17413,7 @@
             "limit"
           ],
           "route": "/roles2/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Roles",
           "type": "function"
@@ -17368,6 +17431,7 @@
             "limit"
           ],
           "route": "/roleids/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Role IDs",
           "type": "function"
@@ -17384,6 +17448,7 @@
           "query": [
           ],
           "route": "/roles/<roleId>",
+          "scopes": "auth:get-role:<roleId>",
           "stability": "stable",
           "title": "Get Role",
           "type": "function"
@@ -17470,6 +17535,7 @@
           "query": [
           ],
           "route": "/scopes/expand",
+          "scopes": "auth:expand-scopes",
           "stability": "stable",
           "title": "Expand Scopes",
           "type": "function"
@@ -17485,6 +17551,7 @@
           "query": [
           ],
           "route": "/scopes/current",
+          "scopes": "auth:current-scopes",
           "stability": "stable",
           "title": "Get Current Scopes",
           "type": "function"

@@ -49,6 +49,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert(false, 'This shouldn\'t have worked');
   });
 
+  test('find (no scopes)', async function() {
+    const myns = slugid.v4();
+    const taskId = slugid.v4();
+    await helper.index.insertTask(myns + '.my-task', {
+      taskId: taskId,
+      rank: 41,
+      data: { hello: 'world' },
+      expires: taskcluster.fromNow('25 minutes'),
+    });
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.index.findTask(myns + '.my-task'),
+      err => err.code === 'InsufficientScopes');
+  });
+
   suite('listing things', function() {
     suiteSetup(async function() {
       if (skipping()) {
@@ -128,8 +143,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('list top-level namespaces (without auth)', async function() {
       helper.scopes('none');
-      const result = await helper.index.listNamespaces('', {});
-      testValidNamespaces(result.namespaces, ['abc', 'bbc', 'cbc', 'dbc']);
+      await assert.rejects(
+        () => helper.index.listNamespaces('', {}),
+        err => err.code === 'InsufficientScopes');
     });
 
     test('list top-level tasks', async function() {
@@ -154,15 +170,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       testValidNamespaces(results);
     });
 
-    test('list top-level tasks (without auth)', async function() {
-      helper.scopes('none');
+    test('list top-level tasks', async function() {
       const result = await helper.index.listTasks('', {});
       testValidNamespaces(result.tasks);
     });
 
-    test('list top-level tasks', async function() {
-      const result = await helper.index.listTasks('', {});
-      testValidNamespaces(result.tasks);
+    test('list top-level tasks (without auth)', async function() {
+      helper.scopes('none');
+      await assert.rejects(
+        () => helper.index.listTasks('', {}),
+        err => err.code === 'InsufficientScopes');
     });
 
     test('findTask throws 404 for expired tasks', async function() {
@@ -188,7 +205,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('access public artifact', async function() {
+  test('access artifact using anonymous scopes', async function() {
     const taskId = slugid.nice();
     debug('### Insert task into index');
     await helper.index.insertTask('my.name.space', {
@@ -198,18 +215,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       expires: taskcluster.fromNowJSON('24 hours'),
     });
 
-    debug('### Download public artifact using index');
+    debug('### Download xyz artifact using index');
     const url = helper.index.buildUrl(
       helper.index.findArtifactFromTask,
       'my.name.space',
-      'public/abc.zip',
+      'xyz/abc.zip',
     );
-    const res = await request.get(url).redirects(0).catch(function(err) {
-      return err.response;
+
+    await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:xyz/abc.zip'], async () => {
+      const res = await request.get(url).redirects(0).catch(function(err) {
+        return err.response;
+      });
+      assert.equal(res.statusCode, 303, 'Expected 303 redirect');
+      const location = res.headers.location.replace(/bewit=.*/, 'bewit=xyz');
+      assert.equal(location,
+        libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/xyz%2Fabc.zip?bewit=xyz`));
     });
-    assert.equal(res.statusCode, 303, 'Expected 303 redirect');
-    assert.equal(res.headers.location,
-      libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Fabc.zip`));
   });
 
   test('access private artifact (with * scope)', async function() {

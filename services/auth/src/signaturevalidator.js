@@ -30,7 +30,7 @@ const parseExt = function(ext) {
  * modified (otherwise it returns the original).
  */
 const limitClientWithExt = function(credentialName, issuingClientId, accessToken, scopes,
-  expires, ext, expandScopes) {
+  expires, ext) {
   let issuingScopes = scopes;
   let res = { scopes, expires, accessToken };
 
@@ -137,7 +137,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
       res.expires = cert_expires;
     }
 
-    res.scopes = scopes = expandScopes(cert.scopes);
+    res.scopes = scopes = cert.scopes;
   }
 
   // Handle scope restriction with authorizedScopes
@@ -167,10 +167,8 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
       ].join('\n'));
     }
 
-    // Further limit scopes
-    res.scopes = scopes = expandScopes(ext.authorizedScopes);
+    res.scopes = scopes = ext.authorizedScopes;
   }
-
   return res;
 };
 
@@ -240,8 +238,12 @@ const createSignatureValidator = function(options) {
     if (ext) {
       ({ scopes, expires, accessToken } = limitClientWithExt(
         credentialName, issuingClientId, accessToken,
-        scopes, expires, ext, options.expandScopes));
+        scopes, expires, ext));
     }
+
+    // Implicitly grant all clients the anonymous role
+    scopes = utils.mergeScopeSets(scopes, ['assume:anonymous']);
+    scopes = options.expandScopes(scopes);
 
     return {
       key: accessToken,
@@ -291,8 +293,8 @@ const createSignatureValidator = function(options) {
 
         credentials = authResult.credentials;
         attributes = authResult.artifacts; // Hawk uses "artifacts" and "attributes"
-      } else {
-        // If there is no authorization header we'll attempt a login with bewit
+      } else if (/^\/.*[\?&]bewit\=/.test(req.resource)) { // using regex because query parsing is disabled
+        // Bewit present
         authResult = await hawk.uri.authenticate({
           method: req.method.toUpperCase(),
           url: req.resource,
@@ -330,16 +332,23 @@ const createSignatureValidator = function(options) {
 
         credentials = authResult.credentials;
         attributes = authResult.attributes;
+      } else {
+        // No auth provided
+        result = {
+          status: 'no-auth',
+          scheme: 'none',
+          expires: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes in future
+          scopes: options.expandScopes(['assume:anonymous']),
+        };
       }
-
-      result = {
+      result = result || {
         status: 'auth-success',
         scheme: 'hawk',
         expires: credentials.expires,
         scopes: credentials.scopes,
         clientId: credentials.clientId,
       };
-      if (attributes.hash) {
+      if (attributes && attributes.hash) {
         result.hash = attributes.hash;
       }
     } catch (err) {

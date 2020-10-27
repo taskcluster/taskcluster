@@ -39,6 +39,7 @@ package tcpurgecache
 
 import (
 	"net/url"
+	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
 )
@@ -127,6 +128,9 @@ func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, paylo
 // endpoint that is specific to their workerType and
 // provisionerId.
 //
+// Required scopes:
+//   purge-cache:all-purge-requests
+//
 // See #allPurgeRequests
 func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) (*OpenAllPurgeRequestsList, error) {
 	v := url.Values{}
@@ -141,10 +145,31 @@ func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) 
 	return responseObject.(*OpenAllPurgeRequestsList), err
 }
 
+// Returns a signed URL for AllPurgeRequests, valid for the specified duration.
+//
+// Required scopes:
+//   purge-cache:all-purge-requests
+//
+// See AllPurgeRequests for more details.
+func (purgeCache *PurgeCache) AllPurgeRequests_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*purgeCache)
+	return (&cd).SignedURL("/purge-cache/list", v, duration)
+}
+
 // List the caches for this `provisionerId`/`workerType` that should to be
 // purged if they are from before the time given in the response.
 //
 // This is intended to be used by workers to determine which caches to purge.
+//
+// Required scopes:
+//   purge-cache:purge-requests:<provisionerId>/<workerType>
 //
 // See #purgeRequests
 func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since string) (*OpenPurgeRequestList, error) {
@@ -155,4 +180,19 @@ func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since str
 	cd := tcclient.Client(*purgeCache)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(OpenPurgeRequestList), v)
 	return responseObject.(*OpenPurgeRequestList), err
+}
+
+// Returns a signed URL for PurgeRequests, valid for the specified duration.
+//
+// Required scopes:
+//   purge-cache:purge-requests:<provisionerId>/<workerType>
+//
+// See PurgeRequests for more details.
+func (purgeCache *PurgeCache) PurgeRequests_SignedURL(provisionerId, workerType, since string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if since != "" {
+		v.Add("since", since)
+	}
+	cd := tcclient.Client(*purgeCache)
+	return (&cd).SignedURL("/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), v, duration)
 }

@@ -112,6 +112,9 @@ func (queue *Queue) Ping() error {
 // definition may have been modified by queue, if an optional property is
 // not specified the queue may provide a default value.
 //
+// Required scopes:
+//   queue:get-task:<taskId>
+//
 // See #task
 func (queue *Queue) Task(taskId string) (*TaskDefinitionResponse, error) {
 	cd := tcclient.Client(*queue)
@@ -119,13 +122,38 @@ func (queue *Queue) Task(taskId string) (*TaskDefinitionResponse, error) {
 	return responseObject.(*TaskDefinitionResponse), err
 }
 
+// Returns a signed URL for Task, valid for the specified duration.
+//
+// Required scopes:
+//   queue:get-task:<taskId>
+//
+// See Task for more details.
+func (queue *Queue) Task_SignedURL(taskId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId), nil, duration)
+}
+
 // Get task status structure from `taskId`
+//
+// Required scopes:
+//   queue:status:<taskId>
 //
 // See #status
 func (queue *Queue) Status(taskId string) (*TaskStatusResponse, error) {
 	cd := tcclient.Client(*queue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/status", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), err
+}
+
+// Returns a signed URL for Status, valid for the specified duration.
+//
+// Required scopes:
+//   queue:status:<taskId>
+//
+// See Status for more details.
+func (queue *Queue) Status_SignedURL(taskId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/status", nil, duration)
 }
 
 // List tasks sharing the same `taskGroupId`.
@@ -145,6 +173,9 @@ func (queue *Queue) Status(taskId string) (*TaskStatusResponse, error) {
 // If you are not interested in listing all the members at once, you may
 // use the query-string option `limit` to return fewer.
 //
+// Required scopes:
+//   queue:list-task-group:<taskGroupId>
+//
 // See #listTaskGroup
 func (queue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string) (*ListTaskGroupResponse, error) {
 	v := url.Values{}
@@ -157,6 +188,24 @@ func (queue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string) 
 	cd := tcclient.Client(*queue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-group/"+url.QueryEscape(taskGroupId)+"/list", new(ListTaskGroupResponse), v)
 	return responseObject.(*ListTaskGroupResponse), err
+}
+
+// Returns a signed URL for ListTaskGroup, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-task-group:<taskGroupId>
+//
+// See ListTaskGroup for more details.
+func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task-group/"+url.QueryEscape(taskGroupId)+"/list", v, duration)
 }
 
 // List tasks that depend on the given `taskId`.
@@ -176,6 +225,9 @@ func (queue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string) 
 // If you are not interested in listing all the tasks at once, you may
 // use the query-string option `limit` to return fewer.
 //
+// Required scopes:
+//   queue:list-dependent-tasks:<taskId>
+//
 // See #listDependentTasks
 func (queue *Queue) ListDependentTasks(taskId, continuationToken, limit string) (*ListDependentTasksResponse, error) {
 	v := url.Values{}
@@ -188,6 +240,24 @@ func (queue *Queue) ListDependentTasks(taskId, continuationToken, limit string) 
 	cd := tcclient.Client(*queue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/dependents", new(ListDependentTasksResponse), v)
 	return responseObject.(*ListDependentTasksResponse), err
+}
+
+// Returns a signed URL for ListDependentTasks, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-dependent-tasks:<taskId>
+//
+// See ListDependentTasks for more details.
+func (queue *Queue) ListDependentTasks_SignedURL(taskId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/dependents", v, duration)
 }
 
 // Create a new task, this is an **idempotent** operation, so repeat it if
@@ -524,10 +594,12 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArti
 
 // Get artifact by `<name>` from a specific run.
 //
-// **Public Artifacts**, in-order to get an artifact you need the scope
+// **Artifact Access**, in order to get an artifact you need the scope
 // `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
-// But if the artifact `name` starts with `public/`, authentication and
-// authorization is not necessary to fetch the artifact.
+// To allow access to fetch artifacts with a client like `curl` or a web
+// browser, without using Taskcluster credentials, include a scope in the
+// `anonymous` role.  The convention is to include
+// `queue:get-artifact:public/*`.
 //
 // **API Clients**, this method will redirect you to the artifact, if it is
 // stored externally. Either way, the response may not be JSON. So API
@@ -599,8 +671,7 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArti
 // (This feature may be disabled in the future, use is sparingly!)
 //
 // Required scopes:
-//   If private:
-//     queue:get-artifact:<name>
+//   queue:get-artifact:<name>
 //
 // See #getArtifact
 func (queue *Queue) GetArtifact(taskId, runId, name string) error {
@@ -612,8 +683,7 @@ func (queue *Queue) GetArtifact(taskId, runId, name string) error {
 // Returns a signed URL for GetArtifact, valid for the specified duration.
 //
 // Required scopes:
-//   If private:
-//     queue:get-artifact:<name>
+//   queue:get-artifact:<name>
 //
 // See GetArtifact for more details.
 func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
@@ -623,10 +693,12 @@ func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration t
 
 // Get artifact by `<name>` from the last run of a task.
 //
-// **Public Artifacts**, in-order to get an artifact you need the scope
+// **Artifact Access**, in order to get an artifact you need the scope
 // `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
-// But if the artifact `name` starts with `public/`, authentication and
-// authorization is not necessary to fetch the artifact.
+// To allow access to fetch artifacts with a client like `curl` or a web
+// browser, without using Taskcluster credentials, include a scope in the
+// `anonymous` role.  The convention is to include
+// `queue:get-artifact:public/*`.
 //
 // **API Clients**, this method will redirect you to the artifact, if it is
 // stored externally. Either way, the response may not be JSON. So API
@@ -638,8 +710,7 @@ func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration t
 // the latest run. Otherwise, just us the most convenient API end-point.
 //
 // Required scopes:
-//   If private:
-//     queue:get-artifact:<name>
+//   queue:get-artifact:<name>
 //
 // See #getLatestArtifact
 func (queue *Queue) GetLatestArtifact(taskId, name string) error {
@@ -651,8 +722,7 @@ func (queue *Queue) GetLatestArtifact(taskId, name string) error {
 // Returns a signed URL for GetLatestArtifact, valid for the specified duration.
 //
 // Required scopes:
-//   If private:
-//     queue:get-artifact:<name>
+//   queue:get-artifact:<name>
 //
 // See GetLatestArtifact for more details.
 func (queue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
@@ -670,6 +740,9 @@ func (queue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration ti
 // By default this end-point will list up-to 1000 artifacts in a single page
 // you may limit this with the query-string parameter `limit`.
 //
+// Required scopes:
+//   queue:list-artifacts:<taskId>:<runId>
+//
 // See #listArtifacts
 func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string) (*ListArtifactsResponse, error) {
 	v := url.Values{}
@@ -684,6 +757,24 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 	return responseObject.(*ListArtifactsResponse), err
 }
 
+// Returns a signed URL for ListArtifacts, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>:<runId>
+//
+// See ListArtifacts for more details.
+func (queue *Queue) ListArtifacts_SignedURL(taskId, runId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", v, duration)
+}
+
 // Returns a list of artifacts and associated meta-data for the latest run
 // from the given task.
 //
@@ -694,6 +785,9 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 //
 // By default this end-point will list up-to 1000 artifacts in a single page
 // you may limit this with the query-string parameter `limit`.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>
 //
 // See #listLatestArtifacts
 func (queue *Queue) ListLatestArtifacts(taskId, continuationToken, limit string) (*ListArtifactsResponse, error) {
@@ -709,6 +803,24 @@ func (queue *Queue) ListLatestArtifacts(taskId, continuationToken, limit string)
 	return responseObject.(*ListArtifactsResponse), err
 }
 
+// Returns a signed URL for ListLatestArtifacts, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>
+//
+// See ListLatestArtifacts for more details.
+func (queue *Queue) ListLatestArtifacts_SignedURL(taskId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts", v, duration)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Get all active provisioners.
@@ -721,6 +833,9 @@ func (queue *Queue) ListLatestArtifacts(taskId, continuationToken, limit string)
 // should call the end-point again with the `continuationToken` as a query-string
 // option. By default this end-point will list up to 1000 provisioners in a single
 // page. You may limit this with the query-string parameter `limit`.
+//
+// Required scopes:
+//   queue:list-provisioners
 //
 // See #listProvisioners
 func (queue *Queue) ListProvisioners(continuationToken, limit string) (*ListProvisionersResponse, error) {
@@ -736,6 +851,24 @@ func (queue *Queue) ListProvisioners(continuationToken, limit string) (*ListProv
 	return responseObject.(*ListProvisionersResponse), err
 }
 
+// Returns a signed URL for ListProvisioners, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-provisioners
+//
+// See ListProvisioners for more details.
+func (queue *Queue) ListProvisioners_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/provisioners", v, duration)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Get an active provisioner.
@@ -744,11 +877,25 @@ func (queue *Queue) ListProvisioners(continuationToken, limit string) (*ListProv
 // This does not necessarily mean there is an associated service performing any
 // provisioning activity.
 //
+// Required scopes:
+//   queue:get-provisioner:<provisionerId>
+//
 // See #getProvisioner
 func (queue *Queue) GetProvisioner(provisionerId string) (*ProvisionerResponse, error) {
 	cd := tcclient.Client(*queue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId), new(ProvisionerResponse), nil)
 	return responseObject.(*ProvisionerResponse), err
+}
+
+// Returns a signed URL for GetProvisioner, valid for the specified duration.
+//
+// Required scopes:
+//   queue:get-provisioner:<provisionerId>
+//
+// See GetProvisioner for more details.
+func (queue *Queue) GetProvisioner_SignedURL(provisionerId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -782,11 +929,25 @@ func (queue *Queue) DeclareProvisioner(provisionerId string, payload *Provisione
 // should be no means expect this to be an accurate number.
 // It is, however, a solid estimate of the number of pending tasks.
 //
+// Required scopes:
+//   queue:pending-count:<provisionerId>/<workerType>
+//
 // See #pendingTasks
 func (queue *Queue) PendingTasks(provisionerId, workerType string) (*CountPendingTasksResponse, error) {
 	cd := tcclient.Client(*queue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse), nil)
 	return responseObject.(*CountPendingTasksResponse), err
+}
+
+// Returns a signed URL for PendingTasks, valid for the specified duration.
+//
+// Required scopes:
+//   queue:pending-count:<provisionerId>/<workerType>
+//
+// See PendingTasks for more details.
+func (queue *Queue) PendingTasks_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -797,6 +958,9 @@ func (queue *Queue) PendingTasks(provisionerId, workerType string) (*CountPendin
 // should call the end-point again with the `continuationToken` as a query-string
 // option. By default this end-point will list up to 1000 worker-types in a single
 // page. You may limit this with the query-string parameter `limit`.
+//
+// Required scopes:
+//   queue:list-worker-types:<provisionerId>
 //
 // See #listWorkerTypes
 func (queue *Queue) ListWorkerTypes(provisionerId, continuationToken, limit string) (*ListWorkerTypesResponse, error) {
@@ -812,15 +976,47 @@ func (queue *Queue) ListWorkerTypes(provisionerId, continuationToken, limit stri
 	return responseObject.(*ListWorkerTypesResponse), err
 }
 
+// Returns a signed URL for ListWorkerTypes, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-worker-types:<provisionerId>
+//
+// See ListWorkerTypes for more details.
+func (queue *Queue) ListWorkerTypes_SignedURL(provisionerId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types", v, duration)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Get a worker-type from a provisioner.
+//
+// Required scopes:
+//   queue:get-worker-type:<provisionerId>/<workerType>
 //
 // See #getWorkerType
 func (queue *Queue) GetWorkerType(provisionerId, workerType string) (*WorkerTypeResponse, error) {
 	cd := tcclient.Client(*queue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType), new(WorkerTypeResponse), nil)
 	return responseObject.(*WorkerTypeResponse), err
+}
+
+// Returns a signed URL for GetWorkerType, valid for the specified duration.
+//
+// Required scopes:
+//   queue:get-worker-type:<provisionerId>/<workerType>
+//
+// See GetWorkerType for more details.
+func (queue *Queue) GetWorkerType_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -855,6 +1051,9 @@ func (queue *Queue) DeclareWorkerType(provisionerId, workerType string, payload 
 // option. By default this end-point will list up to 1000 workers in a single
 // page. You may limit this with the query-string parameter `limit`.
 //
+// Required scopes:
+//   queue:list-workers:<provisionerId>/<workerType>
+//
 // See #listWorkers
 func (queue *Queue) ListWorkers(provisionerId, workerType, continuationToken, limit, quarantined string) (*ListWorkersResponse, error) {
 	v := url.Values{}
@@ -872,15 +1071,50 @@ func (queue *Queue) ListWorkers(provisionerId, workerType, continuationToken, li
 	return responseObject.(*ListWorkersResponse), err
 }
 
+// Returns a signed URL for ListWorkers, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-workers:<provisionerId>/<workerType>
+//
+// See ListWorkers for more details.
+func (queue *Queue) ListWorkers_SignedURL(provisionerId, workerType, continuationToken, limit, quarantined string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	if quarantined != "" {
+		v.Add("quarantined", quarantined)
+	}
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", v, duration)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Get a worker from a worker-type.
+//
+// Required scopes:
+//   queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
 //
 // See #getWorker
 func (queue *Queue) GetWorker(provisionerId, workerType, workerGroup, workerId string) (*WorkerResponse, error) {
 	cd := tcclient.Client(*queue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
 	return responseObject.(*WorkerResponse), err
+}
+
+// Returns a signed URL for GetWorker, valid for the specified duration.
+//
+// Required scopes:
+//   queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
+//
+// See GetWorker for more details.
+func (queue *Queue) GetWorker_SignedURL(provisionerId, workerType, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***

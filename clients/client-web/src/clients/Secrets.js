@@ -14,7 +14,7 @@ export default class Secrets extends Client {
     this.set.entry = {"args":["name"],"category":"Secrets Service","input":true,"method":"put","name":"set","query":[],"route":"/secret/<name>","scopes":"secrets:set:<name>","stability":"stable","type":"function"}; // eslint-disable-line
     this.remove.entry = {"args":["name"],"category":"Secrets Service","method":"delete","name":"remove","query":[],"route":"/secret/<name>","scopes":"secrets:set:<name>","stability":"stable","type":"function"}; // eslint-disable-line
     this.get.entry = {"args":["name"],"category":"Secrets Service","method":"get","name":"get","output":true,"query":[],"route":"/secret/<name>","scopes":"secrets:get:<name>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.list.entry = {"args":[],"category":"Secrets Service","method":"get","name":"list","output":true,"query":["continuationToken","limit"],"route":"/secrets","stability":"stable","type":"function"}; // eslint-disable-line
+    this.list.entry = {"args":[],"category":"Secrets Service","method":"get","name":"list","output":true,"query":["continuationToken","limit"],"route":"/secrets","scopes":"secrets:list-secrets","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

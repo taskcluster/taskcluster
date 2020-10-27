@@ -1,4 +1,5 @@
 const slugid = require('slugid');
+const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
@@ -40,20 +41,35 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     extra: {},
   };
 
-  test('task(taskId) is correct', async () => {
-    const taskId = slugid.v4();
+  let taskId;
 
+  setup(async function() {
+    taskId = slugid.v4();
     await helper.queue.createTask(taskId, taskDef);
+  });
+
+  test('task(taskId) is correct', async () => {
+    helper.scopes(`queue:get-task:${taskId}`);
     const taskDef2 = await helper.queue.task(taskId);
     assume(taskDef2).deep.equals(taskDef);
   });
 
-  test('task(taskId) doesn\'t require credentials', async () => {
-    const taskId = slugid.v4();
-    await helper.queue.createTask(taskId, taskDef);
-
+  test('task(taskId) requires scopes', async () => {
     helper.scopes('none');
-    const taskDef2 = await helper.queue.task(taskId);
-    assume(taskDef2).deep.equals(taskDef);
+
+    await assert.rejects(
+      () => helper.queue.task(taskId),
+      err => err.code === 'InsufficientScopes');
+  });
+
+  test('status(taskId) requires scopes', async () => {
+    helper.scopes('none');
+
+    await assert.rejects(
+      () => helper.queue.status(taskId),
+      err => err.code === 'InsufficientScopes');
+
+    helper.scopes(`queue:status:${taskId}`);
+    await helper.queue.status(taskId); // doesn't fail..
   });
 });

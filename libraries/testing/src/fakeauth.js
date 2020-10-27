@@ -6,6 +6,8 @@ let hawk = require('hawk');
 let libUrls = require('taskcluster-lib-urls');
 let taskcluster = require('taskcluster-client');
 
+let anonymousScopes = [];
+
 exports.start = function(clients, { rootUrl } = {}) {
   assert(rootUrl, 'rootUrl option is required');
   const authPath = url.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk')).pathname;
@@ -23,7 +25,7 @@ exports.start = function(clients, { rootUrl } = {}) {
         clientId = authorization.id;
         scopes = clients[clientId];
         ext = authorization.ext;
-      } else {
+      } else if (/^\/.*[\?&]bewit\=/.test(body.resource)) {
         // The following is a hacky reproduction of the bewit logic in
         // https://github.com/hueniverse/hawk/blob/0833f99ba64558525995a7e21d4093da1f3e15fa/lib/server.js#L366-L383
         let bewitString = url.parse(body.resource, true).query.bewit;
@@ -38,6 +40,13 @@ exports.start = function(clients, { rootUrl } = {}) {
           scopes = clients[clientId];
           ext = bewitParts[3] || '';
         }
+      } else {
+        return {
+          status: 'no-auth',
+          scheme: 'none',
+          scopes: anonymousScopes,
+          expires: new Date(Date.now() + 15 * 60 * 1000),
+        };
       }
       if (ext) {
         ext = JSON.parse(Buffer.from(ext, 'base64').toString('utf-8'));
@@ -75,4 +84,15 @@ exports.stop = function() {
   // all nock interceptors, not just the one we installed.  See
   // https://github.com/pgte/nock/issues/438
   nock.cleanAll();
+};
+
+// run the enclosed function with `anonymousScopes` set to a new value
+exports.withAnonymousScopes = async (scopes, fn) => {
+  const saved = anonymousScopes;
+  try {
+    anonymousScopes = scopes;
+    return await fn();
+  } finally {
+    anonymousScopes = saved;
+  }
 };

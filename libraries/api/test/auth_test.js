@@ -134,6 +134,10 @@ suite(testing.suiteName(), function() {
     return request.get(url).set('Authorization', header).set('x-taskcluster-trace-id', 'foo/bar');
   };
 
+  const noAuthRequest = (url) => {
+    return request.get(url).set('x-taskcluster-trace-id', 'foo/bar');
+  };
+
   testEndpoint({
     method: 'get',
     route: '/test-deprecated-satisfies',
@@ -320,8 +324,7 @@ suite(testing.suiteName(), function() {
           } else {
             assert(err.message.match(/This request requires Taskcluster/));
           }
-
-          return res.reply({});
+          return res.reportError('InsufficientScopes', 'Insufficient scopes as intended');
         }
         throw err;
       }
@@ -331,14 +334,14 @@ suite(testing.suiteName(), function() {
       {
         label: 'insufficient scopes with auth has documented details',
         id: 'nobody',
-        desiredStatus: 200,
+        desiredStatus: 403,
         tester: (auth, url) => requestWithHawk(url, auth),
       },
       {
         label: 'insufficient scopes without auth has documented details',
-        shouldCallAuth: false,
-        desiredStatus: 200,
-        tester: (auth, url) => request.get(url),
+        shouldCallAuth: true,
+        desiredStatus: 403,
+        tester: (auth, url) => noAuthRequest(url),
       },
     ],
   });
@@ -384,7 +387,7 @@ suite(testing.suiteName(), function() {
       {
         shouldCallAuth: false,
         label: 'public unauthenticated endpoint',
-        tester: (auth, url) => request.get(url),
+        tester: (auth, url) => noAuthRequest(url),
       },
     ],
   });
@@ -579,6 +582,7 @@ suite(testing.suiteName(), function() {
         shouldCallAuth: false,
         tester: (auth, url) => request
           .get(url)
+          .set('x-taskcluster-trace-id', 'foo/bar')
           .send({
             public: true,
           }),
@@ -601,6 +605,7 @@ suite(testing.suiteName(), function() {
         desiredStatus: 403,
         tester: (auth, url) => request
           .get(url)
+          .set('x-taskcluster-trace-id', 'foo/bar')
           .send({
             public: false,
           }),

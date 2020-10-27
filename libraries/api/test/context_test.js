@@ -11,6 +11,16 @@ const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
   const rootUrl = 'http://localhost:4321';
+
+  setup(async () => {
+    testing.fakeauth.start({
+      'client-with-aa-bb-dd': ['aa', 'bb', 'dd'],
+    }, { rootUrl });
+  });
+  teardown(() => {
+    testing.fakeauth.stop();
+  });
+
   test('Provides context', async () => {
     // Create test api
     const builder = new APIBuilder({
@@ -20,11 +30,11 @@ suite(testing.suiteName(), function() {
       serviceName: 'test',
       apiVersion: 'v1',
     });
-
     builder.declare({
       method: 'get',
       route: '/context/',
       name: 'getContext',
+      scopes: null,
       title: 'Test End-Point',
       category: 'API Library',
       description: 'Place we can call to test something',
@@ -174,6 +184,7 @@ suite(testing.suiteName(), function() {
       method: 'get',
       route: '/context/',
       name: 'getContext',
+      scopes: null,
       title: 'Test End-Point',
       category: 'API Library',
       description: 'Place we can call to test something',

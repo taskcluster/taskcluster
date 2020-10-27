@@ -1,4 +1,5 @@
 const debug = require('debug')('test:query');
+const assert = require('assert');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const assume = require('assume');
@@ -67,7 +68,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r2.pendingTasks).is.equals(r1.pendingTasks);
   });
 
+  test('pendingTasks requires scopes', async () => {
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.queue.pendingTasks(
+        'no-provisioner-extended-extended',
+        'empty-test-worker-extended-extended',
+      ), err => err.code === 'InsufficientScopes');
+  });
+
   test('pendingTasks == 0', async () => {
+    helper.scopes('queue:pending-count:no-provisioner-extended-extended/empty-test-worker-extended-extended');
     const r1 = await helper.queue.pendingTasks(
       'no-provisioner-extended-extended',
       'empty-test-worker-extended-extended',

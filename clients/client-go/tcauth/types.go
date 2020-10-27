@@ -26,7 +26,7 @@ type (
 		// Message saying why the authentication failed.
 		Message string `json:"message"`
 
-		// The kind of response, `auth-failed` or `auth-success`.
+		// If `auth-failed`, the request failed to authenticate (e.g., invalid credentials).
 		//
 		// Possible values:
 		//   * "auth-failed"
@@ -45,11 +45,11 @@ type (
 		// Syntax:     ^[A-Za-z0-9!@/:.+|_-]+$
 		ClientID string `json:"clientId"`
 
-		// The expiration time for the credentials used to make this request.
+		// The expiration time that the returned scopes are valid for.
 		// This should be treated as the latest time at which the authorization
-		// is valid.  For most cases, where the access being authorized occurs
+		// is valid. For most cases, where the access being authorized occurs
 		// immediately, this field can be ignored, as the value will always be
-		// in the future if the status is `auth-success`.
+		// in the future.
 		Expires tcclient.Time `json:"expires"`
 
 		// Payload as extracted from `Authentication` header. This property is
@@ -73,7 +73,8 @@ type (
 		// Syntax:     ^[ -~]*$
 		Scopes []string `json:"scopes"`
 
-		// The kind of response, `auth-failed` or `auth-success`.
+		// If `auth-success`, the request has successfully authenticated.
+		// This does not imply authorization (i.e. scope satisfaction not guaranteed).
 		//
 		// Possible values:
 		//   * "auth-success"
@@ -510,6 +511,7 @@ type (
 	// One of:
 	//   * AuthenticationSuccessfulResponse
 	//   * AuthenticationFailedResponse
+	//   * NoAuthenticationResponse
 	HawkSignatureAuthenticationResponse json.RawMessage
 
 	// List of clients
@@ -520,6 +522,38 @@ type (
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
 		ContinuationToken string `json:"continuationToken,omitempty"`
+	}
+
+	// Response from a request to authenticate a hawk request.
+	NoAuthenticationResponse struct {
+
+		// The expiration time that the returned scopes are valid for.
+		// This should be treated as the latest time at which the authorization
+		// is valid. For most cases, where the access being authorized occurs
+		// immediately, this field can be ignored, as the value will always be
+		// in the future.
+		Expires tcclient.Time `json:"expires"`
+
+		// Authentication scheme the client used. Generally, you don't need to
+		// read this property unless `hash` is provided and you want to validate
+		// the payload hash. Additional values may be added in the future.
+		//
+		// Possible values:
+		//   * "none"
+		Scheme string `json:"scheme"`
+
+		// List of scopes the client is authorized to access.  Scopes must be
+		// composed of printable ASCII characters and spaces.
+		//
+		// Array items:
+		// Syntax:     ^[ -~]*$
+		Scopes []string `json:"scopes"`
+
+		// If `no-auth`, the request provided no credentials or bewit.
+		//
+		// Possible values:
+		//   * "no-auth"
+		Status string `json:"status"`
 	}
 
 	// Sentry DSN for submitting errors.

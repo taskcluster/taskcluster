@@ -1519,13 +1519,35 @@
             },
             "name": "workers",
             "next": {
-              "path": "manual/deploying/backups",
-              "title": "Backups"
+              "path": "manual/deploying/anonymous-role",
+              "title": "Anonymous Role"
             },
             "path": "manual/deploying/workers",
             "prev": {
               "path": "manual/deploying/static-clients",
               "title": "Static Clients"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Anonymous Role"
+            },
+            "name": "anonymous-role",
+            "next": {
+              "path": "manual/deploying/backups",
+              "title": "Backups"
+            },
+            "path": "manual/deploying/anonymous-role",
+            "prev": {
+              "path": "manual/deploying/workers",
+              "title": "Workers"
             },
             "up": {
               "path": "manual/deploying",
@@ -1546,8 +1568,8 @@
             },
             "path": "manual/deploying/backups",
             "prev": {
-              "path": "manual/deploying/workers",
-              "title": "Workers"
+              "path": "manual/deploying/anonymous-role",
+              "title": "Anonymous Role"
             },
             "up": {
               "path": "manual/deploying",

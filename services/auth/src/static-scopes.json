@@ -85,6 +85,7 @@
       "auth:create-client:worker/*",
       "notify:email:*",
       "queue:claim-work:*",
+      "queue:pending-count:*",
       "queue:worker-id:*",
       "secrets:get:worker-pool:*",
       "secrets:get:worker-type:*",

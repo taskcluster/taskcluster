@@ -5,6 +5,7 @@ const slugid = require('slugid');
 const crypto = require('crypto');
 const taskcluster = require('taskcluster-client');
 const sigvalidator = require('../src/signaturevalidator');
+const utils = require('taskcluster-lib-scopes');
 const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
 
@@ -29,6 +30,15 @@ suite(testing.suiteName(), function() {
     },
   };
 
+  // Expand `assume:anonymous` to include scopes `anonscope`
+  // No other "roles" apply.
+  const expandScopes = scopes => {
+    if (scopes.includes('assume:anonymous')) {
+      scopes = utils.mergeScopeSets(scopes, ['anonscope']);
+    }
+    return scopes;
+  };
+
   suiteSetup(async function() {
     validator = sigvalidator.createSignatureValidator({
       clientLoader: async clientId => {
@@ -37,7 +47,7 @@ suite(testing.suiteName(), function() {
         }
         return clients[clientId];
       },
-      expandScopes: scopes => scopes,
+      expandScopes,
       monitor: await helper.load('monitor'),
     });
   });
@@ -104,6 +114,12 @@ suite(testing.suiteName(), function() {
 
       let got = await validator(input);
       assume(got).to.deeply.equal(expected);
+
+      // *any* successful request should be returning `anonscope`, no matter
+      // what, so check that
+      if (got.status !== 'auth-failed') {
+        assume(utils.satisfiesExpression(got.scopes, 'anonscope')).is.ok();
+      }
     });
   };
 
@@ -418,7 +434,7 @@ suite(testing.suiteName(), function() {
         authorizedScopes: ['scope1:*', 'scope2'],
       },
     },
-  }, success(['scope1:*', 'scope2']));
+  }, success(['anonscope', 'assume:anonymous', 'scope1:*', 'scope2']));
 
   makeTest('invalid: authorized scopes not satisfied by clientId', {
     authorization: {
@@ -468,7 +484,17 @@ suite(testing.suiteName(), function() {
       credentials: { id, key },
       ext: { certificate },
     },
-  }), success(['tmpscope']));
+  }), success(['anonscope', 'assume:anonymous', 'tmpscope']));
+
+  testWithTemp('basic temporary credentials where the issuer does not have an explicit assume:anonymous', {
+    id: 'unpriv',
+    scopes: ['scope2'],
+  }, (id, key, certificate) => ({
+    authorization: {
+      credentials: { id, key },
+      ext: { certificate },
+    },
+  }), success(['anonscope', 'assume:anonymous', 'scope2'], { clientId: 'unpriv' }));
 
   testWithTemp('invalid: expired temporary credentials', {
     start: taskcluster.fromNow('-2 hour'),
@@ -490,7 +516,7 @@ suite(testing.suiteName(), function() {
       credentials: { id, key },
       ext: { certificate },
     },
-  }), success(['tmpscope'], { expires: one_hour }));
+  }), success(['anonscope', 'assume:anonymous', 'tmpscope'], { expires: one_hour }));
 
   testWithTemp('temporary credentials that expire after issuer give correct expiration', {
     expiry: three_hours,
@@ -501,7 +527,7 @@ suite(testing.suiteName(), function() {
       credentials: { id, key },
       ext: { certificate },
     },
-  }), success(['tmpscope'], { expires: two_hours }));
+  }), success(['anonscope', 'assume:anonymous', 'tmpscope'], { expires: two_hours }));
 
   testWithTemp('invalid: postdated temporary credentials', {
     start: taskcluster.fromNow('1 hour'),
@@ -557,7 +583,7 @@ suite(testing.suiteName(), function() {
         authorizedScopes: ['scope1:a', 'scope2:b'],
       },
     },
-  }), success(['scope1:a', 'scope2:b']));
+  }), success(['anonscope', 'assume:anonymous', 'scope1:a', 'scope2:b']));
 
   testWithTemp('invalid: temporary credentials with authorizedScopes not satisfied', {
     id: 'unpriv',
@@ -612,7 +638,7 @@ suite(testing.suiteName(), function() {
         certificate,
       },
     },
-  }), success(['tmpscope'], { clientId: 'my-temp-cred' }));
+  }), success(['anonscope', 'assume:anonymous', 'tmpscope'], { clientId: 'my-temp-cred' }));
 
   testWithTemp('named temporary credentials with authorizedScopes', {
     id: 'my-temp-cred',
@@ -628,7 +654,7 @@ suite(testing.suiteName(), function() {
         authorizedScopes: ['scopes:1', 'scopes:2'],
       },
     },
-  }), success(['scopes:1', 'scopes:2'], { clientId: 'my-temp-cred' }));
+  }), success(['anonscope', 'assume:anonymous', 'scopes:1', 'scopes:2'], { clientId: 'my-temp-cred' }));
 
   testWithTemp('invalid: named temporary credentials with issuer == clientId', {
     id: 'root',
@@ -705,7 +731,7 @@ suite(testing.suiteName(), function() {
         authorizedScopes: ['scope1:*'],
       },
     },
-  }, success(['scope1:*']));
+  }, success(['anonscope', 'assume:anonymous', 'scope1:*']));
 
   makeTest('invalid: bewit with bad key', {
     bewit: {
@@ -735,7 +761,7 @@ suite(testing.suiteName(), function() {
     scopes: ['scope3'],
   }, (id, key, certificate) => ({
     bewit: { id, key, ext: { certificate } },
-  }), success(['scope3']));
+  }), success(['anonscope', 'assume:anonymous', 'scope3']));
 
   testWithTemp('bewit based on temporary creds and authorizedScopes', {
     id: 'root',
@@ -749,7 +775,7 @@ suite(testing.suiteName(), function() {
         certificate,
       },
     },
-  }), success(['scope3']));
+  }), success(['anonscope', 'assume:anonymous', 'scope3']));
 
   testWithTemp('bewit based on named temporary creds and authorizedScopes', {
     id: 'root/temp-url',
@@ -766,5 +792,5 @@ suite(testing.suiteName(), function() {
         certificate,
       },
     },
-  }), success(['scope3'], { clientId: 'root/temp-url' }));
+  }), success(['anonscope', 'assume:anonymous', 'scope3'], { clientId: 'root/temp-url' }));
 });

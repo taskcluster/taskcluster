@@ -102,6 +102,9 @@ func (hooks *Hooks) Ping() error {
 
 // This endpoint will return a list of all hook groups with at least one hook.
 //
+// Required scopes:
+//   hooks:list-hooks:
+//
 // See #listHookGroups
 func (hooks *Hooks) ListHookGroups() (*HookGroups, error) {
 	cd := tcclient.Client(*hooks)
@@ -109,8 +112,22 @@ func (hooks *Hooks) ListHookGroups() (*HookGroups, error) {
 	return responseObject.(*HookGroups), err
 }
 
+// Returns a signed URL for ListHookGroups, valid for the specified duration.
+//
+// Required scopes:
+//   hooks:list-hooks:
+//
+// See ListHookGroups for more details.
+func (hooks *Hooks) ListHookGroups_SignedURL(duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*hooks)
+	return (&cd).SignedURL("/hooks", nil, duration)
+}
+
 // This endpoint will return a list of all the hook definitions within a
 // given hook group.
+//
+// Required scopes:
+//   hooks:list-hooks:<hookGroupId>
 //
 // See #listHooks
 func (hooks *Hooks) ListHooks(hookGroupId string) (*HookList, error) {
@@ -119,14 +136,39 @@ func (hooks *Hooks) ListHooks(hookGroupId string) (*HookList, error) {
 	return responseObject.(*HookList), err
 }
 
+// Returns a signed URL for ListHooks, valid for the specified duration.
+//
+// Required scopes:
+//   hooks:list-hooks:<hookGroupId>
+//
+// See ListHooks for more details.
+func (hooks *Hooks) ListHooks_SignedURL(hookGroupId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*hooks)
+	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId), nil, duration)
+}
+
 // This endpoint will return the hook definition for the given `hookGroupId`
 // and hookId.
+//
+// Required scopes:
+//   hooks:get:<hookGroupId>:<hookId>
 //
 // See #hook
 func (hooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), err
+}
+
+// Returns a signed URL for Hook, valid for the specified duration.
+//
+// Required scopes:
+//   hooks:get:<hookGroupId>:<hookId>
+//
+// See Hook for more details.
+func (hooks *Hooks) Hook_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*hooks)
+	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -136,11 +178,25 @@ func (hooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, error) {
 //
 // This method is deprecated in favor of listLastFires.
 //
+// Required scopes:
+//   hooks:status:<hookGroupId>/<hookId>
+//
 // See #getHookStatus
 func (hooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusResponse, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/status", new(HookStatusResponse), nil)
 	return responseObject.(*HookStatusResponse), err
+}
+
+// Returns a signed URL for GetHookStatus, valid for the specified duration.
+//
+// Required scopes:
+//   hooks:status:<hookGroupId>/<hookId>
+//
+// See GetHookStatus for more details.
+func (hooks *Hooks) GetHookStatus_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*hooks)
+	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/status", nil, duration)
 }
 
 // This endpoint will create a new hook.
@@ -257,9 +313,23 @@ func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payl
 // This endpoint will return information about the the last few times this hook has been
 // fired, including whether the hook was fired successfully or not
 //
+// Required scopes:
+//   hooks:list-last-fires:<hookGroupId>/<hookId>
+//
 // See #listLastFires
 func (hooks *Hooks) ListLastFires(hookGroupId, hookId string) (*LastFiresList, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", new(LastFiresList), nil)
 	return responseObject.(*LastFiresList), err
+}
+
+// Returns a signed URL for ListLastFires, valid for the specified duration.
+//
+// Required scopes:
+//   hooks:list-last-fires:<hookGroupId>/<hookId>
+//
+// See ListLastFires for more details.
+func (hooks *Hooks) ListLastFires_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*hooks)
+	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", nil, duration)
 }

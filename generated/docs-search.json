@@ -148,6 +148,27 @@
   },
   {
     "element": "h1",
+    "id": "anonymous-role",
+    "path": "/manual/deploying/anonymous-role",
+    "subtitle": null,
+    "title": "Anonymous Role"
+  },
+  {
+    "element": "h2",
+    "id": "private-deployments",
+    "path": "/manual/deploying/anonymous-role",
+    "subtitle": "Private Deployments",
+    "title": "Anonymous Role"
+  },
+  {
+    "element": "h2",
+    "id": "public-deployments",
+    "path": "/manual/deploying/anonymous-role",
+    "subtitle": "Public Deployments",
+    "title": "Anonymous Role"
+  },
+  {
+    "element": "h1",
     "id": "backups-and-restores",
     "path": "/manual/deploying/backups",
     "subtitle": null,

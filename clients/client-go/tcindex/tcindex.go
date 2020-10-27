@@ -107,11 +107,25 @@ func (index *Index) Ping() error {
 // Find a task by index path, returning the highest-rank task with that path. If no
 // task exists for the given path, this API end-point will respond with a 404 status.
 //
+// Required scopes:
+//   index:find-task:<indexPath>
+//
 // See #findTask
 func (index *Index) FindTask(indexPath string) (*IndexedTaskResponse, error) {
 	cd := tcclient.Client(*index)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(indexPath), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), err
+}
+
+// Returns a signed URL for FindTask, valid for the specified duration.
+//
+// Required scopes:
+//   index:find-task:<indexPath>
+//
+// See FindTask for more details.
+func (index *Index) FindTask_SignedURL(indexPath string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*index)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(indexPath), nil, duration)
 }
 
 // List the namespaces immediately under a given namespace.
@@ -121,6 +135,9 @@ func (index *Index) FindTask(indexPath string) (*IndexedTaskResponse, error) {
 // `continuationToken` will be returned, which can be given in the next
 // request. For the initial request, the payload should be an empty JSON
 // object.
+//
+// Required scopes:
+//   index:list-namespaces:<namespace>
 //
 // See #listNamespaces
 func (index *Index) ListNamespaces(namespace, continuationToken, limit string) (*ListNamespacesResponse, error) {
@@ -136,6 +153,24 @@ func (index *Index) ListNamespaces(namespace, continuationToken, limit string) (
 	return responseObject.(*ListNamespacesResponse), err
 }
 
+// Returns a signed URL for ListNamespaces, valid for the specified duration.
+//
+// Required scopes:
+//   index:list-namespaces:<namespace>
+//
+// See ListNamespaces for more details.
+func (index *Index) ListNamespaces_SignedURL(namespace, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*index)
+	return (&cd).SignedURL("/namespaces/"+url.QueryEscape(namespace), v, duration)
+}
+
 // List the tasks immediately under a given namespace.
 //
 // This endpoint
@@ -146,6 +181,9 @@ func (index *Index) ListNamespaces(namespace, continuationToken, limit string) (
 //
 // **Remark**, this end-point is designed for humans browsing for tasks, not
 // services, as that makes little sense.
+//
+// Required scopes:
+//   index:list-tasks:<namespace>
 //
 // See #listTasks
 func (index *Index) ListTasks(namespace, continuationToken, limit string) (*ListTasksResponse, error) {
@@ -159,6 +197,24 @@ func (index *Index) ListTasks(namespace, continuationToken, limit string) (*List
 	cd := tcclient.Client(*index)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), v)
 	return responseObject.(*ListTasksResponse), err
+}
+
+// Returns a signed URL for ListTasks, valid for the specified duration.
+//
+// Required scopes:
+//   index:list-tasks:<namespace>
+//
+// See ListTasks for more details.
+func (index *Index) ListTasks_SignedURL(namespace, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*index)
+	return (&cd).SignedURL("/tasks/"+url.QueryEscape(namespace), v, duration)
 }
 
 // Insert a task into the index.  If the new rank is less than the existing rank
@@ -193,8 +249,7 @@ func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*I
 // If no task exists for the given index path, this API end-point responds with 404.
 //
 // Required scopes:
-//   If private:
-//     queue:get-artifact:<name>
+//   queue:get-artifact:<name>
 //
 // See #findArtifactFromTask
 func (index *Index) FindArtifactFromTask(indexPath, name string) error {
@@ -206,8 +261,7 @@ func (index *Index) FindArtifactFromTask(indexPath, name string) error {
 // Returns a signed URL for FindArtifactFromTask, valid for the specified duration.
 //
 // Required scopes:
-//   If private:
-//     queue:get-artifact:<name>
+//   queue:get-artifact:<name>
 //
 // See FindArtifactFromTask for more details.
 func (index *Index) FindArtifactFromTask_SignedURL(indexPath, name string, duration time.Duration) (*url.URL, error) {

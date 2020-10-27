@@ -74,6 +74,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.equal(result.provisioners.length, 0, 'Did not expect any provisioners');
   });
 
+  test('queue.listProvisioners requires scopes', async () => {
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.queue.listProvisioners(),
+      err => err.code === 'InsufficientScopes');
+  });
+
   test('queue.listProvisioners returns provisioners', async () => {
     const provisioner = await makeProvisioner({});
 
@@ -111,6 +118,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const result = await helper.queue.listWorkerTypes('no-provisioner');
 
     assert.equal(result.workerTypes.length, 0, 'did not expect any worker-types');
+  });
+
+  test('queue.listWorkerTypes requires scopes', async () => {
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.queue.listWorkerTypes('no-provisioner'),
+      err => err.code === 'InsufficientScopes');
   });
 
   test('queue.listWorkerTypes returns workerTypes', async () => {
@@ -194,6 +208,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const result = await helper.queue.listWorkers('prov1-extended-extended-extended', 'gecko-b-2-linux-extended-extended');
 
     assert.equal(result.workers.length, 0, 'Did not expect any workers');
+  });
+
+  test('queue.listWorkers requires scopes', async () => {
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.queue.listWorkers('prov', 'wt'),
+      err => err.code === 'InsufficientScopes');
   });
 
   test('queue.listWorkers returns workers', async () => {
@@ -350,6 +371,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     );
   });
 
+  test('queue.getWorkerType requires scopes', async () => {
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.queue.getWorkerType('some-prov', 'some-wt'),
+      err => err.code === 'InsufficientScopes');
+  });
+
   test('queue.getWorkerType returns a worker-type', async () => {
     await makeProvisioner({});
     const wType = await makeWorkerType({});
@@ -458,6 +486,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('queue.getProvisioner returns a provisioner', async () => {
     const provisioner = await makeProvisioner({});
 
+    helper.scopes(`queue:get-provisioner:${provisioner.provisionerId}`);
     const result = await helper.queue.getProvisioner(provisioner.provisionerId);
 
     assert(result.provisionerId === provisioner.provisionerId, `expected ${provisioner.provisionerId}`);
@@ -465,6 +494,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(result.stability === provisioner.stability, `expected ${provisioner.stability}`);
     assert.equal(result.actions.length, 0, 'expected no actions');
     assert(new Date(result.expires).getTime() === provisioner.expires.getTime(), `expected ${provisioner.expires}`);
+  });
+
+  test('queue.getProvisioner requires scopes', async () => {
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.queue.getProvisioner('some-prov'),
+      err => err.code === 'InsufficientScopes');
   });
 
   test('queue.getProvisioner returns 404 when no such provisioner is found', async () => {
@@ -703,6 +739,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       worker.workerGroup,
       worker.workerId);
     assert.equal(result.workerId, worker.workerId);
+  });
+
+  test('queue.getWorker requires scopes', async () => {
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.queue.getWorker('some-prov', 'some-wt', 'wg', 'wid'),
+      err => err.code === 'InsufficientScopes');
   });
 
   test('queue.getWorker returns 404 for a missing WorkerType', async () => {
