@@ -72,7 +72,7 @@
     "temporary": "^0.0.8",
     "tweetnacl": "^1.0.0",
     "typed-env-config": "^3.0.0",
-    "uuid": "^2.0.0",
+    "uuid": "^8.0.0",
     "walk": "^2.3.14",
     "websocket-stream": "^3.3.0",
     "ws": "^7.1.2"
