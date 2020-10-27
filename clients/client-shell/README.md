@@ -18,7 +18,7 @@ platform, run `chmod +x` and run it!
 
 MacOS users run the following command:
 ```shell
-curl https://github.com/taskcluster/taskcluster/releases/download/v37.5.1/taskcluster-darwin-amd64 --output taskcluster
+curl -L https://github.com/taskcluster/taskcluster/releases/download/v37.5.1/taskcluster-darwin-amd64 --output taskcluster
 ```
 This is to ensure the binary is not quarantined by MacOS.
 You will need to `chmod +x` of
