@@ -35,7 +35,6 @@ const IGNORE = {
     'async',
     'bluebird',
     'ccount',
-    'chokidar',
     'chownr',
     'commander',
     'compressible',
