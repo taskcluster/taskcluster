@@ -3,7 +3,7 @@ let diskspace = require('diskspace');
 module.exports = {
   exceedsDiskspaceThreshold(mnt, threshold, availableCapacity, log, monitor) {
     return new Promise(function (accept, reject) {
-      diskspace.check(mnt, function (err, total, free, status) {
+      diskspace.check(mnt, function (err, { total, free }) {
         let used = total - free;
         let capacity = (100 * (used / total)).toPrecision(5);
 

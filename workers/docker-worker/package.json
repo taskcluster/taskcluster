@@ -32,7 +32,7 @@
     "commander": "^6.0.0",
     "debug": "*",
     "dev-null": "^0.1.0",
-    "diskspace": "^1.0.3",
+    "diskspace": "^2.0.0",
     "diveSync": "^0.3.0",
     "docker-exec-websocket-server": "^2.0.0",
     "docker-image-parser": "^1.0.0",
