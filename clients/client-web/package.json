@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-client-web",
-  "version": "37.3.0",
+  "version": "37.5.1",
   "main": "build/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
@@ -25,7 +25,7 @@
     "crypto-js": "^3.1.9-1",
     "dotenv": "^8.0.0",
     "eslint": "^6.6.0",
-    "hawk": "^7.0.7",
+    "hawk": "<7.1.0",
     "karma": "^4.0.1",
     "karma-cli": "^2.0.0",
     "karma-firefox-launcher": "^1.1.0",
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "crypto-js": "^3.1.9-1",
-    "hawk": "^7.0.7",
+    "hawk": "<7.1.0",
     "taskcluster-lib-urls": "^12.0.0",
     "query-string": "^6.1.0"
   }

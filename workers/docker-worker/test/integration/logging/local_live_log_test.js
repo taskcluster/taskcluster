@@ -3,6 +3,7 @@ const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 
+const helper = require('../../helper');
 const DockerWorker = require('../../dockerworker');
 const TestWorker = require('../../testworker');
 const waitForEvent = require('../../../src/lib/wait_for_event');
@@ -63,7 +64,7 @@ suite('live logging', () => {
     await waitForEvent(worker, 'task run');
 
     // expects rootUrl, credentials from env vars
-    const queue = new taskcluster.Queue();
+    const queue = new taskcluster.Queue(helper.optionsFromCiCreds());
     let artifactUrl = queue.buildUrl(queue.getLatestArtifact, taskId, 'public/logs/live.log');
 
     // Don't follow redirect, we just care about where it's going

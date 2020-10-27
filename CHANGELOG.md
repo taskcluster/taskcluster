@@ -3,6 +3,63 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v37.5.1
+
+
+
+## v37.5.0
+
+### GENERAL
+
+▶ [minor] [#3640](https://github.com/taskcluster/taskcluster/issues/3640)
+Notify routes can now include `on-defined`, `on-pending` and `on-running`.
+
+`on-any` is now deprecated and there are two new alternatives:
+- `on-transition` for any state transition.
+- `on-resolved` for terminal states (completed, failed and exception).
+
+▶ [patch] 
+taskcluster-web-server is now equipped with the anonymous role. This will allow
+it to assign the anonymous role to users who successfuly login.
+
+### USERS
+
+▶ [minor] [#3521](https://github.com/taskcluster/taskcluster/issues/3521)
+Taskcluster-proxy now adds a `Content-Type` header to proxied requests lacking one.  While this behavior is not desirable, it matches the behavior of older versions and real tasks depend on it.  A future version of Taskcluster will drop this behavior.
+
+When this occurs, the worker will log a message containing the string "Adding missing Content-Type header".  Use this logging to find tasks that fail to include the `Content-Type` header and adjust accordingly.
+
+### OTHER
+
+▶ Additional change not described here: [#3679](https://github.com/taskcluster/taskcluster/issues/3679).
+
+## v37.4.0
+
+### GENERAL
+
+▶ [patch] [#3659](https://github.com/taskcluster/taskcluster/issues/3659)
+Slack and Email notifications' Task Group URLs are now correct (containing `/tasks`).
+
+▶ [patch] [#3639](https://github.com/taskcluster/taskcluster/issues/3639)
+`taskDefined` messages will now always have an unscheduled status.
+
+### USERS
+
+▶ [patch] [#3631](https://github.com/taskcluster/taskcluster/issues/3631)
+Calling a JS Client constructor with no arguments works again -- assuming that any necessary configuration was passed to `taskcluster.config(..)`.
+
+### DEVELOPERS
+
+▶ [minor] [#3538](https://github.com/taskcluster/taskcluster/issues/3538)
+DB function `get_workers` is now deprecated.
+
+▶ [patch] [#3619](https://github.com/taskcluster/taskcluster/issues/3619)
+The `tools/workerproto` Go package is now available for external use, and its API is considered stable (in other words, breaking changes will result in a major version bump).
+
+### OTHER
+
+▶ Additional change not described here: [#3591](https://github.com/taskcluster/taskcluster/issues/3591).
+
 ## v37.3.0
 
 ### DEPLOYERS

@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -196,14 +195,20 @@ func TestBewit(t *testing.T) {
 		}
 	}
 
-	testWithPermCreds(t, test(false, 200), 303)
-	testWithTempCreds(t, test(false, 200), 303, "test:authenticate-get")
+	t.Run("perm creds, no authorized scopes",
+		func(t *testing.T) { testWithPermCreds(t, test(false, 200), 303) })
+	t.Run("temp creds with good scope, no authorized scopes",
+		func(t *testing.T) { testWithTempCreds(t, test(false, 200), 303, "test:authenticate-get") })
 	// not the required scope for the API method (InsufficientScopes)
-	testWithTempCreds(t, test(false, 403), 303, "test:some-other-scope")
-	testWithPermCreds(t, test(true, 200), 303)
-	testWithTempCreds(t, test(true, 200), 303, "test:authenticate-get")
+	t.Run("temp creds with bad scope, no authorized scopes",
+		func(t *testing.T) { testWithTempCreds(t, test(false, 403), 303, "test:some-other-scope") })
+	t.Run("perm creds with authorized scopes",
+		func(t *testing.T) { testWithPermCreds(t, test(true, 200), 303) })
+	t.Run("temp creds with good scope, authorized scopes",
+		func(t *testing.T) { testWithTempCreds(t, test(true, 200), 303, "test:authenticate-get") })
 	// temp creds that don't satisfy authorizedScopes (invalid authentication)
-	testWithTempCreds(t, test(true, 401), 303, "test:some-other-scope")
+	t.Run("temp creds with bad scope, authorized scopes",
+		func(t *testing.T) { testWithTempCreds(t, test(true, 401), 303, "test:some-other-scope") })
 }
 
 func TestBewitArbitraryURL(t *testing.T) {
@@ -267,9 +272,8 @@ func TestBewitArbitraryURL(t *testing.T) {
 }
 
 func TestAPICallGET(t *testing.T) {
-	test := func(name string, scopes []string) IntegrationTest {
+	test := func(scopes []string) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
-			fmt.Printf("-- %s --\n", name)
 			// Test setup
 			routes := NewRoutes(
 				tcclient.Client{
@@ -304,15 +308,25 @@ func TestAPICallGET(t *testing.T) {
 			return res
 		}
 	}
-	testWithPermCreds(t, test("Test with perm creds without authorizedScopes", []string{}), 200)
-	testWithPermCreds(t, test("Test with perm creds with authorizedScopes", []string{"test:authenticate-get"}), 200)
-	testWithPermCreds(t, test("Test with perm creds with wrong authorizedScopes", []string{"test:something-else"}), 403)
-	testWithTempCreds(t, test("Test with temp creds without authorizedScopes", []string{}), 200, "test:authenticate-get")
-	testWithTempCreds(t, test("Test with temp creds with authorizedScopes", []string{"test:authenticate-get"}), 200, "test:authenticate-get")
+	t.Run("Test with perm creds without authorizedScopes", func(t *testing.T) {
+		testWithPermCreds(t, test([]string{}), 200)
+	})
+	t.Run("Test with perm creds with authorizedScopes", func(t *testing.T) {
+		testWithPermCreds(t, test([]string{"test:authenticate-get"}), 200)
+	})
+	t.Run("Test with perm creds with wrong authorizedScopes", func(t *testing.T) {
+		testWithPermCreds(t, test([]string{"test:something-else"}), 403)
+	})
+	t.Run("Test with temp creds without authorizedScopes", func(t *testing.T) {
+		testWithTempCreds(t, test([]string{}), 200, "test:authenticate-get")
+	})
+	t.Run("Test with temp creds with authorizedScopes", func(t *testing.T) {
+		testWithTempCreds(t, test([]string{"test:authenticate-get"}), 200, "test:authenticate-get")
+	})
 }
 
 func TestAPICallPOST(t *testing.T) {
-	test := func(name string, scopes []string) IntegrationTest {
+	test := func(scopes []string, sendContentType bool) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 			// Test setup
@@ -338,7 +352,9 @@ func TestAPICallPOST(t *testing.T) {
 				"http://localhost:60024/auth/v1/test-authenticate",
 				bytes.NewBufferString(`{"clientScopes": ["test:*", "auth:create-client:test:*"], "requiredScopes": ["test:authenticate-post"]}`),
 			)
-			req.Header["content-type"] = []string{"application/json"}
+			if sendContentType {
+				req.Header["Content-Type"] = []string{"application/json"}
+			}
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -350,11 +366,24 @@ func TestAPICallPOST(t *testing.T) {
 		}
 	}
 
-	testWithPermCreds(t, test("Test with perm creds without authorizedScopes", []string{}), 200)
-	testWithPermCreds(t, test("Test with perm creds with authorizedScopes", []string{"test:authenticate-post"}), 200)
-	testWithPermCreds(t, test("Test with perm creds with wrong authorizedScopes", []string{"test:something-else"}), 403)
-	testWithTempCreds(t, test("Test with temp creds without authorizedScopes", []string{}), 200, "test:authenticate-post")
-	testWithTempCreds(t, test("Test with temp creds with authorizedScopes", []string{"test:authenticate-post"}), 200, "test:authenticate-post")
+	t.Run("Test with perm creds without authorizedScopes", func(t *testing.T) {
+		testWithPermCreds(t, test([]string{}, true), 200)
+	})
+	t.Run("Test with perm creds without Content-Type header", func(t *testing.T) {
+		testWithPermCreds(t, test([]string{}, false), 200)
+	})
+	t.Run("Test with perm creds with authorizedScopes", func(t *testing.T) {
+		testWithPermCreds(t, test([]string{"test:authenticate-post"}, true), 200)
+	})
+	t.Run("Test with perm creds with wrong authorizedScopes", func(t *testing.T) {
+		testWithPermCreds(t, test([]string{"test:something-else"}, true), 403)
+	})
+	t.Run("Test with temp creds without authorizedScopes", func(t *testing.T) {
+		testWithTempCreds(t, test([]string{}, true), 200, "test:authenticate-post")
+	})
+	t.Run("Test with temp creds with authorizedScopes", func(t *testing.T) {
+		testWithTempCreds(t, test([]string{"test:authenticate-post"}, true), 200, "test:authenticate-post")
+	})
 }
 
 func TestNon200HasErrorBody(t *testing.T) {
@@ -389,8 +418,8 @@ func TestNon200HasErrorBody(t *testing.T) {
 		return res
 
 	}
-	testWithPermCreds(t, test, 404)
-	testWithTempCreds(t, test, 404)
+	t.Run("perm creds", func(t *testing.T) { testWithPermCreds(t, test, 404) })
+	t.Run("temp creds", func(t *testing.T) { testWithTempCreds(t, test, 404) })
 }
 
 func TestOversteppedScopes(t *testing.T) {
@@ -500,8 +529,8 @@ func TestInvalidEndpoint(t *testing.T) {
 		)
 		return res
 	}
-	testWithTempCreds(t, test, 404)
-	testWithPermCreds(t, test, 404)
+	t.Run("temp creds", func(t *testing.T) { testWithTempCreds(t, test, 404) })
+	t.Run("perm creds", func(t *testing.T) { testWithPermCreds(t, test, 404) })
 }
 
 func TestGetResponseBody(t *testing.T) {
@@ -542,6 +571,8 @@ func TestGetResponseBody(t *testing.T) {
 		}
 	}
 
-	testWithPermCreds(t, test("tester"), 200)
-	testWithTempCreds(t, test("test:temp-cred-issuer"), 200, "test:authenticate-get")
+	t.Run("perm creds",
+		func(t *testing.T) { testWithPermCreds(t, test("tester"), 200) })
+	t.Run("temp creds",
+		func(t *testing.T) { testWithTempCreds(t, test("test:temp-cred-issuer"), 200, "test:authenticate-get") })
 }

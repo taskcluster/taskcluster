@@ -6,7 +6,7 @@ let request = require('superagent');
 let debug = require('debug')('taskcluster-client');
 let _ = require('lodash');
 let assert = require('assert');
-let hawk = require('@hapi/hawk');
+let hawk = require('hawk');
 let url = require('url');
 let crypto = require('crypto');
 let slugid = require('slugid');
@@ -207,7 +207,7 @@ exports.createClient = function(reference, name) {
     this._options.rootUrl = this._options.rootUrl.replace(/\/$/, '');
     this._options._trueRootUrl = this._options.rootUrl.replace(/\/$/, ''); // Useful for buildUrl/buildSignedUrl in certain cases
 
-    this._options.serviceDiscoveryScheme = options.serviceDiscoveryScheme || DEFAULT_SERVICE_DISCOVERY_SCHEME;
+    this._options.serviceDiscoveryScheme = this._options.serviceDiscoveryScheme || DEFAULT_SERVICE_DISCOVERY_SCHEME;
     if (!SERVICE_DISCOVERY_SCHEMES.includes(this._options.serviceDiscoveryScheme)) {
       throw new Error(`Invalid Taskcluster client service discovery scheme: ${this._options.serviceDiscoveryScheme}`);
     }

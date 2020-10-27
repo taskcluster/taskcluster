@@ -1,6 +1,6 @@
 const request = require('superagent');
 const assert = require('assert');
-const hawk = require('@hapi/hawk');
+const hawk = require('hawk');
 const { APIBuilder } = require('../');
 const helper = require('./helper');
 const _ = require('lodash');

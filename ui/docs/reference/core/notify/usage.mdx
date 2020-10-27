@@ -22,7 +22,20 @@ __Slack:__ If a Taskcluster deployment has Slack credentials, you can post to it
 
 ### Filters
 
-__on-any:__ This does what it sounds like and will notify you of task-completion no matter how it ends. Unless the task was deliberately canceled.
+You can read more in the queue documentation to understand exactly what different
+task states exist.
+
+__on-any:__ (DEPRECATED) This does what it sounds like and will notify you of task-completion no matter how it ends. Unless the task was deliberately canceled.
+
+__on-transition:__ As the task changes states (defined -> pending -> running -> resolved) this will send a notification for each one.
+
+__on-resolved:__ This replaces the old `on-any` filter and will send a notification on any of the end-states of a task (completed, failed and exception)
+
+__on-defined:__ When the task is defined you will get a notification.
+
+__on-pending:__ When the task is pending you will get a notification.
+
+__on-running:__ When the task is running you will get a notification.
 
 __on-completed:__ Only when the task completes with no errors will you get a notification.
 
@@ -39,12 +52,12 @@ But what you've really been waiting for is to know how to use this, so here's a 
 ```json
 {
   "routes": [
-    "notify.email.<you@you.com>.on-any",
+    "notify.email.<you@you.com>.on-resolved",
     "notify.irc-user.<your-mozilla-irc-nick>.on-failed",
     "notify.irc-channel.<a-mozilla-irc-channel>.on-completed",
     "notify.pulse.<a-pulse-routing-key>.on-exception",
-    "notify.matrix-room.<a-matrix-roomId>.on-any",
-    "notify.slack-channel.<a-slack-channelId>.on-any"
+    "notify.matrix-room.<a-matrix-roomId>.on-resolved",
+    "notify.slack-channel.<a-slack-channelId>.on-resolved"
   ]
 }
 ```
@@ -122,7 +135,7 @@ tasks:
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: "{{ taskcluster.docker.workerType }}"
     routes:
-      - "notify.email.{{event.head.user.email}}.on-any"
+      - "notify.email.{{event.head.user.email}}.on-resolved"
       - "notify.irc-channel.#taskcluster-notifications.on-failed"
       - "notify.irc-channel.#taskcluster-notifications.on-exception"
     extra:

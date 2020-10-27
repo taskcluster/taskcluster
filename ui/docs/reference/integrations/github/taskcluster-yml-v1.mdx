@@ -151,7 +151,7 @@ tasks:
     'tasks_for == "github-push"':
       taskId: {$eval: as_slugid("pr_task")}
       routes:
-        - 'notify.email.<you@you.com>.on-any'
+        - 'notify.email.<you@you.com>.on-resolved'
 ```
 
 More on routes you can read [here](/docs/reference/core/notify/) and [here](/docs/reference/platform/queue/task-schema)

@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-client",
-  "version": "37.3.0",
+  "version": "37.5.1",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Client for interfacing taskcluster components",
   "license": "MPL-2.0",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "@hapi/hawk": "^7.1.2",
+    "hawk": "^7.1.2",
     "lodash": "^4.17.4",
     "slugid": "^2.0.0",
     "superagent": "^5.0.0",

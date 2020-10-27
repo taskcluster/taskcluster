@@ -53,7 +53,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     let runId = result.runId;
 
     // expects rootUrl and credentials from env vars
-    let queue = new taskcluster.Queue();
+    let queue = new taskcluster.Queue(helper.optionsFromCiCreds());
     let url = queue.buildUrl(queue.getArtifact, taskId, runId, 'public/dockerImage.tar');
 
     let res = got.stream(url);
@@ -120,7 +120,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     let runId = result.runId;
 
     // expects rootUrl and credentials from env vars
-    let queue = new taskcluster.Queue();
+    let queue = new taskcluster.Queue(helper.optionsFromCiCreds());
     let url = queue.buildUrl(queue.getArtifact, taskId, runId, 'public/cache/docker-worker-garbage-caches-test-cache.tar');
 
     let res = got.stream(url);

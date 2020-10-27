@@ -227,7 +227,7 @@ exports.dockerRegistryCheck = async ({ tag }) => {
   const [repo, imagetag] = tag.split(/:/);
   try {
     // Access the registry API directly to see if this tag already exists, and do not push if so.
-    const res = await got(`https://index.docker.io/v1/repositories/${repo}/tags`, { json: true });
+    const res = await got(`https://index.docker.io/v1/repositories/${repo}/tags`, { responseType: 'json' });
     if (!res.body) {
       throw new Error('invalid response from index.docker.io');
     }

@@ -4,7 +4,7 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
 
-VERSION = '37.3.0'
+VERSION = '37.5.1'
 
 tests_require = [
     'pytest',
@@ -62,7 +62,8 @@ elif sys.version_info[:2] < (3, 5):
     raise Exception('This library does not support Python 3 versions below 3.5')
 elif sys.version_info[:2] >= (3, 5):
     install_requires.extend([
-        'aiohttp>=2.0.0',
+        # 3.7.0 is broken - see https://github.com/taskcluster/taskcluster/issues/3767
+        'aiohttp>=2.0.0,!=3.7.0',
         'async_timeout>=2.0.0',
     ])
 

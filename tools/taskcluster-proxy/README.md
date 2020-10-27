@@ -45,26 +45,13 @@ $ ./build.sh -a
 
 ## Testing
 
-To run the full test suites you will need the
-[project:taskcluster:taskcluster-proxy-tester
-scopes](https://auth.taskcluster.net/v1/roles/project:taskcluster:taskcluster-proxy-tester).
-The easiest way to obtain these is to [gain full taskcluster-contributor
-scopes](https://github.com/taskcluster/generic-worker/#acquire-taskcluster-credentials-for-running-tests).
-
-The credentials are expected to be in the `TASKCLUSTER_CLIENT_ID` and
-`TASKCLUSTER_ACCESS_TOKEN` environment variables. You are advised to create a
-permanent client for testing the proxy, which has the single scope
-`assume:project:taskcluster:taskcluster-proxy-tester` since some tests require
-a permanent client in order to create temporary credentials. Make sure to unset
-`TASKCLUSTER_CERTIFICATE` if you previously had set it.
+To run the full test suites you will need to set the `TASKCLUSTER_ROOT_URL` environment variable to point to a running Taskcluster deployment.
+It doesn't matter which one!
 
 Running tests is a feature of the build.sh script, and requires the `-t` flag:
 
 ```
 $ export TASKCLUSTER_ROOT_URL='......'
-$ export TASKCLUSTER_CLIENT_ID='......'
-$ export TASKCLUSTER_ACCESS_TOKEN='......'
-$ unset TASKCLUSTER_CERTIFICATE  # permacreds are required for testing
 $ ./build.sh -t
 ```
 
@@ -91,9 +78,9 @@ task id.
                                     If not provided, will bind listener to all available network
                                     interfaces [default: ].
     -t --task-id <taskId>           Restrict given scopes to those defined in taskId.
-    --client-id <clientId>          Use a specific auth.taskcluster hawk client id [default: ].
-    --access-token <accessToken>    Use a specific auth.taskcluster hawk access token [default: ].
-    --certificate <certificate>     Use a specific auth.taskcluster hawk certificate [default: ].
+    --client-id <clientId>          Use a specific hawk client id [default: ].
+    --access-token <accessToken>    Use a specific hawk access token [default: ].
+    --certificate <certificate>     Use a specific hawk certificate [default: ].
 ```
 
 ## Passing credentials via environment variables
@@ -211,12 +198,11 @@ curl http://localhost:8080/bewit --data 'https://taskcluster.example.com/api/que
 
 The proxy has the endpoint `/credentials` which accepts a `PUT` request for
 updating the credentials used by a running taskcluster-proxy, without needing
-to restart it. The body is a
-[Credentials](https://docs.taskcluster.net/reference/platform/queue/api-docs#claimTask)
-object in json format. This endpoint is called by `docker-worker` and
+to restart it. The body is a credentials object object in json format.
+This endpoint is called by `docker-worker` and
 `generic-worker` when they receive updated temporary credentials from the queue
 for a running task (see
-[queue.reclaimTask](https://docs.taskcluster.net/reference/platform/taskcluster-queue/references/api#reclaimTask)).
+[`queue.claimWork`](https://docs.taskcluster.net/docs/reference/platform/queue/api#claimWork)).
 Existing requests will be completed before the credentials are updated, and new
 requests will be queued behind the credentials update request. Therefore if a
 long transaction is currently in place, the credentials update request may take

@@ -1,4 +1,3 @@
-const taskcluster = require('taskcluster-client');
 const { suiteName } = require('taskcluster-lib-testing');
 const libUrls = require('taskcluster-lib-urls');
 const ImageManager = require('../src/lib/docker/image_manager');
@@ -42,8 +41,6 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
   let imageManager;
 
   setup(async () => {
-    taskcluster.config(helper.optionsFromCiCreds());
-
     imageManager = new ImageManager({
       docker: docker,
       dockerConfig: {

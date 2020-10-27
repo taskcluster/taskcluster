@@ -1,4 +1,4 @@
-const hawk = require('@hapi/hawk');
+const hawk = require('hawk');
 const assert = require('assert');
 // Someone should rename utils to scopes...
 const utils = require('taskcluster-lib-scopes');

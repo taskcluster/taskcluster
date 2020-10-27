@@ -539,6 +539,12 @@ builder.declare({
   );
 
   let task = Task.fromApi(taskId, taskDef);
+
+  // Fetch the status of the task before creation, so that `taskDefined` messages
+  // have a default status. This can't be run after create, since create is
+  // idempotent and does a DB fetch.
+  let initialStatus = task.status();
+
   try {
     await task.create(this.db);
   } catch (err) {
@@ -574,20 +580,19 @@ builder.declare({
     tags: task.tags,
   };
 
-  // If first run isn't unscheduled or pending, all message must have been
-  // published before, this can happen if we came from the catch-branch
-  // (it's unlikely to happen). But no need to publish messages again
-  let runZeroState = (task.runs[0] || { state: 'unscheduled' }).state;
-  if (runZeroState !== 'unscheduled' && runZeroState !== 'pending') {
-    return res.reply({ status });
+  // If the first run status is not unscheduled, then we are not the first
+  // call to create this task (due to idempotency). That call will have sent
+  // the `taskDefined` message. (This can happen when two identical calls are
+  // made to createTask in quick succession, but it is very unlikely.)
+  if (initialStatus.state === 'unscheduled') {
+    // Publish task-defined message, we want this arriving before the
+    // task-pending message, so we have to await publication here
+    await this.publisher.taskDefined({ status: initialStatus, task: taskPulseContents }, task.routes);
+    this.monitor.log.taskDefined({ taskId });
   }
 
-  // Publish task-defined message, we want this arriving before the
-  // task-pending message, so we have to await publication here
-  await this.publisher.taskDefined({ status, task: taskPulseContents }, task.routes);
-  this.monitor.log.taskDefined({ taskId });
-
-  // If first run is pending we publish messages about this
+  // Same as above but for tasks with no dependencies, scheduling the first run.
+  let runZeroState = (task.runs[0] || { state: 'unscheduled' }).state;
   if (runZeroState === 'pending') {
     await Promise.all([
       // Put message into the task pending queue

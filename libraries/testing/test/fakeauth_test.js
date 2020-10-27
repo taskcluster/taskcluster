@@ -1,5 +1,5 @@
 const debug = require('debug')('test');
-const hawk = require('@hapi/hawk');
+const hawk = require('hawk');
 const request = require('superagent');
 const SchemaSet = require('taskcluster-lib-validate');
 const { APIBuilder } = require('taskcluster-lib-api');

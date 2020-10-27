@@ -26,12 +26,24 @@ class Handler {
 
     this.pulseClient = pulseClient;
     this.bindings = [
+      queueEvents.taskDefined(`route.${routePrefix}.#.on-defined.#`),
+      queueEvents.taskDefined(`route.${routePrefix}.#.on-transition.#`),
+      queueEvents.taskPending(`route.${routePrefix}.#.on-pending.#`),
+      queueEvents.taskPending(`route.${routePrefix}.#.on-transition.#`),
+      queueEvents.taskRunning(`route.${routePrefix}.#.on-running.#`),
+      queueEvents.taskRunning(`route.${routePrefix}.#.on-transition.#`),
       queueEvents.taskCompleted(`route.${routePrefix}.#.on-completed.#`),
-      queueEvents.taskCompleted(`route.${routePrefix}.#.on-any.#`),
+      queueEvents.taskCompleted(`route.${routePrefix}.#.on-any.#`), // deprecated
+      queueEvents.taskCompleted(`route.${routePrefix}.#.on-resolved.#`),
+      queueEvents.taskCompleted(`route.${routePrefix}.#.on-transition.#`),
       queueEvents.taskFailed(`route.${routePrefix}.#.on-failed.#`),
-      queueEvents.taskFailed(`route.${routePrefix}.#.on-any.#`),
+      queueEvents.taskFailed(`route.${routePrefix}.#.on-any.#`), // deprecated
+      queueEvents.taskFailed(`route.${routePrefix}.#.on-resolved.#`),
+      queueEvents.taskFailed(`route.${routePrefix}.#.on-transition.#`),
       queueEvents.taskException(`route.${routePrefix}.#.on-exception.#`),
-      queueEvents.taskException(`route.${routePrefix}.#.on-any.#`),
+      queueEvents.taskException(`route.${routePrefix}.#.on-any.#`), // deprecated
+      queueEvents.taskException(`route.${routePrefix}.#.on-resolved.#`),
+      queueEvents.taskException(`route.${routePrefix}.#.on-transition.#`),
     ];
   }
 
@@ -57,6 +69,18 @@ class Handler {
     }
   }
 
+  shouldNotifyOnDecider(decider, state) {
+    if (decider === 'transition') {
+      return true;
+    }
+
+    if ((decider === 'any' || decider === 'resolved') && ['completed', 'failed', 'exception'].includes(state)) {
+      return true;
+    }
+
+    return decider === state;
+  }
+
   async onMessage(message) {
     let { status } = message.payload;
 
@@ -71,7 +95,7 @@ class Handler {
     let taskId = status.taskId;
     let task = await this.queue.task(taskId);
     let href = libUrls.ui(this.rootUrl, `tasks/${taskId}`);
-    let groupHref = libUrls.ui(this.rootUrl, `groups/${taskId}/tasks`);
+    let groupHref = libUrls.ui(this.rootUrl, `tasks/groups/${taskId}/tasks`);
     let runCount = status.runs.length;
 
     await Promise.allSettled(message.routes.map(async entry => {
@@ -79,7 +103,7 @@ class Handler {
 
       // convert from on- syntax to state. e.g. on-exception -> exception
       let decider = _.join(_.slice(route[route.length - 1], 3), '');
-      if (decider !== 'any' && status.state !== decider) {
+      if (!this.shouldNotifyOnDecider(decider, status.state)) {
         return;
       }
 
