@@ -6,7 +6,7 @@ const http = require('http');
 const sslify = require('express-sslify');
 const hsts = require('hsts');
 const csp = require('content-security-policy');
-const uuidv4 = require('uuid/v4');
+const uuid = require('uuid');
 const path = require('path');
 const fs = require('fs');
 
@@ -22,10 +22,10 @@ const traceMiddleware = (req, res, next) => {
   if (req.headers['x-taskcluster-trace-id']) {
     traceId = req.headers['x-taskcluster-trace-id'];
   } else {
-    traceId = uuidv4();
+    traceId = uuid.v4();
   }
   req.traceId = traceId;
-  req.requestId = uuidv4();
+  req.requestId = uuid.v4();
   res.setHeader('x-for-trace-id', traceId);
   res.setHeader('x-for-request-id', req.requestId);
   next();
