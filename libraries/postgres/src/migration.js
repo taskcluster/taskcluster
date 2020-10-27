@@ -147,6 +147,7 @@ const runOnlineBatches = async ({ client, showProgress, versionNum, kind }) => {
   }
 
   // outer loop: continue until completion function returns true
+  let outerCount = 0;
   while (true) {
     showProgress(`..checking completion of online ${kind} for db version ${versionNum}`);
     if (await isComplete()) {
@@ -166,6 +167,9 @@ const runOnlineBatches = async ({ client, showProgress, versionNum, kind }) => {
 
     eta.measurement(0);
     while (true) {
+      if (hooks['preBatch']) {
+        await hooks['preBatch'](outerCount, count);
+      }
       const res = await runBatch(batchSize, state);
       state = res.state;
       count += res.count;
@@ -181,6 +185,9 @@ const runOnlineBatches = async ({ client, showProgress, versionNum, kind }) => {
       if (!isNaN(rate)) {
         batchSize = Math.round(Math.max(1, rate * batchTime));
       }
+      if (hooks['batchSize']) {
+        batchSize = await hooks['batchSize'](batchSize);
+      }
 
       if (nextReport <= Date.now()) {
         const roundedRate = Math.round(rate * 10000) / 10;
@@ -190,6 +197,7 @@ const runOnlineBatches = async ({ client, showProgress, versionNum, kind }) => {
         reportTime = Math.min(reportTime * 2, 60 * 1000);
       }
     }
+    outerCount++;
   }
 };
 
