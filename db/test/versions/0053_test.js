@@ -43,9 +43,9 @@ suite(testing.suiteName(), function() {
       assert.equal(res.rows[0].provisioner_id, 'pp');
       assert.equal(res.rows[0].worker_type, 'wt');
     });
-    
+
   });
-    test('task_queue_id, provisioner_id, worker_type columns created / removed appropriately for queue_workers', async function() {
+  test('task_queue_id, provisioner_id, worker_type columns created / removed appropriately for queue_workers', async function() {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
 
     await helper.upgradeTo(PREV_VERSION);
@@ -80,6 +80,6 @@ suite(testing.suiteName(), function() {
       assert.equal(res.rows[0].provisioner_id, 'pp');
       assert.equal(res.rows[0].worker_type, 'wt');
     });
-    
+
   });
 });

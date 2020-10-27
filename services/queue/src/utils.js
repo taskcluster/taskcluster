@@ -1,3 +1,4 @@
+let assert = require('assert');
 const debug = require('debug')('utils');
 
 const artifactUtils = {
@@ -109,3 +110,37 @@ const artifactUtils = {
 };
 
 exports.artifactUtils = artifactUtils;
+
+/**
+ * Split a taskQueueId into its deprecated provisionerId/workerType components.
+ */
+const splitTaskQueueId = taskQueueId => {
+  const split = taskQueueId.split('/');
+  assert.equal(split.length, 2, `invalid taskQueueId ${taskQueueId}`);
+  return { provisionerId: split[0], workerType: split[1] };
+};
+exports.splitTaskQueueId = splitTaskQueueId;
+
+/**
+ * Join a provisionerId and workerType to make a taskQueueId
+ */
+const joinTaskQueueId = (provisionerId, workerType) => {
+  assert(typeof provisionerId === 'string', 'provisionerId omitted');
+  assert(typeof workerType === 'string', 'workerType omitted');
+  assert(provisionerId.indexOf('/') === -1, 'provisionerId cannot contain `/`');
+  return `${provisionerId}/${workerType}`;
+};
+exports.joinTaskQueueId = joinTaskQueueId;
+
+/**
+ * Add the provisionerId, workerType fields to an object that has a
+ * taskQueueId field to maintain public interface compatibility
+ */
+const useSplitFields = (obj) => {
+  assert(Object.prototype.hasOwnProperty.call(obj, 'taskQueueId'), 'object is missing property `taskQueueId`');
+  const { provisionerId, workerType } = splitTaskQueueId(obj.taskQueueId);
+  obj.provisionerId = provisionerId;
+  obj.workerType = workerType;
+  delete obj.taskQueueId;
+};
+exports.useSplitFields = useSplitFields;

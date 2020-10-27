@@ -122,11 +122,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       Type: 'task-claimed',
       Logger: 'taskcluster.test.api',
       Fields: {
-        provisionerId: "no-provisioner-extended-extended",
+        taskQueueId: `no-provisioner-extended-extended/${workerType}`,
         v: 1,
         workerGroup: "my-worker-group-extended-extended",
         workerId: "my-worker-extended-extended",
-        workerType,
         taskId,
         runId: 0,
       },

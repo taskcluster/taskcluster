@@ -67,7 +67,7 @@ class Task {
     return Task.fromDbRows(await db.fns.get_task(taskId));
   }
 
-  // Call db.create_worker with the content of this instance.  This
+  // Call db.create_task with the content of this instance.  This
   // implements the usual idempotency checks and returns an error with code
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
@@ -342,7 +342,7 @@ class Provisioner {
 // Export Provisioner
 exports.Provisioner = Provisioner;
 
-class WorkerType {
+class TaskQueue {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -350,9 +350,8 @@ class WorkerType {
 
   // Create a single instance from a DB row
   static fromDb(row) {
-    return new WorkerType({
-      provisionerId: row.provisioner_id,
-      workerType: row.worker_type,
+    return new TaskQueue({
+      taskQueueId: row.task_queue_id,
       expires: row.expires,
       lastDateActive: row.last_date_active,
       description: row.description,
@@ -361,19 +360,19 @@ class WorkerType {
   }
 
   // Create a single instance, or undefined, from a set of rows containing zero
-  // or one elements.  This matches the semantics of get_worker_type
+  // or one elements.  This matches the semantics of get_task_queue
   static fromDbRows(rows) {
     if (rows.length === 1) {
-      return WorkerType.fromDb(rows[0]);
+      return TaskQueue.fromDb(rows[0]);
     }
   }
 
-  // Create an instance from createWorkerType API request arguments
-  static fromApi(workerType, input) {
+  // Create an instance from createTaskQueue API request arguments
+  static fromApi(taskQueueId, input) {
     assert(input.expires);
     assert(input.lastDateActive);
-    return new WorkerType({
-      workerType,
+    return new TaskQueue({
+      taskQueueId,
       ...input,
       // convert to dates
       expires: new Date(input.expires),
@@ -382,19 +381,18 @@ class WorkerType {
   }
 
   // Get a worker type from the DB, or undefined
-  static async get(db, provisionerId, workerType, expires) {
-    return WorkerType.fromDbRows(await db.fns.get_queue_worker_type(provisionerId, workerType, expires));
+  static async get(db, taskQueueId, expires) {
+    return TaskQueue.fromDbRows(await db.fns.get_task_queue(taskQueueId, expires));
   }
 
-  // Call db.get_queue_worker_types.
+  // Call db.get_task_queues.
   // The response will be of the form { rows, continationToken }.
   // If there are no worker types to show, the response will have the
   // `rows` field set to an empty array.
-  static async getWorkerTypes(
+  static async getTaskQueues(
     db,
     {
-      provisionerId,
-      workerType,
+      taskQueueId,
       expires,
     },
     {
@@ -404,15 +402,14 @@ class WorkerType {
     const fetchResults = async (query) => {
       const { continuationToken, rows } = await paginateResults({
         query,
-        fetch: (size, offset) => db.fns.get_queue_worker_types(
-          provisionerId || null,
-          workerType || null,
+        fetch: (size, offset) => db.fns.get_task_queues(
+          taskQueueId || null,
           expires || null,
           size,
           offset,
         ),
       });
-      const entries = rows.map(WorkerType.fromDb);
+      const entries = rows.map(TaskQueue.fromDb);
 
       return { rows: entries, continuationToken: continuationToken };
     };
@@ -421,14 +418,24 @@ class WorkerType {
     return await fetchResults(query || {});
   }
 
-  // Call db.create_worker_type with the content of this instance.  This
+  // Get a list with all the task queues in the DB, possibly filtered
+  // by `expires`, without pagination.
+  static async getAllTaskQueues(db, expires) {
+    return (await db.fns.get_task_queues(
+      null,
+      expires || null,
+      null,
+      null,
+    )).map(TaskQueue.fromDb);
+  }
+
+  // Call db.create_task_queue with the content of this instance.  This
   // implements the usual idempotency checks and returns an error with code
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
     try {
-      await db.fns.create_queue_worker_type(
-        this.provisionerId,
-        this.workerType,
+      await db.fns.create_task_queue(
+        this.taskQueueId,
         this.expires,
         this.lastDateActive,
         this.description,
@@ -439,9 +446,9 @@ class WorkerType {
         throw err;
       }
 
-      const existing = await WorkerType.get(db, this.provisionerId, this.workerType, new Date());
+      const existing = await TaskQueue.get(db, this.taskQueueId, new Date());
       if (!this.equals(existing)) {
-        // new worker type does not match, so this is a "real" conflict
+        // new task queue does not match, so this is a "real" conflict
         throw err;
       }
       // ..otherwise adopt the identity of the existing worker type
@@ -450,9 +457,8 @@ class WorkerType {
   }
 
   async update(db, { description, expires, lastDateActive, stability }) {
-    return await db.fns.update_queue_worker_type(
-      this.provisionerId,
-      this.workerType,
+    return await db.fns.update_task_queue(
+      this.taskQueueId,
       expires || this.expires,
       lastDateActive || this.lastDateActive,
       description || this.description,
@@ -460,11 +466,10 @@ class WorkerType {
     );
   }
 
-  // return the serialization of this worker type
+  // return the serialization of this task queue
   serialize() {
     return {
-      provisionerId: this.provisionerId,
-      workerType: this.workerType,
+      taskQueueId: this.taskQueueId,
       expires: this.expires.toJSON(),
       lastDateActive: this.lastDateActive.toJSON(),
       description: this.description,
@@ -472,14 +477,14 @@ class WorkerType {
     };
   }
 
-  // Compare to another worker type (used to check idempotency)
+  // Compare to another task queue (used to check idempotency)
   equals(other) {
     return _.isEqual(other, this);
   }
 }
 
-// Export WorkerType
-exports.WorkerType = WorkerType;
+// Export TaskQueue
+exports.TaskQueue = TaskQueue;
 
 class Worker {
   // (private constructor)
@@ -490,8 +495,7 @@ class Worker {
   // Create a single instance from a DB row
   static fromDb(row) {
     return new Worker({
-      provisionerId: row.provisioner_id,
-      workerType: row.worker_type,
+      taskQueueId: row.task_queue_id,
       workerGroup: row.worker_group,
       workerId: row.worker_id,
       quarantineUntil: row.quarantine_until,
@@ -526,19 +530,18 @@ class Worker {
   }
 
   // Get a worker from the DB, or undefined
-  static async get(db, provisionerId, workerType, workerGroup, workerId, expires) {
-    return Worker.fromDbRows(await db.fns.get_queue_worker(provisionerId, workerType, workerGroup, workerId, expires));
+  static async get(db, taskQueueId, workerGroup, workerId, expires) {
+    return Worker.fromDbRows(await db.fns.get_queue_worker_tqid(taskQueueId, workerGroup, workerId, expires));
   }
 
-  // Call db.get_queue_workers.
+  // Call db.get_queue_workers_tqid.
   // The response will be of the form { rows, continationToken }.
   // If there are no workers to show, the response will have the
   // `rows` field set to an empty array.
   static async getWorkers(
     db,
     {
-      provisionerId,
-      workerType,
+      taskQueueId,
       expires,
     },
     {
@@ -548,9 +551,8 @@ class Worker {
     const fetchResults = async (query) => {
       const { continuationToken, rows } = await paginateResults({
         query,
-        fetch: (size, offset) => db.fns.get_queue_workers(
-          provisionerId || null,
-          workerType || null,
+        fetch: (size, offset) => db.fns.get_queue_workers_tqid(
+          taskQueueId || null,
           expires || null,
           size,
           offset,
@@ -566,7 +568,7 @@ class Worker {
     return await fetchResults(query || {});
   }
 
-  // Call db.create_worker with the content of this instance.  This
+  // Call db.create_queue_worker_tqid with the content of this instance.  This
   // implements the usual idempotency checks and returns an error with code
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
@@ -574,9 +576,8 @@ class Worker {
     // otherwise does not correctly serialize the array values
     const arr = v => JSON.stringify(v);
     try {
-      await db.fns.create_queue_worker(
-        this.provisionerId,
-        this.workerType,
+      await db.fns.create_queue_worker_tqid(
+        this.taskQueueId,
         this.workerGroup,
         this.workerId,
         this.quarantineUntil,
@@ -591,8 +592,7 @@ class Worker {
 
       const existing = await Worker.get(
         db,
-        this.provisionerId,
-        this.workerType,
+        this.taskQueueId,
         this.workerGroup,
         this.workerId,
         new Date());
@@ -606,9 +606,8 @@ class Worker {
   }
 
   async update(db, { quarantineUntil, expires, recentTasks }) {
-    return await db.fns.update_queue_worker(
-      this.provisionerId,
-      this.workerType,
+    return await db.fns.update_queue_worker_tqid(
+      this.taskQueueId,
       this.workerGroup,
       this.workerId,
       quarantineUntil || this.quarantineUntil,
@@ -620,8 +619,7 @@ class Worker {
   // return the serialization of this worker
   serialize() {
     return {
-      provisionerId: this.provisionerId,
-      workerType: this.workerType,
+      taskQueueId: this.taskQueueId,
       workerGroup: this.workerGroup,
       workerId: this.workerId,
       quarantineUntil: this.quarantineUntil.toJSON(),

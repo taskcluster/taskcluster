@@ -3,7 +3,8 @@ const _ = require('lodash');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const taskCreds = require('./task-creds');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const { Task, Worker, WorkerType, Provisioner } = require('./data');
+const { Task, Worker, TaskQueue, Provisioner } = require('./data');
+const { useSplitFields, joinTaskQueueId, splitTaskQueueId } = require('./utils');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -925,14 +926,15 @@ builder.declare({
     workerType,
   });
 
-  const worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, new Date());
+  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
+  const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
 
   // Don't claim tasks when worker is quarantined (but do record the worker
   // being seen, and be sure to wait the 20 seconds so as not to cause a
   // tight loop of claimWork calls from the worker
   if (worker && worker.quarantineUntil.getTime() > new Date().getTime()) {
     await Promise.all([
-      this.workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
+      this.workerInfo.seen(taskQueueId, workerGroup, workerId),
       sleep20Seconds(),
     ]);
     return res.reply({
@@ -948,15 +950,14 @@ builder.declare({
 
   let [result] = await Promise.all([
     this.workClaimer.claim(
-      provisionerId, workerType, workerGroup, workerId, count, aborted,
+      taskQueueId, workerGroup, workerId, count, aborted,
     ),
-    this.workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
+    this.workerInfo.seen(taskQueueId, workerGroup, workerId),
   ]);
 
   result.forEach(({ runId, status: { taskId } }) => {
     this.monitor.log.taskClaimed({
-      provisionerId,
-      workerType,
+      taskQueueId,
       workerGroup,
       workerId,
       taskId,
@@ -964,7 +965,7 @@ builder.declare({
     });
   });
 
-  await this.workerInfo.taskSeen(provisionerId, workerType, workerGroup, workerId, result);
+  await this.workerInfo.taskSeen(taskQueueId, workerGroup, workerId, result);
 
   return res.reply({
     tasks: result,
@@ -1033,7 +1034,9 @@ builder.declare({
     );
   }
 
-  const worker = await Worker.get(this.db, task.provisionerId, task.workerType, workerGroup, workerId, new Date());
+  const taskQueueId = joinTaskQueueId(task.provisionerId, task.workerType);
+
+  const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
 
   // Don't record task when worker is quarantined
   if (worker && worker.quarantineUntil.getTime() > new Date().getTime()) {
@@ -1045,7 +1048,7 @@ builder.declare({
     this.workClaimer.claimTask(
       taskId, runId, workerGroup, workerId, task,
     ),
-    this.workerInfo.seen(task.provisionerId),
+    this.workerInfo.seen(taskQueueId),
   ]);
 
   // If the run doesn't exist return ResourceNotFound
@@ -1069,7 +1072,7 @@ builder.declare({
     );
   }
 
-  await this.workerInfo.taskSeen(task.provisionerId, task.workerType, workerGroup, workerId, [result]);
+  await this.workerInfo.taskSeen(taskQueueId, workerGroup, workerId, [result]);
 
   // Reply to caller
   return res.reply(result);
@@ -1668,7 +1671,7 @@ builder.declare({
 
   // Get number of pending message
   let count = await this.queueService.countPendingMessages(
-    provisionerId, workerType,
+    joinTaskQueueId(provisionerId, workerType),
   );
 
   // Reply to call with count `pendingTasks`
@@ -1698,20 +1701,29 @@ builder.declare({
     'page. You may limit this with the query-string parameter `limit`.',
   ].join('\n'),
 }, async function(req, res) {
-  const provisionerId = req.params.provisionerId;
-  const { rows: workerTypes, continuationToken } = await WorkerType.getWorkerTypes(
-    this.db,
-    { provisionerId, expires: new Date() },
-    { query: req.query },
-  );
+  // We no longer have a provisioner_id field in the DB, so we have to
+  // do the filtering here for now.
+  let taskQueuesFull = await TaskQueue.getAllTaskQueues(this.db, new Date());
+  taskQueuesFull = taskQueuesFull.filter(tq => {
+    const { provisionerId } = splitTaskQueueId(tq.taskQueueId);
+    return provisionerId === req.params.provisionerId;
+  });
+
+  // Apply pagination on the filtered results
+  const { rows: taskQueues, continuationToken } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => taskQueuesFull.slice(offset, offset + size),
+  });
+
   const result = {
-    workerTypes: workerTypes.map(workerType => workerType.serialize()),
+    workerTypes: taskQueues.map(taskQueue => taskQueue.serialize()),
   };
 
   if (continuationToken) {
     result.continuationToken = continuationToken;
   }
 
+  result.workerTypes.forEach(useSplitFields);
   return res.reply(result);
 });
 
@@ -1729,14 +1741,15 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { provisionerId, workerType } = req.params;
+  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   const expires = new Date();
-  const [wType, provisioner] = await Promise.all([
-    WorkerType.get(this.db, provisionerId, workerType, expires),
+  const [tQueue, provisioner] = await Promise.all([
+    TaskQueue.get(this.db, taskQueueId, expires),
     Provisioner.get(this.db, provisionerId, expires),
   ]);
 
-  if (!wType || !provisioner) {
+  if (!tQueue || !provisioner) {
     return res.reportError('ResourceNotFound',
       'Worker-type `{{workerType}}` with Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
         workerType,
@@ -1745,8 +1758,11 @@ builder.declare({
     );
   }
 
+  const tqResult = tQueue.serialize();
+  useSplitFields(tqResult);
+
   const actions = provisioner.actions.filter(action => action.context === 'worker-type');
-  return res.reply(Object.assign({}, wType.serialize(), { actions }));
+  return res.reply(Object.assign({}, tqResult, { actions }));
 });
 
 /** Update a worker-type */
@@ -1777,6 +1793,7 @@ builder.declare({
 }, async function(req, res) {
   const { provisionerId, workerType } = req.params;
   const { stability, description, expires } = req.body;
+  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   await req.authorize({
     provisionerId,
@@ -1784,18 +1801,21 @@ builder.declare({
     properties: Object.keys(req.body),
   });
 
-  const [wType, provisioner] = await Promise.all([
-    this.workerInfo.upsertWorkerType({
-      provisionerId,
-      workerType,
+  const [tQueue, provisioner] = await Promise.all([
+    this.workerInfo.upsertTaskQueue({
+      taskQueueId,
       stability,
       description,
       expires,
     }),
     this.workerInfo.upsertProvisioner({ provisionerId }),
   ]);
+
+  const tqResult = tQueue.serialize();
+  useSplitFields(tqResult);
+
   const actions = provisioner.actions.filter(action => action.context === 'worker-type');
-  return res.reply(Object.assign({}, wType.serialize(), { actions }));
+  return res.reply(Object.assign({}, tqResult, { actions }));
 });
 
 /** List all active workerGroup/workerId of a workerType */
@@ -1828,10 +1848,11 @@ builder.declare({
   const provisionerId = req.params.provisionerId;
   const workerType = req.params.workerType;
   const now = new Date();
+  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   const { rows: workers, continuationToken } = await Worker.getWorkers(
     this.db,
-    { provisionerId, workerType },
+    { taskQueueId },
     { query: req.query },
   );
 
@@ -1883,18 +1904,19 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { provisionerId, workerType, workerGroup, workerId } = req.params;
+  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   const now = new Date();
-  const [worker, wType, provisioner] = await Promise.all([
-    Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, now),
-    WorkerType.get(this.db, provisionerId, workerType, now),
+  const [worker, tQueue, provisioner] = await Promise.all([
+    Worker.get(this.db, taskQueueId, workerGroup, workerId, now),
+    TaskQueue.get(this.db, taskQueueId, now),
     Provisioner.get(this.db, provisionerId, now),
   ]);
 
   // do not consider workers expired until their quarantine date expires.
   const expired = worker && worker.expires < now && worker.quarantineUntil < now;
 
-  if (expired || !worker || !wType || !provisioner) {
+  if (expired || !worker || !tQueue || !provisioner) {
     return res.reportError('ResourceNotFound',
       'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
       'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found. ' +
@@ -1907,8 +1929,11 @@ builder.declare({
     );
   }
 
+  const workerResult = worker.serialize();
+  useSplitFields(workerResult);
+
   const actions = provisioner.actions.filter(action => action.context === 'worker');
-  return res.reply(Object.assign({}, worker.serialize(), { actions }));
+  return res.reply(Object.assign({}, workerResult, { actions }));
 });
 
 /** Quarantine a Worker */
@@ -1931,10 +1956,11 @@ builder.declare({
   let result;
   const { provisionerId, workerType, workerGroup, workerId } = req.params;
   const { quarantineUntil } = req.body;
+  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   const expires = new Date();
   let [worker, provisioner] = await Promise.all([
-    Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, expires),
+    Worker.get(this.db, taskQueueId, workerGroup, workerId, expires),
     Provisioner.get(this.db, provisionerId, expires),
   ]);
 
@@ -1954,8 +1980,11 @@ builder.declare({
   result = await worker.update(this.db, { quarantineUntil });
   worker = Worker.fromDbRows(result);
 
+  const workerResult = worker.serialize();
+  useSplitFields(workerResult);
+
   const actions = provisioner.actions.filter(action => action.context === 'worker');
-  return res.reply(Object.assign({}, worker.serialize(), { actions }));
+  return res.reply(Object.assign({}, workerResult, { actions }));
 });
 
 /** Update a worker */
@@ -1984,6 +2013,7 @@ builder.declare({
 }, async function(req, res) {
   const { provisionerId, workerType, workerGroup, workerId } = req.params;
   const { expires } = req.body;
+  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   await req.authorize({
     provisionerId,
@@ -1994,11 +2024,14 @@ builder.declare({
   });
 
   const [worker, _, provisioner] = await Promise.all([
-    this.workerInfo.upsertWorker({ provisionerId, workerType, workerGroup, workerId, expires }),
-    this.workerInfo.upsertWorkerType({ provisionerId, workerType }),
+    this.workerInfo.upsertWorker({ taskQueueId, workerGroup, workerId, expires }),
+    this.workerInfo.upsertTaskQueue({ taskQueueId, workerType }),
     this.workerInfo.upsertProvisioner({ provisionerId }),
   ]);
 
+  const workerResult = worker.serialize();
+  useSplitFields(workerResult);
+
   const actions = provisioner.actions.filter(action => action.context === 'worker');
-  return res.reply(Object.assign({}, worker.serialize(), { actions }));
+  return res.reply(Object.assign({}, workerResult, { actions }));
 });

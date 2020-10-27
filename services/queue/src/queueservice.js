@@ -5,6 +5,7 @@ let base32 = require('thirty-two');
 let crypto = require('crypto');
 let slugid = require('slugid');
 let AZQueue = require('taskcluster-lib-azqueue');
+let { joinTaskQueueId } = require('./utils');
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where
@@ -364,20 +365,17 @@ class QueueService {
   }
 
   /** Ensure existence of a queue */
-  ensurePendingQueue(provisionerId, workerType) {
-    // Construct id, note that slash cannot be used in provisionerId, workerType
-    let id = provisionerId + '/' + workerType;
+  ensurePendingQueue(taskQueueId) {
+    let id = taskQueueId;
 
     // Find promise
     if (this.queues[id]) {
       return this.queues[id];
     }
 
-    // Create promise, if it doesn't exist
-    assert(/^[A-Za-z0-9_-]{1,38}$/.test(provisionerId),
-      'Expected provisionerId to be an identifier');
-    assert(/^[A-Za-z0-9_-]{1,38}$/.test(workerType),
-      'Expected workerType to be an identifier');
+    // Validate taskQueueId
+    assert(/^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/.test(taskQueueId),
+      'Expected taskQueueId to be a split identifier');
 
     // Hash identifier to 24 characters
     let hashId = (id) => {
@@ -388,8 +386,7 @@ class QueueService {
     // Construct queue name prefix (add priority later)
     let namePrefix = [
       this.prefix, // prefix all queues
-      hashId(provisionerId), // hash of provisionerId
-      hashId(workerType), // hash of workerType
+      hashId(taskQueueId), // hash of taskQueueId
       '', // priority, add PRIORITY_TO_CONSTANT
     ].join('-');
 
@@ -398,7 +395,7 @@ class QueueService {
 
     // Return and cache promise that we created this queue
     return this.queues[id] = Promise.all(_.map(names, queueName => {
-      return this._ensureQueueAndMetadata(queueName, provisionerId, workerType);
+      return this._ensureQueueAndMetadata(queueName, taskQueueId);
     })).catch(err => {
       err.note = 'Failed to ensure azure queue in queueservice.js';
       this.monitor.reportError(err);
@@ -421,7 +418,7 @@ class QueueService {
    * We delete queues if they have `last_used` > 10 days ago, this happens in
    * a periodic test tasks.
    */
-  async _ensureQueueAndMetadata(queue, provisionerId, workerType) {
+  async _ensureQueueAndMetadata(queue, taskQueueId) {
     // NOOP on postgres
   }
 
@@ -458,10 +455,8 @@ class QueueService {
     assert(typeof runId === 'number', 'Expected runId as number');
 
     // Find name of azure queue
-    let queueNames = await this.ensurePendingQueue(
-      task.provisionerId,
-      task.workerType,
-    );
+    const taskQueueId = joinTaskQueueId(task.provisionerId, task.workerType);
+    let queueNames = await this.ensurePendingQueue(taskQueueId);
 
     // Find the time to deadline
     let timeToDeadline = secondsTo(task.deadline);
@@ -499,11 +494,9 @@ class QueueService {
    *   release: function() {} // Async function that makes the message visible
    * }
    */
-  async pendingQueues(provisionerId, workerType) {
+  async pendingQueues(taskQueueId) {
     // Find names of azure queues
-    let queueNames = await this.ensurePendingQueue(
-      provisionerId, workerType,
-    );
+    let queueNames = await this.ensurePendingQueue(taskQueueId);
     // Order by priority (and convert to array)
     let queues = PRIORITIES.map(priority => queueNames[priority]);
 
@@ -529,9 +522,9 @@ class QueueService {
   }
 
   /** Returns promise for number of messages pending in pending task queue */
-  async countPendingMessages(provisionerId, workerType) {
+  async countPendingMessages(taskQueueId) {
     // Find cache entry
-    let cacheKey = provisionerId + '/' + workerType;
+    let cacheKey = taskQueueId;
     let entry = this.countPendingCache[cacheKey] || {
       count: Promise.resolve(0),
       lastUpdated: 0,
@@ -543,7 +536,7 @@ class QueueService {
       entry.lastUpdated = Date.now();
       entry.count = (async () => {
         // Find name of azure queue
-        let queueNames = await this.ensurePendingQueue(provisionerId, workerType);
+        let queueNames = await this.ensurePendingQueue(taskQueueId);
 
         // Find messages count queues
         let results = await Promise.all(_.map(queueNames, queueName => {

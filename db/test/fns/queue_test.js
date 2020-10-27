@@ -1089,14 +1089,6 @@ suite(testing.suiteName(), function() {
       assert.equal(res.length, 1);
     });
 
-    /* TODO Review this test
-    helper.dbTest('get_queue_worker_types doesn\'t return expired worker types', async function(db) {
-      await create(db, { expires: taskcluster.fromNow('-2 hours') });
-      const res = await db.fns.get_queue_worker_types(new Date(), null, null, null, null);
-      assert.deepEqual(res, []);
-    });
-    */
-
     helper.dbTest('get_task_queues full results', async function(db) {
       for (let i = 0; i < 10; i++) {
         await create(db, { taskQueueId: `prov/wt/${i}` });
