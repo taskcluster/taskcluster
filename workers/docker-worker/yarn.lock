@@ -911,9 +911,10 @@ fs-constants@^1.0.0:
   resolved "https://registry.yarnpkg.com/fs-constants/-/fs-constants-1.0.0.tgz#6be0de9be998ce16af8afc24497b9ee9b7ccd9ad"
   integrity sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==
 
-fs-ext@^1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/fs-ext/-/fs-ext-1.3.0.tgz#d841ee147e73640c2407ea9e210774e119f6a0b9"
+fs-ext@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/fs-ext/-/fs-ext-2.0.0.tgz#e58168fcc37506a9358e0928f4aae60912af7caa"
+  integrity sha512-aK8NlpSO5LUdSoWeshpnkgtptbua1rGo58Wc+mHQ2+JnoBlubMTsnV56Swl4bA0msrgAhG8TDu1aGS8deJwzBQ==
   dependencies:
     nan "^2.14.0"
 
