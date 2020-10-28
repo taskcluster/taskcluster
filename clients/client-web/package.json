@@ -16,17 +16,17 @@
     "test": "karma start --single-run"
   },
   "devDependencies": {
-    "@neutrinojs/karma": "9.0.0-rc.0",
-    "@neutrinojs/library": "9.0.0-rc.0",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/plugin-proposal-object-rest-spread": "^7.11.0",
+    "@neutrinojs/karma": "9.0.0-rc.0",
+    "@neutrinojs/library": "9.0.0-rc.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "crypto-js": "^4.0.0",
     "dotenv": "^8.0.0",
     "eslint": "^6.6.0",
     "hawk": "<7.1.0",
-    "karma": "^4.0.1",
+    "karma": "^5.2.3",
     "karma-cli": "^2.0.0",
     "karma-firefox-launcher": "^1.1.0",
     "karma-sourcemap-loader": "^0.3.7",
@@ -38,7 +38,7 @@
   "dependencies": {
     "crypto-js": "^4.0.0",
     "hawk": "<7.1.0",
-    "taskcluster-lib-urls": "^12.0.0",
-    "query-string": "^6.1.0"
+    "query-string": "^6.1.0",
+    "taskcluster-lib-urls": "^12.0.0"
   }
 }
