@@ -1091,18 +1091,18 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_task_queues full results', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, { taskQueueId: `prov/wt/${i}` });
+        await create(db, { taskQueueId: `prov/wt-${i}` });
       }
       const res = await db.fns.get_task_queues(null, null, null, null);
       assert.equal(res.length, 10);
-      assert.equal(res[3].task_queue_id, 'prov/wt/3');
-      assert.equal(res[4].task_queue_id, 'prov/wt/4');
-      assert.equal(res[5].task_queue_id, 'prov/wt/5');
+      assert.equal(res[3].task_queue_id, 'prov/wt-3');
+      assert.equal(res[4].task_queue_id, 'prov/wt-4');
+      assert.equal(res[5].task_queue_id, 'prov/wt-5');
     });
 
     helper.dbTest('get_task_queues with pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, { taskQueueId: `prov/wt/${i}` });
+        await create(db, { taskQueueId: `prov/wt-${i}` });
       }
       let result = [];
       while (true) {
@@ -1113,9 +1113,9 @@ suite(testing.suiteName(), function() {
         }
       }
       assert.equal(result.length, 10);
-      assert.equal(result[3].task_queue_id, 'prov/wt/3');
-      assert.equal(result[4].task_queue_id, 'prov/wt/4');
-      assert.equal(result[5].task_queue_id, 'prov/wt/5');
+      assert.equal(result[3].task_queue_id, 'prov/wt-3');
+      assert.equal(result[4].task_queue_id, 'prov/wt-4');
+      assert.equal(result[5].task_queue_id, 'prov/wt-5');
     });
 
     helper.dbTest('update_task_queue', async function(db) {
@@ -1252,6 +1252,247 @@ suite(testing.suiteName(), function() {
       let res = await db.fns.expire_queue_provisioners(new Date());
       assert.equal(res[0].expire_queue_provisioners, 1);
       res = await db.fns.get_queue_provisioners(null, null, null);
+      assert.equal(res.length, 0);
+    });
+  });
+
+  suite('queue_workers_deprecated', function() {
+    setup('reset tables', async function() {
+      await helper.withDbClient(async client => {
+        await client.query('truncate queue_workers');
+      });
+    });
+
+    const quarantineUntil = taskcluster.fromNow('-2 hours');
+    const expires = taskcluster.fromNow('2 hours');
+    const firstClaim = taskcluster.fromNow('0 hours');
+    const create = async (db, options = {}) => {
+      await db.deprecatedFns.create_queue_worker(
+        options.provisionerId || 'prov',
+        options.workerType || 'wt',
+        options.workerGroup || 'wg',
+        options.workerId || 'wi',
+        options.quarantineUntil || quarantineUntil,
+        options.expires || expires,
+        options.firstClaim || firstClaim,
+        options.recentTasks || JSON.stringify([{
+          recent: "task",
+        }]),
+      );
+    };
+
+    helper.dbTest('no such queue worker', async function(db) {
+      const res = await db.deprecatedFns.get_queue_worker('prov', 'wt', 'wg', 'wi', new Date());
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('create_queue_worker / get_queue_worker', async function(db) {
+      await create(db);
+      const res = await db.deprecatedFns.get_queue_worker('prov', 'wt', 'wg', 'wi', new Date());
+      assert.equal(res[0].provisioner_id, 'prov');
+      assert.equal(res[0].worker_type, 'wt');
+      assert.equal(res[0].worker_group, 'wg');
+      assert.deepEqual(res[0].quarantine_until, quarantineUntil);
+      assert.deepEqual(res[0].expires, expires);
+      assert.deepEqual(res[0].first_claim, firstClaim);
+      assert.deepEqual(res[0].recent_tasks, [{ recent: "task" }]);
+    });
+
+    helper.dbTest('get_queue_worker doesn\'t return expired workers', async function(db) {
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
+      const res = await db.deprecatedFns.get_queue_worker('prov', 'wt', 'wg', 'wi', new Date());
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_queue_worker returns expired quarantined workers', async function(db) {
+      await create(db, {
+        expires: taskcluster.fromNow('-2 hours'),
+        quarantineUntil: taskcluster.fromNow('2 hours'),
+      });
+      const res = await db.deprecatedFns.get_queue_worker('prov', 'wt', 'wg', 'wi', new Date());
+      assert.equal(res.length, 1);
+    });
+
+    helper.dbTest('get_queue_workers empty', async function(db) {
+      const res = await db.deprecatedFns.get_queue_workers(null, null, null, null, null);
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_queue_workers null options', async function(db) {
+      await create(db);
+      const res = await db.deprecatedFns.get_queue_workers(null, null, null, null, null);
+      assert.equal(res.length, 1);
+    });
+
+    helper.dbTest('get_queue_workers doesn\'t return expired workers', async function(db) {
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
+      const res = await db.deprecatedFns.get_queue_workers(new Date(), null, null, null, null);
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_queue_workers returns expired quarantined workers', async function(db) {
+      await create(db, {
+        expires: taskcluster.fromNow('-2 hours'),
+        quarantineUntil: taskcluster.fromNow('2 hours'),
+      });
+      const res = await db.deprecatedFns.get_queue_workers(new Date(), null, null, null, null);
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_queue_workers full results', async function(db) {
+      for (let i = 0; i < 10; i++) {
+        await create(db, { workerId: `w/${i}` });
+      }
+      const res = await db.deprecatedFns.get_queue_workers(null, null, null, null, null);
+      assert.equal(res.length, 10);
+      assert.equal(res[3].worker_id, 'w/3');
+      assert.equal(res[4].worker_id, 'w/4');
+      assert.equal(res[5].worker_id, 'w/5');
+    });
+
+    helper.dbTest('get_queue_workers with pagination', async function(db) {
+      for (let i = 0; i < 10; i++) {
+        await create(db, { workerId: `w/${i}` });
+      }
+      let results = [];
+      while (true) {
+        const res = await db.deprecatedFns.get_queue_workers(null, null, null, 2, results.length);
+        if (res.length === 0) {
+          break;
+        }
+        results = results.concat(res);
+      }
+
+      assert.equal(results.length, 10);
+      assert.equal(results[3].worker_id, 'w/3');
+      assert.equal(results[4].worker_id, 'w/4');
+      assert.equal(results[5].worker_id, 'w/5');
+    });
+
+    helper.dbTest('update_queue_worker', async function(db) {
+      await create(db);
+      const res = await db.deprecatedFns.update_queue_worker(
+        'prov',
+        'wt',
+        'wg',
+        'wi',
+        new Date(0),
+        new Date(1),
+        JSON.stringify([]),
+      );
+      assert.deepEqual(res[0].quarantine_until, new Date(0));
+      assert.deepEqual(res[0].expires, new Date(1));
+      assert.deepEqual(res[0].recent_tasks, []);
+    });
+  });
+
+  suite('queue_worker_types (deprecated)', function() {
+    setup('reset tables', async function() {
+      await helper.withDbClient(async client => {
+        await client.query('truncate task_queues');
+      });
+    });
+
+    const expires = taskcluster.fromNow('2 hours');
+    const lastDateActive = taskcluster.fromNow('0 hours');
+    const create = async (db, options = {}) => {
+      await db.deprecatedFns.create_queue_worker_type(
+        options.provisionerId || 'prov',
+        options.workerType || 'wt',
+        options.expires || expires,
+        options.lastDateActive || lastDateActive,
+        options.description || 'desc',
+        options.stability || 'unstable',
+      );
+    };
+
+    helper.dbTest('no such queue worker type', async function(db) {
+      const res = await db.deprecatedFns.get_queue_worker_type('prov', 'wt', new Date());
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('create_queue_worker_type / get_queue_worker_types', async function(db) {
+      await create(db);
+      const res = await db.deprecatedFns.get_queue_worker_types('prov', 'wt', new Date(), null, null);
+      assert.equal(res[0].provisioner_id, 'prov');
+      assert.equal(res[0].worker_type, 'wt');
+      assert.deepEqual(res[0].expires, expires);
+      assert.deepEqual(res[0].last_date_active, lastDateActive);
+      assert.deepEqual(res[0].description, 'desc');
+    });
+
+    helper.dbTest('get_queue_worker_types doesn\'t return expired worker types', async function(db) {
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
+      const res = await db.deprecatedFns.get_queue_worker_types('prov', 'wt', new Date(), null, null);
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_queue_worker_types empty', async function(db) {
+      const res = await db.deprecatedFns.get_queue_worker_types(null, null, null, null, null);
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_queue_worker_types null options', async function(db) {
+      await create(db);
+      const res = await db.deprecatedFns.get_queue_worker_types(null, null, null, null, null);
+      assert.equal(res.length, 1);
+    });
+
+    helper.dbTest('get_queue_worker_types doesn\'t return expired worker types', async function(db) {
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
+      const res = await db.deprecatedFns.get_queue_worker_types(new Date(), null, null, null, null);
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_queue_worker_types full results', async function(db) {
+      for (let i = 0; i < 10; i++) {
+        await create(db, { workerType: `wt-${i}` });
+      }
+      const res = await db.deprecatedFns.get_queue_worker_types(null, null, null, null, null);
+      assert.equal(res.length, 10);
+      assert.equal(res[3].worker_type, 'wt-3');
+      assert.equal(res[4].worker_type, 'wt-4');
+      assert.equal(res[5].worker_type, 'wt-5');
+    });
+
+    helper.dbTest('get_queue_worker_types with pagination', async function(db) {
+      for (let i = 0; i < 10; i++) {
+        await create(db, { workerType: `wt-${i}` });
+      }
+      let result = [];
+      while (true) {
+        const res = await db.deprecatedFns.get_queue_worker_types(null, null, null, 2, result.length);
+        result = result.concat(res);
+        if (res.length === 0) {
+          break;
+        }
+      }
+      assert.equal(result.length, 10);
+      assert.equal(result[3].worker_type, 'wt-3');
+      assert.equal(result[4].worker_type, 'wt-4');
+      assert.equal(result[5].worker_type, 'wt-5');
+    });
+
+    helper.dbTest('update_queue_worker_type', async function(db) {
+      await create(db);
+      const res = await db.deprecatedFns.update_queue_worker_type(
+        'prov',
+        'wt',
+        new Date(0),
+        new Date(1),
+        'new_desc',
+        'more unstable',
+      );
+      assert.deepEqual(res[0].expires, new Date(0));
+      assert.deepEqual(res[0].last_date_active, new Date(1));
+      assert.equal(res[0].description, 'new_desc');
+    });
+
+    helper.dbTest('expire_queue_worker_types deletes expired worker types', async function(db) {
+      await create(db, { expires: taskcluster.fromNow('-2 hours') });
+      let res = await db.deprecatedFns.expire_queue_worker_types(new Date());
+      assert.equal(res[0].expire_queue_worker_types, 1);
+      res = await db.deprecatedFns.get_queue_worker_types(null, null, null, null, null);
       assert.equal(res.length, 0);
     });
   });

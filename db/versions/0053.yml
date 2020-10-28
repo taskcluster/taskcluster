@@ -90,7 +90,7 @@ methods:
           task_queues.description,
           task_queues.stability,
           public.gen_random_uuid()
-        from queue_worker_types
+        from task_queues
         where
           task_queues.task_queue_id = provisioner_id_in || '/' || worker_type_in and
           task_queues.expires > expires_in;
@@ -144,7 +144,7 @@ methods:
           task_queues.description,
           task_queues.stability,
           public.gen_random_uuid()
-        from queue_worker_types
+        from task_queues
         where
           (split_part(task_queues.task_queue_id, '/', 1) = provisioner_id_in or provisioner_id_in is null) and
           (split_part(task_queues.task_queue_id, '/', 2) = worker_type_in or worker_type_in is null) and

@@ -5530,7 +5530,7 @@
         },
         "get_queue_worker_type": {
           "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz",
-          "body": "begin\n  return query\n  select\n    split_part(task_queues.task_queue_id, '/', 1) as provisioner_id,\n    split_part(task_queues.task_queue_id, '/', 2) as worker_type,\n    task_queues.expires,\n    task_queues.last_date_active,\n    task_queues.description,\n    task_queues.stability,\n    public.gen_random_uuid()\n  from queue_worker_types\n  where\n    task_queues.task_queue_id = provisioner_id_in || '/' || worker_type_in and\n    task_queues.expires > expires_in;\n  end",
+          "body": "begin\n  return query\n  select\n    split_part(task_queues.task_queue_id, '/', 1) as provisioner_id,\n    split_part(task_queues.task_queue_id, '/', 2) as worker_type,\n    task_queues.expires,\n    task_queues.last_date_active,\n    task_queues.description,\n    task_queues.stability,\n    public.gen_random_uuid()\n  from task_queues\n  where\n    task_queues.task_queue_id = provisioner_id_in || '/' || worker_type_in and\n    task_queues.expires > expires_in;\n  end",
           "deprecated": true,
           "description": "Get a non-expired queue worker type by provisioner_id and worker_type.",
           "mode": "read",
@@ -5539,7 +5539,7 @@
         },
         "get_queue_worker_types": {
           "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
-          "body": "begin\n  return query\n  select\n    split_part(task_queues.task_queue_id, '/', 1) as provisioner_id,\n    split_part(task_queues.task_queue_id, '/', 2) as worker_type,\n    task_queues.expires,\n    task_queues.last_date_active,\n    task_queues.description,\n    task_queues.stability,\n    public.gen_random_uuid()\n  from queue_worker_types\n  where\n    (split_part(task_queues.task_queue_id, '/', 1) = provisioner_id_in or provisioner_id_in is null) and\n    (split_part(task_queues.task_queue_id, '/', 2) = worker_type_in or worker_type_in is null) and\n    (task_queues.expires > expires_in or expires_in is null)\n  order by task_queue_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "body": "begin\n  return query\n  select\n    split_part(task_queues.task_queue_id, '/', 1) as provisioner_id,\n    split_part(task_queues.task_queue_id, '/', 2) as worker_type,\n    task_queues.expires,\n    task_queues.last_date_active,\n    task_queues.description,\n    task_queues.stability,\n    public.gen_random_uuid()\n  from task_queues\n  where\n    (split_part(task_queues.task_queue_id, '/', 1) = provisioner_id_in or provisioner_id_in is null) and\n    (split_part(task_queues.task_queue_id, '/', 2) = worker_type_in or worker_type_in is null) and\n    (task_queues.expires > expires_in or expires_in is null)\n  order by task_queue_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
           "deprecated": true,
           "description": "Get queue worker types ordered by `provisioner_id` and `worker_type`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
           "mode": "read",
