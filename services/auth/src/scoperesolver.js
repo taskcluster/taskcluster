@@ -313,6 +313,11 @@ class ScopeResolver extends events.EventEmitter {
       throw new Error('Client with clientId: \'' + clientId + '\' has expired');
     }
 
+    if (client.updateLastUsed) {
+      client.updateLastUsed = false;
+      await this.db.fns.update_client_last_used(clientId);
+    }
+
     // Lazily expand client scopes
     if (client.scopes === null) {
       let scopes = this.resolve(client.unexpandedScopes);
@@ -320,15 +325,17 @@ class ScopeResolver extends events.EventEmitter {
       client.expandedScopes = scopes;
     }
 
+    // We must clone the client because it is modified in place to reset
+    // `client.scopes` in `_rebuildResolver`.
+    // Note that if `client` ever grows any fields that are themselves
+    // objects, we must do a deep clone here instead.
+    client = { ...client };
+
     // check for https://github.com/taskcluster/taskcluster/issues/3502
     if (!Array.isArray(client.scopes)) {
       assert(false, `Got non-array client.scopes=${util.inspect(client.scopes)} (see #3502)`);
     }
 
-    if (client.updateLastUsed) {
-      client.updateLastUsed = false;
-      await this.db.fns.update_client_last_used(clientId);
-    }
     return client;
   }
 
