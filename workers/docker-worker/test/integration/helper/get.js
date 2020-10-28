@@ -2,7 +2,7 @@ const got = require('got');
 
 module.exports = async (url, options) => {
   try {
-    const response = await got(url, { retries: 5, ...options });
+    const response = await got(url, { retry: 5, ...options });
     return response.body;
   }
   catch (e) {
