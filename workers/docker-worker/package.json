@@ -41,7 +41,7 @@
     "dockerode-process": "^0.7.0",
     "express": "^4.17.1",
     "fs-ext": "^2.0.0",
-    "got": "^8.0.0",
+    "got": "^11.0.0",
     "got-promise": "^5.0.0",
     "iptables": "^0.0.4",
     "js-yaml": "^3.13.1",
