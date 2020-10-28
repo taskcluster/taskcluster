@@ -108,14 +108,5 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(helper.githubFixtures.orgs.octocat.some(org => org.role !== 'admin'));
       assert.deepEqual(user.roles.filter(role => role.startsWith('github-org-')), ['github-org-admin:taskcluster'].sort());
     });
-
-    test('user has anonymous scope', async function () {
-      const userId = String(helper.githubFixtures.users.octocat);
-      const strategy = getStrategy();
-      await makeUser(userId);
-      const user = await strategy.userFromIdentity(`github/${userId}|octocat`);
-
-      assert(user.scopes().includes('assume:anonymous'));
-    });
   });
 });

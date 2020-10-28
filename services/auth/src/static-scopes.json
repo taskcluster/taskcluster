@@ -56,7 +56,6 @@
   {
     "clientId": "static/taskcluster/web-server",
     "scopes": [
-      "assume:anonymous",
       "assume:github-org-admin:*",
       "assume:github-team:*",
       "assume:login-identity:*",
