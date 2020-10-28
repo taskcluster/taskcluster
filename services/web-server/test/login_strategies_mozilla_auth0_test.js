@@ -177,11 +177,5 @@ suite(testing.suiteName(), () => {
       const user = await strategy.userFromIdentity('mozilla-auth0/oauth2|firefoxaccounts|012345abcdef');
       assert.deepEqual(user.roles, []);
     });
-
-    test('user has anonymous scope', async function () {
-      const user = await strategy.userFromIdentity('mozilla-auth0/ad|Mozilla-LDAP|tcperson');
-
-      assert(user.scopes().includes('assume:anonymous'));
-    });
   });
 });
