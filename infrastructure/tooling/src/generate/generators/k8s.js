@@ -96,10 +96,6 @@ const labels = (projectName, component) => ({
 });
 
 const renderTemplates = async (name, vars, procs, templates) => {
-
-  await rimraf(TMPL_DIR);
-  await mkdirp(TMPL_DIR);
-
   for (const resource of ['serviceaccount', 'secret']) {
     const rendered = jsone(templates[resource], {
       projectName: `taskcluster-${name}`,
@@ -190,10 +186,20 @@ exports.tasks.push({
   },
 });
 
+exports.tasks.push({
+  title: `Clear k8s/templates dirctory`,
+  requires: [],
+  provides: ['k8s-templates-dir'],
+  run: async (requirements, utils) => {
+    await rimraf(TMPL_DIR);
+    await mkdirp(TMPL_DIR);
+  },
+});
+
 SERVICES.forEach(name => {
   exports.tasks.push({
     title: `Generate helm templates for ${name}`,
-    requires: [`configs-${name}`, `procslist-${name}`, 'k8s-templates'],
+    requires: [`configs-${name}`, `procslist-${name}`, 'k8s-templates', 'k8s-templates-dir'],
     provides: [`ingresses-${name}`],
     run: async (requirements, utils) => {
       const procs = requirements[`procslist-${name}`];
