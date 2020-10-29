@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
-	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
+	"github.com/taskcluster/taskcluster/v38/clients/client-go/tcqueue"
 	"golang.org/x/crypto/ed25519"
 )
 

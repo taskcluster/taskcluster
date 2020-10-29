@@ -3,6 +3,55 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v38.0.0
+
+### GENERAL
+
+▶ [MAJOR] [#3615](https://github.com/taskcluster/taskcluster/issues/3615)
+[RFC 165](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0165-Anonymous-scopes.md) has been implemented, allowing for greater administrator control over "public" endpoints. Previously these were guarded by no scopes and could be accessed by anyone with no way to limit this. In this release all unauthenticated API calls are now granted the scope `assume:anonymous`.  Additionally, most previously unprotected endpoints are now guarded by at least one scope, to enable the following:
+
+* To maintain current behavior, some scopes will need to be granted to the `anonymous`role. Refer to `the [anonymous role section](https://docs.taskcluster.net/docs/manual/deploying/anonymous-role) in the docs.
+* To entirely lock down the cluster from anonymous access, do not grant any scopes to role `anonymous`
+* Pick and choose specific "public" endpoints to make available to anonymous requests
+
+Performance testing results (refer to https://github.com/taskcluster/taskcluster/issues/3698 for more details):
+* Auth service CPU has seen an increase of 0%-15%
+* Auth service memory has seen no increase
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#3015](https://github.com/taskcluster/taskcluster/issues/3015)
+Generic-worker no longer supports the `--configure-for-{aws,gcp,azure}` options.  Instead, the expectation is that generic-worker will be started by worker-runner.  While it remains possible to run generic-worker without worker-runner in a "static" configuration, cloud-based deployments using worker-manager now require worker-runner.
+
+### USERS
+
+▶ [patch] [#3791](https://github.com/taskcluster/taskcluster/issues/3791)
+The shell client (the `taskcluster` command) now correctly handles the case where no credentials are provided.  In previous versions, if used to call a method which required credentials, this would result in an error: `Bad Request: Bad attribute value: id`.  With the inclusion of [RFC#165](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0165-Anonymous-scopes.md) in this release, this error would occur when calling any method.  The short story is, if you see such errors, upgrade the shell client.
+
+▶ [patch] [#3463](https://github.com/taskcluster/taskcluster/issues/3463)
+This release fixes a bug that may occur when a new task is quickly inserted
+twice into the index service. When the bug is triggered, one of the insert
+calls would fail with a server error. With this fix, the UNIQUE_VIOLATION error
+is caught, and the previously failed insert will update the task if the rank is
+higher.
+This bug was first seen in v37.3.0
+
+▶ [patch] [#3767](https://github.com/taskcluster/taskcluster/issues/3767)
+This version adjusts the Python client requirements to avoid `aiohttp==3.7.0`, which has a [serious bug preventing use of HTTPS](https://github.com/aio-libs/aiohttp/issues/5110).
+
+### DEVELOPERS
+
+▶ [patch] [#3502](https://github.com/taskcluster/taskcluster/issues/3502)
+A bug where `authenticateHawk` calls would occasionally return an invalid response has been fixed. This issue impacted
+reliability but not security.
+
+▶ [patch] [#3748](https://github.com/taskcluster/taskcluster/issues/3748)
+The source for the `gw-workers` and `occ-workers` administrative tools has been removed.  The `gw-workers` tool is now at https://github.com/taskcluster/community-tc-utils.
+
+### OTHER
+
+▶ Additional changes not described here: [#3655](https://github.com/taskcluster/taskcluster/issues/3655), [#3662](https://github.com/taskcluster/taskcluster/issues/3662), [#3670](https://github.com/taskcluster/taskcluster/issues/3670), [#3704](https://github.com/taskcluster/taskcluster/issues/3704), [#3730](https://github.com/taskcluster/taskcluster/issues/3730), [#3783](https://github.com/taskcluster/taskcluster/issues/3783), [#3788](https://github.com/taskcluster/taskcluster/issues/3788), [#3793](https://github.com/taskcluster/taskcluster/issues/3793).
+
 ## v37.5.1
 
 

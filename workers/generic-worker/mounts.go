@@ -17,9 +17,9 @@ import (
 	"github.com/mholt/archiver"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
-	"github.com/taskcluster/taskcluster/v37/internal/scopes"
-	"github.com/taskcluster/taskcluster/v37/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
+	"github.com/taskcluster/taskcluster/v38/internal/scopes"
+	"github.com/taskcluster/taskcluster/v38/workers/generic-worker/fileutil"
 )
 
 var (
