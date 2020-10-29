@@ -29,7 +29,6 @@ for f in src schemas .npmignore package.json yarn.lock config.yml bin-utils; do
 done
 
 # Install Node
-# TODO: use the same node version as everything else, bug 1636164
 NODE_VERSION=$(echo "console.log(require('./package.json').engines.node)" | node)
 mkdir $DW_ROOT/node
 curl https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz | tar -C $DW_ROOT/node --strip-components=1 -xJf -
@@ -41,7 +40,8 @@ curl -L https://yarnpkg.com/latest.tar.gz | tar --transform 's|yarn-[^/]*/|yarn/
 PATH=$DW_ROOT/node/bin:$DW_ROOT/node_modules/.bin:$PATH
 (
     cd $DW_ROOT
-    ./yarn/bin/yarn install --dev
+    # --ignore-engines is to ignore if we're using the wrong version of yarn
+    ./yarn/bin/yarn install --dev --ignore-engines
 )
 
 # Clean up some stuff
