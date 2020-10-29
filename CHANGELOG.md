@@ -3,6 +3,17 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v38.0.1
+
+### DEVELOPERS
+
+▶ [patch] 
+This version fixes an error in docker-worker's release script that caused the 38.0.0 release to fail.
+
+### OTHER
+
+▶ Additional change not described here: [#3738](https://github.com/taskcluster/taskcluster/issues/3738).
+
 ## v38.0.0
 
 ### GENERAL
