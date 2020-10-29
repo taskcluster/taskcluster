@@ -1,13 +1,11 @@
 const DataLoader = require('dataloader');
 const sift = require('../utils/sift');
 const { isNil } = require('ramda');
-const { withRootUrl } = require('taskcluster-lib-urls');
 const ConnectionLoader = require('../ConnectionLoader');
 const Artifact = require('../entities/Artifact');
 const Artifacts = require('../entities/Artifacts');
 
 module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
-  const urls = withRootUrl(rootUrl);
   const withUrl = ({ method, taskId, artifact, runId }) => {
     const hasRunId = !isNil(runId);
 
