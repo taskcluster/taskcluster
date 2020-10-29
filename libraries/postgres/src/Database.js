@@ -142,7 +142,7 @@ class Database {
    *
    * If given, the upgrade process stops at toVersion; this is used for testing.
    */
-  static async upgrade({ schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl }) {
+  static async upgrade({ schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl, skipChecks }) {
     assert(Database._validUsernamePrefix(usernamePrefix));
     const db = new Database({ urlsByMode: { admin: adminDbUrl, read: adminDbUrl } });
 
@@ -184,7 +184,7 @@ class Database {
 
       // access.yml corresponds to the latest version, so only check
       // permissions if upgrading to that version
-      if (toVersion === schema.latestVersion().version) {
+      if (stopAt === schema.latestVersion().version && !skipChecks) {
         showProgress('...checking permissions');
         await Database._checkPermissions({ db, schema, usernamePrefix });
         showProgress('...checking table columns');
