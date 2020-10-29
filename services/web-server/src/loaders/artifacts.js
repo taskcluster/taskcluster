@@ -10,41 +10,6 @@ module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, r
   const urls = withRootUrl(rootUrl);
   const withUrl = ({ method, taskId, artifact, runId }) => {
     const hasRunId = !isNil(runId);
-    const isPublic = /^public\//.test(artifact.name);
-
-    // We don't want to build signed URLs for public artifacts,
-    // even when credentials are present -- users often
-    // copy/paste artifact URLs, and this would likely lead to
-    // people copy/pasting time-limited, signed URLs which would
-    // (a) have a long ?bewit=.. argument and
-    // (b) probably not work after that bewit expires.
-    // We could use queue.buildUrl, but this creates URLs where the artifact
-    // name has slashes encoded. For artifacts we specifically allow slashes
-    // in the name unencoded, as this make things like `wget ${URL}` create
-    // files with nice names.
-    if (isPublic) {
-      return {
-        ...artifact,
-        url: hasRunId
-          ? urls.api(
-            'queue',
-            'v1',
-            `task/${taskId}/runs/${runId}/artifacts/${encodeURI(artifact.name)}`,
-          )
-          : urls.api(
-            'queue',
-            'v1',
-            `task/${taskId}/artifacts/${encodeURI(artifact.name)}`,
-          ),
-      };
-    }
-
-    if (!isPublic && !isAuthed) {
-      return {
-        ...artifact,
-        url: null,
-      };
-    }
 
     return {
       ...artifact,
