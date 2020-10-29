@@ -35,10 +35,10 @@
   dependencies:
     xss "^1.0.6"
 
-"@azure/arm-compute@^12.0.0":
-  version "12.0.0"
-  resolved "https://registry.yarnpkg.com/@azure/arm-compute/-/arm-compute-12.0.0.tgz#22c3444b68cce50936edc770a00bc88af60b1356"
-  integrity sha512-iITc+VqXLWAg7sK9yk04DgvXyvvS94KkM/7YW0wCvjZb1tIsTdpVJWsJNrXsTx8fk0nknynX8jf8I6ydizS2zQ==
+"@azure/arm-compute@^15.0.0":
+  version "15.0.0"
+  resolved "https://registry.yarnpkg.com/@azure/arm-compute/-/arm-compute-15.0.0.tgz#5d0d0c1db16adbb6db3d33ca376b120c68e6ae23"
+  integrity sha512-ElV2MuYZ+B2+ygMx2iiM/u3C7WDRruZjkXzfk5p2O+UbWxjG6j/686OH3T+VSDqmzg+47AnIOTLu2v0u0H8FOw==
   dependencies:
     "@azure/ms-rest-azure-js" "^2.0.1"
     "@azure/ms-rest-js" "^2.0.4"
