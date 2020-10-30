@@ -13,6 +13,7 @@
     "scopes": [
       "assume:repo:github.com/*",
       "assume:scheduler-id:taskcluster-github/*",
+      "queue:list-task-group:*",
       "queue:route:checks",
       "queue:route:statuses",
       "queue:scheduler-id:taskcluster-github"
