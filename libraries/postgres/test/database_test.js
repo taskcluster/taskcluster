@@ -126,7 +126,7 @@ helper.dbSuite(path.basename(__filename), function() {
     },
   ];
   const access = {};
-  const tables = {};
+  const tables = { testing: { a: 'integer', b: 'integer' } };
   const schema = Schema.fromSerializable({ versions, access, tables });
 
   const createUsers = async db => {
@@ -203,6 +203,11 @@ helper.dbSuite(path.basename(__filename), function() {
 
     suiteSetup(async function() {
       db = new Database({ urlsByMode: { admin: helper.dbUrl } });
+    });
+
+    suiteTeardown(async function() {
+      db = new Database({ urlsByMode: { admin: helper.dbUrl } });
+      await resetRoles(db);
     });
 
     setup(async function() {
@@ -484,7 +489,7 @@ helper.dbSuite(path.basename(__filename), function() {
           quantity: 'integer',
         },
       });
-      await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
+      await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test', skipChecks: true });
       const db = new Database({ urlsByMode: { admin: helper.dbUrl } });
       await assert.rejects(
         () => Database._checkTableColumns({ db, schema }),
