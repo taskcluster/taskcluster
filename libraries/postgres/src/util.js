@@ -113,3 +113,59 @@ exports.paginatedIterator = ({ fetch, size = 1000 }) => {
     },
   };
 };
+
+/**
+ * Calculate ETA and rate for an ongoing process.
+ */
+class ETA {
+  constructor({
+    // end is the final value, for ETA; if not given, ETA is not available
+    end,
+    // the number of history elements to keep
+    historyLength,
+  }) {
+    this.end = end;
+    this.historyLength = historyLength;
+
+    this.history = [];
+  }
+
+  // record a measurement at the current time; this is an absolute value, not a
+  // delta
+  measurement(val) {
+    this.history.push([Date.now(), val]);
+    while (this.history.length > this.historyLength) {
+      this.history.shift();
+    }
+  }
+
+  // return the rate in units of value per ms, or NaN if it cannot be calculated yet
+  rate() {
+    if (this.history.length < 2) {
+      return NaN;
+    }
+
+    const [first, last] = [this.history[0], this.history[this.history.length - 1]];
+    return (last[1] - first[1]) / (last[0] - first[0]);
+  }
+
+  // return the time the value will reach the end, or undefined if this cannot
+  // be calculated.
+  eta() {
+    if (!this.end) {
+      return undefined;
+    }
+
+    const rate = this.rate();
+    if (isNaN(rate) || !rate) {
+      return undefined;
+    }
+
+    const last = this.history[this.history.length - 1];
+    const remainingCount = this.end - last[1];
+    const remainingTime = remainingCount / rate;
+    return new Date(Date.now() + remainingTime);
+  }
+}
+
+exports.ETA = ETA;

@@ -115,6 +115,28 @@ A downgrade entails running the downgrade script for the buggy DB version, *afte
 Downgrades should not be done lightly, as they can lose data.
 For example, downgrading a version that adds a table entails dropping that table and all data it contains.
 
+#### Quick Migrations
+
+Migration scripts should run quickly, even when tables have large row counts, to avoid downtime caused by locks.
+"Quickly" is ambiguous.
+Any operation which is independent of the table size certainly qualifies as "quick".
+For example, adding a new, nullable column does not require rewriting all rows, although adding a non-null column with a default value does perform a full table scan and is not quick.
+Deciphering what postgres operations are "quick" is difficult and requires testing and some careful reading of documentation.
+
+Full scans of tables which are likely to be small are also "quick".
+For example, the `roles` table in a typical deployment should number in thousands of rows, and postgres can scan such a table in millisecods.
+
+#### Online Migrations
+
+In cases where the changes to be made are not quick, this library supports "online migrations".
+These follow a migration script and occur in a series of short transactions that run concurrently with production usage, without blocking that usage or causing inconsistencies.
+
+For example, assume two columns (`old1` and `old2`) in a large table are to be merged into one (`new`).
+The migration script creates the `new` column with a null value (a quick operation) and redefines the database-access functions to read from `new` if it is not null, otherwise `old1`/`old2`, and to write to all three columns.
+Then the online migration, working in small batches, updates `new` in each row based on the `old1`/`old2` values.
+Once all values of `new` are non-null, the online migration is complete.
+A subsequent database version can then safely redefine the functions to use only the `new` column and drop the `old1`/`old2` columns.
+
 ### Secret Data
 
 Some data in the database is secret and must be encrypted at rest, and in transit to and from the server.
@@ -145,9 +167,8 @@ A version file contains the following:
 version: 17
 
 # an SQL script, bracketed with `begin` and `end`, that will upgrade the database
-# from the previous version.  This should also adjust any permisisons using
-# `grant` and `revoke`.  The username prefix will be substituted for
-# `$db_user_prefix$`, so such statements can take the form `grant .. to
+# from the previous version.  The username prefix will be substituted for
+# `$db_user_prefix$`, so such grants/revokes can take the form `grant .. to
 # $db_user_prefix$_worker_manager`.  The script can be included inline in the YAML
 # using `|-`, or specify a filename to load the script from an external file in the
 # same directory.  In cases where no migration is required (such as adding or modifying
@@ -159,14 +180,13 @@ migrationScript: |-
     grant ...;
   end
 
-# Similar to migrationScript, but reversing its effects.  It's OK for this to lose data.
-# This can similarly specify a filename.  This is only required if migrationScript is
-# present.
+# Similar to migrationScript, but reversing its effects. This can similarly
+# specify a filename.  This is only required if migrationScript is present.
 downgradeScript: |-
   begin
     revoke ...;
     alter ...;
-    create ...;
+    drop ...;
   end
 
 # Methods for database access.  Each entry either defines a new stored function, or
@@ -240,6 +260,57 @@ table_name:
 
 Column types are a "stripped down" version of the full Postgres type definition, including only a simple type name and if necessary the suffix `not null`.
 Primary keys, constraints, defaults, sequences, and so on are not included.
+
+## Migations
+
+Each version specifies how to migrate from the previous version, and how to downgrade back to that version.
+These are specified in `migrationScript` and `downgradeScript` as described in the "Version Files" section above.
+
+Each is run in a single transaction, in which the versions's updated stored fucntions are also defined.
+
+The `migrationScript` should perform all of the required schema changes, including adjusting permisisons using `grant` and `revoke`. 
+All operations in the migration script should be "quick" as defined above: no table scans, no locks held for a long time.
+Note that Postgres locks are held until the end of the transaction, so it is wise to split up a migration that locks many tables into a sequence of independent versions.
+
+The `downgradeScript` reverses the actions of the migration script.
+Where possible, it must preserve data, but in many cases this is not possible due to the nature of the migration.
+For example, if the migration script added a new table to store new data, that data is simply lost when the table is dropped.
+
+### Online Migrations
+
+An online migration occurs after a regular migration script completes successfully.
+Versions with no online migration defined implicitly do nothing.
+
+An online migration is defined by functions `online_migration_v<version>_batch` and `online_migration_v<version>_is_complete`, where `<version>` is the db version number without 0-padding.
+These functions are defined in the migration script and dropped in the downgrade script.
+
+The functions should have the following signatures:
+```sql
+create function online_migration_vNNN_batch(batch_size_in integer, state_in jsonb)
+returns table (count integer, state jsonb)
+as .. ;
+create function online_migration_vNNN_is_complete() returns boolean
+as .. ;
+```
+
+The `_batch` function will be called repeatedly with a requested batch size, and should attempt to perform that many modifications.
+The caller may change the `batch_size_in` from call to call to achieve a target transaction time.
+The `state_in` and `state` parameters allow state to be passed from one invocation to the next, beginning as an empty object.
+A common approach is to store the latest-seen value of an indexed column in `state` and use that to avoid scanning already-migrated rows on the next invocation.
+The function should return, in `count`, the number of modifications made.
+A count of zero indicates that the online migration may be finished, and the caller will call the `_is_complete` function to check.
+If not, it will start over with an empty state.
+
+The `_is_complete` function should verify that the migration is complete, often via a table scan.
+It is only called as necessary.
+
+An online downgrade is defined by functions `online_downgrade_v<version>_batch` and `online_downgrade_v<version>_is_complete`.
+These functions are also created in the migration script and dropped in the downgrade script, and have identical signatures and calling process to the online migration functions.
+It's not required that an online downgrade be defined to reverse every online migration.
+
+Online migrations must be complete before the next version's migration begins.
+The `upgrade` function will always try to complete the previous version's migration, allowing online migrations to be interupted and restarted as necessary.
+An online migration may also be interrupted and replaced with an online downgrade.
 
 ## Pagination
 
