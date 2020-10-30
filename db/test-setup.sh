@@ -25,6 +25,7 @@ CREATE USER test_github;
 CREATE USER test_hooks;
 CREATE USER test_index;
 CREATE USER test_notify;
+CREATE USER test_object;
 CREATE USER test_purge_cache;
 CREATE USER test_queue;
 CREATE USER test_secrets;

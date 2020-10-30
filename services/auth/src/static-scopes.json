@@ -39,6 +39,11 @@
     ]
   },
   {
+    "clientId": "static/taskcluster/object",
+    "scopes": [
+    ]
+  },
+  {
     "clientId": "static/taskcluster/purge-cache",
     "scopes": [
     ]

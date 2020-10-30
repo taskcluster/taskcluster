@@ -8455,6 +8455,80 @@
           "title": "Configuration options for notify",
           "type": "object"
         },
+        "object": {
+          "additionalProperties": false,
+          "properties": {
+            "db_crypto_keys": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
+            "debug": {
+              "title": "node debug env var",
+              "type": "string"
+            },
+            "level": {
+              "type": "string"
+            },
+            "procs": {
+              "additionalProperties": false,
+              "properties": {
+                "web": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "web"
+              ],
+              "title": "Process settings for this service",
+              "type": "object"
+            },
+            "read_db_url": {
+              "type": "string"
+            },
+            "taskcluster_access_token": {
+              "type": "string"
+            },
+            "taskcluster_client_id": {
+              "type": "string"
+            },
+            "write_db_url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "procs",
+            "taskcluster_client_id",
+            "taskcluster_access_token",
+            "read_db_url",
+            "write_db_url"
+          ],
+          "title": "Configuration options for object",
+          "type": "object"
+        },
         "pulseHostname": {
           "description": "A rabbitmq cluster",
           "type": "string"
@@ -9440,6 +9514,7 @@
         "hooks",
         "index",
         "notify",
+        "object",
         "purge_cache",
         "queue",
         "secrets",
@@ -14755,6 +14830,222 @@
   {
     "content": {
       "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "object",
+      "types": [
+        {
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "fields": {
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
+            "expires": "The expiration date of the credentials, if the header was authenticated.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
+            "sourceIp": "The API method caller's IP",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
+          "type": "monitor.apiMethod",
+          "version": 2
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "level": "info",
+          "name": "awsTimer",
+          "title": "AWS Request Report",
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "basicTimer",
+          "title": "Basic Timer",
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "level": "info",
+          "name": "countMetric",
+          "title": "Generic Count",
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "This message is logged for each invocation of a Postgres stored function.",
+          "fields": {
+            "name": "The name of the DB function"
+          },
+          "level": "info",
+          "name": "dbFunctionCall",
+          "title": "DB Method Call",
+          "type": "db-function-call",
+          "version": 1
+        },
+        {
+          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "fields": {
+            "idleCount": "The number of connections (out of the total) which are not currently in use",
+            "pool": "The name of the pool within the process",
+            "totalCount": "The total number of connections",
+            "waitingCount": "The number of operations waiting for an idle connection"
+          },
+          "level": "notice",
+          "name": "dbPoolCounts",
+          "title": "DB Pool Counts",
+          "type": "db-pool-counts",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "level": "any",
+          "name": "errorReport",
+          "title": "Error Report",
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "level": "any",
+          "name": "generic",
+          "title": "Generic Message",
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "level": "info",
+          "name": "handlerTimer",
+          "title": "Handler Timer",
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "level": "err",
+          "name": "loggingError",
+          "title": "Error in Logging",
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "level": "info",
+          "name": "measureMetric",
+          "title": "Generic Measure",
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "Status and duration of a periodic background process.",
+          "fields": {
+            "duration": "The duration in ms of the process.",
+            "name": "The name of this process.",
+            "status": "Either success, or exception depending on the outcome."
+          },
+          "level": "any",
+          "name": "periodic",
+          "title": "Periodic Process",
+          "type": "monitor.periodic",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "level": "info",
+          "name": "resourceMetrics",
+          "title": "Resource Usage Metrics",
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "level": "info",
+          "name": "timekeeper",
+          "title": "TimeKeeper Report",
+          "type": "monitor.timekeeper",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/object/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/api-reference-v0.json#",
+      "apiVersion": "v1",
+      "description": "The object service provides HTTP-accessible storage for large blobs of data.",
+      "entries": [
+        {
+          "args": [
+          ],
+          "category": "Ping Server",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "type": "function"
+        }
+      ],
+      "serviceName": "object",
+      "title": "Taskcluster Object Service API Documentation"
+    },
+    "filename": "references/object/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "notify",
       "types": [
         {
@@ -15290,6 +15581,8 @@
         "/references/notify/v1/api.json",
         "/references/notify/v1/exchanges.json",
         "/references/notify/v1/logs.json",
+        "/references/object/v1/api.json",
+        "/references/object/v1/logs.json",
         "/references/purge-cache/v1/api.json",
         "/references/purge-cache/v1/logs.json",
         "/references/queue/v1/api.json",

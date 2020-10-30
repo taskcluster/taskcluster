@@ -843,6 +843,80 @@
       "title": "Configuration options for notify",
       "type": "object"
     },
+    "object": {
+      "additionalProperties": false,
+      "properties": {
+        "db_crypto_keys": {
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
+        "debug": {
+          "title": "node debug env var",
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "procs": {
+          "additionalProperties": false,
+          "properties": {
+            "web": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                },
+                "replicas": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "web"
+          ],
+          "title": "Process settings for this service",
+          "type": "object"
+        },
+        "read_db_url": {
+          "type": "string"
+        },
+        "taskcluster_access_token": {
+          "type": "string"
+        },
+        "taskcluster_client_id": {
+          "type": "string"
+        },
+        "write_db_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "procs",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "read_db_url",
+        "write_db_url"
+      ],
+      "title": "Configuration options for object",
+      "type": "object"
+    },
     "pulseHostname": {
       "description": "A rabbitmq cluster",
       "type": "string"
@@ -1828,6 +1902,7 @@
     "hooks",
     "index",
     "notify",
+    "object",
     "purge_cache",
     "queue",
     "secrets",
