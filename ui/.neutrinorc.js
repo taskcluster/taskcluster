@@ -114,7 +114,7 @@ module.exports = {
                 .filter(plugin => !plugin[0].includes('plugin-proposal-class-properties'))
                 .concat([
                   [require.resolve('@babel/plugin-proposal-decorators'), { legacy: true }],
-                  [require.resolve('@babel/plugin-proposal-class-properties'), { loose: true }],
+                  [require.resolve('@babel/plugin-proposal-class-properties'), { loose: false }],
                   [require.resolve('@babel/plugin-proposal-optional-chaining'), { loose: true }],
                   [require.resolve('@babel/plugin-proposal-nullish-coalescing-operator'), { loose: true }],
                 ]).filter(Boolean)
