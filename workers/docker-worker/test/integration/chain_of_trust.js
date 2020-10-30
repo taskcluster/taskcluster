@@ -76,7 +76,7 @@ suite('certificate of trust', () => {
     let chainOfTrust = await getArtifact(result, 'public/chain-of-trust.json');
     let queue = new taskcluster.Queue(helper.optionsFromCiCreds());
     let url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/chain-of-trust.json.sig');
-    let chainOfTrustSig = (await got(url, { encoding: null })).body;
+    let chainOfTrustSig = (await got(url, { responseType: 'buffer' })).body;
 
     let verifyKey = Buffer.from(fs.readFileSync('test/fixtures/ed25519_public_key', 'ascii'), 'base64');
     let verified = Buffer.from(chainOfTrust);

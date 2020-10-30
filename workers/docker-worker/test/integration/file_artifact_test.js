@@ -102,7 +102,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
 
     // Constant is gzips version of `xfoo\n', generated via
     // $ echo xfoo | gzip | od -t x1 -w30 | cut -d ' ' -f 2- --output-delimiter= --only-delimited
-    assert.equal(xfoo, Buffer.from('1f8b0800000000000003ab48cbcfe70200a7e6f65005000000', 'hex'));
+    assert.deepEqual(xfoo, Buffer.from('1f8b0800000000000003ab48cbcfe70200a7e6f65005000000', 'hex'));
   });
 
   test('extract dmg not compressed', async () => {
@@ -462,12 +462,12 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     // The text file should have gzip content-encoding
     let queue = new taskcluster.Queue(helper.optionsFromCiCreds());
     let url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/hello.txt');
-    let resp = await got(url, { retries: 5 });
+    let resp = await got(url, { retry: 5 });
     assert.ok(resp.headers['content-encoding'] === 'gzip', `headers are: ${JSON.stringify(resp.headers)}`);
 
     // The jpg file should have no encoding
     url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/world.jpg');
-    resp = await got(url, { retries: 5 });
+    resp = await got(url, { retry: 5 });
     assert.ok(! ('content-encoding' in resp.headers), `headers are: ${JSON.stringify(resp.headers)}`);
   });
 });
