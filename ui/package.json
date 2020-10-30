@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-ui",
-  "version": "38.0.1",
+  "version": "37.5.1",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
@@ -57,7 +57,7 @@
     "localforage": "^1.7.3",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
-    "markdown-it": "^10.0.0",
+    "markdown-it": "^12.0.0",
     "markdown-it-highlightjs": "^3.0.0",
     "markdown-it-link-attributes": "^3.0.0",
     "material-ui-json-schema-viewer": "^1.1.1",
@@ -115,7 +115,7 @@
     "graphql-tag": "^2.8.0",
     "karma": "^4.0.0",
     "karma-cli": "^2.0.0",
-    "karma-firefox-launcher": "^2.0.0",
+    "karma-firefox-launcher": "^1.1.0",
     "mocha": "^6.0.0",
     "neutrino": "^9.1.0",
     "node-fetch": "^2.2.0",
