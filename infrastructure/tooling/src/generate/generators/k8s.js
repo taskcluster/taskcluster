@@ -500,7 +500,7 @@ exports.tasks.push({
             cpu: '10m',
           };
           valuesYAML[confName].procs[n] = {
-            replicas: 1,
+            replicas: p.defaultReplicas === undefined ? 1 : p.defaultReplicas,
             ...defaultResource(confName, n),
           };
           procSettings.required.push(n);

@@ -95,7 +95,7 @@ notify:
 object:
   procs:
     web:
-      replicas: 1
+      replicas: 0
       cpu: 50m
       memory: 100Mi
   debug: ''
