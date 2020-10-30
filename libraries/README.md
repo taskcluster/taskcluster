@@ -8,7 +8,6 @@ These are any packages that are used by Taskcluster services that aren't intende
 * [API Library](api#readme)
 * [App Library](app#readme)
 * [AZQueue Library](azqueue#readme)
-* [Azure Library](azure#readme)
 * [Config Library](config#readme)
 * [Iterate Library](iterate#readme)
 * [Loader Library](loader#readme)
