@@ -18,8 +18,8 @@
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/plugin-proposal-object-rest-spread": "^7.11.0",
-    "@neutrinojs/karma": "9.0.0-rc.0",
-    "@neutrinojs/library": "9.0.0-rc.0",
+    "@neutrinojs/karma": "9.4.0",
+    "@neutrinojs/library": "9.4.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "crypto-js": "^4.0.0",
@@ -30,7 +30,7 @@
     "karma-cli": "^2.0.0",
     "karma-firefox-launcher": "^2.0.0",
     "karma-sourcemap-loader": "^0.3.7",
-    "neutrino": "9.0.0-rc.0",
+    "neutrino": "9.4.0",
     "query-string": "^6.1.0",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.2.3"

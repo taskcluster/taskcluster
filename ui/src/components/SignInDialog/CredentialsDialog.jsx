@@ -60,7 +60,7 @@ export default class CredentialsDialog extends Component {
 
     return (
       <Dialog {...props} aria-labelledby="credentials-dialog-title">
-        <form onSubmit={this.handleSubmit} aria-disabled={!isFormValid}>
+        <form onSubmit={this.handleSubmit}>
           <DialogTitle id="credentials-dialog-title">
             Sign in with credentials
           </DialogTitle>
@@ -99,7 +99,9 @@ export default class CredentialsDialog extends Component {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.props.onClose}>Cancel</Button>
+            <Button onClick={this.props.onClose} aria-disabled={!isFormValid}>
+              Cancel
+            </Button>
             <Button
               color="secondary"
               variant="contained"
