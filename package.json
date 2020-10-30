@@ -208,7 +208,7 @@
     "dependencyDashboard": true,
     "rebaseConflictedPrs": false,
     "prHourlyLimit": 0,
-    "prConcurrentLimit": 9,
+    "prConcurrentLimit": 2,
     "rangeStrategy": "update-lockfile",
     "semanticCommits": "disabled",
     "packageRules": [
