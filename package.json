@@ -1,6 +1,6 @@
 {
   "name": "taskcluster",
-  "version": "38.0.1",
+  "version": "38.0.0",
   "private": true,
   "engine-strict": true,
   "engines": {
@@ -45,7 +45,7 @@
     "generate-password": "^1.5.0",
     "get-caller-file": "^2.0.5",
     "googleapis": "^62.0.0",
-    "graphql": "^14.5.4",
+    "graphql": "^15.0.0",
     "graphql-depth-limit": "^1.1.0",
     "graphql-iso-date": "^3.5.0",
     "graphql-playground-middleware-express": "^1.7.8",
@@ -142,7 +142,7 @@
     "inquirer": "^7.0.0",
     "is-uuid": "^1.0.2",
     "json-stable-stringify": "^1.0.1",
-    "markdown-table": "^2.0.0",
+    "markdown-table": "^1.1.3",
     "md-directory": "^1.0.2",
     "mocha": "^8.2.0",
     "mock-aws-s3": "^4.0.1",
