@@ -576,7 +576,7 @@ methods:
         from task_queues
         group by provisioner_id
         having
-          provisioner_id = provisioner_id_in and
+          split_part(task_queue_id, '/', 1) = provisioner_id_in and
           max(task_queues.expires) > expires_in;
       end
   update_queue_provisioner:

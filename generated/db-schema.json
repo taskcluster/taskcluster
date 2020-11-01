@@ -5521,7 +5521,7 @@
         },
         "get_queue_provisioner": {
           "args": "provisioner_id_in text, expires_in timestamptz",
-          "body": "begin\n  return query\n  select\n    split_part(task_queue_id, '/', 1) as provisioner_id,\n    max(task_queues.expires),\n    max(task_queues.last_date_active),\n    '' as description,\n    'experimental' as stability,\n    '[]'::jsonb as actions,\n    public.gen_random_uuid()\n  from task_queues\n  group by provisioner_id\n  having\n    provisioner_id = provisioner_id_in and\n    max(task_queues.expires) > expires_in;\nend",
+          "body": "begin\n  return query\n  select\n    split_part(task_queue_id, '/', 1) as provisioner_id,\n    max(task_queues.expires),\n    max(task_queues.last_date_active),\n    '' as description,\n    'experimental' as stability,\n    '[]'::jsonb as actions,\n    public.gen_random_uuid()\n  from task_queues\n  group by provisioner_id\n  having\n    split_part(task_queue_id, '/', 1) = provisioner_id_in and\n    max(task_queues.expires) > expires_in;\nend",
           "deprecated": false,
           "description": "Get a queue provisioner by provisioner_id.",
           "mode": "read",
