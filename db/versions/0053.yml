@@ -20,6 +20,11 @@ migrationScript: |-
     alter table queue_workers drop column provisioner_id, drop column worker_type;
     alter table queue_workers alter column task_queue_id set not null;
     alter table queue_workers add primary key (task_queue_id, worker_group, worker_id);
+
+    lock table queue_provisioners;
+
+    revoke select, insert, update, delete on queue_provisioners from $db_user_prefix$_queue;
+    drop table queue_provisioners;
   end
 downgradeScript: |-
   begin
@@ -49,6 +54,29 @@ downgradeScript: |-
     alter table queue_workers alter column provisioner_id set not null;
     alter table queue_workers alter column worker_type set not null;
     alter table queue_workers add primary key (provisioner_id, worker_type, worker_group, worker_id);
+
+    create table queue_provisioners
+    as
+      select
+        provisioner_id,
+        max(expires) as expires, 
+        max(last_date_active) as last_date_active,
+        '' as description,
+        'experimental' as stability,
+        '[]'::jsonb as actions
+      from queue_worker_types
+      group by provisioner_id;
+
+    alter table queue_provisioners add primary key (provisioner_id);
+    alter table queue_provisioners
+      alter column provisioner_id set not null,
+      alter column expires set not null,
+      alter column last_date_active set not null,
+      alter column description set not null,
+      alter column stability set not null,
+      alter column actions set not null;
+    
+    grant select, insert, update, delete on queue_provisioners to $db_user_prefix$_queue;
   end
 methods:
   create_queue_worker_type:
@@ -427,7 +455,6 @@ methods:
           );
           return public.gen_random_uuid();
       end
-
   get_queue_worker_tqid:
     description: |-
       Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.
@@ -513,4 +540,116 @@ methods:
         order by task_queue_id, worker_group, worker_id
         limit get_page_limit(page_size_in)
         offset get_page_offset(page_offset_in);
+      end
+  create_queue_provisioner:
+    description: |-
+      Create a new queue provisioner.  Raises UNIQUE_VIOLATION if the provisioner already exists.
+    mode: write
+    serviceName: queue
+    args: provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb
+    returns: uuid
+    body: |-
+      begin
+        insert
+          into task_queues (task_queue_id, expires, last_date_active, description, stability)
+          values (provisioner_id_in || '/', expires_in, last_date_active_in, description_in, stability_in);
+          return public.gen_random_uuid();
+      end
+  get_queue_provisioner:
+    description: |-
+      Get a queue provisioner by provisioner_id.
+    mode: read
+    serviceName: queue
+    args: provisioner_id_in text, expires_in timestamptz
+    returns: table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          split_part(task_queue_id, '/', 1) as provisioner_id,
+          max(task_queues.expires),
+          max(task_queues.last_date_active),
+          '' as description,
+          'experimental' as stability,
+          '[]'::jsonb as actions,
+          public.gen_random_uuid()
+        from task_queues
+        group by provisioner_id
+        having
+          provisioner_id = provisioner_id_in and
+          max(task_queues.expires) > expires_in;
+      end
+  update_queue_provisioner:
+    serviceName: queue
+    description: |-
+      Update a queue provisioner's expires, last_date_active, description, stability, and actions.
+      All parameters must be supplied.
+    mode: write
+    args: provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb
+    returns: table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)
+    body: |-
+      begin
+        return query update task_queues
+        set
+          expires = expires_in,
+          last_date_active = last_date_active_in,
+          description = description_in,
+          stability = stability_in
+        where
+          task_queues.task_queue_id = provisioner_id_in || '/'
+        returning
+          split_part(task_queues.task_queue_id, '/', 1),
+          task_queues.expires,
+          task_queues.last_date_active,
+          task_queues.description,
+          'experimental' as stability,
+          '[]'::jsonb as actions,
+          public.gen_random_uuid();
+      end
+  get_queue_provisioners:
+    description: |-
+      Get queue provisioners ordered by `provisioner_id`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: queue
+    args: expires_in timestamptz, page_size_in integer, page_offset_in integer
+    returns: table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          split_part(task_queues.task_queue_id, '/', 1) as provisioner_id,
+          max(task_queues.expires),
+          max(task_queues.last_date_active),
+          '' as description,
+          'experimental' as stability,
+          '[]'::jsonb as actions,
+          public.gen_random_uuid()
+        from task_queues
+        group by provisioner_id
+        having (max(task_queues.expires) > expires_in or expires_in is null)
+        order by provisioner_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  expire_queue_provisioners:
+    description: |-
+      Expire provisioners that come before `expires_in`.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: queue
+    args: expires_in timestamptz
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from task_queues
+        where (task_queues.expires < expires_in and split_part(task_queue_id, '/', 2) = '');
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
       end

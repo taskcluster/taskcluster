@@ -17,7 +17,6 @@
  * [`index_namespaces`](#index_namespaces)
  * [`indexed_tasks`](#indexed_tasks)
  * [`queue_artifacts`](#queue_artifacts)
- * [`queue_provisioners`](#queue_provisioners)
  * [`queue_workers`](#queue_workers)
  * [`roles`](#roles)
  * [`secrets`](#secrets)
@@ -274,21 +273,6 @@ CREATE TABLE queue_artifacts (
 );
 ALTER TABLE queue_artifacts
     ADD CONSTRAINT queue_artifacts_pkey PRIMARY KEY (task_id, run_id, name);
-```
-
-## queue_provisioners
-
-```sql
-CREATE TABLE queue_provisioners (
-    provisioner_id text NOT NULL,
-    expires timestamp with time zone NOT NULL,
-    last_date_active timestamp with time zone NOT NULL,
-    description text NOT NULL,
-    stability text NOT NULL,
-    actions jsonb NOT NULL
-);
-ALTER TABLE queue_provisioners
-    ADD CONSTRAINT queue_provisioners_pkey PRIMARY KEY (provisioner_id);
 ```
 
 ## queue_workers

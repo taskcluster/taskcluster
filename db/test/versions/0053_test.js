@@ -43,8 +43,8 @@ suite(testing.suiteName(), function() {
       assert.equal(res.rows[0].provisioner_id, 'pp');
       assert.equal(res.rows[0].worker_type, 'wt');
     });
-
   });
+
   test('task_queue_id, provisioner_id, worker_type columns created / removed appropriately for queue_workers', async function() {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
 
@@ -80,6 +80,30 @@ suite(testing.suiteName(), function() {
       assert.equal(res.rows[0].provisioner_id, 'pp');
       assert.equal(res.rows[0].worker_type, 'wt');
     });
-
   });
+
+  test('queue_provisioners deleted and recreated appropriately', async function() {
+    await testing.resetDb({ testDbUrl: helper.dbUrl });
+
+    await helper.upgradeTo(PREV_VERSION);
+
+    await helper.withDbClient(async client => {
+      await client.query(`
+        insert into queue_worker_types (provisioner_id, worker_type, description, stability, expires, last_date_active)
+        values ('pp', 'wt', 'desc', 'st', now(), now())`);
+      await client.query(`
+        insert into queue_worker_types (provisioner_id, worker_type, description, stability, expires, last_date_active)
+        values ('pp', 'wt2', 'desc', 'st', now(), now())`);
+    });
+
+    await helper.upgradeTo(THIS_VERSION);
+    await helper.assertNoTable('queue_provisioners');
+
+    await helper.downgradeTo(PREV_VERSION);
+    await helper.withDbClient(async client => {
+      const res = await client.query(`select provisioner_id from queue_provisioners`);
+      assert.equal(res.rows[0].provisioner_id, 'pp');
+    });
+  });
+
 });

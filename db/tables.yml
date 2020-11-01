@@ -206,13 +206,6 @@ task_queues:
   last_date_active: timestamp with time zone not null
   description: text not null
   stability: text not null
-queue_provisioners:
-  provisioner_id: text not null
-  expires: timestamp with time zone not null
-  last_date_active: timestamp with time zone not null
-  description: text not null
-  stability: text not null
-  actions: jsonb not null
 
 # This table is used by tc-lib-azqueue to emulate the Azure Storage API's Queue functionality.
 azure_queue_messages:

@@ -1144,7 +1144,7 @@ suite(testing.suiteName(), function() {
   suite('queue_provisioners', function() {
     setup('reset tables', async function() {
       await helper.withDbClient(async client => {
-        await client.query('truncate queue_provisioners');
+        await client.query('truncate task_queues');
       });
     });
 
@@ -1172,7 +1172,6 @@ suite(testing.suiteName(), function() {
       assert.equal(res[0].provisioner_id, 'prov');
       assert.deepEqual(res[0].expires, expires);
       assert.deepEqual(res[0].last_date_active, lastDateActive);
-      assert.deepEqual(res[0].description, 'desc');
     });
 
     helper.dbTest('get_queue_provisioners doesn\'t return expired provisioner', async function(db) {
@@ -1200,18 +1199,18 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_queue_provisioners full result', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, { provisionerId: `p/${i}` });
+        await create(db, { provisionerId: `p-${i}` });
       }
       const res = await db.fns.get_queue_provisioners(null, null, null);
       assert.equal(res.length, 10);
-      assert.equal(res[3].provisioner_id, 'p/3');
-      assert.equal(res[4].provisioner_id, 'p/4');
-      assert.equal(res[5].provisioner_id, 'p/5');
+      assert.equal(res[3].provisioner_id, 'p-3');
+      assert.equal(res[4].provisioner_id, 'p-4');
+      assert.equal(res[5].provisioner_id, 'p-5');
     });
 
     helper.dbTest('get_queue_provisioners pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, { provisionerId: `p/${i}` });
+        await create(db, { provisionerId: `p-${i}` });
       }
       let results = [];
       while (true ) {
@@ -1222,9 +1221,9 @@ suite(testing.suiteName(), function() {
         }
       }
       assert.equal(results.length, 10);
-      assert.equal(results[3].provisioner_id, 'p/3');
-      assert.equal(results[4].provisioner_id, 'p/4');
-      assert.equal(results[5].provisioner_id, 'p/5');
+      assert.equal(results[3].provisioner_id, 'p-3');
+      assert.equal(results[4].provisioner_id, 'p-4');
+      assert.equal(results[5].provisioner_id, 'p-5');
     });
 
     helper.dbTest('update_queue_provisioner / get_queue_provisioners', async function(db) {
@@ -1239,12 +1238,10 @@ suite(testing.suiteName(), function() {
       );
       assert.deepEqual(res[0].expires, new Date(1));
       assert.deepEqual(res[0].last_date_active, new Date(2));
-      assert.equal(res[0].description, 'new_desc');
 
       res = await db.fns.get_queue_provisioners(new Date(0), null, null);
       assert.deepEqual(res[0].expires, new Date(1));
       assert.deepEqual(res[0].last_date_active, new Date(2));
-      assert.equal(res[0].description, 'new_desc');
     });
 
     helper.dbTest('expire_queue_provisioners deletes expired provisioner', async function(db) {
@@ -1254,9 +1251,32 @@ suite(testing.suiteName(), function() {
       res = await db.fns.get_queue_provisioners(null, null, null);
       assert.equal(res.length, 0);
     });
+
+    helper.dbTest('get_queue_provisioners infers provisioners from task_queues', async function(db) {
+      const createTaskQueue = async (db, options = {}) => {
+        await db.fns.create_task_queue(
+          options.taskQueueId || 'prov/wt',
+          options.expires || expires,
+          options.lastDateActive || lastDateActive,
+          options.description || 'desc',
+          options.stability || 'unstable',
+        );
+      };
+      await createTaskQueue(db, { taskQueueId: 'prov1/wt' });
+      await createTaskQueue(db, {
+        taskQueueId: 'prov2/wt',
+        expires: taskcluster.fromNow('4 hours'),
+        lastDayActive: taskcluster.fromNow('-2 hours'),
+      });
+      const res = await db.fns.get_queue_provisioners(new Date(), null, null);
+      assert.equal(res[0].provisioner_id, 'prov1');
+      assert.deepEqual(res[0].expires, expires);
+      assert.deepEqual(res[0].last_date_active, lastDateActive);
+      assert.equal(res[1].provisioner_id, 'prov2');
+    });
   });
 
-  suite('queue_workers_deprecated', function() {
+  suite('queue_workers deprecated', function() {
     setup('reset tables', async function() {
       await helper.withDbClient(async client => {
         await client.query('truncate queue_workers');

@@ -35,7 +35,6 @@ queue:
     task_dependencies: write
     task_queues: write
     queue_workers: write
-    queue_provisioners: write
     azure_queue_messages: write
     tasks: write
 secrets:

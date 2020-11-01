@@ -20,7 +20,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       provisionerId: 'prov1-extended-extended-extended',
       expires: new Date('3017-07-29'),
       lastDateActive: new Date(),
-      description: 'test-provisioner',
+      description: '',
       stability: 'experimental',
       actions: [],
     }, opts));
@@ -115,34 +115,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const wType = await makeTaskQueue({});
 
     const result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended');
-    assert.equal(result.workerTypes.length, 1, 'expected workerTypes');
-    const [_, workerType] = wType.taskQueueId.split('/');
-    assert(result.workerTypes[0].workerType === workerType, `expected ${workerType}`);
-  });
-
-  test('queue.listWorkerTypes returns actions with the right context', async () => {
-    await makeProvisioner({
-      provisionerId: 'prov-B',
-      actions: [{
-        name: 'kill',
-        title: 'Kill Provisioner',
-        context: 'provisioner',
-        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle/<provisionerId>',
-        method: 'DELETE',
-        description: 'Remove provisioner prov-B',
-      }, {
-        name: 'kill',
-        title: 'Kill Worker Type',
-        context: 'worker-type',
-        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle/<provisionerId>/<workerType>',
-        method: 'DELETE',
-        description: 'Remove worker type',
-      }],
-    });
-    const wType = await makeTaskQueue({ taskQueueId: 'prov-B/gecko-b-2-linux-extended-extended' });
-
-    const result = await helper.queue.listWorkerTypes('prov-B');
-
     assert.equal(result.workerTypes.length, 1, 'expected workerTypes');
     const [_, workerType] = wType.taskQueueId.split('/');
     assert(result.workerTypes[0].workerType === workerType, `expected ${workerType}`);
