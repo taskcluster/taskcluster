@@ -47,7 +47,7 @@ Observe that this is URL-safe and that if you strictly want to put another chara
 
 Tasks can be indexed using the `insertTask` API method, but the most common way to index tasks is adding a custom route to `task.routes` of the form `index.<namespace>`.
 This will result in a Pulse message with routing-key `route.index.<namespace>`.
-In order to add this route to a task you'll need the scope `queue:route:index.<namespace>`.Note that slashes(/) aren’t allowed in custom routes.
+In order to add this route to a task you'll need the scope `queue:route:index.<namespace>`.Note that slashes(/) aren’t allowed in routes.
 When a task has this route, it will be indexed when the task is **completed successfully**.
 The task will be indexed with `rank`, `data` and `expires` as specified in `task.extra.index`.
 For example:
