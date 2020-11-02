@@ -63,7 +63,7 @@ describe('Auth', function() {
       .buildSignedUrl(auth.testAuthenticateGet)
       .then(url => request(url))
       .then(({ scopes }) => {
-        expect(scopes).to.deep.equal(['test:authenticate-get', 'test:foo']);
+        expect(scopes).to.deep.equal(['assume:anonymous', 'test:authenticate-get', 'test:foo']);
       });
   });
 
@@ -83,7 +83,7 @@ describe('Auth', function() {
       .buildSignedUrl(auth.testAuthenticateGet)
       .then(url => request(url))
       .then(({ scopes }) => {
-        expect(scopes).to.deep.equal(['test:authenticate-get', 'test:bar']);
+        expect(scopes).to.deep.equal(['assume:anonymous', 'test:authenticate-get', 'test:bar']);
       });
   });
 
@@ -121,7 +121,7 @@ describe('Auth', function() {
       .buildSignedUrl(auth.testAuthenticateGet)
       .then(url => request(url))
       .then(({ scopes }) => {
-        expect(scopes).to.deep.equal(['test:authenticate-get']);
+        expect(scopes).to.deep.equal(['assume:anonymous', 'test:authenticate-get']);
       });
   });
 
@@ -186,17 +186,13 @@ describe('Auth', function() {
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('tester');
-        expect(scopes).to.deep.equal([]);
+        expect(scopes).to.deep.equal(['assume:anonymous']);
       });
   });
 
   it('should request with authentication and query string', () => {
     const auth = new Auth({
       rootUrl: helper.rootUrl,
-      credentials: {
-        clientId: 'tester',
-        accessToken: 'no-secret',
-      },
     });
 
     return auth
@@ -221,7 +217,7 @@ describe('Auth', function() {
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('tester');
-        expect(scopes).to.deep.equal(['test:param']);
+        expect(scopes).to.deep.equal(['assume:anonymous', 'test:param']);
       });
   });
 
@@ -290,7 +286,7 @@ describe('Auth', function() {
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('tester');
-        expect(scopes).to.deep.equal(['scopes:specific']);
+        expect(scopes).to.deep.equal(['assume:anonymous', 'scopes:specific']);
       });
   });
 
@@ -370,7 +366,7 @@ describe('Auth', function() {
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('my-temp-cred');
-        expect(scopes).to.deep.equal(['scopes:specific']);
+        expect(scopes).to.deep.equal(['assume:anonymous', 'scopes:specific']);
       });
   });
 
@@ -400,7 +396,7 @@ describe('Auth', function() {
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('my-temp-cred');
-        expect(scopes).to.deep.equal(['scopes:specific', 'scopes:another']);
+        expect(scopes).to.deep.equal(['assume:anonymous', 'scopes:specific', 'scopes:another']);
       });
   });
 
@@ -425,7 +421,7 @@ describe('Auth', function() {
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('tester');
-        expect(scopes).to.deep.equal(['scopes:subcategory:specific']);
+        expect(scopes).to.deep.equal(['assume:anonymous', 'scopes:subcategory:specific']);
       });
   });
 
