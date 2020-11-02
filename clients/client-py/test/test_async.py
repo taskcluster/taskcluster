@@ -32,7 +32,7 @@ def test_async_works_with_permanent_credentials():
                 'clientScopes': ['test:a'],
                 'requiredScopes': ['test:a'],
             })
-            assert result == {'scopes': ['test:a'], 'clientId': 'tester'}
+            assert result == {'scopes': ['assume:anonymous', 'test:a'], 'clientId': 'tester'}
 
     loop.run_until_complete(x())
 
@@ -60,6 +60,6 @@ def test_async_works_with_temporary_credentials():
                 'clientScopes': ['test:*'],
                 'requiredScopes': ['test:xyz'],
             })
-            assert result == {'scopes': ['test:xyz'], 'clientId': 'tester'}
+            assert result == {'scopes': ['assume:anonymous', 'test:xyz'], 'clientId': 'tester'}
 
     loop.run_until_complete(x())

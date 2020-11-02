@@ -9,6 +9,7 @@ import (
 
 	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
 	"github.com/taskcluster/taskcluster/v38/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v38/internal/scopes"
 	"github.com/taskcluster/taskcluster/v38/internal/testrooturl"
 )
 
@@ -53,7 +54,11 @@ func TestTcProxy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not interpret response %q as json: %v", string(data), err)
 	}
-	if len(scopeset.Scopes) != 1 || scopeset.Scopes[0] != "queue:get-artifact:SampleArtifacts/_/X.txt" {
-		t.Fatalf("Got incorrect data: %v", string(data))
+
+	// check that the current scopes satisfy the authorized scopes
+	given := scopes.Given(scopeset.Scopes)
+	required := scopes.Required([][]string{[]string{"queue:get-artifact:SampleArtifacts/_/X.txt"}})
+	if ok, err := given.Satisfies(required, tcauth.New(nil, rootURL)); !ok || err != nil {
+		t.Fatalf("Got current scopes that do not %s: %v", required, string(data))
 	}
 }
