@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+let { Octokit } = require('@octokit/rest');
 
 const retryPlugin = (octokit, options) => {
 
@@ -22,7 +23,7 @@ const retryPlugin = (octokit, options) => {
     }
   });
 };
-const Octokit = require('@octokit/rest').plugin([retryPlugin]);
+Octokit = Octokit.plugin(retryPlugin);
 
 const getPrivatePEM = cfg => {
   const keyRe = /-----BEGIN RSA PRIVATE KEY-----(\n|\\n).*(\n|\\n)-----END RSA PRIVATE KEY-----(\n|\\n)?/s;

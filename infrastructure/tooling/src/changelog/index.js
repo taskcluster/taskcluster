@@ -7,7 +7,7 @@ const { REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd, gitCurrent
 const taskcluster = require('taskcluster-client');
 const path = require('path');
 const openEditor = require('open-editor');
-const Octokit = require("@octokit/rest");
+const { Octokit } = require("@octokit/rest");
 
 const ALLOWED_LEVELS = {
   'major': 1,
