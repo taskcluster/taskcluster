@@ -1,7 +1,7 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { lowerCase } from 'change-case';
+import { lowerCase } from 'lower-case';
 import catchLinks from 'catch-links';
 import { MDXProvider } from '@mdx-js/react';
 import 'prismjs';

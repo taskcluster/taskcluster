@@ -1,4 +1,5 @@
-import { upperCase, snakeCase } from 'change-case';
+import { upperCase } from 'upper-case';
+import { snakeCase } from 'snake-case';
 import { pipe } from 'ramda';
 
 // Example: all-completed becomes ALL_COMPLETED

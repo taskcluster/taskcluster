@@ -3,7 +3,7 @@ import { func, array } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
-import { titleCase } from 'change-case';
+import { titleCase } from 'title-case';
 import IconButton from '@material-ui/core/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
