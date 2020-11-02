@@ -1,0 +1,7 @@
+web:
+  type: web
+  command: node services/object/src/main.js server
+  defaultReplicas: 0
+write-docs:
+  type: build
+  command: node services/object/src/main.js writeDocs

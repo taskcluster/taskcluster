@@ -911,6 +911,25 @@ var services = map[string]definitions.Service{
 			},
 		},
 	},
+	"Object": definitions.Service{
+		APIVersion:  "v1",
+		ServiceName: "object",
+		Title:       "Taskcluster Object Service API Documentation",
+		Description: "The object service provides HTTP-accessible storage for large blobs of data.",
+		Entries: []definitions.Entry{
+			definitions.Entry{
+				Name:        "ping",
+				Title:       "Ping Server",
+				Description: "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/ping",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "",
+			},
+		},
+	},
 	"PurgeCache": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "purge-cache",

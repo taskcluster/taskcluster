@@ -31,6 +31,10 @@
         "denylisted_notifications": "write"
       }
     },
+    "object": {
+      "tables": {
+      }
+    },
     "purge_cache": {
       "tables": {
         "cache_purges": "write"

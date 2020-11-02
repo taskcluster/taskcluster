@@ -17,6 +17,7 @@ export { default as HooksEvents } from './clients/HooksEvents';
 export { default as Index } from './clients/Index';
 export { default as Notify } from './clients/Notify';
 export { default as NotifyEvents } from './clients/NotifyEvents';
+export { default as Object } from './clients/Object';
 export { default as PurgeCache } from './clients/PurgeCache';
 export { default as Queue } from './clients/Queue';
 export { default as QueueEvents } from './clients/QueueEvents';

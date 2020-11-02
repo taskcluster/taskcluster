@@ -11,6 +11,7 @@ These are any packages that are run as part of a deployment of Taskcluster.
 * [Hooks Service](hooks#readme)
 * [Index Service](index#readme)
 * [Notify Service](notify#readme)
+* [Object Service](object#readme)
 * [Purge-Cache Service](purge-cache#readme)
 * [Queue Service](queue#readme)
 * [Secrets Service](secrets#readme)

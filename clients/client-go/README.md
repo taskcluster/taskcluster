@@ -44,6 +44,8 @@ This library provides the following packages to interface with Taskcluster:
 
 * http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcnotify
 
+* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcobject
+
 * http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcpurgecache
 
 * http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueue
