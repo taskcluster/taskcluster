@@ -17,7 +17,7 @@ let builder = new APIBuilder({
     '',
     'As described in the service documentation, tasks are typically indexed via Pulse',
     'messages, so the most common use of API methods is to read from the index.',
-    'Slashes (/) aren\'t allowed while using API',
+    'Slashes (/) aren\'t allowed while calling routes in API',
   ].join('\n'),
   projectName: 'taskcluster-index',
   serviceName: 'index',
