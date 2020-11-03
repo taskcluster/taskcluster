@@ -4285,10 +4285,10 @@ dot-case@^3.0.3:
     no-case "^3.0.3"
     tslib "^1.10.0"
 
-dot-prop-immutable@^1.4.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/dot-prop-immutable/-/dot-prop-immutable-1.6.0.tgz#abd90ec600323567343bba33a52cb85cf875ef62"
-  integrity sha512-JDJ/3P7anjMJcGVMQ4ZKCsp9YGBAtdKX86ZXTdROuuKo9gRBBefYbUGJP4v6HSFVcM3DmoRehuakBp9/l43Ysg==
+dot-prop-immutable@^2.0.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/dot-prop-immutable/-/dot-prop-immutable-2.1.0.tgz#aa08d57b7b4c8ba1aac1b8f9b058bb3f37027af6"
+  integrity sha512-8IIkxeXjLkKbhbqwmqCdFzRup1wFwH4tuY7/s5ScVpzYXgjZ+lw5ocvtDG1KR9VG+/AIGgGpWBdzmq+QUFANoA==
 
 dotenv-cli@^3.0.0:
   version "3.2.0"
