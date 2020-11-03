@@ -4,6 +4,7 @@ const { isNil } = require('ramda');
 const ConnectionLoader = require('../ConnectionLoader');
 const Artifact = require('../entities/Artifact');
 const Artifacts = require('../entities/Artifacts');
+const maybeSignedUrl = require('../utils/maybeSignedUrl');
 
 module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const withUrl = ({ method, taskId, artifact, runId }) => {
@@ -12,8 +13,8 @@ module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, r
     return {
       ...artifact,
       url: hasRunId
-        ? queue.externalBuildSignedUrl(method, taskId, runId, artifact.name)
-        : queue.externalBuildSignedUrl(method, taskId, artifact.name),
+        ? maybeSignedUrl(queue)(method, taskId, runId, artifact.name)
+        : maybeSignedUrl(queue)(method, taskId, artifact.name),
     };
   };
 
