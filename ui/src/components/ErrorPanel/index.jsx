@@ -115,13 +115,19 @@ export default class ErrorPanel extends Component {
         }
       });
 
-      // construct a markdown summary of all of the errors
+      // construct a markdown summary of all of the errors (at most 3)
       if (errors.length > 1) {
-        message.push('Multiple errors from web-server:');
+        message.push(
+          `${errors.length} errors occurred fetching data for this page:`
+        );
 
-        errors.forEach(err => {
+        errors.slice(0, 3).forEach(err => {
           message.push(`* ${err.message}`);
         });
+
+        if (errors.length > 3) {
+          message.push('* (further errors hidden; see console)');
+        }
       } else {
         message.push(errors[0].message);
       }
