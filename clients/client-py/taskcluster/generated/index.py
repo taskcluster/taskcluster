@@ -18,6 +18,8 @@ class Index(BaseClient):
 
     As described in the service documentation, tasks are typically indexed via Pulse
     messages, so the most common use of API methods is to read from the index.
+
+    Slashes (`/`) aren't allowed in index paths.
     """
 
     classOptions = {
