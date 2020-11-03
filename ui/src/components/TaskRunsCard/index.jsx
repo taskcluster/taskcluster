@@ -215,11 +215,9 @@ export default class TaskRunsCard extends Component {
   };
 
   getLiveLogArtifactFromRun = run => {
-    const artifact =
-      run &&
-      run.artifacts.edges.find(
-        ({ node: { name } }) => name === 'public/logs/live.log'
-      );
+    const artifact = run?.artifacts?.edges?.find(
+      ({ node: { name } }) => name === 'public/logs/live.log'
+    );
 
     if (!artifact) {
       return;
@@ -229,6 +227,14 @@ export default class TaskRunsCard extends Component {
   };
 
   createSortedArtifactsConnection(artifacts) {
+    // artifacts may be null if there was an error fetching them
+    if (!artifacts) {
+      return {
+        edges: [],
+        pageInfo: {},
+      };
+    }
+
     return {
       ...artifacts,
       edges: [...artifacts.edges].sort((a, b) => {
@@ -244,8 +250,7 @@ export default class TaskRunsCard extends Component {
   renderArtifactsTable() {
     const { classes, onArtifactsPageChange } = this.props;
     const run = this.getCurrentRun();
-    const artifacts =
-      run && this.createSortedArtifactsConnection(run.artifacts);
+    const artifacts = this.createSortedArtifactsConnection(run?.artifacts);
 
     return (
       <ConnectionDataTable
