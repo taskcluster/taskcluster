@@ -59,6 +59,6 @@ func TestTcProxy(t *testing.T) {
 	given := scopes.Given(scopeset.Scopes)
 	required := scopes.Required([][]string{[]string{"queue:get-artifact:SampleArtifacts/_/X.txt"}})
 	if ok, err := given.Satisfies(required, tcauth.New(nil, rootURL)); !ok || err != nil {
-		t.Fatalf("Got current scopes that do not match %s: %v", required, string(data))
+		t.Fatalf("Got current scopes %s that do not satisfy authorized scopes %s: %v", string(data), required, err)
 	}
 }
