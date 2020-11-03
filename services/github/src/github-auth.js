@@ -56,7 +56,7 @@ module.exports = async ({ cfg }) => {
     try {
       const inteGithub = await getAppGithub();
       // Authenticating as installation
-      const instaToken = (await inteGithub.apps.createInstallationToken({
+      const instaToken = (await inteGithub.apps.createInstallationAccessToken({
         installation_id: inst_id,
       })).data;
       const instaGithub = new Octokit({ auth: `token ${instaToken.token}` });
