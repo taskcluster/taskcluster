@@ -123,7 +123,7 @@ func verifyPrivateToOwner(filename string) (err error) {
 	}
 
 	if si.String() != OWNER_ONLY_SDDL {
-		return fmt.Errorf("File did not have expected DACL; got %s, expected %s", si, OWNER_ONLY_SDDL)
+		return fmt.Errorf("File %s did not have expected DACL; got %s, expected %s", filename, si, OWNER_ONLY_SDDL)
 	}
 
 	si, err = windows.GetNamedSecurityInfo(
@@ -149,11 +149,11 @@ func verifyPrivateToOwner(filename string) (err error) {
 	}
 
 	if owner.String() != currentUser.String() {
-		return fmt.Errorf("File did not have expcted owner; got %s, expected %s", owner, currentUser)
+		return fmt.Errorf("File %s did not have expcted owner; got %s, expected %s", filename, owner, currentUser)
 	}
 
 	if group.String() != NOBODY {
-		return fmt.Errorf("File did not have expcted group; got %s, expected %s", group, NOBODY)
+		return fmt.Errorf("File %s did not have expcted group; got %s, expected %s", filename, group, NOBODY)
 	}
 
 	return
