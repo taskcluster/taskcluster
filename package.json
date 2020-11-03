@@ -18,7 +18,7 @@
     "@azure/ms-rest-azure-js": "^2.0.1",
     "@azure/ms-rest-js": "^2.0.5",
     "@azure/ms-rest-nodeauth": "^3.0.5",
-    "@octokit/rest": "^16.15.0",
+    "@octokit/rest": "^18.0.0",
     "@sentry/node": "^5.6.1",
     "@slack/web-api": "^5.12.0",
     "ajv": "^6.10.0",

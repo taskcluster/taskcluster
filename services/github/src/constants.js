@@ -1,6 +1,5 @@
 module.exports = {
   CONCLUSIONS: { // maps status communicated by the queue service to github checkrun conclusions
-    /*eslint quote-props: ["error", "consistent-as-needed"]*/
     'completed': 'success',
     'failed': 'failure',
     'exception': 'failure',

@@ -295,7 +295,7 @@ class Handlers {
   async getYml({ instGithub, owner, repo, ref }) {
     let response;
     try {
-      response = await instGithub.repos.getContents({ owner, repo, path: '.taskcluster.yml', ref });
+      response = await instGithub.repos.getContent({ owner, repo, path: '.taskcluster.yml', ref });
     } catch (e) {
       if (e.status === 404) {
         return null;
@@ -405,7 +405,7 @@ async function deprecatedStatusHandler(message) {
   debug(`Attempting to update status for ${build.organization}/${build.repository}@${build.sha} (${state})`);
   const target_url = taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId);
   try {
-    await instGithub.repos.createStatus({
+    await instGithub.repos.createCommitStatus({
       owner: build.organization,
       repo: build.repository,
       sha: build.sha,
@@ -889,7 +889,7 @@ async function taskGroupCreationHandler(message) {
   const instGithub = await this.context.github.getInstallationGithub(installation_id);
 
   debug('Creating new "pending" status');
-  await instGithub.repos.createStatus({
+  await instGithub.repos.createCommitStatus({
     owner: organization,
     repo: repository,
     sha,

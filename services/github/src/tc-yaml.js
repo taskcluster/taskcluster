@@ -6,7 +6,11 @@ const tc = require('taskcluster-client');
 const TopoSort = require('topo-sort');
 
 // Assert that only scope-valid characters are in branches
-const branchTest = /^[\x20-\x7e]*$/;
+const branchTest = branch => {
+  if (!/^[\x20-\x7e]*$/.test(branch || '')) {
+    throw new Error('Must have only ascii-printable chars in branch names!');
+  }
+};
 
 class TcYaml {
   static instantiate(version) {
@@ -30,12 +34,8 @@ class VersionZero extends TcYaml {
  **/
   completeInTreeConfig(cfg, config, payload) {
     config.scopes = [];
-    if (!branchTest.test(payload.details['event.base.repo.branch'] || '')) {
-      throw new Error('Cannot have unicode in branch names!');
-    }
-    if (!branchTest.test(payload.details['event.head.repo.branch'] || '')) {
-      throw new Error('Cannot have unicode in branch names!');
-    }
+    branchTest(payload.details['event.base.repo.branch']);
+    branchTest(payload.details['event.head.repo.branch']);
 
     if (payload.details['event.type'].startsWith('pull_request')) {
       config.scopes = [
@@ -208,17 +208,12 @@ class VersionOne extends TcYaml {
   }
 
   substituteParameters(config, cfg, payload) {
-    if (!branchTest.test(payload.branch || '')) {
-      throw new Error('Cannot have unicode in branch names!');
-    }
-    if (!branchTest.test(payload.branch || '')) {
-      throw new Error('Cannot have unicode in branch names!');
-    }
+    branchTest(payload.branch);
 
     let slugids = {};
     let as_slugid = (label) => {
-      let rv;
-      if (rv = slugids[label]) { // eslint-disable-line no-cond-assign
+      let rv = slugids[label];
+      if (rv) {
         return rv;
       } else {
         return slugids[label] = slugid.nice();
