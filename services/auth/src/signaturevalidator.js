@@ -235,13 +235,21 @@ const createSignatureValidator = function(options) {
     ({ clientId, expires, accessToken, scopes } = await options.clientLoader(issuingClientId));
 
     // apply restrictions based on the ext field
+    // Implicitly grant all clients the anonymous role _before_ we check
+    // `authorizedScopes`. If we didn't do this first then the check that
+    // the client has a superset of `authorizedScopes` can fail if the scope
+    // is provided by it being in `anonymous`
     if (ext) {
+      scopes = utils.mergeScopeSets(scopes, ['assume:anonymous']);
+      scopes = options.expandScopes(scopes);
       ({ scopes, expires, accessToken } = limitClientWithExt(
         credentialName, issuingClientId, accessToken,
         scopes, expires, ext));
     }
 
-    // Implicitly grant all clients the anonymous role
+    // Implicitly grant all clients the anonymous role a second time.
+    // This is required to add it back in if it has been removed by
+    // it (and the scopes it grants) _not_ being included in authorizedScopes.
     scopes = utils.mergeScopeSets(scopes, ['assume:anonymous']);
     scopes = options.expandScopes(scopes);
 

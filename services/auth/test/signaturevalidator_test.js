@@ -1,6 +1,6 @@
 const hawk = require('hawk');
 const _ = require('lodash');
-const assume = require('assume');
+const assert = require('assert');
 const slugid = require('slugid');
 const crypto = require('crypto');
 const taskcluster = require('taskcluster-client');
@@ -113,12 +113,12 @@ suite(testing.suiteName(), function() {
       }
 
       let got = await validator(input);
-      assume(got).to.deeply.equal(expected);
+      assert.deepStrictEqual(expected, got);
 
       // *any* successful request should be returning `anonscope`, no matter
       // what, so check that
       if (got.status !== 'auth-failed') {
-        assume(utils.satisfiesExpression(got.scopes, 'anonscope')).is.ok();
+        assert(utils.satisfiesExpression(got.scopes, 'anonscope'));
       }
     });
   };
@@ -447,7 +447,7 @@ suite(testing.suiteName(), function() {
     'Supplied credentials do not satisfy authorizedScopes; credentials have scopes:',
     '',
     '```',
-    clients.unpriv.scopes.join('\n'),
+    ['anonscope', 'assume:anonymous', ...clients.unpriv.scopes].join('\n'),
     '```',
     '',
     'authorizedScopes are:',
