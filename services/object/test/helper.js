@@ -27,6 +27,26 @@ const testclients = {
   'test-server': ['*'],
 };
 
+exports.withBackends = (mock, skipping) => {
+  suiteSetup('withBackends', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    // add the 'test' backend only for testing
+    BACKEND_TYPES['test'] = TestBackend;
+
+    // start with an empty set of backends
+    await exports.load('cfg');
+    exports.load.cfg('backends', {});
+    exports.load.cfg('backendMap', []);
+  });
+
+  suiteTeardown('withBackends', async function() {
+    delete BACKEND_TYPES['test'];
+  });
+};
+
 exports.withServer = (mock, skipping) => {
   let webServer;
 
@@ -39,9 +59,6 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('server.env', 'development');
     exports.load.cfg('server.forceSSL', false);
     exports.load.cfg('server.trustProxy', true);
-
-    // start with an empty list of backends
-    exports.load.cfg('backends', {});
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
@@ -80,6 +97,3 @@ exports.withServer = (mock, skipping) => {
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'object');
 };
-
-// add the 'test' backend only for testing
-BACKEND_TYPES['test'] = TestBackend;

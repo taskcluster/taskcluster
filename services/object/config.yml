@@ -1,6 +1,7 @@
 defaults:
   # backends for this service
   backends: !env:json BACKENDS
+  backendMap: !env:json BACKEND_MAP
 
   # Taskcluster configuration
   taskcluster:
