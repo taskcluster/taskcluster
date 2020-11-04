@@ -33,6 +33,7 @@
     },
     "object": {
       "tables": {
+        "objects": "write"
       }
     },
     "purge_cache": {
@@ -190,6 +191,10 @@
       "namespace": "text not null",
       "rank": "integer not null",
       "task_id": "text not null"
+    },
+    "objects": {
+      "data": "jsonb not null",
+      "name": "text not null"
     },
     "queue_artifacts": {
       "content_type": "text not null",
@@ -5457,6 +5462,14 @@
         }
       },
       "version": 52
+    },
+    {
+      "description": "objects table MVP",
+      "downgradeScript": "begin\n  revoke select, insert, update, delete on objects from $db_user_prefix$_object;\n  drop table objects;\nend\n\n",
+      "methods": {
+      },
+      "migrationScript": "begin\n  create table objects (\n    name text not null,\n    data jsonb not null\n  );\n  grant select, insert, update, delete on objects to $db_user_prefix$_object;\nend\n",
+      "version": 53
     }
   ]
 }
