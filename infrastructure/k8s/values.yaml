@@ -98,6 +98,9 @@ object:
       replicas: 0
       cpu: 50m
       memory: 100Mi
+    cleanup_expire_objects:
+      cpu: 50m
+      memory: 100Mi
   debug: ''
   taskcluster_client_id: static/taskcluster/object
   level: notice

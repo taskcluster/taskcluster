@@ -5471,6 +5471,21 @@
       },
       "migrationScript": "begin\n  create table objects (\n    name text not null,\n    data jsonb not null,\n    expires timestamptz not null\n  );\n  grant select, insert, update, delete on objects to $db_user_prefix$_object;\nend\n",
       "version": 53
+    },
+    {
+      "description": "add expiration db fn to objects service",
+      "methods": {
+        "expire_objects": {
+          "args": "",
+          "body": "declare\n  count integer;\nbegin\n  delete from objects where objects.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Delete objects that expire before the current time.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "object"
+        }
+      },
+      "version": 54
     }
   ]
 }

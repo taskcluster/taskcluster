@@ -8479,6 +8479,22 @@
             "procs": {
               "additionalProperties": false,
               "properties": {
+                "cleanup_expire_objects": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
                 "web": {
                   "additionalProperties": false,
                   "properties": {
@@ -8501,7 +8517,8 @@
                 }
               },
               "required": [
-                "web"
+                "web",
+                "cleanup_expire_objects"
               ],
               "title": "Process settings for this service",
               "type": "object"

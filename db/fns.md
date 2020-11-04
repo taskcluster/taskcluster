@@ -53,6 +53,8 @@
    * [`all_denylist_addresses`](#all_denylist_addresses)
    * [`delete_denylist_address`](#delete_denylist_address)
    * [`exists_denylist_address`](#exists_denylist_address)
+ * [object functions](#object)
+   * [`expire_objects`](#expire_objects)
  * [purge_cache functions](#purge_cache)
    * [`all_purge_requests_wpid`](#all_purge_requests_wpid)
    * [`expire_cache_purges`](#expire_cache_purges)
@@ -950,6 +952,19 @@ Returns number of rows deleted (0 or 1).
 * *Returns*: `boolean`
 
 Returns a boolean indicating whether the denylist type/address exists.
+
+## object
+
+* [`expire_objects`](#expire_objects)
+
+### expire_objects
+
+* *Mode*: write
+* *Arguments*:
+* *Returns*: `integer`
+
+Delete objects that expire before the current time.
+Returns a count of rows that have been deleted.
 
 ## purge_cache
 
