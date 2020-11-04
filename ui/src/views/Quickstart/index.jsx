@@ -27,6 +27,7 @@ import SiteSpecific from '../../components/SiteSpecific';
 import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import githubQuery from './github.graphql';
+import { siteSpecificVariable } from '../../utils/siteSpecific';
 
 const baseCmd = [
   'git clone {{event.head.repo.url}} repo',
@@ -67,6 +68,10 @@ const getTaskDefinition = state => {
     taskName,
     taskDescription,
   } = state;
+  const tutorialWorkerPool =
+    siteSpecificVariable('tutorial_worker_pool_id') ||
+    'proj-getting-started/tutorial';
+  const [provisionerId, workerType] = tutorialWorkerPool.split('/');
 
   return safeDump({
     version: 1,
@@ -77,8 +82,8 @@ const getTaskDefinition = state => {
       $match: {
         [condition]: {
           taskId: { $eval: 'as_slugid("test")' },
-          provisionerId: 'proj-getting-started',
-          workerType: 'tutorial',
+          provisionerId,
+          workerType,
           metadata: {
             name: taskName,
             description: taskDescription,
