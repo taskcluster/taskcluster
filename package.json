@@ -36,7 +36,7 @@
     "debug": "^4.1.1",
     "deepmerge": "^4.0.0",
     "ejs": "^3.0.0",
-    "email-templates": "^6.0.0",
+    "email-templates": "^7.0.0",
     "express": "4.17.1",
     "express-session": "^1.16.2",
     "express-sslify": "1.2.0",
