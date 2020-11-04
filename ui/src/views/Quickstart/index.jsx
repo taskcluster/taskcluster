@@ -98,6 +98,7 @@ const getTaskDefinition = state => {
         $match: {
           [condition]: {
             taskId: { $eval: 'as_slugid("test")' },
+            deadline: { $fromNow: '1 day' },
             provisionerId,
             workerType,
             metadata: {
