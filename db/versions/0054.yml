@@ -1,0 +1,22 @@
+version: 54
+description: add expiration db fn to objects service
+methods:
+  expire_objects:
+    description: |-
+      Delete objects that expire before the current time.
+      Returns a count of rows that have been deleted.
+    mode: write
+    serviceName: object
+    args: ''
+    returns: integer
+    body: |-
+      declare
+        count integer;
+      begin
+        delete from objects where objects.expires < now();
+        if found then
+          get diagnostics count = row_count;
+          return count;
+        end if;
+        return 0;
+      end
