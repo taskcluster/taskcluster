@@ -265,7 +265,8 @@ CREATE INDEX sha512_indexed_tasks_idx ON indexed_tasks USING btree (public.sha51
 ```sql
 CREATE TABLE objects (
     name text NOT NULL,
-    data jsonb NOT NULL
+    data jsonb NOT NULL,
+    expires timestamp with time zone NOT NULL
 );
 ```
 

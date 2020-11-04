@@ -194,6 +194,7 @@
     },
     "objects": {
       "data": "jsonb not null",
+      "expires": "timestamp with time zone not null",
       "name": "text not null"
     },
     "queue_artifacts": {
@@ -5468,7 +5469,7 @@
       "downgradeScript": "begin\n  revoke select, insert, update, delete on objects from $db_user_prefix$_object;\n  drop table objects;\nend\n\n",
       "methods": {
       },
-      "migrationScript": "begin\n  create table objects (\n    name text not null,\n    data jsonb not null\n  );\n  grant select, insert, update, delete on objects to $db_user_prefix$_object;\nend\n",
+      "migrationScript": "begin\n  create table objects (\n    name text not null,\n    data jsonb not null,\n    expires timestamptz not null\n  );\n  grant select, insert, update, delete on objects to $db_user_prefix$_object;\nend\n",
       "version": 53
     }
   ]
