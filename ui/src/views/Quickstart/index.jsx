@@ -28,30 +28,6 @@ import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import githubQuery from './github.graphql';
 
-const taskDefinition = {
-  version: 1,
-  policy: {
-    pullRequests: 'collaborators',
-  },
-  tasks: {
-    $match: {
-      taskId: { $eval: 'as_slugid("pr_task")' },
-      provisionerId: 'proj-getting-started',
-      workerType: 'tutorial',
-      payload: {
-        maxRunTime: 3600,
-        image: 'node',
-        command: [],
-      },
-      metadata: {
-        name: '',
-        description: '',
-        owner: '${event.sender.login}@users.noreply.github.com', // eslint-disable-line no-template-curly-in-string
-        source: '${event.repository.url}', // eslint-disable-line no-template-curly-in-string
-      },
-    },
-  },
-};
 const baseCmd = [
   'git clone {{event.head.repo.url}} repo',
   'cd repo',
@@ -93,25 +69,28 @@ const getTaskDefinition = state => {
   } = state;
 
   return safeDump({
-    ...taskDefinition,
+    version: 1,
     policy: {
       pullRequests: access,
     },
     tasks: {
       $match: {
         [condition]: {
-          ...taskDefinition.tasks.$match,
-          ...{
-            metadata: {
-              ...taskDefinition.tasks.$match.metadata,
-              name: taskName,
-              description: taskDescription,
-            },
-            payload: {
-              ...taskDefinition.tasks.$match.payload,
-              image,
-              command: commands,
-            },
+          taskId: { $eval: 'as_slugid("test")' },
+          provisionerId: 'proj-getting-started',
+          workerType: 'tutorial',
+          metadata: {
+            name: taskName,
+            description: taskDescription,
+            // eslint-disable-next-line no-template-curly-in-string
+            owner: '${event.sender.login}@users.noreply.github.com',
+            // eslint-disable-next-line no-template-curly-in-string
+            source: '${event.repository.url}',
+          },
+          payload: {
+            maxRunTime: 3600,
+            image,
+            command: commands,
           },
         },
       },
@@ -119,7 +98,7 @@ const getTaskDefinition = state => {
   });
 };
 
-const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
+const cmdDirectory = (language, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   ({
     node: [
       '/bin/bash',
@@ -133,12 +112,12 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
       '-c',
       baseCmd.concat(['pip install tox', 'tox']).join(' && '),
     ],
-    'rust:latest': [
+    rust: [
       '/bin/bash',
       '-c',
       baseCmd.concat(['rustc --test unit_test.rs', './unit_test']).join(' && '),
     ],
-    golang: [
+    go: [
       '/bin/bash',
       '--login',
       '-c',
@@ -153,7 +132,13 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
         'go test ./...',
       ].join(' && '),
     ],
-  }[type]);
+  }[language]);
+const imageForLanguage = {
+  node: 'node:latest',
+  python: 'python:latest',
+  rust: 'rust:latest',
+  go: 'golang:latest',
+};
 
 @hot(module)
 @withApollo
@@ -223,6 +208,7 @@ export default class QuickStart extends Component {
     owner: '',
     repo: '',
     access: 'collaborators',
+    language: 'node',
     image: 'node',
     commands: cmdDirectory('node'),
     commandSelection: 'standard',
@@ -254,9 +240,11 @@ export default class QuickStart extends Component {
   };
 
   handleCommandsChange = ({ target: { value } }) => {
+    const { language } = this.state;
+
     this.setState({
       commandSelection: value,
-      commands: value === 'standard' ? cmdDirectory(this.state.image) : [],
+      commands: value === 'standard' ? cmdDirectory(language) : [],
       editorValue: null,
     });
   };
@@ -279,6 +267,18 @@ export default class QuickStart extends Component {
 
   handleInputChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value, editorValue: null });
+  };
+
+  handleLanguageChange = ({ target: { value: language } }) => {
+    this.setState({
+      language,
+      image: imageForLanguage[language],
+      commands:
+        this.state.commandSelection === 'standard'
+          ? cmdDirectory(language)
+          : [],
+      editorValue: null,
+    });
   };
 
   handleOrgRepoChange = ({ target: { name, value } }) => {
@@ -327,7 +327,7 @@ export default class QuickStart extends Component {
       taskName,
       taskDescription,
       events,
-      image,
+      language,
       installedState,
       commandSelection,
       access,
@@ -558,9 +558,9 @@ export default class QuickStart extends Component {
                 select
                 label="Project Language"
                 helperText="This will select a corresponding docker image"
-                value={image}
-                name="image"
-                onChange={this.handleInputChange}
+                value={language}
+                name="language"
+                onChange={this.handleLanguageChange}
                 margin="normal">
                 <MenuItem value="node">Node.js</MenuItem>
                 <MenuItem value="python">Python</MenuItem>
