@@ -29,11 +29,14 @@ import ErrorPanel from '../../components/ErrorPanel';
 import githubQuery from './github.graphql';
 import { siteSpecificVariable } from '../../utils/siteSpecific';
 
+// we embed JSON-e here, which looks a lot like a template to eslint..
+/* eslint-disable no-template-curly-in-string */
+
 const baseCmd = [
-  'git clone {{event.head.repo.url}} repo',
+  'git clone ${repository} repo',
   'cd repo',
   'git config advice.detachedHead false',
-  'git checkout {{event.head.sha}}',
+  'git checkout ${head_rev}',
 ];
 const getMatchCondition = events => {
   const condition = [];
@@ -79,23 +82,35 @@ const getTaskDefinition = state => {
       pullRequests: access,
     },
     tasks: {
-      $match: {
-        [condition]: {
-          taskId: { $eval: 'as_slugid("test")' },
-          provisionerId,
-          workerType,
-          metadata: {
-            name: taskName,
-            description: taskDescription,
-            // eslint-disable-next-line no-template-curly-in-string
-            owner: '${event.sender.login}@users.noreply.github.com',
-            // eslint-disable-next-line no-template-curly-in-string
-            source: '${event.repository.url}',
-          },
-          payload: {
-            maxRunTime: 3600,
-            image,
-            command: commands,
+      $let: {
+        head_rev: {
+          $if: 'tasks_for == "github-pull-request"',
+          then: '${event.pull_request.head.sha}',
+          else: '${event.after}',
+        },
+        repository: {
+          $if: 'tasks_for == "github-pull-request"',
+          then: '${event.pull_request.head.repo.html_url}',
+          else: '${event.repository.html_url}',
+        },
+      },
+      in: {
+        $match: {
+          [condition]: {
+            taskId: { $eval: 'as_slugid("test")' },
+            provisionerId,
+            workerType,
+            metadata: {
+              name: taskName,
+              description: taskDescription,
+              owner: '${event.sender.login}@users.noreply.github.com',
+              source: '${event.repository.url}',
+            },
+            payload: {
+              maxRunTime: 3600,
+              image,
+              command: commands,
+            },
           },
         },
       },
@@ -103,41 +118,26 @@ const getTaskDefinition = state => {
   });
 };
 
-const cmdDirectory = (language, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
-  ({
-    node: [
-      '/bin/bash',
-      '--login',
-      '-c',
-      baseCmd.concat(['npm install .', 'npm test']).join(' && '),
-    ],
-    python: [
-      '/bin/bash',
-      '--login',
-      '-c',
-      baseCmd.concat(['pip install tox', 'tox']).join(' && '),
-    ],
-    rust: [
-      '/bin/bash',
-      '-c',
-      baseCmd.concat(['rustc --test unit_test.rs', './unit_test']).join(' && '),
-    ],
-    go: [
-      '/bin/bash',
-      '--login',
-      '-c',
-      [
-        `mkdir -p /go/src/github.com/${org}/${repo}`,
-        `cd /go/src/github.com/${org}/${repo}`,
-        'git init',
-        'git fetch {{ event.head.repo.url }} {{ event.head.ref }}',
-        'git config advice.detachedHead false',
-        'git checkout {{ event.head.sha }}',
-        'go install',
-        'go test ./...',
-      ].join(' && '),
-    ],
-  }[language]);
+const commandForLanguage = {
+  node: [
+    '/bin/bash',
+    '--login',
+    '-c',
+    baseCmd.concat(['npm install .', 'npm test']).join(' && '),
+  ],
+  python: [
+    '/bin/bash',
+    '--login',
+    '-c',
+    baseCmd.concat(['pip install tox', 'tox']).join(' && '),
+  ],
+  rust: ['/bin/bash', '-c', baseCmd.concat(['cargo test']).join(' && ')],
+  go: [
+    '/bin/bash',
+    '-c',
+    baseCmd.concat(['go install', 'go test ./...']).join(' && '),
+  ],
+};
 const imageForLanguage = {
   node: 'node:latest',
   python: 'python:latest',
@@ -215,7 +215,7 @@ export default class QuickStart extends Component {
     access: 'collaborators',
     language: 'node',
     image: 'node',
-    commands: cmdDirectory('node'),
+    commands: commandForLanguage.node,
     commandSelection: 'standard',
     installedState: null,
     taskName: '',
@@ -249,7 +249,7 @@ export default class QuickStart extends Component {
 
     this.setState({
       commandSelection: value,
-      commands: value === 'standard' ? cmdDirectory(language) : [],
+      commands: value === 'standard' ? commandForLanguage[language] : [],
       editorValue: null,
     });
   };
@@ -280,7 +280,7 @@ export default class QuickStart extends Component {
       image: imageForLanguage[language],
       commands:
         this.state.commandSelection === 'standard'
-          ? cmdDirectory(language)
+          ? commandForLanguage[language]
           : [],
       editorValue: null,
     });
