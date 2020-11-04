@@ -44,7 +44,7 @@
     "dexie": "^3.0.0",
     "docker-exec-websocket-client": "^1.4.0",
     "dot-prop-immutable": "^2.0.0",
-    "escape-string-regexp": "^2.0.0",
+    "escape-string-regexp": "^4.0.0",
     "fast-memoize": "^2.5.1",
     "graphql": "^14.2.1",
     "highlight.js": "^10.0.0",
