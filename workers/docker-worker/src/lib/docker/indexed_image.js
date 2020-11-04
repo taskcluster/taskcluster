@@ -49,7 +49,7 @@ module.exports = class IndexedImage extends ArtifactImage {
 
     const index = new taskcluster.Index({
       rootUrl: this.runtime.rootUrl,
-      credentials: this.runtime.taskcluster,
+      credentials: this.task.claim.credentials,
       authorizedScopes: this.taskScopes,
     });
 
