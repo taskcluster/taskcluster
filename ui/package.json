@@ -116,7 +116,7 @@
     "chai": "^4.2.0",
     "cross-env": "^7.0.0",
     "dotenv-cli": "^4.0.0",
-    "eslint": "^6.7.2",
+    "eslint": "^7.0.0",
     "graphql-tag": "^2.8.0",
     "karma": "^4.0.0",
     "karma-cli": "^2.0.0",
