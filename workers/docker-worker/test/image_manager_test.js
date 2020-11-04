@@ -72,6 +72,9 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
         credentials: undefined,
         scopes: [],
       }),
+      claim: {
+        credentials: undefined,
+      },
     };
 
     let im = new ImageManager(runtime);
@@ -115,6 +118,9 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
         credentials: undefined,
         scopes: [],
       }),
+      claim: {
+        credentials: undefined,
+      },
     };
 
     let im = new ImageManager(runtime);
@@ -156,6 +162,9 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
         credentials: undefined,
         scopes: [],
       }),
+      claim: {
+        credentials: undefined,
+      },
     };
 
     let im = new ImageManager(runtime);
@@ -200,6 +209,9 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
         credentials: undefined,
         scopes: [],
       }),
+      claim: {
+        credentials: undefined,
+      },
     };
 
     let im = new ImageManager(runtime);
@@ -231,6 +243,9 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
         credentials: undefined,
         scopes: [],
       }),
+      claim: {
+        credentials: undefined,
+      },
     };
 
     let im = new ImageManager(runtime);
@@ -268,6 +283,9 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
         credentials: undefined,
         scopes: [],
       }),
+      claim: {
+        credentials: undefined,
+      },
     };
 
     let im = new ImageManager(runtime);
@@ -304,6 +322,9 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
         credentials: undefined,
         scopes: [],
       }),
+      claim: {
+        credentials: undefined,
+      },
     };
 
     let im = new ImageManager(runtime);
@@ -359,6 +380,9 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
 
       let task = {
         queue: new taskcluster.Queue(helper.optionsFromCiCreds()),
+        claim: {
+          credentials: undefined,
+        },
       };
 
       let im = new ImageManager(runtime);
