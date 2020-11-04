@@ -228,3 +228,4 @@ azure_queue_messages:
 objects:
   name: text not null
   data: jsonb not null
+  expires: timestamp with time zone not null
