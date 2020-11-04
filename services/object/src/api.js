@@ -7,7 +7,7 @@ let builder = new APIBuilder({
   ].join('\n'),
   serviceName: 'object',
   apiVersion: 'v1',
-  context: ['cfg', 'db'],
+  context: ['cfg', 'db', 'backends'],
 });
 
 module.exports = builder;

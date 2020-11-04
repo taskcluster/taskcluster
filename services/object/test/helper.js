@@ -3,6 +3,8 @@ const { fakeauth, stickyLoader, Secrets, withMonitor } = require('taskcluster-li
 const load = require('../src/main');
 const builder = require('../src/api.js');
 const { withDb } = require('taskcluster-lib-testing');
+const { BACKEND_TYPES } = require('../src/backends');
+const { TestBackend } = require('../src/backends/test');
 
 exports.load = stickyLoader(load);
 
@@ -37,6 +39,9 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('server.env', 'development');
     exports.load.cfg('server.forceSSL', false);
     exports.load.cfg('server.trustProxy', true);
+
+    // start with an empty list of backends
+    exports.load.cfg('backends', {});
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
@@ -75,3 +80,6 @@ exports.withServer = (mock, skipping) => {
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'object');
 };
+
+// add the 'test' backend only for testing
+BACKEND_TYPES['test'] = TestBackend;
