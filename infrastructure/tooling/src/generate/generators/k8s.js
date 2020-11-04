@@ -205,6 +205,7 @@ SERVICES.forEach(name => {
       const procs = requirements[`procslist-${name}`];
       const templates = requirements['k8s-templates'];
       const vars = requirements[`configs-${name}`].map(v => v.var);
+      vars.push('debug');
       return {
         [`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates),
       };
