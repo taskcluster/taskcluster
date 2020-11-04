@@ -846,6 +846,17 @@
     "object": {
       "additionalProperties": false,
       "properties": {
+        "backends": {
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
         "db_crypto_keys": {
           "oneOf": [
             {
@@ -926,6 +937,7 @@
       },
       "required": [
         "procs",
+        "backends",
         "taskcluster_client_id",
         "taskcluster_access_token",
         "read_db_url",

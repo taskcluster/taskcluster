@@ -343,6 +343,55 @@
     "title": "Monitoring Services"
   },
   {
+    "element": "h1",
+    "id": "-catch-all",
+    "path": "/manual/deploying/object-service",
+    "subtitle": null,
+    "title": "Object Service"
+  },
+  {
+    "element": "h1",
+    "id": "-logs-are-stored-in-a-special-reduced-redundancy-backend",
+    "path": "/manual/deploying/object-service",
+    "subtitle": null,
+    "title": "Object Service"
+  },
+  {
+    "element": "h1",
+    "id": "-project-lindys-builds-are-stored-in-a-dedicated-backend",
+    "path": "/manual/deploying/object-service",
+    "subtitle": null,
+    "title": "Object Service"
+  },
+  {
+    "element": "h1",
+    "id": "object-service",
+    "path": "/manual/deploying/object-service",
+    "subtitle": null,
+    "title": "Object Service"
+  },
+  {
+    "element": "h2",
+    "id": "backend-configuration",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "Backend Configuration",
+    "title": "Object Service"
+  },
+  {
+    "element": "h2",
+    "id": "backend-types",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "Backend Types",
+    "title": "Object Service"
+  },
+  {
+    "element": "h2",
+    "id": "cautions",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "Cautions",
+    "title": "Object Service"
+  },
+  {
     "element": "h2",
     "id": "configuration",
     "path": "/manual/deploying/pulse",
@@ -2539,6 +2588,27 @@
     "path": "/reference/platform/auth/scopes",
     "subtitle": "Stars in Scopes",
     "title": "Scopes and Satisfaction"
+  },
+  {
+    "element": "h1",
+    "id": "object-service",
+    "path": "/reference/platform/object",
+    "subtitle": null,
+    "title": "Object Service"
+  },
+  {
+    "element": "h2",
+    "id": "experimental",
+    "path": "/reference/platform/object",
+    "subtitle": "Experimental!",
+    "title": "Object Service"
+  },
+  {
+    "element": "h2",
+    "id": "usage",
+    "path": "/reference/platform/object",
+    "subtitle": "Usage",
+    "title": "Object Service"
   },
   {
     "element": "h1",
