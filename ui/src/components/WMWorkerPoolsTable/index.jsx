@@ -3,7 +3,7 @@ import { withStyles } from '@material-ui/core';
 import Label from '@mozilla-frontend-infra/components/Label';
 import { shape, func, arrayOf, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
-import { camelCase } from 'change-case/change-case';
+import { camelCase } from 'camel-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
@@ -79,7 +79,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
   createSortedWorkerPoolsConnection = memoize(
     (workerPoolsConnection, sortBy, sortDirection) => {
-      const sortByProperty = camelCase(sortBy);
+      const sortByProperty = sortBy ? camelCase(sortBy) : '';
 
       if (!sortBy) {
         return workerPoolsConnection;

@@ -5,7 +5,7 @@ import memoize from 'fast-memoize';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { camelCase } from 'change-case';
+import { camelCase } from 'camel-case';
 import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../utils/constants';
@@ -39,7 +39,7 @@ export default class IndexNamespacesTable extends Component {
 
   createSortedNamespacesConnection = memoize(
     (connection, sortBy, sortDirection) => {
-      const sortByProperty = camelCase(sortBy);
+      const sortByProperty = sortBy ? camelCase(sortBy) : '';
 
       if (!sortBy) {
         return connection;

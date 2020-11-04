@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
-import { lowerCase } from 'change-case';
+import { lowerCase } from 'lower-case';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import ListItem from '@material-ui/core/ListItem';

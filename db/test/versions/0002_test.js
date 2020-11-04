@@ -1,9 +1,9 @@
 const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
-const { snakeCase } = require('change-case');
+const { snakeCase } = require('snake-case');
 
-// due to some differences in different versions of change-case, we
-// have some special-cases.  Everything else follows change-case's
+// due to some differences in different versions of snake-case, we
+// have some special-cases.  Everything else follows snake-case's
 // snakeCase.
 const POSTGRES_TABLE_NAMES = {
   LastFire3: 'last_fire_3',
