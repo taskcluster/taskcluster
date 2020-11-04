@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v38.0.3
+
+### DEVELOPERS
+
+▶ [patch] 
+Fix one usage of Octokit in release machinery to fix releases
+
 ## v38.0.2
 
 ### GENERAL
