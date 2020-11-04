@@ -26,7 +26,8 @@ notify:
   tables:
     denylisted_notifications: write
 object:
-  tables: {}
+  tables:
+    objects: write
 purge_cache:
   tables:
     cache_purges: write

@@ -1,0 +1,5 @@
+version: 53
+description: objects table MVP
+migrationScript: 0053-migration.sql
+downgradeScript: 0053-downgrade.sql
+methods: []
