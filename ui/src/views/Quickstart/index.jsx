@@ -59,32 +59,27 @@ const baseCmd = [
   'git checkout {{event.head.sha}}',
 ];
 const getMatchCondition = events => {
-  let condition = '';
-  const eventsJoin = Array.from(events).join(' ');
+  const condition = [];
+  const prActions = [];
 
-  if (eventsJoin.includes('pull_request')) {
-    condition = `${condition}(tasks_for == "github-pull-request" && event["action"] in [${[
-      ...events,
-    ].sort()}])`;
-  }
-
-  if (eventsJoin.includes('push')) {
-    if (condition.length > 0) {
-      condition = `${condition} || `;
+  events.forEach(event => {
+    if (event.startsWith('pull_request.')) {
+      prActions.push(event.split('.')[1]);
+    } else if (event === 'push') {
+      condition.push('(tasks_for == "github-push")');
+    } else if (event === 'release') {
+      condition.push('(tasks_for == "github-release")');
     }
+  });
 
-    condition = `${condition}(tasks_for == "github-push")`;
+  if (prActions.length > 0) {
+    condition.push(
+      `(tasks_for == "github-pull-request" ` +
+        `&& event["action"] in ${JSON.stringify(prActions.sort())})`
+    );
   }
 
-  if (eventsJoin.includes('release')) {
-    if (condition.length > 0) {
-      condition = `${condition} || `;
-    }
-
-    condition = `${condition}(tasks_for == "github-release")`;
-  }
-
-  return condition;
+  return condition.length > 0 ? condition.join(' || ') : 'false';
 };
 
 const getTaskDefinition = state => {
@@ -591,7 +586,9 @@ export default class QuickStart extends Component {
               <ListItemText
                 disableTypography
                 primary={
-                  <Typography variant="subtitle1">Task Definiton</Typography>
+                  <Typography variant="subtitle1">
+                    Your .taskcluster.yml
+                  </Typography>
                 }
               />
             </ListItem>
