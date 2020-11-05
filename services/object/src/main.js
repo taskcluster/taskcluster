@@ -77,10 +77,10 @@ let load = loader({
     }),
   },
 
-  'cleanup-expire-objects': {
+  expire: {
     requires: ['db', 'monitor'],
     setup: ({ db, monitor }) => {
-      return monitor.oneShot('cleanup-expire-objects', async () => {
+      return monitor.oneShot('expire', async () => {
         debug('Expiring objects rows');
         const count = (await db.fns.expire_objects())[0].expire_objects;
         debug(`Expired ${count} rows`);

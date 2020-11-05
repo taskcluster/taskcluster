@@ -8479,7 +8479,7 @@
             "procs": {
               "additionalProperties": false,
               "properties": {
-                "cleanup_expire_objects": {
+                "expire": {
                   "additionalProperties": false,
                   "properties": {
                     "cpu": {
@@ -8518,7 +8518,7 @@
               },
               "required": [
                 "web",
-                "cleanup_expire_objects"
+                "expire"
               ],
               "title": "Process settings for this service",
               "type": "object"

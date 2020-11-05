@@ -98,7 +98,7 @@ object:
       replicas: 0
       cpu: 50m
       memory: 100Mi
-    cleanup_expire_objects:
+    expire:
       cpu: 50m
       memory: 100Mi
   debug: ''

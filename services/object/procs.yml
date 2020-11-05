@@ -2,11 +2,11 @@ web:
   type: web
   command: node services/object/src/main.js server
   defaultReplicas: 0
-cleanup-expire-objects:
+expire:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node services/object/src/main cleanup-expire-objects
+  command: node services/object/src/main expire
 write-docs:
   type: build
   command: node services/object/src/main.js writeDocs

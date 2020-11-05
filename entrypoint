@@ -27,7 +27,7 @@ notify/irc) exec node services/notify/src/main irc;;
 notify/handler) exec node services/notify/src/main handler;;
 notify/write-docs) exec node services/notify/src/main writeDocs;;
 object/web) exec node services/object/src/main.js server;;
-object/cleanup-expire-objects) exec node services/object/src/main cleanup-expire-objects;;
+object/expire) exec node services/object/src/main expire;;
 object/write-docs) exec node services/object/src/main.js writeDocs;;
 purge-cache/web) exec node services/purge-cache/src/main server;;
 purge-cache/expireCachePurges) exec node services/purge-cache/src/main expire-cache-purges;;

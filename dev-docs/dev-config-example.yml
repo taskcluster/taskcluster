@@ -152,7 +152,7 @@ object:
   procs:
     web:
       cpu: 10m
-    cleanup_expire_objects:
+    expire:
       cpu: 10m
 purge_cache:
   read_db_url: ...

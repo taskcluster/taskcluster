@@ -1,11 +1,11 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: taskcluster-object-cleanup-expire-objects
+  name: taskcluster-object-expire
   labels: &ref_0
     app.kubernetes.io/name: taskcluster-object
     app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/component: taskcluster-object-cleanup-expire-objects
+    app.kubernetes.io/component: taskcluster-object-expire
     app.kubernetes.io/part-of: taskcluster
 spec:
   concurrencyPolicy: Forbid
@@ -21,15 +21,15 @@ spec:
         spec:
           restartPolicy: OnFailure
           containers:
-            - name: taskcluster-object-cleanup-expire-objects
+            - name: taskcluster-object-expire
               image: '{{ .Values.dockerImage }}'
               imagePullPolicy: Always
               args:
-                - object/cleanup-expire-objects
+                - object/expire
               resources:
                 requests:
-                  cpu: '{{ .Values.object.procs.cleanup_expire_objects.cpu }}'
-                  memory: '{{ .Values.object.procs.cleanup_expire_objects.memory }}'
+                  cpu: '{{ .Values.object.procs.expire.cpu }}'
+                  memory: '{{ .Values.object.procs.expire.memory }}'
               env:
                 - name: TASKCLUSTER_ROOT_URL
                   value: '{{ .Values.rootUrl }}'
