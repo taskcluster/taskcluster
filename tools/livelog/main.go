@@ -168,7 +168,11 @@ func main() {
 
 	runServer = func(server *http.Server, addr, crtFile, keyFile string) error {
 		server.Addr = addr
-		return server.ListenAndServe()
+		if crtFile != "" && keyFile != "" {
+			return server.ListenAndServeTLS(crtFile, keyFile)
+		} else {
+			return server.ListenAndServe()
+		}
 	}
 
 	serve(putAddr, getAddr)

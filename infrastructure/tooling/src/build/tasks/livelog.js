@@ -72,7 +72,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
-        'FROM scratch',
+        'FROM busybox', // We use busybox rather than scratch to have `/tmp` and such things
         'EXPOSE 60023',
         'EXPOSE 60022',
         'COPY version.json /app/version.json',
