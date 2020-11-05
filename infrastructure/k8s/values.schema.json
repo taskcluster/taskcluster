@@ -846,6 +846,17 @@
     "object": {
       "additionalProperties": false,
       "properties": {
+        "backend_map": {
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
         "backends": {
           "oneOf": [
             {
@@ -938,6 +949,7 @@
       "required": [
         "procs",
         "backends",
+        "backend_map",
         "taskcluster_client_id",
         "taskcluster_access_token",
         "read_db_url",
