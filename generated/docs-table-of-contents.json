@@ -1519,13 +1519,35 @@
             },
             "name": "workers",
             "next": {
-              "path": "manual/deploying/anonymous-role",
-              "title": "Anonymous Role"
+              "path": "manual/deploying/object-service",
+              "title": "Object Service"
             },
             "path": "manual/deploying/workers",
             "prev": {
               "path": "manual/deploying/static-clients",
               "title": "Static Clients"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 22,
+              "title": "Object Service"
+            },
+            "name": "object-service",
+            "next": {
+              "path": "manual/deploying/anonymous-role",
+              "title": "Anonymous Role"
+            },
+            "path": "manual/deploying/object-service",
+            "prev": {
+              "path": "manual/deploying/workers",
+              "title": "Workers"
             },
             "up": {
               "path": "manual/deploying",
@@ -1546,8 +1568,8 @@
             },
             "path": "manual/deploying/anonymous-role",
             "prev": {
-              "path": "manual/deploying/workers",
-              "title": "Workers"
+              "path": "manual/deploying/object-service",
+              "title": "Object Service"
             },
             "up": {
               "path": "manual/deploying",
@@ -2101,8 +2123,8 @@
                 },
                 "name": "external-services-credentials",
                 "next": {
-                  "path": "reference/platform/queue/README",
-                  "title": "queue"
+                  "path": "reference/platform/object/README",
+                  "title": "object"
                 },
                 "path": "reference/platform/auth/external-services-credentials",
                 "prev": {
@@ -2127,6 +2149,73 @@
             "prev": {
               "path": "reference/platform/README",
               "title": "Taskcluster Platform"
+            },
+            "up": {
+              "path": "reference/platform/README",
+              "title": "Taskcluster Platform"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/platform/object/logs",
+                  "title": "logs"
+                },
+                "path": "reference/platform/object/api",
+                "prev": {
+                  "path": "reference/platform/object/README",
+                  "title": "object"
+                },
+                "up": {
+                  "path": "reference/platform/object/README",
+                  "title": "object"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 2,
+                  "title": "logs"
+                },
+                "name": "logs",
+                "next": {
+                  "path": "reference/platform/queue/README",
+                  "title": "queue"
+                },
+                "path": "reference/platform/object/logs",
+                "prev": {
+                  "path": "reference/platform/object/api",
+                  "title": "api"
+                },
+                "up": {
+                  "path": "reference/platform/object/README",
+                  "title": "object"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "object",
+            "next": {
+              "path": "reference/platform/object/api",
+              "title": "api"
+            },
+            "path": "reference/platform/object/README",
+            "prev": {
+              "path": "reference/platform/auth/external-services-credentials",
+              "title": "External Service Credentials"
             },
             "up": {
               "path": "reference/platform/README",
@@ -2357,8 +2446,8 @@
             },
             "path": "reference/platform/queue/README",
             "prev": {
-              "path": "reference/platform/auth/external-services-credentials",
-              "title": "External Service Credentials"
+              "path": "reference/platform/object/logs",
+              "title": "logs"
             },
             "up": {
               "path": "reference/platform/README",

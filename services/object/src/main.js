@@ -8,6 +8,7 @@ const { App } = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
 const config = require('taskcluster-lib-config');
 const debug = require('debug')('objects:app:main');
+const { Backends } = require('./backends');
 
 let load = loader({
   cfg: {
@@ -56,11 +57,16 @@ let load = loader({
     }).generateReferences(),
   },
 
+  backends: {
+    requires: ['cfg', 'db', 'monitor'],
+    setup: ({ cfg, db, monitor }) => new Backends().setup({ cfg, db, monitor }),
+  },
+
   api: {
-    requires: ['cfg', 'db', 'schemaset', 'monitor'],
-    setup: async ({ cfg, db, schemaset, monitor }) => builder.build({
+    requires: ['cfg', 'db', 'schemaset', 'monitor', 'backends'],
+    setup: async ({ cfg, db, schemaset, monitor, backends }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: { cfg, db },
+      context: { cfg, db, backends },
       monitor: monitor.childMonitor('api'),
       schemaset,
     }),

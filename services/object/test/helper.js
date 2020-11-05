@@ -3,6 +3,8 @@ const { fakeauth, stickyLoader, Secrets, withMonitor } = require('taskcluster-li
 const load = require('../src/main');
 const builder = require('../src/api.js');
 const { withDb } = require('taskcluster-lib-testing');
+const { BACKEND_TYPES } = require('../src/backends');
+const { TestBackend } = require('../src/backends/test');
 
 exports.load = stickyLoader(load);
 
@@ -23,6 +25,26 @@ exports.rootUrl = 'http://localhost:60401';
 const testclients = {
   'test-client': ['*'],
   'test-server': ['*'],
+};
+
+exports.withBackends = (mock, skipping) => {
+  suiteSetup('withBackends', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    // add the 'test' backend only for testing
+    BACKEND_TYPES['test'] = TestBackend;
+
+    // start with an empty set of backends
+    await exports.load('cfg');
+    exports.load.cfg('backends', {});
+    exports.load.cfg('backendMap', []);
+  });
+
+  suiteTeardown('withBackends', async function() {
+    delete BACKEND_TYPES['test'];
+  });
 };
 
 exports.withServer = (mock, skipping) => {
