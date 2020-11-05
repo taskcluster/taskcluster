@@ -135,7 +135,7 @@ const load = loader({
     setup: ({ github, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const gh = await github.getAppGithub();
-        const installations = (await gh.apps.listAppInstallations({})).data;
+        const installations = (await gh.apps.listInstallations({})).data;
         await Promise.all(installations.map(i => {
           return db.fns.upsert_github_integration(
             i.account.login,

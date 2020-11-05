@@ -269,9 +269,6 @@ class FakeGithubAuth {
     return {
       apps: {
         listInstallations: async () => {
-          throw new Error('deprecated, use listAppInstallations instead');
-        },
-        listAppInstallations: async () => {
           return { data: _.map(this.installations, (install, id) => ({
             id: parseInt(id, 10),
             account: { login: install._installedOn },
