@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import Paper from '@material-ui/core/Paper';
 import Markdown from '@mozilla-frontend-infra/components/Markdown';
+import { siteSpecificVariables } from '../../utils/siteSpecific';
 
 const styles = withStyles(theme => ({
   root: {
@@ -43,13 +44,7 @@ const SITE_SPECIFIC_VARS = new Set([
 // the result is rendered as Markdown.
 const SiteSpecific = ({ classes, showIfNotSet, children }) => {
   let rendered;
-  const variables = {
-    // omit TASKCLUSTER_ROOT_URL in DOCS_ONLY mode
-    ...(window.env.DOCS_ONLY
-      ? {}
-      : { root_url: window.env.TASKCLUSTER_ROOT_URL }),
-    ...(window.env.SITE_SPECIFIC || {}),
-  };
+  const variables = siteSpecificVariables();
 
   // bail out if the "showIf.." condition is not met
   if (showIfNotSet) {
