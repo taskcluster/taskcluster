@@ -13,6 +13,8 @@ You will probably be working on only one of these pieces, so read carefully belo
 You will need Node version 12.19.0 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
+We use `yarn` to run most development commands, so [install that as well](https://classic.yarnpkg.com/en/docs/install/#debian-stable).
+
 ### Go
 
 <!-- the next line is automatically edited; do not change -->
