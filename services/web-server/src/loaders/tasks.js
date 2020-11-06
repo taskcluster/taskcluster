@@ -45,7 +45,7 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
     Promise.all(
       queries.map(async ({ taskGroupId, filter }) => {
         try {
-          const url = await maybeSignedUrl(queue)(
+          const url = await maybeSignedUrl(queue, isAuthed)(
             queue.getLatestArtifact,
             taskGroupId,
             'public/actions.json',
