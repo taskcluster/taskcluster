@@ -55,6 +55,8 @@
    * [`exists_denylist_address`](#exists_denylist_address)
  * [object functions](#object)
    * [`expire_objects`](#expire_objects)
+   * [`get_object`](#get_object)
+   * [`upload_object`](#upload_object)
  * [purge_cache functions](#purge_cache)
    * [`all_purge_requests_wpid`](#all_purge_requests_wpid)
    * [`expire_cache_purges`](#expire_cache_purges)
@@ -956,6 +958,8 @@ Returns a boolean indicating whether the denylist type/address exists.
 ## object
 
 * [`expire_objects`](#expire_objects)
+* [`get_object`](#get_object)
+* [`upload_object`](#upload_object)
 
 ### expire_objects
 
@@ -965,6 +969,29 @@ Returns a boolean indicating whether the denylist type/address exists.
 
 Delete objects that expire before the current time.
 Returns a count of rows that have been deleted.
+
+### get_object
+
+* *Mode*: read
+* *Arguments*:
+  * `name_in text`
+* *Returns*: `table`
+  * `name text`
+  * `data jsonb`
+  * `expires timestamptz`
+
+Get an object.
+
+### upload_object
+
+* *Mode*: write
+* *Arguments*:
+  * `name_in text`
+  * `data_in jsonb`
+  * `expires_in timestamptz`
+* *Returns*: `void`
+
+Upload object.
 
 ## purge_cache
 

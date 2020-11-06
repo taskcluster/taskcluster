@@ -33,6 +33,17 @@ class Object(BaseClient):
 
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
+    def uploadObject(self, *args, **kwargs):
+        """
+        Upload backend data
+
+        Upload backend data.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["uploadObject"], *args, **kwargs)
+
     funcinfo = {
         "ping": {
             'args': [],
@@ -40,6 +51,13 @@ class Object(BaseClient):
             'name': 'ping',
             'route': '/ping',
             'stability': 'stable',
+        },
+        "uploadObject": {
+            'args': ['name', 'projectId'],
+            'method': 'post',
+            'name': 'uploadObject',
+            'route': '/upload/<name>/<projectId>',
+            'stability': 'experimental',
         },
     }
 

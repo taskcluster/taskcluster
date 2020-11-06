@@ -15077,6 +15077,23 @@
           "stability": "stable",
           "title": "Ping Server",
           "type": "function"
+        },
+        {
+          "args": [
+            "name",
+            "projectId"
+          ],
+          "category": "Backend",
+          "description": "Upload backend data.",
+          "method": "post",
+          "name": "uploadObject",
+          "query": [
+          ],
+          "route": "/upload/<name>/<projectId>",
+          "scopes": "object:upload:<name>/<projectId>",
+          "stability": "experimental",
+          "title": "Upload backend data",
+          "type": "function"
         }
       ],
       "serviceName": "object",

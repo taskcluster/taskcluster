@@ -13,6 +13,28 @@ suite(testing.suiteName(), function() {
   });
 
   suite(`${testing.suiteName()} - objects`, function() {
+    helper.dbTest('upload_object', async function(db, isFake) {
+      const expires = fromNow('1 year');
+      await db.fns.upload_object('foo', { projectId: 'projectId' }, expires);
+
+      await helper.withDbClient(async client => {
+        const { rows } = await client.query('select name, data, expires from objects');
+        assert.equal(rows.length, 1);
+        assert.equal(rows[0].name, 'foo');
+        assert.deepEqual(rows[0].data, { projectId: 'projectId' });
+        assert.equal(JSON.stringify(rows[0].expires), JSON.stringify(expires));
+      });
+    });
+    helper.dbTest('get_object', async function(db, isFake) {
+      const expires = fromNow('1 year');
+      await db.fns.upload_object('foo', { projectId: 'projectId' }, expires);
+      const rows = await db.fns.get_object('foo');
+
+      assert.equal(rows.length, 1);
+      assert.deepEqual(rows[0].name, 'foo');
+      assert.deepEqual(rows[0].data, { projectId: 'projectId' });
+      assert.equal(JSON.stringify(rows[0].expires), JSON.stringify(expires));
+    });
     helper.dbTest('expire_objects', async function(db) {
       const samples = [
         {

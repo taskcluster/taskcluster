@@ -5486,6 +5486,30 @@
         }
       },
       "version": 54
+    },
+    {
+      "description": "add upload db fn to objects service",
+      "methods": {
+        "get_object": {
+          "args": "name_in text",
+          "body": "begin\n  return query select objects.name, objects.data, objects.expires from objects where objects.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get an object.",
+          "mode": "read",
+          "returns": "table (name text, data jsonb, expires timestamptz)",
+          "serviceName": "object"
+        },
+        "upload_object": {
+          "args": "name_in text, data_in jsonb, expires_in timestamptz",
+          "body": "begin\n  insert\n    into objects (name, data, expires)\n    values (name_in, data_in, expires_in);\nend",
+          "deprecated": false,
+          "description": "Upload object.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "object"
+        }
+      },
+      "version": 55
     }
   ]
 }

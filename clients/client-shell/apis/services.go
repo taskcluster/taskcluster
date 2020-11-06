@@ -928,6 +928,20 @@ var services = map[string]definitions.Service{
 				Query:       []string{},
 				Input:       "",
 			},
+			definitions.Entry{
+				Name:        "uploadObject",
+				Title:       "Upload backend data",
+				Description: "Upload backend data.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/upload/<name>/<projectId>",
+				Args: []string{
+					"name",
+					"projectId",
+				},
+				Query: []string{},
+				Input: "",
+			},
 		},
 	},
 	"PurgeCache": definitions.Service{
