@@ -2,17 +2,21 @@ const BACKEND_TYPES = {
   // TBD!
 };
 
+/**
+ * A container for all defined backends in a running instance of this service,
+ * supporting getting backends either by name or for a newly uploaded object.
+ */
 class Backends {
   async setup({ cfg, monitor, db }) {
     this.monitor = monitor;
 
-    await this.setupBackends({ cfg, monitor, db });
-    await this.setupMatching({ cfg });
+    await this._setupBackends({ cfg, monitor, db });
+    await this._setupMatching({ cfg });
 
     return this;
   }
 
-  async setupBackends({ cfg, monitor, db }) {
+  async _setupBackends({ cfg, monitor, db }) {
     this._backends = new Map();
 
     if (!cfg.backends) {
@@ -37,12 +41,15 @@ class Backends {
     }
   }
 
-  async setupMatching({ cfg }) {
+  async _setupMatching({ cfg }) {
     // the config processing stuff defaults this to an empty object, rather than an
     // emtpy array, so coerce to be friendly
     let backendMap = cfg.backendMap;
     if (typeof backendMap === 'object' && !Array.isArray(backendMap)) {
-      backendMap = Object.entries(backendMap); // ..to catch cases where the object isn't empty
+      backendMap = Object.entries(backendMap);
+      if (backendMap.length > 0) {
+        throw new Error('backendMap must be an array, not an object');
+      }
     }
 
     // construct matcher functions for each backendMap element; each taking an object and
@@ -60,7 +67,7 @@ class Backends {
         when = {};
       }
 
-      const patternFn = pattern => {
+      const makePatternFn = pattern => {
         if (typeof pattern === 'string') {
           return value => value === pattern;
         }
@@ -71,13 +78,14 @@ class Backends {
         if (pattern.is) {
           return value => value === pattern.is;
         }
-        throw new Error(`invalid backendMap pattern ${JSON.stringify(pattern)}`);
+        throw new Error(`backendMap[${i}] has invalid pattern ${JSON.stringify(pattern)}`);
       };
 
       const conditions = Object.entries(when).map(([param, pattern]) => {
+        const patternFn = makePatternFn(pattern);
         switch (param) {
-          case 'projectId': return object => patternFn(pattern)(object.projectId);
-          case 'name': return object => patternFn(pattern)(object.name);
+          case 'projectId': return object => patternFn(object.projectId);
+          case 'name': return object => patternFn(object.name);
           default: throw new Error(`backendMap[${i}] has invalid match parameter ${param}`);
         }
       });
