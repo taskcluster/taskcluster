@@ -1,5 +1,5 @@
 import mitt from 'mitt';
-import { MAX_SET_TIMEOUT_DELAY, AUTH_STORE } from '../utils/constants';
+import { AUTH_STORE } from '../utils/constants';
 import credentialsQuery from './credentials.graphql';
 import removeKeys from '../utils/removeKeys';
 import UserSession from './UserSession';
@@ -9,6 +9,9 @@ import UserSession from './UserSession';
  *
  * This encompasses knowledge of ongoing expiration monitoring,
  * synchronizing sign-in status across tabs and any additional required UI.
+ *
+ * This emits a `user-changed` event with a new user each time the user
+ * changes (possibly if no user information actually changed).
  */
 export default class AuthController {
   constructor(client) {
@@ -29,6 +32,31 @@ export default class AuthController {
     });
   }
 
+  /**
+   * Get the current user, first renewing credentials if necessary.
+   */
+  async getUser() {
+    // if no user, try loading from localStorage
+    if (!this.user) {
+      this.loadUser();
+    }
+
+    // if expired or no credentials, try to renew the credentials
+    if (
+      this.user &&
+      (!this.user.credentials || new Date(this.user.expires) < new Date())
+    ) {
+      await this.renew();
+    }
+
+    return this.user;
+  }
+
+  /**
+   * Set the current user (or if null, no user is signed in)
+   *
+   * This uses localStorage to communicate across browser tabs.
+   */
   setUser(user) {
     if (!user) {
       localStorage.removeItem(AUTH_STORE);
@@ -41,60 +69,42 @@ export default class AuthController {
     this.loadUser();
   }
 
+  /**
+   * Signal to the backend that the user is no longer
+   * signed in.
+   */
+  async signOut() {
+    await fetch('/login/logout', { method: 'POST' });
+    this.setUser(null);
+  }
+
+  /* -- remaining functions are private -- */
+
+  /**
+   * Load the user from localStorage
+   */
   loadUser() {
     const auth = localStorage.getItem(AUTH_STORE);
-    let user = auth ? UserSession.deserialize(auth) : null;
 
-    if (user) {
-      const now = new Date();
-      // Logout the user if the provider's access token has expired.
-      const expires = new Date(user.providerExpires);
-
-      if (expires < now) {
-        localStorage.removeItem(AUTH_STORE);
-        user = null;
-      }
-    }
-
-    this.resetRenewalTimer(user);
-    this.emit('user-changed', user);
+    this.user = auth ? UserSession.deserialize(auth) : null;
+    this.emit('user-changed', this.user);
   }
 
-  resetRenewalTimer(user) {
-    if (this.renewalTimer) {
-      window.clearTimeout(this.renewalTimer);
-      this.renewalTimer = null;
+  /**
+   * Renew the current user's credentials, if applicable
+   */
+  async renew() {
+    // if not logged in, or manually logged in, there's nothing to do
+    if (!this.user || this.user.identityProviderId === 'manual') {
+      return;
     }
 
-    if (user) {
-      const taskclusterExpires = new Date(user.expires);
-      const now = new Date();
-      let timeout = Math.max(0, taskclusterExpires.getTime() - now.getTime());
-
-      // if the timeout is in the future, apply up to a few minutes to it
-      // randomly.  This avoids multiple tabs all trying to renew at the
-      // same time.
-      if (timeout > 0) {
-        timeout = Math.max(0, timeout - Math.random() * 5 * 60 * 1000);
-      }
-
-      this.renewalTimer = window.setTimeout(() => {
-        this.renewalTimer = null;
-        this.renew(user);
-      }, Math.min(timeout, MAX_SET_TIMEOUT_DELAY));
-    }
-  }
-
-  async renew(user) {
     try {
-      const { credentials, expires } =
-        user.identityProviderId === 'manual'
-          ? user
-          : await this.getCredentials(user);
+      const { credentials, expires } = await this.fetchCredentials();
 
       this.setUser(
         UserSession.create({
-          ...user,
+          ...this.user,
           expires,
           credentials,
         })
@@ -107,20 +117,21 @@ export default class AuthController {
     }
   }
 
-  getCredentials = async user => {
-    if (!user) {
-      return null;
-    }
-
+  /**
+   * Fetch credentials from the backend, based on the current
+   * session cookie
+   */
+  fetchCredentials = async () => {
     const { data } = await this.client.query({
       query: credentialsQuery,
       fetchPolicy: 'no-cache',
+      context: {
+        // signal that this request does not need an Authorization header,
+        // since it is required to generate such a header
+        noAuthorizationHeader: true,
+      },
     });
 
     return removeKeys(data.getCredentials, ['__typename']);
-  };
-
-  clearSession = () => {
-    fetch('/login/logout', { method: 'POST' });
   };
 }

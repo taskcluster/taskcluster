@@ -86,23 +86,34 @@ export default class App extends Component {
     },
   });
 
+  /**
+   * Add an Authorization header to every request, unless
+   * context.noAuthorizationHeader; the latter can be set on
+   * a request as an argument to `client.query({..})`.
+   */
+  authLink = setContext(async (request, { noAuthorizationHeader, headers }) => {
+    if (noAuthorizationHeader) {
+      return {};
+    }
+
+    const user = await this.authController.getUser();
+
+    if (!user || !user.credentials) {
+      return {};
+    }
+
+    return {
+      headers: {
+        ...headers,
+        Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
+      },
+    };
+  });
+
   apolloClient = new ApolloClient({
     cache: this.cache,
     link: from([
-      setContext((request, { headers }) => {
-        const { user } = this.state.auth;
-
-        if (!user || !user.credentials) {
-          return;
-        }
-
-        return {
-          headers: {
-            ...headers,
-            Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
-          },
-        };
-      }),
+      this.authLink,
       split(
         // split based on operation type
         ({ query }) => {
@@ -150,10 +161,6 @@ export default class App extends Component {
   }
 
   handleUserChanged = user => {
-    if (!user) {
-      this.authController.clearSession();
-    }
-
     this.setState({
       auth: {
         ...this.state.auth,
@@ -169,17 +176,24 @@ export default class App extends Component {
   async componentDidMount() {
     const themeType = await db.userPreferences.get('theme');
 
-    this.authController.loadUser();
-
     if (themeType === 'light') {
       this.setState({ theme: theme.lightTheme });
     }
+
+    const user = await this.authController.getUser();
+
+    this.setState({
+      auth: {
+        ...this.state.auth,
+        user,
+      },
+    });
   }
 
-  authorize = user => this.authController.renew(user);
+  authorize = user => this.authController.setUser(user);
 
   unauthorize = () => {
-    this.authController.setUser(null);
+    this.authController.signOut().catch(error => this.setState({ error }));
   };
 
   toggleTheme = () => {
