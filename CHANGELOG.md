@@ -3,6 +3,38 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v38.0.4
+
+### DEPLOYERS
+
+▶ [patch] 
+Setting a node `DEBUG` env var via the `debug` field of service configs is supported again.
+If left unset it will default to `''`. Example:
+
+```yaml
+auth:
+    debug: '*'
+```
+
+### USERS
+
+▶ [patch] [#3865](https://github.com/taskcluster/taskcluster/issues/3865)
+Livelog TLS support is now functional.
+
+▶ [patch] [#3851](https://github.com/taskcluster/taskcluster/issues/3851)
+The GitHub quickstart tool now generates correct `.taskcluster.yml` files, among other bugfixes.
+
+▶ [patch] [#3836](https://github.com/taskcluster/taskcluster/issues/3836)
+The web UI no longer fails with "ext.certificate.expiry < now".
+
+▶ [patch] [#3831](https://github.com/taskcluster/taskcluster/issues/3831)
+This version fixes an issue introduced in v38.0.0 which would cause the log viewer to display 401 errors.
+
+### DEVELOPERS
+
+▶ [patch] 
+Config types of `env:list` now generate the correct type in helm schemas.
+
 ## v38.0.3
 
 ### DEVELOPERS
