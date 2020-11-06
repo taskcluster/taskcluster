@@ -13,8 +13,8 @@ module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, r
     return {
       ...artifact,
       url: hasRunId
-        ? maybeSignedUrl(queue)(method, taskId, runId, artifact.name)
-        : maybeSignedUrl(queue)(method, taskId, artifact.name),
+        ? maybeSignedUrl(queue, isAuthed)(method, taskId, runId, artifact.name)
+        : maybeSignedUrl(queue, isAuthed)(method, taskId, artifact.name),
     };
   };
 
