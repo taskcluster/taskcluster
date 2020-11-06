@@ -265,7 +265,7 @@ PEM file you have obtained in the previous step. Be careful to remove any newlin
 and the necessary newlines after the header and before the footer should be replaced with `\n`, so the whole thing is a one-line string
 like this: `-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEblahblahblah==\n-----END RSA PRIVATE KEY-----`
 2. Populate the `github_app_id` in the `dev-config.yml` (it's the numerical `App ID` you will find in the app settings, near the top of the General tab)
-3. If you have `webhook_secret` in your `dev-config.yml`, remove it.
+3. Set `webhook_secret` in your `dev-config.yml` to whatever it is set to in the app if you have it enabled.
 4. In the app settings, on that same General tab, find the Webhook URL field. Enter the api URL in there (should be something like
 `https://<YOUR_ROOT_URL>/api/github/v1/github`).
 5. Leave the Webhook Secret field empty, make sure the app is Active and the SSL verification is enabled. On the Permissions & Events tab,

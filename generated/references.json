@@ -7972,7 +7972,7 @@
               "type": "string"
             },
             "webhook_secret": {
-              "type": "array"
+              "type": "string"
             },
             "worker_type": {
               "type": "string"

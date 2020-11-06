@@ -840,8 +840,8 @@ async function jobHandler(message) {
     debug(`Publishing status exchange for ${organization}/${repository}@${sha} (${groupState})`);
     await context.publisher.taskGroupCreationRequested({
       taskGroupId,
-      organization,
-      repository,
+      organization: organization.replace(/\./g, '%'),
+      repository: repository.replace(/\./g, '%'),
     }, routes);
   } catch (e) {
     debug(`Failed to publish to taskGroupCreationRequested exchange.
