@@ -1141,7 +1141,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite('queue_provisioners', function() {
+  suite('queue_provisioners (deprecated)', function() {
     setup('reset tables', async function() {
       await helper.withDbClient(async client => {
         await client.query('truncate task_queues');
@@ -1150,25 +1150,27 @@ suite(testing.suiteName(), function() {
 
     const expires = taskcluster.fromNow('2 hours');
     const lastDateActive = taskcluster.fromNow('0 hours');
+    // Since create_queue_provisioner is now a no-op and the getter
+    // functions rely on the task_queues table to simulate the old
+    // behavior, we have to use create_task_queues for testing here.
     const create = async (db, options = {}) => {
-      await db.fns.create_queue_provisioner(
-        options.provisionerId || 'prov',
+      await db.fns.create_task_queue(
+        options.taskQueueId || 'prov/wt',
         options.expires || expires,
         options.lastDateActive || lastDateActive,
         options.description || 'desc',
         options.stability || 'unstable',
-        options.actions || JSON.stringify([]),
       );
     };
 
     helper.dbTest('no such queue provisioner', async function(db) {
-      const res = await db.fns.get_queue_provisioner('prov', new Date());
+      const res = await db.deprecatedFns.get_queue_provisioner('prov', new Date());
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('create_queue_provisioners / get_queue_provisioners', async function(db) {
+    helper.dbTest('create_task_queues / get_queue_provisioners', async function(db) {
       await create(db);
-      const res = await db.fns.get_queue_provisioners(new Date(), null, null);
+      const res = await db.deprecatedFns.get_queue_provisioners(new Date(), null, null);
       assert.equal(res[0].provisioner_id, 'prov');
       assert.deepEqual(res[0].expires, expires);
       assert.deepEqual(res[0].last_date_active, lastDateActive);
@@ -1176,32 +1178,32 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_queue_provisioners doesn\'t return expired provisioner', async function(db) {
       await create(db, { expires: taskcluster.fromNow('-2 hours') });
-      const res = await db.fns.get_queue_provisioners(new Date(), null, null);
+      const res = await db.deprecatedFns.get_queue_provisioners(new Date(), null, null);
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('get_queue_provisioners empty', async function(db) {
-      const res = await db.fns.get_queue_provisioners(null, null, null);
+      const res = await db.deprecatedFns.get_queue_provisioners(null, null, null);
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('get_queue_provisioners null options', async function(db) {
       await create(db);
-      const res = await db.fns.get_queue_provisioners(null, null, null);
+      const res = await db.deprecatedFns.get_queue_provisioners(null, null, null);
       assert.equal(res.length, 1);
     });
 
     helper.dbTest('get_queue_provisioners doesn\'t return expired provisioners', async function(db) {
       await create(db, { expires: taskcluster.fromNow('-2 hours') });
-      const res = await db.fns.get_queue_provisioners(new Date(), null, null);
+      const res = await db.deprecatedFns.get_queue_provisioners(new Date(), null, null);
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('get_queue_provisioners full result', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, { provisionerId: `p-${i}` });
+        await create(db, { taskQueueId: `p-${i}/wt` });
       }
-      const res = await db.fns.get_queue_provisioners(null, null, null);
+      const res = await db.deprecatedFns.get_queue_provisioners(null, null, null);
       assert.equal(res.length, 10);
       assert.equal(res[3].provisioner_id, 'p-3');
       assert.equal(res[4].provisioner_id, 'p-4');
@@ -1210,11 +1212,11 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_queue_provisioners pagination', async function(db) {
       for (let i = 0; i < 10; i++) {
-        await create(db, { provisionerId: `p-${i}` });
+        await create(db, { taskQueueId: `p-${i}/wt` });
       }
       let results = [];
       while (true ) {
-        const res = await db.fns.get_queue_provisioners(null, 2, results.length);
+        const res = await db.deprecatedFns.get_queue_provisioners(null, 2, results.length);
         results = results.concat(res);
         if (res.length === 0) {
           break;
@@ -1226,9 +1228,9 @@ suite(testing.suiteName(), function() {
       assert.equal(results[5].provisioner_id, 'p-5');
     });
 
-    helper.dbTest('update_queue_provisioner / get_queue_provisioners', async function(db) {
+    helper.dbTest('update_queue_provisioner is no-op', async function(db) {
       await create(db);
-      let res = await db.fns.update_queue_provisioner(
+      let res = await db.deprecatedFns.update_queue_provisioner(
         'prov',
         new Date(1),
         new Date(2),
@@ -1236,39 +1238,24 @@ suite(testing.suiteName(), function() {
         'more unstable',
         JSON.stringify([]),
       );
-      assert.deepEqual(res[0].expires, new Date(1));
-      assert.deepEqual(res[0].last_date_active, new Date(2));
-
-      res = await db.fns.get_queue_provisioners(new Date(0), null, null);
-      assert.deepEqual(res[0].expires, new Date(1));
-      assert.deepEqual(res[0].last_date_active, new Date(2));
+      assert.deepEqual(res[0].expires, expires);
+      assert.deepEqual(res[0].last_date_active, lastDateActive);
     });
 
-    helper.dbTest('expire_queue_provisioners deletes expired provisioner', async function(db) {
-      await create(db, { expires: taskcluster.fromNow('-2 hours') });
-      let res = await db.fns.expire_queue_provisioners(new Date());
-      assert.equal(res[0].expire_queue_provisioners, 1);
-      res = await db.fns.get_queue_provisioners(null, null, null);
-      assert.equal(res.length, 0);
+    helper.dbTest('expire_queue_provisioners return 0', async function(db) {
+      // expire_queue_provisioners is now a no-op, and returns 0 to be consistent
+      let res = await db.deprecatedFns.expire_queue_provisioners(new Date());
+      assert.equal(res[0].expire_queue_provisioners, 0);
     });
 
     helper.dbTest('get_queue_provisioners infers provisioners from task_queues', async function(db) {
-      const createTaskQueue = async (db, options = {}) => {
-        await db.fns.create_task_queue(
-          options.taskQueueId || 'prov/wt',
-          options.expires || expires,
-          options.lastDateActive || lastDateActive,
-          options.description || 'desc',
-          options.stability || 'unstable',
-        );
-      };
-      await createTaskQueue(db, { taskQueueId: 'prov1/wt' });
-      await createTaskQueue(db, {
+      await create(db, { taskQueueId: 'prov1/wt' });
+      await create(db, {
         taskQueueId: 'prov2/wt',
         expires: taskcluster.fromNow('4 hours'),
         lastDayActive: taskcluster.fromNow('-2 hours'),
       });
-      const res = await db.fns.get_queue_provisioners(new Date(), null, null);
+      const res = await db.deprecatedFns.get_queue_provisioners(new Date(), null, null);
       assert.equal(res[0].provisioner_id, 'prov1');
       assert.deepEqual(res[0].expires, expires);
       assert.deepEqual(res[0].last_date_active, lastDateActive);

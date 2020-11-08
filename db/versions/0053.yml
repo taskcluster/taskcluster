@@ -544,20 +544,19 @@ methods:
   create_queue_provisioner:
     description: |-
       Create a new queue provisioner.  Raises UNIQUE_VIOLATION if the provisioner already exists.
+    deprecated: true
     mode: write
     serviceName: queue
     args: provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb
     returns: uuid
     body: |-
       begin
-        insert
-          into task_queues (task_queue_id, expires, last_date_active, description, stability)
-          values (provisioner_id_in || '/', expires_in, last_date_active_in, description_in, stability_in);
-          return public.gen_random_uuid();
+        return public.gen_random_uuid();
       end
   get_queue_provisioner:
     description: |-
       Get a queue provisioner by provisioner_id.
+    deprecated: true
     mode: read
     serviceName: queue
     args: provisioner_id_in text, expires_in timestamptz
@@ -584,33 +583,32 @@ methods:
     description: |-
       Update a queue provisioner's expires, last_date_active, description, stability, and actions.
       All parameters must be supplied.
+    deprecated: true
     mode: write
     args: provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb
     returns: table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)
     body: |-
       begin
-        return query update task_queues
-        set
-          expires = expires_in,
-          last_date_active = last_date_active_in,
-          description = description_in,
-          stability = stability_in
-        where
-          task_queues.task_queue_id = provisioner_id_in || '/'
-        returning
-          split_part(task_queues.task_queue_id, '/', 1),
-          task_queues.expires,
-          task_queues.last_date_active,
-          task_queues.description,
+        return query
+        select
+          split_part(task_queue_id, '/', 1) as provisioner_id,
+          max(task_queues.expires),
+          max(task_queues.last_date_active),
+          '' as description,
           'experimental' as stability,
           '[]'::jsonb as actions,
-          public.gen_random_uuid();
+          public.gen_random_uuid()
+        from task_queues
+        group by provisioner_id
+        having
+          split_part(task_queue_id, '/', 1) = provisioner_id_in;
       end
   get_queue_provisioners:
     description: |-
       Get queue provisioners ordered by `provisioner_id`.
       If the pagination arguments are both NULL, all rows are returned.
       Otherwise, page_size rows are returned at offset page_offset.
+    deprecated: true
     mode: read
     serviceName: queue
     args: expires_in timestamptz, page_size_in integer, page_offset_in integer
@@ -637,19 +635,12 @@ methods:
     description: |-
       Expire provisioners that come before `expires_in`.
       Returns a count of rows that have been deleted.
+    deprecated: true
     mode: write
     serviceName: queue
     args: expires_in timestamptz
     returns: integer
     body: |-
-      declare
-        count integer;
       begin
-        delete from task_queues
-        where (task_queues.expires < expires_in and split_part(task_queue_id, '/', 2) = '');
-        if found then
-          get diagnostics count = row_count;
-          return count;
-        end if;
         return 0;
       end
