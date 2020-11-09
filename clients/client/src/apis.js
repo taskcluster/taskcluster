@@ -1647,6 +1647,23 @@ module.exports = {
           "stability": "stable",
           "title": "Ping Server",
           "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "category": "Upload",
+          "description": "Upload backend data.",
+          "input": "v1/upload-object-request.json#",
+          "method": "post",
+          "name": "uploadObject",
+          "query": [
+          ],
+          "route": "/upload/<name>",
+          "scopes": "object:upload:<name>",
+          "stability": "experimental",
+          "title": "Upload backend data",
+          "type": "function"
         }
       ],
       "serviceName": "object",

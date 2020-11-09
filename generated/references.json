@@ -3952,6 +3952,34 @@
   },
   {
     "content": {
+      "$id": "/schemas/object/v1/upload-object-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Representation of the object entry to insert.\n",
+      "properties": {
+        "expires": {
+          "description": "Date at which this entry expires from the object table.\n",
+          "format": "date-time",
+          "title": "Expiration",
+          "type": "string"
+        },
+        "projectId": {
+          "description": "Project identifier.\n",
+          "title": "Project Identifier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "expires",
+        "projectId"
+      ],
+      "title": "Upload Object Request",
+      "type": "object"
+    },
+    "filename": "schemas/object/v1/upload-object-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/notify/v1/slack-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -15076,6 +15104,23 @@
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "category": "Upload",
+          "description": "Upload backend data.",
+          "input": "v1/upload-object-request.json#",
+          "method": "post",
+          "name": "uploadObject",
+          "query": [
+          ],
+          "route": "/upload/<name>",
+          "scopes": "object:upload:<name>",
+          "stability": "experimental",
+          "title": "Upload backend data",
           "type": "function"
         }
       ],

@@ -227,5 +227,7 @@ azure_queue_messages:
   pop_receipt: uuid
 objects:
   name: text not null
+  project_id: text not null
+  backend_id: text not null
   data: jsonb not null
   expires: timestamp with time zone not null

@@ -34,6 +34,8 @@
 package tcobject
 
 import (
+	"net/url"
+
 	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
 )
 
@@ -94,5 +96,19 @@ func NewFromEnv() *Object {
 func (object *Object) Ping() error {
 	cd := tcclient.Client(*object)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Upload backend data.
+//
+// Required scopes:
+//   object:upload:<name>
+//
+// See #uploadObject
+func (object *Object) UploadObject(name string, payload *UploadObjectRequest) error {
+	cd := tcclient.Client(*object)
+	_, _, err := (&cd).APICall(payload, "POST", "/upload/"+url.QueryEscape(name), nil, nil)
 	return err
 }

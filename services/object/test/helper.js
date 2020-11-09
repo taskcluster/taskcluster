@@ -36,10 +36,14 @@ exports.withBackends = (mock, skipping) => {
     // add the 'test' backend only for testing
     BACKEND_TYPES['test'] = TestBackend;
 
-    // start with an empty set of backends
     await exports.load('cfg');
-    exports.load.cfg('backends', {});
-    exports.load.cfg('backendMap', []);
+    exports.load.cfg('backends', {
+      testBackend: { backendType: 'test' },
+    });
+    exports.load.cfg('backendMap', [
+      // not anchored, so can appear anywhere in the name
+      { backendId: 'testBackend', when: 'all' },
+    ]);
   });
 
   suiteTeardown('withBackends', async function() {

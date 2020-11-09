@@ -193,9 +193,11 @@
       "task_id": "text not null"
     },
     "objects": {
+      "backend_id": "text not null",
       "data": "jsonb not null",
       "expires": "timestamp with time zone not null",
-      "name": "text not null"
+      "name": "text not null",
+      "project_id": "text not null"
     },
     "queue_artifacts": {
       "content_type": "text not null",
@@ -5486,6 +5488,32 @@
         }
       },
       "version": 54
+    },
+    {
+      "description": "add upload db fn to objects service",
+      "downgradeScript": "begin\n    alter table objects drop column backend_id text;\n    alter table objects drop column project_id text;\nend\n",
+      "methods": {
+        "create_object": {
+          "args": "name_in text, project_id_in text, backend_id_in text, data_in jsonb, expires_in timestamptz",
+          "body": "begin\n  insert\n    into objects (name, data, project_id, backend_id, expires)\n    values (name_in, data_in, project_id_in, backend_id_in, expires_in);\nend",
+          "deprecated": false,
+          "description": "Upload object.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "object"
+        },
+        "get_object": {
+          "args": "name_in text",
+          "body": "begin\n  return query select objects.name, objects.data, objects.project_id, objects.backend_id, objects.expires from objects where objects.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get an object.",
+          "mode": "read",
+          "returns": "table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)",
+          "serviceName": "object"
+        }
+      },
+      "migrationScript": "begin\n    alter table objects add column backend_id text not null default '';\n    alter table objects add column project_id text not null default '';\nend\n",
+      "version": 55
     }
   ]
 }

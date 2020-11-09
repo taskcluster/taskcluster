@@ -11,6 +11,7 @@ export default class Object extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.uploadObject.entry = {"args":["name"],"category":"Upload","input":true,"method":"post","name":"uploadObject","query":[],"route":"/upload/<name>","scopes":"object:upload:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -20,5 +21,13 @@ export default class Object extends Client {
     this.validate(this.ping.entry, args);
 
     return this.request(this.ping.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Upload backend data.
+  /* eslint-enable max-len */
+  uploadObject(...args) {
+    this.validate(this.uploadObject.entry, args);
+
+    return this.request(this.uploadObject.entry, args);
   }
 }
