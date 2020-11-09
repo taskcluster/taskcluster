@@ -36,6 +36,7 @@
   {
     "clientId": "static/taskcluster/notify",
     "scopes": [
+      "queue:get-task:*"
     ]
   },
   {
