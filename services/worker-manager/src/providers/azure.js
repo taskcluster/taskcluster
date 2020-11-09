@@ -604,10 +604,10 @@ class AzureProvider extends Provider {
               workerPool,
               kind: 'creation-error',
               title: 'VM Creation Error',
-              description: err.message,
+              description: 'Cannot parse the request (IP)',
             });
           }
-          await this.removeWorker({ worker, reason: `VM Creation Error(from IP): ${err.message}` });
+          await this.removeWorker({ worker, reason: `VM Creation Error(IP): ${err.message}` });
       }
 
       if (!worker.providerData.ip.id) {
@@ -659,10 +659,10 @@ class AzureProvider extends Provider {
               workerPool,
               kind: 'creation-error',
               title: 'VM Creation Error',
-              description: err.message,
+              description: 'Cannot parse the request (NIC)',
             });
           }
-          await this.removeWorker({ worker, reason: `VM Creation Error(from NIC): ${err.message}` });
+          await this.removeWorker({ worker, reason: `VM Creation Error(NIC): ${err.message}` });
       }
 
       if (!worker.providerData.nic.id) {
@@ -706,10 +706,10 @@ class AzureProvider extends Provider {
             workerPool,
             kind: 'creation-error',
             title: 'VM Creation Error',
-            description: err.message,
+            description: 'Cannot parse the request (VM)',
           });
         }
-        await this.removeWorker({ worker, reason: `VM Creation Error(from VM): ${err.message}` });
+        await this.removeWorker({ worker, reason: `VM Creation Error ( VM): ${err.message}` });
       }
 
       if (!worker.providerData.vm.id) {
