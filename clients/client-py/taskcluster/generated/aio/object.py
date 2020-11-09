@@ -53,11 +53,11 @@ class Object(AsyncBaseClient):
             'stability': 'stable',
         },
         "uploadObject": {
-            'args': ['name', 'projectId'],
+            'args': ['name'],
             'input': 'v1/upload-object-request.json#',
             'method': 'post',
             'name': 'uploadObject',
-            'route': '/upload/<name>/<projectId>',
+            'route': '/upload/<name>',
             'stability': 'experimental',
         },
     }

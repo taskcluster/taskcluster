@@ -4,6 +4,11 @@ description: |
   Representation of the object entry to insert.
 type:               object
 properties:
+  projectId:
+    title:          "Project Identifier"
+    description: |
+      Project identifier.
+    type:           string
   expires:
     title:          "Expiration"
     description: |
@@ -13,3 +18,4 @@ properties:
 additionalProperties: false
 required:
   - expires
+  - projectId

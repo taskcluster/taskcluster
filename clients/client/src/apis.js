@@ -1650,18 +1650,17 @@ module.exports = {
         },
         {
           "args": [
-            "name",
-            "projectId"
+            "name"
           ],
-          "category": "Backend",
+          "category": "Upload",
           "description": "Upload backend data.",
           "input": "v1/upload-object-request.json#",
           "method": "post",
           "name": "uploadObject",
           "query": [
           ],
-          "route": "/upload/<name>/<projectId>",
-          "scopes": "object:upload:<name>/<projectId>",
+          "route": "/upload/<name>",
+          "scopes": "object:upload:<name>",
           "stability": "experimental",
           "title": "Upload backend data",
           "type": "function"

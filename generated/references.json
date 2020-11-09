@@ -3962,10 +3962,16 @@
           "format": "date-time",
           "title": "Expiration",
           "type": "string"
+        },
+        "projectId": {
+          "description": "Project identifier.\n",
+          "title": "Project Identifier",
+          "type": "string"
         }
       },
       "required": [
-        "expires"
+        "expires",
+        "projectId"
       ],
       "title": "Upload Object Request",
       "type": "object"
@@ -15102,18 +15108,17 @@
         },
         {
           "args": [
-            "name",
-            "projectId"
+            "name"
           ],
-          "category": "Backend",
+          "category": "Upload",
           "description": "Upload backend data.",
           "input": "v1/upload-object-request.json#",
           "method": "post",
           "name": "uploadObject",
           "query": [
           ],
-          "route": "/upload/<name>/<projectId>",
-          "scopes": "object:upload:<name>/<projectId>",
+          "route": "/upload/<name>",
+          "scopes": "object:upload:<name>",
           "stability": "experimental",
           "title": "Upload backend data",
           "type": "function"

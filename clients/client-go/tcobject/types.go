@@ -12,5 +12,8 @@ type (
 
 		// Date at which this entry expires from the object table.
 		Expires tcclient.Time `json:"expires"`
+
+		// Project identifier.
+		ProjectID string `json:"projectId"`
 	}
 )

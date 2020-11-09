@@ -934,10 +934,9 @@ var services = map[string]definitions.Service{
 				Description: "Upload backend data.",
 				Stability:   "experimental",
 				Method:      "post",
-				Route:       "/upload/<name>/<projectId>",
+				Route:       "/upload/<name>",
 				Args: []string{
 					"name",
-					"projectId",
 				},
 				Query: []string{},
 				Input: "v1/upload-object-request.json#",

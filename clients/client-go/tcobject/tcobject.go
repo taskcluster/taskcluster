@@ -104,11 +104,11 @@ func (object *Object) Ping() error {
 // Upload backend data.
 //
 // Required scopes:
-//   object:upload:<name>/<projectId>
+//   object:upload:<name>
 //
 // See #uploadObject
-func (object *Object) UploadObject(name, projectId string, payload *UploadObjectRequest) error {
+func (object *Object) UploadObject(name string, payload *UploadObjectRequest) error {
 	cd := tcclient.Client(*object)
-	_, _, err := (&cd).APICall(payload, "POST", "/upload/"+url.QueryEscape(name)+"/"+url.QueryEscape(projectId), nil, nil)
+	_, _, err := (&cd).APICall(payload, "POST", "/upload/"+url.QueryEscape(name), nil, nil)
 	return err
 }
