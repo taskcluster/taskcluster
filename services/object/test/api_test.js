@@ -1,6 +1,7 @@
 const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
+const { fromNow } = require('taskcluster-client');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -12,7 +13,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('should be able to upload', async function() {
-    await helper.apiClient.uploadObject('public/foo', 'x');
+    await helper.apiClient.uploadObject('public/foo', 'x', { expires: fromNow('1 year') });
     const rows = await helper.db.fns.get_object('public/foo');
 
     assert.equal(rows.length, 1);

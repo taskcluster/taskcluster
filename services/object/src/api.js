@@ -1,5 +1,4 @@
 const { APIBuilder } = require('taskcluster-lib-api');
-const { fromNow } = require('taskcluster-client');
 
 let builder = new APIBuilder({
   title: 'Taskcluster Object Service API Documentation',
@@ -25,10 +24,12 @@ builder.declare({
     'Upload backend data.',
   ].join('\n'),
 }, async function(req, res) {
+  let input = req.body;
   let { name, projectId } = req.params;
   const backend = this.backends.forUpload({ name, projectId });
-  let expires = fromNow('1 year');
-  await this.db.fns.create_object(name, { backendId: backend.backendId, name, projectId }, expires);
+  // Parse date string
+  input.expires = new Date(input.expires);
+  await this.db.fns.create_object(name, { backendId: backend.backendId, name, projectId }, input.expires);
   return res.reply({});
 });
 
