@@ -38,13 +38,11 @@ exports.withBackends = (mock, skipping) => {
 
     await exports.load('cfg');
     exports.load.cfg('backends', {
-      pub: { backendType: 'test' },
+      testBackend: { backendType: 'test' },
     });
     exports.load.cfg('backendMap', [
       // not anchored, so can appear anywhere in the name
-      { backendId: 'pub', when: { name: { regexp: 'public/.*' } } },
-      // anchored to the beginning of the string
-      { backendId: 'pub', when: { name: { regexp: '^pubdocs/.*' } } },
+      { backendId: 'testBackend', when: 'all' },
     ]);
   });
 
