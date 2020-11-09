@@ -7,8 +7,8 @@ const { MonitorManager } = require('taskcluster-lib-monitor');
 const { App } = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
 const config = require('taskcluster-lib-config');
-const debug = require('debug')('objects:app:main');
 const { Backends } = require('./backends');
+const expireObjects = require('./expire');
 
 let load = loader({
   cfg: {
@@ -84,14 +84,9 @@ let load = loader({
   },
 
   expire: {
-    requires: ['db', 'monitor'],
-    setup: ({ db, monitor }) => {
-      return monitor.oneShot('expire', async () => {
-        debug('Expiring objects rows');
-        const count = (await db.fns.expire_objects())[0].expire_objects;
-        debug(`Expired ${count} rows`);
-      });
-    },
+    requires: ['db', 'monitor', 'backends'],
+    setup: ({ db, monitor, backends }) =>
+      monitor.oneShot('expireObjects', () => expireObjects({ db, monitor, backends })),
   },
 }, {
   profile: process.env.NODE_ENV,
