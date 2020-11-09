@@ -15,7 +15,6 @@ builder.declare({
   route: '/upload/:name',
   name: 'uploadObject',
   input: 'upload-object-request.yml',
-  output: undefined,
   stability: 'experimental',
   category: 'Upload',
   scopes: 'object:upload:<name>',
