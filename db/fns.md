@@ -55,7 +55,8 @@
    * [`exists_denylist_address`](#exists_denylist_address)
  * [object functions](#object)
    * [`create_object`](#create_object)
-   * [`expire_objects`](#expire_objects)
+   * [`delete_object`](#delete_object)
+   * [`get_expired_objects`](#get_expired_objects)
    * [`get_object`](#get_object)
  * [purge_cache functions](#purge_cache)
    * [`all_purge_requests_wpid`](#all_purge_requests_wpid)
@@ -958,7 +959,8 @@ Returns a boolean indicating whether the denylist type/address exists.
 ## object
 
 * [`create_object`](#create_object)
-* [`expire_objects`](#expire_objects)
+* [`delete_object`](#delete_object)
+* [`get_expired_objects`](#get_expired_objects)
 * [`get_object`](#get_object)
 
 ### create_object
@@ -974,14 +976,31 @@ Returns a boolean indicating whether the denylist type/address exists.
 
 Upload object.
 
-### expire_objects
+### delete_object
 
 * *Mode*: write
 * *Arguments*:
-* *Returns*: `integer`
+  * `name_in text`
+* *Returns*: `void`
 
-Delete objects that expire before the current time.
-Returns a count of rows that have been deleted.
+Delete an object.
+
+### get_expired_objects
+
+* *Mode*: read
+* *Arguments*:
+  * `limit_in integer`
+  * `start_at_in text`
+* *Returns*: `table`
+  * `name text`
+  * `data jsonb`
+  * `project_id text`
+  * `backend_id text`
+  * `expires timestamptz`
+
+Get objects with an expiration before the current time.  If given, only
+objects with a name greater than `start_at_in` are returned.  The
+`limit_in` argument limits the number of results returned.
 
 ### get_object
 
@@ -995,7 +1014,11 @@ Returns a count of rows that have been deleted.
   * `backend_id text`
   * `expires timestamptz`
 
-Get an object.
+Get an object by name, or an empty set if no such object exists.
+
+### deprecated methods
+
+* `expire_objects()` (compatibility guaranteed until v40.0.0)
 
 ## purge_cache
 

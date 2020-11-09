@@ -270,6 +270,8 @@ CREATE TABLE objects (
     backend_id text DEFAULT ''::text NOT NULL,
     project_id text DEFAULT ''::text NOT NULL
 );
+ALTER TABLE objects
+    ADD CONSTRAINT objects_pkey PRIMARY KEY (name);
 ```
 
 ## queue_artifacts
