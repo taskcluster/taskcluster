@@ -131,12 +131,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       taskGroupId,
     }, taskDef));
 
+    helper.scopes(`queue:list-task-group:${taskGroupId}`);
+
+    debug('### listing');
     let result = await helper.queue.listTaskGroup(taskGroupId);
     assert(!result.continuationToken);
     assert(_.includes(members(result), taskIdA));
     assert(_.includes(members(result), taskIdB));
     assert(members(result).length === 2);
     assert(result.taskGroupId === taskGroupId);
+
+    debug('### checking InsufficientScopes');
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.queue.listTaskGroup(taskGroupId),
+      err => err.code === 'InsufficientScopes');
   });
 
   test('list task-group (limit and continuationToken)', async () => {

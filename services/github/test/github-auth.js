@@ -27,7 +27,10 @@ class FakeGithub {
     };
 
     const stubs = {
-      'repos.createStatus': ({ owner, repo, sha, state, target_url, description, context }) => {
+      'repos.createStatus': () => {
+        throw new Error('deprecated! use createCommitStatus instead');
+      },
+      'repos.createCommitStatus': ({ owner, repo, sha, state, target_url, description, context }) => {
         if (repo === 'no-permission') {
           throwError(403);
         }
@@ -69,13 +72,6 @@ class FakeGithub {
           data: this._commits[key],
         };
       },
-      'orgs.checkMembership': async ({ org, username }) => {
-        if (this._org_membership[org] && this._org_membership[org].has(username)) {
-          return {};
-        } else {
-          throwError(404);
-        }
-      },
       'repos.checkCollaborator': async ({ owner, repo, username }) => {
         const key = `${owner}/${repo}`;
         if (this._repo_collaborators[key] && this._repo_collaborators[key].has(username)) {
@@ -92,7 +88,10 @@ class FakeGithub {
           throwError(404);
         }
       },
-      'repos.getContents': async ({ owner, repo, path, ref }) => {
+      'repos.getContents': async () => {
+        throw new Error('deprecated! use getContent instead');
+      },
+      'repos.getContent': async ({ owner, repo, path, ref }) => {
         assert.equal(path, '.taskcluster.yml');
         const key = `${owner}/${repo}@${ref}`;
         if (this._taskcluster_yml_files[key]) {
@@ -112,9 +111,15 @@ class FakeGithub {
         }
       },
       'apps.listRepos': async () => {
+        throw new Error('deprecated! use listReposAccessibleToInstallation instead');
+      },
+      'apps.listReposAccessibleToInstallation': async () => {
         return { data: this._repositories };
       },
-      'repos.listStatusesForRef': async ({ owner, repo, ref }) => {
+      'repos.listStatusesForRef': async () => {
+        throw new Error('deprecated! use listCommitStatusesForRef instead');
+      },
+      'repos.listCommitStatusesForRef': async ({ owner, repo, ref }) => {
         const key = `${owner}/${repo}@${ref}`;
         const info = this._statuses[key];
         if (info && info.errorStatus) {
@@ -216,7 +221,7 @@ class FakeGithub {
     this._statuses[key] = info;
   }
 
-  listStatusesForRef({ owner, repo, ref }) {
+  listCommitStatusesForRef({ owner, repo, ref }) {
     const key = `${owner}/${repo}@${ref}`;
     return { data: this._statuses[key] };
   }

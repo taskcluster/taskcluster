@@ -40,7 +40,7 @@ module.exports = function (config) {
 
   stats.measure('cpu.used', (loadTime / totalCPUTime) * 100);
 
-  diskspace.check(dockerVolume, (err, total, free) => {
+  diskspace.check(dockerVolume, (err, { total, free }) => {
     if (err) {
       console.log(`Error checking free diskspace. ${err.message}`);
       return;

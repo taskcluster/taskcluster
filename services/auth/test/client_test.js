@@ -12,6 +12,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.withServers(mock, skipping);
   helper.resetTables(mock, skipping);
 
+  const setAnonymousRole = async (...scopes) => {
+    await helper.apiClient.createRole(
+      'anonymous',
+      { description: 'global scopes for arbitrary requests', scopes },
+    );
+  };
+
+  teardown(async function() {
+    helper.onPulsePublish(); // don't fail to publish this time!
+    helper.setupScopes();
+    await helper.apiClient.deleteRole('anonymous');
+  });
+
   test('ping', async () => {
     await helper.apiClient.ping();
   });
@@ -20,11 +33,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     await helper.apiClient.client('static/taskcluster/root');
   });
 
-  test('auth.client (no credentials)', async () => {
-    await helper.apiClient.client('static/taskcluster/root');
+  test('auth.client (no credentials, allowed by anonymous)', async () => {
+    await setAnonymousRole('auth:get-client:static/taskcluster/root');
     await (new helper.AuthClient({
       rootUrl: helper.rootUrl,
     })).client('static/taskcluster/root');
+  });
+
+  test('auth.client (no scopes)', async () => {
+    helper.setupScopes('none');
+    assert.rejects(
+      () => helper.apiClient.client('static/taskcluster/root'),
+      err => err.code === 'InsufficientScopes');
   });
 
   const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
@@ -381,6 +401,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assumeScopesetsEqual(await helper.apiClient.expandScopes({ scopes: [] }), { scopes: [] });
   });
 
+  test('auth.expandScopes without permission', async () => {
+    helper.setupScopes('none');
+    assert.rejects(
+      () => helper.apiClient.expandScopes({ scopes: [] }),
+      err => err.code === 'InsufficientScopes');
+  });
+
   test('auth.expandScopes with non-expanding scopes', async () => {
     let scopes = ['myapi:a', 'myapi:b'];
     assume(await helper.apiClient.expandScopes({ scopes: scopes }))
@@ -425,13 +452,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         clientId: 'static/taskcluster/root',
         accessToken: helper.rootAccessToken,
       },
-      authorizedScopes: ['myapi:a', 'myapi:b'],
+      authorizedScopes: ['myapi:a', 'myapi:b', 'auth:current-scopes'],
     });
     assumeScopesetsEqual(await auth.currentScopes(),
-      { scopes: ['myapi:a', 'myapi:b'] });
+      { scopes: ['assume:anonymous', 'auth:current-scopes', 'myapi:a', 'myapi:b'] });
   });
 
   test('auth.currentScopes with temp credentials', async () => {
+    await setAnonymousRole('auth:current-scopes');
     let auth = new helper.AuthClient({
       rootUrl: helper.rootUrl,
       credentials: taskcluster.createTemporaryCredentials({
@@ -444,24 +472,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       }),
     });
     assumeScopesetsEqual(await auth.currentScopes(),
-      { scopes: ['myapi:x', 'myapi:y'] });
+      { scopes: ['assume:anonymous', 'auth:current-scopes', 'myapi:x', 'myapi:y'] });
   });
 
   test('auth.currentScopes with temp credentials and authorizedScopes', async () => {
+    await setAnonymousRole('auth:current-scopes');
     let auth = new helper.AuthClient({
       rootUrl: helper.rootUrl,
       credentials: taskcluster.createTemporaryCredentials({
         expiry: taskcluster.fromNow('10 min'),
-        scopes: ['myapi:x', 'myapi:y'],
+        scopes: ['myapi:x', 'myapi:y', 'auth:current-scopes'],
         credentials: {
           clientId: 'static/taskcluster/root',
           accessToken: helper.rootAccessToken,
         },
       }),
-      authorizedScopes: ['myapi:x'],
+      authorizedScopes: ['myapi:x', 'auth:current-scopes'],
     });
     assumeScopesetsEqual(await auth.currentScopes(),
-      { scopes: ['myapi:x'] });
+      { scopes: ['assume:anonymous', 'myapi:x', 'auth:current-scopes'] });
   });
 
   suite('auth.listClients', function() {
@@ -486,6 +515,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     test('all clients', async () => {
       let clients = await helper.apiClient.listClients();
       assume(gotSuffixes(clients)).to.deeply.equal(suffixes);
+    });
+
+    test('fails without the scope', async () => {
+      helper.setupScopes('none');
+      assert.rejects(
+        () => helper.apiClient.listClients(),
+        err => err.code === 'InsufficientScopes');
     });
 
     test('prefix filtering', async () => {

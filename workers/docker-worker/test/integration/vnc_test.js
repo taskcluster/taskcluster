@@ -88,8 +88,8 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     assert(info.socketUrl, 'missing socketUrl');
     let displays = await poll(async () => {
       let res = await got(info.displaysUrl, {
-        rejectUnauthorized: false,
-        json: true,
+        https: { rejectUnauthorized: false },
+        responseType: 'json',
       });
       let result = res.body;
       debug('Got displays: %j', result);

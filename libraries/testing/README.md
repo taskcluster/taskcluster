@@ -285,6 +285,15 @@ fake web server -- `http://localhost:1234` or something of that sort.
 
 Call `testing.fakeauth.stop()` in your test suite's `teardown` method to stop the HTTP interceptor.
 
+In cases where you must test that HTTP requests without credentials are properly authenticated, for example, to test a webhook.
+To achieve this, temporarily set the anonymous scopes with
+
+```js
+testing.fakeauth.withAnonymousScopes(['some-scope'], async () => {
+  ..; // make the credential-free call
+});
+```
+
 withDb
 ------
 

@@ -92,18 +92,20 @@ exports.withServer = (mock, skipping) => {
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    const rootUrl = 'http://localhost:60415';
-    exports.load.cfg('taskcluster.rootUrl', rootUrl);
+    exports.rootUrl = 'http://localhost:60415';
+    exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
     exports.load.cfg('taskcluster.clientId', null);
     exports.load.cfg('taskcluster.accessToken', null);
 
-    fakeauth.start({ 'test-client': ['*'] }, { rootUrl });
+    fakeauth.start({
+      'test-client': ['*'],
+    }, { rootUrl: exports.rootUrl });
 
-    const GithubClient = taskcluster.createClient(builder.reference());
+    exports.GithubClient = taskcluster.createClient(builder.reference());
 
-    exports.apiClient = new GithubClient({
+    exports.apiClient = new exports.GithubClient({
       credentials: { clientId: 'test-client', accessToken: 'unused' },
-      rootUrl,
+      rootUrl: exports.rootUrl,
       retries: 0,
     });
 

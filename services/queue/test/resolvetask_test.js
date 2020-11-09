@@ -155,6 +155,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      'queue:status:' + taskId,
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'malformed-payload',
@@ -214,6 +215,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      'queue:status:' + taskId,
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
@@ -265,6 +267,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      'queue:status:' + taskId,
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'internal-error',
@@ -316,6 +319,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      'queue:status:' + taskId,
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'superseded',

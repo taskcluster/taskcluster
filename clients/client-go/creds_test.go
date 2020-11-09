@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
-	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v37/internal/testrooturl"
+	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
+	"github.com/taskcluster/taskcluster/v38/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v38/internal/testrooturl"
 )
 
 func ExampleCredentials_CreateTemporaryCredentials() {
@@ -79,7 +79,7 @@ func Test_PermaCred(t *testing.T) {
 		RequiredScopes: []string{"scope:this"},
 	})
 	checkAuthenticate(t, response, err,
-		"tester", []string{"scope:*"})
+		"tester", []string{"assume:anonymous", "scope:*"})
 }
 
 func Test_TempCred(t *testing.T) {
@@ -94,7 +94,7 @@ func Test_TempCred(t *testing.T) {
 		RequiredScopes: []string{"scope:1"},
 	})
 	checkAuthenticate(t, response, err,
-		"tester", []string{"scope:1", "scope:2"})
+		"tester", []string{"assume:anonymous", "scope:1", "scope:2"})
 }
 
 func Test_NamedTempCred(t *testing.T) {
@@ -110,7 +110,7 @@ func Test_NamedTempCred(t *testing.T) {
 		RequiredScopes: []string{"scope:1"},
 	})
 	checkAuthenticate(t, response, err,
-		"jimmy", []string{"scope:1", "scope:2"})
+		"jimmy", []string{"assume:anonymous", "scope:1", "scope:2"})
 }
 
 func Test_PermaCred_Bewit(t *testing.T) {
@@ -259,7 +259,7 @@ func Test_AuthorizedScopes(t *testing.T) {
 		RequiredScopes: []string{"scope:1"},
 	})
 	checkAuthenticate(t, response, err,
-		"tester", []string{"scope:1", "scope:3"})
+		"tester", []string{"assume:anonymous", "scope:1", "scope:3"})
 }
 
 func Test_TempCredWithAuthorizedScopes(t *testing.T) {
@@ -275,7 +275,7 @@ func Test_TempCredWithAuthorizedScopes(t *testing.T) {
 		RequiredScopes: []string{"scope:1"},
 	})
 	checkAuthenticate(t, response, err,
-		"tester", []string{"scope:1"})
+		"tester", []string{"assume:anonymous", "scope:1"})
 }
 
 func Test_NamedTempCredWithAuthorizedScopes(t *testing.T) {
@@ -292,5 +292,5 @@ func Test_NamedTempCredWithAuthorizedScopes(t *testing.T) {
 		RequiredScopes: []string{"scope:1"},
 	})
 	checkAuthenticate(t, response, err,
-		"julie", []string{"scope:1"})
+		"julie", []string{"assume:anonymous", "scope:1"})
 }

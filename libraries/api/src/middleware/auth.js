@@ -70,9 +70,6 @@ const ErrorReply = require('../error-reply');
  * In this case if the parameter `foo` is a boolean and true, then the
  * object will be substituted with the scope expression specified
  * in `then`. No truthiness conversions will be done for you.
- * This is useful for allowing methods to be called
- * when certain cases happen such as an artifact beginning with the
- * string "public/".
  *
  * Params specified in `<...>` or the `in` part of the objects are allowed to
  * use dotted syntax to descend into params. Example:
@@ -130,16 +127,6 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
       };
     }
 
-    // If no authentication is provided, we just return valid with zero scopes
-    if ((!req.query || !req.query.bewit) &&
-        (!req.headers || !req.headers.authorization)) {
-      return {
-        status: 'no-auth',
-        scheme: 'none',
-        scopes: [],
-      };
-    }
-
     // Parse host header
     const host = hawk.utils.parseHost(req);
     // Find port, overwrite if forwarded by reverse proxy
@@ -192,7 +179,12 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
     scopeTemplate = new ScopeExpressionTemplate(entry.scopes);
     // Write route parameters into {[param]: ''}
     // if these are valid parameters, then we can parameterize using req.params
-    let [, params] = utils.cleanRouteAndParams(entry.route);
+    let [, params, optionalParams] = utils.cleanRouteAndParams(entry.route);
+    // We can only decide to useUrlParams if all params are required params.
+    // Otherwise if they are not provided the scope checking will fail.
+    // This means all endpoints with optional params that get included in the
+    // scope expression must call req.authorize.
+    params = params.filter(param => !optionalParams.includes(param));
     params = Object.assign({}, ...params.map(p => ({ [p]: '' })));
     useUrlParams = scopeTemplate.validate(params);
   }
@@ -204,7 +196,7 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
       req.scopes = async () => {
         // This lint can be disabled because authenticate() will always return the same value
         result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
-        if (result.status !== 'auth-success') {
+        if (result.status === 'auth-failed') {
           return [];
         }
         return result.scopes || [];
@@ -264,7 +256,7 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
 
         // Test that we have scope intersection, and hence, is authorized
         const satisfyingScopes = scopes.scopesSatisfying(result.scopes, scopeExpression);
-        req.hasAuthed = true;
+        req.authenticated = true;
 
         if (!satisfyingScopes) {
           const clientId = await req.clientId();
@@ -301,21 +293,18 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
         req.satisfyingScopes = satisfyingScopes;
       };
 
-      req.hasAuthed = false;
+      req.authenticated = false;
       req.public = false;
 
       // If authentication is deferred or satisfied, then we proceed,
       // substituting the request parameters by default
       if (!entry.scopes) {
         req.public = true; // No need to check auth if there are no scopes
-        next();
-      } else {
+      } else if (useUrlParams) {
         // If url parameters is enough to parameterize we do it automatically
-        if (useUrlParams) {
-          await req.authorize(req.params);
-        }
-        next();
+        await req.authorize(req.params);
       }
+      next();
     } catch (err) {
       return next(err);
     }

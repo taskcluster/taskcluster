@@ -42,8 +42,9 @@ package tcgithub
 
 import (
 	"net/url"
+	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
 )
 
 type Github tcclient.Client
@@ -120,6 +121,9 @@ func (github *Github) GithubWebHookConsumer() error {
 // Taskcluster. Can be filtered on various git-specific
 // fields.
 //
+// Required scopes:
+//   github:list-builds
+//
 // See #builds
 func (github *Github) Builds(continuationToken, limit, organization, repository, sha string) (*BuildsResponse, error) {
 	v := url.Values{}
@@ -143,10 +147,40 @@ func (github *Github) Builds(continuationToken, limit, organization, repository,
 	return responseObject.(*BuildsResponse), err
 }
 
+// Returns a signed URL for Builds, valid for the specified duration.
+//
+// Required scopes:
+//   github:list-builds
+//
+// See Builds for more details.
+func (github *Github) Builds_SignedURL(continuationToken, limit, organization, repository, sha string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	if organization != "" {
+		v.Add("organization", organization)
+	}
+	if repository != "" {
+		v.Add("repository", repository)
+	}
+	if sha != "" {
+		v.Add("sha", sha)
+	}
+	cd := tcclient.Client(*github)
+	return (&cd).SignedURL("/builds", v, duration)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Checks the status of the latest build of a given branch
 // and returns corresponding badge svg.
+//
+// Required scopes:
+//   github:get-badge:<owner>:<repo>:<branch>
 //
 // See #badge
 func (github *Github) Badge(owner, repo, branch string) error {
@@ -155,10 +189,24 @@ func (github *Github) Badge(owner, repo, branch string) error {
 	return err
 }
 
+// Returns a signed URL for Badge, valid for the specified duration.
+//
+// Required scopes:
+//   github:get-badge:<owner>:<repo>:<branch>
+//
+// See Badge for more details.
+func (github *Github) Badge_SignedURL(owner, repo, branch string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*github)
+	return (&cd).SignedURL("/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/badge.svg", nil, duration)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Returns any repository metadata that is
 // useful within Taskcluster related services.
+//
+// Required scopes:
+//   github:get-repository:<owner>:<repo>
 //
 // See #repository
 func (github *Github) Repository(owner, repo string) (*RepositoryResponse, error) {
@@ -167,17 +215,42 @@ func (github *Github) Repository(owner, repo string) (*RepositoryResponse, error
 	return responseObject.(*RepositoryResponse), err
 }
 
+// Returns a signed URL for Repository, valid for the specified duration.
+//
+// Required scopes:
+//   github:get-repository:<owner>:<repo>
+//
+// See Repository for more details.
+func (github *Github) Repository_SignedURL(owner, repo string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*github)
+	return (&cd).SignedURL("/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo), nil, duration)
+}
+
 // For a given branch of a repository, this will always point
 // to a status page for the most recent task triggered by that
 // branch.
 //
 // Note: This is a redirect rather than a direct link.
 //
+// Required scopes:
+//   github:latest-status:<owner>:<repo>:<branch>
+//
 // See #latest
 func (github *Github) Latest(owner, repo, branch string) error {
 	cd := tcclient.Client(*github)
 	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/latest", nil, nil)
 	return err
+}
+
+// Returns a signed URL for Latest, valid for the specified duration.
+//
+// Required scopes:
+//   github:latest-status:<owner>:<repo>:<branch>
+//
+// See Latest for more details.
+func (github *Github) Latest_SignedURL(owner, repo, branch string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*github)
+	return (&cd).SignedURL("/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/latest", nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***

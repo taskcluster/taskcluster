@@ -97,25 +97,63 @@ export default class ErrorPanel extends Component {
     } = this.props;
     const { error } = this.state;
     const hasWarning = Boolean(props.warning);
-    const errorMessage =
-      error && error.graphQLErrors && error.graphQLErrors[0]
-        ? error.graphQLErrors[0].message
-        : error;
+    const message = [];
+
+    if (!error) {
+      return null;
+    }
+
+    // handle GraphQLErrors as a special case
+    if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+      const errors = error.graphQLErrors;
+
+      // Log extensions for all errors received
+      errors.forEach(err => {
+        if (err?.extensions) {
+          // eslint-disable-next-line no-console
+          console.log('Error from web-server:', err.extensions);
+        }
+      });
+
+      // construct a markdown summary of all of the errors (at most 3)
+      if (errors.length > 1) {
+        message.push(
+          `${errors.length} errors occurred fetching data for this page:`
+        );
+
+        errors.slice(0, 3).forEach(err => {
+          message.push(`* ${err.message}`);
+        });
+
+        if (errors.length > 3) {
+          message.push('* (further errors hidden; see console)');
+        }
+      } else {
+        message.push(errors[0].message);
+      }
+    } else if (error.networkError) {
+      // special-case networkError as well, although note that this still shows
+      // JSON errors when the response is not JSON, regardless of content-type.
+      message.push(
+        `Network Error (${error.networkError.statusCode ||
+          'no status code'}): ${error.networkError}`
+      );
+    } else {
+      message.push(error.message);
+    }
 
     return (
-      error && (
-        <MuiErrorPanel
-          className={classNames(className, {
-            [classes.error]: !hasWarning,
-            [classes.warning]: hasWarning,
-            [classes.fixed]: fixed || fixedDocs,
-            [classes.fixedDocs]: fixedDocs,
-          })}
-          error={errorMessage}
-          onClose={this.handleErrorClose}
-          {...props}
-        />
-      )
+      <MuiErrorPanel
+        className={classNames(className, {
+          [classes.error]: !hasWarning,
+          [classes.warning]: hasWarning,
+          [classes.fixed]: fixed || fixedDocs,
+          [classes.fixedDocs]: fixedDocs,
+        })}
+        error={message.join('\n')}
+        onClose={this.handleErrorClose}
+        {...props}
+      />
     );
   }
 }

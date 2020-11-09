@@ -310,6 +310,11 @@ const stubbedClients = () => {
   const workerPools = new Map();
   const options = {
     rootUrl: exports.rootUrl,
+    // credentials are required to generate signed URLs
+    credentials: {
+      clientId: 'testing',
+      accessToken: 'testing',
+    },
   };
 
   teardown(() => {

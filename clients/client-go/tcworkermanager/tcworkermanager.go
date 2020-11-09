@@ -35,8 +35,9 @@ package tcworkermanager
 
 import (
 	"net/url"
+	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
 )
 
 type WorkerManager tcclient.Client
@@ -101,6 +102,9 @@ func (workerManager *WorkerManager) Ping() error {
 
 // Retrieve a list of providers that are available for worker pools.
 //
+// Required scopes:
+//   worker-manager:list-providers
+//
 // See #listProviders
 func (workerManager *WorkerManager) ListProviders(continuationToken, limit string) (*ProviderList, error) {
 	v := url.Values{}
@@ -113,6 +117,24 @@ func (workerManager *WorkerManager) ListProviders(continuationToken, limit strin
 	cd := tcclient.Client(*workerManager)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/providers", new(ProviderList), v)
 	return responseObject.(*ProviderList), err
+}
+
+// Returns a signed URL for ListProviders, valid for the specified duration.
+//
+// Required scopes:
+//   worker-manager:list-providers
+//
+// See ListProviders for more details.
+func (workerManager *WorkerManager) ListProviders_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/providers", v, duration)
 }
 
 // Create a new worker pool. If the worker pool already exists, this will throw an error.
@@ -167,6 +189,9 @@ func (workerManager *WorkerManager) DeleteWorkerPool(workerPoolId string) (*Work
 
 // Fetch an existing worker pool defition.
 //
+// Required scopes:
+//   worker-manager:get-worker-pool:<workerPoolId>
+//
 // See #workerPool
 func (workerManager *WorkerManager) WorkerPool(workerPoolId string) (*WorkerPoolFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
@@ -174,7 +199,21 @@ func (workerManager *WorkerManager) WorkerPool(workerPoolId string) (*WorkerPool
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
+// Returns a signed URL for WorkerPool, valid for the specified duration.
+//
+// Required scopes:
+//   worker-manager:get-worker-pool:<workerPoolId>
+//
+// See WorkerPool for more details.
+func (workerManager *WorkerManager) WorkerPool_SignedURL(workerPoolId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/worker-pool/"+url.QueryEscape(workerPoolId), nil, duration)
+}
+
 // Get the list of all the existing worker pools.
+//
+// Required scopes:
+//   worker-manager:list-worker-pools
 //
 // See #listWorkerPools
 func (workerManager *WorkerManager) ListWorkerPools(continuationToken, limit string) (*WorkerPoolList, error) {
@@ -188,6 +227,24 @@ func (workerManager *WorkerManager) ListWorkerPools(continuationToken, limit str
 	cd := tcclient.Client(*workerManager)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pools", new(WorkerPoolList), v)
 	return responseObject.(*WorkerPoolList), err
+}
+
+// Returns a signed URL for ListWorkerPools, valid for the specified duration.
+//
+// Required scopes:
+//   worker-manager:list-worker-pools
+//
+// See ListWorkerPools for more details.
+func (workerManager *WorkerManager) ListWorkerPools_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/worker-pools", v, duration)
 }
 
 // Report an error that occurred on a worker.  This error will be included
@@ -214,6 +271,9 @@ func (workerManager *WorkerManager) ReportWorkerError(workerPoolId string, paylo
 
 // Get the list of worker pool errors.
 //
+// Required scopes:
+//   worker-manager:list-worker-pool-errors:<workerPoolId>
+//
 // See #listWorkerPoolErrors
 func (workerManager *WorkerManager) ListWorkerPoolErrors(workerPoolId, continuationToken, limit string) (*WorkerPoolErrorList, error) {
 	v := url.Values{}
@@ -228,7 +288,28 @@ func (workerManager *WorkerManager) ListWorkerPoolErrors(workerPoolId, continuat
 	return responseObject.(*WorkerPoolErrorList), err
 }
 
+// Returns a signed URL for ListWorkerPoolErrors, valid for the specified duration.
+//
+// Required scopes:
+//   worker-manager:list-worker-pool-errors:<workerPoolId>
+//
+// See ListWorkerPoolErrors for more details.
+func (workerManager *WorkerManager) ListWorkerPoolErrors_SignedURL(workerPoolId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/worker-pool-errors/"+url.QueryEscape(workerPoolId), v, duration)
+}
+
 // Get the list of all the existing workers in a given group in a given worker pool.
+//
+// Required scopes:
+//   worker-manager:list-workers:<workerPoolId>/<workerGroup>
 //
 // See #listWorkersForWorkerGroup
 func (workerManager *WorkerManager) ListWorkersForWorkerGroup(workerPoolId, workerGroup, continuationToken, limit string) (*WorkerListInAGivenWorkerPool, error) {
@@ -244,13 +325,45 @@ func (workerManager *WorkerManager) ListWorkersForWorkerGroup(workerPoolId, work
 	return responseObject.(*WorkerListInAGivenWorkerPool), err
 }
 
+// Returns a signed URL for ListWorkersForWorkerGroup, valid for the specified duration.
+//
+// Required scopes:
+//   worker-manager:list-workers:<workerPoolId>/<workerGroup>
+//
+// See ListWorkersForWorkerGroup for more details.
+func (workerManager *WorkerManager) ListWorkersForWorkerGroup_SignedURL(workerPoolId, workerGroup, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup), v, duration)
+}
+
 // Get a single worker.
+//
+// Required scopes:
+//   worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>
 //
 // See #worker
 func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId string) (*WorkerFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
 	return responseObject.(*WorkerFullDefinition), err
+}
+
+// Returns a signed URL for Worker, valid for the specified duration.
+//
+// Required scopes:
+//   worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+// See Worker for more details.
+func (workerManager *WorkerManager) Worker_SignedURL(workerPoolId, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, duration)
 }
 
 // Create a new worker.  This is only useful for worker pools where the provider
@@ -306,6 +419,9 @@ func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, work
 
 // Get the list of all the existing workers in a given worker pool.
 //
+// Required scopes:
+//   worker-manager:list-workers:<workerPoolId>
+//
 // See #listWorkersForWorkerPool
 func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, continuationToken, limit string) (*WorkerListInAGivenWorkerPool, error) {
 	v := url.Values{}
@@ -318,6 +434,24 @@ func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, conti
 	cd := tcclient.Client(*workerManager)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId), new(WorkerListInAGivenWorkerPool), v)
 	return responseObject.(*WorkerListInAGivenWorkerPool), err
+}
+
+// Returns a signed URL for ListWorkersForWorkerPool, valid for the specified duration.
+//
+// Required scopes:
+//   worker-manager:list-workers:<workerPoolId>
+//
+// See ListWorkersForWorkerPool for more details.
+func (workerManager *WorkerManager) ListWorkersForWorkerPool_SignedURL(workerPoolId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId), v, duration)
 }
 
 // Register a running worker.  Workers call this method on worker start-up.

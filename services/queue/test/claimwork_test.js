@@ -102,6 +102,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:claim-work:no-provisioner-extended-extended/' + workerType,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      'queue:get-task:' + taskId,
+      'queue:status:' + taskId,
     );
     let before = new Date();
     let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
@@ -162,6 +164,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:claim-work:no-provisioner-extended-extended/' + workerType,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      'queue:get-task:' + taskId,
+      'queue:status:' + taskId,
     );
     let before = new Date();
     let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {

@@ -85,6 +85,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### listTaskDependents');
     {
+      helper.scopes(`queue:list-dependent-tasks:${taskIdA}`, `queue:list-dependent-tasks:${taskIdB}`);
       let d1 = await helper.queue.listDependentTasks(taskIdA);
       assume(d1.taskId).equals(taskIdA);
       assume(d1.tasks).has.length(1);
@@ -92,6 +93,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       let d2 = await helper.queue.listDependentTasks(taskIdB);
       assume(d2.taskId).equals(taskIdB);
       assume(d2.tasks).has.length(0);
+
+      helper.scopes('none');
+      await assert.rejects(
+        () => helper.queue.listDependentTasks(taskIdA),
+        err => err.code === 'InsufficientScopes');
+
+      helper.scopes();
     }
 
     debug('### Claim and resolve taskA');

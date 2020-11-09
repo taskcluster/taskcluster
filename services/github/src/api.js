@@ -147,7 +147,7 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
   let statuses;
 
   try {
-    statuses = (await github.repos.listStatusesForRef({ owner, repo, ref: branch })).data;
+    statuses = (await github.repos.listCommitStatusesForRef({ owner, repo, ref: branch })).data;
   } catch (e) {
     if (e.code === 404) {
       return undefined;
@@ -187,6 +187,7 @@ builder.declare({
   method: 'post',
   route: '/github',
   name: 'githubWebHookConsumer',
+  scopes: null,
   title: 'Consume GitHub WebHook',
   category: 'Github Service',
   stability: 'stable',
@@ -304,6 +305,7 @@ builder.declare({
   method: 'get',
   route: '/builds',
   name: 'builds',
+  scopes: 'github:list-builds',
   title: 'List of Builds',
   stability: 'stable',
   category: 'Github Service',
@@ -362,6 +364,7 @@ builder.declare({
 
 builder.declare({
   name: 'badge',
+  scopes: 'github:get-badge:<owner>:<repo>:<branch>',
   title: 'Latest Build Status Badge',
   description: [
     'Checks the status of the latest build of a given branch',
@@ -410,6 +413,7 @@ builder.declare({
 
 builder.declare({
   name: 'repository',
+  scopes: 'github:get-repository:<owner>:<repo>',
   title: 'Get Repository Info',
   description: [
     'Returns any repository metadata that is',
@@ -428,7 +432,7 @@ builder.declare({
 
   if (instGithub) {
     try {
-      let reposList = await instGithub.apps.listRepos({});
+      let reposList = await instGithub.apps.listReposAccessibleToInstallation({});
 
       while (true) {
         let installed = reposList.data.repositories.map(repo => repo.name).indexOf(repo);
@@ -454,6 +458,7 @@ builder.declare({
 
 builder.declare({
   name: 'latest',
+  scopes: 'github:latest-status:<owner>:<repo>:<branch>',
   title: 'Latest Status for Branch',
   description: [
     'For a given branch of a repository, this will always point',
@@ -511,7 +516,7 @@ builder.declare({
 
   if (instGithub) {
     try {
-      await instGithub.repos.createStatus({
+      await instGithub.repos.createCommitStatus({
         owner,
         repo,
         sha,

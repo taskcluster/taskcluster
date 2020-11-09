@@ -3,6 +3,139 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v38.0.4
+
+### DEPLOYERS
+
+▶ [patch] 
+Setting a node `DEBUG` env var via the `debug` field of service configs is supported again.
+If left unset it will default to `''`. Example:
+
+```yaml
+auth:
+    debug: '*'
+```
+
+### USERS
+
+▶ [patch] [#3865](https://github.com/taskcluster/taskcluster/issues/3865)
+Livelog TLS support is now functional.
+
+▶ [patch] [#3851](https://github.com/taskcluster/taskcluster/issues/3851)
+The GitHub quickstart tool now generates correct `.taskcluster.yml` files, among other bugfixes.
+
+▶ [patch] [#3836](https://github.com/taskcluster/taskcluster/issues/3836)
+The web UI no longer fails with "ext.certificate.expiry < now".
+
+▶ [patch] [#3831](https://github.com/taskcluster/taskcluster/issues/3831)
+This version fixes an issue introduced in v38.0.0 which would cause the log viewer to display 401 errors.
+
+### DEVELOPERS
+
+▶ [patch] 
+Config types of `env:list` now generate the correct type in helm schemas.
+
+## v38.0.3
+
+### DEVELOPERS
+
+▶ [patch] 
+Fix one usage of Octokit in release machinery to fix releases
+
+## v38.0.2
+
+### GENERAL
+
+▶ [patch] [#3843](https://github.com/taskcluster/taskcluster/issues/3843)
+Two bugs were fixed that together made it so that tasks could not use indexed images.
+
+First is that docker-worker now correctly uses the task's credentials rather than
+its own to query the index.
+Second is that scopes are now expanded prior to limiting them with `authorizedScopes`
+in addition to afterward.
+
+### DEPLOYERS
+
+▶ [patch] [bug 3759](http://bugzil.la/3759)
+As of this version, the DB upgrade process correctly checks access rights and table structures of the Postgres database.
+
+### USERS
+
+▶ [patch] [#3839](https://github.com/taskcluster/taskcluster/issues/3839)
+This version fixes an error ("e.artifacts is undefined") in the UI when viewing a task without credentials.  It also improves error reporting from the UI in general.
+
+▶ [patch] 
+This version includes an explicit scope to allow the github service to list task groups.  Without this, GitHub projects using the older status API will appear "running" forever.
+
+### DEVELOPERS
+
+▶ [patch] [#3733](https://github.com/taskcluster/taskcluster/issues/3733)
+The database abstraction layer now supports "online" migrations, iterating over large tables without blocking production use of those tables.  These migrations are entirely managed by the existing `db:upgrade` and `db:downgrade` functions, so this presents no change for deployers.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1609067](http://bugzil.la/1609067), [#3721](https://github.com/taskcluster/taskcluster/issues/3721), [#3731](https://github.com/taskcluster/taskcluster/issues/3731), [#3732](https://github.com/taskcluster/taskcluster/issues/3732), [#3804](https://github.com/taskcluster/taskcluster/issues/3804), [#3807](https://github.com/taskcluster/taskcluster/issues/3807), [#3827](https://github.com/taskcluster/taskcluster/issues/3827), [#3834](https://github.com/taskcluster/taskcluster/issues/3834).
+
+## v38.0.1
+
+### DEVELOPERS
+
+▶ [patch] 
+This version fixes an error in docker-worker's release script that caused the 38.0.0 release to fail.
+
+### OTHER
+
+▶ Additional change not described here: [#3738](https://github.com/taskcluster/taskcluster/issues/3738).
+
+## v38.0.0
+
+### GENERAL
+
+▶ [MAJOR] [#3615](https://github.com/taskcluster/taskcluster/issues/3615)
+[RFC 165](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0165-Anonymous-scopes.md) has been implemented, allowing for greater administrator control over "public" endpoints. Previously these were guarded by no scopes and could be accessed by anyone with no way to limit this. In this release all unauthenticated API calls are now granted the scope `assume:anonymous`.  Additionally, most previously unprotected endpoints are now guarded by at least one scope, to enable the following:
+
+* To maintain current behavior, some scopes will need to be granted to the `anonymous`role. Refer to `the [anonymous role section](https://docs.taskcluster.net/docs/manual/deploying/anonymous-role) in the docs.
+* To entirely lock down the cluster from anonymous access, do not grant any scopes to role `anonymous`
+* Pick and choose specific "public" endpoints to make available to anonymous requests
+
+Performance testing results (refer to https://github.com/taskcluster/taskcluster/issues/3698 for more details):
+* Auth service CPU has seen an increase of 0%-15%
+* Auth service memory has seen no increase
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#3015](https://github.com/taskcluster/taskcluster/issues/3015)
+Generic-worker no longer supports the `--configure-for-{aws,gcp,azure}` options.  Instead, the expectation is that generic-worker will be started by worker-runner.  While it remains possible to run generic-worker without worker-runner in a "static" configuration, cloud-based deployments using worker-manager now require worker-runner.
+
+### USERS
+
+▶ [patch] [#3791](https://github.com/taskcluster/taskcluster/issues/3791)
+The shell client (the `taskcluster` command) now correctly handles the case where no credentials are provided.  In previous versions, if used to call a method which required credentials, this would result in an error: `Bad Request: Bad attribute value: id`.  With the inclusion of [RFC#165](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0165-Anonymous-scopes.md) in this release, this error would occur when calling any method.  The short story is, if you see such errors, upgrade the shell client.
+
+▶ [patch] [#3463](https://github.com/taskcluster/taskcluster/issues/3463)
+This release fixes a bug that may occur when a new task is quickly inserted
+twice into the index service. When the bug is triggered, one of the insert
+calls would fail with a server error. With this fix, the UNIQUE_VIOLATION error
+is caught, and the previously failed insert will update the task if the rank is
+higher.
+This bug was first seen in v37.3.0
+
+▶ [patch] [#3767](https://github.com/taskcluster/taskcluster/issues/3767)
+This version adjusts the Python client requirements to avoid `aiohttp==3.7.0`, which has a [serious bug preventing use of HTTPS](https://github.com/aio-libs/aiohttp/issues/5110).
+
+### DEVELOPERS
+
+▶ [patch] [#3502](https://github.com/taskcluster/taskcluster/issues/3502)
+A bug where `authenticateHawk` calls would occasionally return an invalid response has been fixed. This issue impacted
+reliability but not security.
+
+▶ [patch] [#3748](https://github.com/taskcluster/taskcluster/issues/3748)
+The source for the `gw-workers` and `occ-workers` administrative tools has been removed.  The `gw-workers` tool is now at https://github.com/taskcluster/community-tc-utils.
+
+### OTHER
+
+▶ Additional changes not described here: [#3655](https://github.com/taskcluster/taskcluster/issues/3655), [#3662](https://github.com/taskcluster/taskcluster/issues/3662), [#3670](https://github.com/taskcluster/taskcluster/issues/3670), [#3704](https://github.com/taskcluster/taskcluster/issues/3704), [#3730](https://github.com/taskcluster/taskcluster/issues/3730), [#3783](https://github.com/taskcluster/taskcluster/issues/3783), [#3788](https://github.com/taskcluster/taskcluster/issues/3788), [#3793](https://github.com/taskcluster/taskcluster/issues/3793).
+
 ## v37.5.1
 
 

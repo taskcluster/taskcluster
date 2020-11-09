@@ -7,7 +7,6 @@ const IGNORE = {
   'clients/client-web/yarn.lock': pkg => false,
   'yarn.lock': pkg => [
     'acorn',
-    'async',
     'base64-js',
     'bluebird',
     'body-parser',
@@ -35,7 +34,6 @@ const IGNORE = {
     'async',
     'bluebird',
     'ccount',
-    'chokidar',
     'chownr',
     'commander',
     'compressible',

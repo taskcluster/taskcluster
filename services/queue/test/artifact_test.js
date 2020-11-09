@@ -53,6 +53,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     return res;
   };
 
+  // Get something we expect to return 403
+  const get403 = async (url) => {
+    let res;
+    try {
+      res = await request.get(url).redirects(0);
+    } catch (err) {
+      res = err.response;
+    }
+    assume(res.statusCode).equals(403);
+    return res;
+  };
+
   // Use the same task definition for everything
   const taskDef = {
     provisionerId: 'no-provisioner',
@@ -103,6 +115,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       helper.scopes(
         'queue:create-artifact:public/s3.json',
         'assume:worker-id:my-worker-group/my-worker',
+        'queue:get-artifact:public/*',
+        'queue:list-artifacts:' + taskId,
+        'queue:list-artifacts:' + taskId + ':0',
       );
       const r1 = await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
         storageType: 's3',
@@ -116,25 +131,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assume(res.ok).is.ok();
 
       debug('### Download Artifact (runId: 0)');
-      let url = helper.queue.buildUrl(
-        helper.queue.getArtifact,
-        taskId, 0, 'public/s3.json',
-      );
-      debug('Fetching artifact from: %s', url);
-      res = await request.get(url).ok(() => true).redirects(0);
-      assume(res.status).equals(303);
-      assume(res.headers.location).to.not.be.empty();
-      assume(res.headers.location).does.not.contain('&Signature=');
-      res = await request.get(res.headers.location);
-      assume(res.ok).is.ok();
-      assume(res.body).to.be.eql({ message: 'Hello World' });
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/s3.json'], async () => {
+        let url = helper.queue.buildUrl(
+          helper.queue.getArtifact,
+          taskId, 0, 'public/s3.json',
+        );
+        debug('Fetching artifact from: %s', url);
+        res = await request.get(url).ok(() => true).redirects(0);
+        assume(res.status).equals(303);
+        assume(res.headers.location).to.not.be.empty();
+        assume(res.headers.location).does.not.contain('&Signature=');
+        res = await request.get(res.headers.location);
+        assume(res.ok).is.ok();
+        assume(res.body).to.be.eql({ message: 'Hello World' });
+      });
 
       debug('### Download Artifact Signed URL (runId: 0)');
-      url = helper.queue.buildSignedUrl(
+      let url = helper.queue.buildSignedUrl(
         helper.queue.getArtifact,
         taskId, 0, 'public/s3.json',
       );
-      debug('Fetching artifact from: %s', url);
+
+      debug('Fetching artifact from signed URL %s', url);
       res = await getWith303Redirect(url);
       assume(res.ok).is.ok();
       assume(res.body).to.be.eql({ message: 'Hello World' });
@@ -144,10 +162,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         helper.queue.getLatestArtifact,
         taskId, 'public/s3.json',
       );
-      debug('Fetching artifact from: %s', url);
-      res = await getWith303Redirect(url);
-      assume(res.ok).is.ok();
-      assume(res.body).to.be.eql({ message: 'Hello World' });
+      debug('Fetching artifact from unsigned URL with anonymous scope %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        const res = await getWith303Redirect(url);
+        assume(res.ok).is.ok();
+        assume(res.body).to.be.eql({ message: 'Hello World' });
+      });
 
       debug('### List artifacts');
       const r2 = await helper.queue.listArtifacts(taskId, 0);
@@ -168,15 +188,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         return prefix.service === 'EC2' && prefix.region === 'us-east-1';
       })[0].ip_prefix;
       const fakeIp = new Netmask(ipRange).first;
-      debug('Fetching artifact from: %s', url);
-      try {
-        res = await request
-          .get(url)
-          .set('x-forwarded-for', fakeIp)
-          .redirects(0);
-      } catch (err) {
-        res = err.response;
-      }
+
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        try {
+          res = await request
+            .get(url)
+            .set('x-forwarded-for', fakeIp)
+            .redirects(0);
+        } catch (err) {
+          res = err.response;
+        }
+      });
       assume(res.statusCode).equals(303);
       assert(res.headers.location.indexOf('proxy-for-us-east-1'),
         'Expected res.headers.location to contain proxy-for-us-east-1');
@@ -190,8 +213,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         helper.queue.getArtifact,
         taskId, 0, 'public/s3.json',
       );
-      debug('Fetching artifact from: %s', url);
-      await get404(url);
+
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        await get404(url);
+      });
+
+      debug('Fetching artifact from unsigned URL %s, without scopes', url);
+      await get403(url);
+    });
+
+    test('Listing artifacts without scopes', async function() {
+      const taskId = slugid.nice();
+
+      helper.scopes('none');
+      await assert.rejects(
+        () => helper.queue.listArtifacts(taskId, 0),
+        err => err.code === 'InsufficientScopes');
+      await assert.rejects(
+        () => helper.queue.listLatestArtifacts(taskId),
+        err => err.code === 'InsufficientScopes');
     });
 
     test('Post S3 artifact (with temp creds)', async () => {
@@ -227,10 +268,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         helper.queue.getArtifact,
         taskId, 0, 'public/s3.json',
       );
-      debug('Fetching artifact from: %s', url);
-      res = await getWith303Redirect(url);
-      assume(res.ok).is.ok();
-      assume(res.body).to.be.eql({ message: 'Hello World' });
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        res = await getWith303Redirect(url);
+        assume(res.ok).is.ok();
+        assume(res.body).to.be.eql({ message: 'Hello World' });
+      });
 
       debug('### Download Artifact Signed URL (runId: 0)');
       url = helper.queue.buildSignedUrl(
@@ -247,10 +290,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         helper.queue.getLatestArtifact,
         taskId, 'public/s3.json',
       );
-      debug('Fetching artifact from: %s', url);
-      res = await getWith303Redirect(url);
-      assume(res.ok).is.ok();
-      assume(res.body).to.be.eql({ message: 'Hello World' });
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        res = await getWith303Redirect(url);
+        assume(res.ok).is.ok();
+        assume(res.body).to.be.eql({ message: 'Hello World' });
+      });
 
       debug('### List artifacts');
       const r2 = await helper.queue.listArtifacts(taskId, 0);
@@ -271,18 +316,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         return prefix.service === 'EC2' && prefix.region === 'us-east-1';
       })[0].ip_prefix;
       const fakeIp = new Netmask(ipRange).first;
-      debug('Fetching artifact from: %s', url);
-      try {
-        res = await request
-          .get(url)
-          .set('x-forwarded-for', fakeIp)
-          .redirects(0);
-      } catch (err) {
-        res = err.response;
-      }
-      assume(res.statusCode).equals(303);
-      assert(res.headers.location.indexOf('proxy-for-us-east-1'),
-        'Expected res.headers.location to contain proxy-for-us-east-1');
+
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        try {
+          res = await request
+            .get(url)
+            .set('x-forwarded-for', fakeIp)
+            .redirects(0);
+        } catch (err) {
+          res = err.response;
+        }
+        assume(res.statusCode).equals(303);
+        assert(res.headers.location.indexOf('proxy-for-us-east-1'),
+          'Expected res.headers.location to contain proxy-for-us-east-1');
+      });
 
       debug('### Expire artifacts');
       // config/test.js hardcoded to expire artifact 4 days in the future
@@ -293,8 +341,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         helper.queue.getArtifact,
         taskId, 0, 'public/s3.json',
       );
-      debug('Fetching artifact from: %s', url);
-      await get404(url);
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        await get404(url);
+      });
     });
 
     test('Post S3 artifact (with bad scopes)', async () => {
@@ -374,16 +424,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       let res = await request.put(r1.putUrl).send({ message: 'Hello World' });
       assume(res.ok).is.ok();
 
-      debug('### Download Artifact (runId: 0)');
-      let url = helper.queue.buildUrl(
-        helper.queue.getArtifact,
-        taskId, 0, 'public/s3.json',
-      );
-      debug('Fetching artifact from: %s', url);
-      res = await getWith303Redirect(url);
-      assume(res.ok).is.ok();
-      assume(res.body).to.be.eql({ message: 'Hello World' });
-
       debug('### List artifacts');
       const r2 = await helper.queue.listArtifacts(taskId, 0);
       assume(r2.artifacts.length).equals(1);
@@ -395,7 +435,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       await helper.runExpiration('expire-artifacts');
 
       debug('### Download Artifact (runId: 0)');
-      url = helper.queue.buildUrl(
+      const url = helper.queue.buildSignedUrl(
         helper.queue.getArtifact,
         taskId, 0, 'public/s3.json',
       );
@@ -442,23 +482,27 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         helper.queue.getArtifact,
         taskId, 0, 'public/error.json',
       );
-      debug('Fetching artifact from: %s', url);
-      let res;
-      try {
-        res = await request.get(url);
-      } catch (err) {
-        res = err.response;
-      }
-      assume(res.ok).to.not.be.ok();
-      assume(res.status).equals(424);
-      assume(res.body.message).equals('Some user-defined message');
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        let res;
+        try {
+          res = await request.get(url);
+        } catch (err) {
+          res = err.response;
+        }
+        assume(res.ok).to.not.be.ok();
+        assume(res.status).equals(424);
+        assume(res.body.message).equals('Some user-defined message');
+      });
 
       debug('### Expire artifacts');
       // config/test.js hardcoded to expire artifact 4 days in the future
       await helper.runExpiration('expire-artifacts');
 
       debug('### Attempt to download artifact');
-      await get404(url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        await get404(url);
+      });
     });
 
     test('Post redirect artifact', async () => {
@@ -500,16 +544,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         helper.queue.getArtifact,
         taskId, 0, 'public/redirect.json',
       );
-      debug('Fetching artifact from: %s', url);
-      const res = await getWith303Redirect(url);
-      assume(res.ok).is.ok();
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        const res = await getWith303Redirect(url);
+        assume(res.ok).is.ok();
+      });
 
       debug('### Expire artifacts');
       // config/test.js hardcoded to expire artifact 4 days in the future
       await helper.runExpiration('expire-artifacts');
 
       debug('### Attempt to download artifact');
-      await get404(url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        await get404(url);
+      });
     });
 
     test('Redirect artifact doesn\'t expire too soon', async () => {
@@ -547,9 +595,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         helper.queue.getArtifact,
         taskId, 0, 'public/redirect.json',
       );
-      debug('Fetching artifact from: %s', url);
-      let res = await getWith303Redirect(url);
-      assume(res.ok).is.ok();
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        let res = await getWith303Redirect(url);
+        assume(res.ok).is.ok();
+      });
 
       debug('### Expire artifacts');
       // config/test.js hardcoded to expire artifact 4 days in the future
@@ -561,9 +611,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         helper.queue.getArtifact,
         taskId, 0, 'public/redirect.json',
       );
-      debug('Fetching artifact from: %s', url);
-      res = await getWith303Redirect(url);
-      assume(res.ok).is.ok();
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        let res = await getWith303Redirect(url);
+        assume(res.ok).is.ok();
+      });
     });
 
     test('Post artifact past resolution for \'exception\'', async () => {
@@ -893,7 +945,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assume(res.ok).is.ok();
 
       debug('### Download Artifact (runId: 0)');
-      let url = helper.queue.buildUrl(
+      helper.scopes('queue:get-artifact:public/s3.json');
+      let url = helper.queue.buildSignedUrl(
         helper.queue.getArtifact,
         taskId, 0, 'public/s3.json',
       );

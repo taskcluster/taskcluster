@@ -21,19 +21,20 @@ with automatic quarantining of workers, waiting for custom events, etc).
 ## Obtain prebuilt release
 
 * Download the latest release for your platform from https://github.com/taskcluster/taskcluster/releases
-* Download the latest release of taskcluster-proxy for your platform from https://github.com/taskcluster/taskcluster-proxy/releases
-* Download the latest release of livelog for your platform from https://github.com/taskcluster/livelog/releases
+* Download the latest release of taskcluster-proxy for your platform from https://github.com/taskcluster/taskcluster/releases
+* Download the latest release of livelog for your platform from https://github.com/taskcluster/taskcluster/releases
 * For darwin/linux, make the binaries executable: `chmod a+x {generic-worker,livelog,taskcluster-proxy}*`
 
 ## Build from source
 
-If you prefer not to use a prepackaged binary, or want to have the latest unreleased version from the development head:
+If you prefer not to use a prepackaged binary, or want to have the latest unreleased version from the development head, follow these instructions.
+Determine the major Taskcluster version `<MAJOR>` that you would like to build.  Then,
 
-* Head over to https://golang.org/dl/ and follow the instructions for your platform. __NOTE: go 1.8 or higher is required__. Be sure to set your GOPATH to something appropriate.
-* Run `go get github.com/taskcluster/livelog`
-* Run `go get github.com/taskcluster/taskcluster-proxy`
+* Head over to https://golang.org/dl/ and follow the instructions for your platform. __NOTE: The go version required is given in https://github.com/taskcluster/taskcluster/blob/main/dev-docs/development-process.md__.
+* Run `go get github.com/taskcluster/taskcluster/v<MAJOR>/tools/livelog`
+* Run `go get github.com/taskcluster/taskcluster/v<MAJOR>/tools/taskcluster-proxy`
 
-Run `go get -tags multiuser github.com/taskcluster/generic-worker` (windows/darwin) and/or `go get -tags simple github.com/taskcluster/generic-worker` (linux/darwin) and/or `go get -tags docker github.com/taskcluster/generic-worker` (linux). This should also build binaries for your platform.
+Run `go get -tags multiuser github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (windows/darwin) and/or `go get -tags simple github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (linux/darwin) and/or `go get -tags docker github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (linux). This should also build binaries for your platform.
 
 Run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
 
@@ -65,11 +66,11 @@ All being well, the binaries will be built in the directory you executed the `bu
    * `generic-worker.exe install service` (see `generic-worker.exe --help` to
      apply non-default configuration settings)
 
-5. Download livelog from https://github.com/taskcluster/livelog/releases and
+5. Download livelog from https://github.com/taskcluster/taskcluster/releases/ and
    place it in `C:\generic-worker\livelog.exe`.
 
 6. Download taskcluster proxy from
-   https://github.com/taskcluster/taskcluster-proxy/releases and place it in
+   https://github.com/taskcluster/taskcluster/releases/ and place it in
    `C:\generic-worker\taskcluster-proxy.exe`.
 
 7. Create `C:\generic-worker\generic-worker.config` with appopriate values.
@@ -105,14 +106,14 @@ __These instructions require macOS Mojave version 10.14.x__
     * `profiles install -path=profiles/SkipiCloudSetup/SkipiCloudSetup.mobileconfig`
 
  3. Download `generic-worker` from
-    https://github.com/taskcluster/generic-worker/releases and place it in
+    https://github.com/taskcluster/taskcluster/releases/ and place it in
     `/usr/local/bin/generic-worker`.
 
- 4. Download livelog from https://github.com/taskcluster/livelog/releases and
+ 4. Download livelog from https://github.com/taskcluster/taskcluster/releases/ and
     place it in `/usr/local/bin/livelog`.
 
  5. Download taskcluster proxy from
-    https://github.com/taskcluster/taskcluster-proxy/releases and place it in
+    https://github.com/taskcluster/taskcluster/releases/ and place it in
     `/usr/local/bin/taskcluster-proxy`.
 
  6. Make `generic-worker`, `taskcluster-proxy`, `livelog` binaries executable:
@@ -259,9 +260,9 @@ __These instructions require macOS Mojave version 10.14.x__
 
     ```
     cd /usr/local/bin
-    curl -L "https://github.com/taskcluster/generic-worker/releases/download/<GENERIC_WORKER_VERSION>/generic-worker-multiuser-linux-amd64" > generic-worker
-    curl -L "https://github.com/taskcluster/livelog/releases/download/<LIVELOG_VERSION>/livelog-linux-amd64" > livelog
-    curl -L "https://github.com/taskcluster/taskcluster-proxy/releases/download/<TASKCLUSTER_PROXY_VERSION>/taskcluster-proxy-linux-amd64" > taskcluster-proxy
+    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v<VERSION>/generic-multiuser-linux-amd64" > generic-worker
+    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v<VERSION>/livelog-linux-amd64" > livelog
+    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v<VERSION>/taskcluster-proxy-linux-amd64" > taskcluster-proxy
     ```
 
  6. Make binaries executable:

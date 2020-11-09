@@ -34,6 +34,7 @@ module.exports = {
             "limit"
           ],
           "route": "/clients/",
+          "scopes": "auth:list-clients",
           "stability": "stable",
           "title": "List Clients",
           "type": "function"
@@ -50,6 +51,7 @@ module.exports = {
           "query": [
           ],
           "route": "/clients/<clientId>",
+          "scopes": "auth:get-client:<clientId>",
           "stability": "stable",
           "title": "Get Client",
           "type": "function"
@@ -186,6 +188,7 @@ module.exports = {
           "query": [
           ],
           "route": "/roles/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Roles (no pagination)",
           "type": "function"
@@ -203,6 +206,7 @@ module.exports = {
             "limit"
           ],
           "route": "/roles2/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Roles",
           "type": "function"
@@ -220,6 +224,7 @@ module.exports = {
             "limit"
           ],
           "route": "/roleids/",
+          "scopes": "auth:list-roles",
           "stability": "stable",
           "title": "List Role IDs",
           "type": "function"
@@ -236,6 +241,7 @@ module.exports = {
           "query": [
           ],
           "route": "/roles/<roleId>",
+          "scopes": "auth:get-role:<roleId>",
           "stability": "stable",
           "title": "Get Role",
           "type": "function"
@@ -322,6 +328,7 @@ module.exports = {
           "query": [
           ],
           "route": "/scopes/expand",
+          "scopes": "auth:expand-scopes",
           "stability": "stable",
           "title": "Expand Scopes",
           "type": "function"
@@ -337,6 +344,7 @@ module.exports = {
           "query": [
           ],
           "route": "/scopes/current",
+          "scopes": "auth:current-scopes",
           "stability": "stable",
           "title": "Get Current Scopes",
           "type": "function"
@@ -741,6 +749,7 @@ module.exports = {
             "sha"
           ],
           "route": "/builds",
+          "scopes": "github:list-builds",
           "stability": "stable",
           "title": "List of Builds",
           "type": "function"
@@ -758,6 +767,7 @@ module.exports = {
           "query": [
           ],
           "route": "/repository/<owner>/<repo>/<branch>/badge.svg",
+          "scopes": "github:get-badge:<owner>:<repo>:<branch>",
           "stability": "experimental",
           "title": "Latest Build Status Badge",
           "type": "function"
@@ -775,6 +785,7 @@ module.exports = {
           "query": [
           ],
           "route": "/repository/<owner>/<repo>",
+          "scopes": "github:get-repository:<owner>:<repo>",
           "stability": "experimental",
           "title": "Get Repository Info",
           "type": "function"
@@ -792,6 +803,7 @@ module.exports = {
           "query": [
           ],
           "route": "/repository/<owner>/<repo>/<branch>/latest",
+          "scopes": "github:latest-status:<owner>:<repo>:<branch>",
           "stability": "stable",
           "title": "Latest Status for Branch",
           "type": "function"
@@ -1004,6 +1016,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks",
+          "scopes": "hooks:list-hooks:",
           "stability": "stable",
           "title": "List hook groups",
           "type": "function"
@@ -1020,6 +1033,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>",
+          "scopes": "hooks:list-hooks:<hookGroupId>",
           "stability": "stable",
           "title": "List hooks in a given group",
           "type": "function"
@@ -1037,6 +1051,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>",
+          "scopes": "hooks:get:<hookGroupId>:<hookId>",
           "stability": "stable",
           "title": "Get hook definition",
           "type": "function"
@@ -1054,6 +1069,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/status",
+          "scopes": "hooks:status:<hookGroupId>/<hookId>",
           "stability": "deprecated",
           "title": "Get hook status",
           "type": "function"
@@ -1210,6 +1226,7 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
+          "scopes": "hooks:list-last-fires:<hookGroupId>/<hookId>",
           "stability": "stable",
           "title": "Get information about recent hook fires",
           "type": "function"
@@ -1283,7 +1300,7 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The index service is responsible for indexing tasks. The service ensures that\ntasks can be located by user-defined names.\n\nAs described in the service documentation, tasks are typically indexed via Pulse\nmessages, so the most common use of API methods is to read from the index.",
+      "description": "The index service is responsible for indexing tasks. The service ensures that\ntasks can be located by user-defined names.\n\nAs described in the service documentation, tasks are typically indexed via Pulse\nmessages, so the most common use of API methods is to read from the index.\n\nSlashes (`/`) aren't allowed in index paths.",
       "entries": [
         {
           "args": [
@@ -1311,6 +1328,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<indexPath>",
+          "scopes": "index:find-task:<indexPath>",
           "stability": "stable",
           "title": "Find Indexed Task",
           "type": "function"
@@ -1329,6 +1347,7 @@ module.exports = {
             "limit"
           ],
           "route": "/namespaces/<namespace>",
+          "scopes": "index:list-namespaces:<namespace>",
           "stability": "stable",
           "title": "List Namespaces",
           "type": "function"
@@ -1347,6 +1366,7 @@ module.exports = {
             "limit"
           ],
           "route": "/tasks/<namespace>",
+          "scopes": "index:list-tasks:<namespace>",
           "stability": "stable",
           "title": "List Tasks",
           "type": "function"
@@ -1381,10 +1401,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<indexPath>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": "queue:get-artifact:<name>"
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact From Indexed Task",
           "type": "function"
@@ -1662,6 +1679,7 @@ module.exports = {
             "limit"
           ],
           "route": "/purge-cache/list",
+          "scopes": "purge-cache:all-purge-requests",
           "stability": "stable",
           "title": "All Open Purge Requests",
           "type": "function"
@@ -1680,6 +1698,7 @@ module.exports = {
             "since"
           ],
           "route": "/purge-cache/<provisionerId>/<workerType>",
+          "scopes": "purge-cache:purge-requests:<provisionerId>/<workerType>",
           "stability": "stable",
           "title": "Open Purge Requests for a provisionerId/workerType pair",
           "type": "function"
@@ -1721,6 +1740,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>",
+          "scopes": "queue:get-task:<taskId>",
           "stability": "stable",
           "title": "Get Task Definition",
           "type": "function"
@@ -1737,6 +1757,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/status",
+          "scopes": "queue:status:<taskId>",
           "stability": "stable",
           "title": "Get task status",
           "type": "function"
@@ -1755,6 +1776,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task-group/<taskGroupId>/list",
+          "scopes": "queue:list-task-group:<taskGroupId>",
           "stability": "stable",
           "title": "List Task Group",
           "type": "function"
@@ -1773,6 +1795,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task/<taskId>/dependents",
+          "scopes": "queue:list-dependent-tasks:<taskId>",
           "stability": "stable",
           "title": "List Dependent Tasks",
           "type": "function"
@@ -2108,20 +2131,13 @@ module.exports = {
             "name"
           ],
           "category": "Artifacts",
-          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with an HTTP client that can handle responses correctly.\n\n**Downloading artifacts**\nThere are some special considerations for those http clients which download\nartifacts.  This api endpoint is designed to be compatible with an HTTP 1.1\ncompliant client, but has extra features to ensure the download is valid.\nIt is strongly recommend that consumers use either taskcluster-lib-artifact (JS),\ntaskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with\nartifacts.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3\n\nThe following important headers are set on responses to this method for Blob artifacts\n\n* x-taskcluster-location-content-sha256: the SHA256 of the artifact\n*after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-content-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-transfer-sha256: the SHA256 of the artifact\n*before* any content-encoding is undone.  This is the SHA256 of what is sent over\nthe wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-content-encoding: the content-encoding used.  It will either\nbe `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact\nwas created and no content-negotiation occurs\n* x-taskcluster-location-content-type: the content-type of the artifact\n\n**Caching**, artifacts may be cached in data centers closer to the\nworkers in-order to reduce bandwidth costs. This can lead to longer\nresponse times. Caching can be skipped by setting the header\n`x-taskcluster-skip-cache: true`, this should only be used for resources\nwhere request volume is known to be low, and caching not useful.\n(This feature may be disabled in the future, use is sparingly!)",
+          "description": "Get artifact by `<name>` from a specific run.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with an HTTP client that can handle responses correctly.\n\n**Downloading artifacts**\nThere are some special considerations for those http clients which download\nartifacts.  This api endpoint is designed to be compatible with an HTTP 1.1\ncompliant client, but has extra features to ensure the download is valid.\nIt is strongly recommend that consumers use either taskcluster-lib-artifact (JS),\ntaskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with\nartifacts.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3\n\nThe following important headers are set on responses to this method for Blob artifacts\n\n* x-taskcluster-location-content-sha256: the SHA256 of the artifact\n*after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-content-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-transfer-sha256: the SHA256 of the artifact\n*before* any content-encoding is undone.  This is the SHA256 of what is sent over\nthe wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-content-encoding: the content-encoding used.  It will either\nbe `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact\nwas created and no content-negotiation occurs\n* x-taskcluster-location-content-type: the content-type of the artifact\n\n**Caching**, artifacts may be cached in data centers closer to the\nworkers in-order to reduce bandwidth costs. This can lead to longer\nresponse times. Caching can be skipped by setting the header\n`x-taskcluster-skip-cache: true`, this should only be used for resources\nwhere request volume is known to be low, and caching not useful.\n(This feature may be disabled in the future, use is sparingly!)",
           "method": "get",
           "name": "getArtifact",
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": {
-              "AllOf": [
-                "queue:get-artifact:<name>"
-              ]
-            }
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact from Run",
           "type": "function"
@@ -2132,20 +2148,13 @@ module.exports = {
             "name"
           ],
           "category": "Artifacts",
-          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
+          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
           "method": "get",
           "name": "getLatestArtifact",
           "query": [
           ],
           "route": "/task/<taskId>/artifacts/<name>",
-          "scopes": {
-            "if": "private",
-            "then": {
-              "AllOf": [
-                "queue:get-artifact:<name>"
-              ]
-            }
-          },
+          "scopes": "queue:get-artifact:<name>",
           "stability": "stable",
           "title": "Get Artifact from Latest Run",
           "type": "function"
@@ -2165,6 +2174,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts",
+          "scopes": "queue:list-artifacts:<taskId>:<runId>",
           "stability": "stable",
           "title": "Get Artifacts from Run",
           "type": "function"
@@ -2183,6 +2193,7 @@ module.exports = {
             "limit"
           ],
           "route": "/task/<taskId>/artifacts",
+          "scopes": "queue:list-artifacts:<taskId>",
           "stability": "stable",
           "title": "Get Artifacts from Latest Run",
           "type": "function"
@@ -2200,6 +2211,7 @@ module.exports = {
             "limit"
           ],
           "route": "/provisioners",
+          "scopes": "queue:list-provisioners",
           "stability": "experimental",
           "title": "Get a list of all active provisioners",
           "type": "function"
@@ -2216,6 +2228,7 @@ module.exports = {
           "query": [
           ],
           "route": "/provisioners/<provisionerId>",
+          "scopes": "queue:get-provisioner:<provisionerId>",
           "stability": "experimental",
           "title": "Get an active provisioner",
           "type": "function"
@@ -2259,6 +2272,7 @@ module.exports = {
           "query": [
           ],
           "route": "/pending/<provisionerId>/<workerType>",
+          "scopes": "queue:pending-count:<provisionerId>/<workerType>",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
           "type": "function"
@@ -2277,6 +2291,7 @@ module.exports = {
             "limit"
           ],
           "route": "/provisioners/<provisionerId>/worker-types",
+          "scopes": "queue:list-worker-types:<provisionerId>",
           "stability": "experimental",
           "title": "Get a list of all active worker-types",
           "type": "function"
@@ -2294,6 +2309,7 @@ module.exports = {
           "query": [
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
+          "scopes": "queue:get-worker-type:<provisionerId>/<workerType>",
           "stability": "experimental",
           "title": "Get a worker-type",
           "type": "function"
@@ -2341,6 +2357,7 @@ module.exports = {
             "quarantined"
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
+          "scopes": "queue:list-workers:<provisionerId>/<workerType>",
           "stability": "experimental",
           "title": "Get a list of all active workers of a workerType",
           "type": "function"
@@ -2360,6 +2377,7 @@ module.exports = {
           "query": [
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
+          "scopes": "queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
           "stability": "experimental",
           "title": "Get a worker-type",
           "type": "function"
@@ -3050,6 +3068,7 @@ module.exports = {
             "limit"
           ],
           "route": "/secrets",
+          "scopes": "secrets:list-secrets",
           "stability": "stable",
           "title": "List Secrets",
           "type": "function"
@@ -3092,6 +3111,7 @@ module.exports = {
             "limit"
           ],
           "route": "/providers",
+          "scopes": "worker-manager:list-providers",
           "stability": "stable",
           "title": "List Providers",
           "type": "function"
@@ -3171,6 +3191,7 @@ module.exports = {
           "query": [
           ],
           "route": "/worker-pool/<workerPoolId>",
+          "scopes": "worker-manager:get-worker-pool:<workerPoolId>",
           "stability": "stable",
           "title": "Get Worker Pool",
           "type": "function"
@@ -3188,6 +3209,7 @@ module.exports = {
             "limit"
           ],
           "route": "/worker-pools",
+          "scopes": "worker-manager:list-worker-pools",
           "stability": "stable",
           "title": "List All Worker Pools",
           "type": "function"
@@ -3229,6 +3251,7 @@ module.exports = {
             "limit"
           ],
           "route": "/worker-pool-errors/<workerPoolId>",
+          "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
           "stability": "stable",
           "title": "List Worker Pool Errors",
           "type": "function"
@@ -3248,6 +3271,7 @@ module.exports = {
             "limit"
           ],
           "route": "/workers/<workerPoolId>:/<workerGroup>",
+          "scopes": "worker-manager:list-workers:<workerPoolId>/<workerGroup>",
           "stability": "stable",
           "title": "Workers in a specific Worker Group in a Worker Pool",
           "type": "function"
@@ -3266,6 +3290,7 @@ module.exports = {
           "query": [
           ],
           "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Get a Worker",
           "type": "function"
@@ -3342,6 +3367,7 @@ module.exports = {
             "limit"
           ],
           "route": "/workers/<workerPoolId>",
+          "scopes": "worker-manager:list-workers:<workerPoolId>",
           "stability": "stable",
           "title": "Workers in a Worker Pool",
           "type": "function"

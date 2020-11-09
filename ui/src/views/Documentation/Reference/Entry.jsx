@@ -2,20 +2,20 @@ import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
-import { upperCase } from 'change-case';
+import { upperCase } from 'upper-case';
 import { toString, path } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Grid from '@material-ui/core/Grid';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
 import DataTable from '../../../components/DataTable';
 import Markdown from '../../../components/Markdown';
 import StatusLabel from '../../../components/StatusLabel';
@@ -123,7 +123,7 @@ export default class Entry extends Component {
     }`;
   }
 
-  renderFunctionExpansionPanelSummary = () => {
+  renderFunctionAccordionSummary = () => {
     const { entry, classes } = this.props;
     const signature = this.getSignatureFromEntry(entry);
 
@@ -150,7 +150,7 @@ export default class Entry extends Component {
     );
   };
 
-  renderExchangeExpansionPanelSummary = () => {
+  renderExchangeAccordionSummary = () => {
     const { entry, classes } = this.props;
 
     return (
@@ -171,7 +171,7 @@ export default class Entry extends Component {
     );
   };
 
-  renderLogsExpansionPanelSummary = () => {
+  renderLogsAccordionSummary = () => {
     const { entry, classes } = this.props;
 
     return (
@@ -204,7 +204,7 @@ export default class Entry extends Component {
     );
   };
 
-  renderSchemaExpansionPanelSummary = () => {
+  renderSchemaAccordionSummary = () => {
     const { entry, classes } = this.props;
 
     return (
@@ -602,30 +602,30 @@ export default class Entry extends Component {
     const entryHashKey = this.getEntryHashKey(type);
 
     return (
-      <ExpansionPanel
+      <Accordion
         defaultExpanded={expanded}
         onChange={this.handlePanelChange(entryHashKey)}
         CollapseProps={{ unmountOnExit: true }}
         elevation={2}>
-        <ExpansionPanelSummary
+        <AccordionSummary
           classes={{
             content: classNames(classes.expansionPanelSummary, {
               [classes.expansionPanelSummaryContent]: !isExchangeType,
             }),
           }}
           expandIcon={<ExpandMoreIcon />}>
-          {isSchemaType && this.renderSchemaExpansionPanelSummary()}
-          {isExchangeType && this.renderExchangeExpansionPanelSummary()}
-          {isLogType && this.renderLogsExpansionPanelSummary()}
-          {isFunctionType && this.renderFunctionExpansionPanelSummary()}
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
+          {isSchemaType && this.renderSchemaAccordionSummary()}
+          {isExchangeType && this.renderExchangeAccordionSummary()}
+          {isLogType && this.renderLogsAccordionSummary()}
+          {isFunctionType && this.renderFunctionAccordionSummary()}
+        </AccordionSummary>
+        <AccordionDetails>
           {isSchemaType && this.renderSchemaExpansionDetails()}
           {isExchangeType && this.renderExchangeExpansionDetails()}
           {isLogType && this.renderLogsExpansionDetails()}
           {isFunctionType && this.renderFunctionExpansionDetails()}
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
+        </AccordionDetails>
+      </Accordion>
     );
   }
 }

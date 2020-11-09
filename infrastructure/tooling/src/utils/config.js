@@ -38,7 +38,7 @@ exports.configToSchema = type => {
     }
     case '!env:list': {
       return {
-        type: 'array',
+        type: 'string',
       };
     }
     default: throw new Error(`Unknown config type ${type}`);
@@ -55,7 +55,7 @@ exports.configToExample = type => {
     case '!env:number': return '...';
     case '!env:bool': return 'true/false';
     case '!env:json': return {};
-    case '!env:list': return [];
+    case '!env:list': return '';
     default: throw new Error(`Unknown config type ${type}`);
   }
 };

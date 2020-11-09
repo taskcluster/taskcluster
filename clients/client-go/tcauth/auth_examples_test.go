@@ -5,22 +5,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v37/clients/client-go"
-	"github.com/taskcluster/taskcluster/v37/clients/client-go/tcauth"
+	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
+	"github.com/taskcluster/taskcluster/v38/clients/client-go/tcauth"
 )
 
 func Example_scopes() {
 
-	// Note: the API call we will make doesn't need credentials as it supplies public information.
-	// However, for the purpose of demonstrating the general case, this is how you can provide
-	// credentials for API calls that require them.
-	myAuth := tcauth.New(
-		&tcclient.Credentials{
-			ClientID:    "SOME-CLIENT-ID",
-			AccessToken: "SOME-WELL-FORMED-ACCESS-TOKEN",
-		},
-		"https://community-tc.services.mozilla.com",
-	)
+	myAuth := tcauth.New(nil, "https://community-tc.services.mozilla.com")
 
 	// Look up client details for client id "project/taskcluster/generic-worker/taskcluster-ci"...
 	resp, err := myAuth.Client("project/taskcluster/generic-worker/taskcluster-ci")

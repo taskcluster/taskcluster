@@ -166,6 +166,10 @@ builder.declare({
   }
 
   // Construct details for different storage types
+
+  // NOTE: isPublic is a relic from before RFC#165.  If signPublicArtifactUrls is set,
+  // then this value has no effect.  With the advent of the Object service, this relic
+  // will disappear.
   let isPublic = /^public\//.test(name);
   let details = {};
   let present = false;
@@ -417,20 +421,17 @@ builder.declare({
   name: 'getArtifact',
   stability: APIBuilder.stability.stable,
   category: 'Artifacts',
-  scopes: {
-    if: 'private',
-    then: {
-      AllOf: ['queue:get-artifact:<name>'],
-    },
-  },
+  scopes: 'queue:get-artifact:<name>',
   title: 'Get Artifact from Run',
   description: [
     'Get artifact by `<name>` from a specific run.',
     '',
-    '**Public Artifacts**, in-order to get an artifact you need the scope',
+    '**Artifact Access**, in order to get an artifact you need the scope',
     '`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.',
-    'But if the artifact `name` starts with `public/`, authentication and',
-    'authorization is not necessary to fetch the artifact.',
+    'To allow access to fetch artifacts with a client like `curl` or a web',
+    'browser, without using Taskcluster credentials, include a scope in the',
+    '`anonymous` role.  The convention is to include',
+    '`queue:get-artifact:public/*`.',
     '',
     '**API Clients**, this method will redirect you to the artifact, if it is',
     'stored externally. Either way, the response may not be JSON. So API',
@@ -506,11 +507,6 @@ builder.declare({
   let runId = parseInt(req.params.runId, 10);
   let name = req.params.name;
 
-  await req.authorize({
-    private: !/^public\//.test(name),
-    name,
-  });
-
   return replyWithArtifact.call(this, taskId, runId, name, req, res);
 });
 
@@ -521,20 +517,17 @@ builder.declare({
   name: 'getLatestArtifact',
   stability: APIBuilder.stability.stable,
   category: 'Artifacts',
-  scopes: {
-    if: 'private',
-    then: {
-      AllOf: ['queue:get-artifact:<name>'],
-    },
-  },
+  scopes: 'queue:get-artifact:<name>',
   title: 'Get Artifact from Latest Run',
   description: [
     'Get artifact by `<name>` from the last run of a task.',
     '',
-    '**Public Artifacts**, in-order to get an artifact you need the scope',
+    '**Artifact Access**, in order to get an artifact you need the scope',
     '`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.',
-    'But if the artifact `name` starts with `public/`, authentication and',
-    'authorization is not necessary to fetch the artifact.',
+    'To allow access to fetch artifacts with a client like `curl` or a web',
+    'browser, without using Taskcluster credentials, include a scope in the',
+    '`anonymous` role.  The convention is to include',
+    '`queue:get-artifact:public/*`.',
     '',
     '**API Clients**, this method will redirect you to the artifact, if it is',
     'stored externally. Either way, the response may not be JSON. So API',
@@ -548,11 +541,6 @@ builder.declare({
 }, async function(req, res) {
   let taskId = req.params.taskId;
   let name = req.params.name;
-
-  await req.authorize({
-    private: !/^public\//.test(name),
-    name,
-  });
 
   // Load task status structure from table
   let task = await Task.get(this.db, taskId);
@@ -580,6 +568,7 @@ builder.declare({
   route: '/task/:taskId/runs/:runId/artifacts',
   query: paginateResults.query,
   name: 'listArtifacts',
+  scopes: 'queue:list-artifacts:<taskId>:<runId>',
   stability: APIBuilder.stability.stable,
   category: 'Artifacts',
   output: 'list-artifacts-response.json#',
@@ -644,6 +633,7 @@ builder.declare({
   method: 'get',
   route: '/task/:taskId/artifacts',
   name: 'listLatestArtifacts',
+  scopes: 'queue:list-artifacts:<taskId>',
   query: paginateResults.query,
   stability: APIBuilder.stability.stable,
   output: 'list-artifacts-response.json#',

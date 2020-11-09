@@ -1395,4 +1395,49 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       );
     });
   });
+
+  suite('ensure 403s when required', function() {
+    test('listProviders without scopes', async function() {
+      const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.listProviders(),
+        err => err.code === 'InsufficientScopes');
+    });
+    test('workerPool without scopes', async function() {
+      const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.workerPool('aa/bb'),
+        err => err.code === 'InsufficientScopes');
+    });
+    test('listWorkerPools without scopes', async function() {
+      const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.listWorkerPools(),
+        err => err.code === 'InsufficientScopes');
+    });
+    test('listWorkerPoolErrors without scopes', async function() {
+      const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.listWorkerPoolErrors('aa/bb'),
+        err => err.code === 'InsufficientScopes');
+    });
+    test('listWorkersForWorkerPool without scopes', async function() {
+      const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.listWorkersForWorkerPool('aa/bb'),
+        err => err.code === 'InsufficientScopes');
+    });
+    test('listWorkersForWorkerGroup without scopes', async function() {
+      const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.listWorkersForWorkerGroup('aa/bb', 'ff'),
+        err => err.code === 'InsufficientScopes');
+    });
+    test('worker without scopes', async function() {
+      const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.worker('aa/bb', 'ff', 'i-123'),
+        err => err.code === 'InsufficientScopes');
+    });
+  });
 });

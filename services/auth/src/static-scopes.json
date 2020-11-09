@@ -13,6 +13,7 @@
     "scopes": [
       "assume:repo:github.com/*",
       "assume:scheduler-id:taskcluster-github/*",
+      "queue:list-task-group:*",
       "queue:route:checks",
       "queue:route:statuses",
       "queue:scheduler-id:taskcluster-github"
@@ -35,6 +36,7 @@
   {
     "clientId": "static/taskcluster/notify",
     "scopes": [
+      "queue:get-task:*"
     ]
   },
   {
@@ -56,7 +58,6 @@
   {
     "clientId": "static/taskcluster/web-server",
     "scopes": [
-      "assume:anonymous",
       "assume:github-org-admin:*",
       "assume:github-team:*",
       "assume:login-identity:*",
@@ -85,6 +86,7 @@
       "auth:create-client:worker/*",
       "notify:email:*",
       "queue:claim-work:*",
+      "queue:pending-count:*",
       "queue:worker-id:*",
       "secrets:get:worker-pool:*",
       "secrets:get:worker-type:*",

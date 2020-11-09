@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"sync"
 
-	stream "github.com/taskcluster/taskcluster/v37/tools/livelog/writer"
+	stream "github.com/taskcluster/taskcluster/v38/tools/livelog/writer"
 )
 
 const (
@@ -168,7 +168,11 @@ func main() {
 
 	runServer = func(server *http.Server, addr, crtFile, keyFile string) error {
 		server.Addr = addr
-		return server.ListenAndServe()
+		if crtFile != "" && keyFile != "" {
+			return server.ListenAndServeTLS(crtFile, keyFile)
+		} else {
+			return server.ListenAndServe()
+		}
 	}
 
 	serve(putAddr, getAddr)

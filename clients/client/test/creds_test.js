@@ -35,7 +35,7 @@ suite(testing.suiteName(), function() {
         requiredScopes: [],
       }), {
         clientId: 'tester',
-        scopes: [],
+        scopes: ['assume:anonymous'],
       });
   });
 
@@ -64,7 +64,7 @@ suite(testing.suiteName(), function() {
         requiredScopes: ['scopes:specific'],
       }), {
         clientId: 'tester',
-        scopes: ['scopes:specific'],
+        scopes: ['assume:anonymous', 'scopes:specific'],
       });
   });
 
@@ -92,7 +92,7 @@ suite(testing.suiteName(), function() {
         requiredScopes: ['scopes:specific'],
       }), {
         clientId: 'tester',
-        scopes: ['scopes:specific'],
+        scopes: ['assume:anonymous', 'scopes:specific'],
       });
   });
 
@@ -144,7 +144,7 @@ suite(testing.suiteName(), function() {
         requiredScopes: ['scopes:specific'],
       }), {
         clientId: 'my-temp-cred',
-        scopes: ['scopes:specific'],
+        scopes: ['assume:anonymous', 'scopes:specific'],
       });
   });
 
@@ -166,7 +166,7 @@ suite(testing.suiteName(), function() {
         requiredScopes: ['scopes:subcategory:specific'],
       }), {
         clientId: 'tester',
-        scopes: ['scopes:subcategory:specific'],
+        scopes: ['assume:anonymous', 'scopes:subcategory:specific'],
       });
   });
 
@@ -227,7 +227,7 @@ suite(testing.suiteName(), function() {
         requiredScopes: ['scopes:specific'],
       }), {
         clientId: 'my-temp-cred',
-        scopes: ['scopes:specific', 'scopes:another'],
+        scopes: ['assume:anonymous', 'scopes:specific', 'scopes:another'],
       });
   });
 
@@ -252,7 +252,7 @@ suite(testing.suiteName(), function() {
     });
     let url = cl.buildSignedUrl(cl.testAuthenticateGet);
     assert.deepEqual((await getJson(url)).scopes,
-      ['test:authenticate-get', 'test:foo']);
+      ['assume:anonymous', 'test:authenticate-get', 'test:foo']);
   });
 
   test('buildSignedUrl authorizedScopes (unauthorized)', async () => {
@@ -283,7 +283,7 @@ suite(testing.suiteName(), function() {
     });
     let url = cl.buildSignedUrl(cl.testAuthenticateGet);
     assert.deepEqual((await getJson(url)).scopes,
-      ['test:authenticate-get', 'test:bar']);
+      ['assume:anonymous', 'test:authenticate-get', 'test:bar']);
   });
 
   test('buildSignedUrl with temporary credentials and expiration', async () => {
@@ -338,7 +338,7 @@ suite(testing.suiteName(), function() {
       authorizedScopes: ['test:authenticate-get'],
     });
     let url = cl.buildSignedUrl(cl.testAuthenticateGet);
-    assert.deepEqual((await getJson(url)).scopes, ['test:authenticate-get']);
+    assert.deepEqual((await getJson(url)).scopes, ['assume:anonymous', 'test:authenticate-get']);
   });
 
   suite('Get with credentials from environment variables', async () => {
@@ -383,7 +383,7 @@ suite(testing.suiteName(), function() {
           requiredScopes: [],
         }), {
           clientId: 'tester',
-          scopes: [],
+          scopes: ['assume:anonymous'],
         });
     });
   });

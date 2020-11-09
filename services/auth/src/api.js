@@ -162,6 +162,7 @@ builder.declare({
     ...paginateResults.query,
   },
   name: 'listClients',
+  scopes: 'auth:list-clients',
   output: 'list-clients-response.yml',
   category: 'Clients',
   stability: 'stable',
@@ -192,6 +193,7 @@ builder.declare({
   method: 'get',
   route: '/clients/:clientId',
   name: 'client',
+  scopes: 'auth:get-client:<clientId>',
   stability: 'stable',
   category: 'Clients',
   output: 'get-client-response.yml',
@@ -574,6 +576,7 @@ builder.declare({
   method: 'get',
   route: '/roles/',
   name: 'listRoles',
+  scopes: 'auth:list-roles',
   input: undefined,
   output: 'list-roles-response.yml',
   category: 'Roles',
@@ -600,6 +603,7 @@ builder.declare({
     limit: /^[0-9]+$/,
   },
   name: 'listRoles2',
+  scopes: 'auth:list-roles',
   input: undefined,
   category: 'Roles',
   output: 'list-roles2-response.yml',
@@ -633,6 +637,7 @@ builder.declare({
     limit: /^[0-9]+$/,
   },
   name: 'listRoleIds',
+  scopes: 'auth:list-roles',
   input: undefined,
   category: 'Roles',
   output: 'list-role-ids-response.yml',
@@ -663,6 +668,7 @@ builder.declare({
   method: 'get',
   route: '/roles/:roleId',
   name: 'role',
+  scopes: 'auth:get-role:<roleId>',
   input: undefined,
   category: 'Roles',
   output: 'get-role-response.yml',
@@ -904,6 +910,7 @@ builder.declare({
   method: 'post',
   route: '/scopes/expand',
   name: 'expandScopes',
+  scopes: 'auth:expand-scopes',
   input: 'scopeset.yml',
   output: 'scopeset.yml',
   category: 'Scopes and Auth',
@@ -923,6 +930,7 @@ builder.declare({
   method: 'get',
   route: '/scopes/current',
   name: 'currentScopes',
+  scopes: 'auth:current-scopes',
   output: 'scopeset.yml',
   category: 'Scopes and Auth',
   stability: 'stable',
@@ -962,6 +970,10 @@ builder.declare({
     'credentials for authentication. This way we can use Hawk without having',
     'the secret credentials leave this service.',
   ].join('\n'),
+  // This API method should _not_ require scopes, since auth middleware calls
+  // it without authentication. If later the auth middleware uses credentials
+  // a scope could be added here.
+  scopes: null,
 }, function(req, res) {
   return this.signatureValidator(req.body).then(result => {
     if (result.expires) {
@@ -975,6 +987,8 @@ builder.declare({
   method: 'post',
   route: '/test-authenticate',
   name: 'testAuthenticate',
+  // scopes here would not make sense since this endpoint is called with a fake client
+  scopes: null,
   category: 'Scopes and Auth',
   input: 'test-authenticate-request.yml',
   output: 'test-authenticate-response.yml',
@@ -1027,6 +1041,8 @@ builder.declare({
   method: 'get',
   route: '/test-authenticate-get/',
   name: 'testAuthenticateGet',
+  // scopes here would not make sense since this endpoint is called with a fake client
+  scopes: null,
   category: 'Scopes and Auth',
   output: 'test-authenticate-response.yml',
   stability: 'stable',

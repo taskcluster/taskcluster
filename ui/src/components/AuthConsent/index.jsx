@@ -9,9 +9,9 @@ import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from 'mdi-react/ExpandMoreIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
@@ -87,16 +87,16 @@ export default class AuthConsent extends Component {
               </span>
             }
           />
-          <ExpansionPanel elevation={2} defaultExpanded>
-            <ExpansionPanelSummary
+          <Accordion elevation={2} defaultExpanded>
+            <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="panel1a-content"
               id="panel1a-header">
               <Typography variant="body2" className={classes.heading}>
                 Client Details
               </Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
+            </AccordionSummary>
+            <AccordionDetails>
               <List className={classes.list}>
                 <ListItem>
                   <ListItemText
@@ -143,8 +143,8 @@ export default class AuthConsent extends Component {
                   />
                 </ListItem>
               </List>
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
+            </AccordionDetails>
+          </Accordion>
         </div>
         <Button
           type="submit"

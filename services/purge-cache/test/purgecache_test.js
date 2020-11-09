@@ -13,6 +13,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     return helper.apiClient.ping();
   });
 
+  test('allPurgeRequests without scopes', async function() {
+    const client = new helper.PurgeCacheClient({ rootUrl: helper.rootUrl });
+    await assert.rejects(
+      () => client.allPurgeRequests(),
+      err => err.code === 'InsufficientScopes');
+  });
+
+  test('purgeRequests without scopes', async function() {
+    const client = new helper.PurgeCacheClient({ rootUrl: helper.rootUrl });
+    await assert.rejects(
+      () => client.purgeRequests('dummy-provisioner-extended-extended-2', 'dummy-worker-extended-extended'),
+      err => err.code === 'InsufficientScopes');
+  });
+
   test('Publish purge-cache requests', async () => {
     // We should have no purge-cache requests to start with
     let openRequests = await helper.apiClient.allPurgeRequests();

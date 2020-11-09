@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+let { Octokit } = require('@octokit/rest');
 
 const retryPlugin = (octokit, options) => {
 
@@ -22,7 +23,7 @@ const retryPlugin = (octokit, options) => {
     }
   });
 };
-const Octokit = require('@octokit/rest').plugin([retryPlugin]);
+Octokit = Octokit.plugin(retryPlugin);
 
 const getPrivatePEM = cfg => {
   const keyRe = /-----BEGIN RSA PRIVATE KEY-----(\n|\\n).*(\n|\\n)-----END RSA PRIVATE KEY-----(\n|\\n)?/s;
@@ -55,7 +56,7 @@ module.exports = async ({ cfg }) => {
     try {
       const inteGithub = await getAppGithub();
       // Authenticating as installation
-      const instaToken = (await inteGithub.apps.createInstallationToken({
+      const instaToken = (await inteGithub.apps.createInstallationAccessToken({
         installation_id: inst_id,
       })).data;
       const instaGithub = new Octokit({ auth: `token ${instaToken.token}` });

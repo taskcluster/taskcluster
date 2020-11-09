@@ -460,7 +460,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
-      assert(github.inst(5828).repos.createStatus.callCount === 0, 'Status was unexpectedly updated!');
+      assert(github.inst(5828).repos.createCommitStatus.callCount === 0, 'Status was unexpectedly updated!');
       assert(github.inst(5828).repos.createCommitComment.calledOnce);
       let args = github.inst(5828).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
@@ -570,7 +570,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await simulateJobMessage({ user: 'imbstack', eventType: 'pull_request.opened' });
 
-      assert(github.inst(5828).repos.createStatus.callCount === 0);
+      assert(github.inst(5828).repos.createCommitStatus.callCount === 0);
       assert(github.inst(5828).issues.createComment.callCount === 1);
     });
 
@@ -620,8 +620,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P32ow';
 
     async function assertStatusUpdate(state) {
-      assert(github.inst(9988).repos.createStatus.calledOnce, 'createStatus was not called');
-      let args = github.inst(9988).repos.createStatus.firstCall.args[0];
+      assert(github.inst(9988).repos.createCommitStatus.calledOnce, 'createCommitStatus was not called');
+      let args = github.inst(9988).repos.createCommitStatus.firstCall.args[0];
       assert.equal(args.owner, 'TaskclusterRobot');
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
@@ -947,9 +947,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';
 
     function assertStatusCreation(state) {
-      assert(github.inst(9988).repos.createStatus.called, 'createStatus was not called');
+      assert(github.inst(9988).repos.createCommitStatus.called, 'createCommitStatus was not called');
 
-      github.inst(9988).repos.createStatus.firstCall.args.forEach(args => {
+      github.inst(9988).repos.createCommitStatus.firstCall.args.forEach(args => {
         if (args.state === state) {
           assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
@@ -989,7 +989,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const TASKID = 'banana';
 
     function assertStatusCreate(state) {
-      assert(github.inst(9988).checks.create.called, 'createStatus was not called');
+      assert(github.inst(9988).checks.create.called, 'createCommitStatus was not called');
 
       github.inst(9988).checks.create.firstCall.args.forEach(args => {
         if (args.state === state) {

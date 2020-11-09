@@ -8,7 +8,8 @@ oneOf:
     properties:
       status:
         description: |
-          The kind of response, `auth-failed` or `auth-success`.
+          If `auth-success`, the request has successfully authenticated. 
+          This does not imply authorization (i.e. scope satisfaction not guaranteed).
         type:                 string
         enum:
           - auth-success
@@ -46,11 +47,11 @@ oneOf:
         pattern:              {$const: clientId}
       expires:
         description: |
-          The expiration time for the credentials used to make this request.
+          The expiration time that the returned scopes are valid for.
           This should be treated as the latest time at which the authorization
-          is valid.  For most cases, where the access being authorized occurs
+          is valid. For most cases, where the access being authorized occurs
           immediately, this field can be ignored, as the value will always be
-          in the future if the status is `auth-success`.
+          in the future.
         type: string
         format: date-time
     additionalProperties:       false
@@ -65,7 +66,7 @@ oneOf:
     properties:
       status:
         description: |
-          The kind of response, `auth-failed` or `auth-success`.
+          If `auth-failed`, the request failed to authenticate (e.g., invalid credentials).
         type:                 string
         enum:
           - auth-failed
@@ -77,3 +78,44 @@ oneOf:
     required:
       - status
       - message
+  - title:                    "No Authentication Response"
+    type:                     object
+    properties:
+      status:
+        description: |
+          If `no-auth`, the request provided no credentials or bewit.
+        type:                 string
+        enum:
+          - no-auth
+      scheme:
+        description: |
+          Authentication scheme the client used. Generally, you don't need to
+          read this property unless `hash` is provided and you want to validate
+          the payload hash. Additional values may be added in the future.
+        type:                 string
+        enum:
+          - none
+      scopes:
+        description: |
+          List of scopes the client is authorized to access.  Scopes must be
+          composed of printable ASCII characters and spaces.
+        type:                 array
+        uniqueItems: true
+        items:
+          type:               string
+          pattern: "^[\x20-\x7e]*$"
+      expires:
+        description: |
+          The expiration time that the returned scopes are valid for.
+          This should be treated as the latest time at which the authorization
+          is valid. For most cases, where the access being authorized occurs
+          immediately, this field can be ignored, as the value will always be
+          in the future.
+        type: string
+        format: date-time
+    additionalProperties:       false
+    required:
+      - status
+      - scheme
+      - scopes
+      - expires

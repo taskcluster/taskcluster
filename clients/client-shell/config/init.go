@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v37/clients/client-shell/client"
+	"github.com/taskcluster/taskcluster/v38/clients/client-shell/client"
 )
 
 var (
@@ -53,9 +53,9 @@ func Setup() {
 	rootURL = Configuration["config"]["rootUrl"].(string)
 
 	// load credentials
-	clientID, ok1 := Configuration["config"]["clientId"].(string)
-	accessToken, ok2 := Configuration["config"]["accessToken"].(string)
-	if ok1 && ok2 {
+	clientID := Configuration["config"]["clientId"].(string)
+	accessToken := Configuration["config"]["accessToken"].(string)
+	if clientID != "" && accessToken != "" {
 		certificate, _ := Configuration["config"]["certificate"].(string)
 		authorizedScopes, _ := Configuration["config"]["authorizedScopes"].([]string)
 		Credentials = &client.Credentials{
@@ -66,7 +66,7 @@ func Setup() {
 		}
 		return
 	}
-	if ok1 || ok2 {
+	if clientID != "" || accessToken != "" {
 		fmt.Fprintln(os.Stderr, "Either ClientID or Access Token not set")
 		os.Exit(1)
 	}
