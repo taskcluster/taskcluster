@@ -3,7 +3,7 @@ const assert = require('assert');
 const debug = require('debug')('workerinfo');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 
-const { Provisioner, Worker, TaskQueue } = require('./data');
+const { Worker, TaskQueue } = require('./data');
 
 const DAY = 24 * 60 * 60 * 1000;
 const RECENT_TASKS_LIMIT = 20;
@@ -114,10 +114,6 @@ class WorkerInfo {
   async expire(now) {
     let count;
 
-    debug('Expiring provisioners at: %s, from before %s', new Date(), now);
-    count = await this.db.fns.expire_queue_provisioners(now);
-    debug('Expired %s provisioners', count);
-
     debug('Expiring worker-types at: %s, from before %s', new Date(), now);
     count = await this.db.fns.expire_task_queues(now);
     debug('Expired %s worker-types', count);
@@ -144,39 +140,6 @@ class WorkerInfo {
       ...tasks.map(({ status }) => ({ taskId: status.taskId, runId: status.runs.length - 1 })),
     ].slice(-RECENT_TASKS_LIMIT);
     await worker.update(this.db, { recentTasks });
-  }
-
-  async upsertProvisioner({ provisionerId, stability, description, actions, expires }) {
-    let provisioner = await Provisioner.get(this.db, provisionerId, new Date());
-    let result;
-    if (provisioner) {
-      let rows = await provisioner.update(this.db, {
-        expires: new Date(expires || provisioner.expires),
-        description: description || provisioner.description,
-        stability: stability || provisioner.stability,
-        actions: actions || provisioner.actions || [],
-      });
-      result = Provisioner.fromDbRows(rows);
-    } else {
-      provisioner = await Provisioner.fromApi(provisionerId, {
-        provisionerId,
-        expires: new Date(expires || taskcluster.fromNow('5 days')),
-        lastDateActive: new Date(),
-        description: description || '',
-        stability: stability || 'experimental',
-        actions: actions || [],
-      });
-      try {
-        await provisioner.create(this.db);
-      } catch (err) {
-        if (err.code !== UNIQUE_VIOLATION) {
-          throw err;
-        }
-      }
-      result = provisioner;
-    }
-
-    return result;
   }
 
   async upsertTaskQueue({ taskQueueId, stability, description, expires }) {

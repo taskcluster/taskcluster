@@ -2,6 +2,7 @@ let assert = require('assert');
 let _ = require('lodash');
 const { paginateResults } = require('taskcluster-lib-api');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const { splitTaskQueueId } = require('./utils');
 
 const STATUS_FIELDS = ['retriesLeft', 'runs', 'takenUntil'];
 
@@ -209,32 +210,12 @@ class Provisioner {
     Object.assign(this, props);
   }
 
-  // Create a single instance from a DB row
-  static fromDb(row) {
-    return new Provisioner({
-      provisionerId: row.provisioner_id,
-      expires: row.expires,
-      lastDateActive: row.last_date_active,
-      description: row.description,
-      stability: row.stability,
-      actions: row.actions,
-    });
-  }
-
-  // Create a single instance, or undefined, from a set of rows containing zero
-  // or one elements.  This matches the semantics of get_provisioner
-  static fromDbRows(rows) {
-    if (rows.length === 1) {
-      return Provisioner.fromDb(rows[0]);
-    }
-  }
-
   // Create an instance from createProvisioner API request arguments
-  static fromApi(provisioner, input) {
+  static fromApi(provisionerId, input) {
     assert(input.expires);
     assert(input.lastDateActive);
     return new Provisioner({
-      provisioner,
+      provisionerId,
       ...input,
       // convert to dates
       expires: new Date(input.expires),
@@ -244,14 +225,39 @@ class Provisioner {
   }
 
   // Get a provisioner from the DB, or undefined
+  // This is emulated using the task_queues table as there is no
+  // longer a queue_provisioners table.
   static async get(db, provisionerId, expires) {
-    return Provisioner.fromDbRows(await db.fns.get_queue_provisioner(provisionerId, expires));
+    const allTaskQueues = await TaskQueue.getAllTaskQueues(db, new Date());
+    const taskQueuesForProvisioner = allTaskQueues.filter(
+      tq => (provisionerId === splitTaskQueueId(tq.taskQueueId).provisionerId),
+    );
+    let provisioner;
+    taskQueuesForProvisioner.forEach(tq => {
+      if (!provisioner) {
+        provisioner = Provisioner.fromApi(provisionerId, {
+          expires: tq.expires,
+          lastDateActive: tq.lastDateActive,
+          description: '',
+          stability: 'experimental',
+        });
+      } else {
+        if (tq.expires > provisioner.expires) {
+          provisioner.expires = tq.expires;
+        }
+        if (tq.lastDateActive > provisioner.lastDateActive) {
+          provisioner.lastDateActive = tq.lastDateActive;
+        }
+      }
+    });
+    return provisioner;
   }
 
-  // Call db.get_queue_provisioners.
   // The response will be of the form { rows, continationToken }.
   // If there are no provisioners to show, the response will have the
   // `rows` field set to an empty array.
+  // There is no longer a queue_provisioners table, so this function
+  // is emulated by using the data from the task_queues table
   static async getProvisioners(
     db,
     {
@@ -261,64 +267,34 @@ class Provisioner {
       query,
     } = {},
   ) {
-    const fetchResults = async (query) => {
-      const { continuationToken, rows } = await paginateResults({
-        query,
-        fetch: (size, offset) => db.fns.get_queue_provisioners(
-          expires,
-          size,
-          offset,
-        ),
-      });
-      const entries = rows.map(Provisioner.fromDb);
-
-      return { rows: entries, continuationToken: continuationToken };
-    };
-
-    // Fetch results
-    return await fetchResults(query || {});
-  }
-
-  // Call db.create_provisioner with the content of this instance.  This
-  // implements the usual idempotency checks and returns an error with code
-  // UNIQUE_VIOLATION when those checks fail.
-  async create(db) {
-    // for array values, we need to stringify manually because node-pg
-    // otherwise does not correctly serialize the array values
-    const arr = v => JSON.stringify(v);
-    try {
-      await db.fns.create_queue_provisioner(
-        this.provisionerId,
-        this.expires,
-        this.lastDateActive,
-        this.description,
-        this.stability,
-        arr(this.actions),
-      );
-    } catch (err) {
-      if (err.code !== UNIQUE_VIOLATION) {
-        throw err;
+    const allTaskQueues = await TaskQueue.getAllTaskQueues(db, new Date());
+    let allProvisioners = new Map();
+    allTaskQueues.forEach(tq => {
+      const { provisionerId } = splitTaskQueueId(tq.taskQueueId);
+      if (allProvisioners.has(provisionerId)) {
+        const prov = allProvisioners.get(provisionerId);
+        if (tq.expires > prov.expires) {
+          prov.expires = tq.expires;
+        }
+        if (tq.lastDateActive > prov.lastDateActive) {
+          prov.lastDateActive = tq.lastDateActive;
+        }
+      } else {
+        allProvisioners.set(provisionerId, Provisioner.fromApi(provisionerId, {
+          expires: tq.expires,
+          lastDateActive: tq.lastDateActive,
+          description: '',
+          stability: 'experimental',
+        }));
       }
+    });
+    allProvisioners = Array.from(allProvisioners.values());
 
-      const existing = await Provisioner.get(db, this.provisionerId, new Date());
-      if (!this.equals(existing)) {
-        // new provisioner does not match, so this is a "real" conflict
-        throw err;
-      }
-      // ..otherwise adopt the identity of the existing provisioner
-      Object.assign(this, existing);
-    }
-  }
-
-  async update(db, { description, expires, lastDateActive, stability, actions }) {
-    return await db.fns.update_queue_provisioner(
-      this.provisionerId,
-      expires || this.expires,
-      lastDateActive || this.lastDateActive,
-      description || this.description,
-      stability || this.stability,
-      JSON.stringify(actions) || JSON.stringify(this.actions),
-    );
+    // Apply pagination on the filtered results
+    return await paginateResults({
+      query: { continuationToken: query.continuation, limit: query.limit },
+      fetch: (size, offset) => allProvisioners.slice(offset, offset + size),
+    });
   }
 
   // return the serialization of this provisioner

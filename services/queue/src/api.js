@@ -1559,6 +1559,7 @@ builder.declare({
     { expires: new Date() },
     { query: { continuationToken: continuation, limit } },
   );
+
   const result = {
     provisioners: provisioners.map(provisioner => provisioner.serialize()),
   };
@@ -1703,8 +1704,8 @@ builder.declare({
 }, async function(req, res) {
   // We no longer have a provisioner_id field in the DB, so we have to
   // do the filtering here for now.
-  let taskQueuesFull = await TaskQueue.getAllTaskQueues(this.db, new Date());
-  taskQueuesFull = taskQueuesFull.filter(tq => {
+  let allTaskQueues = await TaskQueue.getAllTaskQueues(this.db, new Date());
+  allTaskQueues = allTaskQueues.filter(tq => {
     const { provisionerId } = splitTaskQueueId(tq.taskQueueId);
     return provisionerId === req.params.provisionerId;
   });
@@ -1712,7 +1713,7 @@ builder.declare({
   // Apply pagination on the filtered results
   const { rows: taskQueues, continuationToken } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => taskQueuesFull.slice(offset, offset + size),
+    fetch: (size, offset) => allTaskQueues.slice(offset, offset + size),
   });
 
   const result = {
@@ -1744,12 +1745,9 @@ builder.declare({
   const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   const expires = new Date();
-  const [tQueue, provisioner] = await Promise.all([
-    TaskQueue.get(this.db, taskQueueId, expires),
-    Provisioner.get(this.db, provisionerId, expires),
-  ]);
+  const tQueue = await TaskQueue.get(this.db, taskQueueId, expires);
 
-  if (!tQueue || !provisioner) {
+  if (!tQueue) {
     return res.reportError('ResourceNotFound',
       'Worker-type `{{workerType}}` with Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
         workerType,
@@ -1761,7 +1759,7 @@ builder.declare({
   const tqResult = tQueue.serialize();
   useSplitFields(tqResult);
 
-  const actions = provisioner.actions.filter(action => action.context === 'worker-type');
+  const actions = [];
   return res.reply(Object.assign({}, tqResult, { actions }));
 });
 
@@ -1801,20 +1799,17 @@ builder.declare({
     properties: Object.keys(req.body),
   });
 
-  const [tQueue, provisioner] = await Promise.all([
-    this.workerInfo.upsertTaskQueue({
-      taskQueueId,
-      stability,
-      description,
-      expires,
-    }),
-    this.workerInfo.upsertProvisioner({ provisionerId }),
-  ]);
+  const tQueue = await this.workerInfo.upsertTaskQueue({
+    taskQueueId,
+    stability,
+    description,
+    expires,
+  });
 
   const tqResult = tQueue.serialize();
   useSplitFields(tqResult);
 
-  const actions = provisioner.actions.filter(action => action.context === 'worker-type');
+  const actions = [];
   return res.reply(Object.assign({}, tqResult, { actions }));
 });
 
@@ -1907,16 +1902,15 @@ builder.declare({
   const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   const now = new Date();
-  const [worker, tQueue, provisioner] = await Promise.all([
+  const [worker, tQueue] = await Promise.all([
     Worker.get(this.db, taskQueueId, workerGroup, workerId, now),
     TaskQueue.get(this.db, taskQueueId, now),
-    Provisioner.get(this.db, provisionerId, now),
   ]);
 
   // do not consider workers expired until their quarantine date expires.
   const expired = worker && worker.expires < now && worker.quarantineUntil < now;
 
-  if (expired || !worker || !tQueue || !provisioner) {
+  if (expired || !worker || !tQueue) {
     return res.reportError('ResourceNotFound',
       'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
       'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found. ' +
@@ -1932,7 +1926,7 @@ builder.declare({
   const workerResult = worker.serialize();
   useSplitFields(workerResult);
 
-  const actions = provisioner.actions.filter(action => action.context === 'worker');
+  const actions = [];
   return res.reply(Object.assign({}, workerResult, { actions }));
 });
 
@@ -1959,10 +1953,7 @@ builder.declare({
   const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   const expires = new Date();
-  let [worker, provisioner] = await Promise.all([
-    Worker.get(this.db, taskQueueId, workerGroup, workerId, expires),
-    Provisioner.get(this.db, provisionerId, expires),
-  ]);
+  let worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, expires);
 
   if (!worker) {
     return res.reportError('ResourceNotFound',
@@ -1983,7 +1974,7 @@ builder.declare({
   const workerResult = worker.serialize();
   useSplitFields(workerResult);
 
-  const actions = provisioner.actions.filter(action => action.context === 'worker');
+  const actions = [];
   return res.reply(Object.assign({}, workerResult, { actions }));
 });
 
@@ -2023,15 +2014,14 @@ builder.declare({
     properties: Object.keys(req.body),
   });
 
-  const [worker, _, provisioner] = await Promise.all([
+  const [worker, _] = await Promise.all([
     this.workerInfo.upsertWorker({ taskQueueId, workerGroup, workerId, expires }),
     this.workerInfo.upsertTaskQueue({ taskQueueId, workerType }),
-    this.workerInfo.upsertProvisioner({ provisionerId }),
   ]);
 
   const workerResult = worker.serialize();
   useSplitFields(workerResult);
 
-  const actions = provisioner.actions.filter(action => action.context === 'worker');
+  const actions = [];
   return res.reply(Object.assign({}, workerResult, { actions }));
 });
