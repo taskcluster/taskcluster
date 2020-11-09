@@ -1,0 +1,15 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Upload Object Request"
+description: |
+  Representation of the object entry to insert.
+type:               object
+properties:
+  expires:
+    title:          "Expiration"
+    description: |
+      Date at which this entry expires from the object table.
+    type:           string
+    format:         date-time
+additionalProperties: false
+required:
+  - expires

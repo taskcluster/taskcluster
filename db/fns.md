@@ -966,6 +966,8 @@ Returns a boolean indicating whether the denylist type/address exists.
 * *Mode*: write
 * *Arguments*:
   * `name_in text`
+  * `project_id_in text`
+  * `backend_id_in text`
   * `data_in jsonb`
   * `expires_in timestamptz`
 * *Returns*: `void`
@@ -989,6 +991,8 @@ Returns a count of rows that have been deleted.
 * *Returns*: `table`
   * `name text`
   * `data jsonb`
+  * `project_id text`
+  * `backend_id text`
   * `expires timestamptz`
 
 Get an object.

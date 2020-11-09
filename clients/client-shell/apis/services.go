@@ -940,7 +940,7 @@ var services = map[string]definitions.Service{
 					"projectId",
 				},
 				Query: []string{},
-				Input: "",
+				Input: "v1/upload-object-request.json#",
 			},
 		},
 	},

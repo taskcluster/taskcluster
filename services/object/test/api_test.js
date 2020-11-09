@@ -18,6 +18,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     assert.equal(rows.length, 1);
     assert.equal(rows[0].name, 'public/foo');
-    assert.deepEqual(rows[0].data, { backendId: 'pub', projectId: 'x', name: 'public/foo' });
+    assert.equal(rows[0].project_id, 'x');
+    assert.equal(rows[0].backend_id, 'pub');
+    assert.deepEqual(rows[0].data, {});
   });
 });

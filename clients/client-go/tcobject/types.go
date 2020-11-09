@@ -2,4 +2,15 @@
 
 package tcobject
 
-type ()
+import (
+	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
+)
+
+type (
+	// Representation of the object entry to insert.
+	UploadObjectRequest struct {
+
+		// Date at which this entry expires from the object table.
+		Expires tcclient.Time `json:"expires"`
+	}
+)

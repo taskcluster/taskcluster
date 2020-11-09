@@ -1655,6 +1655,7 @@ module.exports = {
           ],
           "category": "Backend",
           "description": "Upload backend data.",
+          "input": "v1/upload-object-request.json#",
           "method": "post",
           "name": "uploadObject",
           "query": [

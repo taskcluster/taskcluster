@@ -14,7 +14,7 @@ builder.declare({
   method: 'post',
   route: '/upload/:name/:projectId',
   name: 'uploadObject',
-  input: undefined,
+  input: 'upload-object-request.yml',
   output: undefined,
   stability: 'experimental',
   category: 'Backend',
@@ -29,7 +29,7 @@ builder.declare({
   const backend = this.backends.forUpload({ name, projectId });
   // Parse date string
   input.expires = new Date(input.expires);
-  await this.db.fns.create_object(name, { backendId: backend.backendId, name, projectId }, input.expires);
+  await this.db.fns.create_object(name, projectId, backend.backendId, {}, input.expires);
   return res.reply({});
 });
 

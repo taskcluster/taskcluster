@@ -1,18 +1,20 @@
 version: 55
 description: add upload db fn to objects service
+migrationScript: 0055-migration.sql
+downgradeScript: 0055-downgrade.sql
 methods:
   create_object:
     description: |-
       Upload object.
     mode: write
     serviceName: object
-    args: name_in text, data_in jsonb, expires_in timestamptz
+    args: name_in text, project_id_in text, backend_id_in text, data_in jsonb, expires_in timestamptz
     returns: void
     body: |-
       begin
         insert
-          into objects (name, data, expires)
-          values (name_in, data_in, expires_in);
+          into objects (name, data, project_id, backend_id, expires)
+          values (name_in, data_in, project_id_in, backend_id_in, expires_in);
       end
   get_object:
     description: |-
@@ -20,8 +22,8 @@ methods:
     mode: read
     serviceName: object
     args: name_in text
-    returns: table (name text, data jsonb, expires timestamptz)
+    returns: table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)
     body: |-
       begin
-        return query select objects.name, objects.data, objects.expires from objects where objects.name = name_in;
+        return query select objects.name, objects.data, objects.project_id, objects.backend_id, objects.expires from objects where objects.name = name_in;
       end

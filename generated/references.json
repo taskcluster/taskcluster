@@ -3952,6 +3952,28 @@
   },
   {
     "content": {
+      "$id": "/schemas/object/v1/upload-object-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Representation of the object entry to insert.\n",
+      "properties": {
+        "expires": {
+          "description": "Date at which this entry expires from the object table.\n",
+          "format": "date-time",
+          "title": "Expiration",
+          "type": "string"
+        }
+      },
+      "required": [
+        "expires"
+      ],
+      "title": "Upload Object Request",
+      "type": "object"
+    },
+    "filename": "schemas/object/v1/upload-object-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/notify/v1/slack-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -15085,6 +15107,7 @@
           ],
           "category": "Backend",
           "description": "Upload backend data.",
+          "input": "v1/upload-object-request.json#",
           "method": "post",
           "name": "uploadObject",
           "query": [
