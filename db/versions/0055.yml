@@ -1,7 +1,7 @@
 version: 55
 description: add upload db fn to objects service
 methods:
-  upload_object:
+  create_object:
     description: |-
       Upload object.
     mode: write

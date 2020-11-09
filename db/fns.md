@@ -54,9 +54,9 @@
    * [`delete_denylist_address`](#delete_denylist_address)
    * [`exists_denylist_address`](#exists_denylist_address)
  * [object functions](#object)
+   * [`create_object`](#create_object)
    * [`expire_objects`](#expire_objects)
    * [`get_object`](#get_object)
-   * [`upload_object`](#upload_object)
  * [purge_cache functions](#purge_cache)
    * [`all_purge_requests_wpid`](#all_purge_requests_wpid)
    * [`expire_cache_purges`](#expire_cache_purges)
@@ -957,9 +957,20 @@ Returns a boolean indicating whether the denylist type/address exists.
 
 ## object
 
+* [`create_object`](#create_object)
 * [`expire_objects`](#expire_objects)
 * [`get_object`](#get_object)
-* [`upload_object`](#upload_object)
+
+### create_object
+
+* *Mode*: write
+* *Arguments*:
+  * `name_in text`
+  * `data_in jsonb`
+  * `expires_in timestamptz`
+* *Returns*: `void`
+
+Upload object.
 
 ### expire_objects
 
@@ -981,17 +992,6 @@ Returns a count of rows that have been deleted.
   * `expires timestamptz`
 
 Get an object.
-
-### upload_object
-
-* *Mode*: write
-* *Arguments*:
-  * `name_in text`
-  * `data_in jsonb`
-  * `expires_in timestamptz`
-* *Returns*: `void`
-
-Upload object.
 
 ## purge_cache
 

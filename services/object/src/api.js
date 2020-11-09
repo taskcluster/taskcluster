@@ -28,7 +28,7 @@ builder.declare({
   let { name, projectId } = req.params;
   const backend = this.backends.forUpload({ name, projectId });
   let expires = fromNow('1 year');
-  await this.db.fns.upload_object(name, { backendId: backend.backendId, name, projectId }, expires);
+  await this.db.fns.create_object(name, { backendId: backend.backendId, name, projectId }, expires);
   return res.reply({});
 });
 

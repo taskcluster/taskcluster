@@ -13,9 +13,9 @@ suite(testing.suiteName(), function() {
   });
 
   suite(`${testing.suiteName()} - objects`, function() {
-    helper.dbTest('upload_object', async function(db, isFake) {
+    helper.dbTest('create_object', async function(db, isFake) {
       const expires = fromNow('1 year');
-      await db.fns.upload_object('foo', { projectId: 'projectId' }, expires);
+      await db.fns.create_object('foo', { projectId: 'projectId' }, expires);
 
       await helper.withDbClient(async client => {
         const { rows } = await client.query('select name, data, expires from objects');
@@ -27,7 +27,7 @@ suite(testing.suiteName(), function() {
     });
     helper.dbTest('get_object', async function(db, isFake) {
       const expires = fromNow('1 year');
-      await db.fns.upload_object('foo', { projectId: 'projectId' }, expires);
+      await db.fns.create_object('foo', { projectId: 'projectId' }, expires);
       const rows = await db.fns.get_object('foo');
 
       assert.equal(rows.length, 1);
