@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const generator = require('generate-password');
+const { rootCertificates } = require('tls');
 const { WorkerPool, Worker } = require('../data');
 
 const auth = require('@azure/ms-rest-nodeauth');
@@ -68,6 +69,13 @@ function workerConfigWithSecrets(cfg) {
   return newCfg;
 }
 
+// Convert a Subject or Issuer Distinguished Name (DN) to a string
+function dnToString(dn) {
+  return dn.attributes.map(attr => {
+    return `/${attr.shortName}=${attr.value}`;
+  }).join();
+}
+
 class AzureProvider extends Provider {
 
   constructor({
@@ -77,6 +85,40 @@ class AzureProvider extends Provider {
     super(conf);
     this.configSchema = 'config-azure';
     this.providerConfig = providerConfig;
+  }
+
+  // Add a PEM-encoded root certificate rootCertPem
+  //
+  // node-forge doesn't support ECC so it cannot load ECDSA certs (issue #3924).
+  // See https://github.com/digitalbazaar/forge/issues/116 (opened April 2014)
+  // If failIfNotRSA == true, then ECDSA certs throw an Error
+  //
+  // Returns true if the certificate was added.
+  addRootCertPem(rootCertPem, failIfNotRSA = false) {
+    let rootCert = null;
+    try {
+      rootCert = forge.pki.certificateFromPem(rootCertPem);
+    } catch (err) {
+      const notRSA = (err.message !== 'Cannot read public key. OID is not RSA.');
+      if (notRSA || failIfNotRSA) {
+        throw err;
+      }
+    }
+    if (rootCert && !this.caStore.hasCertificate(rootCert)) {
+      this.caStore.addCertificate(rootCert);
+      return true;
+    }
+    return false;
+  }
+
+  // Add an intermediate certificate
+  addIntermediateCert(cert) {
+    const issuer = this.caStore.getIssuer(cert);
+    if (issuer === null) {
+      throw Error(`Issuer "${dnToString(cert.issuer)}"` +
+                  ` for "${dnToString(cert.subject)}" is not a known Root CA`);
+    }
+    this.caStore.addCertificate(cert);
   }
 
   async setup() {
@@ -111,12 +153,18 @@ class AzureProvider extends Provider {
     });
     this._enqueue = cloud.enqueue.bind(cloud);
 
-    // load microsoft intermediate certs from disk
-    // TODO (bug 1607922) : we should download the intermediate certs,
-    //       locations are in the authorityInfoAccess extension
+    // Load root certificates from Node, which get them from the Mozilla CA store.
+    // As of node v12.19.0 (Nov. 2020), this includes 117 certs that node-forge
+    // can load, and 21 it can not (issue #3923)
+    this.caStore = forge.pki.createCaStore();
+    rootCertificates.forEach(pem => this.addRootCertPem(pem));
+
+    // load known microsoft intermediate certs from disk
+    // TODO (issue #3925): Remove these around February 2021, when they are
+    // planned to be revoked.
     let intermediateFiles = [1, 2, 4, 5].map(i => fs.readFileSync(path.resolve(__dirname, `azure-ca-certs/microsoft_it_tls_ca_${i}.pem`)));
     let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
-    this.caStore = forge.pki.createCaStore(intermediateCerts);
+    intermediateCerts.forEach(cert => this.addIntermediateCert(cert));
 
     let credentials = await auth.loginWithServicePrincipalSecret(clientId, secret, domain);
     this.computeClient = new armCompute.ComputeManagementClient(credentials, subscriptionId);
@@ -1040,4 +1088,5 @@ class AzureProvider extends Provider {
 
 module.exports = {
   AzureProvider,
+  dnToString,
 };

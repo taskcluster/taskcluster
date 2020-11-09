@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const assert = require('assert');
 const helper = require('./helper');
 const { FakeAzure } = require('./fakes');
-const { AzureProvider } = require('../src/providers/azure');
+const { AzureProvider, dnToString } = require('../src/providers/azure');
 const testing = require('taskcluster-lib-testing');
 const forge = require('node-forge');
 const fs = require('fs');
@@ -48,6 +48,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   let monitor;
   suiteSetup(async function() {
     monitor = await helper.load('monitor');
+  });
+
+  suite('helpers', function() {
+    const testCertPath = path.resolve(
+      __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_2.pem');
+    const testCert = forge.pki.certificateFromPem(fs.readFileSync(testCertPath));
+
+    test('dnToString of subject', async function() {
+      const dn = dnToString(testCert.subject);
+      assert.equal(
+        dn,
+        '/C=US,/ST=Washington,/L=Redmond,/O=Microsoft Corporation,' +
+        '/OU=Microsoft IT,/CN=Microsoft IT TLS CA 2');
+    });
+
+    test('dnToString of issuer', async function() {
+      const dn = dnToString(testCert.issuer);
+      assert.equal(
+        dn,
+        '/C=IE,/O=Baltimore,/OU=CyberTrust,/CN=Baltimore CyberTrust Root');
+    });
   });
 
   setup(async function() {
@@ -126,6 +147,46 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       vm: fake.computeClient.virtualMachines,
     }[resourceType];
   };
+
+  suite('setup', function(){
+    test('has all Azure root certificates', async function() {
+      // https://docs.microsoft.com/en-us/azure/security/fundamentals/tls-certificate-changes
+      const azureRootCAs = new Map([
+        ['df3c24f9bfd666761b268073fe06d1cc8d4f82a4', 'DigiCert Global Root G2'],
+        ['a8985d3a65e5e5c4b2d7d66d40c6dd2fb19c5436', 'DigiCert Global Root CA'],
+        ['d4de20d05e66fc53fe1a50882c78db2852cae474', 'Baltimore CyberTrust Root'],
+        ['58e8abb0361533fb80f79b1b6d29d3ff8d5f00f0', 'D-TRUST Root Class 3 CA 2 2009'],
+        ['73a5e64a3bff8316ff0edccc618a906e4eae4d74', 'Microsoft RSA Root Certificate Authority 2017'],
+        ['999a64c37ff47d9fab95f14769891460eec4c3c5', 'Microsoft ECC Root Certificate Authority 2017'],
+      ]);
+      // node-forge is unable to load these
+      const forgeProblemRootCAs = new Map([
+        ['73a5e64a3bff8316ff0edccc618a906e4eae4d74', 'Microsoft RSA Root Certificate Authority 2017'],
+        ['999a64c37ff47d9fab95f14769891460eec4c3c5', 'Microsoft ECC Root Certificate Authority 2017'],
+      ]);
+
+      // Calculate the thumbprint of a certificate
+      // From https://github.com/digitalbazaar/forge/issues/596
+      function getThumbprint(cert) {
+        const der = forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).getBytes();
+        const m = forge.md.sha1.create();
+        m.start();
+        m.update(der);
+        const thumbprint = m.digest().toHex().toLowerCase();
+        return thumbprint;
+      }
+
+      // Find matching thumbprints in provider.caStore
+      const caCerts = provider.caStore.listAllCertificates();
+      caCerts.forEach(cert => {
+        const thumbprint = getThumbprint(cert);
+        azureRootCAs.delete(thumbprint);
+      });
+
+      assert.deepEqual(azureRootCAs, forgeProblemRootCAs);
+      assert.equal(azureRootCAs.size, 2);
+    });
+  });
 
   suite('provisioning', function() {
     const provisionWorkerPool = async (launchConfig, overrides) => {
