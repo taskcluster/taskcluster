@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { string, oneOf } from 'prop-types';
-import { paramCase } from 'change-case';
+import { paramCase } from 'param-case';
 import Typography from '@material-ui/core/Typography';
 
 @withStyles(theme => ({

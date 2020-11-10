@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { string, shape, func, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
-import { camelCase } from 'change-case/change-case';
+import { camelCase } from 'camel-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -41,7 +41,7 @@ export default class RolesTable extends Component {
 
   createSortedRolesConnection = memoize(
     (rolesConnection, sortBy, sortDirection) => {
-      const sortByProperty = camelCase(sortBy);
+      const sortByProperty = sortBy ? camelCase(sortBy) : '';
 
       if (!sortBy) {
         return rolesConnection;

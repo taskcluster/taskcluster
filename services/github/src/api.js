@@ -147,7 +147,7 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
   let statuses;
 
   try {
-    statuses = (await github.repos.listStatusesForRef({ owner, repo, ref: branch })).data;
+    statuses = (await github.repos.listCommitStatusesForRef({ owner, repo, ref: branch })).data;
   } catch (e) {
     if (e.code === 404) {
       return undefined;
@@ -432,7 +432,7 @@ builder.declare({
 
   if (instGithub) {
     try {
-      let reposList = await instGithub.apps.listRepos({});
+      let reposList = await instGithub.apps.listReposAccessibleToInstallation({});
 
       while (true) {
         let installed = reposList.data.repositories.map(repo => repo.name).indexOf(repo);
@@ -516,7 +516,7 @@ builder.declare({
 
   if (instGithub) {
     try {
-      await instGithub.repos.createStatus({
+      await instGithub.repos.createCommitStatus({
         owner,
         repo,
         sha,

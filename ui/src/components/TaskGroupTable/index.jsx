@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { string, arrayOf, oneOf, shape } from 'prop-types';
 import classNames from 'classnames';
 import { curry, pipe, map, sort as rSort } from 'ramda';
-import { lowerCase } from 'change-case';
+import { lowerCase } from 'lower-case';
 import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import { FixedSizeList as List } from 'react-window';
@@ -49,7 +49,7 @@ const filterTasksByState = curry((filter, tasks) =>
 const filterTasksByName = curry((searchTerm, tasks) =>
   searchTerm
     ? tasks.filter(({ node: { metadata: { name } } }) =>
-        lowerCase(name).includes(searchTerm)
+        (name ? lowerCase(name) : '').includes(searchTerm)
       )
     : tasks
 );
@@ -207,7 +207,7 @@ export default class TaskGroupTable extends Component {
       sortBy,
       sortDirection,
       filter,
-      lowerCase(searchTerm)
+      searchTerm ? lowerCase(searchTerm) : ''
     );
     const itemCount = items.length;
     const ItemRenderer = ({ index, style }) => {

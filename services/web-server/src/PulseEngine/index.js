@@ -28,11 +28,12 @@ module.exports = class PulseEngine {
       return;
     }
 
-    this.reset();
-    this.client.onConnected(conn => this.connected(conn));
-
     const sync = pSynchronize();
     this.innerReconcileSubscriptions = sync(() => this._innerReconcileSubscriptions());
+
+    this.reset();
+    // note that this may callback right away, so do it last-thing in the constructor.
+    this.client.onConnected(conn => this.connected(conn));
   }
 
   reset() {

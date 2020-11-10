@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { shape, func, arrayOf, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
-import { camelCase } from 'change-case/change-case';
+import { camelCase } from 'camel-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -38,7 +38,7 @@ export default class ClientsTable extends Component {
 
   createSortedClientsConnection = memoize(
     (clientsConnection, sortBy, sortDirection) => {
-      const sortByProperty = camelCase(sortBy);
+      const sortByProperty = sortBy ? camelCase(sortBy) : '';
 
       if (!sortBy) {
         return clientsConnection;

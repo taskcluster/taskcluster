@@ -774,7 +774,7 @@ def test_permacred_simple():
         'clientScopes': ['test:a'],
         'requiredScopes': ['test:a'],
     })
-    assert result == {'scopes': ['test:a'], 'clientId': 'tester'}
+    assert result == {'scopes': ['assume:anonymous', 'test:a'], 'clientId': 'tester'}
 
 
 def test_permacred_simple_authorizedScopes():
@@ -790,7 +790,7 @@ def test_permacred_simple_authorizedScopes():
         'clientScopes': ['test:*'],
         'requiredScopes': ['test:a'],
     })
-    assert result == {'scopes': ['test:a', 'test:b'], 'clientId': 'tester'}
+    assert result == {'scopes': ['assume:anonymous', 'test:a', 'test:b'], 'clientId': 'tester'}
 
 
 def test_unicode_permacred_simple():
@@ -806,7 +806,7 @@ def test_unicode_permacred_simple():
         'clientScopes': ['test:a'],
         'requiredScopes': ['test:a'],
     })
-    assert result == {'scopes': ['test:a'], 'clientId': 'tester'}
+    assert result == {'scopes': ['assume:anonymous', 'test:a'], 'clientId': 'tester'}
 
 
 def test_invalid_unicode_permacred_simple():
@@ -856,7 +856,7 @@ def test_temporary_credentials():
         'clientScopes': ['test:*'],
         'requiredScopes': ['test:xyz'],
     })
-    assert result == {'scopes': ['test:xyz'], 'clientId': 'tester'}
+    assert result == {'scopes': ['assume:anonymous', 'test:xyz'], 'clientId': 'tester'}
 
 
 def test_named_temporary_credentials():
@@ -877,7 +877,7 @@ def test_named_temporary_credentials():
         'clientScopes': ['test:*', 'auth:create-client:credName'],
         'requiredScopes': ['test:xyz'],
     })
-    assert result == {'scopes': ['test:xyz'], 'clientId': 'credName'}
+    assert result == {'scopes': ['assume:anonymous', 'test:xyz'], 'clientId': 'credName'}
 
 
 def test_temporary_credentials_authorizedScopes():
@@ -898,7 +898,7 @@ def test_temporary_credentials_authorizedScopes():
         'clientScopes': ['test:*'],
         'requiredScopes': ['test:xyz:abc'],
     })
-    assert result == {'scopes': ['test:xyz:abc'], 'clientId': 'tester'}
+    assert result == {'scopes': ['assume:anonymous', 'test:xyz:abc'], 'clientId': 'tester'}
 
 
 def test_named_temporary_credentials_authorizedScopes():
@@ -920,7 +920,7 @@ def test_named_temporary_credentials_authorizedScopes():
         'clientScopes': ['test:*', 'auth:create-client:credName'],
         'requiredScopes': ['test:xyz:abc'],
     })
-    assert result == {'scopes': ['test:xyz:abc'], 'clientId': 'credName'}
+    assert result == {'scopes': ['assume:anonymous', 'test:xyz:abc'], 'clientId': 'credName'}
 
 
 def test_signed_url():
@@ -938,7 +938,7 @@ def test_signed_url():
     response = response.json()
     response['scopes'].sort()
     assert response == {
-        'scopes': sorted(['test:*', u'auth:create-client:test:*']),
+        'scopes': sorted(['assume:anonymous', 'test:*', u'auth:create-client:test:*']),
         'clientId': 'tester',
     }
 
@@ -975,7 +975,7 @@ def test_temp_credentials_signed_url():
     response.raise_for_status()
     response = response.json()
     assert response == {
-        'scopes': ['test:*'],
+        'scopes': ['assume:anonymous', 'test:*'],
         'clientId': 'tester',
     }
 
@@ -994,7 +994,7 @@ def test_signed_url_authorizedScopes():
     response.raise_for_status()
     response = response.json()
     assert response == {
-        'scopes': ['test:authenticate-get'],
+        'scopes': ['assume:anonymous', 'test:authenticate-get'],
         'clientId': 'tester',
     }
 
@@ -1017,6 +1017,6 @@ def test_temp_credentials_signed_url_authorizedScopes():
     response.raise_for_status()
     response = response.json()
     assert response == {
-        'scopes': ['test:authenticate-get'],
+        'scopes': ['assume:anonymous', 'test:authenticate-get'],
         'clientId': 'tester',
     }

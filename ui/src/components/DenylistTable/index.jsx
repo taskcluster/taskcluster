@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { string, shape, func, arrayOf } from 'prop-types';
-import { titleCase, upperCase } from 'change-case';
+import { titleCase } from 'title-case';
+import { upperCase } from 'upper-case';
 import classNames from 'classnames';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';

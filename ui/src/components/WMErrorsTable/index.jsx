@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import { camelCase } from 'change-case';
+import { camelCase } from 'camel-case';
 import memoize from 'fast-memoize';
 import { shape, arrayOf, string, func } from 'prop-types';
 import IconButton from '@material-ui/core/IconButton';
@@ -85,7 +85,7 @@ export default class WorkerManagerErrorsTable extends Component {
 
   sortErrors = memoize(
     (errorsConnection, sortBy, sortDirection, searchTerm) => {
-      const sortByProperty = camelCase(sortBy);
+      const sortByProperty = sortBy ? camelCase(sortBy) : '';
       // filter
       const filtered = {
         ...errorsConnection,
