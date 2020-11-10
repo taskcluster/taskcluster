@@ -5491,7 +5491,7 @@
     },
     {
       "description": "add upload db fn to objects service",
-      "downgradeScript": "begin\n    alter table objects drop column backend_id text;\n    alter table objects drop column project_id text;\nend\n",
+      "downgradeScript": "begin\n    alter table objects drop column backend_id;\n    alter table objects drop column project_id;\nend\n",
       "methods": {
         "create_object": {
           "args": "name_in text, project_id_in text, backend_id_in text, data_in jsonb, expires_in timestamptz",

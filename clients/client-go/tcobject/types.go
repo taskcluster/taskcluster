@@ -3,10 +3,42 @@
 package tcobject
 
 import (
+	"encoding/json"
+	"errors"
+
 	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
 )
 
 type (
+	Details struct {
+		URL string `json:"url"`
+	}
+
+	// Download object request.
+	DownloadObjectRequest struct {
+
+		// Array items:
+		// Supported protocols.
+		//
+		// Possible values:
+		//   * "HTTP:GET"
+		AcceptProtocols []string `json:"acceptProtocols"`
+	}
+
+	// Download object request.
+	DownloadObjectRequest1 struct {
+		Details Details `json:"details"`
+
+		// Constant value: "HTTP:GET"
+		Protocol string `json:"protocol"`
+	}
+
+	// Download object response.
+	//
+	// One of:
+	//   * DownloadObjectRequest1
+	DownloadObjectResponse json.RawMessage
+
 	// Representation of the object entry to insert.
 	UploadObjectRequest struct {
 
@@ -17,3 +49,19 @@ type (
 		ProjectID string `json:"projectId"`
 	}
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// DownloadObjectResponse is of type json.RawMessage...
+func (this *DownloadObjectResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *DownloadObjectResponse) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("DownloadObjectResponse: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
