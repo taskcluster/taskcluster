@@ -156,9 +156,11 @@ export default class ConnectionDataTable extends Component {
     };
   }
 
-  handleHeaderClick = ({ target }) => {
-    if (this.props.onHeaderClick) {
-      this.props.onHeaderClick(target.id);
+  handleHeaderClick = header => {
+    const { onHeaderClick } = this.props;
+
+    if (onHeaderClick) {
+      onHeaderClick(header);
     }
   };
 
@@ -254,7 +256,7 @@ export default class ConnectionDataTable extends Component {
                         id={header}
                         active={header === sortByHeader}
                         direction={sortDirection || 'desc'}
-                        onClick={this.handleHeaderClick}>
+                        onClick={() => this.handleHeaderClick(header)}>
                         {header}
                       </TableSortLabel>
                     </TableCell>
