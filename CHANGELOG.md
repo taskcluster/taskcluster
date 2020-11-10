@@ -3,6 +3,79 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v38.0.4
+
+### DEPLOYERS
+
+▶ [patch] 
+Setting a node `DEBUG` env var via the `debug` field of service configs is supported again.
+If left unset it will default to `''`. Example:
+
+```yaml
+auth:
+    debug: '*'
+```
+
+### USERS
+
+▶ [patch] [#3865](https://github.com/taskcluster/taskcluster/issues/3865)
+Livelog TLS support is now functional.
+
+▶ [patch] [#3851](https://github.com/taskcluster/taskcluster/issues/3851)
+The GitHub quickstart tool now generates correct `.taskcluster.yml` files, among other bugfixes.
+
+▶ [patch] [#3836](https://github.com/taskcluster/taskcluster/issues/3836)
+The web UI no longer fails with "ext.certificate.expiry < now".
+
+▶ [patch] [#3831](https://github.com/taskcluster/taskcluster/issues/3831)
+This version fixes an issue introduced in v38.0.0 which would cause the log viewer to display 401 errors.
+
+### DEVELOPERS
+
+▶ [patch] 
+Config types of `env:list` now generate the correct type in helm schemas.
+
+## v38.0.3
+
+### DEVELOPERS
+
+▶ [patch] 
+Fix one usage of Octokit in release machinery to fix releases
+
+## v38.0.2
+
+### GENERAL
+
+▶ [patch] [#3843](https://github.com/taskcluster/taskcluster/issues/3843)
+Two bugs were fixed that together made it so that tasks could not use indexed images.
+
+First is that docker-worker now correctly uses the task's credentials rather than
+its own to query the index.
+Second is that scopes are now expanded prior to limiting them with `authorizedScopes`
+in addition to afterward.
+
+### DEPLOYERS
+
+▶ [patch] [bug 3759](http://bugzil.la/3759)
+As of this version, the DB upgrade process correctly checks access rights and table structures of the Postgres database.
+
+### USERS
+
+▶ [patch] [#3839](https://github.com/taskcluster/taskcluster/issues/3839)
+This version fixes an error ("e.artifacts is undefined") in the UI when viewing a task without credentials.  It also improves error reporting from the UI in general.
+
+▶ [patch] 
+This version includes an explicit scope to allow the github service to list task groups.  Without this, GitHub projects using the older status API will appear "running" forever.
+
+### DEVELOPERS
+
+▶ [patch] [#3733](https://github.com/taskcluster/taskcluster/issues/3733)
+The database abstraction layer now supports "online" migrations, iterating over large tables without blocking production use of those tables.  These migrations are entirely managed by the existing `db:upgrade` and `db:downgrade` functions, so this presents no change for deployers.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1609067](http://bugzil.la/1609067), [#3721](https://github.com/taskcluster/taskcluster/issues/3721), [#3731](https://github.com/taskcluster/taskcluster/issues/3731), [#3732](https://github.com/taskcluster/taskcluster/issues/3732), [#3804](https://github.com/taskcluster/taskcluster/issues/3804), [#3807](https://github.com/taskcluster/taskcluster/issues/3807), [#3827](https://github.com/taskcluster/taskcluster/issues/3827), [#3834](https://github.com/taskcluster/taskcluster/issues/3834).
+
 ## v38.0.1
 
 ### DEVELOPERS

@@ -63,7 +63,7 @@ module.exports = async ({ userConfig, answer, configTmpl }) => {
   setDefault('github.bot_username', '???');
   setDefault('github.github_private_pem', '???');
   setDefault('github.github_app_id', '???');
-  setDefault('github.webhook_secret', []);
+  setDefault('github.webhook_secret', '???');
 
   // TODO: This eventually should just build these from rootUrl itself probably
   setDefault('ui.graphql_subscription_endpoint', `${rootUrl}/subscription`);

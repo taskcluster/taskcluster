@@ -1,4 +1,6 @@
-import { lowerCase, titleCase, upperCase } from 'change-case';
+import { lowerCase } from 'lower-case';
+import { titleCase } from 'title-case';
+import { upperCase } from 'upper-case';
 import { map, split, join, pipe } from 'ramda';
 import { KNOWN_ACRONYMS } from './constants';
 

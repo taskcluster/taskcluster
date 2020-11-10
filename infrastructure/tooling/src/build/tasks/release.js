@@ -1,4 +1,4 @@
-const Octokit = require('@octokit/rest');
+const { Octokit } = require('@octokit/rest');
 const fs = require('fs');
 const util = require('util');
 const path = require('path');
