@@ -13,6 +13,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     db = helper.db;
     monitor = await helper.load('monitor');
     cfg = await helper.load('cfg');
+    helper.load.cfg('backends', {});
+    helper.load.cfg('backendMap', []);
   });
 
   test('fails when unknown backend type is given', async function() {
