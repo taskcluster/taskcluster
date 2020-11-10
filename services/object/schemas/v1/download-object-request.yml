@@ -1,0 +1,17 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Download Object Request"
+description: |
+  Download object request.
+type:               object
+properties:
+  acceptProtocols:
+    type: array
+    title: "Supported protocols"
+    uniqueItems: true
+    items:
+      type: string
+      enum: ['HTTP:GET']
+      description: "Supported protocols."
+additionalProperties: false
+required:
+  - acceptProtocols

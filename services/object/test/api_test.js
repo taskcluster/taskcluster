@@ -22,4 +22,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(rows[0].backend_id, 'testBackend');
     assert.deepEqual(rows[0].data, {});
   });
+
+  test('should be able to call downloadObject', async function() {
+    await helper.apiClient.downloadObject('public/foo', { acceptProtocols: ['HTTP:GET'] });
+  });
 });
