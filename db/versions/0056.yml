@@ -1,0 +1,52 @@
+version: 56
+description: get expired objects and delete them in different db methods, and add primary key
+migrationScript: |-
+  begin
+    alter table objects add primary key (name);
+  end
+downgradeScript: |-
+  begin
+    alter table objects drop constraint objects_pkey;
+  end
+methods:
+  expire_objects:
+    deprecated: true
+  get_expired_objects:
+    description: |-
+      Get objects with an expiration before the current time.  If given, only
+      objects with a name greater than `start_at_in` are returned.  The
+      `limit_in` argument limits the number of results returned.
+    mode: read
+    serviceName: object
+    args: 'limit_in integer, start_at_in text'
+    returns: table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          objects.name,
+          objects.data,
+          objects.project_id,
+          objects.backend_id,
+          objects.expires
+        from objects
+        where
+          (start_at_in is null or objects.name > start_at_in) and
+          objects.expires < now()
+        order by name
+        limit limit_in;
+      end
+  delete_object:
+    description: |-
+      Delete an object.
+    mode: write
+    serviceName: object
+    args: 'name_in text'
+    returns: void
+    body: |-
+      begin
+        delete
+        from objects
+        where name = name_in;
+      end
+

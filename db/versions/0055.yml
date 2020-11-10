@@ -18,12 +18,20 @@ methods:
       end
   get_object:
     description: |-
-      Get an object.
+      Get an object by name, or an empty set if no such object exists.
     mode: read
     serviceName: object
     args: name_in text
     returns: table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)
     body: |-
       begin
-        return query select objects.name, objects.data, objects.project_id, objects.backend_id, objects.expires from objects where objects.name = name_in;
+        return query
+        select
+          objects.name,
+          objects.data,
+          objects.project_id,
+          objects.backend_id,
+          objects.expires
+        from objects
+        where objects.name = name_in;
       end
