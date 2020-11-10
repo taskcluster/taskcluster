@@ -55,8 +55,7 @@ jobs:
     run:
       command: yarn release:publish --logs-dir $(pwd)/release-debug-logs
     routes:
-      # TODO: (taskcluster/taskcluster#3684) replace with on-resolved
-      - notify.email.taskcluster-notifications@mozilla.com.on-any
+      - notify.email.taskcluster-notifications@mozilla.com.on-resolved
     scopes:
       - secrets:get:project/taskcluster/release
     extra:
