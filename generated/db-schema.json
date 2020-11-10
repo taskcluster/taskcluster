@@ -5467,31 +5467,8 @@
       "version": 52
     },
     {
-      "description": "objects table MVP",
-      "downgradeScript": "begin\n  revoke select, insert, update, delete on objects from $db_user_prefix$_object;\n  drop table objects;\nend\n\n",
-      "methods": {
-      },
-      "migrationScript": "begin\n  create table objects (\n    name text not null,\n    data jsonb not null,\n    expires timestamptz not null\n  );\n  grant select, insert, update, delete on objects to $db_user_prefix$_object;\nend\n",
-      "version": 53
-    },
-    {
-      "description": "add expiration db fn to objects service",
-      "methods": {
-        "expire_objects": {
-          "args": "",
-          "body": "declare\n  count integer;\nbegin\n  delete from objects where objects.expires < now();\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
-          "deprecated": false,
-          "description": "Delete objects that expire before the current time.\nReturns a count of rows that have been deleted.",
-          "mode": "write",
-          "returns": "integer",
-          "serviceName": "object"
-        }
-      },
-      "version": 54
-    },
-    {
-      "description": "add upload db fn to objects service",
-      "downgradeScript": "begin\n    alter table objects drop column backend_id;\n    alter table objects drop column project_id;\nend\n",
+      "description": "Add objects table and functions",
+      "downgradeScript": "begin\n  revoke select, insert, update, delete on objects from $db_user_prefix$_object;\n  drop table objects;\nend",
       "methods": {
         "create_object": {
           "args": "name_in text, project_id_in text, backend_id_in text, data_in jsonb, expires_in timestamptz",
@@ -5500,6 +5477,24 @@
           "description": "Upload object.",
           "mode": "write",
           "returns": "void",
+          "serviceName": "object"
+        },
+        "delete_object": {
+          "args": "name_in text",
+          "body": "begin\n  delete\n  from objects\n  where name = name_in;\nend",
+          "deprecated": false,
+          "description": "Delete an object.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "object"
+        },
+        "get_expired_objects": {
+          "args": "limit_in integer, start_at_in text",
+          "body": "begin\n  return query\n  select\n    objects.name,\n    objects.data,\n    objects.project_id,\n    objects.backend_id,\n    objects.expires\n  from objects\n  where\n    (start_at_in is null or objects.name > start_at_in) and\n    objects.expires < now()\n  order by name\n  limit limit_in;\nend",
+          "deprecated": false,
+          "description": "Get objects with an expiration before the current time.  If given, only\nobjects with a name greater than `start_at_in` are returned.  The\n`limit_in` argument limits the number of results returned.",
+          "mode": "read",
+          "returns": "table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)",
           "serviceName": "object"
         },
         "get_object": {
@@ -5512,37 +5507,8 @@
           "serviceName": "object"
         }
       },
-      "migrationScript": "begin\n    alter table objects add column backend_id text not null default '';\n    alter table objects add column project_id text not null default '';\nend\n",
-      "version": 55
-    },
-    {
-      "description": "get expired objects and delete them in different db methods, and add primary key",
-      "downgradeScript": "begin\n  alter table objects drop constraint objects_pkey;\nend",
-      "methods": {
-        "delete_object": {
-          "args": "name_in text",
-          "body": "begin\n  delete\n  from objects\n  where name = name_in;\nend",
-          "deprecated": false,
-          "description": "Delete an object.",
-          "mode": "write",
-          "returns": "void",
-          "serviceName": "object"
-        },
-        "expire_objects": {
-          "deprecated": true
-        },
-        "get_expired_objects": {
-          "args": "limit_in integer, start_at_in text",
-          "body": "begin\n  return query\n  select\n    objects.name,\n    objects.data,\n    objects.project_id,\n    objects.backend_id,\n    objects.expires\n  from objects\n  where\n    (start_at_in is null or objects.name > start_at_in) and\n    objects.expires < now()\n  order by name\n  limit limit_in;\nend",
-          "deprecated": false,
-          "description": "Get objects with an expiration before the current time.  If given, only\nobjects with a name greater than `start_at_in` are returned.  The\n`limit_in` argument limits the number of results returned.",
-          "mode": "read",
-          "returns": "table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)",
-          "serviceName": "object"
-        }
-      },
-      "migrationScript": "begin\n  alter table objects add primary key (name);\nend",
-      "version": 56
+      "migrationScript": "begin\n  create table objects (\n    name text not null,\n    data jsonb not null,\n    backend_id text not null,\n    project_id text not null,\n    expires timestamptz not null\n  );\n  alter table objects add primary key (name);\n\n  grant select, insert, update, delete on objects to $db_user_prefix$_object;\nend",
+      "version": 53
     }
   ]
 }

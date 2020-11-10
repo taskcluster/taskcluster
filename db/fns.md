@@ -1016,10 +1016,6 @@ objects with a name greater than `start_at_in` are returned.  The
 
 Get an object by name, or an empty set if no such object exists.
 
-### deprecated methods
-
-* `expire_objects()` (compatibility guaranteed until v40.0.0)
-
 ## purge_cache
 
 * [`all_purge_requests_wpid`](#all_purge_requests_wpid)
