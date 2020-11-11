@@ -1,4 +1,4 @@
-const waitForEvent = require('../../src/lib/wait_for_event');
+const waitForEvent = require('../../src/wait_for_event');
 const settings = require('../settings');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');

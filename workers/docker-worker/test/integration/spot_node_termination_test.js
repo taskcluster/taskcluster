@@ -1,12 +1,12 @@
 const slugid = require('slugid');
-const Docker = require('../../src/lib/docker');
+const Docker = require('../../src/docker');
 const dockerUtils = require('dockerode-process/utils');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
 const settings = require('../settings');
 const getArtifact = require('./helper/get_artifact');
 const sleep = require('./helper/sleep');
-const waitForEvent = require('../../src/lib/wait_for_event');
+const waitForEvent = require('../../src/wait_for_event');
 const assert = require('assert');
 const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');

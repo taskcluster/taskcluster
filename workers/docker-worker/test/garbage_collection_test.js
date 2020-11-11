@@ -1,18 +1,18 @@
 const { suiteName } = require('taskcluster-lib-testing');
 const libUrls = require('taskcluster-lib-urls');
-const ImageManager = require('../src/lib/docker/image_manager');
-const sleep = require('../src/lib/util/sleep');
-const VolumeCache = require('../src/lib/volume_cache');
+const ImageManager = require('../src/docker/image_manager');
+const sleep = require('../src/util/sleep');
+const VolumeCache = require('../src/volume_cache');
 const assert = require('assert');
 const Debug = require('debug');
 const fs = require('fs');
 const devnull = require('dev-null');
-const Docker = require('../src/lib/docker');
-const GarbageCollector = require('../src/lib/gc');
-const { createLogger } = require('../src/lib/log');
+const Docker = require('../src/docker');
+const GarbageCollector = require('../src/gc');
+const { createLogger } = require('../src/log');
 const path = require('path');
 const rmrf = require('rimraf');
-const { removeImage } = require('../src/lib/util/remove_image');
+const { removeImage } = require('../src/util/remove_image');
 const monitor = require('./fixtures/monitor');
 const helper = require('./helper');
 

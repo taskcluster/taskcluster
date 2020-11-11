@@ -6,7 +6,7 @@ grants a particular permission level based on the task scopes.
 const promiseRetry = require('promise-retry');
 const waitForPort = require('../wait_for_port');
 const http = require('http');
-const { version: workerVersion } = require('../../../package.json');
+const { version: workerVersion } = require('../../package.json');
 
 // Alias used to link the proxy.
 const ALIAS = 'taskcluster';

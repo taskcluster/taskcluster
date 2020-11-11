@@ -1,4 +1,4 @@
-const uploadToS3 = require('../src/lib/upload_to_s3');
+const uploadToS3 = require('../src/upload_to_s3');
 const assert = require('assert');
 const temporary = require('temporary');
 const fs = require('fs');

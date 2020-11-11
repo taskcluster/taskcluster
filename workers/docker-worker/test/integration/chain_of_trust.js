@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const assert = require('assert');
-const Docker = require('../../src/lib/docker');
+const Docker = require('../../src/docker');
 const fs = require('mz/fs');
 const getArtifact = require('./helper/get_artifact');
 const cmd = require('./helper/cmd');
@@ -9,7 +9,7 @@ const testworker = require('../post_task');
 const tweetnacl = require('tweetnacl');
 const taskcluster = require('taskcluster-client');
 const got = require('got');
-const { removeImage } = require('../../src/lib/util/remove_image');
+const { removeImage } = require('../../src/util/remove_image');
 const helper = require('../helper');
 const { TASK_ID, TASK_IMAGE_HASH, TASK_IMAGE_ARTIFACT_HASH } = require('../fixtures/image_artifacts');
 

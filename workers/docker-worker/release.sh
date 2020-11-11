@@ -19,7 +19,7 @@ cat > $DW_ROOT/bin/docker-worker <<'EOF'
 #! /bin/bash
 DW_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"
 NODE=$DW_ROOT/node/bin/node
-exec $NODE $DW_ROOT/src/bin/worker.js "${@}"
+exec $NODE $DW_ROOT/src/main.js "${@}"
 EOF
 chmod +x $DW_ROOT/bin/docker-worker
 

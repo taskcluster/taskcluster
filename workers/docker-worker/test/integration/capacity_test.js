@@ -1,13 +1,13 @@
 const assert = require('assert');
 const devnull = require('dev-null');
-const waitForEvent = require('../../src/lib/wait_for_event');
+const waitForEvent = require('../../src/wait_for_event');
 const settings = require('../settings');
 const cmd = require('./helper/cmd');
-const Docker = require('../../src/lib/docker');
+const Docker = require('../../src/docker');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
-const ImageManager = require('../../src/lib/docker/image_manager');
-const { createLogger } = require('../../src/lib/log');
+const ImageManager = require('../../src/docker/image_manager');
+const { createLogger } = require('../../src/log');
 const promiseRetry = require('promise-retry');
 const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');

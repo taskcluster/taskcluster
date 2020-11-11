@@ -2,7 +2,7 @@ let spawn = require('child_process').spawn;
 
 /** Binary to launch inorder to get a worker instance running */
 const BINARY = 'node';
-const STARTUP_SCRIPT = __dirname + '/../src/bin/worker.js';
+const STARTUP_SCRIPT = __dirname + '/../src/main.js';
 
 function eventPromise(listener, event) {
   return new Promise(function(accept, reject) {
@@ -48,7 +48,7 @@ class LocalWorker {
       ];
 
       if (global.asyncDump) {
-        args.concat(['--require', '../src/lib/async-dump']);
+        args.concat(['--require', '../src/async-dump']);
       }
 
       args.push(STARTUP_SCRIPT);

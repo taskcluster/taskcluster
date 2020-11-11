@@ -1,5 +1,5 @@
 const assert = require('assert');
-const waitForEvent = require('../../src/lib/wait_for_event');
+const waitForEvent = require('../../src/wait_for_event');
 const settings = require('../settings');
 const cmd = require('./helper/cmd');
 const DockerWorker = require('../dockerworker');

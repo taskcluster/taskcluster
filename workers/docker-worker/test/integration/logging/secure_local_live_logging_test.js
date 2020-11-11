@@ -8,7 +8,7 @@ const DockerWorker = require('../../dockerworker');
 const helper = require('../../helper');
 const settings = require('../../settings');
 const TestWorker = require('../../testworker');
-const waitForEvent = require('../../../src/lib/wait_for_event');
+const waitForEvent = require('../../../src/wait_for_event');
 
 suite('secure local live logging', () => {
   let worker;

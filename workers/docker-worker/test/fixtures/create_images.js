@@ -3,7 +3,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const mime = require('mime');
 const taskcluster = require('taskcluster-client');
-const uploadToS3 = require('../../src/lib/upload_to_s3');
+const uploadToS3 = require('../../src/upload_to_s3');
 const Docker = require('dockerode');
 const helper = require('../helper');
 
