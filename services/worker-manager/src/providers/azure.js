@@ -579,43 +579,32 @@ class AzureProvider extends Provider {
    * This function is expected to be called several times per worker as
    * resources are created.
    */
+
   async provisionResources({ worker, monitor }) {
+    
+    let ipErrorFlag = false;
+    let nicErrorFlag = false;
+
+    try {
       // IP
       let ipConfig = {
         location: worker.providerData.location,
         publicIPAllocationMethod: 'Dynamic',
       };
+      worker = await this.provisionResource({
+        worker,
+        client: this.networkClient.publicIPAddresses,
+        resourceType: 'ip',
+        resourceConfig: ipConfig,
+        modifyFn: () => {},
+        monitor,
+      });
 
-      try{
-        worker = await this.provisionResource({
-          worker,
-          client: this.networkClient.publicIPAddresses,
-          resourceType: 'ip',
-          resourceConfig: ipConfig,
-          modifyFn: () => {},
-          monitor,
-        });
-      } catch (err) {
-          const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
-          // we create multiple resources in order to provision a VM
-          // if we catch an error we want to deprovision those resources
-          if (workerPool) {
-            await this.reportError({
-              workerPool,
-              kind: 'creation-error',
-              title: 'IP Creation Error',
-              description: err.message,
-            });
-          }
-          await this.removeWorker({ worker, reason: `IP Creation Error: ${err.message}` });
-          
-          return;
-        }
+      ipErrorFlag = true;
 
       if (!worker.providerData.ip.id) {
         return;
       }
-
 
       // NIC
       let nicConfig = {
@@ -642,37 +631,20 @@ class AzureProvider extends Provider {
           },
         ];
       };
+      worker = await this.provisionResource({
+        worker,
+        client: this.networkClient.networkInterfaces,
+        resourceType: 'nic',
+        resourceConfig: nicConfig,
+        modifyFn: nicModifyFunc,
+        monitor,
+      });
 
-      try{
-        worker = await this.provisionResource({
-          worker,
-          client: this.networkClient.networkInterfaces,
-          resourceType: 'nic',
-          resourceConfig: nicConfig,
-          modifyFn: nicModifyFunc,
-          monitor,
-        });
-      } catch (err) {
-          const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
-          // we create multiple resources in order to provision a VM
-          // if we catch an error we want to deprovision those resources
-          if (workerPool) {
-            await this.reportError({
-              workerPool,
-              kind: 'creation-error',
-              title: 'NIC Creation Error',
-              description: err.message,
-            });
-          }
-          await this.removeWorker({ worker, reason: `NIC Creation Error: ${err.message}` });
-
-          return ;
-        }
-
+      nicErrorFlag = true;
+      
       if (!worker.providerData.nic.id) {
         return;
       }
-
 
       // VM
       let vmModifyFunc = (w, vm) => {
@@ -691,33 +663,14 @@ class AzureProvider extends Provider {
         }
         w.providerData.disks = disks;
       };
-      
-      try{
-        worker = await this.provisionResource({
-          worker,
-          client: this.computeClient.virtualMachines,
-          resourceType: 'vm',
-          resourceConfig: workerConfigWithSecrets(worker.providerData.vm.config),
-          modifyFn: vmModifyFunc,
-          monitor,
-        });
-      } catch (err) {
-        const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
-        // we create multiple resources in order to provision a VM
-        // if we catch an error we want to deprovision those resources
-        if (workerPool) {
-          await this.reportError({
-            workerPool,
-            kind: 'creation-error',
-            title: 'VM Creation Error',
-            description: err.message,
-          });
-        }
-        await this.removeWorker({ worker, reason: `VM Creation Error: ${err.message}` });
-        
-        return;
-      }
-
+      worker = await this.provisionResource({
+        worker,
+        client: this.computeClient.virtualMachines,
+        resourceType: 'vm',
+        resourceConfig: workerConfigWithSecrets(worker.providerData.vm.config),
+        modifyFn: vmModifyFunc,
+        monitor,
+      });
       if (!worker.providerData.vm.id) {
         return;
       }
@@ -725,8 +678,35 @@ class AzureProvider extends Provider {
       // Here, the worker is full provisioned, but we do not mark it RUNNING until
       // it calls registerWorker.
       return;
+    } catch (err) {
+      const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
+      // we create multiple resources in order to provision a VM
+      // if we catch an error we want to deprovision those resources
 
+      let titleString = ""; 
+
+      if(ipErrorFlag === false){
+        titleString = "IP Creation Error";
+      }
+      else if (nicErrorFlag === false){
+        titleString = "NIC Creation Error";
+      }
+      else{
+        titleString = "VM Creation Error";
+      }
+
+      if (workerPool) {
+        await this.reportError({
+          workerPool,
+          kind: 'creation-error',
+          title: titleString,
+          description: err.message,
+        });
+      }
+      await this.removeWorker({ worker, reason: titleString + `: ${err.message}` });
+    }
   }
+
 
   async fetchVmInfo(worker) {
     const { provisioningState, vmId } = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
