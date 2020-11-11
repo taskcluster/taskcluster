@@ -419,6 +419,59 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(err.statusCode === 404, 'expected 404');
   });
 
+  test('queue.declareProvisioner for a non-existing provisioner returns an error response', async () => {
+    const provisionerId = 'prov1-extended-extended-extended';
+    const updateProps = {
+      description: 'desc-provisioner',
+      actions: [{
+        name: 'kill',
+        title: 'Kill Provisioner',
+        context: 'provisioner',
+        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle/<provisionerId>',
+        method: 'DELETE',
+        description: 'Remove provisioner desc-provisioner',
+      }],
+    };
+
+    let err;
+    try {
+      await helper.queue.declareProvisioner(provisionerId, updateProps);
+    } catch (e) {
+      err = e;
+    }
+    assert(err, 'expected an error');
+    assert(err.statusCode === 404, 'expected 404');
+  });
+
+  test('queue.declareProvisioner returns existing provisioner without updating', async () => {
+    const provisionerId = 'prov1-extended-extended-extended';
+    const taskQueue = await makeTaskQueue({
+      taskQueueId: `${provisionerId}/not-important`,
+    });
+
+    const updateProps = {
+      description: 'desc-provisioner',
+      actions: [{
+        name: 'kill',
+        title: 'Kill Provisioner',
+        context: 'provisioner',
+        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle/<provisionerId>',
+        method: 'DELETE',
+        description: 'Remove provisioner desc-provisioner',
+      }],
+    };
+
+    await helper.queue.declareProvisioner(provisionerId, updateProps);
+
+    const result = await helper.queue.getProvisioner(provisionerId);
+
+    assert(result.provisionerId === provisionerId, `expected ${provisionerId}`);
+    assert(result.description === '', `expected ''`);
+    assert(result.stability === 'experimental', `expected 'experimental'`);
+    assert(result.actions.length === 0, `expected no actions`);
+    assert(new Date(result.expires).getTime() === taskQueue.expires.getTime(), `expected ${taskQueue.expires}`);
+  });
+
   test('worker-type lastDateActive updates', async () => {
     let result;
     const workerInfo = await helper.load('workerInfo');
@@ -462,8 +515,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let { provisionerId } = splitTaskQueueId(tQueue.taskQueueId);
     result = await helper.queue.getProvisioner(provisionerId);
 
-    assert(new Date(result.lastDateActive).getTime() === tQueue.lastDateActive.getTime(),
-      `expected ${tQueue.lastDateActive}`);
+    assert(new Date(result.lastDateActive).getTime() === tQueue.lastDateActive.getTime(), `expected ${tQueue.lastDateActive}`);
 
     tQueue.lastDateActive = taskcluster.fromNow('- 7h');
     tQueue.taskQueueId = 'prov2/not-important';
@@ -473,8 +525,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     result = await helper.queue.getProvisioner(provisionerId);
 
-    assert(new Date(result.lastDateActive).getTime() !== tQueue.lastDateActive.getTime(),
-      'expected different lastDateActive');
+    assert(new Date(result.lastDateActive).getTime() !== tQueue.lastDateActive.getTime(), 'expected different lastDateActive');
   });
 
   test('queue.getWorker returns a worker', async () => {

@@ -1540,7 +1540,7 @@ builder.declare({
   name: 'listProvisioners',
   scopes: 'queue:list-provisioners',
   category: 'Worker Metadata',
-  stability: APIBuilder.stability.experimental,
+  stability: APIBuilder.stability.deprecated,
   output: 'list-provisioners-response.yml',
   title: 'Get a list of all active provisioners',
   description: [
@@ -1581,7 +1581,7 @@ builder.declare({
   route: '/provisioners/:provisionerId',
   name: 'getProvisioner',
   scopes: 'queue:get-provisioner:<provisionerId>',
-  stability: APIBuilder.stability.experimental,
+  stability: APIBuilder.stability.deprecated,
   output: 'provisioner-response.yml',
   category: 'Worker Metadata',
   title: 'Get an active provisioner',
@@ -1612,7 +1612,7 @@ builder.declare({
   method: 'put',
   route: '/provisioners/:provisionerId',
   name: 'declareProvisioner',
-  stability: APIBuilder.stability.experimental,
+  stability: APIBuilder.stability.deprecated,
   category: 'Worker Metadata',
   scopes: { AllOf: [{
     for: 'property',
@@ -1636,20 +1636,21 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const provisionerId = req.params.provisionerId;
-  const { stability, description, expires, actions } = req.body;
 
   await req.authorize({
     provisionerId,
     properties: Object.keys(req.body),
   });
 
-  const provisioner = await this.workerInfo.upsertProvisioner({
-    provisionerId,
-    stability,
-    description,
-    expires,
-    actions,
-  });
+  const provisioner = await Provisioner.get(this.db, provisionerId, new Date());
+
+  if (!provisioner) {
+    return res.reportError('ResourceNotFound',
+      'Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
+        provisionerId,
+      },
+    );
+  }
 
   return res.reply(provisioner.serialize());
 });
@@ -1698,7 +1699,7 @@ builder.declare({
   name: 'listWorkerTypes',
   scopes: 'queue:list-worker-types:<provisionerId>',
   category: 'Worker Metadata',
-  stability: APIBuilder.stability.experimental,
+  stability: APIBuilder.stability.deprecated,
   output: 'list-workertypes-response.yml',
   title: 'Get a list of all active worker-types',
   description: [
@@ -1742,7 +1743,7 @@ builder.declare({
   route: '/provisioners/:provisionerId/worker-types/:workerType',
   name: 'getWorkerType',
   scopes: 'queue:get-worker-type:<provisionerId>/<workerType>',
-  stability: APIBuilder.stability.experimental,
+  stability: APIBuilder.stability.deprecated,
   category: 'Worker Metadata',
   output: 'workertype-response.yml',
   title: 'Get a worker-type',
@@ -1777,7 +1778,7 @@ builder.declare({
   method: 'put',
   route: '/provisioners/:provisionerId/worker-types/:workerType',
   name: 'declareWorkerType',
-  stability: APIBuilder.stability.experimental,
+  stability: APIBuilder.stability.deprecated,
   category: 'Worker Metadata',
   scopes: { AllOf: [
     {

@@ -559,7 +559,7 @@ class Queue(BaseClient):
         option. By default this end-point will list up to 1000 provisioners in a single
         page. You may limit this with the query-string parameter `limit`.
 
-        This method is ``experimental``
+        This method is ``deprecated``
         """
 
         return self._makeApiCall(self.funcinfo["listProvisioners"], *args, **kwargs)
@@ -574,7 +574,7 @@ class Queue(BaseClient):
         This does not necessarily mean there is an associated service performing any
         provisioning activity.
 
-        This method is ``experimental``
+        This method is ``deprecated``
         """
 
         return self._makeApiCall(self.funcinfo["getProvisioner"], *args, **kwargs)
@@ -594,7 +594,7 @@ class Queue(BaseClient):
         This does not necessarily mean there is an associated service performing any
         provisioning activity.
 
-        This method is ``experimental``
+        This method is ``deprecated``
         """
 
         return self._makeApiCall(self.funcinfo["declareProvisioner"], *args, **kwargs)
@@ -627,7 +627,7 @@ class Queue(BaseClient):
         option. By default this end-point will list up to 1000 worker-types in a single
         page. You may limit this with the query-string parameter `limit`.
 
-        This method is ``experimental``
+        This method is ``deprecated``
         """
 
         return self._makeApiCall(self.funcinfo["listWorkerTypes"], *args, **kwargs)
@@ -638,7 +638,7 @@ class Queue(BaseClient):
 
         Get a worker-type from a provisioner.
 
-        This method is ``experimental``
+        This method is ``deprecated``
         """
 
         return self._makeApiCall(self.funcinfo["getWorkerType"], *args, **kwargs)
@@ -654,7 +654,7 @@ class Queue(BaseClient):
         provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
         `queue:declare-worker-type:my-provisioner/highmem#description`.
 
-        This method is ``experimental``
+        This method is ``deprecated``
         """
 
         return self._makeApiCall(self.funcinfo["declareWorkerType"], *args, **kwargs)
@@ -767,7 +767,7 @@ class Queue(BaseClient):
             'name': 'declareProvisioner',
             'output': 'v1/provisioner-response.json#',
             'route': '/provisioners/<provisionerId>',
-            'stability': 'experimental',
+            'stability': 'deprecated',
         },
         "declareWorker": {
             'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
@@ -785,7 +785,7 @@ class Queue(BaseClient):
             'name': 'declareWorkerType',
             'output': 'v1/workertype-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
-            'stability': 'experimental',
+            'stability': 'deprecated',
         },
         "getArtifact": {
             'args': ['taskId', 'runId', 'name'],
@@ -807,7 +807,7 @@ class Queue(BaseClient):
             'name': 'getProvisioner',
             'output': 'v1/provisioner-response.json#',
             'route': '/provisioners/<provisionerId>',
-            'stability': 'experimental',
+            'stability': 'deprecated',
         },
         "getWorker": {
             'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
@@ -823,7 +823,7 @@ class Queue(BaseClient):
             'name': 'getWorkerType',
             'output': 'v1/workertype-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
-            'stability': 'experimental',
+            'stability': 'deprecated',
         },
         "listArtifacts": {
             'args': ['taskId', 'runId'],
@@ -859,7 +859,7 @@ class Queue(BaseClient):
             'output': 'v1/list-provisioners-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/provisioners',
-            'stability': 'experimental',
+            'stability': 'deprecated',
         },
         "listTaskGroup": {
             'args': ['taskGroupId'],
@@ -877,7 +877,7 @@ class Queue(BaseClient):
             'output': 'v1/list-workertypes-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/provisioners/<provisionerId>/worker-types',
-            'stability': 'experimental',
+            'stability': 'deprecated',
         },
         "listWorkers": {
             'args': ['provisionerId', 'workerType'],

@@ -821,7 +821,7 @@ func (queue *Queue) ListLatestArtifacts_SignedURL(taskId, continuationToken, lim
 	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts", v, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: *** DEPRECATED ***
 //
 // Get all active provisioners.
 //
@@ -869,7 +869,7 @@ func (queue *Queue) ListProvisioners_SignedURL(continuationToken, limit string, 
 	return (&cd).SignedURL("/provisioners", v, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: *** DEPRECATED ***
 //
 // Get an active provisioner.
 //
@@ -898,7 +898,7 @@ func (queue *Queue) GetProvisioner_SignedURL(provisionerId string, duration time
 	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId), nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: *** DEPRECATED ***
 //
 // Declare a provisioner, supplying some details about it.
 //
@@ -950,7 +950,7 @@ func (queue *Queue) PendingTasks_SignedURL(provisionerId, workerType string, dur
 	return (&cd).SignedURL("/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: *** DEPRECATED ***
 //
 // Get all active worker-types for the given provisioner.
 //
@@ -994,7 +994,7 @@ func (queue *Queue) ListWorkerTypes_SignedURL(provisionerId, continuationToken, 
 	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types", v, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: *** DEPRECATED ***
 //
 // Get a worker-type from a provisioner.
 //
@@ -1019,7 +1019,7 @@ func (queue *Queue) GetWorkerType_SignedURL(provisionerId, workerType string, du
 	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType), nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: *** DEPRECATED ***
 //
 // Declare a workerType, supplying some details about it.
 //
