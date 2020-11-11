@@ -161,7 +161,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       ]);
       // node-forge is unable to load these
       const forgeProblemRootCAs = new Map([
-        ['73a5e64a3bff8316ff0edccc618a906e4eae4d74', 'Microsoft RSA Root Certificate Authority 2017'],
         ['999a64c37ff47d9fab95f14769891460eec4c3c5', 'Microsoft ECC Root Certificate Authority 2017'],
       ]);
 
@@ -184,7 +183,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       assert.deepEqual(azureRootCAs, forgeProblemRootCAs);
-      assert.equal(azureRootCAs.size, 2);
+      assert.equal(azureRootCAs.size, 1);
     });
   });
 

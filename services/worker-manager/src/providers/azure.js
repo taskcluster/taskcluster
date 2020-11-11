@@ -159,6 +159,18 @@ class AzureProvider extends Provider {
     this.caStore = forge.pki.createCaStore();
     rootCertificates.forEach(pem => this.addRootCertPem(pem));
 
+    // node v12.9.0 doesn't have these certificates
+    // Added from NSS 3.56, released 2020-08-21
+    // TODO (issue #3924): remove after upgrade to node with these bundled
+    const rootCertFilenames = [
+      'microsoft_rsa_root_certificate_authority_2017.pem',
+      // node-forge can't load ECDSA certificates (issue #3923)
+      // 'microsoft_ecc_root_certificate_authority_2017.pem',
+    ];
+    const rootCertFiles = rootCertFilenames.map(
+      name => fs.readFileSync(path.resolve(__dirname, "azure-ca-certs", name)));
+    rootCertFiles.forEach(pem => this.addRootCertPem(pem, true));
+
     // load known microsoft intermediate certs from disk
     // TODO (issue #3925): Remove these around February 2021, when they are
     // planned to be revoked.
