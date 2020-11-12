@@ -5,7 +5,7 @@ let base32 = require('thirty-two');
 let crypto = require('crypto');
 let slugid = require('slugid');
 let AZQueue = require('taskcluster-lib-azqueue');
-let { joinTaskQueueId } = require('./utils');
+let { joinTaskQueueId, splitTaskQueueId } = require('./utils');
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where
@@ -373,6 +373,7 @@ class QueueService {
       return this.queues[id];
     }
 
+    // Create promise, if it doesn't exist
     // Validate taskQueueId
     assert(/^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/.test(taskQueueId),
       'Expected taskQueueId to be a split identifier');
@@ -384,9 +385,11 @@ class QueueService {
     };
 
     // Construct queue name prefix (add priority later)
+    const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
     let namePrefix = [
       this.prefix, // prefix all queues
-      hashId(taskQueueId), // hash of taskQueueId
+      hashId(provisionerId), // hash of provisionerId
+      hashId(workerType), // hash of workerType
       '', // priority, add PRIORITY_TO_CONSTANT
     ].join('-');
 
