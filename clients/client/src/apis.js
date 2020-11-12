@@ -1664,6 +1664,24 @@ module.exports = {
           "stability": "experimental",
           "title": "Upload backend data",
           "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "category": "Download",
+          "description": "Download object data.",
+          "input": "v1/download-object-request.json#",
+          "method": "put",
+          "name": "downloadObject",
+          "output": "v1/download-object-response.json#",
+          "query": [
+          ],
+          "route": "/download/<name>",
+          "scopes": "object:download:<name>",
+          "stability": "experimental",
+          "title": "Download object data",
+          "type": "function"
         }
       ],
       "serviceName": "object",

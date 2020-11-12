@@ -33,4 +33,33 @@ builder.declare({
   return res.reply({});
 });
 
+builder.declare({
+  method: 'put',
+  route: '/download/:name',
+  name: 'downloadObject',
+  input: 'download-object-request.yml',
+  output: 'download-object-response.yml',
+  stability: 'experimental',
+  category: 'Download',
+  scopes: 'object:download:<name>',
+  title: 'Download object data',
+  description: [
+    'Download object data.',
+  ].join('\n'),
+}, async function(req, res) {
+  let { name } = req.params;
+  const { acceptProtocol } = req.body;
+  const rows = await this.db.fns.get_object(name);
+
+  if (!rows.length) {
+    return res.reportError('ResourceNotFound', 'Object "{{name}}" not found', { name });
+  }
+
+  const [obj] = rows;
+  const backend = this.backends.get(obj.backend_id);
+  const result = backend.objectRetrievalDetails(name, acceptProtocol);
+
+  return res.reply(result);
+});
+
 module.exports = builder;

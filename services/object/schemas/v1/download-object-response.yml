@@ -1,0 +1,7 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Download Object Response"
+description: |
+  Download object response.
+type: object
+oneOf:
+  - $ref: "get-object-http.json#"
