@@ -160,7 +160,7 @@ defaults:
     skipCompressionExtensions: [
       '.7z', '.bz2', '.dmg', '.flv', '.gif', '.gz', '.jpeg', '.jpg', '.png',
       '.swf', '.tbz', '.tgz', '.webp', '.whl', '.woff', '.woff2',
-      '.xz', '.zip', '.zst',
+      '.xz', '.zip', '.zst', 'lz4',
     ]
 
   dockerSave:
