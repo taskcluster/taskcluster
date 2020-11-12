@@ -582,8 +582,7 @@ class AzureProvider extends Provider {
 
   async provisionResources({ worker, monitor }) {
     
-    let ipErrorFlag = false;
-    let nicErrorFlag = false;
+    let titleString = ""; 
 
     try {
       // IP
@@ -591,6 +590,9 @@ class AzureProvider extends Provider {
         location: worker.providerData.location,
         publicIPAllocationMethod: 'Dynamic',
       };
+      
+      titleString = "IP Creation Error";
+      
       worker = await this.provisionResource({
         worker,
         client: this.networkClient.publicIPAddresses,
@@ -599,8 +601,6 @@ class AzureProvider extends Provider {
         modifyFn: () => {},
         monitor,
       });
-
-      ipErrorFlag = true;
 
       if (!worker.providerData.ip.id) {
         return;
@@ -631,6 +631,9 @@ class AzureProvider extends Provider {
           },
         ];
       };
+
+      titleString = "NIC Creation Error";
+
       worker = await this.provisionResource({
         worker,
         client: this.networkClient.networkInterfaces,
@@ -639,8 +642,6 @@ class AzureProvider extends Provider {
         modifyFn: nicModifyFunc,
         monitor,
       });
-
-      nicErrorFlag = true;
       
       if (!worker.providerData.nic.id) {
         return;
@@ -663,6 +664,9 @@ class AzureProvider extends Provider {
         }
         w.providerData.disks = disks;
       };
+
+      titleString = "VM Creation Error";
+
       worker = await this.provisionResource({
         worker,
         client: this.computeClient.virtualMachines,
@@ -682,18 +686,6 @@ class AzureProvider extends Provider {
       const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
       // we create multiple resources in order to provision a VM
       // if we catch an error we want to deprovision those resources
-
-      let titleString = ""; 
-
-      if(ipErrorFlag === false){
-        titleString = "IP Creation Error";
-      }
-      else if (nicErrorFlag === false){
-        titleString = "NIC Creation Error";
-      }
-      else{
-        titleString = "VM Creation Error";
-      }
 
       if (workerPool) {
         await this.reportError({
