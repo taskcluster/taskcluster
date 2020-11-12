@@ -30,7 +30,7 @@ const parseExt = function(ext) {
  * modified (otherwise it returns the original).
  */
 const limitClientWithExt = function(credentialName, issuingClientId, accessToken, scopes,
-  expires, ext) {
+  expires, ext, expandScopes) {
   let issuingScopes = scopes;
   let res = { scopes, expires, accessToken };
 
@@ -150,6 +150,13 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
       throw new Error('ext.authorizedScopes must be an array of valid scopes');
     }
 
+    // Implicitly grant all clients the anonymous role _before_ we check
+    // `authorizedScopes`. If we didn't do this first then the check that
+    // the client has a superset of `authorizedScopes` can fail if the scope
+    // is provided by it being in `anonymous`
+    res.scopes = utils.mergeScopeSets(res.scopes, ['assume:anonymous']);
+    res.scopes = expandScopes(res.scopes);
+
     // Validate authorizedScopes scopes are satisfied by client (or temp) scopes
     if (!utils.satisfiesExpression(res.scopes, { AllOf: ext.authorizedScopes })) {
       throw new Error([
@@ -235,16 +242,10 @@ const createSignatureValidator = function(options) {
     ({ clientId, expires, accessToken, scopes } = await options.clientLoader(issuingClientId));
 
     // apply restrictions based on the ext field
-    // Implicitly grant all clients the anonymous role _before_ we check
-    // `authorizedScopes`. If we didn't do this first then the check that
-    // the client has a superset of `authorizedScopes` can fail if the scope
-    // is provided by it being in `anonymous`
     if (ext) {
-      scopes = utils.mergeScopeSets(scopes, ['assume:anonymous']);
-      scopes = options.expandScopes(scopes);
       ({ scopes, expires, accessToken } = limitClientWithExt(
         credentialName, issuingClientId, accessToken,
-        scopes, expires, ext));
+        scopes, expires, ext, options.expandScopes));
     }
 
     // Implicitly grant all clients the anonymous role a second time.
