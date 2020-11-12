@@ -73,11 +73,11 @@ export default class WorkerTypesTable extends Component {
 
   createSortedWorkerTypesConnection = memoize(
     (workerTypesConnection, sortBy, sortDirection) => {
-      const sortByProperty = camelCase(sortBy);
-
       if (!sortBy) {
         return workerTypesConnection;
       }
+
+      const sortByProperty = camelCase(sortBy);
 
       return {
         ...workerTypesConnection,
