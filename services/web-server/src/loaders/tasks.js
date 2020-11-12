@@ -54,9 +54,6 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
           const raw = await fetch(url, {
             headers: {
               'x-taskcluster-skip-cache': true,
-              // This is required because by default we send Content-Type: application/json,
-              // which a potential S3 URL was not signed for.
-              'Content-Type': '',
             },
           });
 
