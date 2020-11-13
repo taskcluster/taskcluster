@@ -14,6 +14,7 @@ const defaults = {
     'Content-Type': 'application/json',
   },
   method: 'GET',
+  body: null,
 };
 const handleResponse = response =>
   Promise.resolve(response)
@@ -44,11 +45,14 @@ module.exports = (url, opts = {}) => {
   const options = {
     ...defaults,
     ...opts,
-    headers: {
-      ...defaults.headers,
-      ...opts.headers,
-    },
   };
+
+  // Only include the default headers on requests with a body, since
+  // Content-Type only makes sense with a body and otherwise causes
+  // issues with AWS signed URLs.
+  const defaultHeaders = (options.body !== null) ? defaults.headers : {};
+  options.headers = { ...defaultHeaders, ...opts.headers };
+
   const { delayFactor, randomizationFactor, maxDelay, retries } = options;
 
   return new Promise((resolve, reject) => {
