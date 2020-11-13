@@ -522,7 +522,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             let args = github.inst(5828).issues.createComment.args;
             assert.equal(args[0][0].owner, 'TaskclusterRobot');
             assert.equal(args[0][0].repo, 'hooks-testing');
-            assert.equal(args[0][0].number, '36');
+            assert.equal(args[0][0].issue_number, '36');
             assert(args[0][0].body.indexOf('No Taskcluster jobs started for this pull request') !== -1);
           }
         });

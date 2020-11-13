@@ -571,7 +571,7 @@ builder.declare({
       await instGithub.issues.createComment({
         owner,
         repo,
-        number,
+        issue_number: number,
         body,
       });
 
