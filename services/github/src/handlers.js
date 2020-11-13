@@ -67,11 +67,13 @@ class Handlers {
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedInitialStatusPq, 'Cannot setup twice!');
 
-    // This is a simple Queue client without scopes to use throughout the handlers for simple things
-    // Where scopes are needed, use this.queueClient.use({authorizedScopes: scopes}).blahblah
+    // This is a powerful Queue client without scopes to use throughout the handlers for things
+    // where taskcluster-github is acting of its own accord
+    // Where it is acting on behalf of a task, use this.queueClient.use({authorizedScopes: scopes}).blahblah
     // (see this.createTasks for example)
     this.queueClient = new taskcluster.Queue({
       rootUrl: this.context.cfg.taskcluster.rootUrl,
+      credentials: this.context.cfg.taskcluster.credentials,
     });
 
     // Listen for new jobs created via the api webhook endpoint
@@ -192,13 +194,12 @@ class Handlers {
 
   // Create a collection of tasks, centralized here to enable testing without creating tasks.
   async createTasks({ scopes, tasks }) {
-    const scopedQueueClient = this.queueClient.use({
+    const limitedQueueClient = this.queueClient.use({
       authorizedScopes: scopes,
-      credentials: this.context.cfg.taskcluster.credentials,
     });
     for (const t of tasks) {
       try {
-        await scopedQueueClient.createTask(t.taskId, t.task);
+        await limitedQueueClient.createTask(t.taskId, t.task);
       } catch (err) {
         // translate InsufficientScopes errors nicely for our users, since they are common and
         // since we can provide additional context not available from the queue.
@@ -425,9 +426,12 @@ async function deprecatedStatusHandler(message) {
 /**
  * Helper to request artifacts from statusHandler.
  */
-async function requestArtifact(artifactName, { taskId, runId, debug, instGithub, build }) {
+async function requestArtifact(artifactName, { taskId, runId, debug, instGithub, build, scopes }) {
   try {
-    const url = this.queueClient.buildUrl(this.queueClient.getArtifact, taskId, runId, artifactName);
+    const limitedQueueClient = this.queueClient.use({
+      authorizedScopes: scopes,
+    });
+    const url = limitedQueueClient.buildUrl(limitedQueueClient.getArtifact, taskId, runId, artifactName);
     const res = await utils.throttleRequest({ url, method: 'GET' });
 
     if (res.status >= 400 && res.status !== 404) {
@@ -544,6 +548,7 @@ async function statusHandler(message) {
       debug,
       instGithub,
       build,
+      scopes: taskDefinition.scopes,
     });
 
     let customCheckRunAnnotations = [];
@@ -553,6 +558,7 @@ async function statusHandler(message) {
       debug,
       instGithub,
       build,
+      scopes: taskDefinition.scopes,
     });
     if (customCheckRunAnnotationsText) {
       try {

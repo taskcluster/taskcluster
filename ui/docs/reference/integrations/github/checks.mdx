@@ -6,14 +6,21 @@ At the moment, the feature is in beta. If you would like to try it out:
 * Add `reporting: checks-v1` line at the root level of your `.taskcluster.yml`
 * You will need `queue:route:checks` scope for your `repo:github.com/org/repo:<action>` role.
 * If you are using a decision task, make sure you add `route.checks` to the `routes` of your tasks
+* If you have a locked-down deployment without allowing public artifacts fetching in your `anonymous` role, you must add
+  `queue:get-artifact:public/github/customCheckRunText.md` and `queue:get-artifact:public/github/customCheckRunAnnotations.json`
+  to the scopes of your task (`task.scopes`) to avoid an error comment being added to your
+  commits. Note that this will change if you choose a custom artifact name (see below)
 
 ## Custom Text Output in Checks
 
- When a task completes, the Taskcluster-GitHub service can optionally include task-specific information in the check run
- displayed in the GitHub checks tab.  To do so, it looks for an artifact on the task named
- `public/github/customCheckRunText.md` and uses the artifact content as the check run text.
- The artifact name can be customized by setting `task.extra.github.customCheckRun.textArtifactName` in the task definition.
- For example:
+When a task completes, the Taskcluster-GitHub service can optionally include task-specific information in the check run
+displayed in the GitHub checks tab.  To do so, it looks for an artifact on the task named
+`public/github/customCheckRunText.md` and uses the artifact content as the check run text.
+The artifact name can be customized by setting `task.extra.github.customCheckRun.textArtifactName` in the task definition.
+Whichever name you choose must be included in the `task.scopes` (`queue:get-artifact:<textArtifactName>`) as mentioned above if
+it is not included in the `anonymous` role.
+
+For example:
 ```
 payload:
   ...
@@ -42,6 +49,8 @@ task:
 When a task completes, the Taskcluster-GitHub service can optionally include task-specific [annotations](https://developer.github.com/v3/checks/runs/#annotations-object)
 in the check run. To do so, it looks for an artifact on the task named `public/github/customCheckRunAnnotations.json` and uses the artifact content as the check run annotation.
 The artifact name can be customized by setting `task.extra.github.customCheckRun.annotationsArtifactName` in the task definition.
+Whichever name you choose must be included in `task.scopes` (`queue:get-artifact:<annotationsArtifactName>`) as mentioned above if
+it is not included in the `anonymous` role.
 The json in that file will be passed along unchanged to Github and should be in their annotation format defined in the link above.
 
 For example:
