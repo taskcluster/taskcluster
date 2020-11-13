@@ -46,11 +46,11 @@ class FakeGithub {
         }
         this._statuses[key].push(info);
       },
-      'issues.createComment': ({ owner, repo, number, body }) => {
+      'issues.createComment': ({ owner, repo, issue_number, body }) => {
         if (repo === 'no-permission') {
           throwError(403);
         }
-        const key = `${owner}/${repo}@${number}`;
+        const key = `${owner}/${repo}@${issue_number}`;
         const info = {
           body,
         };

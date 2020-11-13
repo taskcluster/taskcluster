@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-ui",
-  "version": "38.0.4",
+  "version": "38.0.6",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
@@ -46,7 +46,7 @@
     "dot-prop-immutable": "^2.0.0",
     "escape-string-regexp": "^4.0.0",
     "fast-memoize": "^2.5.1",
-    "graphql": "^14.2.1",
+    "graphql": "^15.0.0",
     "highlight.js": "^10.0.0",
     "hterm-umd": "^1.0.1",
     "is-absolute-url": "^3.0.0",
@@ -58,7 +58,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
     "lower-case": "^2.0.1",
-    "markdown-it": "^10.0.0",
+    "markdown-it": "^12.0.0",
     "markdown-it-highlightjs": "^3.0.0",
     "markdown-it-link-attributes": "^3.0.0",
     "material-ui-json-schema-viewer": "^1.1.1",

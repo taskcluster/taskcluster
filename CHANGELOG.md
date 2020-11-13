@@ -3,6 +3,44 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v38.0.6
+
+### GENERAL
+
+▶ [patch] [#3906](https://github.com/taskcluster/taskcluster/issues/3906)
+Creating comments on github is fixed in this release
+
+▶ [patch] [#3903](https://github.com/taskcluster/taskcluster/issues/3903)
+Scopes are now expanded in between using a certificate's scopes and checking `authorizedScopes`
+as well.
+
+### USERS
+
+▶ [patch] [#3908](https://github.com/taskcluster/taskcluster/issues/3908)
+E-mail and Slack notifications should now correctly link to the group when the group ID does not match the task ID.
+
+## v38.0.5
+
+### GENERAL
+
+▶ [patch] [#3874](https://github.com/taskcluster/taskcluster/issues/3874)
+The notify service now has enough scopes to handle notifications on Taskcluster instances without the anonymous role.
+
+### USERS
+
+▶ [patch] [#3884](https://github.com/taskcluster/taskcluster/issues/3884)
+Clients created with third-party sign-in (e.g., `taskcluster signin`) will no longer be disabled if they contain `assume:anonymous` or scopes in that role.
+
+▶ [patch] [#3899](https://github.com/taskcluster/taskcluster/issues/3899)
+Docker-worker now skips gzipping artifacts with an `.lz4` extension, in addition to the [existing list of extensions](https://github.com/taskcluster/taskcluster/blob/main/workers/docker-worker/config.yml#L160-L164).
+
+▶ [patch] [#3873](https://github.com/taskcluster/taskcluster/issues/3873)
+The `/provisioners/<worker-type>` view now works correctly, fixing the error about reading property `replace` of `null`.
+
+### OTHER
+
+▶ Additional change not described here: [#3837](https://github.com/taskcluster/taskcluster/issues/3837).
+
 ## v38.0.4
 
 ### DEPLOYERS

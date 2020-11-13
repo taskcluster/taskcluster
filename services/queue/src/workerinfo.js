@@ -3,7 +3,7 @@ const assert = require('assert');
 const debug = require('debug')('workerinfo');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 
-const { Provisioner, Worker, WorkerType } = require('./data');
+const { Worker, TaskQueue } = require('./data');
 
 const DAY = 24 * 60 * 60 * 1000;
 const RECENT_TASKS_LIMIT = 20;
@@ -44,62 +44,33 @@ class WorkerInfo {
     }
   }
 
-  async seen(provisionerId, workerType, workerGroup, workerId) {
+  async seen(taskQueueId, workerGroup, workerId) {
     const newExpiration = workerId ? taskcluster.fromNow('1 day') : taskcluster.fromNow('5 days');
     const expires = new Date();
     const promises = [];
-    // provisioner seen
-    if (provisionerId) {
-      promises.push(this.valueSeen(provisionerId, async () => {
-        let provisioner = await Provisioner.get(this.db, provisionerId, expires);
-        if (provisioner) {
-          return provisioner.update(this.db, {
-            expires: expired(provisioner.expires) ? newExpiration : provisioner.expires,
-            lastDateActive: shouldUpdateLastDateActive(
-              provisioner.lastDateActive) ? new Date() : provisioner.lastDateActive,
-          });
-        }
-        provisioner = await Provisioner.fromApi(provisionerId, {
-          provisionerId,
-          expires: newExpiration,
-          lastDateActive: new Date(),
-          description: '',
-          stability: 'experimental',
-          actions: [],
-        });
-        try {
-          await provisioner.create(this.db);
-        } catch (err) {
-          if (err.code !== UNIQUE_VIOLATION) {
-            throw err;
-          }
-        }
-      }));
-    }
 
     // worker-type seen
-    if (provisionerId && workerType) {
-      promises.push(this.valueSeen(`${provisionerId}/${workerType}`, async () => {
+    if (taskQueueId) {
+      promises.push(this.valueSeen(taskQueueId, async () => {
         // perform an Azure upsert, trying the update first as it is more common
-        let wType = await WorkerType.get(this.db, provisionerId, workerType, expires);
+        let tQueue = await TaskQueue.get(this.db, taskQueueId, expires);
 
-        if (wType) {
-          return wType.update(this.db, {
-            expires: expired(wType.expires) ? newExpiration : wType.expires,
-            lastDateActive: shouldUpdateLastDateActive(wType.lastDateActive) ? new Date() : wType.lastDateActive,
+        if (tQueue) {
+          return tQueue.update(this.db, {
+            expires: expired(tQueue.expires) ? newExpiration : tQueue.expires,
+            lastDateActive: shouldUpdateLastDateActive(tQueue.lastDateActive) ? new Date() : tQueue.lastDateActive,
           });
         }
 
-        wType = await WorkerType.fromApi(workerType, {
-          workerType,
-          provisionerId,
+        tQueue = await TaskQueue.fromApi(taskQueueId, {
+          taskQueueId,
           expires: newExpiration,
           lastDateActive: new Date(),
           description: '',
           stability: 'experimental',
         });
         try {
-          await wType.create(this.db);
+          await tQueue.create(this.db);
         } catch (err) {
           if (err.code !== UNIQUE_VIOLATION) {
             throw err;
@@ -109,10 +80,10 @@ class WorkerInfo {
     }
 
     // worker seen
-    if (provisionerId && workerType && workerGroup && workerId) {
-      promises.push(this.valueSeen(`${provisionerId}/${workerType}/${workerGroup}/${workerId}`, async () => {
+    if (taskQueueId && workerGroup && workerId) {
+      promises.push(this.valueSeen(`${taskQueueId}/${workerGroup}/${workerId}`, async () => {
         // perform an Azure upsert, trying the update first as it is more common
-        let worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, expires);
+        let worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, expires);
 
         if (worker) {
           let rows = await worker.update(this.db, { expires: newExpiration });
@@ -120,8 +91,7 @@ class WorkerInfo {
         }
 
         worker = Worker.fromApi(workerId, {
-          provisionerId,
-          workerType,
+          taskQueueId,
           workerGroup,
           expires: newExpiration,
           recentTasks: [],
@@ -144,12 +114,8 @@ class WorkerInfo {
   async expire(now) {
     let count;
 
-    debug('Expiring provisioners at: %s, from before %s', new Date(), now);
-    count = await this.db.fns.expire_queue_provisioners(now);
-    debug('Expired %s provisioners', count);
-
     debug('Expiring worker-types at: %s, from before %s', new Date(), now);
-    count = await this.db.fns.expire_queue_worker_types(now);
+    count = await this.db.fns.expire_task_queues(now);
     debug('Expired %s worker-types', count);
 
     debug('Expiring workers at: %s, from before %s', new Date(), now);
@@ -157,13 +123,13 @@ class WorkerInfo {
     debug('Expired %s workers', count);
   }
 
-  async taskSeen(provisionerId, workerType, workerGroup, workerId, tasks) {
+  async taskSeen(taskQueueId, workerGroup, workerId, tasks) {
     if (!tasks.length) {
       return;
     }
 
     // Keep track of most recent tasks of a worker
-    const worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, new Date());
+    const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
 
     if (!worker || worker.quarantineUntil.getTime() > new Date().getTime()) {
       return;
@@ -176,41 +142,8 @@ class WorkerInfo {
     await worker.update(this.db, { recentTasks });
   }
 
-  async upsertProvisioner({ provisionerId, stability, description, actions, expires }) {
-    let provisioner = await Provisioner.get(this.db, provisionerId, new Date());
-    let result;
-    if (provisioner) {
-      let rows = await provisioner.update(this.db, {
-        expires: new Date(expires || provisioner.expires),
-        description: description || provisioner.description,
-        stability: stability || provisioner.stability,
-        actions: actions || provisioner.actions || [],
-      });
-      result = Provisioner.fromDbRows(rows);
-    } else {
-      provisioner = await Provisioner.fromApi(provisionerId, {
-        provisionerId,
-        expires: new Date(expires || taskcluster.fromNow('5 days')),
-        lastDateActive: new Date(),
-        description: description || '',
-        stability: stability || 'experimental',
-        actions: actions || [],
-      });
-      try {
-        await provisioner.create(this.db);
-      } catch (err) {
-        if (err.code !== UNIQUE_VIOLATION) {
-          throw err;
-        }
-      }
-      result = provisioner;
-    }
-
-    return result;
-  }
-
-  async upsertWorkerType({ provisionerId, workerType, stability, description, expires }) {
-    let wType = await WorkerType.get(this.db, provisionerId, workerType, new Date());
+  async upsertTaskQueue({ taskQueueId, stability, description, expires }) {
+    let wType = await TaskQueue.get(this.db, taskQueueId, new Date());
     let result;
 
     if (wType) {
@@ -219,11 +152,10 @@ class WorkerInfo {
         description: description || wType.description,
         expires: expires || wType.expires,
       });
-      result = WorkerType.fromDbRows(rows);
+      result = TaskQueue.fromDbRows(rows);
     } else {
-      wType = await WorkerType.fromApi(workerType, {
-        workerType,
-        provisionerId,
+      wType = await TaskQueue.fromApi(taskQueueId, {
+        taskQueueId,
         expires: new Date(expires || taskcluster.fromNow('5 days')),
         lastDateActive: new Date(),
         description: description || '',
@@ -242,8 +174,8 @@ class WorkerInfo {
     return result;
   }
 
-  async upsertWorker({ provisionerId, workerType, workerGroup, workerId, expires }) {
-    let worker = await Worker.get(this.db, provisionerId, workerType, workerGroup, workerId, new Date());
+  async upsertWorker({ taskQueueId, workerGroup, workerId, expires }) {
+    let worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
     let result;
 
     if (worker) {
@@ -251,8 +183,7 @@ class WorkerInfo {
       result = Worker.fromDbRows(rows);
     } else {
       worker = Worker.fromApi(workerId, {
-        provisionerId,
-        workerType,
+        taskQueueId,
         workerGroup,
         workerId,
         recentTasks: [],

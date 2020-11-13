@@ -244,7 +244,7 @@ class Handlers {
       await instGithub.issues.createComment({
         owner: organization,
         repo: repository,
-        number: pullNumber,
+        issue_number: pullNumber,
         body,
       });
       return;
@@ -785,7 +785,7 @@ async function jobHandler(message) {
           await instGithub.issues.createComment({
             owner: organization,
             repo: repository,
-            number: pullNumber,
+            issue_number: pullNumber,
             body,
           });
         }

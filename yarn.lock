@@ -311,6 +311,22 @@
     "@octokit/types" "^5.5.0"
     deprecation "^2.3.1"
 
+"@octokit/plugin-retry@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@octokit/plugin-retry/-/plugin-retry-3.0.4.tgz#17530af7a9b0616bf58beaf61d2437d3420479e8"
+  integrity sha512-E6TqaUvIzJM00dRAnlKUWlkVwJ4jup8zzCvmhx4eoK0lOc2jhiqn6P2tMH3OZky8VoWnjRO8IG9bHy164MlVrQ==
+  dependencies:
+    "@octokit/types" "^5.0.0"
+    bottleneck "^2.15.3"
+
+"@octokit/plugin-throttling@^3.3.3":
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/@octokit/plugin-throttling/-/plugin-throttling-3.3.3.tgz#b78d67c1e460392afc2245c98cce9c0ac778ecea"
+  integrity sha512-G9BLSE33Vijc45qRuQ8uGF8N1YOk0i8nKosgGJw8TRH+CRjoPDMxYuo28roGiHvFZ5t2KArbJlneZb499wApLA==
+  dependencies:
+    "@octokit/types" "^5.5.0"
+    bottleneck "^2.15.3"
+
 "@octokit/request-error@^2.0.0":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@octokit/request-error/-/request-error-2.0.2.tgz#0e76b83f5d8fdda1db99027ea5f617c2e6ba9ed0"
@@ -1590,6 +1606,11 @@ boolean@3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/boolean/-/boolean-3.0.1.tgz#35ecf2b4a2ee191b0b44986f14eb5f052a5cbb4f"
   integrity sha512-HRZPIjPcbwAVQvOTxR4YE3o8Xs98NqbbL1iEZDCz7CL8ql0Lt5iOyJFxfnAB0oFs8Oh02F/lLlg30Mexv46LjA==
+
+bottleneck@^2.15.3:
+  version "2.19.5"
+  resolved "https://registry.yarnpkg.com/bottleneck/-/bottleneck-2.19.5.tgz#5df0b90f59fd47656ebe63c78a98419205cadd91"
+  integrity sha512-VHiNCbI1lKdl44tGrhNfU3lup0Tj/ZBMJB5/2ZbNXRCPuRCO7ed2mgcK4r17y+KB2EfuYuRaVlwNbAeaWGSpbw==
 
 brace-expansion@^1.1.7:
   version "1.1.11"
@@ -3344,10 +3365,10 @@ googleapis-common@^4.4.1:
     url-template "^2.0.8"
     uuid "^8.0.0"
 
-googleapis@^62.0.0:
-  version "62.0.0"
-  resolved "https://registry.yarnpkg.com/googleapis/-/googleapis-62.0.0.tgz#211910a906cbb9497c2141a16d6623d2e9764e30"
-  integrity sha512-IKWMdnrEzaVcambJ90QjH4Rl6e6L+bljB4SRniPgnhTQ8BG/p/M6fuNhzbBssu61GYu5q8EcxKndmRZQIIo2iQ==
+googleapis@^64.0.0:
+  version "64.0.0"
+  resolved "https://registry.yarnpkg.com/googleapis/-/googleapis-64.0.0.tgz#af40364d27f2245049aaa2506847148d1815c61c"
+  integrity sha512-o8m4aRVv/LdvTVMgH4tLNeQvJZrXaa+62L9wPaKg6nHlCN3dBCKWWQKOklCwtg18xpWY4/vdNuTPHb/9Lnd00A==
   dependencies:
     google-auth-library "^6.0.0"
     googleapis-common "^4.4.1"
@@ -3454,17 +3475,10 @@ graphql-validation-complexity@^0.4.0:
   dependencies:
     warning "^4.0.3"
 
-graphql@^14.5.4:
-  version "14.7.0"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-14.7.0.tgz#7fa79a80a69be4a31c27dda824dc04dac2035a72"
-  integrity sha512-l0xWZpoPKpppFzMfvVyFmp9vLN7w/ZZJPefUicMCepfJeQ8sMcztloGYY9DfjVPo6tIUDzU5Hw3MUbIjj9AVVA==
-  dependencies:
-    iterall "^1.2.2"
-
-graphql@^15.3.0:
-  version "15.3.0"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.3.0.tgz#3ad2b0caab0d110e3be4a5a9b2aa281e362b5278"
-  integrity sha512-GTCJtzJmkFLWRfFJuoo9RWWa/FfamUHgiFosxi/X1Ani4AVWbeyBenZTNX6dM+7WSbbFfTo/25eh0LLkwHMw2w==
+graphql@^15.0.0, graphql@^15.3.0:
+  version "15.4.0"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.4.0.tgz#e459dea1150da5a106486ba7276518b5295a4347"
+  integrity sha512-EB3zgGchcabbsU9cFe1j+yxdzKQKAbGUWRb13DsrsMN1yyfmmIq+2+L5MqVWcDCE4V89R5AyUOi7sMOGxdsYtA==
 
 gray-matter@^4.0.2:
   version "4.0.2"

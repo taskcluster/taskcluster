@@ -1298,7 +1298,7 @@ var services = map[string]definitions.Service{
 				Name:        "listProvisioners",
 				Title:       "Get a list of all active provisioners",
 				Description: "Get all active provisioners.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 provisioners in a single\npage. You may limit this with the query-string parameter `limit`.",
-				Stability:   "experimental",
+				Stability:   "deprecated",
 				Method:      "get",
 				Route:       "/provisioners",
 				Args:        []string{},
@@ -1312,7 +1312,7 @@ var services = map[string]definitions.Service{
 				Name:        "getProvisioner",
 				Title:       "Get an active provisioner",
 				Description: "Get an active provisioner.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
-				Stability:   "experimental",
+				Stability:   "deprecated",
 				Method:      "get",
 				Route:       "/provisioners/<provisionerId>",
 				Args: []string{
@@ -1325,7 +1325,7 @@ var services = map[string]definitions.Service{
 				Name:        "declareProvisioner",
 				Title:       "Update a provisioner",
 				Description: "Declare a provisioner, supplying some details about it.\n\n`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are\npossessed. For example, a request to update the `my-provisioner`\nprovisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope\n`queue:declare-provisioner:my-provisioner#description`.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
-				Stability:   "experimental",
+				Stability:   "deprecated",
 				Method:      "put",
 				Route:       "/provisioners/<provisionerId>",
 				Args: []string{
@@ -1352,7 +1352,7 @@ var services = map[string]definitions.Service{
 				Name:        "listWorkerTypes",
 				Title:       "Get a list of all active worker-types",
 				Description: "Get all active worker-types for the given provisioner.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 worker-types in a single\npage. You may limit this with the query-string parameter `limit`.",
-				Stability:   "experimental",
+				Stability:   "deprecated",
 				Method:      "get",
 				Route:       "/provisioners/<provisionerId>/worker-types",
 				Args: []string{
@@ -1368,7 +1368,7 @@ var services = map[string]definitions.Service{
 				Name:        "getWorkerType",
 				Title:       "Get a worker-type",
 				Description: "Get a worker-type from a provisioner.",
-				Stability:   "experimental",
+				Stability:   "deprecated",
 				Method:      "get",
 				Route:       "/provisioners/<provisionerId>/worker-types/<workerType>",
 				Args: []string{
@@ -1382,7 +1382,7 @@ var services = map[string]definitions.Service{
 				Name:        "declareWorkerType",
 				Title:       "Update a worker-type",
 				Description: "Declare a workerType, supplying some details about it.\n\n`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are\npossessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`\nprovisioner with a body `{description: 'This worker type is great'}` would require you to have the scope\n`queue:declare-worker-type:my-provisioner/highmem#description`.",
-				Stability:   "experimental",
+				Stability:   "deprecated",
 				Method:      "put",
 				Route:       "/provisioners/<provisionerId>/worker-types/<workerType>",
 				Args: []string{

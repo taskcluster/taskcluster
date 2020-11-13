@@ -153,7 +153,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await queueService.putPendingMessage(task, runId);
 
     // Get poll functions for queues
-    let poll = await queueService.pendingQueues(provisionerId, workerType);
+    let poll = await queueService.pendingQueues(`${provisionerId}/${workerType}`);
 
     // Poll for the message
     let message = await testing.poll(async () => {
@@ -195,8 +195,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('countPendingMessages', async () => {
     const count = await queueService.countPendingMessages(
-      provisionerId,
-      workerType,
+      `${provisionerId}/${workerType}`,
     );
     debug('pending message count: %j', count);
     assert(typeof count === 'number', 'Expected count as number!');
