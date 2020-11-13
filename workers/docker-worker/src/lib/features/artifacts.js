@@ -131,7 +131,7 @@ class Artifacts {
       }
 
       let headers = {
-        'content-type': mime.lookup(header.name),
+        'content-type': mime.getType(header.name) || 'application/octet-stream',
       };
 
       // Check file extension
