@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-lib-testing",
   "private": true,
-  "version": "38.0.5",
+  "version": "38.0.6",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-testing",
   "license": "MPL-2.0",

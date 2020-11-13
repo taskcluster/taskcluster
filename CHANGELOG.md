@@ -3,6 +3,22 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v38.0.6
+
+### GENERAL
+
+▶ [patch] [#3906](https://github.com/taskcluster/taskcluster/issues/3906)
+Creating comments on github is fixed in this release
+
+▶ [patch] [#3903](https://github.com/taskcluster/taskcluster/issues/3903)
+Scopes are now expanded in between using a certificate's scopes and checking `authorizedScopes`
+as well.
+
+### USERS
+
+▶ [patch] [#3908](https://github.com/taskcluster/taskcluster/issues/3908)
+E-mail and Slack notifications should now correctly link to the group when the group ID does not match the task ID.
+
 ## v38.0.5
 
 ### GENERAL
