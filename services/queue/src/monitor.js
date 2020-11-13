@@ -118,8 +118,7 @@ MonitorManager.register({
     A worker has claimed a task.  In cases where multple tasks were claimed,
     one log message will be produced for each task.`,
   fields: {
-    provisionerId: 'Provisioner that provisioned the worker claiming work.',
-    workerType: 'Type of worker claiming work.',
+    taskQueueId: "The task queue ID for which work is being claimed",
     workerGroup: 'Group of worker claiming work.',
     workerId: 'The id of the claiming worker.',
     taskId: 'The task given to the worker.',

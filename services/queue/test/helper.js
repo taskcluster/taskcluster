@@ -312,8 +312,7 @@ exports.resetTables = (mock, skipping) => {
       'task_groups',
       'task_dependencies',
       'queue_workers',
-      'queue_worker_types',
-      'queue_provisioners',
+      'task_queues',
     ] });
   });
 };

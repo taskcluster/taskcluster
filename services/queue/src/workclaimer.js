@@ -15,10 +15,9 @@ const { Task } = require('./data');
  * It's an if, but not an only-if (think over-approximation).
  */
 class HintPoller {
-  constructor(parent, provisionerId, workerType) {
+  constructor(parent, taskQueueId) {
     this.parent = parent;
-    this.provisionerId = provisionerId;
-    this.workerType = workerType;
+    this.taskQueueId = taskQueueId;
     this.requests = [];
     this.started = false;
     this.destroyed = false;
@@ -63,7 +62,7 @@ class HintPoller {
   async poll() {
     // Get poll functions for pending queues (ordered by priority)
     let polls = await this.parent._queueService.pendingQueues(
-      this.provisionerId, this.workerType,
+      this.taskQueueId,
     );
     // While we have requests for hints
     while (_.sumBy(this.requests, 'count') > 0) {
@@ -113,7 +112,7 @@ class HintPoller {
   destroy() {
     // Remove entry from parent
     this.destroyed = true;
-    delete this.parent._hintPollers[this.provisionerId + '/' + this.workerType];
+    delete this.parent._hintPollers[this.taskQueueId];
     assert(_.sumBy(this.requests, 'count') === 0,
       'destroying while we have pending requests is not allowed');
   }
@@ -152,7 +151,7 @@ class WorkClaimer extends events.EventEmitter {
     this._hintPollers = {}; // provisionerId/workerType -> HintPoller
   }
 
-  async claim(provisionerId, workerType, workerGroup, workerId, count, aborted) {
+  async claim(taskQueueId, workerGroup, workerId, count, aborted) {
     let claims = [];
     let done = false;
     aborted.then(() => done = true);
@@ -161,10 +160,10 @@ class WorkClaimer extends events.EventEmitter {
     // dropping the claims in case of server crash.
     while (claims.length === 0 && !done) {
       // Get a HintPoller
-      let key = provisionerId + '/' + workerType;
+      let key = taskQueueId;
       let hintPoller = this._hintPollers[key];
       if (!hintPoller) {
-        this._hintPollers[key] = hintPoller = new HintPoller(this, provisionerId, workerType);
+        this._hintPollers[key] = hintPoller = new HintPoller(this, taskQueueId);
       }
 
       // Poll for hints (azure messages saying a task may be pending)

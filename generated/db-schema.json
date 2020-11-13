@@ -40,11 +40,10 @@
       "tables": {
         "azure_queue_messages": "write",
         "queue_artifacts": "write",
-        "queue_provisioners": "write",
-        "queue_worker_types": "write",
         "queue_workers": "write",
         "task_dependencies": "write",
         "task_groups": "write",
+        "task_queues": "write",
         "tasks": "write"
       }
     },
@@ -197,31 +196,14 @@
       "storage_type": "text not null",
       "task_id": "text not null"
     },
-    "queue_provisioners": {
-      "actions": "jsonb not null",
-      "description": "text not null",
-      "expires": "timestamp with time zone not null",
-      "last_date_active": "timestamp with time zone not null",
-      "provisioner_id": "text not null",
-      "stability": "text not null"
-    },
-    "queue_worker_types": {
-      "description": "text not null",
-      "expires": "timestamp with time zone not null",
-      "last_date_active": "timestamp with time zone not null",
-      "provisioner_id": "text not null",
-      "stability": "text not null",
-      "worker_type": "text not null"
-    },
     "queue_workers": {
       "expires": "timestamp with time zone not null",
       "first_claim": "timestamp with time zone not null",
-      "provisioner_id": "text not null",
       "quarantine_until": "timestamp with time zone not null",
       "recent_tasks": "jsonb not null",
+      "task_queue_id": "text not null",
       "worker_group": "text not null",
-      "worker_id": "text not null",
-      "worker_type": "text not null"
+      "worker_id": "text not null"
     },
     "roles": {
       "created": "timestamp with time zone not null",
@@ -253,6 +235,13 @@
       "expires": "timestamp with time zone not null",
       "scheduler_id": "text not null",
       "task_group_id": "text not null"
+    },
+    "task_queues": {
+      "description": "text not null",
+      "expires": "timestamp with time zone not null",
+      "last_date_active": "timestamp with time zone not null",
+      "stability": "text not null",
+      "task_queue_id": "text not null"
     },
     "tasks": {
       "created": "timestamp with time zone not null",
@@ -5453,6 +5442,221 @@
         }
       },
       "version": 52
+    },
+    {
+      "description": "Use task_queue_id instead of provisioner_id / worker_type in queues",
+      "downgradeScript": "begin\n  lock table task_queues;\n\n  alter table task_queues drop constraint task_queues_pkey;\n  alter table task_queues add column provisioner_id text, add column worker_type text;\n  update task_queues\n  set\n    provisioner_id = split_part(task_queues.task_queue_id, '/', 1),\n    worker_type = split_part(task_queues.task_queue_id, '/', 2);\n  alter table task_queues drop column task_queue_id;\n  alter table task_queues alter column provisioner_id set not null;\n  alter table task_queues alter column worker_type set not null;\n  alter table task_queues add primary key (provisioner_id, worker_type);\n  alter table task_queues rename to queue_worker_types;\n\n  lock table queue_workers;\n\n  alter table queue_workers drop constraint queue_workers_pkey;\n  alter table queue_workers add column provisioner_id text, add column worker_type text;\n  update queue_workers\n  set\n    provisioner_id = split_part(queue_workers.task_queue_id, '/', 1),\n    worker_type = split_part(queue_workers.task_queue_id, '/', 2);\n  alter table queue_workers drop column task_queue_id;\n  alter table queue_workers alter column provisioner_id set not null;\n  alter table queue_workers alter column worker_type set not null;\n  alter table queue_workers add primary key (provisioner_id, worker_type, worker_group, worker_id);\n\n  create table queue_provisioners\n  as\n    select\n      provisioner_id,\n      max(expires) as expires, \n      max(last_date_active) as last_date_active,\n      '' as description,\n      'experimental' as stability,\n      '[]'::jsonb as actions\n    from queue_worker_types\n    group by provisioner_id;\n\n  alter table queue_provisioners add primary key (provisioner_id);\n  alter table queue_provisioners\n    alter column provisioner_id set not null,\n    alter column expires set not null,\n    alter column last_date_active set not null,\n    alter column description set not null,\n    alter column stability set not null,\n    alter column actions set not null;\n  \n  grant select, insert, update, delete on queue_provisioners to $db_user_prefix$_queue;\nend",
+      "methods": {
+        "create_queue_provisioner": {
+          "args": "provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb",
+          "body": "begin\n  return public.gen_random_uuid();\nend",
+          "deprecated": true,
+          "description": "Create a new queue provisioner.  Raises UNIQUE_VIOLATION if the provisioner already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "create_queue_worker": {
+          "args": "provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, first_claim_in timestamptz, recent_tasks_in jsonb",
+          "body": "begin\n  insert\n    into queue_workers (task_queue_id, worker_group, worker_id, quarantine_until, expires, first_claim, recent_tasks)\n    values (\n      provisioner_id_in || '/' || worker_type_in,\n      worker_group_in,\n      worker_id_in,\n      quarantine_until_in,\n      expires_in,\n      first_claim_in,\n      recent_tasks_in\n    );\n    return public.gen_random_uuid();\nend",
+          "deprecated": true,
+          "description": "Create a new queue worker.  Raises UNIQUE_VIOLATION if the worker already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "create_queue_worker_tqid": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, first_claim_in timestamptz, recent_tasks_in jsonb",
+          "body": "begin\n  insert\n    into queue_workers (task_queue_id, worker_group, worker_id, quarantine_until, expires, first_claim, recent_tasks)\n    values (\n      task_queue_id_in,\n      worker_group_in,\n      worker_id_in,\n      quarantine_until_in,\n      expires_in,\n      first_claim_in,\n      recent_tasks_in\n    );\n    return public.gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "Create a new queue worker.  Raises UNIQUE_VIOLATION if the worker already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "create_queue_worker_type": {
+          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text",
+          "body": "begin\n  insert\n    into task_queues (task_queue_id, expires, last_date_active, description, stability)\n    values (\n      provisioner_id_in || '/' || worker_type_in,\n      expires_in,\n      last_date_active_in,\n      description_in, stability_in\n    );\n    return public.gen_random_uuid();\nend",
+          "deprecated": true,
+          "description": "Create a new queue worker type. Raises UNIQUE_VIOLATION if the worker type already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "create_task_queue": {
+          "args": "task_queue_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text",
+          "body": "begin\n  insert\n    into task_queues (task_queue_id, expires, last_date_active, description, stability)\n    values (\n      task_queue_id_in,\n      expires_in,\n      last_date_active_in,\n      description_in, stability_in\n    );\n    return public.gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "Create a new task queue. Raises UNIQUE_VIOLATION if the task queue already exists.",
+          "mode": "write",
+          "returns": "uuid",
+          "serviceName": "queue"
+        },
+        "expire_queue_provisioners": {
+          "args": "expires_in timestamptz",
+          "body": "begin\n  return 0;\nend",
+          "deprecated": true,
+          "description": "Expire provisioners that come before `expires_in`.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "queue"
+        },
+        "expire_queue_worker_types": {
+          "args": "expires_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete from task_queues\n  where task_queues.expires < expires_in;\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": true,
+          "description": "Expire queue worker types that come before `expires_in`.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "queue"
+        },
+        "expire_task_queues": {
+          "args": "expires_in timestamptz",
+          "body": "declare\n  count integer;\nbegin\n  delete from task_queues\n  where task_queues.expires < expires_in;\n  if found then\n    get diagnostics count = row_count;\n    return count;\n  end if;\n  return 0;\nend",
+          "deprecated": false,
+          "description": "Expire task queues that come before `expires_in`.\nReturns a count of rows that have been deleted.",
+          "mode": "write",
+          "returns": "integer",
+          "serviceName": "queue"
+        },
+        "get_queue_provisioner": {
+          "args": "provisioner_id_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    split_part(task_queue_id, '/', 1) as provisioner_id,\n    max(task_queues.expires),\n    max(task_queues.last_date_active),\n    '' as description,\n    'experimental' as stability,\n    '[]'::jsonb as actions,\n    public.gen_random_uuid()\n  from task_queues\n  group by provisioner_id\n  having\n    split_part(task_queue_id, '/', 1) = provisioner_id_in and\n    max(task_queues.expires) > expires_in;\nend",
+          "deprecated": true,
+          "description": "Get a queue provisioner by provisioner_id.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_provisioners": {
+          "args": "expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    split_part(task_queues.task_queue_id, '/', 1) as provisioner_id,\n    max(task_queues.expires),\n    max(task_queues.last_date_active),\n    '' as description,\n    'experimental' as stability,\n    '[]'::jsonb as actions,\n    public.gen_random_uuid()\n  from task_queues\n  group by provisioner_id\n  having (max(task_queues.expires) > expires_in or expires_in is null)\n  order by provisioner_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": true,
+          "description": "Get queue provisioners ordered by `provisioner_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_worker": {
+          "args": "provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    split_part(queue_workers.task_queue_id, '/', 1) as provisioner_id,\n    split_part(queue_workers.task_queue_id, '/', 2) as worker_type,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    public.gen_random_uuid()\n  from queue_workers\n  where\n    queue_workers.task_queue_id = provisioner_id_in || '/' || worker_type_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in and\n    (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);\n  end",
+          "deprecated": true,
+          "description": "Get a non-expired queue worker by provisioner_id, worker_type, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_worker_tqid": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    public.gen_random_uuid()\n  from queue_workers\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in and\n    (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);\n  end",
+          "deprecated": false,
+          "description": "Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.",
+          "mode": "read",
+          "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_worker_type": {
+          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    split_part(task_queues.task_queue_id, '/', 1) as provisioner_id,\n    split_part(task_queues.task_queue_id, '/', 2) as worker_type,\n    task_queues.expires,\n    task_queues.last_date_active,\n    task_queues.description,\n    task_queues.stability,\n    public.gen_random_uuid()\n  from task_queues\n  where\n    task_queues.task_queue_id = provisioner_id_in || '/' || worker_type_in and\n    task_queues.expires > expires_in;\n  end",
+          "deprecated": true,
+          "description": "Get a non-expired queue worker type by provisioner_id and worker_type.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_worker_types": {
+          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    split_part(task_queues.task_queue_id, '/', 1) as provisioner_id,\n    split_part(task_queues.task_queue_id, '/', 2) as worker_type,\n    task_queues.expires,\n    task_queues.last_date_active,\n    task_queues.description,\n    task_queues.stability,\n    public.gen_random_uuid()\n  from task_queues\n  where\n    (split_part(task_queues.task_queue_id, '/', 1) = provisioner_id_in or provisioner_id_in is null) and\n    (split_part(task_queues.task_queue_id, '/', 2) = worker_type_in or worker_type_in is null) and\n    (task_queues.expires > expires_in or expires_in is null)\n  order by task_queue_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": true,
+          "description": "Get queue worker types ordered by `provisioner_id` and `worker_type`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_workers": {
+          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    split_part(queue_workers.task_queue_id, '/', 1) as provisioner_id,\n    split_part(queue_workers.task_queue_id, '/', 2) as worker_type,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    public.gen_random_uuid()\n  from queue_workers\n  where\n    (split_part(queue_workers.task_queue_id, '/', 1) = provisioner_id_in or provisioner_id_in is null) and\n    (split_part(queue_workers.task_queue_id, '/', 2) = worker_type_in or worker_type_in is null) and\n    ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers.expires_in is null)\n  order by task_queue_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": true,
+          "description": "Get non-expired queue workers ordered by provisioner_id, worker_type, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_workers_tqid": {
+          "args": "task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    public.gen_random_uuid()\n  from queue_workers\n  where\n    (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_tqid.task_queue_id_in is null) and\n    ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers_tqid.expires_in is null)\n  order by task_queue_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get non-expired queue workers ordered by task_queue_id, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_task_queue": {
+          "args": "task_queue_id_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    task_queues.task_queue_id,\n    task_queues.expires,\n    task_queues.last_date_active,\n    task_queues.description,\n    task_queues.stability,\n    public.gen_random_uuid()\n  from task_queues\n  where\n    task_queues.task_queue_id = task_queue_id_in and\n    task_queues.expires > expires_in;\n  end",
+          "deprecated": false,
+          "description": "Get a non-expired task queue by task_queue_id.",
+          "mode": "read",
+          "returns": "table(task_queue_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_task_queues": {
+          "args": "task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    task_queues.task_queue_id,\n    task_queues.expires,\n    task_queues.last_date_active,\n    task_queues.description,\n    task_queues.stability,\n    public.gen_random_uuid()\n  from task_queues\n  where\n    (task_queues.task_queue_id = task_queue_id_in or task_queue_id_in is null) and\n    (task_queues.expires > expires_in or expires_in is null)\n  order by task_queue_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get task queues ordered by `task_queue_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(task_queue_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
+          "serviceName": "queue"
+        },
+        "update_queue_provisioner": {
+          "args": "provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb",
+          "body": "begin\n  return query\n  select\n    split_part(task_queue_id, '/', 1) as provisioner_id,\n    max(task_queues.expires),\n    max(task_queues.last_date_active),\n    '' as description,\n    'experimental' as stability,\n    '[]'::jsonb as actions,\n    public.gen_random_uuid()\n  from task_queues\n  group by provisioner_id\n  having\n    split_part(task_queue_id, '/', 1) = provisioner_id_in;\nend",
+          "deprecated": true,
+          "description": "Update a queue provisioner's expires, last_date_active, description, stability, and actions.\nAll parameters must be supplied.",
+          "mode": "write",
+          "returns": "table(provisioner_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, actions jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "update_queue_worker": {
+          "args": "provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, recent_tasks_in jsonb",
+          "body": "begin\n  return query update queue_workers\n  set\n    quarantine_until = quarantine_until_in,\n    expires = expires_in,\n    recent_tasks = recent_tasks_in\n  where\n    queue_workers.task_queue_id = provisioner_id_in || '/' || worker_type_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in\n  returning\n    split_part(queue_workers.task_queue_id, '/', 1) as provisioner_id,\n    split_part(queue_workers.task_queue_id, '/', 2) as worker_type,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    public.gen_random_uuid();\nend",
+          "deprecated": true,
+          "description": "Update a queue worker's quarantine_until, expires, and recent_tasks.\nAll parameters must be supplied.",
+          "mode": "write",
+          "returns": "table(provisioner_id text, worker_type text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "update_queue_worker_tqid": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, recent_tasks_in jsonb",
+          "body": "begin\n  return query update queue_workers\n  set\n    quarantine_until = quarantine_until_in,\n    expires = expires_in,\n    recent_tasks = recent_tasks_in\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in\n  returning\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    public.gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "Update a queue worker's quarantine_until, expires, and recent_tasks.\nAll parameters must be supplied.",
+          "mode": "write",
+          "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, etag uuid)",
+          "serviceName": "queue"
+        },
+        "update_queue_worker_type": {
+          "args": "provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text",
+          "body": "begin\n  return query update task_queues\n  set\n    expires = expires_in,\n    last_date_active = last_date_active_in,\n    description = description_in,\n    stability = stability_in\n  where\n    task_queues.task_queue_id = provisioner_id_in || '/' || worker_type_in\n  returning\n    split_part(task_queues.task_queue_id, '/', 1) as provisioner_id,\n    split_part(task_queues.task_queue_id, '/', 2) as worker_type,\n    task_queues.expires,\n    task_queues.last_date_active,\n    task_queues.description,\n    task_queues.stability,\n    public.gen_random_uuid();\nend",
+          "deprecated": true,
+          "description": "Update a queue worker type's expires, last_date_active, description, and stability.\nAll parameters must be supplied.",
+          "mode": "write",
+          "returns": "table(provisioner_id text, worker_type text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
+          "serviceName": "queue"
+        },
+        "update_task_queue": {
+          "args": "task_queue_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text",
+          "body": "begin\n  return query update task_queues\n  set\n    expires = expires_in,\n    last_date_active = last_date_active_in,\n    description = description_in,\n    stability = stability_in\n  where\n    task_queues.task_queue_id = task_queue_id_in\n  returning\n    task_queues.task_queue_id,\n    task_queues.expires,\n    task_queues.last_date_active,\n    task_queues.description,\n    task_queues.stability,\n    public.gen_random_uuid();\nend",
+          "deprecated": false,
+          "description": "Update a task queue's expires, last_date_active, description, and stability.\nAll parameters must be supplied.",
+          "mode": "write",
+          "returns": "table(task_queue_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  lock table queue_worker_types;\n\n  alter table queue_worker_types drop constraint queue_worker_types_pkey;\n  alter table queue_worker_types rename to task_queues;\n  alter table task_queues add column task_queue_id text;\n  update task_queues set task_queue_id = provisioner_id || '/' || worker_type;\n  alter table task_queues drop column provisioner_id, drop column worker_type;\n  alter table task_queues alter column task_queue_id set not null;\n  alter table task_queues add primary key (task_queue_id);\n\n  lock table queue_workers;\n\n  alter table queue_workers drop constraint queue_workers_pkey;\n  alter table queue_workers add column task_queue_id text;\n  update queue_workers set task_queue_id = provisioner_id || '/' || worker_type;\n  alter table queue_workers drop column provisioner_id, drop column worker_type;\n  alter table queue_workers alter column task_queue_id set not null;\n  alter table queue_workers add primary key (task_queue_id, worker_group, worker_id);\n\n  lock table queue_provisioners;\n\n  revoke select, insert, update, delete on queue_provisioners from $db_user_prefix$_queue;\n  drop table queue_provisioners;\nend",
+      "version": 53
     }
   ]
 }

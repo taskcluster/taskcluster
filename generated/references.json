@@ -13088,12 +13088,11 @@
         {
           "description": "A worker has claimed a task.  In cases where multple tasks were claimed,\none log message will be produced for each task.",
           "fields": {
-            "provisionerId": "Provisioner that provisioned the worker claiming work.",
             "runId": "The run of this task assigned to the worker.",
             "taskId": "The task given to the worker.",
+            "taskQueueId": "The task queue ID for which work is being claimed",
             "workerGroup": "Group of worker claiming work.",
-            "workerId": "The id of the claiming worker.",
-            "workerType": "Type of worker claiming work."
+            "workerId": "The id of the claiming worker."
           },
           "level": "notice",
           "name": "taskClaimed",
@@ -14251,7 +14250,7 @@
           ],
           "route": "/provisioners",
           "scopes": "queue:list-provisioners",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get a list of all active provisioners",
           "type": "function"
         },
@@ -14268,7 +14267,7 @@
           ],
           "route": "/provisioners/<provisionerId>",
           "scopes": "queue:get-provisioner:<provisionerId>",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get an active provisioner",
           "type": "function"
         },
@@ -14294,7 +14293,7 @@
               }
             ]
           },
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Update a provisioner",
           "type": "function"
         },
@@ -14331,7 +14330,7 @@
           ],
           "route": "/provisioners/<provisionerId>/worker-types",
           "scopes": "queue:list-worker-types:<provisionerId>",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get a list of all active worker-types",
           "type": "function"
         },
@@ -14349,7 +14348,7 @@
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
           "scopes": "queue:get-worker-type:<provisionerId>/<workerType>",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get a worker-type",
           "type": "function"
         },
@@ -14376,7 +14375,7 @@
               }
             ]
           },
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Update a worker-type",
           "type": "function"
         },

@@ -2212,7 +2212,7 @@ module.exports = {
           ],
           "route": "/provisioners",
           "scopes": "queue:list-provisioners",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get a list of all active provisioners",
           "type": "function"
         },
@@ -2229,7 +2229,7 @@ module.exports = {
           ],
           "route": "/provisioners/<provisionerId>",
           "scopes": "queue:get-provisioner:<provisionerId>",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get an active provisioner",
           "type": "function"
         },
@@ -2255,7 +2255,7 @@ module.exports = {
               }
             ]
           },
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Update a provisioner",
           "type": "function"
         },
@@ -2292,7 +2292,7 @@ module.exports = {
           ],
           "route": "/provisioners/<provisionerId>/worker-types",
           "scopes": "queue:list-worker-types:<provisionerId>",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get a list of all active worker-types",
           "type": "function"
         },
@@ -2310,7 +2310,7 @@ module.exports = {
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
           "scopes": "queue:get-worker-type:<provisionerId>/<workerType>",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get a worker-type",
           "type": "function"
         },
@@ -2337,7 +2337,7 @@ module.exports = {
               }
             ]
           },
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Update a worker-type",
           "type": "function"
         },

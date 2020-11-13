@@ -193,28 +193,19 @@ task_dependencies:
   requires: task_requires not null
   satisfied: boolean not null
 queue_workers:
-  provisioner_id: text not null
-  worker_type: text not null
+  task_queue_id: text not null
   worker_group: text not null
   worker_id: text not null
   recent_tasks: jsonb not null
   quarantine_until: timestamp with time zone not null
   expires: timestamp with time zone not null
   first_claim: timestamp with time zone not null
-queue_worker_types:
-  provisioner_id: text not null
-  worker_type: text not null
+task_queues:
+  task_queue_id: text not null
   expires: timestamp with time zone not null
   last_date_active: timestamp with time zone not null
   description: text not null
   stability: text not null
-queue_provisioners:
-  provisioner_id: text not null
-  expires: timestamp with time zone not null
-  last_date_active: timestamp with time zone not null
-  description: text not null
-  stability: text not null
-  actions: jsonb not null
 
 # This table is used by tc-lib-azqueue to emulate the Azure Storage API's Queue functionality.
 azure_queue_messages:
