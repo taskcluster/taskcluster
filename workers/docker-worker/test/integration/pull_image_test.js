@@ -2,7 +2,7 @@ const assert = require('assert');
 const testworker = require('../post_task');
 const Docker = require('../../src/lib/docker');
 const cmd = require('./helper/cmd');
-const { ZSTD_TASK_ID, LZ4_TASK_ID, TASK_ID, NAMESPACE } = require('../fixtures/image_artifacts');
+const { ZSTD_TASK_ID, LZ4_TASK_ID, TASK_ID, GZIP_CONTENT_ENCODING_TASK_ID, NAMESPACE } = require('../fixtures/image_artifacts');
 const { createHash } = require('crypto');
 const { removeImage } = require('../../src/lib/util/remove_image');
 const { suiteName } = require('taskcluster-lib-testing');
@@ -36,6 +36,31 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       type: 'task-image',
       taskId: TASK_ID,
       path: 'public/image.tar',
+    };
+
+    let hashedName = createHash('md5')
+      .update(`${TASK_ID}${image.path}`)
+      .digest('hex');
+
+    await removeImage(docker, hashedName);
+
+    let result = await testworker({
+      payload: {
+        image: image,
+        command: cmd('ls /bin'),
+        maxRunTime: 5 * 60,
+      },
+    });
+
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+  });
+
+  test('ensure public image from a task can be pulled, even gzipped', async () => {
+    let image = {
+      type: 'task-image',
+      taskId: GZIP_CONTENT_ENCODING_TASK_ID,
+      path: 'public/image-gzip-content-encoding.tar',
     };
 
     let hashedName = createHash('md5')
