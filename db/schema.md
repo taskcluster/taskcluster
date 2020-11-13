@@ -16,6 +16,7 @@
  * [`hooks_queues`](#hooks_queues)
  * [`index_namespaces`](#index_namespaces)
  * [`indexed_tasks`](#indexed_tasks)
+ * [`objects`](#objects)
  * [`queue_artifacts`](#queue_artifacts)
  * [`queue_workers`](#queue_workers)
  * [`roles`](#roles)
@@ -256,6 +257,20 @@ CREATE TABLE indexed_tasks (
 ALTER TABLE indexed_tasks
     ADD CONSTRAINT indexed_tasks_pkey PRIMARY KEY (namespace, name);
 CREATE INDEX sha512_indexed_tasks_idx ON indexed_tasks USING btree (public.sha512(namespace), name);
+```
+
+## objects
+
+```sql
+CREATE TABLE objects (
+    name text NOT NULL,
+    data jsonb NOT NULL,
+    backend_id text NOT NULL,
+    project_id text NOT NULL,
+    expires timestamp with time zone NOT NULL
+);
+ALTER TABLE objects
+    ADD CONSTRAINT objects_pkey PRIMARY KEY (name);
 ```
 
 ## queue_artifacts

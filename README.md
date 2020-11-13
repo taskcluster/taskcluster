@@ -70,6 +70,7 @@ This repository is used to develop, build, and release the Taskcluster services.
     * [Hooks Service](services/hooks#readme)
     * [Index Service](services/index#readme)
     * [Notify Service](services/notify#readme)
+    * [Object Service](services/object#readme)
     * [Purge-Cache Service](services/purge-cache#readme)
     * [Queue Service](services/queue#readme)
     * [Secrets Service](services/secrets#readme)

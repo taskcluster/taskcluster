@@ -53,6 +53,11 @@
    * [`all_denylist_addresses`](#all_denylist_addresses)
    * [`delete_denylist_address`](#delete_denylist_address)
    * [`exists_denylist_address`](#exists_denylist_address)
+ * [object functions](#object)
+   * [`create_object`](#create_object)
+   * [`delete_object`](#delete_object)
+   * [`get_expired_objects`](#get_expired_objects)
+   * [`get_object`](#get_object)
  * [purge_cache functions](#purge_cache)
    * [`all_purge_requests_wpid`](#all_purge_requests_wpid)
    * [`expire_cache_purges`](#expire_cache_purges)
@@ -945,6 +950,66 @@ Returns number of rows deleted (0 or 1).
 * *Returns*: `boolean`
 
 Returns a boolean indicating whether the denylist type/address exists.
+
+## object
+
+* [`create_object`](#create_object)
+* [`delete_object`](#delete_object)
+* [`get_expired_objects`](#get_expired_objects)
+* [`get_object`](#get_object)
+
+### create_object
+
+* *Mode*: write
+* *Arguments*:
+  * `name_in text`
+  * `project_id_in text`
+  * `backend_id_in text`
+  * `data_in jsonb`
+  * `expires_in timestamptz`
+* *Returns*: `void`
+
+Upload object.
+
+### delete_object
+
+* *Mode*: write
+* *Arguments*:
+  * `name_in text`
+* *Returns*: `void`
+
+Delete an object.
+
+### get_expired_objects
+
+* *Mode*: read
+* *Arguments*:
+  * `limit_in integer`
+  * `start_at_in text`
+* *Returns*: `table`
+  * `name text`
+  * `data jsonb`
+  * `project_id text`
+  * `backend_id text`
+  * `expires timestamptz`
+
+Get objects with an expiration before the current time.  If given, only
+objects with a name greater than `start_at_in` are returned.  The
+`limit_in` argument limits the number of results returned.
+
+### get_object
+
+* *Mode*: read
+* *Arguments*:
+  * `name_in text`
+* *Returns*: `table`
+  * `name text`
+  * `data jsonb`
+  * `project_id text`
+  * `backend_id text`
+  * `expires timestamptz`
+
+Get an object by name, or an empty set if no such object exists.
 
 ## purge_cache
 

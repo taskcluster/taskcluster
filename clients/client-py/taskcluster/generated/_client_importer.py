@@ -11,6 +11,7 @@ from .hooksevents import HooksEvents  # NOQA
 from .index import Index  # NOQA
 from .notify import Notify  # NOQA
 from .notifyevents import NotifyEvents  # NOQA
+from .object import Object  # NOQA
 from .purgecache import PurgeCache  # NOQA
 from .queue import Queue  # NOQA
 from .queueevents import QueueEvents  # NOQA

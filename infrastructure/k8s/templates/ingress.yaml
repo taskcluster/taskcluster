@@ -55,6 +55,10 @@ spec:
             backend:
               servicePort: 80
               serviceName: taskcluster-notify
+          - path: /api/object/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-object
           - path: /api/purge-cache/*
             backend:
               servicePort: 80

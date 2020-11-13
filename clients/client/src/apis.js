@@ -1628,6 +1628,48 @@ module.exports = {
       "title": "Notify AMQP Exchanges"
     }
   },
+  "Object": {
+    "reference": {
+      "$schema": "/schemas/common/api-reference-v0.json#",
+      "apiVersion": "v1",
+      "description": "The object service provides HTTP-accessible storage for large blobs of data.",
+      "entries": [
+        {
+          "args": [
+          ],
+          "category": "Ping Server",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "category": "Upload",
+          "description": "Upload backend data.",
+          "input": "v1/upload-object-request.json#",
+          "method": "post",
+          "name": "uploadObject",
+          "query": [
+          ],
+          "route": "/upload/<name>",
+          "scopes": "object:upload:<name>",
+          "stability": "experimental",
+          "title": "Upload backend data",
+          "type": "function"
+        }
+      ],
+      "serviceName": "object",
+      "title": "Taskcluster Object Service API Documentation"
+    }
+  },
   "PurgeCache": {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",

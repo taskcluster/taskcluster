@@ -31,6 +31,11 @@
         "denylisted_notifications": "write"
       }
     },
+    "object": {
+      "tables": {
+        "objects": "write"
+      }
+    },
     "purge_cache": {
       "tables": {
         "cache_purges": "write"
@@ -185,6 +190,13 @@
       "namespace": "text not null",
       "rank": "integer not null",
       "task_id": "text not null"
+    },
+    "objects": {
+      "backend_id": "text not null",
+      "data": "jsonb not null",
+      "expires": "timestamp with time zone not null",
+      "name": "text not null",
+      "project_id": "text not null"
     },
     "queue_artifacts": {
       "content_type": "text not null",
@@ -5657,6 +5669,50 @@
       },
       "migrationScript": "begin\n  lock table queue_worker_types;\n\n  alter table queue_worker_types drop constraint queue_worker_types_pkey;\n  alter table queue_worker_types rename to task_queues;\n  alter table task_queues add column task_queue_id text;\n  update task_queues set task_queue_id = provisioner_id || '/' || worker_type;\n  alter table task_queues drop column provisioner_id, drop column worker_type;\n  alter table task_queues alter column task_queue_id set not null;\n  alter table task_queues add primary key (task_queue_id);\n\n  lock table queue_workers;\n\n  alter table queue_workers drop constraint queue_workers_pkey;\n  alter table queue_workers add column task_queue_id text;\n  update queue_workers set task_queue_id = provisioner_id || '/' || worker_type;\n  alter table queue_workers drop column provisioner_id, drop column worker_type;\n  alter table queue_workers alter column task_queue_id set not null;\n  alter table queue_workers add primary key (task_queue_id, worker_group, worker_id);\n\n  lock table queue_provisioners;\n\n  revoke select, insert, update, delete on queue_provisioners from $db_user_prefix$_queue;\n  drop table queue_provisioners;\nend",
       "version": 53
+    },
+    {
+      "description": "Add objects table and functions",
+      "downgradeScript": "begin\n  revoke select, insert, update, delete on objects from $db_user_prefix$_object;\n  drop table objects;\nend",
+      "methods": {
+        "create_object": {
+          "args": "name_in text, project_id_in text, backend_id_in text, data_in jsonb, expires_in timestamptz",
+          "body": "begin\n  insert\n    into objects (name, data, project_id, backend_id, expires)\n    values (name_in, data_in, project_id_in, backend_id_in, expires_in);\nend",
+          "deprecated": false,
+          "description": "Upload object.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "object"
+        },
+        "delete_object": {
+          "args": "name_in text",
+          "body": "begin\n  delete\n  from objects\n  where name = name_in;\nend",
+          "deprecated": false,
+          "description": "Delete an object.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "object"
+        },
+        "get_expired_objects": {
+          "args": "limit_in integer, start_at_in text",
+          "body": "begin\n  return query\n  select\n    objects.name,\n    objects.data,\n    objects.project_id,\n    objects.backend_id,\n    objects.expires\n  from objects\n  where\n    (start_at_in is null or objects.name > start_at_in) and\n    objects.expires < now()\n  order by name\n  limit limit_in;\nend",
+          "deprecated": false,
+          "description": "Get objects with an expiration before the current time.  If given, only\nobjects with a name greater than `start_at_in` are returned.  The\n`limit_in` argument limits the number of results returned.",
+          "mode": "read",
+          "returns": "table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)",
+          "serviceName": "object"
+        },
+        "get_object": {
+          "args": "name_in text",
+          "body": "begin\n  return query\n  select\n    objects.name,\n    objects.data,\n    objects.project_id,\n    objects.backend_id,\n    objects.expires\n  from objects\n  where objects.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get an object by name, or an empty set if no such object exists.",
+          "mode": "read",
+          "returns": "table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)",
+          "serviceName": "object"
+        }
+      },
+      "migrationScript": "begin\n  create table objects (\n    name text not null,\n    data jsonb not null,\n    backend_id text not null,\n    project_id text not null,\n    expires timestamptz not null\n  );\n  alter table objects add primary key (name);\n\n  grant select, insert, update, delete on objects to $db_user_prefix$_object;\nend",
+      "version": 54
     }
   ]
 }
