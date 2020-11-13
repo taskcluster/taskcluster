@@ -31,10 +31,15 @@ suite(testing.suiteName(), function() {
   };
 
   // Expand `assume:anonymous` to include scopes `anonscope`
-  // No other "roles" apply.
+  // Expand `assume:expansion` to include `expansion` to test
+  // specifically that we can have roles in certs that expand
+  // prior to checking authorizedScopes
   const expandScopes = scopes => {
     if (scopes.includes('assume:anonymous')) {
       scopes = utils.mergeScopeSets(scopes, ['anonscope']);
+    }
+    if (scopes.includes('assume:expansion')) {
+      scopes = utils.mergeScopeSets(scopes, ['expanded']);
     }
     return scopes;
   };
@@ -585,6 +590,19 @@ suite(testing.suiteName(), function() {
     },
   }), success(['anonscope', 'assume:anonymous', 'scope1:a', 'scope2:b']));
 
+  testWithTemp('temporary credentials with authorizedScopes (that need expansion)', {
+    id: 'root',
+    scopes: ['scope1:*', 'scope2:*', 'assume:expansion'],
+  }, (id, key, certificate) => ({
+    authorization: {
+      credentials: { id, key },
+      ext: {
+        certificate,
+        authorizedScopes: ['scope1:a', 'scope2:b', 'expanded'],
+      },
+    },
+  }), success(['anonscope', 'assume:anonymous', 'scope1:a', 'scope2:b', 'expanded']));
+
   testWithTemp('invalid: temporary credentials with authorizedScopes not satisfied', {
     id: 'unpriv',
     scopes: ['scope2'],
@@ -600,6 +618,8 @@ suite(testing.suiteName(), function() {
     'Supplied credentials do not satisfy authorizedScopes; credentials have scopes:',
     '',
     '```',
+    'anonscope',
+    'assume:anonymous',
     'scope2',
     '```',
     '',
