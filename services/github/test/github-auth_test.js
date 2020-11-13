@@ -1,3 +1,4 @@
+const helper = require('./helper');
 const assert = require('assert');
 const nock = require('nock');
 const githubAuth = require('../src/github-auth');
@@ -43,6 +44,7 @@ suite(testing.suiteName(), function() {
         .post('/app/installations/100/access_tokens')
         .reply(200);
       const gh = await githubAuth({
+        monitor: await helper.load('monitor'),
         cfg: {
           github: {
             credentials: {

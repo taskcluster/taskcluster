@@ -81,8 +81,8 @@ const load = loader({
   },
 
   github: {
-    requires: ['cfg'],
-    setup: ({ cfg }) => githubAuth({ cfg }),
+    requires: ['cfg', 'monitor'],
+    setup: ({ cfg, monitor }) => githubAuth({ cfg, monitor: monitor.childMonitor('octokit') }),
   },
 
   intree: {

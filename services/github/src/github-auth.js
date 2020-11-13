@@ -1,29 +1,9 @@
 const jwt = require('jsonwebtoken');
-let { Octokit } = require('@octokit/rest');
+const { Octokit } = require('@octokit/rest');
+const { throttling } = require("@octokit/plugin-throttling");
+const { retry } = require("@octokit/plugin-retry");
 
-const retryPlugin = (octokit, options) => {
-
-  const retries = 7;
-  const baseBackoff = 100;
-  const sleep = timeout => new Promise(resolve => setTimeout(resolve, timeout));
-
-  octokit.hook.wrap('request', async (request, options) => {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        return await request(options);
-      } catch (err) {
-        // 404 and 401 are both retried because they can occur spuriously, likely due to MySQL db replication
-        // delays at GitHub.
-        if (attempt < retries && err.name === 'HttpError' && (err.status >= 500 || err.status === 401 || err.status === 404)) {
-          await sleep(baseBackoff * Math.pow(2, attempt));
-          continue;
-        }
-        throw err;
-      }
-    }
-  });
-};
-Octokit = Octokit.plugin(retryPlugin);
+const PluggedOctokit = Octokit.plugin(retry, throttling);
 
 const getPrivatePEM = cfg => {
   const keyRe = /-----BEGIN RSA PRIVATE KEY-----(\n|\\n).*(\n|\\n)-----END RSA PRIVATE KEY-----(\n|\\n)?/s;
@@ -39,8 +19,35 @@ const getPrivatePEM = cfg => {
   return privatePEM.replace(/\\n/g, '\n');
 };
 
-module.exports = async ({ cfg }) => {
+module.exports = async ({ cfg, monitor }) => {
   const privatePEM = getPrivatePEM(cfg);
+
+  const OctokitOptions = {
+    log: {
+      debug: message => monitor.debug(message),
+      info: message => monitor.info(message),
+      warn: message => monitor.warning(message),
+      error: message => monitor.err(message),
+    },
+    throttle: {
+      onRateLimit: (retryAfter, options) => {
+        PluggedOctokit.log.info(`Request quota exhausted for request ${options.method} ${options.url}`);
+
+        if (options.request.retryCount < 3) {
+          PluggedOctokit.log.info(`Retrying after ${retryAfter} seconds!`);
+          return true;
+        }
+      },
+      onAbuseLimit: (retryAfter, options) => {
+        PluggedOctokit.log.warn(`Abuse detected for request ${options.method} ${options.url}`);
+      },
+    },
+    retry: {
+      // 404 and 401 are both retried because they can occur spuriously, likely due to MySQL db replication
+      // delays at GitHub.
+      doNotRetry: [400, 403],
+    },
+  };
 
   const getAppGithub = async () => {
     const inteToken = jwt.sign(
@@ -49,7 +56,10 @@ module.exports = async ({ cfg }) => {
       { algorithm: 'RS256', expiresIn: '1m' },
     );
 
-    return new Octokit({ auth: `bearer ${inteToken}` });
+    return new PluggedOctokit({
+      auth: `bearer ${inteToken}`,
+      ...OctokitOptions,
+    });
   };
 
   const getInstallationGithub = async (inst_id) => {
@@ -59,7 +69,10 @@ module.exports = async ({ cfg }) => {
       const instaToken = (await inteGithub.apps.createInstallationAccessToken({
         installation_id: inst_id,
       })).data;
-      const instaGithub = new Octokit({ auth: `token ${instaToken.token}` });
+      const instaGithub = new PluggedOctokit({
+        auth: `token ${instaToken.token}`,
+        ...OctokitOptions,
+      });
       return instaGithub;
     } catch (err) {
       err.installationId = inst_id;
