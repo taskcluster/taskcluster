@@ -581,8 +581,8 @@ class AzureProvider extends Provider {
    */
 
   async provisionResources({ worker, monitor }) {
-    
-    let titleString = ""; 
+
+    let titleString = "";
 
     try {
       // IP
@@ -590,9 +590,9 @@ class AzureProvider extends Provider {
         location: worker.providerData.location,
         publicIPAllocationMethod: 'Dynamic',
       };
-      
+
       titleString = "IP Creation Error";
-      
+
       worker = await this.provisionResource({
         worker,
         client: this.networkClient.publicIPAddresses,
@@ -642,7 +642,7 @@ class AzureProvider extends Provider {
         modifyFn: nicModifyFunc,
         monitor,
       });
-      
+
       if (!worker.providerData.nic.id) {
         return;
       }
@@ -698,7 +698,6 @@ class AzureProvider extends Provider {
       await this.removeWorker({ worker, reason: titleString + `: ${err.message}` });
     }
   }
-
 
   async fetchVmInfo(worker) {
     const { provisioningState, vmId } = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
