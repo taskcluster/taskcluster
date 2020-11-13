@@ -166,6 +166,7 @@ class AzureProvider extends Provider {
     super(conf);
     this.configSchema = 'config-azure';
     this.providerConfig = providerConfig;
+    this.downloadTimeout = 5000; // 5 seconds
   }
 
   // Add a PEM-encoded root certificate rootCertPem
@@ -205,7 +206,8 @@ class AzureProvider extends Provider {
   // Return Promise that will download a binary file
   async downloadBinaryPromise(url) {
     const getPromise = new Promise((resolve, reject) => {
-      http.get(url, (res) => {
+      const options = { timeout: this.downloadTimeout };
+      const request = http.get(url, options, (res) => {
         const { statusCode } = res;
         if (statusCode !== 200) {
           res.resume(); // Consume bytes
@@ -220,7 +222,11 @@ class AzureProvider extends Provider {
           const body = Buffer.concat(chunks);
           resolve(body.toString('binary'));
         });
-        res.on('error', (error) => reject(error));
+      });
+      request.on('error', (error) => reject(error));
+      request.on('timeout', () => {
+        request.abort();
+        reject(Error(`Timed out (${this.downloadTimeout}ms)`));
       });
     });
     return getPromise;

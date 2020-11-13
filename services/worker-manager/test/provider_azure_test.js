@@ -1200,6 +1200,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           provider.downloadBinaryPromise = oldDownloadBinaryPromise;
         });
 
+        test('certificate download timeout', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = Worker.fromApi({
+            ...defaultWorker,
+          });
+          await worker.create(helper.db);
+          const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+          const workerIdentityProof = { document };
+
+          const oldDownloadTimeout = provider.downloadTimeout;
+          provider.downloadTimeout = 1; // 1 millisecond
+
+          // Remove the intermediate certificate
+          const intermediateCertPem = fs.readFileSync(path.resolve(__dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_4.pem'));
+          const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
+          const deletedCert = provider.caStore.removeCertificate(intermediateCert);
+          assert(deletedCert);
+
+          await assert.rejects(() =>
+            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+          /Signature validation error/);
+          const expectedUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt';
+          assert.equal(monitor.manager.messages[0].Fields.message, 'Error downloading intermediate certificate');
+          assert.equal(monitor.manager.messages[0].Fields.error, `Error: Timed out (1ms); location=${expectedUrl}`);
+          const expectedSubject = dnToString(deletedCert.subject);
+          const expectedAIA = JSON.stringify([
+            { method: 'CA Issuer', location: expectedUrl },
+            { method: "OSCP", location: "http://ocsp.msocsp.com" },
+          ]);
+          assert.equal(monitor.manager.messages[1].Fields.message, 'Unable to download intermediate certificate');
+          assert.equal(monitor.manager.messages[1].Fields.error, `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
+
+          provider.caStore.addCertificate(deletedCert);
+          provider.downloadTimeout = oldDownloadTimeout;
+        });
+
         test('download is not binary cert', async function() {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
