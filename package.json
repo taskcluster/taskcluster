@@ -47,7 +47,7 @@
     "generate-password": "^1.5.0",
     "get-caller-file": "^2.0.5",
     "googleapis": "^64.0.0",
-    "graphql": "^14.5.4",
+    "graphql": "^15.0.0",
     "graphql-depth-limit": "^1.1.0",
     "graphql-iso-date": "^3.5.0",
     "graphql-playground-middleware-express": "^1.7.8",
