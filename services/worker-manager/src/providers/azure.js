@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const generator = require('generate-password');
+const http = require('http');
 const { rootCertificates } = require('tls');
 const { WorkerPool, Worker } = require('../data');
 
@@ -76,6 +77,86 @@ function dnToString(dn) {
   }).join();
 }
 
+// Calculate the fingerprint of a certificate
+// From https://github.com/digitalbazaar/forge/issues/596
+// Fingerprint is OpenSSL format, A1:B2:C3...
+function getCertFingerprint(cert) {
+  const der = forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).getBytes();
+  const messageDigest = forge.md.sha1.create();
+  messageDigest.start();
+  messageDigest.update(der);
+  const fingerprint = messageDigest.digest()
+    .toHex()
+    .match(/.{2}/g)
+    .join(':')
+    .toUpperCase();
+  return fingerprint;
+}
+
+// Extract the AuthorityAccessInfo.AccessDescriptions from a certificate
+// See https://tools.ietf.org/html/rfc5280#section-4.2.2.1
+// Return is an array of objects:
+// [{
+//   method: "OSCP" or "CA Issuer",
+//   location: location, which may be a URL
+// },...]
+function getAuthorityAccessInfo(cert) {
+  // ASN.1 validator and data capture for AccessDescription items in
+  // AuthorityAccessInfo extension
+  const accessDescriptionValidator = {
+    name: 'AccessDescription',
+    tagClass: forge.asn1.Class.UNIVERSAL,
+    type: forge.asn1.Type.SEQUENCE,
+    constructed: true,
+    value: [{
+      name: 'AccessDescription.accessMethod',
+      tagClass: forge.asn1.Class.UNIVERSAL,
+      type: forge.asn1.Type.OID,
+      constructed: false,
+      capture: 'accessMethod',
+    }, {
+      name: 'AccessDescription.accessLocation',
+      tagClass: forge.asn1.Class.CONTEXT_SPECIFIC,
+      type: forge.asn1.Type.OID,
+      constructed: false,
+      capture: 'accessLocation',
+    }],
+  };
+  const knownOIDs = new Map([
+    ['1.3.6.1.5.5.7.48.1', 'OSCP'],
+    ['1.3.6.1.5.5.7.48.2', 'CA Issuer'],
+  ]);
+
+  const authorityInfoAccessRaw = cert.getExtension('authorityInfoAccess');
+  if (!authorityInfoAccessRaw) {
+    throw Error("No AuthorityAccessInfo");
+  }
+
+  const authorityInfoAccess = forge.asn1.fromDer(authorityInfoAccessRaw.value);
+  const accessDescriptions = [];
+  authorityInfoAccess.value.forEach((accessDescription, idx) => {
+    const errors = [];
+    const capture = {};
+    const valid = forge.asn1.validate(
+      accessDescription, accessDescriptionValidator, capture, errors);
+    if (!valid) {
+      const err = Error(`accessDescription[${idx}] is invalid`);
+      err.errors = errors;
+      throw err;
+    }
+    const keyOID = forge.asn1.derToOid(capture.accessMethod);
+    const key = knownOIDs.get(keyOID);
+    if (key === undefined) {
+      throw Error(`accessDescription[$(idx)] has unknown key ${keyOID}`);
+    }
+    accessDescriptions.push({
+      method: key,
+      location: capture.accessLocation,
+    });
+  });
+  return accessDescriptions;
+}
+
 class AzureProvider extends Provider {
 
   constructor({
@@ -119,6 +200,30 @@ class AzureProvider extends Provider {
                   ` for "${dnToString(cert.subject)}" is not a known Root CA`);
     }
     this.caStore.addCertificate(cert);
+  }
+
+  // Return Promise that will download a binary file
+  async downloadBinaryPromise(url) {
+    const getPromise = new Promise((resolve, reject) => {
+      http.get(url, (res) => {
+        const { statusCode } = res;
+        if (statusCode !== 200) {
+          res.resume(); // Consume bytes
+          reject(Error(`Request failed, status code ${statusCode}`));
+        }
+
+        let chunks = [];
+        res.on('data', chunk => {
+          chunks.push(Buffer.from(chunk));
+        });
+        res.on('end', () => {
+          const body = Buffer.concat(chunks);
+          resolve(body.toString('binary'));
+        });
+        res.on('error', (error) => reject(error));
+      });
+    });
+    return getPromise;
   }
 
   async setup() {
@@ -387,6 +492,72 @@ class AzureProvider extends Provider {
     } catch (err) {
       this.monitor.log.registrationErrorWarning({ message: 'Error verifying PKCS#7 message signature', error: err.toString() });
       throw error();
+    }
+
+    // download the intermediate certificate if needed
+    let issuer = this.caStore.getIssuer(crt);
+    if (issuer === null) {
+      const authorityAccessInfo = getAuthorityAccessInfo(crt);
+      let method, location;
+      for (let i = 0; i < authorityAccessInfo.length; i++) {
+        method = authorityAccessInfo[i].method;
+        location = authorityAccessInfo[i].location;
+        if (method === 'CA Issuer' && location.startsWith('http:')) {
+          let raw_data = null;
+          try {
+            raw_data = await this.downloadBinaryPromise(location);
+          } catch (err) {
+            this.monitor.log.registrationErrorWarning({
+              message: 'Error downloading intermediate certificate',
+              error: `${err.toString()}; location=${location}`,
+            });
+            // Continue, there may be a further CA Issuer that works
+          }
+          if (raw_data) {
+            try {
+              const certAsn1 = forge.asn1.fromDer(forge.util.createBuffer(raw_data));
+              issuer = forge.pki.certificateFromAsn1(certAsn1);
+            } catch (err) {
+              // Could be an issue with external server, or unexpected content
+              // RFC 5280, section 4.2.2.1 says it may be a "certs-only" CMS message
+              this.monitor.log.registrationErrorWarning({
+                message: 'Error reading intermediate certificate',
+                error: `${err.toString()}; location=${location}`,
+              });
+              // Continue, there may be a later CA Issuer that works
+            }
+
+            if (issuer) {
+              break;
+            }
+          }
+        }
+      }
+
+      if (issuer) {
+        try {
+          this.addIntermediateCert(issuer);
+        } catch(err) {
+          this.monitor.log.registrationErrorWarning({
+            message: 'Error verifying new intermediate certificate',
+            error: err.message,
+          });
+          throw error();
+        }
+        this.monitor.log.registrationNewIntermediateCertificate({
+          subject: dnToString(issuer.subject),
+          issuer: dnToString(issuer.issuer),
+          fingerprint: getCertFingerprint(issuer),
+          url: location,
+        });
+      } else {
+        this.monitor.log.registrationErrorWarning({
+          message: 'Unable to download intermediate certificate',
+          error: `Certificate "${dnToString(crt.issuer)}";` +
+                 ` AuthorityAccessInfo ${JSON.stringify(authorityAccessInfo)}`,
+        });
+        throw error();
+      }
     }
 
     // verify that the embedded certificates have proper chain of trust
@@ -1101,4 +1272,6 @@ class AzureProvider extends Provider {
 module.exports = {
   AzureProvider,
   dnToString,
+  getCertFingerprint,
+  getAuthorityAccessInfo,
 };

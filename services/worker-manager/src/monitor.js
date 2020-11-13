@@ -171,3 +171,21 @@ MonitorManager.register({
     error: 'Error message from cloud that triggered this',
   },
 });
+
+MonitorManager.register({
+  name: 'registrationNewIntermediateCertificate',
+  title: 'Registration of New Intermediate Certificate',
+  type: 'registration-new-intermediate-certificate',
+  version: 1,
+  level: 'warning',
+  description: `
+    A worker's identify proof message was signed by an unknown intermediate certificate.
+    This was successfully downloaded, verified by root CAs, and added to the CA store.
+  `,
+  fields: {
+    subject: 'The distinguished name of the certificate subject',
+    issuer: 'The distinguished name of the certificate issuer',
+    fingerprint: 'The fingerprint of the certificate',
+    url: 'The URL from which the certificate was downloaded',
+  },
+});
