@@ -171,7 +171,7 @@ class AzureProvider extends Provider {
         workerConfig: cfg.workerConfig || {},
       })).toString('base64');
 
-      // Disallow users from naming diss
+      // Disallow users from naming disk
       // required
       let osDisk = { ..._.omit(cfg.storageProfile.osDisk, ['name']) };
       // optional

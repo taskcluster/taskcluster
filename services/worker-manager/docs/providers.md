@@ -46,7 +46,7 @@ The default implementation of all three methods throws an ApiError that will res
 The provider's `createWorker` method is called with `workerPool` (an instance of the WorkerPool Azure entity class), `workerGroup`, `workerId`, and `input`.
 The `input` matches the `create-worker-request.yml` schema, and that schema can be adjusted to allow provider-specific parameters.
 The return value should be an instance of the Worker azure entity class.
-[Idempotency](../../dev-docs/idempotency.md) of this method is the responsibilty of the provider.
+[Idempotency](../../dev-docs/idempotency.md) of this method is the responsibility of the provider.
 
 The provider's `updateWorker` method is called with `{workerPool, worker, input}` where `workerPool` is the WorkerPool instance, `worker` is the Worker instance and `input` is the same as for `createWorker`.
 The return value should be an instance of the Worker azure entity class.
@@ -62,7 +62,7 @@ The API method first verifies that the given worker exists in the Azure table an
 The provider should verify the supplied identity proof and, if it is valid, modify the worker entry as appropriate (at least setting its state to RUNNING).
 Providers that wish to limit registration to once per worker should return an error message from this function if the worker is already RUNNING.
 A successful return value should be an object with property `expires` giving the appropriate expiration time for the resulting credentials.
-If the method returns sucessfully, then the caller will be given Taskcluster credentials appropriate to the worker.
+If the method returns successfully, then the caller will be given Taskcluster credentials appropriate to the worker.
 
 This API method is not scope-protected, and implements an access-control mechanism based on the identity proof.
 It should be written with defensive programming in mind.
