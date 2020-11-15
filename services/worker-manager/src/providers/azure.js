@@ -459,7 +459,8 @@ class AzureProvider extends Provider {
     // We need to check that:
     // 1. The embedded document was signed with the private key corresponding to the
     //    embedded public key
-    // 2. The embedded public key has a proper certificate chain back to a trusted CA
+    // 2. The embedded public key has a proper certificate chain back to a trusted CA,
+    //    and has a subject of "metadata.azure.com" or ends with ".metadata.azure.com"
     // 3. The embedded message contains the vmId that matches the worker making the request
 
     // signature is base64-encoded DER-format PKCS#7 / CMS message
@@ -497,6 +498,18 @@ class AzureProvider extends Provider {
       assert(verifier.verify(pem, sig, 'binary'));
     } catch (err) {
       this.monitor.log.registrationErrorWarning({ message: 'Error verifying PKCS#7 message signature', error: err.toString() });
+      throw error();
+    }
+
+    // verify the subject of the signing certificate
+    const signerCommonName = crt.subject.getField({ name: 'commonName' });
+    if (!(signerCommonName &&
+          (signerCommonName.value === 'metadata.azure.com' ||
+           signerCommonName.value.endsWith('.metadata.azure.com')))) {
+      this.monitor.log.registrationErrorWarning({
+        message: 'Wrong PKCS#7 message signature subject',
+        error: `Expected "/CN=metadata.azure.com", got "${dnToString(crt.subject)}"`,
+      });
       throw error();
     }
 
