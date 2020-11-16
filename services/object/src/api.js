@@ -48,7 +48,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let { name } = req.params;
-  const { acceptProtocol } = req.body;
+  const { acceptDownloadMethods } = req.body;
   const rows = await this.db.fns.get_object(name);
 
   if (!rows.length) {
@@ -57,7 +57,7 @@ builder.declare({
 
   const [obj] = rows;
   const backend = this.backends.get(obj.backend_id);
-  const result = backend.objectRetrievalDetails(name, acceptProtocol);
+  const result = backend.objectRetrievalDetails(name, acceptDownloadMethods);
 
   return res.reply(result);
 });

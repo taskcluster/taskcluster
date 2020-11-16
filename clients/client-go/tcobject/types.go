@@ -14,15 +14,15 @@ type (
 		URL string `json:"url"`
 	}
 
-	// Download object request. See [Transport Protocols](https://docs.taskcluster.net/docs/reference/platform/object/transport-protocols) for more detail.
+	// Download object request. See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.
 	DownloadObjectRequest struct {
 
 		// Array items:
-		// Supported protocols.
+		// Supported download methods.
 		//
 		// Possible values:
 		//   * "HTTP:GET"
-		AcceptProtocols []string `json:"acceptProtocols"`
+		AcceptDownloadMethods []string `json:"acceptDownloadMethods"`
 	}
 
 	// Download object response.

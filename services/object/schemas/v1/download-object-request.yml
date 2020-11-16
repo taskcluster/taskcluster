@@ -1,17 +1,17 @@
 $schema: "/schemas/common/metaschema.json#"
 title:              "Download Object Request"
 description: |
-  Download object request. See [Transport Protocols](https://docs.taskcluster.net/docs/reference/platform/object/transport-protocols) for more detail.
+  Download object request. See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.
 type:               object
 properties:
-  acceptProtocols:
+  acceptDownloadMethods:
     type: array
-    title: "Supported protocols"
+    title: "Supported download methods"
     uniqueItems: true
     items:
       type: string
       enum: ['HTTP:GET']
-      description: "Supported protocols."
+      description: "Supported download methods."
 additionalProperties: false
 required:
-  - acceptProtocols
+  - acceptDownloadMethods

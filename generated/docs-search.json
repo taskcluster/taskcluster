@@ -2612,24 +2612,24 @@
   },
   {
     "element": "h1",
-    "id": "transport-protocols",
-    "path": "/reference/platform/object/transport-protocols",
+    "id": "upload-and-download-methods",
+    "path": "/reference/platform/object/upload-download-methods",
     "subtitle": null,
-    "title": "Transport Protocols"
+    "title": "Upload and Download Methods"
   },
   {
     "element": "h2",
-    "id": "protocols",
-    "path": "/reference/platform/object/transport-protocols",
-    "subtitle": "Protocols",
-    "title": "Transport Protocols"
+    "id": "download-methods",
+    "path": "/reference/platform/object/upload-download-methods",
+    "subtitle": "Download Methods",
+    "title": "Upload and Download Methods"
   },
   {
     "element": "h2",
-    "id": "uploading-and-downloading-objects",
-    "path": "/reference/platform/object/transport-protocols",
-    "subtitle": "Uploading and Downloading Objects",
-    "title": "Transport Protocols"
+    "id": "introduction",
+    "path": "/reference/platform/object/upload-download-methods",
+    "subtitle": "Introduction",
+    "title": "Upload and Download Methods"
   },
   {
     "element": "h1",

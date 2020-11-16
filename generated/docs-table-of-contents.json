@@ -2190,8 +2190,8 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/platform/object/transport-protocols",
-                  "title": "transport"
+                  "path": "reference/platform/object/upload-download-methods",
+                  "title": "Upload Download Methods"
                 },
                 "path": "reference/platform/object/logs",
                 "prev": {
@@ -2209,14 +2209,14 @@
                 "data": {
                   "inline": true,
                   "order": 3,
-                  "title": "transport"
+                  "title": "Upload Download Methods"
                 },
-                "name": "transport-protocols",
+                "name": "upload-download-methods",
                 "next": {
                   "path": "reference/platform/queue/README",
                   "title": "queue"
                 },
-                "path": "reference/platform/object/transport-protocols",
+                "path": "reference/platform/object/upload-download-methods",
                 "prev": {
                   "path": "reference/platform/object/logs",
                   "title": "logs"
@@ -2469,8 +2469,8 @@
             },
             "path": "reference/platform/queue/README",
             "prev": {
-              "path": "reference/platform/object/transport-protocols",
-              "title": "transport"
+              "path": "reference/platform/object/upload-download-methods",
+              "title": "Upload Download Methods"
             },
             "up": {
               "path": "reference/platform/README",

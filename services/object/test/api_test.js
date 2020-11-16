@@ -24,6 +24,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('should be able to call downloadObject', async function() {
-    await helper.apiClient.downloadObject('public/foo', { acceptProtocols: ['HTTP:GET'] });
+    await helper.apiClient.downloadObject('public/foo', { acceptDownloadMethods: ['HTTP:GET'] });
   });
 });

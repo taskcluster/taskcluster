@@ -1,0 +1,29 @@
+---
+order: 3
+inline: true
+title: Upload Download Methods
+---
+# Upload and Download Methods
+
+## Introduction
+
+The Object Service does not directly upload and download objects, but acts as an
+intermediary on behalf of other data storage service providers. To upload an
+object, clients must make a request to the Object Service describing the object
+to upload (`object.uploadObject`), and the Object Service responds with details
+for the client to perform the upload directly.
+
+Similarly, to download an object (`object.downloadObject`), a request must be
+made to the Object Service describing the object, and the Object Server responds
+with information for the client to download the object directly (typically a
+URL).
+
+## Download Methods
+
+Currently the Object Service supports the single download method `HTTP:GET`. In
+order to support additional download methods in future, download requests from
+clients should include an ordered list of preferred download methods to use, in
+the `acceptDownloadMethods` property of the request body. When additional
+download methods are available, the Object Service will select a preferred
+download method from the union of its supported download methods and the
+`acceptDownloadMethods` of the client request.

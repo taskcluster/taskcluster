@@ -4032,23 +4032,23 @@
       "$id": "/schemas/object/v1/download-object-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Download object request. See [Transport Protocols](https://docs.taskcluster.net/docs/reference/platform/object/transport-protocols) for more detail.\n",
+      "description": "Download object request. See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.\n",
       "properties": {
-        "acceptProtocols": {
+        "acceptDownloadMethods": {
           "items": {
-            "description": "Supported protocols.",
+            "description": "Supported download methods.",
             "enum": [
               "HTTP:GET"
             ],
             "type": "string"
           },
-          "title": "Supported protocols",
+          "title": "Supported download methods",
           "type": "array",
           "uniqueItems": true
         }
       },
       "required": [
-        "acceptProtocols"
+        "acceptDownloadMethods"
       ],
       "title": "Download Object Request",
       "type": "object"
