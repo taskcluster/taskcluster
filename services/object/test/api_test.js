@@ -5,6 +5,7 @@ const { fromNow } = require('taskcluster-client');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
+  helper.resetTables(mock, skipping);
   helper.withBackends(mock, skipping);
   helper.withServer(mock, skipping);
 
@@ -23,7 +24,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.deepEqual(rows[0].data, {});
   });
 
-  test('should be able to call downloadObject', async function() {
-    await helper.apiClient.downloadObject('public/foo', { acceptDownloadMethods: ['HTTP:GET'] });
+  test('downloadObject for a supported method succeeds', async function() {
+    await helper.apiClient.uploadObject('public/foo', { projectId: 'x', expires: fromNow('1 year') });
+    const res = await helper.apiClient.downloadObject('public/foo', { acceptDownloadMethods: ['HTTP:GET'] });
+    assert.deepEqual(res, {
+      method: 'HTTP:GET',
+      details: {
+        url: 'https://google.ca',
+      },
+    });
+  });
+
+  test('downloadObject for an unsupported method returns 406', async function() {
+    await helper.apiClient.uploadObject('has/no/methods', { projectId: 'x', expires: fromNow('1 year') });
+    await assert.rejects(
+      () => helper.apiClient.downloadObject('has/no/methods', { acceptDownloadMethods: ['HTTP:GET'] }),
+      err => err.code === 'NoMatchingMethod' && err.statusCode === 406,
+    );
   });
 });

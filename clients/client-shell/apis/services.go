@@ -944,7 +944,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "downloadObject",
 				Title:       "Download object data",
-				Description: "Download object data.\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.",
+				Description: "Get information on how to download an object.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.",
 				Stability:   "experimental",
 				Method:      "put",
 				Route:       "/download/<name>",

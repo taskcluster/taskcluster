@@ -36,7 +36,7 @@ type (
 		Details Details `json:"details"`
 
 		// Constant value: "HTTP:GET"
-		Protocol string `json:"protocol"`
+		Method string `json:"method"`
 	}
 
 	// Representation of the object entry to insert.

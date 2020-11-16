@@ -48,7 +48,10 @@ class Object(BaseClient):
         """
         Download object data
 
-        Download object data.
+        Get information on how to download an object.  Call this endpoint with a list of acceptable
+        download methods, and the server will select a method and return the corresponding payload.
+        Returns a 406 error if none of the given download methods are available.
+
         See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.
 
         This method is ``experimental``

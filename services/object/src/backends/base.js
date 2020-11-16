@@ -14,19 +14,32 @@ class Backend {
    */
 
   /**
-   * Return the backend-specific details required for a client to retrieve the object.
-   *
-   * Subclasses should override this.
-   */
-  objectRetrievalDetails(name, acceptProtocol) {
-  }
-
-  /**
    * Set up this backend.
    *
    * Subclasses should override this.
    */
   async setup() {
+  }
+
+  /**
+   * Get the set of download methods available for this object
+   *
+   * Subclasses should override this.
+   */
+  async availableDownloadMethods(object) {
+    return [];
+  }
+
+  /**
+   * Return the backend-specific details required for a client to retrieve the
+   * object.  The result is returned directly from the `downloadObject` API
+   * endpoint.  The given `method` is one of those returned from
+   * `availableDownloadMethods`.
+   *
+   * Subclasses should override this.
+   */
+  async downloadObject(object, method) {
+    throw new Error('downloadObject is not implemented for this backend');
   }
 
   /**

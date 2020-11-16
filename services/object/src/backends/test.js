@@ -4,9 +4,16 @@ const { Backend } = require('./base');
  * The test backend type is only available when running tests.
  */
 class TestBackend extends Backend {
-  objectRetrievalDetails(name, acceptProtocol) {
+  async availableDownloadMethods(object) {
+    if (object.name === 'has/no/methods') {
+      return [];
+    }
+    return ['HTTP:GET'];
+  }
+
+  async downloadObject(object, method) {
     return {
-      protocol: 'HTTP:GET',
+      method: 'HTTP:GET',
       details: {
         url: 'https://google.ca',
       },
