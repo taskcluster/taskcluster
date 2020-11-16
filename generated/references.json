@@ -3980,6 +3980,83 @@
   },
   {
     "content": {
+      "$id": "/schemas/object/v1/get-object-http.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Download object response.\n",
+      "properties": {
+        "details": {
+          "additionalProperties": false,
+          "properties": {
+            "url": {
+              "format": "uri",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "type": "object"
+        },
+        "protocol": {
+          "const": "HTTP:GET",
+          "type": "string"
+        }
+      },
+      "required": [
+        "protocol",
+        "details"
+      ],
+      "title": "Download Object Response",
+      "type": "object"
+    },
+    "filename": "schemas/object/v1/get-object-http.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/object/v1/download-object-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "description": "Download object response.\n",
+      "oneOf": [
+        {
+          "$ref": "get-object-http.json#"
+        }
+      ],
+      "title": "Download Object Response",
+      "type": "object"
+    },
+    "filename": "schemas/object/v1/download-object-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/object/v1/download-object-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Download object request. See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.\n",
+      "properties": {
+        "acceptDownloadMethods": {
+          "items": {
+            "description": "Supported download methods.",
+            "enum": [
+              "HTTP:GET"
+            ],
+            "type": "string"
+          },
+          "title": "Supported download methods",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "acceptDownloadMethods"
+      ],
+      "title": "Download Object Request",
+      "type": "object"
+    },
+    "filename": "schemas/object/v1/download-object-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/notify/v1/slack-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -15120,6 +15197,24 @@
           "scopes": "object:upload:<name>",
           "stability": "experimental",
           "title": "Upload backend data",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "category": "Download",
+          "description": "Download object data.",
+          "input": "v1/download-object-request.json#",
+          "method": "put",
+          "name": "downloadObject",
+          "output": "v1/download-object-response.json#",
+          "query": [
+          ],
+          "route": "/download/<name>",
+          "scopes": "object:download:<name>",
+          "stability": "experimental",
+          "title": "Download object data",
           "type": "function"
         }
       ],

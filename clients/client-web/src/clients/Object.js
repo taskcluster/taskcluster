@@ -12,6 +12,7 @@ export default class Object extends Client {
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
     this.uploadObject.entry = {"args":["name"],"category":"Upload","input":true,"method":"post","name":"uploadObject","query":[],"route":"/upload/<name>","scopes":"object:upload:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.downloadObject.entry = {"args":["name"],"category":"Download","input":true,"method":"put","name":"downloadObject","output":true,"query":[],"route":"/download/<name>","scopes":"object:download:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -29,5 +30,13 @@ export default class Object extends Client {
     this.validate(this.uploadObject.entry, args);
 
     return this.request(this.uploadObject.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Download object data.
+  /* eslint-enable max-len */
+  downloadObject(...args) {
+    this.validate(this.downloadObject.entry, args);
+
+    return this.request(this.downloadObject.entry, args);
   }
 }
