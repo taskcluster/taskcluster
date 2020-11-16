@@ -7,7 +7,6 @@ const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
   const rootUrl = libUrls.testRootUrl();
-  const legacyRootUrl = 'https://taskcluster.net';
 
   const assert_file = (serializable, filename, content) => {
     for (let file of serializable) {
@@ -72,17 +71,6 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('generates an absolute manifest for legacy rootUrl', function() {
-    const serializable = makeSerializable({ references: references.asAbsolute(legacyRootUrl) });
-    assert_file(serializable, 'references/manifest.json', {
-      $schema: 'https://schemas.taskcluster.net/common/manifest-v3.json#',
-      references: [
-        'https://references.taskcluster.net/test/v1/api.json',
-        'https://references.taskcluster.net/test2/v2/exchanges.json',
-      ],
-    });
-  });
-
   test('generates abstract schema filenames', function() {
     const serializable = makeSerializable({ references });
     assert_file(serializable, 'schemas/common/api-reference-v0.json', content => {
@@ -96,14 +84,6 @@ suite(testing.suiteName(), function() {
     assert_file(serializable, 'schemas/common/api-reference-v0.json', content => {
       assert.equal(content.$schema, rootUrl + '/schemas/common/metadata-metaschema.json#');
       assert.equal(content.$id, rootUrl + '/schemas/common/api-reference-v0.json#');
-    });
-  });
-
-  test('generates absolute schema filenames for legacy rootUrl', function() {
-    const serializable = makeSerializable({ references: references.asAbsolute(legacyRootUrl) });
-    assert_file(serializable, 'schemas/common/api-reference-v0.json', content => {
-      assert.equal(content.$schema, 'https://schemas.taskcluster.net/common/metadata-metaschema.json#');
-      assert.equal(content.$id, 'https://schemas.taskcluster.net/common/api-reference-v0.json#');
     });
   });
 

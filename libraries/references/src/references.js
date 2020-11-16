@@ -219,13 +219,8 @@ class References {
       return new References(this);
     }
 
-    let withoutRootUrl;
-    if (this.rootUrl === 'https://taskcluster.net') {
-      withoutRootUrl = uri => uri.replace(/^https:\/\/([^.]*)\.taskcluster\.net\//, '/$1/');
-    } else {
-      const rootUrlPrefix = new RegExp(`^${regexEscape(this.rootUrl)}`);
-      withoutRootUrl = uri => uri.replace(rootUrlPrefix, '');
-    }
+    const rootUrlPrefix = new RegExp(`^${regexEscape(this.rootUrl)}`);
+    const withoutRootUrl = uri => uri.replace(rootUrlPrefix, '');
 
     return new References({
       rootUrl: undefined,
@@ -249,13 +244,7 @@ class References {
       return this.asAbstract().asAbsolute(rootUrl);
     }
 
-    let withRootUrl;
-    if (rootUrl === 'https://taskcluster.net') {
-      const rootUrlPrefix = /^\/(references|schemas)\//;
-      withRootUrl = uri => uri.replace(rootUrlPrefix, 'https://$1.taskcluster.net/');
-    } else {
-      withRootUrl = uri => uri[0] === '/' ? rootUrl + uri : uri;
-    }
+    const withRootUrl = uri => uri[0] === '/' ? rootUrl + uri : uri;
 
     return new References({
       rootUrl,

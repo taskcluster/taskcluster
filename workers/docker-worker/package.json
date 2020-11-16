@@ -67,7 +67,7 @@
     "tar-fs": "^2.1.0",
     "tar-stream": "^2.1.3",
     "taskcluster-client": "^38.0.0",
-    "taskcluster-lib-urls": "^12.0.0",
+    "taskcluster-lib-urls": "^13.0.0",
     "temporary": "^0.0.8",
     "tweetnacl": "^1.0.0",
     "typed-env-config": "^3.0.0",

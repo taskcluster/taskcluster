@@ -33,7 +33,7 @@ suite(testing.suiteName(), function() {
       title: 'Test Post',
       description: 'Place we can call to test POST',
       scopes: [],
-      input: 'http://schemas.taskcluster.net/nothing.json',
+      input: 'http://tc-tests.example.com/schemas/nothing.json',
     },
     {
       type: 'function',
@@ -46,7 +46,7 @@ suite(testing.suiteName(), function() {
       title: 'Test Post Param',
       description: 'Place we can call to test POST with params',
       scopes: [],
-      input: 'http://schemas.taskcluster.net/nothing.json',
+      input: 'http://tc-tests.example.com/schemas/nothing.json',
     },
     {
       type: 'function',
@@ -59,7 +59,7 @@ suite(testing.suiteName(), function() {
       title: 'Test Post Param Query',
       description: 'Place we can call to test POST with params and a query',
       scopes: [],
-      input: 'http://schemas.taskcluster.net/nothing.json',
+      input: 'http://tc-tests.example.com/schemas/nothing.json',
     },
     {
       type: 'function',
@@ -111,26 +111,9 @@ suite(testing.suiteName(), function() {
     },
   ];
 
-  let referenceBaseUrlStyle = {
-    version: 0,
-    $schema: 'http://schemas.taskcluster.net/base/v1/api-reference.json#',
-    title: 'Fake API (with just baseUrl)',
-    description: 'Fake API',
-    baseUrl: 'https://fake.taskcluster.net/v1',
-    entries,
-  };
-  let referenceBothStyle = {
-    version: 0,
-    $schema: 'http://schemas.taskcluster.net/base/v1/api-reference.json#',
-    title: 'Fake API (with baseUrl and name)',
-    description: 'Fake API',
-    baseUrl: 'https://fake0.taskcluster.net/v1',
-    name: 'fake1',
-    entries,
-  };
   let referenceNameStyle = {
     version: 0,
-    $schema: 'http://schemas.taskcluster.net/base/v1/api-reference.json#',
+    $schema: 'http://tc-tests.example.com/schemas/base/v1/api-reference.json#',
     title: 'Fake API (with just name)',
     description: 'Fake API',
     name: 'fake2',
@@ -143,38 +126,6 @@ suite(testing.suiteName(), function() {
   });
 
   const subjects = {
-    old: {
-      name: 'just https://taskcluster.net',
-      urlPrefix: 'https://fake.taskcluster.net',
-      Fake: taskcluster.createClient(referenceBaseUrlStyle),
-      rootUrl: 'https://taskcluster.net',
-      client: (() => {
-        const Fake = taskcluster.createClient(referenceBaseUrlStyle);
-        return new Fake({
-          rootUrl: 'https://taskcluster.net',
-          credentials: {
-            clientId: 'nobody',
-            accessToken: 'nothing',
-          },
-        });
-      })(),
-    },
-    bothWays: {
-      name: 'baseurl and rootUrl with rootUrl set',
-      urlPrefix: 'https://whatever.net/api/fake1',
-      Fake: taskcluster.createClient(referenceBothStyle),
-      rootUrl: 'https://whatever.net',
-      client: (() => {
-        const Fake = taskcluster.createClient(referenceBothStyle);
-        return new Fake({
-          rootUrl: 'https://whatever.net',
-          credentials: {
-            clientId: 'nobody',
-            accessToken: 'nothing',
-          },
-        });
-      })(),
-    },
     serviceDiscoveryK8sDns: {
       name: 'using k8s dns service discovery',
       urlPrefix: 'http://taskcluster-fake2/api/fake2',
@@ -710,7 +661,7 @@ suite(testing.suiteName(), function() {
     try {
       let referenceBaseUrlStyle = {
         version: 0,
-        $schema: 'http://schemas.taskcluster.net/base/v1/api-reference.json#',
+        $schema: 'http://tc-tests.example.com/schemas/base/v1/api-reference.json#',
         title: 'Fake API (with just baseUrl)',
         description: 'Fake API',
         entries: [],

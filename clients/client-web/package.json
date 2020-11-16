@@ -39,6 +39,6 @@
     "crypto-js": "^4.0.0",
     "hawk": "<7.1.0",
     "query-string": "^6.1.0",
-    "taskcluster-lib-urls": "^12.0.0"
+    "taskcluster-lib-urls": "^13.0.0"
   }
 }

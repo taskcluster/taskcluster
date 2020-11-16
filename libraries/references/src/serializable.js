@@ -19,9 +19,7 @@ const makeSerializable = ({ references }) => {
   }));
 
   let urlPattern;
-  if (references.rootUrl === 'https://taskcluster.net') {
-    urlPattern = /^https:\/\/schemas\.taskcluster\.net\/(.*)#/;
-  } else if (references.rootUrl) {
+  if (references.rootUrl) {
     urlPattern = new RegExp(`^${regexEscape(references.rootUrl)}/schemas\/(.*)#`);
   } else {
     urlPattern = /^\/schemas\/(.*)#/;
@@ -36,9 +34,7 @@ const makeSerializable = ({ references }) => {
   const manifest = {
     $schema: urls.schema('common', 'manifest-v3.json#'),
     references: namedReferences.map(({ filename }) => {
-      if (references.rootUrl === 'https://taskcluster.net') {
-        return filename.replace(/^references/, 'https://references.taskcluster.net');
-      } else if (references.rootUrl) {
+      if (references.rootUrl) {
         return `${references.rootUrl}/${filename}`;
       } else {
         return `/${filename}`;

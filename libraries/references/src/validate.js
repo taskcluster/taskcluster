@@ -62,12 +62,8 @@ exports.validate = (references) => {
   // first check for some basic structural issues that will cause Ajv to
   // be sad..
 
-  let schemaPattern; // capture group 1 === prefix up to and including service name)
-  if (references.rootUrl === 'https://taskcluster.net') {
-    schemaPattern = new RegExp('(^https:\/\/schemas\\.taskcluster\\.net\/[^\/]*\/).*\\.json#');
-  } else {
-    schemaPattern = new RegExp(`(^${regexEscape(references.rootUrl)}\/schemas\/[^\/]*\/).*\\.json#`);
-  }
+  // (capture group 1 === prefix up to and including service name)
+  const schemaPattern = new RegExp(`(^${regexEscape(references.rootUrl)}\/schemas\/[^\/]*\/).*\\.json#`);
 
   for (let { filename, content } of references.schemas) {
     if (!content.$id) {
