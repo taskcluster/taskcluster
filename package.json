@@ -216,6 +216,7 @@
     "packageRules": [
       {
         "packagePatterns": [
+          "^googleapis$",
           "^aws-sdk$",
           "^golang.org/x/.*"
         ],
