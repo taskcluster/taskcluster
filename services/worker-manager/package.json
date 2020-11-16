@@ -9,8 +9,8 @@
   "scripts": {
     "coverage": "c8 yarn test",
     "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
-    "lint": "eslint src/*.js test/*.js",
-    "fixlint": "eslint --fix src/*.js test/*.js",
+    "lint": "eslint src test",
+    "fixlint": "eslint --fix src test",
     "test": "mocha test/*_test.js test/**/*_test.js"
   }
 }
