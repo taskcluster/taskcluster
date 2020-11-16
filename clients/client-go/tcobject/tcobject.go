@@ -104,7 +104,7 @@ func (object *Object) Ping() error {
 // Upload backend data.
 //
 // Required scopes:
-//   object:upload:<name>
+//   object:upload:<projectId>:<name>
 //
 // See #uploadObject
 func (object *Object) UploadObject(name string, payload *UploadObjectRequest) error {
