@@ -2612,6 +2612,27 @@
   },
   {
     "element": "h1",
+    "id": "transport-protocols",
+    "path": "/reference/platform/object/transport-protocols",
+    "subtitle": null,
+    "title": "Transport Protocols"
+  },
+  {
+    "element": "h2",
+    "id": "protocols",
+    "path": "/reference/platform/object/transport-protocols",
+    "subtitle": "Protocols",
+    "title": "Transport Protocols"
+  },
+  {
+    "element": "h2",
+    "id": "uploading-and-downloading-objects",
+    "path": "/reference/platform/object/transport-protocols",
+    "subtitle": "Uploading and Downloading Objects",
+    "title": "Transport Protocols"
+  },
+  {
+    "element": "h1",
     "id": "queue-service",
     "path": "/reference/platform/queue",
     "subtitle": null,

@@ -14,7 +14,7 @@ import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import { func, array, shape } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
-import { camelCase } from 'change-case';
+import { camelCase } from 'camel-case';
 import LinkIcon from 'mdi-react/LinkIcon';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import StatusLabel from '../StatusLabel';
@@ -73,11 +73,11 @@ export default class WorkerTypesTable extends Component {
 
   createSortedWorkerTypesConnection = memoize(
     (workerTypesConnection, sortBy, sortDirection) => {
-      const sortByProperty = camelCase(sortBy);
-
       if (!sortBy) {
         return workerTypesConnection;
       }
+
+      const sortByProperty = camelCase(sortBy);
 
       return {
         ...workerTypesConnection,

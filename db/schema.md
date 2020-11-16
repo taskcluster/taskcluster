@@ -266,10 +266,12 @@ CREATE INDEX sha512_indexed_tasks_idx ON indexed_tasks USING btree (public.sha51
 CREATE TABLE objects (
     name text NOT NULL,
     data jsonb NOT NULL,
-    expires timestamp with time zone NOT NULL,
-    backend_id text DEFAULT ''::text NOT NULL,
-    project_id text DEFAULT ''::text NOT NULL
+    backend_id text NOT NULL,
+    project_id text NOT NULL,
+    expires timestamp with time zone NOT NULL
 );
+ALTER TABLE objects
+    ADD CONSTRAINT objects_pkey PRIMARY KEY (name);
 ```
 
 ## queue_artifacts

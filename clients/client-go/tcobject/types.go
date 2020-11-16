@@ -14,7 +14,7 @@ type (
 		URL string `json:"url"`
 	}
 
-	// Download object request.
+	// Download object request. See [Transport Protocols](https://docs.taskcluster.net/docs/reference/platform/object/transport-protocols) for more detail.
 	DownloadObjectRequest struct {
 
 		// Array items:
@@ -25,19 +25,19 @@ type (
 		AcceptProtocols []string `json:"acceptProtocols"`
 	}
 
-	// Download object request.
-	DownloadObjectRequest1 struct {
+	// Download object response.
+	//
+	// One of:
+	//   * DownloadObjectResponse1
+	DownloadObjectResponse json.RawMessage
+
+	// Download object response.
+	DownloadObjectResponse1 struct {
 		Details Details `json:"details"`
 
 		// Constant value: "HTTP:GET"
 		Protocol string `json:"protocol"`
 	}
-
-	// Download object response.
-	//
-	// One of:
-	//   * DownloadObjectRequest1
-	DownloadObjectResponse json.RawMessage
 
 	// Representation of the object entry to insert.
 	UploadObjectRequest struct {

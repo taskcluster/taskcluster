@@ -19,6 +19,6 @@ suite(testing.suiteName(), function() {
 
   test('matches real lib', async function() {
     let inst = await fakeGithubAuth().getInstallationGithub('doesntmatter');
-    checkKeys(inst, github());
+    checkKeys(inst, new github());
   });
 });

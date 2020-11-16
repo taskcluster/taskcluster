@@ -7,7 +7,7 @@ const { REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd, gitCurrent
 const taskcluster = require('taskcluster-client');
 const path = require('path');
 const openEditor = require('open-editor');
-const Octokit = require("@octokit/rest");
+const { Octokit } = require("@octokit/rest");
 
 const ALLOWED_LEVELS = {
   'major': 1,
@@ -282,7 +282,7 @@ const add = async (options) => {
   } else if (options.bug) {
     name = `bug-${options.bug}`;
     reference = `reference: bug ${options.bug}\n`;
-  } else if (options.bug === false) {
+  } else if (options.bug === false || options.issue === false) {
     name = taskcluster.slugid();
     reference = '';
   } else {
@@ -292,7 +292,7 @@ const add = async (options) => {
       reference = `reference: ${m[1]} ${m[2]}\n`;
       name = `${m[1]}-${m[2]}`;
     } else {
-      console.log('Must specify one of --issue, --bug, or --no-bug');
+      console.log('Must specify one of --issue, --bug, --no-issue, or --no-bug');
       bad = true;
     }
   }

@@ -57,7 +57,7 @@ builder.declare({
 
   const [obj] = rows;
   const backend = this.backends.get(obj.backend_id);
-  const result = backend.getDetails(name, acceptProtocol);
+  const result = backend.objectRetrievalDetails(name, acceptProtocol);
 
   return res.reply(result);
 });

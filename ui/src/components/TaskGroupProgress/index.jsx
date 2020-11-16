@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { bool, func, shape, arrayOf, string } from 'prop-types';
 import memoize from 'fast-memoize';
 import { equals, sum, pipe, filter, map, sort as rSort } from 'ramda';
-import { lowerCase, title } from 'change-case';
+import { lowerCase } from 'lower-case';
+import { titleCase } from 'title-case';
 import classNames from 'classnames';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
@@ -331,7 +332,7 @@ export default class TaskGroupProgress extends Component {
                     classes.statusButtonTypography
                   )}
                   variant="caption">
-                  {title(status)}
+                  {titleCase(status)}
                 </Typography>
               </div>
             </ButtonBase>

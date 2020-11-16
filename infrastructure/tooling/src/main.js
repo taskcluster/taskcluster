@@ -102,7 +102,8 @@ program.command('changelog')
   .option('--general', 'Add a changelog entry that does not fit into other categories')
   .option('--issue <issue>', 'Reference this issue # in the added changelog')
   .option('--bug <bug>', 'Reference this Bugzilla bug in the added changelog')
-  .option('--no-bug', 'This change does not reference a bug or an issue')
+  .option('--no-bug', 'This change does not reference a bug')
+  .option('--no-issue', 'This change does not reference an issue')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');

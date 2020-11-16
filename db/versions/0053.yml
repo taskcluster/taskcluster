@@ -1,5 +1,92 @@
 version: 53
-description: objects table MVP
-migrationScript: 0053-migration.sql
-downgradeScript: 0053-downgrade.sql
-methods: []
+description: Add objects table and functions
+migrationScript: |-
+  begin
+    create table objects (
+      name text not null,
+      data jsonb not null,
+      backend_id text not null,
+      project_id text not null,
+      expires timestamptz not null
+    );
+    alter table objects add primary key (name);
+
+    grant select, insert, update, delete on objects to $db_user_prefix$_object;
+  end
+downgradeScript: |-
+  begin
+    revoke select, insert, update, delete on objects from $db_user_prefix$_object;
+    drop table objects;
+  end
+methods:
+  create_object:
+    description: |-
+      Upload object.
+    mode: write
+    serviceName: object
+    args: name_in text, project_id_in text, backend_id_in text, data_in jsonb, expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        insert
+          into objects (name, data, project_id, backend_id, expires)
+          values (name_in, data_in, project_id_in, backend_id_in, expires_in);
+      end
+  get_object:
+    description: |-
+      Get an object by name, or an empty set if no such object exists.
+    mode: read
+    serviceName: object
+    args: name_in text
+    returns: table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          objects.name,
+          objects.data,
+          objects.project_id,
+          objects.backend_id,
+          objects.expires
+        from objects
+        where objects.name = name_in;
+      end
+  get_expired_objects:
+    description: |-
+      Get objects with an expiration before the current time.  If given, only
+      objects with a name greater than `start_at_in` are returned.  The
+      `limit_in` argument limits the number of results returned.
+    mode: read
+    serviceName: object
+    args: 'limit_in integer, start_at_in text'
+    returns: table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          objects.name,
+          objects.data,
+          objects.project_id,
+          objects.backend_id,
+          objects.expires
+        from objects
+        where
+          (start_at_in is null or objects.name > start_at_in) and
+          objects.expires < now()
+        order by name
+        limit limit_in;
+      end
+  delete_object:
+    description: |-
+      Delete an object.
+    mode: write
+    serviceName: object
+    args: 'name_in text'
+    returns: void
+    body: |-
+      begin
+        delete
+        from objects
+        where name = name_in;
+      end
+

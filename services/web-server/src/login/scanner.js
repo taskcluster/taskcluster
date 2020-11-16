@@ -59,7 +59,7 @@ module.exports = async (auth, strategies) => {
           continue;
         }
 
-        userScopes = (await auth.expandScopes({ scopes: user.scopes() })).scopes;
+        userScopes = (await auth.expandScopes({ scopes: [...user.scopes(), 'assume:anonymous'] })).scopes;
 
         debug('..against user', user.identity);
       }

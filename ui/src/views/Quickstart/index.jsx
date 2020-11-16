@@ -27,64 +27,39 @@ import SiteSpecific from '../../components/SiteSpecific';
 import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import githubQuery from './github.graphql';
+import { siteSpecificVariable } from '../../utils/siteSpecific';
 
-const taskDefinition = {
-  version: 1,
-  policy: {
-    pullRequests: 'collaborators',
-  },
-  tasks: {
-    $match: {
-      taskId: { $eval: 'as_slugid("pr_task")' },
-      provisionerId: 'proj-getting-started',
-      workerType: 'tutorial',
-      payload: {
-        maxRunTime: 3600,
-        image: 'node',
-        command: [],
-      },
-      metadata: {
-        name: '',
-        description: '',
-        owner: '${event.sender.login}@users.noreply.github.com', // eslint-disable-line no-template-curly-in-string
-        source: '${event.repository.url}', // eslint-disable-line no-template-curly-in-string
-      },
-    },
-  },
-};
+// we embed JSON-e here, which looks a lot like a template to eslint..
+/* eslint-disable no-template-curly-in-string */
+
 const baseCmd = [
-  'git clone {{event.head.repo.url}} repo',
+  'git clone ${repository} repo',
   'cd repo',
   'git config advice.detachedHead false',
-  'git checkout {{event.head.sha}}',
+  'git checkout ${head_rev}',
 ];
 const getMatchCondition = events => {
-  let condition = '';
-  const eventsJoin = Array.from(events).join(' ');
+  const condition = [];
+  const prActions = [];
 
-  if (eventsJoin.includes('pull_request')) {
-    condition = `${condition}(tasks_for == "github-pull-request" && event["action"] in [${[
-      ...events,
-    ].sort()}])`;
-  }
-
-  if (eventsJoin.includes('push')) {
-    if (condition.length > 0) {
-      condition = `${condition} || `;
+  events.forEach(event => {
+    if (event.startsWith('pull_request.')) {
+      prActions.push(event.split('.')[1]);
+    } else if (event === 'push') {
+      condition.push('(tasks_for == "github-push")');
+    } else if (event === 'release') {
+      condition.push('(tasks_for == "github-release")');
     }
+  });
 
-    condition = `${condition}(tasks_for == "github-push")`;
+  if (prActions.length > 0) {
+    condition.push(
+      `(tasks_for == "github-pull-request" ` +
+        `&& event["action"] in ${JSON.stringify(prActions.sort())})`
+    );
   }
 
-  if (eventsJoin.includes('release')) {
-    if (condition.length > 0) {
-      condition = `${condition} || `;
-    }
-
-    condition = `${condition}(tasks_for == "github-release")`;
-  }
-
-  return condition;
+  return condition.length > 0 ? condition.join(' || ') : 'false';
 };
 
 const getTaskDefinition = state => {
@@ -96,24 +71,44 @@ const getTaskDefinition = state => {
     taskName,
     taskDescription,
   } = state;
+  const tutorialWorkerPool =
+    siteSpecificVariable('tutorial_worker_pool_id') ||
+    'proj-getting-started/tutorial';
+  const [provisionerId, workerType] = tutorialWorkerPool.split('/');
 
   return safeDump({
-    ...taskDefinition,
+    version: 1,
     policy: {
       pullRequests: access,
     },
     tasks: {
-      $match: {
-        [condition]: {
-          ...taskDefinition.tasks.$match,
-          ...{
+      $let: {
+        head_rev: {
+          $if: 'tasks_for == "github-pull-request"',
+          then: '${event.pull_request.head.sha}',
+          else: '${event.after}',
+        },
+        repository: {
+          $if: 'tasks_for == "github-pull-request"',
+          then: '${event.pull_request.head.repo.html_url}',
+          else: '${event.repository.html_url}',
+        },
+      },
+      in: {
+        $match: {
+          [condition]: {
+            taskId: { $eval: 'as_slugid("test")' },
+            deadline: { $fromNow: '1 day' },
+            provisionerId,
+            workerType,
             metadata: {
-              ...taskDefinition.tasks.$match.metadata,
               name: taskName,
               description: taskDescription,
+              owner: '${event.sender.login}@users.noreply.github.com',
+              source: '${event.repository.url}',
             },
             payload: {
-              ...taskDefinition.tasks.$match.payload,
+              maxRunTime: 3600,
               image,
               command: commands,
             },
@@ -124,41 +119,32 @@ const getTaskDefinition = state => {
   });
 };
 
-const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
-  ({
-    node: [
-      '/bin/bash',
-      '--login',
-      '-c',
-      baseCmd.concat(['npm install .', 'npm test']).join(' && '),
-    ],
-    python: [
-      '/bin/bash',
-      '--login',
-      '-c',
-      baseCmd.concat(['pip install tox', 'tox']).join(' && '),
-    ],
-    'rust:latest': [
-      '/bin/bash',
-      '-c',
-      baseCmd.concat(['rustc --test unit_test.rs', './unit_test']).join(' && '),
-    ],
-    golang: [
-      '/bin/bash',
-      '--login',
-      '-c',
-      [
-        `mkdir -p /go/src/github.com/${org}/${repo}`,
-        `cd /go/src/github.com/${org}/${repo}`,
-        'git init',
-        'git fetch {{ event.head.repo.url }} {{ event.head.ref }}',
-        'git config advice.detachedHead false',
-        'git checkout {{ event.head.sha }}',
-        'go install',
-        'go test ./...',
-      ].join(' && '),
-    ],
-  }[type]);
+const commandForLanguage = {
+  node: [
+    '/bin/bash',
+    '--login',
+    '-c',
+    baseCmd.concat(['npm install .', 'npm test']).join(' && '),
+  ],
+  python: [
+    '/bin/bash',
+    '--login',
+    '-c',
+    baseCmd.concat(['pip install tox', 'tox']).join(' && '),
+  ],
+  rust: ['/bin/bash', '-c', baseCmd.concat(['cargo test']).join(' && ')],
+  go: [
+    '/bin/bash',
+    '-c',
+    baseCmd.concat(['go install', 'go test ./...']).join(' && '),
+  ],
+};
+const imageForLanguage = {
+  node: 'node:latest',
+  python: 'python:latest',
+  rust: 'rust:latest',
+  go: 'golang:latest',
+};
 
 @hot(module)
 @withApollo
@@ -228,8 +214,9 @@ export default class QuickStart extends Component {
     owner: '',
     repo: '',
     access: 'collaborators',
+    language: 'node',
     image: 'node',
-    commands: cmdDirectory('node'),
+    commands: commandForLanguage.node,
     commandSelection: 'standard',
     installedState: null,
     taskName: '',
@@ -259,9 +246,11 @@ export default class QuickStart extends Component {
   };
 
   handleCommandsChange = ({ target: { value } }) => {
+    const { language } = this.state;
+
     this.setState({
       commandSelection: value,
-      commands: value === 'standard' ? cmdDirectory(this.state.image) : [],
+      commands: value === 'standard' ? commandForLanguage[language] : [],
       editorValue: null,
     });
   };
@@ -284,6 +273,18 @@ export default class QuickStart extends Component {
 
   handleInputChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value, editorValue: null });
+  };
+
+  handleLanguageChange = ({ target: { value: language } }) => {
+    this.setState({
+      language,
+      image: imageForLanguage[language],
+      commands:
+        this.state.commandSelection === 'standard'
+          ? commandForLanguage[language]
+          : [],
+      editorValue: null,
+    });
   };
 
   handleOrgRepoChange = ({ target: { name, value } }) => {
@@ -332,7 +333,7 @@ export default class QuickStart extends Component {
       taskName,
       taskDescription,
       events,
-      image,
+      language,
       installedState,
       commandSelection,
       access,
@@ -563,9 +564,9 @@ export default class QuickStart extends Component {
                 select
                 label="Project Language"
                 helperText="This will select a corresponding docker image"
-                value={image}
-                name="image"
-                onChange={this.handleInputChange}
+                value={language}
+                name="language"
+                onChange={this.handleLanguageChange}
                 margin="normal">
                 <MenuItem value="node">Node.js</MenuItem>
                 <MenuItem value="python">Python</MenuItem>
@@ -591,7 +592,9 @@ export default class QuickStart extends Component {
               <ListItemText
                 disableTypography
                 primary={
-                  <Typography variant="subtitle1">Task Definiton</Typography>
+                  <Typography variant="subtitle1">
+                    Your .taskcluster.yml
+                  </Typography>
                 }
               />
             </ListItem>

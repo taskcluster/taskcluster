@@ -1,7 +1,7 @@
 $schema: "/schemas/common/metaschema.json#"
 title:              "Download Object Request"
 description: |
-  Download object request.
+  Download object request. See [Transport Protocols](https://docs.taskcluster.net/docs/reference/platform/object/transport-protocols) for more detail.
 type:               object
 properties:
   acceptProtocols:

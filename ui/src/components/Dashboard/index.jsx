@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { bool, node, string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
-import { title as makeTitle } from 'change-case';
+import { titleCase } from 'title-case';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
@@ -309,7 +309,7 @@ export default class Dashboard extends Component {
     );
     const isDocs = history.location.pathname.startsWith(DOCS_PATH_PREFIX);
     const isMobileView = width === 'sm' || width === 'xs';
-    const pageTitle = disableTitleFormatting ? title : makeTitle(title);
+    const pageTitle = disableTitleFormatting ? title : titleCase(title);
 
     return (
       <div className={classes.root}>

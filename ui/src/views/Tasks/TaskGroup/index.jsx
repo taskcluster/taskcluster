@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import { sum, isEmpty } from 'ramda';
-import { kebabCase } from 'change-case';
+import { paramCase } from 'param-case';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { safeDump } from 'js-yaml';
 import { withStyles } from '@material-ui/core/styles';
@@ -492,7 +492,7 @@ export default class TaskGroup extends Component {
 
   handleNotifyDialogSubmit = () => {
     Object.entries(this.state.notifyPreferences).map(([key, checked]) =>
-      db.userPreferences.put(checked, kebabCase(key))
+      db.userPreferences.put(checked, paramCase(key))
     );
 
     this.setState({ previousNotifyPreferences: this.state.notifyPreferences });

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { string, func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
-import { camelCase } from 'change-case/change-case';
+import { camelCase } from 'camel-case';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import DateDistance from '../DateDistance';
@@ -43,7 +43,7 @@ export default class CachePurgesTable extends Component {
 
   createSortedCachePurgesConnection = memoize(
     (cachePurgesConnection, sortBy, sortDirection, searchTerm) => {
-      const sortByProperty = camelCase(sortBy);
+      const sortByProperty = sortBy ? camelCase(sortBy) : '';
       const filteredCache = searchTerm
         ? cachePurgesConnection.edges.filter(({ node }) =>
             node.cacheName.includes(searchTerm)

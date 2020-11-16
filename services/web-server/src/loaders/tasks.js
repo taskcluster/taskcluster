@@ -3,6 +3,7 @@ const sift = require('../utils/sift');
 const fetch = require('../utils/fetch');
 const ConnectionLoader = require('../ConnectionLoader');
 const Task = require('../entities/Task');
+const maybeSignedUrl = require('../utils/maybeSignedUrl');
 
 module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const task = new DataLoader(taskIds =>
@@ -44,7 +45,7 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
     Promise.all(
       queries.map(async ({ taskGroupId, filter }) => {
         try {
-          const url = await queue.buildSignedUrl(
+          const url = await maybeSignedUrl(queue, isAuthed)(
             queue.getLatestArtifact,
             taskGroupId,
             'public/actions.json',
@@ -63,7 +64,8 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
             }
             : null;
         } catch (err) {
-          if (err.response.status === 404 || err.response.status === 424) {
+          // if the URL does not exist or is an error artifact, return nothing
+          if (err.response && (err.response.status === 404 || err.response.status === 424)) {
             return null;
           }
 

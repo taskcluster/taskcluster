@@ -1,7 +1,7 @@
 $schema: "/schemas/common/metaschema.json#"
-title: "Download Object Request"
+title: "Download Object Response"
 description: |
-  Download object request.
+  Download object response.
 type: object
 properties:
   protocol:
