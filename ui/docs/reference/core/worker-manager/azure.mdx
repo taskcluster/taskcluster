@@ -40,7 +40,7 @@ The `workerIdentityProof` contains a [signed attested data document](https://doc
 {"document": "<signature>"}
 ```
 
-The document should have audience equal to the deployment's `rootUrl` and `format=full`.
+The document is validated, then checked to ensure it has the same `vmID` as the provisioned worker.
 
 ### Tags
 
