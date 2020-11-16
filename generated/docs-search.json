@@ -2612,6 +2612,27 @@
   },
   {
     "element": "h1",
+    "id": "upload-and-download-methods",
+    "path": "/reference/platform/object/upload-download-methods",
+    "subtitle": null,
+    "title": "Upload and Download Methods"
+  },
+  {
+    "element": "h2",
+    "id": "download-methods",
+    "path": "/reference/platform/object/upload-download-methods",
+    "subtitle": "Download Methods",
+    "title": "Upload and Download Methods"
+  },
+  {
+    "element": "h2",
+    "id": "introduction",
+    "path": "/reference/platform/object/upload-download-methods",
+    "subtitle": "Introduction",
+    "title": "Upload and Download Methods"
+  },
+  {
+    "element": "h1",
     "id": "queue-service",
     "path": "/reference/platform/queue",
     "subtitle": null,

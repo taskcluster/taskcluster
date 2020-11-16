@@ -941,6 +941,19 @@ var services = map[string]definitions.Service{
 				Query: []string{},
 				Input: "v1/upload-object-request.json#",
 			},
+			definitions.Entry{
+				Name:        "downloadObject",
+				Title:       "Download object data",
+				Description: "Download object data.",
+				Stability:   "experimental",
+				Method:      "put",
+				Route:       "/download/<name>",
+				Args: []string{
+					"name",
+				},
+				Query: []string{},
+				Input: "v1/download-object-request.json#",
+			},
 		},
 	},
 	"PurgeCache": definitions.Service{

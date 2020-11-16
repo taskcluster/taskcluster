@@ -1,0 +1,17 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Download Object Request"
+description: |
+  Download object request. See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.
+type:               object
+properties:
+  acceptDownloadMethods:
+    type: array
+    title: "Supported download methods"
+    uniqueItems: true
+    items:
+      type: string
+      enum: ['HTTP:GET']
+      description: "Supported download methods."
+additionalProperties: false
+required:
+  - acceptDownloadMethods

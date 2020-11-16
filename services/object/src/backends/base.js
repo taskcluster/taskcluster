@@ -14,6 +14,14 @@ class Backend {
    */
 
   /**
+   * Return the backend-specific details required for a client to retrieve the object.
+   *
+   * Subclasses should override this.
+   */
+  objectRetrievalDetails(name, acceptProtocol) {
+  }
+
+  /**
    * Set up this backend.
    *
    * Subclasses should override this.

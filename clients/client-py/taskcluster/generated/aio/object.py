@@ -44,7 +44,27 @@ class Object(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["uploadObject"], *args, **kwargs)
 
+    async def downloadObject(self, *args, **kwargs):
+        """
+        Download object data
+
+        Download object data.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["downloadObject"], *args, **kwargs)
+
     funcinfo = {
+        "downloadObject": {
+            'args': ['name'],
+            'input': 'v1/download-object-request.json#',
+            'method': 'put',
+            'name': 'downloadObject',
+            'output': 'v1/download-object-response.json#',
+            'route': '/download/<name>',
+            'stability': 'experimental',
+        },
         "ping": {
             'args': [],
             'method': 'get',

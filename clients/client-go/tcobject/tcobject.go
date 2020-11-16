@@ -112,3 +112,17 @@ func (object *Object) UploadObject(name string, payload *UploadObjectRequest) er
 	_, _, err := (&cd).APICall(payload, "POST", "/upload/"+url.QueryEscape(name), nil, nil)
 	return err
 }
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Download object data.
+//
+// Required scopes:
+//   object:download:<name>
+//
+// See #downloadObject
+func (object *Object) DownloadObject(name string, payload *DownloadObjectRequest) (*DownloadObjectResponse, error) {
+	cd := tcclient.Client(*object)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/download/"+url.QueryEscape(name), new(DownloadObjectResponse), nil)
+	return responseObject.(*DownloadObjectResponse), err
+}
