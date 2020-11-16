@@ -18,5 +18,5 @@ These are any packages that are run as part of a deployment of Taskcluster.
 * [Web-Server Service](web-server#readme)
 * [Worker Manager Service](worker-manager#readme)
     * [About the Keys in this  Directory](worker-manager/src/providers/aws-keys#readme)
-    * [worker-manager/src/providers/azure-ca-certs](worker-manager/src/providers/azure-ca-certs#readme)
+    * [Azure Trusted Certificates](worker-manager/src/providers/azure-ca-certs#readme)
 <!-- TOC END -->
