@@ -173,16 +173,16 @@ class AzureProvider extends Provider {
   //
   // node-forge doesn't support ECC so it cannot load ECDSA certs (issue #3924).
   // See https://github.com/digitalbazaar/forge/issues/116 (opened April 2014)
-  // If failIfNotRSA == true, then ECDSA certs throw an Error
+  // If failIfNotRSACert == true, then ECDSA certs throw an Error
   //
   // Returns true if the certificate was added.
-  addRootCertPem(rootCertPem, failIfNotRSA = false) {
+  addRootCertPem(rootCertPem, failIfNotRSACert = false) {
     let rootCert = null;
     try {
       rootCert = forge.pki.certificateFromPem(rootCertPem);
     } catch (err) {
-      const notRSA = (err.message !== 'Cannot read public key. OID is not RSA.');
-      if (notRSA || failIfNotRSA) {
+      const isNotRSACert = (err.message !== 'Cannot read public key. OID is not RSA.');
+      if (isNotRSACert || failIfNotRSACert) {
         throw err;
       }
     }
@@ -223,7 +223,7 @@ class AzureProvider extends Provider {
           resolve(body.toString('binary'));
         });
       });
-      request.on('error', (error) => reject(error));
+      request.on('error', error => reject(error));
       request.on('timeout', () => {
         request.abort();
         reject(Error(`Timed out (${this.downloadTimeout}ms)`));
