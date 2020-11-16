@@ -33,6 +33,7 @@ export default class Object extends Client {
   }
   /* eslint-disable max-len */
   // Download object data.
+  // See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.
   /* eslint-enable max-len */
   downloadObject(...args) {
     this.validate(this.downloadObject.entry, args);

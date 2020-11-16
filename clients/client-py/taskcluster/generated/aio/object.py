@@ -49,6 +49,7 @@ class Object(AsyncBaseClient):
         Download object data
 
         Download object data.
+        See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.
 
         This method is ``experimental``
         """

@@ -116,6 +116,7 @@ func (object *Object) UploadObject(name string, payload *UploadObjectRequest) er
 // Stability: *** EXPERIMENTAL ***
 //
 // Download object data.
+// See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.
 //
 // Required scopes:
 //   object:download:<name>

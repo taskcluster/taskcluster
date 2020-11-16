@@ -944,7 +944,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "downloadObject",
 				Title:       "Download object data",
-				Description: "Download object data.",
+				Description: "Download object data.\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.",
 				Stability:   "experimental",
 				Method:      "put",
 				Route:       "/download/<name>",

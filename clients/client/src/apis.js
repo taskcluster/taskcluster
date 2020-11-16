@@ -1670,7 +1670,7 @@ module.exports = {
             "name"
           ],
           "category": "Download",
-          "description": "Download object data.",
+          "description": "Download object data.\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.",
           "input": "v1/download-object-request.json#",
           "method": "put",
           "name": "downloadObject",
