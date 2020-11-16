@@ -22,8 +22,9 @@ URL).
 
 Currently the Object Service supports the single download method `HTTP:GET`. In
 order to support additional download methods in future, download requests from
-clients should include an ordered list of preferred download methods to use, in
-the `acceptDownloadMethods` property of the request body. When additional
-download methods are available, the Object Service will select a preferred
-download method from the union of its supported download methods and the
-`acceptDownloadMethods` of the client request.
+clients should include a list of download methods to use, in
+the `acceptDownloadMethods` property of the request body and the server will
+select the preferred method. When additional download methods are available,
+the Object Service will select a preferred download method from the intersection
+of its supported download methods and the `acceptDownloadMethods`
+of the client request.

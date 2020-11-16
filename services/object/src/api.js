@@ -45,6 +45,7 @@ builder.declare({
   title: 'Download object data',
   description: [
     'Download object data.',
+    'See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.',
   ].join('\n'),
 }, async function(req, res) {
   let { name } = req.params;
