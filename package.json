@@ -4,7 +4,7 @@
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "12.19.0",
+    "node": "12.19.1",
     "yarn": "^1.22.10"
   },
   "workspaces": [
