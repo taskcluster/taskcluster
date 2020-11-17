@@ -1407,7 +1407,7 @@ var services = map[string]definitions.Service{
 			},
 			definitions.Entry{
 				Name:        "listTaskQueues",
-				Title:       "Get a list of all active worker-types",
+				Title:       "Get a list of all active task queues",
 				Description: "Get all active task queues.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 task queues in a single\npage. You may limit this with the query-string parameter `limit`.",
 				Stability:   "stable",
 				Method:      "get",

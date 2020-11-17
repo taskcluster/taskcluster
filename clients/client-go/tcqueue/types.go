@@ -1235,14 +1235,14 @@ type (
 		// Description of the task queue.
 		Description string `json:"description"`
 
-		// Date and time after which the worker-type will be automatically
+		// Date and time after which the task queue will be automatically
 		// deleted by the queue.
 		Expires tcclient.Time `json:"expires"`
 
 		// Date and time where the task queue was last seen active
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
-		// This is the stability of the worker-type. Accepted values:
+		// This is the stability of the task queue. Accepted values:
 		//  * `experimental`
 		//  * `stable`
 		//  * `deprecated`

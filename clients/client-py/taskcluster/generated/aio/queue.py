@@ -661,7 +661,7 @@ class Queue(AsyncBaseClient):
 
     async def listTaskQueues(self, *args, **kwargs):
         """
-        Get a list of all active worker-types
+        Get a list of all active task queues
 
         Get all active task queues.
 

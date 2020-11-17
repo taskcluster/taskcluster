@@ -3338,7 +3338,7 @@
                 "type": "string"
               },
               "expires": {
-                "description": "Date and time after which the worker-type will be automatically\ndeleted by the queue.\n",
+                "description": "Date and time after which the task queue will be automatically\ndeleted by the queue.\n",
                 "format": "date-time",
                 "title": "Task queue Expiration",
                 "type": "string"
@@ -3350,7 +3350,7 @@
                 "type": "string"
               },
               "stability": {
-                "description": "This is the stability of the worker-type. Accepted values:\n * `experimental`\n * `stable`\n * `deprecated`\n",
+                "description": "This is the stability of the task queue. Accepted values:\n * `experimental`\n * `stable`\n * `deprecated`\n",
                 "enum": [
                   "experimental",
                   "stable",
@@ -14742,7 +14742,7 @@
           "route": "/task-queues",
           "scopes": "queue:list-task-queues",
           "stability": "stable",
-          "title": "Get a list of all active worker-types",
+          "title": "Get a list of all active task queues",
           "type": "function"
         },
         {

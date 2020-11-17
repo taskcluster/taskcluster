@@ -2416,7 +2416,7 @@ module.exports = {
           "route": "/task-queues",
           "scopes": "queue:list-task-queues",
           "stability": "stable",
-          "title": "Get a list of all active worker-types",
+          "title": "Get a list of all active task queues",
           "type": "function"
         },
         {
