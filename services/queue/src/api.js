@@ -1823,6 +1823,75 @@ builder.declare({
   return res.reply(Object.assign({}, tqResult, { actions }));
 });
 
+/** List task queues */
+builder.declare({
+  method: 'get',
+  route: '/task-queues',
+  query: paginateResults.query,
+  name: 'listTaskQueues',
+  scopes: 'queue:list-task-queues',
+  category: 'Worker Metadata',
+  stability: APIBuilder.stability.stable,
+  output: 'list-taskqueues-response.yml',
+  title: 'Get a list of all active worker-types',
+  description: [
+    'Get all active task queues.',
+    '',
+    'The response is paged. If this end-point returns a `continuationToken`, you',
+    'should call the end-point again with the `continuationToken` as a query-string',
+    'option. By default this end-point will list up to 1000 task queues in a single',
+    'page. You may limit this with the query-string parameter `limit`.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { rows: taskQueues, continuationToken } = await TaskQueue.getTaskQueues(
+    this.db,
+    { expires: new Date() },
+    { query: req.query },
+  );
+
+  const result = {
+    taskQueues: taskQueues.map(taskQueue => taskQueue.serialize()),
+  };
+
+  if (continuationToken) {
+    result.continuationToken = continuationToken;
+  }
+
+  return res.reply(result);
+});
+
+/** Get a task queue */
+builder.declare({
+  method: 'get',
+  route: '/task-queues/:taskQueueId',
+  name: 'getTaskQueue',
+  scopes: 'queue:get-task-queue:<taskQueueId>',
+  stability: APIBuilder.stability.stable,
+  category: 'Worker Metadata',
+  output: 'taskqueue-response.yml',
+  title: 'Get a task queue',
+  description: [
+    'Get a task queue.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { taskQueueId } = req.params;
+
+  const expires = new Date();
+  const tQueue = await TaskQueue.get(this.db, taskQueueId, expires);
+
+  if (!tQueue) {
+    return res.reportError('ResourceNotFound',
+      'Task queue with `{{taskQueueId}}` not found. Are you sure it was created?', {
+        taskQueueId,
+      },
+    );
+  }
+
+  const result = tQueue.serialize();
+
+  return res.reply(result);
+});
+
 /** List all active workerGroup/workerId of a workerType */
 builder.declare({
   method: 'get',

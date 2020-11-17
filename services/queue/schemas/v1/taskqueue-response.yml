@@ -1,0 +1,49 @@
+$schema: "/schemas/common/metaschema.json#"
+title:          "Task queue Response"
+description: |
+  Response to a task queue request from a provisioner.
+type:           object
+properties:
+  taskQueueId:
+    title:          "Task Queue Id"
+    description: |
+      Unique identifier for a task-queue
+    type:           string
+    pattern:        {$const: taskqueueid-pattern}
+  stability:
+    title:        "Stability"
+    description: |
+      This is the stability of the worker-type. Accepted values:
+        * `experimental`
+        * `stable`
+        * `deprecated`
+    type:         string
+    enum:         ["experimental", "stable", "deprecated"]
+  description:
+    title:        "Description"
+    description: |
+      Description of the task queue.
+    type:         string
+  expires:
+    title:        "Task queue Expiration"
+    description: |
+      Date and time after which the task queue will be automatically
+      deleted by the queue.
+    type:         string
+    format:       date-time
+  lastDateActive:
+    title:        "Task queue Last Date Active"
+    description: |
+      Date of the last time this task queue was seen active. `lastDateActive` is updated every 6 hours
+      but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+      of when the task queue was last seen active.
+    type:         string
+    format:       date-time
+additionalProperties: false
+required:
+  - taskQueueId
+  - description
+  - stability
+  - expires
+  - lastDateActive
+
