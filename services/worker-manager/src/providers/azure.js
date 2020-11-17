@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const generator = require('generate-password');
-const http = require('http');
+const request = require('superagent');
 const { rootCertificates } = require('tls');
 const { WorkerPool, Worker } = require('../data');
 
@@ -203,33 +203,14 @@ class AzureProvider extends Provider {
     this.caStore.addCertificate(cert);
   }
 
-  // Return Promise that will download a binary file
-  async downloadBinaryPromise(url) {
-    const getPromise = new Promise((resolve, reject) => {
-      const options = { timeout: this.downloadTimeout };
-      const request = http.get(url, options, (res) => {
-        const { statusCode } = res;
-        if (statusCode !== 200) {
-          res.resume(); // Consume bytes
-          reject(Error(`Request failed, status code ${statusCode}`));
-        }
-
-        let chunks = [];
-        res.on('data', chunk => {
-          chunks.push(Buffer.from(chunk));
-        });
-        res.on('end', () => {
-          const body = Buffer.concat(chunks);
-          resolve(body.toString('binary'));
-        });
-      });
-      request.on('error', error => reject(error));
-      request.on('timeout', () => {
-        request.abort();
-        reject(Error(`Timed out (${this.downloadTimeout}ms)`));
-      });
-    });
-    return getPromise;
+  // Return a response Promise, where .body is the binary file
+  // This method is patched for testing
+  async downloadBinaryResponse(url) {
+    return await request.get(url)
+      .timeout(this.downloadTimeout)
+      .ok(res => res.status === 200)
+      .redirects(0)
+      .buffer(true);
   }
 
   async setup() {
@@ -524,7 +505,7 @@ class AzureProvider extends Provider {
         if (method === 'CA Issuer' && location.startsWith('http:')) {
           let raw_data = null;
           try {
-            raw_data = await this.downloadBinaryPromise(location);
+            raw_data = (await this.downloadBinaryResponse(location)).body;
           } catch (err) {
             this.monitor.log.registrationErrorWarning({
               message: 'Error downloading intermediate certificate',

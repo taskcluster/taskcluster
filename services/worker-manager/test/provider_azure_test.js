@@ -1190,7 +1190,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = { document };
 
-          const oldDownloadBinaryPromise = provider.downloadBinaryPromise;
+          const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
 
           // Remove the intermediate certificate
           const intermediateCertPath = path.resolve(
@@ -1201,9 +1201,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert(deletedCert);
 
           // Disable downloads
-          provider.downloadBinaryPromise = (url) => {
+          provider.downloadBinaryResponse = (url) => {
             return new Promise((resolve, reject) => {
-              reject(Error('Mocked downloadBinaryPromise'));
+              reject(Error('Mocked downloadBinaryResponse'));
             });
           };
 
@@ -1215,7 +1215,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert.equal(log0.message, 'Error downloading intermediate certificate');
           assert.equal(
             log0.error,
-            `Error: Mocked downloadBinaryPromise; location=${expectedUrl}`);
+            `Error: Mocked downloadBinaryResponse; location=${expectedUrl}`);
           const expectedSubject = dnToString(deletedCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: expectedUrl },
@@ -1229,7 +1229,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           // Restore test fixture
           provider.caStore.addCertificate(deletedCert);
-          provider.downloadBinaryPromise = oldDownloadBinaryPromise;
+          provider.downloadBinaryResponse = oldDownloadBinaryResponse;
         });
 
         test('certificate download timeout', async function() {
@@ -1259,7 +1259,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const expectedUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt';
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error downloading intermediate certificate');
-          assert.equal(log0.error, `Error: Timed out (1ms); location=${expectedUrl}`);
+          assert.equal(log0.error, `Error: Timeout of 1ms exceeded; location=${expectedUrl}`);
           const expectedSubject = dnToString(deletedCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: expectedUrl },
@@ -1286,7 +1286,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = { document };
 
-          const oldDownloadBinaryPromise = provider.downloadBinaryPromise;
+          const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
 
           // Remove the intermediate certificate
           const intermediateCertPath = path.resolve(
@@ -1297,9 +1297,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert(deletedCert);
 
           // Download is not a binary certificate
-          provider.downloadBinaryPromise = (url) => {
+          provider.downloadBinaryResponse = (url) => {
             return new Promise((resolve, reject) => {
-              resolve('<html><body><h1>Apache2 Default Page</h1></body></html>');
+              resolve({ body: '<html><body><h1>Apache2 Default Page</h1></body></html>' });
             });
           };
 
@@ -1325,7 +1325,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           // Restore test fixture
           provider.caStore.addCertificate(deletedCert);
-          provider.downloadBinaryPromise = oldDownloadBinaryPromise;
+          provider.downloadBinaryResponse = oldDownloadBinaryResponse;
         });
 
         test('bad cert', async function() {
