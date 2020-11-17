@@ -1833,7 +1833,7 @@ builder.declare({
   category: 'Worker Metadata',
   stability: APIBuilder.stability.stable,
   output: 'list-taskqueues-response.yml',
-  title: 'Get a list of all active worker-types',
+  title: 'Get a list of all active task queues',
   description: [
     'Get all active task queues.',
     '',

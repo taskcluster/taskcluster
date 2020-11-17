@@ -23,7 +23,7 @@ properties:
         stability:
           title:        "Stability"
           description: |
-            This is the stability of the worker-type. Accepted values:
+            This is the stability of the task queue. Accepted values:
              * `experimental`
              * `stable`
              * `deprecated`
@@ -37,7 +37,7 @@ properties:
         expires:
           title:        "Task queue Expiration"
           description: |
-            Date and time after which the worker-type will be automatically
+            Date and time after which the task queue will be automatically
             deleted by the queue.
           type:         string
           format:       date-time
