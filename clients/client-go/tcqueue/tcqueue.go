@@ -1038,6 +1038,71 @@ func (queue *Queue) DeclareWorkerType(provisionerId, workerType string, payload 
 	return responseObject.(*WorkerTypeResponse), err
 }
 
+// Get all active task queues.
+//
+// The response is paged. If this end-point returns a `continuationToken`, you
+// should call the end-point again with the `continuationToken` as a query-string
+// option. By default this end-point will list up to 1000 task queues in a single
+// page. You may limit this with the query-string parameter `limit`.
+//
+// Required scopes:
+//   queue:list-task-queues
+//
+// See #listTaskQueues
+func (queue *Queue) ListTaskQueues(continuationToken, limit string) (*ListTaskQueuesResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues", new(ListTaskQueuesResponse), v)
+	return responseObject.(*ListTaskQueuesResponse), err
+}
+
+// Returns a signed URL for ListTaskQueues, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-task-queues
+//
+// See ListTaskQueues for more details.
+func (queue *Queue) ListTaskQueues_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task-queues", v, duration)
+}
+
+// Get a task queue.
+//
+// Required scopes:
+//   queue:get-task-queue:<taskQueueId>
+//
+// See #getTaskQueue
+func (queue *Queue) GetTaskQueue(taskQueueId string) (*TaskQueueResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.QueryEscape(taskQueueId), new(TaskQueueResponse), nil)
+	return responseObject.(*TaskQueueResponse), err
+}
+
+// Returns a signed URL for GetTaskQueue, valid for the specified duration.
+//
+// Required scopes:
+//   queue:get-task-queue:<taskQueueId>
+//
+// See GetTaskQueue for more details.
+func (queue *Queue) GetTaskQueue_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task-queues/"+url.QueryEscape(taskQueueId), nil, duration)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Get a list of all active workers of a workerType.

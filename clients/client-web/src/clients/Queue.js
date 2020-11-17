@@ -37,6 +37,8 @@ export default class Queue extends Client {
     this.listWorkerTypes.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/provisioners/<provisionerId>/worker-types","scopes":"queue:list-worker-types:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.getWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"getWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":"queue:get-worker-type:<provisionerId>/<workerType>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.declareWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","input":true,"method":"put","name":"declareWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":{"AllOf":[{"each":"queue:declare-worker-type:<provisionerId>/<workerType>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
+    this.listTaskQueues.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listTaskQueues","output":true,"query":["continuationToken","limit"],"route":"/task-queues","scopes":"queue:list-task-queues","stability":"stable","type":"function"}; // eslint-disable-line
+    this.getTaskQueue.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"getTaskQueue","output":true,"query":[],"route":"/task-queues/<taskQueueId>","scopes":"queue:get-task-queue:<taskQueueId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkers.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"listWorkers","output":true,"query":["continuationToken","limit","quarantined"],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers","scopes":"queue:list-workers:<provisionerId>/<workerType>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.getWorker.entry = {"args":["provisionerId","workerType","workerGroup","workerId"],"category":"Worker Metadata","method":"get","name":"getWorker","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>","scopes":"queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.quarantineWorker.entry = {"args":["provisionerId","workerType","workerGroup","workerId"],"category":"Worker Metadata","input":true,"method":"put","name":"quarantineWorker","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>","scopes":{"AllOf":["queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
@@ -533,6 +535,26 @@ export default class Queue extends Client {
     this.validate(this.declareWorkerType.entry, args);
 
     return this.request(this.declareWorkerType.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get all active task queues.
+  // The response is paged. If this end-point returns a `continuationToken`, you
+  // should call the end-point again with the `continuationToken` as a query-string
+  // option. By default this end-point will list up to 1000 task queues in a single
+  // page. You may limit this with the query-string parameter `limit`.
+  /* eslint-enable max-len */
+  listTaskQueues(...args) {
+    this.validate(this.listTaskQueues.entry, args);
+
+    return this.request(this.listTaskQueues.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get a task queue.
+  /* eslint-enable max-len */
+  getTaskQueue(...args) {
+    this.validate(this.getTaskQueue.entry, args);
+
+    return this.request(this.getTaskQueue.entry, args);
   }
   /* eslint-disable max-len */
   // Get a list of all active workers of a workerType.

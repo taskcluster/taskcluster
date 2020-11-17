@@ -1733,6 +1733,59 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/taskqueue-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response to a task queue request from a provisioner.\n",
+      "properties": {
+        "description": {
+          "description": "Description of the task queue.\n",
+          "title": "Description",
+          "type": "string"
+        },
+        "expires": {
+          "description": "Date and time after which the task queue will be automatically\ndeleted by the queue.\n",
+          "format": "date-time",
+          "title": "Task queue Expiration",
+          "type": "string"
+        },
+        "lastDateActive": {
+          "description": "Date of the last time this task queue was seen active. `lastDateActive` is updated every 6 hours\nbut may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator\nof when the task queue was last seen active.\n",
+          "format": "date-time",
+          "title": "Task queue Last Date Active",
+          "type": "string"
+        },
+        "stability": {
+          "description": "This is the stability of the worker-type. Accepted values:\n  * `experimental`\n  * `stable`\n  * `deprecated`\n",
+          "enum": [
+            "experimental",
+            "stable",
+            "deprecated"
+          ],
+          "title": "Stability",
+          "type": "string"
+        },
+        "taskQueueId": {
+          "description": "Unique identifier for a task-queue\n",
+          "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
+          "title": "Task Queue Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskQueueId",
+        "description",
+        "stability",
+        "expires",
+        "lastDateActive"
+      ],
+      "title": "Task queue Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/taskqueue-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/task.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -3261,6 +3314,80 @@
       "type": "object"
     },
     "filename": "schemas/queue/v1/list-workers-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/queue/v1/list-taskqueues-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response from a `listTaskQueues` request.\n",
+      "properties": {
+        "continuationToken": {
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of task-queues.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `listTaskQueues` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "taskQueues": {
+          "description": "List of all task-queues.\n",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "description": "Description of the task queue.\n",
+                "title": "Description",
+                "type": "string"
+              },
+              "expires": {
+                "description": "Date and time after which the worker-type will be automatically\ndeleted by the queue.\n",
+                "format": "date-time",
+                "title": "Task queue Expiration",
+                "type": "string"
+              },
+              "lastDateActive": {
+                "description": "Date and time where the task queue was last seen active\n",
+                "format": "date-time",
+                "title": "Task queue Last Date Active",
+                "type": "string"
+              },
+              "stability": {
+                "description": "This is the stability of the worker-type. Accepted values:\n * `experimental`\n * `stable`\n * `deprecated`\n",
+                "enum": [
+                  "experimental",
+                  "stable",
+                  "deprecated"
+                ],
+                "title": "Stability",
+                "type": "string"
+              },
+              "taskQueueId": {
+                "description": "Unique identifier for a task-queue\n",
+                "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
+                "title": "Task Queue Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "taskQueueId",
+              "stability",
+              "description",
+              "expires",
+              "lastDateActive"
+            ],
+            "title": "Task Queue",
+            "type": "object"
+          },
+          "title": "taskQueues",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "taskQueues"
+      ],
+      "title": "List Task-Queues Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/list-taskqueues-response.json"
   },
   {
     "content": {
@@ -14598,6 +14725,41 @@
           },
           "stability": "deprecated",
           "title": "Update a worker-type",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Worker Metadata",
+          "description": "Get all active task queues.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 task queues in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "method": "get",
+          "name": "listTaskQueues",
+          "output": "v1/list-taskqueues-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/task-queues",
+          "scopes": "queue:list-task-queues",
+          "stability": "stable",
+          "title": "Get a list of all active worker-types",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskQueueId"
+          ],
+          "category": "Worker Metadata",
+          "description": "Get a task queue.",
+          "method": "get",
+          "name": "getTaskQueue",
+          "output": "v1/taskqueue-response.json#",
+          "query": [
+          ],
+          "route": "/task-queues/<taskQueueId>",
+          "scopes": "queue:get-task-queue:<taskQueueId>",
+          "stability": "stable",
+          "title": "Get a task queue",
           "type": "function"
         },
         {

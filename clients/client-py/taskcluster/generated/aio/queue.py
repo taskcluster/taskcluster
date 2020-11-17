@@ -659,6 +659,33 @@ class Queue(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["declareWorkerType"], *args, **kwargs)
 
+    async def listTaskQueues(self, *args, **kwargs):
+        """
+        Get a list of all active worker-types
+
+        Get all active task queues.
+
+        The response is paged. If this end-point returns a `continuationToken`, you
+        should call the end-point again with the `continuationToken` as a query-string
+        option. By default this end-point will list up to 1000 task queues in a single
+        page. You may limit this with the query-string parameter `limit`.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["listTaskQueues"], *args, **kwargs)
+
+    async def getTaskQueue(self, *args, **kwargs):
+        """
+        Get a task queue
+
+        Get a task queue.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["getTaskQueue"], *args, **kwargs)
+
     async def listWorkers(self, *args, **kwargs):
         """
         Get a list of all active workers of a workerType
@@ -809,6 +836,14 @@ class Queue(AsyncBaseClient):
             'route': '/provisioners/<provisionerId>',
             'stability': 'deprecated',
         },
+        "getTaskQueue": {
+            'args': ['taskQueueId'],
+            'method': 'get',
+            'name': 'getTaskQueue',
+            'output': 'v1/taskqueue-response.json#',
+            'route': '/task-queues/<taskQueueId>',
+            'stability': 'stable',
+        },
         "getWorker": {
             'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
             'method': 'get',
@@ -868,6 +903,15 @@ class Queue(AsyncBaseClient):
             'output': 'v1/list-task-group-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/task-group/<taskGroupId>/list',
+            'stability': 'stable',
+        },
+        "listTaskQueues": {
+            'args': [],
+            'method': 'get',
+            'name': 'listTaskQueues',
+            'output': 'v1/list-taskqueues-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/task-queues',
             'stability': 'stable',
         },
         "listWorkerTypes": {
