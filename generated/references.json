@@ -4107,50 +4107,18 @@
   },
   {
     "content": {
-      "$id": "/schemas/object/v1/get-object-http.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Download object response.\n",
-      "properties": {
-        "details": {
-          "additionalProperties": false,
-          "properties": {
-            "url": {
-              "format": "uri",
-              "type": "string"
-            }
-          },
-          "required": [
-            "url"
-          ],
-          "type": "object"
-        },
-        "method": {
-          "const": "HTTP:GET",
-          "type": "string"
-        }
-      },
-      "required": [
-        "method",
-        "details"
-      ],
-      "title": "Download Object Response",
-      "type": "object"
-    },
-    "filename": "schemas/object/v1/get-object-http.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/object/v1/download-object-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
-      "description": "Download object response.\n",
+      "description": "See [Download Methods](https://docs.taskcluster.net/docs/docs/reference/platform/object/download-methods) for details.\n",
       "oneOf": [
         {
-          "$ref": "get-object-http.json#"
+          "$ref": "download-method-http-get.json#/definitions/response"
+        },
+        {
+          "$ref": "download-method-simple.json#/definitions/response"
         }
       ],
-      "title": "Download Object Response",
-      "type": "object"
+      "title": "Download Object Response"
     },
     "filename": "schemas/object/v1/download-object-response.json"
   },
@@ -4159,19 +4127,23 @@
       "$id": "/schemas/object/v1/download-object-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Download object request. See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.\n",
+      "description": "See [Download Methods](https://docs.taskcluster.net/docs/docs/reference/platform/object/download-methods) for details.\n",
       "properties": {
         "acceptDownloadMethods": {
-          "items": {
-            "description": "Supported download methods.",
-            "enum": [
-              "HTTP:GET"
-            ],
-            "type": "string"
+          "additionalProperties": false,
+          "description": "Download methods that the caller can suport, together with parameters for each method.\nThe server will choose one method and make the corresponding response.",
+          "properties": {
+            "HTTP:GET": {
+              "$ref": "download-method-http-get.json#/definitions/request"
+            },
+            "simple": {
+              "$ref": "download-method-simple.json#/definitions/request"
+            }
           },
+          "required": [
+          ],
           "title": "Supported download methods",
-          "type": "array",
-          "uniqueItems": true
+          "type": "object"
         }
       },
       "required": [
@@ -4181,6 +4153,91 @@
       "type": "object"
     },
     "filename": "schemas/object/v1/download-object-request.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/object/v1/download-method-simple.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "definitions": {
+        "request": {
+          "const": true,
+          "type": "boolean"
+        },
+        "response": {
+          "additionalProperties": false,
+          "description": "A simple download returns a URL to which the caller should make a GET request.\nSee [Simple Downloads](https://docs.taskcluster.net/docs/docs/reference/platform/object/simple-downloads) for details.",
+          "properties": {
+            "details": {
+              "additionalProperties": false,
+              "properties": {
+                "url": {
+                  "format": "uri",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ],
+              "type": "object"
+            },
+            "method": {
+              "const": "simple",
+              "type": "string"
+            }
+          },
+          "required": [
+            "method",
+            "details"
+          ],
+          "title": "simple Download Response",
+          "type": "object"
+        }
+      },
+      "title": "simple Download Method"
+    },
+    "filename": "schemas/object/v1/download-method-simple.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/object/v1/download-method-http-get.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "definitions": {
+        "request": {
+          "const": true,
+          "type": "boolean"
+        },
+        "response": {
+          "additionalProperties": false,
+          "properties": {
+            "details": {
+              "additionalProperties": false,
+              "properties": {
+                "url": {
+                  "format": "uri",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ],
+              "type": "object"
+            },
+            "method": {
+              "const": "HTTP:GET",
+              "type": "string"
+            }
+          },
+          "required": [
+            "method",
+            "details"
+          ],
+          "title": "HTTP:GET Download Response",
+          "type": "object"
+        }
+      },
+      "title": "HTTP:GET Download Method"
+    },
+    "filename": "schemas/object/v1/download-method-http-get.json"
   },
   {
     "content": {
@@ -15380,17 +15437,33 @@
             "name"
           ],
           "category": "Download",
-          "description": "Get information on how to download an object.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.",
+          "description": "Get information on how to download an object.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
           "input": "v1/download-object-request.json#",
           "method": "put",
           "name": "downloadObject",
           "output": "v1/download-object-response.json#",
           "query": [
           ],
-          "route": "/download/<name>",
+          "route": "/download-object/<name>",
           "scopes": "object:download:<name>",
           "stability": "experimental",
           "title": "Download object data",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "category": "Download",
+          "description": "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`downloadObject` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
+          "method": "get",
+          "name": "download",
+          "query": [
+          ],
+          "route": "/download/<name>",
+          "scopes": "object:download:<name>",
+          "stability": "experimental",
+          "title": "Get an object's data",
           "type": "function"
         }
       ],

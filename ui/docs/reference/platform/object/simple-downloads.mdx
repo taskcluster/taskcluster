@@ -1,0 +1,40 @@
+---
+order: 4
+title: Simple Downloads
+---
+
+# Simple Downloads
+
+In many cases, it's useful to be able to share a URL for an object such that a simple HTTP GET will result in that object's data.
+For example, a link to a logfile for viewing in a browser, or an executable that can be downloaded in a shell script with `curl`.
+
+That's what the `object.download` endpoint is for.
+Its response body is not a JSON object like other API methods; instead, it returns a redirect to a location that serves the data dirctly.
+
+Note that when the object service is used by the queue to store artifacts, the queue's `getArtifact` method provides similar behvaior to the `object.download` method.
+
+This page describes the behavior and limitations of this simple download process.
+
+## URL Format
+
+The URL for a simple download is the URL of the `object.download` API method.
+Given a root URL for the Taskcluster deployment, that looks like `<rootUrl>/api/object/v1/download/<name>`.
+The `<name>` is urlencoded but can contain un-encoded `/` characters.
+
+This request requires the Taskcluster scope `object:download:<name>`.
+If that scope is public, then the simple form of the URL will be sufficient.
+However, if that scope requires credentials, then the URL will need to be [signed with a bewit](/docs/manual/design/apis/hawk/signed-urls).
+
+## Client Requirements
+
+The client used to download the object must meet the following requirements:
+
+* Able to follow HTTP redirects
+* Signals an error on 4xx and 5xx HTTP responses
+
+Unfortunately, `curl`'s default configuration does not meet these requirements.
+We recommand the following invocation:
+
+```
+$ curl -sSL --fail $url
+```

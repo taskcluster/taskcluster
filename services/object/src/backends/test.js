@@ -1,3 +1,4 @@
+const assert = require('assert');
 const { Backend } = require('./base');
 
 /**
@@ -8,16 +9,33 @@ class TestBackend extends Backend {
     if (object.name === 'has/no/methods') {
       return [];
     }
-    return ['HTTP:GET'];
+    return ['simple', 'HTTP:GET'];
   }
 
-  async downloadObject(object, method) {
-    return {
-      method: 'HTTP:GET',
-      details: {
-        url: 'https://google.ca',
-      },
-    };
+  async downloadObject(object, method, params) {
+    switch (method){
+      case 'simple': {
+        assert.equal(params, true);
+        return {
+          method,
+          url: 'https://example.com',
+        };
+      }
+
+      case 'HTTP:GET': {
+        assert.equal(params, true);
+        return {
+          method,
+          details: {
+            url: 'https://google.ca',
+          },
+        };
+      }
+
+      default: {
+        throw new Error(`unknown download method ${method}`);
+      }
+    }
   }
 
   async expireObject(object) {

@@ -1,0 +1,31 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "simple Download Method"
+definitions:
+
+  request:
+    type: boolean
+    const: true
+
+  response:
+    title: 'simple Download Response'
+    description: |-
+      A simple download returns a URL to which the caller should make a GET request.
+      See [Simple Downloads](https://docs.taskcluster.net/docs/docs/reference/platform/object/simple-downloads) for details.
+    type: object
+    properties:
+      method:
+        type: string
+        const: 'simple'
+      details:
+        type: object
+        properties:
+          url:
+            type: string
+            format: uri
+        additionalProperties: false
+        required:
+          - url
+    additionalProperties: false
+    required:
+      - method
+      - details
