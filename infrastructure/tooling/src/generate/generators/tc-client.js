@@ -1,4 +1,4 @@
-const stringify = require('json-stable-stringify');
+const stringify = require('fast-json-stable-stringify');
 const { writeRepoFile } = require('../../utils');
 
 exports.tasks = [{

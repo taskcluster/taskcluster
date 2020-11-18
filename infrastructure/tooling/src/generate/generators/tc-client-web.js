@@ -1,5 +1,5 @@
 const util = require('util');
-const stringify = require('json-stable-stringify');
+const stringify = require('fast-json-stable-stringify');
 const path = require('path');
 const { omit } = require('lodash');
 const { compile } = require('ejs');

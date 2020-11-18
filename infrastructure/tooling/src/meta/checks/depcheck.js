@@ -90,7 +90,17 @@ if (isMainThread) {
     const rootPkg = require(`${REPO_ROOT}/package.json`);
     const deps = Object.keys(rootPkg.dependencies);
     const devDeps = Object.keys(rootPkg.devDependencies).concat(deps);
-    const specials = rootPkg.metatests.specialImports;
+    const { specialImports, disallowedPackages } = rootPkg.metatests;
+
+    for (const [pkg, replacement] of Object.entries(disallowedPackages)) {
+      if (deps.includes(pkg) || devDeps.includes(pkg)) {
+        if (replacement) {
+          throw new Error(`Dependency ${pkg} is not allowed. Please use ${replacement} instead.`);
+        } else {
+          throw new Error(`Dependency ${pkg} is not allowed.`);
+        }
+      }
+    }
 
     status("listing files");
     let prodFiles = await gitLsFiles({ patterns: ['services/*/src/**.js', 'libraries/*/src/**.js', 'db/src/**.js', 'services/prelude.js'] });
@@ -112,8 +122,8 @@ if (isMainThread) {
     await Promise.all(devFiles.map(f => handleFile(f, devDeps, usedInDev, 'devDependencies')));
 
     status("calculating extra dependencies");
-    usedInProd = [...usedInProd.keys(), ...specials];
-    usedInDev = [...usedInDev.keys(), ...specials];
+    usedInProd = [...usedInProd.keys(), ...specialImports];
+    usedInDev = [...usedInDev.keys(), ...specialImports];
 
     let extraProd = _.difference(deps, usedInProd);
     const shouldBeDev = _.intersection(extraProd, usedInDev);
@@ -121,7 +131,7 @@ if (isMainThread) {
     const extraDev = _.difference(devDeps, [...usedInProd, ...usedInDev]);
 
     if (shouldBeDev.length) {
-      throw new Error(`Depenencies for prod that should be dev! Move ${stringify(shouldBeDev)} from dependencies to devDependencies in package.json`);
+      throw new Error(`Dependencies for prod that should be dev! Move ${stringify(shouldBeDev)} from dependencies to devDependencies in package.json`);
     }
     if (extraProd.length) {
       throw new Error(`Extra production dependencies! Remove ${stringify(extraProd)} from dependencies in package.json`);

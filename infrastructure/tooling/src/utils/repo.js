@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const glob = require('glob');
 const yaml = require('js-yaml');
-const stringify = require('json-stable-stringify');
+const stringify = require('fast-json-stable-stringify');
 const exec = promisify(require('child_process').execFile);
 const pSynchronize = require('p-synchronize');
 

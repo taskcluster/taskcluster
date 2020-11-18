@@ -142,7 +142,6 @@
     "graphql-tag": "^2.10.1",
     "inquirer": "^7.0.0",
     "is-uuid": "^1.0.2",
-    "json-stable-stringify": "^1.0.1",
     "markdown-table": "^2.0.0",
     "md-directory": "^1.0.2",
     "mocha": "^8.2.0",
@@ -201,7 +200,10 @@
       "c8",
       "cross-env",
       "ejs"
-    ]
+    ],
+    "disallowedPackages": {
+      "json-stable-stringify": "fast-json-stable-stringify"
+    }
   },
   "renovate": {
     "extends": [
