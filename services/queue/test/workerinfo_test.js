@@ -168,6 +168,49 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.equal(result.workerTypes.length, 0, 'expected no worker-types');
   });
 
+  test('queue.listTaskQueues returns an empty list', async () => {
+    const result = await helper.queue.listTaskQueues();
+
+    assert.equal(result.taskQueues.length, 0, 'did not expect any task queues');
+  });
+
+  test('queue.listTaskQueues requires scopes', async () => {
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.queue.listTaskQueues(),
+      err => err.code === 'InsufficientScopes');
+  });
+
+  test('queue.listTaskQueues returns taskQueues', async () => {
+    const tQueue = await makeTaskQueue({});
+
+    const result = await helper.queue.listTaskQueues();
+    assert.equal(result.taskQueues.length, 1, 'expected taskQueues');
+    assert(result.taskQueues[0].taskQueueId === tQueue.taskQueueId, `expected ${tQueue.taskQueueId}`);
+  });
+
+  test('list task queues (limit and continuationToken)', async () => {
+    await makeTaskQueue({
+      taskQueueId: 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended',
+    });
+    await makeTaskQueue({
+      taskQueueId: 'prov1-extended-extended-extended/gecko-b-2-android',
+    });
+
+    let result = await helper.queue.listTaskQueues({ limit: 1 });
+
+    assert(result.continuationToken);
+    assert.equal(result.taskQueues.length, 1);
+
+    result = await helper.queue.listTaskQueues({
+      limit: 1,
+      continuationToken: result.continuationToken,
+    });
+
+    assert(!result.continuationToken);
+    assert.equal(result.taskQueues.length, 1);
+  });
+
   test('queue.listWorkers returns an empty list', async () => {
     const result = await helper.queue.listWorkers('prov1-extended-extended-extended', 'gecko-b-2-linux-extended-extended');
 
@@ -344,6 +387,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     assert(result.workerType === workerType, `expected ${workerType}`);
     assert(result.provisionerId === provisionerId, `expected ${provisionerId}`);
+    assert(result.description === tQueue.description, `expected ${tQueue.description}`);
+    assert(result.stability === tQueue.stability, `expected ${tQueue.stability}`);
+    assert(new Date(result.expires).getTime() === tQueue.expires.getTime(), `expected ${tQueue.expires}`);
+  });
+
+  test('queue.getTaskQueue requires scopes', async () => {
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.queue.getTaskQueue('some-prov/some-wt'),
+      err => err.code === 'InsufficientScopes');
+  });
+
+  test('queue.getTaskQueue returns a task queue', async () => {
+    const tQueue = await makeTaskQueue({});
+
+    const result = await helper.queue.getTaskQueue(tQueue.taskQueueId);
+
+    assert(result.taskQueueId === tQueue.taskQueueId, `expected ${tQueue.taskQueueId}`);
     assert(result.description === tQueue.description, `expected ${tQueue.description}`);
     assert(result.stability === tQueue.stability, `expected ${tQueue.stability}`);
     assert(new Date(result.expires).getTime() === tQueue.expires.getTime(), `expected ${tQueue.expires}`);

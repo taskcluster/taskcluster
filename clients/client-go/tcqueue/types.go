@@ -286,6 +286,22 @@ type (
 		Tasks []TaskDefinitionAndStatus `json:"tasks"`
 	}
 
+	// Response from a `listTaskQueues` request.
+	ListTaskQueuesResponse struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of task-queues.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listTaskQueues` with `continuationToken`
+		// until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of all task-queues.
+		TaskQueues []TaskQueue `json:"taskQueues"`
+	}
+
 	// Response from a `listWorkerTypes` request.
 	ListWorkerTypesResponse struct {
 
@@ -1212,6 +1228,67 @@ type (
 		// Syntax:     ^(https?|ssh)://
 		// Max length: 4096
 		Source string `json:"source"`
+	}
+
+	TaskQueue struct {
+
+		// Description of the task queue.
+		Description string `json:"description"`
+
+		// Date and time after which the task queue will be automatically
+		// deleted by the queue.
+		Expires tcclient.Time `json:"expires"`
+
+		// Date and time where the task queue was last seen active
+		LastDateActive tcclient.Time `json:"lastDateActive"`
+
+		// This is the stability of the task queue. Accepted values:
+		//  * `experimental`
+		//  * `stable`
+		//  * `deprecated`
+		//
+		// Possible values:
+		//   * "experimental"
+		//   * "stable"
+		//   * "deprecated"
+		Stability string `json:"stability"`
+
+		// Unique identifier for a task-queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
+	}
+
+	// Response to a task queue request from a provisioner.
+	TaskQueueResponse struct {
+
+		// Description of the task queue.
+		Description string `json:"description"`
+
+		// Date and time after which the task queue will be automatically
+		// deleted by the queue.
+		Expires tcclient.Time `json:"expires"`
+
+		// Date of the last time this task queue was seen active. `lastDateActive` is updated every 6 hours
+		// but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+		// of when the task queue was last seen active.
+		LastDateActive tcclient.Time `json:"lastDateActive"`
+
+		// This is the stability of the task queue. Accepted values:
+		//   * `experimental`
+		//   * `stable`
+		//   * `deprecated`
+		//
+		// Possible values:
+		//   * "experimental"
+		//   * "stable"
+		//   * "deprecated"
+		Stability string `json:"stability"`
+
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
 	}
 
 	// Response to a successful task claim

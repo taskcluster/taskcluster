@@ -1406,6 +1406,33 @@ var services = map[string]definitions.Service{
 				Input: "v1/update-workertype-request.json#",
 			},
 			definitions.Entry{
+				Name:        "listTaskQueues",
+				Title:       "Get a list of all active task queues",
+				Description: "Get all active task queues.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 task queues in a single\npage. You may limit this with the query-string parameter `limit`.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/task-queues",
+				Args:        []string{},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
+			},
+			definitions.Entry{
+				Name:        "getTaskQueue",
+				Title:       "Get a task queue",
+				Description: "Get a task queue.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/task-queues/<taskQueueId>",
+				Args: []string{
+					"taskQueueId",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "listWorkers",
 				Title:       "Get a list of all active workers of a workerType",
 				Description: "Get a list of all active workers of a workerType.\n\n`listWorkers` allows a response to be filtered by quarantined and non quarantined workers.\nTo filter the query, you should call the end-point with `quarantined` as a query-string option with a\ntrue or false value.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",

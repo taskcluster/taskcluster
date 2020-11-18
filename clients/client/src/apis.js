@@ -2403,6 +2403,41 @@ module.exports = {
         },
         {
           "args": [
+          ],
+          "category": "Worker Metadata",
+          "description": "Get all active task queues.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 task queues in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "method": "get",
+          "name": "listTaskQueues",
+          "output": "v1/list-taskqueues-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/task-queues",
+          "scopes": "queue:list-task-queues",
+          "stability": "stable",
+          "title": "Get a list of all active task queues",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskQueueId"
+          ],
+          "category": "Worker Metadata",
+          "description": "Get a task queue.",
+          "method": "get",
+          "name": "getTaskQueue",
+          "output": "v1/taskqueue-response.json#",
+          "query": [
+          ],
+          "route": "/task-queues/<taskQueueId>",
+          "scopes": "queue:get-task-queue:<taskQueueId>",
+          "stability": "stable",
+          "title": "Get a task queue",
+          "type": "function"
+        },
+        {
+          "args": [
             "provisionerId",
             "workerType"
           ],

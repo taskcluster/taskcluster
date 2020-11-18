@@ -1,0 +1,70 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "List Task-Queues Response"
+description: |
+  Response from a `listTaskQueues` request.
+type:               object
+properties:
+  taskQueues:
+    type:           array
+    title:          "taskQueues"
+    description: |
+      List of all task-queues.
+    uniqueItems: true
+    items:
+      type:         object
+      title:        "Task Queue"
+      properties:
+        taskQueueId:
+          title:          "Task Queue Id"
+          description: |
+            Unique identifier for a task-queue
+          type:           string
+          pattern:        {$const: taskqueueid-pattern}
+        stability:
+          title:        "Stability"
+          description: |
+            This is the stability of the task queue. Accepted values:
+             * `experimental`
+             * `stable`
+             * `deprecated`
+          type:         string
+          enum:         ["experimental", "stable", "deprecated"]
+        description:
+          title:        "Description"
+          description: |
+            Description of the task queue.
+          type:         string
+        expires:
+          title:        "Task queue Expiration"
+          description: |
+            Date and time after which the task queue will be automatically
+            deleted by the queue.
+          type:         string
+          format:       date-time
+        lastDateActive:
+          title:        "Task queue Last Date Active"
+          description: |
+            Date and time where the task queue was last seen active
+          type:         string
+          format:       date-time
+      additionalProperties: false
+      required:
+        - taskQueueId
+        - stability
+        - description
+        - expires
+        - lastDateActive
+  continuationToken:
+    type:               string
+    title:              "Continuation Token"
+    description: |
+      Opaque `continuationToken` to be given as query-string option to get the
+      next set of task-queues.
+      This property is only present if another request is necessary to fetch all
+      results. In practice the next request with a `continuationToken` may not
+      return additional results, but it can. Thus, you can only be sure to have
+      all the results if you've called `listTaskQueues` with `continuationToken`
+      until you get a result without a `continuationToken`.
+additionalProperties: false
+required:
+ - taskQueues
