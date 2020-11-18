@@ -7,6 +7,8 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const generator = require('generate-password');
+const request = require('superagent');
+const { rootCertificates } = require('tls');
 const { WorkerPool, Worker } = require('../data');
 
 const auth = require('@azure/ms-rest-nodeauth');
@@ -68,6 +70,93 @@ function workerConfigWithSecrets(cfg) {
   return newCfg;
 }
 
+// Convert a Subject or Issuer Distinguished Name (DN) to a string
+function dnToString(dn) {
+  return dn.attributes.map(attr => {
+    return `/${attr.shortName}=${attr.value}`;
+  }).join();
+}
+
+// Calculate the fingerprint of a certificate
+// From https://github.com/digitalbazaar/forge/issues/596
+// Fingerprint is OpenSSL format, A1:B2:C3...
+function getCertFingerprint(cert) {
+  const der = forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).getBytes();
+  const messageDigest = forge.md.sha1.create();
+  messageDigest.start();
+  messageDigest.update(der);
+  const fingerprint = messageDigest.digest()
+    .toHex()
+    .match(/.{2}/g)
+    .join(':')
+    .toUpperCase();
+  return fingerprint;
+}
+
+// Extract the AuthorityAccessInfo.AccessDescriptions from a certificate
+// See https://tools.ietf.org/html/rfc5280#section-4.2.2.1
+// Return is an array of objects:
+// [{
+//   method: "OSCP" or "CA Issuer",
+//   location: location, which may be a URL
+// },...]
+function getAuthorityAccessInfo(cert) {
+  // ASN.1 validator and data capture for AccessDescription items in
+  // AuthorityAccessInfo extension
+  const accessDescriptionValidator = {
+    name: 'AccessDescription',
+    tagClass: forge.asn1.Class.UNIVERSAL,
+    type: forge.asn1.Type.SEQUENCE,
+    constructed: true,
+    value: [{
+      name: 'AccessDescription.accessMethod',
+      tagClass: forge.asn1.Class.UNIVERSAL,
+      type: forge.asn1.Type.OID,
+      constructed: false,
+      capture: 'accessMethod',
+    }, {
+      name: 'AccessDescription.accessLocation',
+      tagClass: forge.asn1.Class.CONTEXT_SPECIFIC,
+      type: forge.asn1.Type.OID,
+      constructed: false,
+      capture: 'accessLocation',
+    }],
+  };
+  const knownOIDs = new Map([
+    ['1.3.6.1.5.5.7.48.1', 'OSCP'],
+    ['1.3.6.1.5.5.7.48.2', 'CA Issuer'],
+  ]);
+
+  const authorityInfoAccessRaw = cert.getExtension('authorityInfoAccess');
+  if (!authorityInfoAccessRaw) {
+    throw Error("No AuthorityAccessInfo");
+  }
+
+  const authorityInfoAccess = forge.asn1.fromDer(authorityInfoAccessRaw.value);
+  const accessDescriptions = [];
+  authorityInfoAccess.value.forEach((accessDescription, idx) => {
+    const errors = [];
+    const capture = {};
+    const valid = forge.asn1.validate(
+      accessDescription, accessDescriptionValidator, capture, errors);
+    if (!valid) {
+      const err = Error(`accessDescription[${idx}] is invalid`);
+      err.errors = errors;
+      throw err;
+    }
+    const keyOID = forge.asn1.derToOid(capture.accessMethod);
+    const key = knownOIDs.get(keyOID);
+    if (key === undefined) {
+      throw Error(`accessDescription[$(idx)] has unknown key ${keyOID}`);
+    }
+    accessDescriptions.push({
+      method: key,
+      location: capture.accessLocation,
+    });
+  });
+  return accessDescriptions;
+}
+
 class AzureProvider extends Provider {
 
   constructor({
@@ -77,6 +166,51 @@ class AzureProvider extends Provider {
     super(conf);
     this.configSchema = 'config-azure';
     this.providerConfig = providerConfig;
+    this.downloadTimeout = 5000; // 5 seconds
+  }
+
+  // Add a PEM-encoded root certificate rootCertPem
+  //
+  // node-forge doesn't support ECC so it cannot load ECDSA certs (issue #3924).
+  // See https://github.com/digitalbazaar/forge/issues/116 (opened April 2014)
+  // If failIfNotRSACert == true, then ECDSA certs throw an Error
+  //
+  // Returns true if the certificate was added.
+  addRootCertPem(rootCertPem, failIfNotRSACert = false) {
+    let rootCert = null;
+    try {
+      rootCert = forge.pki.certificateFromPem(rootCertPem);
+    } catch (err) {
+      const isNotRSACert = (err.message !== 'Cannot read public key. OID is not RSA.');
+      if (isNotRSACert || failIfNotRSACert) {
+        throw err;
+      }
+    }
+    if (rootCert && !this.caStore.hasCertificate(rootCert)) {
+      this.caStore.addCertificate(rootCert);
+      return true;
+    }
+    return false;
+  }
+
+  // Add an intermediate certificate
+  addIntermediateCert(cert) {
+    const issuer = this.caStore.getIssuer(cert);
+    if (issuer === null) {
+      throw Error(`Issuer "${dnToString(cert.issuer)}"` +
+                  ` for "${dnToString(cert.subject)}" is not a known Root CA`);
+    }
+    this.caStore.addCertificate(cert);
+  }
+
+  // Return a response Promise, where .body is the binary file
+  // This method is patched for testing
+  async downloadBinaryResponse(url) {
+    return await request.get(url)
+      .timeout(this.downloadTimeout)
+      .ok(res => res.status === 200)
+      .redirects(0)
+      .buffer(true);
   }
 
   async setup() {
@@ -111,12 +245,30 @@ class AzureProvider extends Provider {
     });
     this._enqueue = cloud.enqueue.bind(cloud);
 
-    // load microsoft intermediate certs from disk
-    // TODO (bug 1607922) : we should download the intermediate certs,
-    //       locations are in the authorityInfoAccess extension
+    // Load root certificates from Node, which get them from the Mozilla CA store.
+    // As of node v12.19.0 (Nov. 2020), this includes 117 certs that node-forge
+    // can load, and 21 it can not (issue #3923)
+    this.caStore = forge.pki.createCaStore();
+    rootCertificates.forEach(pem => this.addRootCertPem(pem));
+
+    // node v12.9.0 doesn't have these certificates
+    // Added from NSS 3.56, released 2020-08-21
+    // TODO (issue #3924): remove after upgrade to node with these bundled
+    const rootCertFilenames = [
+      'microsoft_rsa_root_certificate_authority_2017.pem',
+      // node-forge can't load ECDSA certificates (issue #3923)
+      // 'microsoft_ecc_root_certificate_authority_2017.pem',
+    ];
+    const rootCertFiles = rootCertFilenames.map(
+      name => fs.readFileSync(path.resolve(__dirname, "azure-ca-certs", name)));
+    rootCertFiles.forEach(pem => this.addRootCertPem(pem, true));
+
+    // load known microsoft intermediate certs from disk
+    // TODO (issue #3925): Remove these around February 2021, when they are
+    // planned to be revoked.
     let intermediateFiles = [1, 2, 4, 5].map(i => fs.readFileSync(path.resolve(__dirname, `azure-ca-certs/microsoft_it_tls_ca_${i}.pem`)));
     let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
-    this.caStore = forge.pki.createCaStore(intermediateCerts);
+    intermediateCerts.forEach(cert => this.addIntermediateCert(cert));
 
     let credentials = await auth.loginWithServicePrincipalSecret(clientId, secret, domain);
     this.computeClient = new armCompute.ComputeManagementClient(credentials, subscriptionId);
@@ -171,7 +323,7 @@ class AzureProvider extends Provider {
         workerConfig: cfg.workerConfig || {},
       })).toString('base64');
 
-      // Disallow users from naming diss
+      // Disallow users from naming disk
       // required
       let osDisk = { ..._.omit(cfg.storageProfile.osDisk, ['name']) };
       // optional
@@ -288,7 +440,8 @@ class AzureProvider extends Provider {
     // We need to check that:
     // 1. The embedded document was signed with the private key corresponding to the
     //    embedded public key
-    // 2. The embedded public key has a proper certificate chain back to a trusted CA
+    // 2. The embedded public key has a proper certificate chain back to a trusted CA,
+    //    and has a subject of "metadata.azure.com" or ends with ".metadata.azure.com"
     // 3. The embedded message contains the vmId that matches the worker making the request
 
     // signature is base64-encoded DER-format PKCS#7 / CMS message
@@ -327,6 +480,84 @@ class AzureProvider extends Provider {
     } catch (err) {
       this.monitor.log.registrationErrorWarning({ message: 'Error verifying PKCS#7 message signature', error: err.toString() });
       throw error();
+    }
+
+    // verify the subject of the signing certificate
+    const signerCommonName = crt.subject.getField({ name: 'commonName' });
+    if (!(signerCommonName &&
+          (signerCommonName.value === 'metadata.azure.com' ||
+           signerCommonName.value.endsWith('.metadata.azure.com')))) {
+      this.monitor.log.registrationErrorWarning({
+        message: 'Wrong PKCS#7 message signature subject',
+        error: `Expected "/CN=metadata.azure.com", got "${dnToString(crt.subject)}"`,
+      });
+      throw error();
+    }
+
+    // download the intermediate certificate if needed
+    let issuer = this.caStore.getIssuer(crt);
+    if (issuer === null) {
+      const authorityAccessInfo = getAuthorityAccessInfo(crt);
+      let method, location;
+      for (let i = 0; i < authorityAccessInfo.length; i++) {
+        method = authorityAccessInfo[i].method;
+        location = authorityAccessInfo[i].location;
+        if (method === 'CA Issuer' && location.startsWith('http:')) {
+          let raw_data = null;
+          try {
+            raw_data = (await this.downloadBinaryResponse(location)).body;
+          } catch (err) {
+            this.monitor.log.registrationErrorWarning({
+              message: 'Error downloading intermediate certificate',
+              error: `${err.toString()}; location=${location}`,
+            });
+            // Continue, there may be a further CA Issuer that works
+          }
+          if (raw_data) {
+            try {
+              const certAsn1 = forge.asn1.fromDer(forge.util.createBuffer(raw_data));
+              issuer = forge.pki.certificateFromAsn1(certAsn1);
+            } catch (err) {
+              // Could be an issue with external server, or unexpected content
+              // RFC 5280, section 4.2.2.1 says it may be a "certs-only" CMS message
+              this.monitor.log.registrationErrorWarning({
+                message: 'Error reading intermediate certificate',
+                error: `${err.toString()}; location=${location}`,
+              });
+              // Continue, there may be a later CA Issuer that works
+            }
+
+            if (issuer) {
+              break;
+            }
+          }
+        }
+      }
+
+      if (issuer) {
+        try {
+          this.addIntermediateCert(issuer);
+        } catch(err) {
+          this.monitor.log.registrationErrorWarning({
+            message: 'Error verifying new intermediate certificate',
+            error: err.message,
+          });
+          throw error();
+        }
+        this.monitor.log.registrationNewIntermediateCertificate({
+          subject: dnToString(issuer.subject),
+          issuer: dnToString(issuer.issuer),
+          fingerprint: getCertFingerprint(issuer),
+          url: location,
+        });
+      } else {
+        this.monitor.log.registrationErrorWarning({
+          message: 'Unable to download intermediate certificate',
+          error: `Certificate "${dnToString(crt.issuer)}";` +
+                 ` AuthorityAccessInfo ${JSON.stringify(authorityAccessInfo)}`,
+        });
+        throw error();
+      }
     }
 
     // verify that the embedded certificates have proper chain of trust
@@ -1040,4 +1271,7 @@ class AzureProvider extends Provider {
 
 module.exports = {
   AzureProvider,
+  dnToString,
+  getCertFingerprint,
+  getAuthorityAccessInfo,
 };

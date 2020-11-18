@@ -12141,6 +12141,20 @@
           "version": 1
         },
         {
+          "description": "A worker's identify proof message was signed by an unknown intermediate certificate.\nThis was successfully downloaded, verified by root CAs, and added to the CA store.",
+          "fields": {
+            "fingerprint": "The fingerprint of the certificate",
+            "issuer": "The distinguished name of the certificate issuer",
+            "subject": "The distinguished name of the certificate subject",
+            "url": "The URL from which the certificate was downloaded"
+          },
+          "level": "warning",
+          "name": "registrationNewIntermediateCertificate",
+          "title": "Registration of New Intermediate Certificate",
+          "type": "registration-new-intermediate-certificate",
+          "version": 1
+        },
+        {
           "description": "Metrics of a node process.",
           "fields": {
             "lastCpuUsage": "The output of node's process.cpuUsage",

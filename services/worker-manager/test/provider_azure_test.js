@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const assert = require('assert');
 const helper = require('./helper');
 const { FakeAzure } = require('./fakes');
-const { AzureProvider } = require('../src/providers/azure');
+const { AzureProvider, dnToString, getAuthorityAccessInfo, getCertFingerprint } = require('../src/providers/azure');
 const testing = require('taskcluster-lib-testing');
 const forge = require('node-forge');
 const fs = require('fs');
@@ -48,6 +48,41 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   let monitor;
   suiteSetup(async function() {
     monitor = await helper.load('monitor');
+  });
+
+  suite('helpers', function() {
+    const testCertPath = path.resolve(
+      __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_2.pem');
+    const testCert = forge.pki.certificateFromPem(fs.readFileSync(testCertPath));
+
+    test('dnToString of subject', async function() {
+      const dn = dnToString(testCert.subject);
+      assert.equal(
+        dn,
+        '/C=US,/ST=Washington,/L=Redmond,/O=Microsoft Corporation,' +
+        '/OU=Microsoft IT,/CN=Microsoft IT TLS CA 2');
+    });
+
+    test('dnToString of issuer', async function() {
+      const dn = dnToString(testCert.issuer);
+      assert.equal(
+        dn,
+        '/C=IE,/O=Baltimore,/OU=CyberTrust,/CN=Baltimore CyberTrust Root');
+    });
+
+    test('getCertFingerprint', async function() {
+      const fingerprint = getCertFingerprint(testCert);
+      assert.equal(
+        fingerprint,
+        '54:D9:D2:02:39:08:0C:32:31:6E:D9:FF:98:0A:48:98:8F:4A:DF:2D');
+    });
+
+    test('getAuthorityAccessInfo', async function() {
+      const info = getAuthorityAccessInfo(testCert);
+      assert.deepEqual(
+        info,
+        [{ method: "OSCP", location: "http://ocsp.digicert.com" }]);
+    });
   });
 
   setup(async function() {
@@ -126,6 +161,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       vm: fake.computeClient.virtualMachines,
     }[resourceType];
   };
+
+  suite('setup', function(){
+    test('has all Azure root certificates', async function() {
+      // https://docs.microsoft.com/en-us/azure/security/fundamentals/tls-certificate-changes
+      const azureRootCAs = new Map([
+        ['df3c24f9bfd666761b268073fe06d1cc8d4f82a4', 'DigiCert Global Root G2'],
+        ['a8985d3a65e5e5c4b2d7d66d40c6dd2fb19c5436', 'DigiCert Global Root CA'],
+        ['d4de20d05e66fc53fe1a50882c78db2852cae474', 'Baltimore CyberTrust Root'],
+        ['58e8abb0361533fb80f79b1b6d29d3ff8d5f00f0', 'D-TRUST Root Class 3 CA 2 2009'],
+        ['73a5e64a3bff8316ff0edccc618a906e4eae4d74', 'Microsoft RSA Root Certificate Authority 2017'],
+        ['999a64c37ff47d9fab95f14769891460eec4c3c5', 'Microsoft ECC Root Certificate Authority 2017'],
+      ]);
+      // node-forge is unable to load these (issue #3923)
+      const forgeProblemRootCAs = new Map([
+        ['999a64c37ff47d9fab95f14769891460eec4c3c5', 'Microsoft ECC Root Certificate Authority 2017'],
+      ]);
+
+      // Calculate the thumbprint of a certificate
+      // Microsoft's thumbprint is OpenSSL's fingerprint in lowercase, no colons
+      function getThumbprint(cert) {
+        const fingerprint = getCertFingerprint(cert);
+        const thumbprint = fingerprint.replace(/:/g, '').toLowerCase();
+        return thumbprint;
+      }
+
+      // Find matching thumbprints in provider.caStore
+      const caCerts = provider.caStore.listAllCertificates();
+      caCerts.forEach(cert => {
+        const thumbprint = getThumbprint(cert);
+        azureRootCAs.delete(thumbprint);
+      });
+
+      assert.deepEqual(azureRootCAs, forgeProblemRootCAs);
+      assert.equal(azureRootCAs.size, 1);
+    });
+  });
 
   suite('provisioning', function() {
     const provisionWorkerPool = async (launchConfig, overrides) => {
@@ -1071,6 +1142,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert(monitor.manager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
         });
 
+        test('wrong signer subject', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = Worker.fromApi({
+            ...defaultWorker,
+          });
+          await worker.create(helper.db);
+          // A message signed by a cert with the wrong subject
+          // "/CN=metadata.azure.org" (instead of .com)
+          const message = fs.readFileSync(
+            path.resolve(__dirname, 'fixtures/azure_wrong_subject.pkcs7')).toString();
+          const content = message.split('\n').slice(1, -1).join();
+          const workerIdentityProof = { document: content };
+          await assert.rejects(() =>
+            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+          /Signature validation error/);
+          const log = monitor.manager.messages[0].Fields;
+          assert.equal(log.message, 'Wrong PKCS#7 message signature subject');
+          assert.equal(
+            log.error,
+            'Expected "/CN=metadata.azure.com", got "/CN=metadata.azure.org"');
+        });
+
         test('expired message', async function() {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
@@ -1087,6 +1180,154 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert(monitor.manager.messages[0].Fields.message.includes('Expired message'));
         });
 
+        test('fail to download cert', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = Worker.fromApi({
+            ...defaultWorker,
+          });
+          await worker.create(helper.db);
+          const document = fs.readFileSync(
+            path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+          const workerIdentityProof = { document };
+
+          const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
+
+          // Remove the intermediate certificate
+          const intermediateCertPath = path.resolve(
+            __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_4.pem');
+          const intermediateCertPem = fs.readFileSync(intermediateCertPath);
+          const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
+          const deletedCert = provider.caStore.removeCertificate(intermediateCert);
+          assert(deletedCert);
+
+          // Disable downloads
+          provider.downloadBinaryResponse = (url) => {
+            return new Promise((resolve, reject) => {
+              reject(Error('Mocked downloadBinaryResponse'));
+            });
+          };
+
+          await assert.rejects(() =>
+            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+          /Signature validation error/);
+          const expectedUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt';
+          const log0 = monitor.manager.messages[0].Fields;
+          assert.equal(log0.message, 'Error downloading intermediate certificate');
+          assert.equal(
+            log0.error,
+            `Error: Mocked downloadBinaryResponse; location=${expectedUrl}`);
+          const expectedSubject = dnToString(deletedCert.subject);
+          const expectedAIA = JSON.stringify([
+            { method: 'CA Issuer', location: expectedUrl },
+            { method: "OSCP", location: "http://ocsp.msocsp.com" },
+          ]);
+          const log1 = monitor.manager.messages[1].Fields;
+          assert.equal(log1.message, 'Unable to download intermediate certificate');
+          assert.equal(
+            log1.error,
+            `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
+
+          // Restore test fixture
+          provider.caStore.addCertificate(deletedCert);
+          provider.downloadBinaryResponse = oldDownloadBinaryResponse;
+        });
+
+        test('certificate download timeout', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = Worker.fromApi({
+            ...defaultWorker,
+          });
+          await worker.create(helper.db);
+          const document = fs.readFileSync(
+            path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+          const workerIdentityProof = { document };
+
+          const oldDownloadTimeout = provider.downloadTimeout;
+          provider.downloadTimeout = 1; // 1 millisecond
+
+          // Remove the intermediate certificate
+          const intermediateCertPath = path.resolve(
+            __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_4.pem');
+          const intermediateCertPem = fs.readFileSync(intermediateCertPath);
+          const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
+          const deletedCert = provider.caStore.removeCertificate(intermediateCert);
+          assert(deletedCert);
+
+          await assert.rejects(() =>
+            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+          /Signature validation error/);
+          const expectedUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt';
+          const log0 = monitor.manager.messages[0].Fields;
+          assert.equal(log0.message, 'Error downloading intermediate certificate');
+          assert.equal(log0.error, `Error: Timeout of 1ms exceeded; location=${expectedUrl}`);
+          const expectedSubject = dnToString(deletedCert.subject);
+          const expectedAIA = JSON.stringify([
+            { method: 'CA Issuer', location: expectedUrl },
+            { method: "OSCP", location: "http://ocsp.msocsp.com" },
+          ]);
+          const log1 = monitor.manager.messages[1].Fields;
+          assert.equal(log1.message, 'Unable to download intermediate certificate');
+          assert.equal(
+            log1.error,
+            `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
+
+          // Restore test fixture
+          provider.caStore.addCertificate(deletedCert);
+          provider.downloadTimeout = oldDownloadTimeout;
+        });
+
+        test('download is not binary cert', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = Worker.fromApi({
+            ...defaultWorker,
+          });
+          await worker.create(helper.db);
+          const document = fs.readFileSync(
+            path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+          const workerIdentityProof = { document };
+
+          const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
+
+          // Remove the intermediate certificate
+          const intermediateCertPath = path.resolve(
+            __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_4.pem');
+          const intermediateCertPem = fs.readFileSync(intermediateCertPath);
+          const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
+          const deletedCert = provider.caStore.removeCertificate(intermediateCert);
+          assert(deletedCert);
+
+          // Download is not a binary certificate
+          provider.downloadBinaryResponse = (url) => {
+            return new Promise((resolve, reject) => {
+              resolve({ body: '<html><body><h1>Apache2 Default Page</h1></body></html>' });
+            });
+          };
+
+          await assert.rejects(() =>
+            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+          /Signature validation error/);
+          const expectedUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt';
+          const log0 = monitor.manager.messages[0].Fields;
+          assert.equal(log0.message, 'Error reading intermediate certificate');
+          assert.equal(
+            log0.error,
+            `Error: Too few bytes to read ASN.1 value.; location=${expectedUrl}`);
+          const expectedSubject = dnToString(deletedCert.subject);
+          const expectedAIA = JSON.stringify([
+            { method: 'CA Issuer', location: expectedUrl },
+            { method: "OSCP", location: "http://ocsp.msocsp.com" },
+          ]);
+          const log1 = monitor.manager.messages[1].Fields;
+          assert.equal(log1.message, 'Unable to download intermediate certificate');
+          assert.equal(
+            log1.error,
+            `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
+
+          // Restore test fixture
+          provider.caStore.addCertificate(deletedCert);
+          provider.downloadBinaryResponse = oldDownloadBinaryResponse;
+        });
+
         test('bad cert', async function() {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
@@ -1096,16 +1337,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = { document };
 
-          // Here we replace the intermediate certs with nothing and show that this should reject
-          const oldCaStore = provider.caStore;
-          provider.caStore = forge.pki.createCaStore([]);
+          // Remove the intermediate certificate
+          const intermediateCertPath = path.resolve(
+            __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_4.pem');
+          const intermediateCertPem = fs.readFileSync(intermediateCertPath);
+          const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
+          const deletedCert = provider.caStore.removeCertificate(intermediateCert);
+          assert(deletedCert);
+
+          // Remove the Baltimore CyberTrust Root CA
+          const rootCert = provider.caStore.getIssuer(deletedCert);
+          const deletedRoot = provider.caStore.removeCertificate(rootCert);
+          assert(deletedRoot);
 
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
-          assert(monitor.manager.messages[0].Fields.message.includes('Error verifying certificate chain'));
-          assert(monitor.manager.messages[0].Fields.error.includes('Certificate is not trusted'));
-          provider.caStore = oldCaStore;
+          const log0 = monitor.manager.messages[0].Fields;
+          assert.equal(log0.message, 'Error verifying new intermediate certificate');
+          assert.equal(
+            log0.error,
+            `Issuer "${dnToString(rootCert.subject)}"` +
+            ` for "${dnToString(intermediateCert.subject)}" is not a known Root CA`);
+
+          // Restore test fixture
+          provider.caStore.addCertificate(deletedRoot);
+          provider.caStore.addCertificate(deletedCert);
         });
 
         test('wrong worker state (duplicate call to registerWorker)', async function() {
@@ -1191,6 +1448,53 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
           assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
           assert.equal(res.workerConfig.someKey, 'someValue');
+        });
+
+        test('success after downloading missing intermediate', async function() {
+          const workerPool = await makeWorkerPool();
+          const worker = Worker.fromApi({
+            ...defaultWorker,
+            providerData: {
+              ...defaultWorker.providerData,
+              workerConfig: {
+                "someKey": "someValue",
+              },
+            },
+          });
+          await worker.create(helper.db);
+          const document = fs.readFileSync(
+            path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
+          const workerIdentityProof = { document };
+
+          // Remove the intermediate certificate
+          const intermediateCertPath = path.resolve(
+            __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_4.pem');
+          const intermediateCertPem = fs.readFileSync(intermediateCertPath);
+          const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
+          const deletedCert = provider.caStore.removeCertificate(intermediateCert);
+          assert(deletedCert);
+
+          const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
+          // allow +- 10 seconds since time passes while the test executes
+          assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
+          assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+          assert.equal(res.workerConfig.someKey, 'someValue');
+
+          let log0 = monitor.manager.messages[0];
+          assert.equal(log0.Type, 'registration-new-intermediate-certificate');
+          assert.equal(
+            log0.Fields.fingerprint,
+            '8A:38:75:5D:09:96:82:3F:E8:FA:31:16:A2:77:CE:44:6E:AC:4E:99');
+          assert.equal(
+            log0.Fields.issuer,
+            '/C=IE,/O=Baltimore,/OU=CyberTrust,/CN=Baltimore CyberTrust Root');
+          assert.equal(
+            log0.Fields.subject,
+            '/C=US,/ST=Washington,/L=Redmond,/O=Microsoft Corporation,' +
+            '/OU=Microsoft IT,/CN=Microsoft IT TLS CA 4');
+          assert.equal(
+            log0.Fields.url,
+            'http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt');
         });
       });
     }
