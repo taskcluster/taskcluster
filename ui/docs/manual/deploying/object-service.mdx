@@ -35,6 +35,8 @@ backends:
     # ...
 ```
 
+See the [reference documentation](/docs/reference/platform/object/) for descriptions of the available backends and their configuration.
+
 The backend for a specific object is determined when that object is uploaded, based on the `object.backend_map` configuration value.
 This is a JSON array containing a sequence of match expressions.
 The first matching expression determines the backend to use; remaining expressions are not considered.

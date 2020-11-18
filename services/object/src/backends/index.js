@@ -1,5 +1,7 @@
+const { AwsBackend } = require('./aws');
+
 const BACKEND_TYPES = {
-  // TBD!
+  aws: AwsBackend,
 };
 
 /**
