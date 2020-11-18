@@ -3,7 +3,7 @@ const cmd = require('./helper/cmd');
 const DockerWorker = require('../dockerworker');
 const settings = require('../settings');
 const TestWorker = require('../testworker');
-const waitForEvent = require('../../src/lib/wait_for_event');
+const waitForEvent = require('../../src/wait_for_event');
 const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 

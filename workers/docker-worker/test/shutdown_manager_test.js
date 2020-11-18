@@ -1,4 +1,4 @@
-const ShutdownManager = require('../src/lib/shutdown_manager');
+const ShutdownManager = require('../src/shutdown_manager');
 const assert = require('assert').strict;
 const monitor = require('./fixtures/monitor');
 const Debug = require('debug');

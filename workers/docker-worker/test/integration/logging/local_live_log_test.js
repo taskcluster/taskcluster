@@ -6,7 +6,7 @@ const assert = require('assert');
 const helper = require('../../helper');
 const DockerWorker = require('../../dockerworker');
 const TestWorker = require('../../testworker');
-const waitForEvent = require('../../../src/lib/wait_for_event');
+const waitForEvent = require('../../../src/wait_for_event');
 
 suite('live logging', () => {
   let worker;

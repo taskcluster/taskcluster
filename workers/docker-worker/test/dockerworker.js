@@ -1,7 +1,7 @@
 let devnull = require('dev-null');
 let path = require('path');
 let util = require('util');
-let docker = require('../src/lib/docker')();
+let docker = require('../src/docker')();
 let dockerOpts = require('dockerode-options');
 let DockerProc = require('dockerode-process');
 let dockerUtils = require('dockerode-process/utils');
@@ -53,7 +53,7 @@ class DockerWorker {
           '&&',
           'node',
           global.asyncDump ? '--require /worker/src/lib/async-dump' : '',
-          '/worker/src/bin/worker.js',
+          '/worker/src/main.js',
           '--host test',
           '--worker-group', 'random-local-worker',
           '--worker-id', this.workerId,

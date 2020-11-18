@@ -1,6 +1,6 @@
 const assert = require('assert').strict;
-const { validatePayload } = require('../src/lib/util/validate_schema');
-const SchemaSet = require('../src/lib/validate');
+const { validatePayload } = require('../src/util/validate_schema');
+const SchemaSet = require('../src/validate');
 const libUrls = require('taskcluster-lib-urls');
 const taskcluster = require('taskcluster-client');
 

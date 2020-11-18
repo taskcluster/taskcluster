@@ -135,7 +135,7 @@ class WebsocketServer {
 
     return {
       binds: [{
-        source: path.join(__dirname, '../../../bin-utils'),
+        source: path.join(__dirname, '../../bin-utils'),
         target: '/.taskclusterutils',
         readOnly: true,
       }, {

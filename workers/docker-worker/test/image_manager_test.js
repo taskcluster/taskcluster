@@ -1,10 +1,10 @@
 const assert = require('assert');
 const dockerUtils = require('dockerode-process/utils');
-const ImageManager = require('../src/lib/docker/image_manager');
-const Docker = require('../src/lib/docker');
+const ImageManager = require('../src/docker/image_manager');
+const Docker = require('../src/docker');
 const { createHash } = require('crypto');
 const slugid = require('slugid');
-const { createLogger } = require('../src/lib/log');
+const { createLogger } = require('../src/log');
 const { NAMESPACE, TASK_ID, ROOT_URL } = require('./fixtures/image_artifacts');
 const taskcluster = require('taskcluster-client');
 const monitor = require('./fixtures/monitor');

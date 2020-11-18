@@ -1,11 +1,11 @@
 const assert = require('assert');
 const cmd = require('./helper/cmd');
-const Docker = require('../../src/lib/docker');
+const Docker = require('../../src/docker');
 const DockerWorker = require('../dockerworker');
 const Registry = require('./helper/docker_registry');
 const settings = require('../settings');
 const TestWorker = require('../testworker');
-const { removeImage } = require('../../src/lib/util/remove_image');
+const { removeImage } = require('../../src/util/remove_image');
 const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 

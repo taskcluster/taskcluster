@@ -1,7 +1,7 @@
 const assert = require('assert');
 const { EventEmitter } = require('events');
 const { Readable, PassThrough } = require('stream');
-const { StreamTransport, Protocol } = require('../src/lib/worker-runner-protocol');
+const { StreamTransport, Protocol } = require('../src/worker-runner-protocol');
 
 const endEvent = emitter => new Promise(resolve => emitter.on('end', resolve));
 

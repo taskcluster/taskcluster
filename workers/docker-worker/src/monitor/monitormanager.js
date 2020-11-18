@@ -33,7 +33,7 @@ class MonitorManager {
     this.serviceName = serviceName;
     // read version from package.json, if taskclusterVersion is not set
     if (this.taskclusterVersion === undefined) {
-      this.taskclusterVersion = require('../../../package.json').version;
+      this.taskclusterVersion = require('../../package.json').version;
     }
 
     this._configured = true;

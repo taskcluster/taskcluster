@@ -5,13 +5,13 @@
  */
 const slugid = require('slugid');
 const Debug = require('debug');
-const waitForEvent = require('../src/lib/wait_for_event');
+const waitForEvent = require('../src/wait_for_event');
 const split = require('split2');
 const getArtifact = require('./integration/helper/get_artifact');
 const Task = require('./task');
 const taskcluster = require('taskcluster-client');
 const { EventEmitter } = require('events');
-const getLogsLocationsFromTask = require('../src/lib/features/logs_location.js');
+const getLogsLocationsFromTask = require('../src/features/logs_location.js');
 const helper = require('./helper');
 
 let debug = Debug('docker-worker:test:testworker');

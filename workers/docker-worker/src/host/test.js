@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { settingsPath } = require('../../../test/settings');
+const { settingsPath } = require('../../test/settings');
 const Debug = require('debug');
 
 let debug = Debug('docker-worker:host:test');

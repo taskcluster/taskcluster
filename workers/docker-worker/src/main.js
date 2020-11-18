@@ -7,24 +7,24 @@ if (global.asyncDump) {
   setInterval(global.asyncDump, 5000);
 }
 
-const reportHostMetrics = require('../lib/stats/host_metrics');
+const reportHostMetrics = require('./stats/host_metrics');
 const fs = require('fs');
 const os = require('os');
 const program = require('commander');
-const createLogger = require('../lib/log').createLogger;
+const createLogger = require('./log').createLogger;
 const Debug = require('debug');
 const _ = require('lodash');
-const { defaultMonitorManager } = require('../lib/monitor');
-const Runtime = require('../lib/runtime');
-const TaskListener = require('../lib/task_listener');
-const ShutdownManager = require('../lib/shutdown_manager');
-const GarbageCollector = require('../lib/gc');
-const VolumeCache = require('../lib/volume_cache');
-const ImageManager = require('../lib/docker/image_manager');
+const { defaultMonitorManager } = require('./monitor');
+const Runtime = require('./runtime');
+const TaskListener = require('./task_listener');
+const ShutdownManager = require('./shutdown_manager');
+const GarbageCollector = require('./gc');
+const VolumeCache = require('./volume_cache');
+const ImageManager = require('./docker/image_manager');
 const typedEnvConfig = require('typed-env-config');
-const SchemaSet = require('../lib/validate');
+const SchemaSet = require('./validate');
 const { spawn } = require('child_process');
-const { version } = require('../../package.json');
+const { version } = require('../package.json');
 
 // Available target configurations.
 let allowedHosts = ['test', 'worker-runner'];
@@ -92,7 +92,7 @@ program.parse(process.argv);
   }
 
   let config = typedEnvConfig({
-    files: [`${__dirname}/../../config.yml`],
+    files: [`${__dirname}/../config.yml`],
     profile: profile,
     env: process.env,
   });
@@ -109,7 +109,7 @@ program.parse(process.argv);
       return process.exit(1);
     }
 
-    host = require('../lib/host/' + program.host);
+    host = require('./host/' + program.host);
 
     if (host.setup) {
       host.setup();
@@ -149,7 +149,7 @@ program.parse(process.argv);
 
   // Initialize the classes and objects with core functionality used by higher
   // level docker-worker components.
-  config.docker = require('../lib/docker')();
+  config.docker = require('./docker')();
 
   let monitor = await defaultMonitorManager.configure({
     serviceName: config.monitorProject || 'docker-worker',

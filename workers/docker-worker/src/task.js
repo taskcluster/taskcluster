@@ -20,7 +20,7 @@ const uploadToS3 = require('./upload_to_s3');
 const _ = require('lodash');
 const EventEmitter = require('events');
 const libUrls = require('taskcluster-lib-urls');
-const { version } = require('../../package.json');
+const { version } = require('../package.json');
 
 let debug = new Debug('runTask');
 

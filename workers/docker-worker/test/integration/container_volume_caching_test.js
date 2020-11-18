@@ -7,10 +7,10 @@ const path = require('path');
 const testworker = require('../post_task');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
-const waitForEvent = require('../../src/lib/wait_for_event');
+const waitForEvent = require('../../src/wait_for_event');
 const taskcluster = require('taskcluster-client');
 const util = require('util');
-const sleep = require('../../src/lib/util/sleep');
+const sleep = require('../../src/util/sleep');
 const { suiteName } = require('taskcluster-lib-testing');
 const helper = require('../helper');
 

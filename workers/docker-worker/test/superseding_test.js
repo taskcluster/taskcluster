@@ -1,4 +1,4 @@
-const TaskListener = require('../src/lib/task_listener');
+const TaskListener = require('../src/task_listener');
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const nock = require('nock');

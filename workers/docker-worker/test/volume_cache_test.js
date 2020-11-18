@@ -1,12 +1,12 @@
 const assert = require('assert');
 const devnull = require('dev-null');
-const VolumeCache = require('../src/lib/volume_cache');
-const GarbageCollector = require('../src/lib/gc');
-const { createLogger } = require('../src/lib/log');
+const VolumeCache = require('../src/volume_cache');
+const GarbageCollector = require('../src/gc');
+const { createLogger } = require('../src/log');
 const Debug = require('debug');
-const Docker = require('../src/lib/docker');
+const Docker = require('../src/docker');
 const dockerUtils = require('dockerode-process/utils');
-const waitForEvent = require('../src/lib/wait_for_event');
+const waitForEvent = require('../src/wait_for_event');
 const fs = require('fs');
 const path = require('path');
 const rmrf = require('rimraf');

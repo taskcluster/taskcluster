@@ -1,5 +1,5 @@
 const assert = require('assert');
-const subject = require('../src/lib/host/test');
+const subject = require('../src/host/test');
 const settings = require('./settings');
 const libUrls = require('taskcluster-lib-urls');
 const { suiteName } = require('taskcluster-lib-testing');
