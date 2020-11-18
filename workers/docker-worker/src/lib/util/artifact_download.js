@@ -38,13 +38,22 @@ module.exports = async function(queue, stream, taskId, artifactPath, destination
     try {
       let expectedSize = 0;
       let receivedSize;
-      let req = request.get(artifactUrl);
+      let req = request.get({
+        method: 'GET',
+        url: artifactUrl,
+        gzip: true,
+      });
       req.on('response', (res) => {
+        // measure the expected HTTP response body size and actual, to compare later
         expectedSize = parseInt(res.headers['content-length']);
         receivedSize = 0;
+        res.on('data', chunk => {
+          // note that this event is emitted with compressed data
+          receivedSize += chunk.length;
+        });
       });
       req.on('data', (chunk) => {
-        receivedSize += chunk.length;
+        // note that this event is emitted with uncompressed data
         hash.update(chunk);
       });
 
@@ -68,13 +77,15 @@ module.exports = async function(queue, stream, taskId, artifactPath, destination
         throw error;
       }
 
+      // can only check the expected size if there was no content-encoding; otherwise,
+      // we assume that request checked it on the compressed data.
       if (receivedSize !== expectedSize) {
-        throw new Error(`Expected size is '${expectedSize}' but received '${receivedSize}'`);
+        throw new Error(`Expected response size is '${expectedSize}' but received '${receivedSize}'`);
       }
 
       stream.write(fmtLog('Downloaded artifact successfully.'));
       stream.write(fmtLog(
-        `Downloaded ${(expectedSize / 1024 / 1024).toFixed(3)} mb`,
+        `Downloaded ${(receivedSize / 1024 / 1024).toFixed(3)} mb over the wire`,
       ));
       return `sha256:${hash.digest('hex')}`;
     } catch(e) {

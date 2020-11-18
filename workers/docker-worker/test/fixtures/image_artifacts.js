@@ -4,6 +4,9 @@
 
 const IMAGE_TASK_ID = 'csTL863FQYCK82XEFjMhMw';
 
+// a second task created to add more artifacts..
+const SECOND_TASK_ID = 'W6tr_zwCT1u7XR68BFY5Fw';
+
 module.exports = {
   // the taskcluster instance containing all of these resources
   ROOT_URL: 'https://community-tc.services.mozilla.com',
@@ -21,4 +24,7 @@ module.exports = {
 
   // Zstandard compressed impage
   ZSTD_TASK_ID: IMAGE_TASK_ID,
+
+  // same as the .tar file from TASK_ID, but with Content-Encoding: gzip
+  GZIP_CONTENT_ENCODING_TASK_ID: SECOND_TASK_ID,
 };
