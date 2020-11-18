@@ -7,13 +7,13 @@ properties:
   taskQueueId:
     title:          "Task Queue Id"
     description: |
-      Unique identifier for a task-queue
+      Unique identifier for a task queue
     type:           string
     pattern:        {$const: taskqueueid-pattern}
   stability:
     title:        "Stability"
     description: |
-      This is the stability of the worker-type. Accepted values:
+      This is the stability of the task queue. Accepted values:
         * `experimental`
         * `stable`
         * `deprecated`

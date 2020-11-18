@@ -1274,7 +1274,7 @@ type (
 		// of when the task queue was last seen active.
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
-		// This is the stability of the worker-type. Accepted values:
+		// This is the stability of the task queue. Accepted values:
 		//   * `experimental`
 		//   * `stable`
 		//   * `deprecated`
@@ -1285,7 +1285,7 @@ type (
 		//   * "deprecated"
 		Stability string `json:"stability"`
 
-		// Unique identifier for a task-queue
+		// Unique identifier for a task queue
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		TaskQueueID string `json:"taskQueueId"`

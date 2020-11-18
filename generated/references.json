@@ -1756,7 +1756,7 @@
           "type": "string"
         },
         "stability": {
-          "description": "This is the stability of the worker-type. Accepted values:\n  * `experimental`\n  * `stable`\n  * `deprecated`\n",
+          "description": "This is the stability of the task queue. Accepted values:\n  * `experimental`\n  * `stable`\n  * `deprecated`\n",
           "enum": [
             "experimental",
             "stable",
@@ -1766,7 +1766,7 @@
           "type": "string"
         },
         "taskQueueId": {
-          "description": "Unique identifier for a task-queue\n",
+          "description": "Unique identifier for a task queue\n",
           "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
           "title": "Task Queue Id",
           "type": "string"
