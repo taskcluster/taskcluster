@@ -13,6 +13,40 @@ suite(testing.suiteName(), function() {
     });
   });
 
+  helper.dbTest('create_object same object twice should not raise exception', async function(db, isFake) {
+    const expires = fromNow('1 year');
+    await db.fns.create_object('foo', 'projectId', 'backendId', {}, expires);
+    await db.fns.create_object('foo', 'projectId', 'backendId', {}, expires);
+
+    await helper.withDbClient(async client => {
+      const { rows } = await client.query('select name, data, project_id, backend_id, expires from objects');
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].name, 'foo');
+      assert.equal(rows[0].project_id, 'projectId');
+      assert.equal(rows[0].backend_id, 'backendId');
+      assert.deepEqual(rows[0].data, {});
+      assert.equal(JSON.stringify(rows[0].expires), JSON.stringify(expires));
+    });
+  });
+
+  helper.dbTest('create_object with conflict should P0004', async function(db, isFake) {
+    const expires = fromNow('1 year');
+    await db.fns.create_object('foo', 'projectId', 'backendId', {}, expires);
+    await assert.rejects(
+        () => db.fns.create_object('foo', 'projectId2', 'backendId', {}, expires),
+        err => err.code === 'P0004');
+
+    await helper.withDbClient(async client => {
+      const { rows } = await client.query('select name, data, project_id, backend_id, expires from objects');
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].name, 'foo');
+      assert.equal(rows[0].project_id, 'projectId');
+      assert.equal(rows[0].backend_id, 'backendId');
+      assert.deepEqual(rows[0].data, {});
+      assert.equal(JSON.stringify(rows[0].expires), JSON.stringify(expires));
+    });
+  });
+
   helper.dbTest('create_object', async function(db, isFake) {
     const expires = fromNow('1 year');
     await db.fns.create_object('foo', 'projectId', 'backendId', {}, expires);

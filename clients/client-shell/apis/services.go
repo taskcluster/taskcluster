@@ -933,7 +933,7 @@ var services = map[string]definitions.Service{
 				Title:       "Upload backend data",
 				Description: "Upload backend data.",
 				Stability:   "experimental",
-				Method:      "post",
+				Method:      "put",
 				Route:       "/upload/<name>",
 				Args: []string{
 					"name",
