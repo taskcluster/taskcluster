@@ -218,11 +218,12 @@ exports.validate = (references) => {
     const seen = new Set();
 
     const recurse = (schemaId) => {
-      const schemaDoc = schemaId.replace(/#.*$/, '');
+      // strip a hash path, but keep the hash since $id always has one
+      const schemaDoc = schemaId.replace(/#.*$/, '#');
       if (seen.has(schemaDoc)) {
         return;
       }
-      seen.add(schemaId);
+      seen.add(schemaDoc);
       const schema = references.getSchema(schemaId, { skipValidation: true });
 
       forAllRefs(schema, (ref, path) => {
