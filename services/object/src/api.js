@@ -11,7 +11,7 @@ let builder = new APIBuilder({
 });
 
 builder.declare({
-  method: 'post',
+  method: 'put',
   route: '/upload/:name',
   name: 'uploadObject',
   input: 'upload-object-request.yml',

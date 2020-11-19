@@ -1,0 +1,21 @@
+version: 55
+description: Issue 3937: Don't HTTP 500 if row exists
+methods:
+  create_object:
+    description: |-
+      Upload object.
+    mode: write
+    serviceName: object
+    args: name_in text, project_id_in text, backend_id_in text, data_in jsonb, expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        insert
+          into objects (name, data, project_id, backend_id, expires)
+          values (name_in, data_in, project_id_in, backend_id_in, expires_in)
+        on conflict (name) do
+        update
+        set (data, project_id, backend_id, expires) = (data_in, project_id_in, backend_id_in, expires_in)
+        where
+          objects.name = name_in;
+      end
