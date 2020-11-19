@@ -1660,7 +1660,7 @@ module.exports = {
           "query": [
           ],
           "route": "/upload/<name>",
-          "scopes": "object:upload:<name>",
+          "scopes": "object:upload:<projectId>:<name>",
           "stability": "experimental",
           "title": "Upload backend data",
           "type": "function"

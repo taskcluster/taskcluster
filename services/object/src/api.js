@@ -17,7 +17,7 @@ builder.declare({
   input: 'upload-object-request.yml',
   stability: 'experimental',
   category: 'Upload',
-  scopes: 'object:upload:<name>',
+  scopes: 'object:upload:<projectId>:<name>',
   title: 'Upload backend data',
   description: [
     'Upload backend data.',
@@ -25,6 +25,9 @@ builder.declare({
 }, async function(req, res) {
   let { projectId, expires } = req.body;
   let { name } = req.params;
+
+  await req.authorize({ projectId, name });
+
   const backend = this.backends.forUpload({ name, projectId });
   // Parse date string
   expires = new Date(expires);
