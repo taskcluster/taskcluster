@@ -4082,8 +4082,13 @@
       "$id": "/schemas/object/v1/upload-object-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Representation of the object entry to insert.\n",
+      "description": "Representation of the object entry to insert.  This is a temporary API.\n",
       "properties": {
+        "data": {
+          "description": "The data to upload, base64-encoded\n",
+          "title": "Data",
+          "type": "string"
+        },
         "expires": {
           "description": "Date at which this entry expires from the object table.\n",
           "format": "date-time",
@@ -4098,7 +4103,8 @@
       },
       "required": [
         "expires",
-        "projectId"
+        "projectId",
+        "data"
       ],
       "title": "Upload Object Request",
       "type": "object"
@@ -15429,7 +15435,7 @@
           "route": "/upload/<name>",
           "scopes": "object:upload:<projectId>:<name>",
           "stability": "experimental",
-          "title": "Upload backend data",
+          "title": "Upload backend data (temporary)",
           "type": "function"
         },
         {

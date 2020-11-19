@@ -22,6 +22,14 @@ class AwsBackend extends Backend {
     this.s3 = new aws.S3({ region: this.region, ...credentials });
   }
 
+  async temporaryUpload(object, data) {
+    await this.s3.putObject({
+      Bucket: this.config.bucket,
+      Key: object.name,
+      Body: data,
+    }).promise();
+  }
+
   async availableDownloadMethods(object) {
     return ['simple'];
   }

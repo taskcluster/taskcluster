@@ -4,8 +4,6 @@ class Backend {
     this.db = db;
     this.monitor = monitor;
     this.rootUrl = rootUrl;
-
-    this._matches = config.matches;
   }
 
   /* NOTE:
@@ -19,6 +17,13 @@ class Backend {
    * Subclasses should override this.
    */
   async setup() {
+  }
+
+  /**
+   * Temporary upload method that includes the uploded data in the reuqest body
+   */
+  async temporaryUpload(object, data) {
+    throw new Error('temporaryUpload is not implemented for this backend');
   }
 
   /**

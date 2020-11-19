@@ -1662,7 +1662,7 @@ module.exports = {
           "route": "/upload/<name>",
           "scopes": "object:upload:<projectId>:<name>",
           "stability": "experimental",
-          "title": "Upload backend data",
+          "title": "Upload backend data (temporary)",
           "type": "function"
         },
         {

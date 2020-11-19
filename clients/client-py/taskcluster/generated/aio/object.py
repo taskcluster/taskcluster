@@ -35,7 +35,7 @@ class Object(AsyncBaseClient):
 
     async def uploadObject(self, *args, **kwargs):
         """
-        Upload backend data
+        Upload backend data (temporary)
 
         Upload backend data.
 

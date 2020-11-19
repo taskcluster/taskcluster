@@ -30,21 +30,27 @@ builder.declare({
   stability: 'experimental',
   category: 'Upload',
   scopes: 'object:upload:<projectId>:<name>',
-  title: 'Upload backend data',
+  title: 'Upload backend data (temporary)',
   description: [
     'Upload backend data.',
   ].join('\n'),
 }, async function(req, res) {
-  let { projectId, expires } = req.body;
+  let { projectId, expires, data } = req.body;
   let { name } = req.params;
 
   await req.authorize({ projectId, name });
 
   const backend = this.backends.forUpload({ name, projectId });
-  // Parse date string
-  expires = new Date(expires);
 
-  await this.db.fns.create_object(name, projectId, backend.backendId, {}, expires);
+  data = Buffer.from(data, 'base64');
+
+  // note that it's possible for this process to crash mid-stream, with a row in the DB
+  // but no data in the backend.
+  await this.db.fns.create_object(name, projectId, backend.backendId, {}, new Date(expires));
+  const [object] = await this.db.fns.get_object(name);
+
+  await backend.temporaryUpload(object, data);
+
   return res.reply({});
 });
 
@@ -92,7 +98,7 @@ builder.declare({
   const method = matchingMethods[0];
   const params = acceptDownloadMethods[method];
 
-  const result = await backend.downloadObject(name, method, params);
+  const result = await backend.downloadObject(object, method, params);
 
   return res.reply(result);
 });
@@ -140,7 +146,7 @@ builder.declare({
       { methods: backendMethods.join(', ') });
   }
 
-  const result = await backend.downloadObject(name, method, true);
+  const result = await backend.downloadObject(object, method, true);
 
   return res.redirect(303, result.url);
 });

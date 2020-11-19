@@ -8,6 +8,7 @@ const { TestBackend } = require('../../src/backends/test');
 const aws = require('./aws');
 
 Object.assign(exports, require('./simple-download'));
+Object.assign(exports, require('./temporary-upload'));
 
 exports.load = stickyLoader(load);
 
