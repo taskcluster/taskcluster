@@ -4,7 +4,7 @@ description: |
   Download object response.
 type: object
 properties:
-  protocol:
+  method:
     type: string
     const: 'HTTP:GET'
   details:
@@ -18,5 +18,5 @@ properties:
       - url
 additionalProperties: false
 required:
-  - protocol
+  - method
   - details

@@ -1,5 +1,5 @@
 const taskcluster = require('taskcluster-client');
-const { fakeauth, stickyLoader, Secrets, withMonitor } = require('taskcluster-lib-testing');
+const { fakeauth, stickyLoader, Secrets, withMonitor, resetTables } = require('taskcluster-lib-testing');
 const load = require('../src/main');
 const builder = require('../src/api.js');
 const { withDb } = require('taskcluster-lib-testing');
@@ -100,4 +100,12 @@ exports.withServer = (mock, skipping) => {
 
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'object');
+};
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    await resetTables({
+      tableNames: ['objects'],
+    });
+  });
 };
