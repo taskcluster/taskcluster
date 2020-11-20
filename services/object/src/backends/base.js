@@ -22,7 +22,8 @@ class Backend {
   }
 
   /**
-   * Get the set of download methods available for this object
+   * Get the set of download methods available for this object.  All backends
+   * must support at least the `simple` method.
    *
    * Subclasses should override this.
    */
@@ -33,12 +34,14 @@ class Backend {
   /**
    * Return the backend-specific details required for a client to retrieve the
    * object.  The result is returned directly from the `downloadObject` API
-   * endpoint.  The given `method` is one of those returned from
-   * `availableDownloadMethods`.
+   * endpoint.
+   *
+   * The `method` argument is the selected method, and `params` is the value
+   * of the corresponding property in the caller's `acceptDownloadMethods`.
    *
    * Subclasses should override this.
    */
-  async downloadObject(object, method) {
+  async downloadObject(object, method, params) {
     throw new Error('downloadObject is not implemented for this backend');
   }
 

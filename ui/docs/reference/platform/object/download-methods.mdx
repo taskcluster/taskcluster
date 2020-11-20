@@ -1,0 +1,72 @@
+---
+order: 3
+title: Download Methods
+---
+# Download Methods
+
+## Introduction
+
+The Object Service does not directly handle object data.  Instead, it
+coordinates data storage on other providers such as public clouds. That makes
+downloads a little more complicated than they might otherwise be.
+
+There are two ways to download an object from the service: the "full" process
+and the "simple" process.  The "full" process is particular to the object
+service, while the "simple" process is "plain HTTP" and works with any HTTP
+client.
+
+See ["Simple Downloads"](/simple-downloads) for details of the simple process.
+
+## Full Downloads
+
+The full download process involves making a request to the object service, via the `object.downloadObject` endpoint.
+The response to this request contains the information required to download the object data.
+
+Taskcluster will provide libraries to support this interaction.
+
+## Download Methods
+
+The full download process supports negotiation of a "method" by which the download will take place.
+This negotiation accomplishes two things:
+ * decouples download clients from the object service, allowing new, more advanced methods to be defined while maintaining support for older methods; and
+ * allows the use of "unusual" technology when all parties support it -- for example, AWS supports Bittorrent downloads.
+
+The `downloadObject` request contains a list of methods that the caller supports.
+The object service determines the methods that it can support for the requested object and which are also supported by the client, then chooses the "best" of the matching methods.
+The service then calculates a response for that method and returns it to the caller.
+
+The `downloadObject` request can contain additional parameters, specific to the chosen method, but those are not considered in the negotiation.
+The `acceptDownloadMethods` property in the `downloadObject` request contains all supported methods as properties, with their parameters as values.
+Methods that do not need parameters simply use `true`.
+For example, a request that can use either the `simple` or `superFancy` methods might look like:
+
+```javascript
+{
+  acceptDownloadMethods: {
+    simple: true,
+    superFancy: {
+      superParam1: 13,
+      superParam2: 42,
+    },
+  }
+}
+```
+
+The known methods are defined below.
+
+### `simple` Download Method
+
+The `simple` method implements [simple downloads](/simple-downloads).
+The response contains a URL against which a `GET` request can be made to retrieve the object's data.
+
+To use the simple method with `downloadObject`, pass the following payload:
+
+```javascript
+acceptDownloadMethods: {
+  simple: true
+}
+```
+
+### `HTTP:GET` Download Method
+
+This is an example method that is not well-defined.
