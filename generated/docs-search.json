@@ -2612,6 +2612,20 @@
   },
   {
     "element": "h1",
+    "id": "aws-backend-type",
+    "path": "/reference/platform/object/aws-backend",
+    "subtitle": null,
+    "title": "AWS Backend Type"
+  },
+  {
+    "element": "h2",
+    "id": "deployment-configuration",
+    "path": "/reference/platform/object/aws-backend",
+    "subtitle": "Deployment Configuration",
+    "title": "AWS Backend Type"
+  },
+  {
+    "element": "h1",
     "id": "download-methods",
     "path": "/reference/platform/object/download-methods",
     "subtitle": null,

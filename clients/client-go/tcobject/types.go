@@ -60,8 +60,11 @@ type (
 		Simple bool `json:"simple,omitempty"`
 	}
 
-	// Representation of the object entry to insert.
+	// Representation of the object entry to insert.  This is a temporary API.
 	UploadObjectRequest struct {
+
+		// The data to upload, base64-encoded
+		Data string `json:"data"`
 
 		// Date at which this entry expires from the object table.
 		Expires tcclient.Time `json:"expires"`

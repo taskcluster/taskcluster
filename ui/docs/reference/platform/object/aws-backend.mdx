@@ -1,0 +1,67 @@
+---
+order: 40
+title: AWS Backend Type
+---
+
+# AWS Backend Type
+
+The AWS backend type supports storing objects in the AWS S3 service.
+
+The backend type stores object data in a single S3 bucket.
+The S3 Key name is identical to the object name.
+It can be configured to support buckets that allow public read access, or buckets that prohibit such access.
+For private buckets, the backend generates signed URls to allow access to the data.
+
+In cases where the data is public anyway, these URL signatures can cause unnecessary friction.
+Setting `signGetUrls` to false in this case causes the backend to generate un-signed URLs, which are short and easy for users to pass around.
+
+## Deployment Configuration
+
+Configuration of AWS backends in the `object.backends` looks like this:
+
+```yaml
+backends:
+  publicStuff:
+    backendType: "aws"
+    accessKeyId: "<aws access key ID>"
+    secretAccessKey: "<aws secret access key>"
+    bucket: "<bucket name>"
+    signGetUrls: false # or true
+```
+
+The provided AWS credentials should have the following policy (with `<BUCKET_NAME>` replaced by the bucket name):
+
+```JSON
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1462988481000",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetBucketCORS",
+                "s3:PutBucketCORS",
+                "s3:DeleteObject",
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:PutObjectAcl",
+                "s3:ListBucket",
+                "s3:GetBucketLocation",
+                "s3:GetObjectTagging",
+                "s3:ListMultipartUploadParts",
+                "s3:AbortMultipartUpload",
+                "s3:PutObjectTagging",
+                "s3:PutLifecycleConfiguration"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<BUCKET_NAME>",
+                "arn:aws:s3:::<BUCKET_NAME>/*"
+            ]
+        }
+    ]
+}
+```
+
+The use of `signGetUrls` is described above.
+If this configuration value is `false`, then the bucket should be configured to allow public read access.
+AWS has many layers of "yes, I'm really quite sure" that must be clicked through to accomplish this.

@@ -2,6 +2,8 @@ const assert = require('assert');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const request = require('superagent');
+const crypto = require('crypto');
+const { toDataUrl } = require('../src/backends/test');
 const { fromNow } = require('taskcluster-client');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
@@ -14,9 +16,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.apiClient.ping();
   });
 
-  suite('uplodaObject method', function() {
+  suite('uploadObject method', function() {
     test('should be able to upload', async function() {
-      await helper.apiClient.uploadObject('public/foo', { projectId: 'x', expires: fromNow('1 year') });
+      const data = crypto.randomBytes(128);
+      await helper.apiClient.uploadObject('public/foo', {
+        projectId: 'x',
+        data: data.toString('base64'),
+        expires: fromNow('1 year'),
+      });
       const rows = await helper.db.fns.get_object('public/foo');
 
       assert.equal(rows.length, 1);
@@ -29,7 +36,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('downloadObject method', function() {
     test('downloadObject for a supported method succeeds', async function() {
-      await helper.apiClient.uploadObject('public/foo', { projectId: 'x', expires: fromNow('1 year') });
+      const data = crypto.randomBytes(128);
+      await helper.apiClient.uploadObject('public/foo', {
+        projectId: 'x',
+        data: data.toString('base64'),
+        expires: fromNow('1 year'),
+      });
       const res = await helper.apiClient.downloadObject('public/foo', {
         acceptDownloadMethods: { 'HTTP:GET': true },
       });
@@ -42,7 +54,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('downloadObject for an unsupported method returns 406', async function() {
-      await helper.apiClient.uploadObject('has/no/methods', { projectId: 'x', expires: fromNow('1 year') });
+      const data = crypto.randomBytes(128);
+      await helper.apiClient.uploadObject('has/no/methods', {
+        projectId: 'x',
+        data: data.toString('base64'),
+        expires: fromNow('1 year'),
+      });
       await assert.rejects(
         () => helper.apiClient.downloadObject('has/no/methods', {
           acceptDownloadMethods: { simple: true, 'HTTP:GET': true },
@@ -54,12 +71,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('download method', function() {
     test('simple download redirects to a URL', async function() {
-      await helper.apiClient.uploadObject('foo/bar', { projectId: 'x', expires: fromNow('1 year') });
+      const data = crypto.randomBytes(128);
+      await helper.apiClient.uploadObject('foo/bar', {
+        projectId: 'x',
+        data: data.toString('base64'),
+        expires: fromNow('1 year'),
+      });
 
       const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'foo/bar');
       const res = await request.get(downloadUrl).redirects(0).ok(res => res.status < 400);
       assert.equal(res.statusCode, 303);
-      assert.equal(res.headers.location, 'https://example.com');
+      assert.equal(res.headers.location, toDataUrl(data));
     });
 
     test('simple download for missing object returns 404', async function() {
@@ -69,7 +91,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('simple download for object that does not support the method returns 406', async function() {
-      await helper.apiClient.uploadObject('has/no/methods', { projectId: 'x', expires: fromNow('1 year') });
+      const data = crypto.randomBytes(128);
+      await helper.apiClient.uploadObject('has/no/methods', {
+        projectId: 'x',
+        data: data.toString('base64'),
+        expires: fromNow('1 year'),
+      });
       const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'has/no/methods');
       const res = await request.get(downloadUrl).redirects(0).ok(res => res.status === 406);
       assert.equal(res.statusCode, 406);

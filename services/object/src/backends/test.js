@@ -5,6 +5,15 @@ const { Backend } = require('./base');
  * The test backend type is only available when running tests.
  */
 class TestBackend extends Backend {
+  constructor(options) {
+    super(options);
+    this.data = new Map();
+  }
+
+  async temporaryUpload(object, data) {
+    this.data.set(object.name, data);
+  }
+
   async availableDownloadMethods(object) {
     if (object.name === 'has/no/methods') {
       return [];
@@ -13,12 +22,13 @@ class TestBackend extends Backend {
   }
 
   async downloadObject(object, method, params) {
+    assert(this.data.has(object.name));
     switch (method){
       case 'simple': {
         assert.equal(params, true);
         return {
           method,
-          url: 'https://example.com',
+          url: 'data:;base64,' + this.data.get(object.name).toString('base64'),
         };
       }
 
@@ -48,4 +58,6 @@ class TestBackend extends Backend {
   }
 }
 
-module.exports = { TestBackend };
+const toDataUrl = data => 'data:;base64,' + data.toString('base64');
+
+module.exports = { TestBackend, toDataUrl };

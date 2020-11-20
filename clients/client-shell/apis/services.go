@@ -930,7 +930,7 @@ var services = map[string]definitions.Service{
 			},
 			definitions.Entry{
 				Name:        "uploadObject",
-				Title:       "Upload backend data",
+				Title:       "Upload backend data (temporary)",
 				Description: "Upload backend data.",
 				Stability:   "experimental",
 				Method:      "post",

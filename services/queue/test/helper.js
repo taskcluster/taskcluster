@@ -83,6 +83,7 @@ exports.withS3 = (mock, skipping) => {
   suiteTeardown('cleanup withS3', function() {
     if (tmpDir) {
       tmpDir.rmdirSync();
+
     }
   });
 };

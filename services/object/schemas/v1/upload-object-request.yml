@@ -1,7 +1,7 @@
 $schema: "/schemas/common/metaschema.json#"
 title:              "Upload Object Request"
 description: |
-  Representation of the object entry to insert.
+  Representation of the object entry to insert.  This is a temporary API.
 type:               object
 properties:
   projectId:
@@ -15,7 +15,13 @@ properties:
       Date at which this entry expires from the object table.
     type:           string
     format:         date-time
+  data:
+    title: "Data"
+    description: |
+      The data to upload, base64-encoded
+    type: string
 additionalProperties: false
 required:
   - expires
   - projectId
+  - data
