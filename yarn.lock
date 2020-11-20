@@ -140,14 +140,16 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@grpc/grpc-js@1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.0.5.tgz#09948c0810e62828fdd61455b2eb13d7879888b0"
-  integrity sha512-Hm+xOiqAhcpT9RYM8lc15dbQD7aQurM7ZU8ulmulepiPlN7iwBXXwP3vSBUimoFoApRqz7pSIisXU8pZaCB4og==
+"@grpc/grpc-js@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.2.0.tgz#4ff1ac4cdf7eb2af80d3c67316be9c2308d8d9bf"
+  integrity sha512-09H50V7rmz0gFrGz6IbP49z9A8+2p4yZYcNDEb7bytr90vWn52VBQE1a+LMBlrucmNN0wSsiCr3TJx+dStHTng==
   dependencies:
+    "@types/node" "^12.12.47"
+    google-auth-library "^6.1.1"
     semver "^6.2.0"
 
-"@grpc/proto-loader@^0.5.4":
+"@grpc/proto-loader@^0.5.5":
   version "0.5.5"
   resolved "https://registry.yarnpkg.com/@grpc/proto-loader/-/proto-loader-0.5.5.tgz#6725e7a1827bdf8e92e29fbf4e9ef0203c0906a9"
   integrity sha512-WwN9jVNdHRQoOBo9FDH7qU+mgfjPc8GygPYms3M+y3fbQLfnCe/Kv/E01t7JRgnrsOHH8euvSbed3mIalXhwqQ==
@@ -227,30 +229,30 @@
     titleize "^2.1.0"
     tlds "^1.212.0"
 
-"@newrelic/aws-sdk@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@newrelic/aws-sdk/-/aws-sdk-2.0.0.tgz#d506961d64c298e5ddaa8ca0947fd37d2d3b2e2e"
-  integrity sha512-dHqR8a48w6Mq9ECtaObN3nS/ZeiZl3YZ3QMrP4WCVXdTaQcfbrISrd5sJcRX6WPwoPeI1m4ZFp36JsWDiXklAg==
+"@newrelic/aws-sdk@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@newrelic/aws-sdk/-/aws-sdk-3.0.0.tgz#00d5e75e2206cdf3d71418e4f031b52b45991f9f"
+  integrity sha512-8sS0MBrvmdCOVsCe7NpNReKU06fhNnvsT60+VmzZNbv1nqPNbtOuUVERzukF/85XWU7Lk/r+ikUyGHX+Emlb4w==
 
-"@newrelic/koa@^4.0.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@newrelic/koa/-/koa-4.1.0.tgz#6b677230da51b51f08d9f41ee86ee5609bdc2d0e"
-  integrity sha512-Fe1feXGaLmwAekDpGMeWXGRlg8wbS74WT7hbm8LBSIqJaqSVTnHPNNgxEkRlx2CvC9R/k2K5BB/Qe9lxUCOKzg==
+"@newrelic/koa@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@newrelic/koa/-/koa-5.0.0.tgz#ab9668c56a7a68ee37a6791382bd83b3824a7acf"
+  integrity sha512-4jzRXnUe38gQkZI8K4tWQ6CNdCNTi5uKILf1dTkyT6LpGxzDSLPwVyJ6xtMSMzr8SjIPG7lyNoWe42q8wFA7jg==
   dependencies:
     methods "^1.1.2"
 
-"@newrelic/native-metrics@^5.3.0":
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/@newrelic/native-metrics/-/native-metrics-5.3.0.tgz#762ffcee0e682b1d4182ad307b6c2d32dda508ec"
-  integrity sha512-GF3AIUz6vGzTLeXtQPlwA54LHlQbmKjIxtwY+SKaiFebyL/C7eD1mwW+9sL07B93DIUcs+pEc/OnHei314mNWg==
+"@newrelic/native-metrics@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@newrelic/native-metrics/-/native-metrics-6.0.0.tgz#8c3b24070f2aebcbfa8329d80d24177f67581467"
+  integrity sha512-EUdlsv25dEMT+8SOV02Xfk2E3UTo2fH33lVmnv/CSllH6+ljJDAfG0Ib5zY92Qmaj+oiThbfRpSYOlUfH+Uuiw==
   dependencies:
     nan "^2.14.1"
     semver "^5.5.1"
 
-"@newrelic/superagent@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@newrelic/superagent/-/superagent-3.0.0.tgz#7759b5f5d9deaed1dfb1caef0e408bf5bc592c56"
-  integrity sha512-ihWTSkjOtYWsWe2CHWDSBeXwpLgHHeYJ9qCbBV9gzyTc4xPk7OrblBIZzpQqmAu5qnF3zbI+K/Celya80Y0bKQ==
+"@newrelic/superagent@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@newrelic/superagent/-/superagent-4.0.0.tgz#e3c53825b64aa73a3c5f6d98ed0ccc97f86dbc42"
+  integrity sha512-n4iNrsV0908yHNZPNof7rm/mffclHaIxprCCWk15b4IRJik2VrtuIrK3mboUgNdv5pX4P7EZytY/D6kJgFkDGw==
   dependencies:
     methods "^1.1.2"
 
@@ -802,6 +804,11 @@
   version "10.17.40"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.40.tgz#8a50e47daff15fd4a89dc56f5221b3729e506be6"
   integrity sha512-3hZT2z2/531A5pc8hYhn1gU5Qb1SIRSgMLQ6zuHA5xtt16lWAxUGprtr8lJuc9zNJMXEIIBWfSnzqBP/4mglpA==
+
+"@types/node@^12.12.47":
+  version "12.19.6"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.19.6.tgz#fbf249fa46487dd8c7386d785231368b92a33a53"
+  integrity sha512-U2VopDdmBoYBmtm8Rz340mvvSz34VgX/K9+XCuckvcLGMkt3rbMX8soqFOikIPlPBc5lmw8By9NUK7bEFSBFlQ==
 
 "@types/node@^13.7.0":
   version "13.13.27"
@@ -3255,6 +3262,14 @@ gcp-metadata@^4.1.0:
     gaxios "^3.0.0"
     json-bigint "^1.0.0"
 
+gcp-metadata@^4.2.0:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/gcp-metadata/-/gcp-metadata-4.2.1.tgz#31849fbcf9025ef34c2297c32a89a1e7e9f2cd62"
+  integrity sha512-tSk+REe5iq/N+K+SK1XjZJUrFPuDqGZVzCy2vocIHIGmPlTGsa8owXMJwGkrXr73NO0AzhPW4MF2DEHz7P2AVw==
+  dependencies:
+    gaxios "^4.0.0"
+    json-bigint "^1.0.0"
+
 generate-password@^1.5.0:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/generate-password/-/generate-password-1.5.1.tgz#ad463fadee1b4818edb7b827ff6f3499587d8dd5"
@@ -3346,7 +3361,22 @@ google-auth-library@^6.0.0:
     jws "^4.0.0"
     lru-cache "^6.0.0"
 
-google-p12-pem@^3.0.0:
+google-auth-library@^6.1.1:
+  version "6.1.3"
+  resolved "https://registry.yarnpkg.com/google-auth-library/-/google-auth-library-6.1.3.tgz#39d868140b70d0c4b32c6f6d8f4ccc1400d84dca"
+  integrity sha512-m9mwvY3GWbr7ZYEbl61isWmk+fvTmOt0YNUfPOUY2VH8K5pZlAIWJjxEi0PqR3OjMretyiQLI6GURMrPSwHQ2g==
+  dependencies:
+    arrify "^2.0.0"
+    base64-js "^1.3.0"
+    ecdsa-sig-formatter "^1.0.11"
+    fast-text-encoding "^1.0.0"
+    gaxios "^4.0.0"
+    gcp-metadata "^4.2.0"
+    gtoken "^5.0.4"
+    jws "^4.0.0"
+    lru-cache "^6.0.0"
+
+google-p12-pem@^3.0.0, google-p12-pem@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/google-p12-pem/-/google-p12-pem-3.0.3.tgz#673ac3a75d3903a87f05878f3c75e06fc151669e"
   integrity sha512-wS0ek4ZtFx/ACKYF3JhyGe5kzH7pgiQ7J5otlumqR9psmWMYc+U9cErKlCYVYHoUaidXHdZ2xbo34kB+S+24hA==
@@ -3502,6 +3532,16 @@ gtoken@^5.0.0:
   dependencies:
     gaxios "^3.0.0"
     google-p12-pem "^3.0.0"
+    jws "^4.0.0"
+    mime "^2.2.0"
+
+gtoken@^5.0.4:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/gtoken/-/gtoken-5.1.0.tgz#4ba8d2fc9a8459098f76e7e8fd7beaa39fda9fe4"
+  integrity sha512-4d8N6Lk8TEAHl9vVoRVMh9BNOKWVgl2DdNtr3428O75r3QFrF/a5MMu851VmK0AA8+iSvbwRv69k5XnMLURGhg==
+  dependencies:
+    gaxios "^4.0.0"
+    google-p12-pem "^3.0.3"
     jws "^4.0.0"
     mime "^2.2.0"
 
@@ -4901,16 +4941,16 @@ netmask@^1.0.5:
   resolved "https://registry.yarnpkg.com/netmask/-/netmask-1.0.6.tgz#20297e89d86f6f6400f250d9f4f6b4c1945fcd35"
   integrity sha1-ICl+idhvb2QA8lDZ9Pa0wZRfzTU=
 
-newrelic@^6.4.2:
-  version "6.13.2"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-6.13.2.tgz#4d9caf28b7c3822f1c1ad0c288e05accdfde1027"
-  integrity sha512-zXZKeV4kOAZ/P06Tbw6Kmqkj3keBbxFEB4tbMgXP1u0CstfTX5V1yGrtJIibxjTfcU3OtVj7SRSWon56y/e1gA==
+newrelic@^7.0.0:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-7.0.1.tgz#281085a03af42c955ff06f7c5c5a11e209e763d7"
+  integrity sha512-DMuznXjT4Eh4nXpM5CIxnuY+3Lv6imVdsjOwgPSPD6aKzrPuXg1qpqhh07WjGkUA3XpuAaiwDmxjz4WHrSfJUg==
   dependencies:
-    "@grpc/grpc-js" "1.0.5"
-    "@grpc/proto-loader" "^0.5.4"
-    "@newrelic/aws-sdk" "^2.0.0"
-    "@newrelic/koa" "^4.0.0"
-    "@newrelic/superagent" "^3.0.0"
+    "@grpc/grpc-js" "1.2.0"
+    "@grpc/proto-loader" "^0.5.5"
+    "@newrelic/aws-sdk" "^3.0.0"
+    "@newrelic/koa" "^5.0.0"
+    "@newrelic/superagent" "^4.0.0"
     "@tyriar/fibonacci-heap" "^2.0.7"
     async "^3.2.0"
     concat-stream "^2.0.0"
@@ -4919,7 +4959,7 @@ newrelic@^6.4.2:
     readable-stream "^3.6.0"
     semver "^5.3.0"
   optionalDependencies:
-    "@newrelic/native-metrics" "^5.3.0"
+    "@newrelic/native-metrics" "^6.0.0"
 
 next-tick@~1.0.0:
   version "1.0.0"
