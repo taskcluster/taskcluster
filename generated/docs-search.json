@@ -2615,98 +2615,77 @@
     "id": "aws-backend-type",
     "path": "/reference/platform/object/aws-backend",
     "subtitle": null,
-    "title": "order 4x is for backends"
-  },
-  {
-    "element": "h1",
-    "id": "order-4x-is-for-backends",
-    "path": "/reference/platform/object/aws-backend",
-    "subtitle": null,
-    "title": "order 4x is for backends"
+    "title": "AWS Backend Type"
   },
   {
     "element": "h2",
     "id": "deployment-configuration",
     "path": "/reference/platform/object/aws-backend",
     "subtitle": "Deployment Configuration",
-    "title": "order 4x is for backends"
+    "title": "AWS Backend Type"
   },
   {
     "element": "h1",
     "id": "download-methods",
     "path": "/reference/platform/object/download-methods",
     "subtitle": null,
-    "title": "order 2x is for downloads"
-  },
-  {
-    "element": "h1",
-    "id": "order-2x-is-for-downloads",
-    "path": "/reference/platform/object/download-methods",
-    "subtitle": null,
-    "title": "order 2x is for downloads"
+    "title": "Download Methods"
   },
   {
     "element": "h3",
     "id": "httpget-download-method",
     "path": "/reference/platform/object/download-methods",
     "subtitle": "`HTTP:GET` Download Method",
-    "title": "order 2x is for downloads"
+    "title": "Download Methods"
   },
   {
     "element": "h3",
     "id": "simple-download-method",
     "path": "/reference/platform/object/download-methods",
     "subtitle": "`simple` Download Method",
-    "title": "order 2x is for downloads"
+    "title": "Download Methods"
   },
   {
     "element": "h2",
     "id": "download-methods-1",
     "path": "/reference/platform/object/download-methods",
     "subtitle": "Download Methods",
-    "title": "order 2x is for downloads"
+    "title": "Download Methods"
   },
   {
     "element": "h2",
     "id": "full-downloads",
     "path": "/reference/platform/object/download-methods",
     "subtitle": "Full Downloads",
-    "title": "order 2x is for downloads"
+    "title": "Download Methods"
   },
   {
     "element": "h2",
     "id": "introduction",
     "path": "/reference/platform/object/download-methods",
     "subtitle": "Introduction",
-    "title": "order 2x is for downloads"
-  },
-  {
-    "element": "h1",
-    "id": "order-2x-is-for-downloads",
-    "path": "/reference/platform/object/simple-downloads",
-    "subtitle": null,
-    "title": "order 2x is for downloads"
+    "title": "Download Methods"
   },
   {
     "element": "h1",
     "id": "simple-downloads",
     "path": "/reference/platform/object/simple-downloads",
     "subtitle": null,
-    "title": "order 2x is for downloads"
+    "title": "Simple Downloads"
   },
   {
     "element": "h2",
     "id": "client-requirements",
     "path": "/reference/platform/object/simple-downloads",
     "subtitle": "Client Requirements",
-    "title": "order 2x is for downloads"
+    "title": "Simple Downloads"
   },
   {
     "element": "h2",
     "id": "url-format",
     "path": "/reference/platform/object/simple-downloads",
     "subtitle": "URL Format",
-    "title": "order 2x is for downloads"
+    "title": "Simple Downloads"
   },
   {
     "element": "h1",

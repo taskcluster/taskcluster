@@ -20,7 +20,7 @@ class Backend {
   }
 
   /**
-   * Temporary upload method that includes the uploded data in the reuqest body
+   * Temporary upload method that includes the uploded data in the request body
    */
   async temporaryUpload(object, data) {
     throw new Error('temporaryUpload is not implemented for this backend');

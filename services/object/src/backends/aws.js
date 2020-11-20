@@ -42,9 +42,10 @@ class AwsBackend extends Backend {
           url = await this.s3.getSignedUrlPromise('getObject', {
             Bucket: this.config.bucket,
             Key: object.name,
-            // 30 seconds is copied from the queue; the idea is that the download
+            // 30 minutes is copied from the queue; the idea is that the download
             // begins almost immediately.  It might also make sense to use the
             // expiration time of the object here.
+            // https://github.com/taskcluster/taskcluster/issues/3946
             Expires: 30 * 60,
           });
         } else {
