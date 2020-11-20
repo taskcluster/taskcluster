@@ -63,11 +63,14 @@ class AwsBackend extends Backend {
     // When an object is being expired, we first delete the object from S3.  Even if lifecycle
     // or other S3 policies would accomplish the same thing, this serves as a backstop to
     // prevent removing the database record while the object itself is still on S3, thereby
-    // leaking storage.
+    // leaking storage.  Note that s3.deleteObject is idempotent: this will not fail if the
+    // object does not exist.
     await this.s3.deleteObject({
       Bucket: this.config.bucket,
       Key: object.name,
     }).promise();
+
+    return true;
   }
 }
 

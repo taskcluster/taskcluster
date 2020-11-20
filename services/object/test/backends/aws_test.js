@@ -143,7 +143,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       const backends = await helper.load('backends');
       const backend = backends.get('awsPrivate');
 
-      await backend.expireObject(object);
+      assert(await backend.expireObject(object));
 
       // object should now be gone
       await assert.rejects(() => s3.getObject({
@@ -161,8 +161,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       const backends = await helper.load('backends');
       const backend = backends.get('awsPrivate');
 
-      await backend.expireObject(object);
-      // just needs to not fail..
+      assert(await backend.expireObject(object));
     });
   });
 });
