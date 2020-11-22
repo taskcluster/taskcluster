@@ -804,8 +804,8 @@ class AzureProvider extends Provider {
   /*
    * Called after an iteration of the worker scanner
    */
-  async scanCleanup() {
-    this.monitor.log.scanSeen({ providerId: this.providerId, seen: this.seen });
+  async scanCleanup({ workerPool }) {
+    this.monitor.log.scanSeen({ providerId: this.providerId, seen: this.seen, errors: this.errors });
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await WorkerPool.get(this.db, workerPoolId);
 
