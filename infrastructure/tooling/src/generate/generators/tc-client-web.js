@@ -5,7 +5,7 @@ const { omit } = require('lodash');
 const { compile } = require('ejs');
 const { REPO_ROOT, readRepoFile, writeRepoFile, modifyRepoFile } = require('../../utils');
 const rimraf = util.promisify(require('rimraf'));
-const mkdirp = util.promisify(require('mkdirp'));
+const mkdirp = require('mkdirp');
 
 exports.tasks = [{
   title: 'Generate Taskcluster-Client-Web',
