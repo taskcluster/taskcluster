@@ -1385,9 +1385,9 @@ assert@^1.4.1:
     util "0.10.3"
 
 assume@^2.1.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/assume/-/assume-2.2.0.tgz#53146f801fb3d0ac64534dcb31e2659cc985a062"
-  integrity sha512-R4SMWjVwnwKtd1W3rt7h/Csd6+CxGBG+w7Cd93TBWBUqOOG5rt364LeXPjfntkx5np2zp+d+fc5KrdgvIuCJuw==
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/assume/-/assume-2.3.0.tgz#3fd296dbc92a3872c3d449fea561d39c5e46d48f"
+  integrity sha512-Pv24RxCZMXe5ZXXZqMqEWMVtPByjzxN4VQ+Yh0nRiChxUlR8vrSEQLqG11xVuzU14MEv9c1xOfREhPcQmH2+dg==
   dependencies:
     deep-eql "^3.0.1"
     fn.name "^1.0.1"
@@ -3851,9 +3851,9 @@ is-buffer@^1.1.5:
   integrity sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==
 
 is-buffer@^2.0.0:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-2.0.3.tgz#4ecf3fcf749cbd1e472689e109ac66261a25e725"
-  integrity sha512-U15Q7MXTuZlrbymiz95PJpZxu8IlipAp4dtS3wOdgPXx3mqBnslrWU14kxfHB+Py/+2PVKSr37dMAgM2A4uArw==
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-2.0.5.tgz#ebc252e400d22ff8d77fa09888821a24a658c191"
+  integrity sha512-i2R6zNFDwgEHJyQUtJEk0XFi1i0dPFn/oqjK3/vPCcDeJvW5NQ83V8QbicfF1SupOaB0h8ntgBC2YiE7dfyctQ==
 
 is-callable@^1.1.4, is-callable@^1.2.2:
   version "1.2.2"
@@ -5044,12 +5044,7 @@ object-assign@^4, object-assign@^4.0.1, object-assign@^4.1.0:
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
   integrity sha1-IQmtx5ZYh8/AXLvUQsrIv7s2CGM=
 
-object-inspect@^1.5.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/object-inspect/-/object-inspect-1.6.0.tgz#c70b6cbf72f274aab4c34c0c82f5167bf82cf15b"
-  integrity sha512-GJzfBZ6DgDAmnuaM3104jR4s1Myxr3Y3zfIyN4z3UdqN69oSRacNK8UhnobDdC+7J2AHCjGwxQubNJfE70SXXQ==
-
-object-inspect@^1.6.0, object-inspect@^1.8.0:
+object-inspect@^1.5.0, object-inspect@^1.6.0, object-inspect@^1.8.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/object-inspect/-/object-inspect-1.8.0.tgz#df807e5ecf53a609cc6bfe93eac3cc7be5b3a9d0"
   integrity sha512-jLdtEOB112fORuypAyl/50VRVIBIdVQOSUUGQHzJ4xBSbit81zRarz7GThkEFZy1RceYrWYcPcBFPQwHyAc1gA==
