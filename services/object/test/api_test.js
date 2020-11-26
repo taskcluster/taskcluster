@@ -41,12 +41,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await assert.rejects(
         () => helper.apiClient.uploadObject('public/foo', {
-            projectId: 'x',
-            data: data.toString('base64'),
-            expires: fromNow('1 year'),
+          projectId: 'x',
+          data: data.toString('base64'),
+          expires: fromNow('1 year'),
         }),
         err => err.code === 'RequestConflict' && err.statusCode === 409,
-      )
+      );
     });
   });
 

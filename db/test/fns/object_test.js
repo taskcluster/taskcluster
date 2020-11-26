@@ -33,8 +33,8 @@ suite(testing.suiteName(), function() {
     const expires = fromNow('1 year');
     await db.fns.create_object('foo', 'projectId', 'backendId', {}, expires);
     await assert.rejects(
-        () => db.fns.create_object('foo', 'projectId2', 'backendId', {}, expires),
-        err => err.code === 'P0004');
+      () => db.fns.create_object('foo', 'projectId2', 'backendId', {}, expires),
+      err => err.code === 'P0004');
 
     await helper.withDbClient(async client => {
       const { rows } = await client.query('select name, data, project_id, backend_id, expires from objects');
