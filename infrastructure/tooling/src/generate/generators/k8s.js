@@ -5,7 +5,7 @@ const util = require('util');
 const yaml = require('js-yaml');
 const jsone = require('json-e');
 const rimraf = util.promisify(require('rimraf'));
-const mkdirp = util.promisify(require('mkdirp'));
+const mkdirp = require('mkdirp');
 const { listServices, writeRepoFile, readRepoYAML, writeRepoYAML, writeRepoJSON, REPO_ROOT, configToSchema, configToExample } = require('../../utils');
 
 const SERVICES = listServices();

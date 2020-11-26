@@ -2,7 +2,7 @@ const util = require('util');
 const path = require('path');
 const { writeRepoFile, REPO_ROOT } = require('../../utils');
 const rimraf = util.promisify(require('rimraf'));
-const mkdirp = util.promisify(require('mkdirp'));
+const mkdirp = require('mkdirp');
 
 const HEADER = `\
 # coding=utf-8

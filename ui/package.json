@@ -4,7 +4,7 @@
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "12.19.0",
+    "node": "12.19.1",
     "yarn": "^1.22.10"
   },
   "scripts": {
@@ -77,9 +77,9 @@
     "react-copy-to-clipboard": "^5.0.1",
     "react-dom": "^16.8.6",
     "react-fout-stager": "^3.0.0",
-    "react-ga": "^2.5.3",
+    "react-ga": "^3.0.0",
     "react-gh-like-diff": "^2.0.0",
-    "react-helmet": "^5.2.1",
+    "react-helmet": "^6.0.0",
     "react-hot-loader": "^4.8.4",
     "react-lazylog": "^4.5.1",
     "react-router-dom": "^5.1.2",

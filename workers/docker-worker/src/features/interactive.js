@@ -379,10 +379,10 @@ class WebsocketServer {
   }
 
   async killed (task) {
-    if (this.vnc.httpServ) {
+    if (this.vnc && this.vnc.httpServ) {
       this.vnc.httpServ.close();
     }
-    if (this.ssh.httpServ) {
+    if (this.ssh && this.ssh.httpServ) {
       this.ssh.httpServ.close();
     }
     if(this.shellServer) {

@@ -1,10 +1,14 @@
 const taskcluster = require('taskcluster-client');
-const { fakeauth, stickyLoader, Secrets, withMonitor } = require('taskcluster-lib-testing');
-const load = require('../src/main');
-const builder = require('../src/api.js');
+const { fakeauth, stickyLoader, Secrets, withMonitor, resetTables } = require('taskcluster-lib-testing');
+const load = require('../../src/main');
+const builder = require('../../src/api.js');
 const { withDb } = require('taskcluster-lib-testing');
-const { BACKEND_TYPES } = require('../src/backends');
-const { TestBackend } = require('../src/backends/test');
+const { BACKEND_TYPES } = require('../../src/backends');
+const { TestBackend } = require('../../src/backends/test');
+const aws = require('./aws');
+
+Object.assign(exports, require('./simple-download'));
+Object.assign(exports, require('./temporary-upload'));
 
 exports.load = stickyLoader(load);
 
@@ -17,7 +21,12 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secrets: { },
+  secretName: [
+    'project/taskcluster/testing/taskcluster-object',
+  ],
+  secrets: {
+    aws: aws.secret,
+  },
   load: exports.load,
 });
 
@@ -100,4 +109,12 @@ exports.withServer = (mock, skipping) => {
 
 exports.withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'object');
+};
+
+exports.resetTables = (mock, skipping) => {
+  setup('reset tables', async function() {
+    await resetTables({
+      tableNames: ['objects'],
+    });
+  });
 };

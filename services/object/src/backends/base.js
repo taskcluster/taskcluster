@@ -4,8 +4,6 @@ class Backend {
     this.db = db;
     this.monitor = monitor;
     this.rootUrl = rootUrl;
-
-    this._matches = config.matches;
   }
 
   /* NOTE:
@@ -14,19 +12,42 @@ class Backend {
    */
 
   /**
-   * Return the backend-specific details required for a client to retrieve the object.
-   *
-   * Subclasses should override this.
-   */
-  objectRetrievalDetails(name, acceptProtocol) {
-  }
-
-  /**
    * Set up this backend.
    *
    * Subclasses should override this.
    */
   async setup() {
+  }
+
+  /**
+   * Temporary upload method that includes the uploded data in the request body
+   */
+  async temporaryUpload(object, data) {
+    throw new Error('temporaryUpload is not implemented for this backend');
+  }
+
+  /**
+   * Get the set of download methods available for this object.  All backends
+   * must support at least the `simple` method.
+   *
+   * Subclasses should override this.
+   */
+  async availableDownloadMethods(object) {
+    return [];
+  }
+
+  /**
+   * Return the backend-specific details required for a client to retrieve the
+   * object.  The result is returned directly from the `downloadObject` API
+   * endpoint.
+   *
+   * The `method` argument is the selected method, and `params` is the value
+   * of the corresponding property in the caller's `acceptDownloadMethods`.
+   *
+   * Subclasses should override this.
+   */
+  async downloadObject(object, method, params) {
+    throw new Error('downloadObject is not implemented for this backend');
   }
 
   /**

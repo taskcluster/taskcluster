@@ -4,7 +4,7 @@
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "12.19.0",
+    "node": "12.19.1",
     "yarn": "^1.22.10"
   },
   "workspaces": [
@@ -38,7 +38,7 @@
     "debug": "^4.1.1",
     "deepmerge": "^4.0.0",
     "ejs": "^3.0.0",
-    "email-templates": "^7.0.0",
+    "email-templates": "^8.0.0",
     "express": "4.17.1",
     "express-session": "^1.16.2",
     "express-sslify": "1.2.0",
@@ -69,9 +69,9 @@
     "marked": "^1.0.0",
     "matrix-js-sdk": "^9.0.0",
     "memorystore": "^1.6.1",
-    "mkdirp": "^0.5.1",
+    "mkdirp": "^1.0.0",
     "netmask": "^1.0.5",
-    "newrelic": "^6.4.2",
+    "newrelic": "^7.0.0",
     "node-fetch": "^2.6.0",
     "node-forge": "^0.10.0",
     "nodemailer": "^6.0.0",
@@ -84,14 +84,14 @@
     "passport-github": "^1.1.0",
     "pg": "^8.0.0",
     "pg-connection-string": "^2.3.0",
-    "quick-lru": "^4.0.0",
+    "quick-lru": "^5.0.0",
     "ramda": "^0.27.0",
     "regex-escape": "^3.4.8",
     "request-ip": "^2.0.2",
     "rimraf": "^3.0.0",
-    "sanitize-html": "^1.20.1",
+    "sanitize-html": "^2.0.0",
     "sentry-api": "^0.2.0",
-    "serialize-error": "^5.0.0",
+    "serialize-error": "^7.0.0",
     "sift": "^8.0.0",
     "slugid": "^2.0.0",
     "subscriptions-transport-ws": "^0.9.7",
@@ -165,7 +165,7 @@
     "zurvan": "^0.8.0"
   },
   "resolutions": {
-    "mocha/mkdirp": "^0.5.1"
+    "mocha/mkdirp": "^1.0.0"
   },
   "scripts": {
     "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",

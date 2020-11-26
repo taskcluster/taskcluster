@@ -1,16 +1,51 @@
+const assert = require('assert');
 const { Backend } = require('./base');
 
 /**
  * The test backend type is only available when running tests.
  */
 class TestBackend extends Backend {
-  objectRetrievalDetails(name, acceptProtocol) {
-    return {
-      protocol: 'HTTP:GET',
-      details: {
-        url: 'https://google.ca',
-      },
-    };
+  constructor(options) {
+    super(options);
+    this.data = new Map();
+  }
+
+  async temporaryUpload(object, data) {
+    this.data.set(object.name, data);
+  }
+
+  async availableDownloadMethods(object) {
+    if (object.name === 'has/no/methods') {
+      return [];
+    }
+    return ['simple', 'HTTP:GET'];
+  }
+
+  async downloadObject(object, method, params) {
+    assert(this.data.has(object.name));
+    switch (method){
+      case 'simple': {
+        assert.equal(params, true);
+        return {
+          method,
+          url: 'data:;base64,' + this.data.get(object.name).toString('base64'),
+        };
+      }
+
+      case 'HTTP:GET': {
+        assert.equal(params, true);
+        return {
+          method,
+          details: {
+            url: 'https://google.ca',
+          },
+        };
+      }
+
+      default: {
+        throw new Error(`unknown download method ${method}`);
+      }
+    }
   }
 
   async expireObject(object) {
@@ -23,4 +58,6 @@ class TestBackend extends Backend {
   }
 }
 
-module.exports = { TestBackend };
+const toDataUrl = data => 'data:;base64,' + data.toString('base64');
+
+module.exports = { TestBackend, toDataUrl };

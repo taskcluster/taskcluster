@@ -9,7 +9,7 @@ const taskcluster = require('taskcluster-client');
 const { REPO_ROOT } = require('./repo');
 const got = require('got');
 const { execCommand } = require('./command');
-const mkdirp = util.promisify(require('mkdirp'));
+const mkdirp = require('mkdirp');
 const rimraf = util.promisify(require('rimraf'));
 
 /**

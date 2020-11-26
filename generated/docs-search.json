@@ -2612,24 +2612,80 @@
   },
   {
     "element": "h1",
-    "id": "upload-and-download-methods",
-    "path": "/reference/platform/object/upload-download-methods",
+    "id": "aws-backend-type",
+    "path": "/reference/platform/object/aws-backend",
     "subtitle": null,
-    "title": "Upload and Download Methods"
+    "title": "AWS Backend Type"
   },
   {
     "element": "h2",
+    "id": "deployment-configuration",
+    "path": "/reference/platform/object/aws-backend",
+    "subtitle": "Deployment Configuration",
+    "title": "AWS Backend Type"
+  },
+  {
+    "element": "h1",
     "id": "download-methods",
-    "path": "/reference/platform/object/upload-download-methods",
+    "path": "/reference/platform/object/download-methods",
+    "subtitle": null,
+    "title": "Download Methods"
+  },
+  {
+    "element": "h3",
+    "id": "httpget-download-method",
+    "path": "/reference/platform/object/download-methods",
+    "subtitle": "`HTTP:GET` Download Method",
+    "title": "Download Methods"
+  },
+  {
+    "element": "h3",
+    "id": "simple-download-method",
+    "path": "/reference/platform/object/download-methods",
+    "subtitle": "`simple` Download Method",
+    "title": "Download Methods"
+  },
+  {
+    "element": "h2",
+    "id": "download-methods-1",
+    "path": "/reference/platform/object/download-methods",
     "subtitle": "Download Methods",
-    "title": "Upload and Download Methods"
+    "title": "Download Methods"
+  },
+  {
+    "element": "h2",
+    "id": "full-downloads",
+    "path": "/reference/platform/object/download-methods",
+    "subtitle": "Full Downloads",
+    "title": "Download Methods"
   },
   {
     "element": "h2",
     "id": "introduction",
-    "path": "/reference/platform/object/upload-download-methods",
+    "path": "/reference/platform/object/download-methods",
     "subtitle": "Introduction",
-    "title": "Upload and Download Methods"
+    "title": "Download Methods"
+  },
+  {
+    "element": "h1",
+    "id": "simple-downloads",
+    "path": "/reference/platform/object/simple-downloads",
+    "subtitle": null,
+    "title": "Simple Downloads"
+  },
+  {
+    "element": "h2",
+    "id": "client-requirements",
+    "path": "/reference/platform/object/simple-downloads",
+    "subtitle": "Client Requirements",
+    "title": "Simple Downloads"
+  },
+  {
+    "element": "h2",
+    "id": "url-format",
+    "path": "/reference/platform/object/simple-downloads",
+    "subtitle": "URL Format",
+    "title": "Simple Downloads"
   },
   {
     "element": "h1",

@@ -217,10 +217,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             Taskcluster-GitHub attempted to create a task for this event with the following scopes:
 
             \`\`\`
-            [
-              "assume:repo:github.com/a/b:branch:master",
-              "queue:route:statuses"
-            ]
+            ["assume:repo:github.com/a/b:branch:master","queue:route:statuses"]
             \`\`\`
 
             The expansion of these scopes is not sufficient to create the task, leading to the following:

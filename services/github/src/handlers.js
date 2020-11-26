@@ -1,3 +1,6 @@
+const _ = require('lodash');
+const stringify = require('fast-json-stable-stringify');
+const crypto = require('crypto');
 const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
@@ -47,6 +50,8 @@ class Handlers {
 
     this.handlerComplete = null;
     this.handlerRejected = null;
+
+    this.commentHashCache = [];
 
     this.jobPq = null;
     this.resultStatusPq = null;
@@ -208,7 +213,7 @@ class Handlers {
             'Taskcluster-GitHub attempted to create a task for this event with the following scopes:',
             '',
             '```',
-            JSON.stringify(scopes, null, 2),
+            stringify(scopes, null, 2),
             '```',
             '',
             'The expansion of these scopes is not sufficient to create the task, leading to the following:',
@@ -221,12 +226,32 @@ class Handlers {
     }
   }
 
+  commentKey(idents) {
+    return crypto
+      .createHash('md5')
+      .update(stringify(idents))
+      .digest('hex');
+  }
+
+  isDuplicateComment(...idents) {
+    return _.indexOf(this.commentHashCache, this.commentKey(idents)) !== -1;
+  }
+
+  markCommentSent(...idents) {
+    this.commentHashCache.unshift(this.commentKey(idents));
+    this.commentHashCache = _.take(this.commentHashCache, 1000);
+  }
+
   // Send an exception to Github in the form of a comment.
   async createExceptionComment({ debug, instGithub, organization, repository, sha, error, pullNumber }) {
+    if (this.isDuplicateComment(organization, repository, sha, error, pullNumber)) {
+      debug(`exception comment on ${organization}/${repository}#${pullNumber} found to be duplicate. skipping`);
+      return;
+    }
     let errorBody = error.body && error.body.error || error.message;
     // Let's prettify any objects
     if (typeof errorBody === 'object') {
-      errorBody = JSON.stringify(errorBody, null, 4);
+      errorBody = stringify(errorBody, null, 4);
     }
     let body = [
       '<details>\n',
@@ -248,6 +273,7 @@ class Handlers {
         issue_number: pullNumber,
         body,
       });
+      this.markCommentSent(organization, repository, sha, error, pullNumber);
       return;
     }
     debug(`creating exception comment on ${organization}/${repository}@${sha}`);
@@ -257,6 +283,7 @@ class Handlers {
       commit_sha: sha,
       body,
     });
+    this.markCommentSent(organization, repository, sha, error, pullNumber);
   }
 
   /**
@@ -854,7 +881,7 @@ async function jobHandler(message) {
     Parameters: ${taskGroupId}, ${organization}, ${repository}, ${routes}`);
     debug(`Stack: ${e.stack}`);
     return debug(`Failed to publish to taskGroupCreationRequested exchange
-    for ${organization}/${repository}@${sha} with the error: ${JSON.stringify(e, null, 2)}`);
+    for ${organization}/${repository}@${sha} with the error: ${stringify(e, null, 2)}`);
   }
 
   debug(`Job handling for ${organization}/${repository}@${sha} completed.`);

@@ -14,33 +14,57 @@ type (
 		URL string `json:"url"`
 	}
 
-	// Download object request. See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/upload-download-methods#download-methods) for more detail.
-	DownloadObjectRequest struct {
-
-		// Array items:
-		// Supported download methods.
-		//
-		// Possible values:
-		//   * "HTTP:GET"
-		AcceptDownloadMethods []string `json:"acceptDownloadMethods"`
+	Details1 struct {
+		URL string `json:"url"`
 	}
 
-	// Download object response.
+	// See [Download Methods](https://docs.taskcluster.net/docs/docs/reference/platform/object/download-methods) for details.
+	DownloadObjectRequest struct {
+
+		// Download methods that the caller can suport, together with parameters for each method.
+		// The server will choose one method and make the corresponding response.
+		AcceptDownloadMethods SupportedDownloadMethods `json:"acceptDownloadMethods"`
+	}
+
+	// See [Download Methods](https://docs.taskcluster.net/docs/docs/reference/platform/object/download-methods) for details.
 	//
 	// One of:
-	//   * DownloadObjectResponse1
+	//   * HTTPGETDownloadResponse
+	//   * SimpleDownloadResponse
 	DownloadObjectResponse json.RawMessage
 
-	// Download object response.
-	DownloadObjectResponse1 struct {
+	HTTPGETDownloadResponse struct {
 		Details Details `json:"details"`
 
 		// Constant value: "HTTP:GET"
-		Protocol string `json:"protocol"`
+		Method string `json:"method"`
 	}
 
-	// Representation of the object entry to insert.
+	// A simple download returns a URL to which the caller should make a GET request.
+	// See [Simple Downloads](https://docs.taskcluster.net/docs/docs/reference/platform/object/simple-downloads) for details.
+	SimpleDownloadResponse struct {
+		Details Details1 `json:"details"`
+
+		// Constant value: "simple"
+		Method string `json:"method"`
+	}
+
+	// Download methods that the caller can suport, together with parameters for each method.
+	// The server will choose one method and make the corresponding response.
+	SupportedDownloadMethods struct {
+
+		// Constant value: %!q(bool=true)
+		HTTPGET bool `json:"HTTP:GET,omitempty"`
+
+		// Constant value: %!q(bool=true)
+		Simple bool `json:"simple,omitempty"`
+	}
+
+	// Representation of the object entry to insert.  This is a temporary API.
 	UploadObjectRequest struct {
+
+		// The data to upload, base64-encoded
+		Data string `json:"data"`
 
 		// Date at which this entry expires from the object table.
 		Expires tcclient.Time `json:"expires"`
