@@ -323,6 +323,18 @@ exports.dbVersionTest = ({
     await check('done');
   };
 
+  const assertSawBatches = () => {
+    // these are checks to make sure that there are sufficient batches of online
+    // migration and downgrade for the tests to be effective; if these fail, add more
+    // test data.  Set DEBUG=showProgress to help debugging.
+    if (onlineMigration) {
+      assert(sawMigrationBatches, 'did not see multiple batches of online migration');
+    }
+    if (onlineDowngrade) {
+      assert(sawDowngradeBatches, 'did not see multiple batches of online downgrade');
+    }
+  }
+
   suite(`dbVersionTest for v${version}`, function() {
     setup(async function() {
       sawMigrationBatches = false;
@@ -353,16 +365,7 @@ exports.dbVersionTest = ({
           done: async () => await concurrentCheck(client),
         });
         await startCheck(client);
-
-        // these are checks to make sure that there are sufficient batches of online
-        // migration and downgrade for the tests to be effective; if these fail, add more
-        // test data.  Set DEBUG=showProgress to help debugging.
-        if (onlineMigration) {
-          assert(sawMigrationBatches, 'did not see multiple batches of online migration');
-        }
-        if (onlineDowngrade) {
-          assert(sawDowngradeBatches, 'did not see multiple batches of online downgrade');
-        }
+        assertSawBatches();
       });
     });
 
@@ -394,8 +397,7 @@ exports.dbVersionTest = ({
           done: async () => await concurrentCheck(client),
         });
         await startCheck(client);
-        assert(sawMigrationBatches, 'did not see multiple batches of online migration');
-        assert(sawDowngradeBatches, 'did not see multiple batches of online downgrade');
+        assertSawBatches();
       });
     });
 
@@ -421,8 +423,7 @@ exports.dbVersionTest = ({
           done: async () => await concurrentCheck(client),
         });
         await finishedCheck(client);
-        assert(sawMigrationBatches, 'did not see multiple batches of online migration');
-        assert(sawDowngradeBatches, 'did not see multiple batches of online downgrade');
+        assertSawBatches();
       });
     });
 
@@ -438,8 +439,7 @@ exports.dbVersionTest = ({
           done: async () => await concurrentCheck(client),
         });
         await startCheck(client);
-        assert(sawMigrationBatches, 'did not see multiple batches of online migration');
-        assert(sawDowngradeBatches, 'did not see multiple batches of online downgrade');
+        assertSawBatches();
       });
     });
   });
