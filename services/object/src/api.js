@@ -23,7 +23,7 @@ let builder = new APIBuilder({
 });
 
 builder.declare({
-  method: 'post',
+  method: 'put',
   route: '/upload/:name',
   name: 'uploadObject',
   input: 'upload-object-request.yml',
@@ -46,7 +46,15 @@ builder.declare({
 
   // note that it's possible for this process to crash mid-stream, with a row in the DB
   // but no data in the backend.
-  await this.db.fns.create_object(name, projectId, backend.backendId, {}, new Date(expires));
+  try {
+    await this.db.fns.create_object(name, projectId, backend.backendId, {}, new Date(expires));
+  } catch (err) {
+    if (err.code === 'P0004') {
+      return res.reportError('RequestConflict', err.message, { name, projectId, backendId: backend.backendId });
+    }
+
+    throw err;
+  }
   const [object] = await this.db.fns.get_object(name);
 
   await backend.temporaryUpload(object, data);

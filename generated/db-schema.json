@@ -5713,6 +5713,21 @@
       },
       "migrationScript": "begin\n  create table objects (\n    name text not null,\n    data jsonb not null,\n    backend_id text not null,\n    project_id text not null,\n    expires timestamptz not null\n  );\n  alter table objects add primary key (name);\n\n  grant select, insert, update, delete on objects to $db_user_prefix$_object;\nend",
       "version": 54
+    },
+    {
+      "description": "Insert object into database, raising P0004 if name already exists, but entire row not identical.",
+      "methods": {
+        "create_object": {
+          "args": "name_in text, project_id_in text, backend_id_in text, data_in jsonb, expires_in timestamptz",
+          "body": "begin\n  insert\n    into objects (name, data, project_id, backend_id, expires)\n    values (name_in, data_in, project_id_in, backend_id_in, expires_in)\n  on conflict (name) do\n  update set name = name_in\n  where\n    objects.name = name_in\n    and objects.data = data_in\n    and objects.project_id = project_id_in\n    and objects.backend_id = backend_id_in\n    and objects.expires = expires_in;\n  if found then\n    return;\n  end if;\n  raise exception 'conflict' using errcode = 'P0004';\nend",
+          "deprecated": false,
+          "description": "Upload object.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "object"
+        }
+      },
+      "version": 55
     }
   ]
 }

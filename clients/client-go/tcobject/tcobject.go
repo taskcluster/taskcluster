@@ -110,7 +110,7 @@ func (object *Object) Ping() error {
 // See #uploadObject
 func (object *Object) UploadObject(name string, payload *UploadObjectRequest) error {
 	cd := tcclient.Client(*object)
-	_, _, err := (&cd).APICall(payload, "POST", "/upload/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(payload, "PUT", "/upload/"+url.QueryEscape(name), nil, nil)
 	return err
 }
 

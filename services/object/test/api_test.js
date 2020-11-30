@@ -32,6 +32,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(rows[0].backend_id, 'testBackend');
       assert.deepEqual(rows[0].data, {});
     });
+    test('should return 409 if object already exists', async function() {
+      const data = crypto.randomBytes(128);
+      await helper.apiClient.uploadObject('public/foo', {
+        projectId: 'x',
+        data: data.toString('base64'),
+        expires: fromNow('1 year'),
+      });
+      await assert.rejects(
+        () => helper.apiClient.uploadObject('public/foo', {
+          projectId: 'x',
+          data: data.toString('base64'),
+          expires: fromNow('1 year'),
+        }),
+        err => err.code === 'RequestConflict' && err.statusCode === 409,
+      );
+    });
   });
 
   suite('downloadObject method', function() {
