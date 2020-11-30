@@ -46,7 +46,7 @@ describe('Building URLs', function() {
 
   it('should build signed URL', () => {
     return expect(client.buildSignedUrl(client.get))
-      .to.eventually.match(signed('https://tc-tests.example.com/api/fake/v1/get-test'));
+      .to.eventually.match(signed('https://tc-tests\\.example\\.com/api/fake/v1/get-test'));
   });
 
   it('should build URL with parameter', () => {
@@ -56,7 +56,7 @@ describe('Building URLs', function() {
 
   it('should build signed URL with parameter', () => {
     return expect(client.buildSignedUrl(client.param, 'test'))
-      .to.eventually.match(signed('https://tc-tests.example.com/api/fake/v1/url-param/test/list'));
+      .to.eventually.match(signed('https://tc-tests\\.example\\.com/api/fake/v1/url-param/test/list'));
   });
 
   it('should build URL with 2 parameters', () => {
@@ -66,7 +66,7 @@ describe('Building URLs', function() {
 
   it('should build signed URL with 2 parameters', () => {
     return expect(client.buildSignedUrl(client.param2, 'test', 'te/st'))
-      .to.eventually.match(signed('https://tc-tests.example.com/api/fake/v1/url-param2/test/te%2Fst/list'));
+      .to.eventually.match(signed('https://tc-tests\\.example\\.com/api/fake/v1/url-param2/test/te%2Fst/list'));
   });
 
   it('should not build URL with missing parameter', () => {
@@ -85,7 +85,7 @@ describe('Building URLs', function() {
 
   it('should build signed URL with query options', () => {
     return expect(client.buildSignedUrl(client.query, { option: 2 }))
-      .to.eventually.match(signed('https://tc-tests.example.com/api/fake/v1/query/test?option=2'));
+      .to.eventually.match(signed('https://tc-tests\\.example\\.com/api/fake/v1/query/test?option=2'));
   });
 
   it('should build URL with empty query options', () => {
@@ -95,7 +95,7 @@ describe('Building URLs', function() {
 
   it('should build signed URL with empty query options', () => {
     return expect(client.buildSignedUrl(client.query, {}))
-      .to.eventually.match(new RegExp('^https://tc-tests.example.com/api/fake/v1/query/test'));
+      .to.eventually.match(new RegExp('^https://tc-tests\\.example\\.com/api/fake/v1/query/test'));
   });
 
   it('should not build URL with incorrect query option', () => {
@@ -114,7 +114,7 @@ describe('Building URLs', function() {
 
   it('should build signed URL with parameter and query option', () => {
     return expect(client.buildSignedUrl(client.paramQuery, 'test', { option: 2 }))
-      .to.eventually.match(signed('https://tc-tests.example.com/api/fake/v1/param-query/test?option=2'));
+      .to.eventually.match(signed('https://tc-tests\\.example\\.com/api/fake/v1/param-query/test?option=2'));
   });
 
   it('should build URL with parameter and empty query options', () => {
@@ -124,7 +124,7 @@ describe('Building URLs', function() {
 
   it('should build signed URL with parameter and empty query options', () => {
     return expect(client.buildSignedUrl(client.paramQuery, 'test', {}))
-      .to.eventually.match(signed('https://tc-tests.example.com/api/fake/v1/param-query/test'));
+      .to.eventually.match(signed('https://tc-tests\\.example\\.com/api/fake/v1/param-query/test'));
   });
 
   it('should not build URL with query options and missing parameter', () => {
