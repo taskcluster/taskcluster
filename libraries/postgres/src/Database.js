@@ -7,7 +7,6 @@ const Keyring = require('./Keyring');
 const assert = require('assert').strict;
 const { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } = require('./constants');
 const { MonitorManager } = require('taskcluster-lib-monitor');
-const named = require('yesql').pg;
 const { parse: parseConnectionString } = require('pg-connection-string');
 const { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade } = require('./migration');
 
@@ -109,9 +108,11 @@ class Database {
           try {
             let res;
             if (hasNamedArguments) {
-              const placeholders = Object.keys(args[0]).map(arg => `:${arg}`).join(',');
-              const { text, values } = named(`select * from "${method.name}"(${placeholders})`, { useNullForMissing: true })(args[0]);
-              res = await client.query(text, values);
+              const obj = args[0];
+              const keys = Object.keys(obj);
+              const values = keys.map(k => obj[k]); // order must match keys!
+              const placeholders = keys.map((key, i) => `${key} => $${i + 1}`).join(',');
+              res = await client.query(`select * from "${method.name}"(${placeholders})`, values);
             } else {
               const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
               res = await client.query(`select * from "${method.name}"(${placeholders})`, args);
