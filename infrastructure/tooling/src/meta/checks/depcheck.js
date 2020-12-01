@@ -121,7 +121,7 @@ if (isMainThread) {
     const extraDev = _.difference(devDeps, [...usedInProd, ...usedInDev]);
 
     if (shouldBeDev.length) {
-      throw new Error(`Depenencies for prod that should be dev! Move ${stringify(shouldBeDev)} from dependencies to devDependencies in package.json`);
+      throw new Error(`Dependencies for prod that should be dev! Move ${stringify(shouldBeDev)} from dependencies to devDependencies in package.json`);
     }
     if (extraProd.length) {
       throw new Error(`Extra production dependencies! Remove ${stringify(extraProd)} from dependencies in package.json`);

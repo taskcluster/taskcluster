@@ -18,6 +18,7 @@
     "@azure/ms-rest-azure-js": "^2.0.1",
     "@azure/ms-rest-js": "^2.0.5",
     "@azure/ms-rest-nodeauth": "^3.0.5",
+    "@octokit/core": "^3.0.0",
     "@octokit/plugin-retry": "^3.0.4",
     "@octokit/plugin-throttling": "^3.3.3",
     "@octokit/rest": "^18.0.0",
@@ -200,7 +201,8 @@
       "eslint",
       "c8",
       "cross-env",
-      "ejs"
+      "ejs",
+      "@octokit/core"
     ]
   },
   "renovate": {
