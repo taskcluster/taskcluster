@@ -4,7 +4,7 @@ const { paginateResults } = require('taskcluster-lib-api');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 
 /** Regular expression for valid namespaces */
-exports.namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;
+exports.namespaceFormat = /^([a-zA-Z0-9_!~*'()%-/]+\.)*[a-zA-Z0-9_!~*'()%-/]+$/;
 
 const makeError = (message, code, statusCode) => {
   const err = new Error(message);
