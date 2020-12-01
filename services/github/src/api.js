@@ -432,20 +432,15 @@ builder.declare({
 
   if (instGithub) {
     try {
-      let reposList = await instGithub.apps.listReposAccessibleToInstallation({});
-
-      while (true) {
-        let installed = reposList.data.repositories.map(repo => repo.name).indexOf(repo);
+      for await (const response of instGithub.paginate.iterator(
+        instGithub.apps.listReposAccessibleToInstallation, {})) {
+        let installed = response.data.map(repo => repo.name).indexOf(repo);
         if (installed !== -1) {
           return res.reply({ installed: true });
         }
-        if (instGithub.hasNextPage(reposList)) {
-          reposList = await instGithub.getNextPage(reposList);
-        } else {
-          return res.reply({ installed: false });
-        }
       }
-
+      // no early return -> not installed
+      return res.reply({ installed: false });
     } catch (e) {
       if (e.code > 400 && e.code < 500) {
         return res.reply({ installed: false });

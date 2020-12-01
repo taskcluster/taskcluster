@@ -436,8 +436,13 @@ export default class QuickStart extends Component {
           {installedState === 'error' && (
             <Fragment>
               <ErrorPanel
+                warning
                 className={classes.errorPanels}
-                error="The integration has not been set up for this repository."
+                error={
+                  new Error(
+                    'The integration has not been set up for this repository.'
+                  )
+                }
               />
               <SiteSpecific>
                 To use Taskcluster on this repository, add [this
