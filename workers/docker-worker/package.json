@@ -73,7 +73,7 @@
     "typed-env-config": "^3.0.0",
     "uuid": "^8.0.0",
     "walk": "^2.3.14",
-    "websocket-stream": "^3.3.0",
+    "websocket-stream": "^5.0.0",
     "ws": "^7.1.2"
   },
   "devDependencies": {
