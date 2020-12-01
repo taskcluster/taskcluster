@@ -54,10 +54,11 @@
    * [`delete_denylist_address`](#delete_denylist_address)
    * [`exists_denylist_address`](#exists_denylist_address)
  * [object functions](#object)
-   * [`create_object`](#create_object)
+   * [`create_object_for_upload`](#create_object_for_upload)
    * [`delete_object`](#delete_object)
    * [`get_expired_objects`](#get_expired_objects)
-   * [`get_object`](#get_object)
+   * [`get_object_with_upload`](#get_object_with_upload)
+   * [`object_upload_complete`](#object_upload_complete)
  * [purge_cache functions](#purge_cache)
    * [`all_purge_requests_wpid`](#all_purge_requests_wpid)
    * [`expire_cache_purges`](#expire_cache_purges)
@@ -953,23 +954,31 @@ Returns a boolean indicating whether the denylist type/address exists.
 
 ## object
 
-* [`create_object`](#create_object)
+* [`create_object_for_upload`](#create_object_for_upload)
 * [`delete_object`](#delete_object)
 * [`get_expired_objects`](#get_expired_objects)
-* [`get_object`](#get_object)
+* [`get_object_with_upload`](#get_object_with_upload)
+* [`object_upload_complete`](#object_upload_complete)
 
-### create_object
+### create_object_for_upload
 
 * *Mode*: write
 * *Arguments*:
   * `name_in text`
   * `project_id_in text`
   * `backend_id_in text`
+  * `upload_id_in text`
+  * `upload_expires_in timestamptz`
   * `data_in jsonb`
   * `expires_in timestamptz`
 * *Returns*: `void`
 
-Upload object.
+Create an object record ready for upload.
+
+This method is idempotent, and will succeed if called multiple times with
+the same parameters, as long as `upload_id` is still set (that is, until
+the upload is completed).  Otherwise it will raise a UNIQUE_VIOLATION
+exception.  `upload_expires_in` is excluded from this comparison.
 
 ### delete_object
 
@@ -995,9 +1004,11 @@ Delete an object.
 
 Get objects with an expiration before the current time.  If given, only
 objects with a name greater than `start_at_in` are returned.  The
-`limit_in` argument limits the number of results returned.
+`limit_in` argument limits the number of results returned.  This returns
+both expired objects (expires < now) and expired uploads (upload_expires
+< now).
 
-### get_object
+### get_object_with_upload
 
 * *Mode*: read
 * *Arguments*:
@@ -1007,9 +1018,29 @@ objects with a name greater than `start_at_in` are returned.  The
   * `data jsonb`
   * `project_id text`
   * `backend_id text`
+  * `upload_id text`
+  * `upload_expires timestamptz`
   * `expires timestamptz`
 
 Get an object by name, or an empty set if no such object exists.
+
+### object_upload_complete
+
+* *Mode*: write
+* *Arguments*:
+  * `name_in text`
+  * `upload_id_in text`
+* *Returns*: `void`
+
+Mark an object as uploaded and ready for download.
+
+This method is idempotent, and will succeed if the object is already ready
+for download.
+
+### deprecated methods
+
+* `create_object(name_in text, project_id_in text, backend_id_in text, data_in jsonb, expires_in timestamptz)` (compatibility guaranteed until v41.0.0)
+* `get_object(name_in text)` (compatibility guaranteed until v41.0.0)
 
 ## purge_cache
 

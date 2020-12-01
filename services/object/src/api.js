@@ -1,4 +1,6 @@
 const { APIBuilder } = require('taskcluster-lib-api');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+const taskcluster = require('taskcluster-client');
 
 /**
  * Known download methods, in order of preference (preferring earlier
@@ -35,8 +37,9 @@ builder.declare({
     'Upload backend data.',
   ].join('\n'),
 }, async function(req, res) {
-  let { projectId, expires, data } = req.body;
+  let { projectId, uploadId, expires, data } = req.body;
   let { name } = req.params;
+  const uploadExpires = taskcluster.fromNow('1 day');
 
   await req.authorize({ projectId, name });
 
@@ -44,20 +47,39 @@ builder.declare({
 
   data = Buffer.from(data, 'base64');
 
-  // note that it's possible for this process to crash mid-stream, with a row in the DB
-  // but no data in the backend.
   try {
-    await this.db.fns.create_object(name, projectId, backend.backendId, {}, new Date(expires));
+    await this.db.fns.create_object_for_upload({
+      name_in: name,
+      project_id_in: projectId,
+      backend_id_in: backend.backendId,
+      upload_id_in: uploadId,
+      upload_expires_in: uploadExpires,
+      data_in: {},
+      expires_in: new Date(expires),
+    });
   } catch (err) {
-    if (err.code === 'P0004') {
-      return res.reportError('RequestConflict', err.message, { name, projectId, backendId: backend.backendId });
+    if (err.code === UNIQUE_VIOLATION) {
+      return res.reportError(
+        'RequestConflict',
+        'Object already exists',
+        { name, projectId, backendId: backend.backendId });
     }
 
     throw err;
   }
-  const [object] = await this.db.fns.get_object(name);
 
+  // mark the beginning of the upload..
+  const [object] = await this.db.fns.get_object_with_upload(name);
+  if (!object) {
+    // "this should not happen"
+    throw new Error("newly created object row not found");
+  }
+
+  // ..upload the object..
   await backend.temporaryUpload(object, data);
+
+  // ..and mark its completion
+  await this.db.fns.object_upload_complete({ name_in: name, upload_id_in: uploadId });
 
   return res.reply({});
 });
@@ -82,9 +104,9 @@ builder.declare({
 }, async function(req, res) {
   let { name } = req.params;
   const { acceptDownloadMethods } = req.body;
-  const [object] = await this.db.fns.get_object(name);
+  const [object] = await this.db.fns.get_object_with_upload(name);
 
-  if (!object) {
+  if (!object || object.upload_id !== null) {
     return res.reportError('ResourceNotFound', 'Object "{{name}}" not found', { name });
   }
 
@@ -142,9 +164,9 @@ builder.declare({
 }, async function(req, res) {
   const { name } = req.params;
   const method = 'simple';
-  const [object] = await this.db.fns.get_object(name);
+  const [object] = await this.db.fns.get_object_with_upload(name);
 
-  if (!object) {
+  if (!object || object.upload_id !== null) {
     return res.reportError('ResourceNotFound', 'Object "{{name}}" not found', { name });
   }
 

@@ -3,7 +3,7 @@ const helper = require('../helper');
 const testing = require('taskcluster-lib-testing');
 const request = require('superagent');
 const crypto = require('crypto');
-const { fromNow } = require('taskcluster-client');
+const taskcluster = require('taskcluster-client');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -16,10 +16,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const makeObject = async name => {
     const data = crypto.randomBytes(128);
+    const uploadId = taskcluster.slugid();
     await helper.apiClient.uploadObject(name, {
       projectId: 'x',
       data: data.toString('base64'),
-      expires: fromNow('1 year'),
+      expires: taskcluster.fromNow('1 year'),
+      uploadId,
     });
   };
 

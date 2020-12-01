@@ -4099,10 +4099,17 @@
           "description": "Project identifier.\n",
           "title": "Project Identifier",
           "type": "string"
+        },
+        "uploadId": {
+          "description": "Unique identifier for this upload.   Once an object is created with an uploadId,\nuploads of the same object with different uploadIds will be rejected.  Callers\nshould pass a randomly-generated slugid here.",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Upload ID",
+          "type": "string"
         }
       },
       "required": [
         "expires",
+        "uploadId",
         "projectId",
         "data"
       ],

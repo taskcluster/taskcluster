@@ -90,7 +90,7 @@ exports.tasks = [{
         }
 
         case 'INDEX': {
-          const re = /CREATE INDEX [0-9a-zA-Z_-]+ ON public\.([0-9a-zA-Z_-]+)/;
+          const re = /CREATE (:?UNIQUE)? ?INDEX [0-9a-zA-Z_-]+ ON public\.([0-9a-zA-Z_-]+)/;
           const [_, tableName] = re.exec(body);
           const table = byTable.get(tableName) || {};
           table.indexes = (table.indexes || []).concat([body]);

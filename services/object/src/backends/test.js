@@ -11,6 +11,9 @@ class TestBackend extends Backend {
   }
 
   async temporaryUpload(object, data) {
+    if (TestBackend.failUpload) {
+      throw new Error('uhoh');
+    }
     this.data.set(object.name, data);
   }
 

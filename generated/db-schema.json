@@ -196,7 +196,9 @@
       "data": "jsonb not null",
       "expires": "timestamp with time zone not null",
       "name": "text not null",
-      "project_id": "text not null"
+      "project_id": "text not null",
+      "upload_expires": "timestamp with time zone",
+      "upload_id": "text"
     },
     "queue_artifacts": {
       "content_type": "text not null",
@@ -5728,6 +5730,56 @@
         }
       },
       "version": 55
+    },
+    {
+      "description": "Add objects.upload_id, upload_expires, and ready columns",
+      "downgradeScript": "begin\n  drop index objects_upload_id_idx;\n\n  alter table objects\n  drop column upload_id,\n  drop column upload_expires;\nend",
+      "methods": {
+        "create_object": {
+          "deprecated": true
+        },
+        "create_object_for_upload": {
+          "args": "name_in text,\nproject_id_in text,\nbackend_id_in text,\nupload_id_in text,\nupload_expires_in timestamptz,\ndata_in jsonb,\nexpires_in timestamptz",
+          "body": "begin\n  if upload_id_in is null or upload_expires_in is null then\n    raise exception 'upload_id and upload_expires are required' using errcode = 'NOT_NULL_VIOLATION';\n  end if;\n\n  -- NOTE: This table has two unique columns (name and upload_id).  If the inserted name is novel\n  -- but the inserted upload_id is not, this will generate a UNIQUE_VIOLATION error as desired.\n  -- If the inserted name exists, but the upload_id is novel, then the on-conflict clause will\n  -- apply and we will raise UNIQUE_VIOLATION manually.\n  insert\n    into objects (name, data, project_id, backend_id, upload_id, upload_expires, expires)\n    values (name_in, data_in, project_id_in, backend_id_in, upload_id_in, upload_expires_in, expires_in)\n  on conflict (name) do\n  update set name = name_in\n  where\n    objects.name = name_in\n    and objects.data = data_in\n    and objects.project_id = project_id_in\n    and objects.backend_id = backend_id_in\n    and objects.upload_id = upload_id_in\n    -- note that upload_expires isn't consulted\n    and objects.expires = expires_in;\n  if not found then\n    raise exception 'upload already exists' using errcode = 'unique_violation';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Create an object record ready for upload.\n\nThis method is idempotent, and will succeed if called multiple times with\nthe same parameters, as long as `upload_id` is still set (that is, until\nthe upload is completed).  Otherwise it will raise a UNIQUE_VIOLATION\nexception.  `upload_expires_in` is excluded from this comparison.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "object"
+        },
+        "get_expired_objects": {
+          "args": "limit_in integer, start_at_in text",
+          "body": "begin\n  return query\n  select\n    objects.name,\n    objects.data,\n    objects.project_id,\n    objects.backend_id,\n    objects.expires\n  from objects\n  where\n    (start_at_in is null or objects.name > start_at_in) and\n    (objects.expires < now() or objects.upload_expires < now())\n  order by name\n  limit limit_in;\nend",
+          "deprecated": false,
+          "description": "Get objects with an expiration before the current time.  If given, only\nobjects with a name greater than `start_at_in` are returned.  The\n`limit_in` argument limits the number of results returned.  This returns\nboth expired objects (expires < now) and expired uploads (upload_expires\n< now).",
+          "mode": "read",
+          "returns": "table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)",
+          "serviceName": "object"
+        },
+        "get_object": {
+          "deprecated": true
+        },
+        "get_object_with_upload": {
+          "args": "name_in text",
+          "body": "begin\n  return query\n  select\n    objects.name,\n    objects.data,\n    objects.project_id,\n    objects.backend_id,\n    objects.upload_id,\n    objects.upload_expires,\n    objects.expires\n  from objects\n  where\n    objects.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get an object by name, or an empty set if no such object exists.",
+          "mode": "read",
+          "returns": "table (name text, data jsonb, project_id text, backend_id text, upload_id text, upload_expires timestamptz, expires timestamptz)",
+          "serviceName": "object"
+        },
+        "object_upload_complete": {
+          "args": "name_in text,\nupload_id_in text",
+          "body": "begin\n  update objects\n  set\n    upload_id = null,\n    upload_expires = null\n  where\n    name = name_in\n    and upload_id = upload_id_in;\nend",
+          "deprecated": false,
+          "description": "Mark an object as uploaded and ready for download.\n\nThis method is idempotent, and will succeed if the object is already ready\nfor download.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "object"
+        }
+      },
+      "migrationScript": "begin\n  alter table objects\n  add column upload_id text,\n  add column upload_expires timestamptz;\n\n  -- index by upload_id when it is set\n  create unique index\n  objects_upload_id_idx\n  on objects(upload_id)\n  where objects.upload_id is not NULL;\nend",
+      "version": 56
     }
   ]
 }
