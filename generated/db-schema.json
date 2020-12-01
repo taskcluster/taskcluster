@@ -277,6 +277,7 @@
       "taken_until": "timestamp with time zone",
       "task_group_id": "text not null",
       "task_id": "text not null",
+      "task_queue_id": "text",
       "worker_type": "text not null"
     },
     "worker_pool_errors": {
@@ -5713,6 +5714,23 @@
       },
       "migrationScript": "begin\n  create table objects (\n    name text not null,\n    data jsonb not null,\n    backend_id text not null,\n    project_id text not null,\n    expires timestamptz not null\n  );\n  alter table objects add primary key (name);\n\n  grant select, insert, update, delete on objects to $db_user_prefix$_object;\nend",
       "version": 54
+    },
+    {
+      "description": "Add task_queue_id column to tasks table and populate with online migration",
+      "downgradeScript": "begin\n  alter table tasks drop column task_queue_id;\n\n  drop function online_migration_v55_batch(batch_size_in integer, state_in jsonb);\n  drop function online_migration_v55_is_complete();\nend",
+      "methods": {
+        "create_task": {
+          "args": "task_id text,\nprovisioner_id text,\nworker_type text,\nscheduler_id text,\ntask_group_id text,\ndependencies jsonb,\nrequires task_requires,\nroutes jsonb,\npriority task_priority,\nretries integer,\ncreated timestamptz,\ndeadline timestamptz,\nexpires timestamptz,\nscopes jsonb,\npayload jsonb,\nmetadata jsonb,\ntags jsonb,\nextra jsonb",
+          "body": "begin\n  insert\n  into tasks (\n    task_id,\n    provisioner_id,\n    worker_type,\n    task_queue_id,\n    scheduler_id,\n    task_group_id,\n    dependencies,\n    requires,\n    routes,\n    priority,\n    retries,\n    created,\n    deadline,\n    expires,\n    scopes,\n    payload,\n    metadata,\n    tags,\n    extra,\n    retries_left,\n    runs,\n    taken_until,\n    ever_resolved\n  )\n  values (\n    task_id,\n    provisioner_id,\n    worker_type,\n    provisioner_id || '/' || worker_type,\n    scheduler_id,\n    task_group_id,\n    dependencies,\n    requires,\n    routes,\n    priority,\n    retries,\n    created,\n    deadline,\n    expires,\n    scopes,\n    payload,\n    metadata,\n    tags,\n    extra,\n    -- default values for the mutable bits\n    retries,\n    jsonb_build_array(),\n    null, -- not taken\n    false\n  );\nend",
+          "deprecated": false,
+          "description": "Create a new task, without scheduling it, and with empty values\nfor the status information.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  alter table tasks add column task_queue_id text;\n\n  create function online_migration_v55_batch(batch_size_in integer, state_in jsonb)\n  returns table (count integer, state jsonb) as $$\n  declare\n    item record;\n    count integer;\n  begin\n    count := 0;\n    for item in\n      select task_id\n      from tasks\n      where task_queue_id is null\n      limit batch_size_in\n    loop\n      update tasks\n      set task_queue_id = tasks.provisioner_id || '/' || tasks.worker_type\n      where tasks.task_id = item.task_id;\n      count := count + 1;\n    end loop;\n    return query select\n      count as count,\n      '{}'::jsonb as state;\n  end\n  $$ language plpgsql;\n\n  create function online_migration_v55_is_complete() returns boolean as $$\n  begin\n    perform * from tasks where task_queue_id is null limit 1;\n    return not found; \n  end\n  $$ language plpgsql;\nend",
+      "version": 55
     }
   ]
 }

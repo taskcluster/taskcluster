@@ -333,7 +333,7 @@ exports.dbVersionTest = ({
     if (onlineDowngrade) {
       assert(sawDowngradeBatches, 'did not see multiple batches of online downgrade');
     }
-  }
+  };
 
   suite(`dbVersionTest for v${version}`, function() {
     setup(async function() {

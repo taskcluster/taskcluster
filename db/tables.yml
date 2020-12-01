@@ -172,6 +172,7 @@ tasks:
   tags: jsonb not null
   taken_until: timestamp with time zone
   task_group_id: text not null
+  task_queue_id: text
   worker_type: text not null
 queue_artifacts:
   task_id: text not null

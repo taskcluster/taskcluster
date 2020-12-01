@@ -1,0 +1,126 @@
+version: 55
+description: Add task_queue_id column to tasks table and populate with online migration
+migrationScript: |-
+  begin
+    alter table tasks add column task_queue_id text;
+
+    create function online_migration_v55_batch(batch_size_in integer, state_in jsonb)
+    returns table (count integer, state jsonb) as $$
+    declare
+      item record;
+      count integer;
+    begin
+      count := 0;
+      for item in
+        select task_id
+        from tasks
+        where task_queue_id is null
+        limit batch_size_in
+      loop
+        update tasks
+        set task_queue_id = tasks.provisioner_id || '/' || tasks.worker_type
+        where tasks.task_id = item.task_id;
+        count := count + 1;
+      end loop;
+      return query select
+        count as count,
+        '{}'::jsonb as state;
+    end
+    $$ language plpgsql;
+
+    create function online_migration_v55_is_complete() returns boolean as $$
+    begin
+      perform * from tasks where task_queue_id is null limit 1;
+      return not found; 
+    end
+    $$ language plpgsql;
+  end
+downgradeScript: |-
+  begin
+    alter table tasks drop column task_queue_id;
+
+    drop function online_migration_v55_batch(batch_size_in integer, state_in jsonb);
+    drop function online_migration_v55_is_complete();
+  end
+methods:
+  create_task:
+    description: |-
+      Create a new task, without scheduling it, and with empty values
+      for the status information.
+    mode: write
+    serviceName: queue
+    args: |-
+      task_id text,
+      provisioner_id text,
+      worker_type text,
+      scheduler_id text,
+      task_group_id text,
+      dependencies jsonb,
+      requires task_requires,
+      routes jsonb,
+      priority task_priority,
+      retries integer,
+      created timestamptz,
+      deadline timestamptz,
+      expires timestamptz,
+      scopes jsonb,
+      payload jsonb,
+      metadata jsonb,
+      tags jsonb,
+      extra jsonb
+    returns: void
+    body: |-
+      begin
+        insert
+        into tasks (
+          task_id,
+          provisioner_id,
+          worker_type,
+          task_queue_id,
+          scheduler_id,
+          task_group_id,
+          dependencies,
+          requires,
+          routes,
+          priority,
+          retries,
+          created,
+          deadline,
+          expires,
+          scopes,
+          payload,
+          metadata,
+          tags,
+          extra,
+          retries_left,
+          runs,
+          taken_until,
+          ever_resolved
+        )
+        values (
+          task_id,
+          provisioner_id,
+          worker_type,
+          provisioner_id || '/' || worker_type,
+          scheduler_id,
+          task_group_id,
+          dependencies,
+          requires,
+          routes,
+          priority,
+          retries,
+          created,
+          deadline,
+          expires,
+          scopes,
+          payload,
+          metadata,
+          tags,
+          extra,
+          -- default values for the mutable bits
+          retries,
+          jsonb_build_array(),
+          null, -- not taken
+          false
+        );
+      end
