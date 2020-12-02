@@ -616,7 +616,7 @@ builder.declare({
   const { rows, continuationToken } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_workers_without_provider_data({
-      worker_pool_in: workerPoolId,
+      worker_pool_id_in: workerPoolId,
       worker_group_in: null,
       worker_id_in: null,
       state_in: null,
