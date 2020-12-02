@@ -19,15 +19,24 @@ class AwsBackend extends Backend {
       secretAccessKey: this.config.secretAccessKey,
     };
 
+    let oldRegion = this.region;
+
     try{
-    this.region = await getBucketRegion({ bucket: this.config.bucket, credentials });
+      this.region = await getBucketRegion({ bucket: this.config.bucket, credentials });
     }catch(err){
+      this.region = oldRegion;
+      this.monitor.reportError(err.message);
       return;
     }
+
+    let oldS3 = this.s3;
     
     try{
-    this.s3 = new aws.S3({ region: this.region, ...credentials });
+      this.s3 = new aws.S3({ region: this.region, ...credentials });
     }catch(err){
+      this.region = oldRegion;
+      this.s3 = oldS3;
+      this.monitor.reportError(err.message);
       return;
     }
     
