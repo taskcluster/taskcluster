@@ -9,7 +9,7 @@ suite(testing.suiteName(), function() {
 
   // A helper to make it easier to create tasks with dummy values within queries
   const makeFieldsForCreation = (opts) => {
-    let result = `${opts.taskId || `'tid'`}, ${opts.provisionerId || `'pp'`}, ${opts.workerType || `'wt'`}, 
+    let result = `${opts.taskId || `'tid'`}, ${opts.provisionerId || `'pp'`}, ${opts.workerType || `'wt'`},
             'sid', 'tgid', jsonb_object('{}'), 'all-completed',
             jsonb_object('{}'), 'normal', 0, now(), now(), now(), jsonb_object('{}'),
             jsonb_object('{}'), jsonb_object('{}'), jsonb_object('{}'),
@@ -20,8 +20,6 @@ suite(testing.suiteName(), function() {
     return result;
   };
 
-  let taskCounter = 0;
-
   helper.withDbForVersion();
 
   helper.dbVersionTest({
@@ -29,7 +27,6 @@ suite(testing.suiteName(), function() {
     onlineMigration: true,
     onlineDowngrade: false,
     createData: async client => {
-      taskCounter = 0;
       await client.query(`
         with gen as (
           select generate_series(1, 99) as i
@@ -58,50 +55,48 @@ suite(testing.suiteName(), function() {
                            ever_resolved)
         select ${makeFieldsForCreation({ taskId: `'tid-' || gen.i`, workerType: `'wt-' || gen.i`, withDefaults: true })}
         from gen`);
-      // Update task counter
-      taskCounter = 100;
     },
     startCheck: async client => {
-      // check that the data is as we inserted it (even after migration+downgrade)
-      const res = await client.query('select task_id, worker_type from tasks');
-      const wts = res.rows.map(({ worker_type }) => worker_type).sort();
-      assert.deepEqual(wts, _.range(1, taskCounter).map(i => `wt-${i}`).sort());
-      const tids = res.rows.map(({ task_id }) => task_id).sort();
-      assert.deepEqual(tids, _.range(1, taskCounter).map(i => `tid-${i}`).sort());
+      // basic check
+      const res = await client.query('select task_id, provisioner_id, worker_type from tasks');
+      const taskCount = res.rows.length;
+      assert(taskCount >= 99, 'data was not created properly');
 
-      // and check the schema
+      // check the schema
       await helper.assertTableColumn('tasks', 'provisioner_id');
       await helper.assertTableColumn('tasks', 'worker_type');
       await helper.assertNoTableColumn('tasks', 'task_queue_id');
     },
     concurrentCheck: async client => {
-      // check that the data can still be retrieved the same way
+      // check that the inserted data looks as expected
       const res = await client.query('select task_id, provisioner_id, worker_type from tasks');
-      const wts = res.rows.map(({ worker_type }) => worker_type).sort();
-      assert.deepEqual(wts, _.range(1, taskCounter).map(i => `wt-${i}`).sort());
-      const tids = res.rows.map(({ task_id }) => task_id).sort();
-      assert.deepEqual(tids, _.range(1, taskCounter).map(i => `tid-${i}`).sort());
+      const nextTaskId = res.rows.length + 1;
       const pps = res.rows.map(({ provisioner_id }) => provisioner_id);
-      // all provisioner id's so far have the same value
       assert.deepEqual(new Set(pps), new Set(['pp']));
+      const wts = res.rows.map(({ worker_type }) => worker_type).sort();
+      assert.deepEqual(wts, _.range(1, nextTaskId).map(i => `wt-${i}`).sort());
+      const tids = res.rows.map(({ task_id }) => task_id).sort();
+      assert.deepEqual(tids, _.range(1, nextTaskId).map(i => `tid-${i}`).sort());
 
       // check that create_task works as expected
       const taskOpts = {
-        taskId: `'tid-${taskCounter}'`,
+        taskId: `'tid-${nextTaskId}'`,
         provisionerId: `'pp'`,
-        workerType: `'wt-${taskCounter}'`,
+        workerType: `'wt-${nextTaskId}'`,
       };
       await client.query(`select create_task(${makeFieldsForCreation(taskOpts)})`);
-      // check that we can use get_task to retrieve the task we just created
-      const taskRes = await client.query(`select task_id, provisioner_id, worker_type from get_task(${taskOpts.taskId})`);
-      const expectedTask = {
-        task_id: `tid-${taskCounter}`,
-        provisioner_id: 'pp',
-        worker_type: `wt-${taskCounter}`,
-      };
-      assert.deepEqual(taskRes.rows[0], expectedTask, 'the last task created with create_task could not be retrieved with get_task');
 
-      taskCounter += 1;
+      // check that we can use get_task to retrieve the task we just created
+      const taskRes = await client.query(`
+        select task_id, provisioner_id, worker_type from get_task(${taskOpts.taskId})
+      `);
+      const expectedTask = {
+        task_id: `tid-${nextTaskId}`,
+        provisioner_id: 'pp',
+        worker_type: `wt-${nextTaskId}`,
+      };
+      assert.deepEqual(taskRes.rows[0], expectedTask,
+        'the last task created with create_task could not be retrieved with get_task');
     },
     finishedCheck: async client => {
       // check that all tasks have a task_queue_id that is not null
