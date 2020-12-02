@@ -333,11 +333,11 @@
     deprecation "^2.3.1"
 
 "@octokit/plugin-retry@^3.0.4":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@octokit/plugin-retry/-/plugin-retry-3.0.4.tgz#17530af7a9b0616bf58beaf61d2437d3420479e8"
-  integrity sha512-E6TqaUvIzJM00dRAnlKUWlkVwJ4jup8zzCvmhx4eoK0lOc2jhiqn6P2tMH3OZky8VoWnjRO8IG9bHy164MlVrQ==
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/@octokit/plugin-retry/-/plugin-retry-3.0.5.tgz#1c55ee23fabb38bd2782277d11b8e88f973db419"
+  integrity sha512-Bz5rXkqCv+Sfe4HQNb95EQfs2AYeM3FLLjQbmVeov7P3M9wW6jPW+nAtdpRIsBvLReGLKAjUCZGeiIZFWIIKgQ==
   dependencies:
-    "@octokit/types" "^5.0.0"
+    "@octokit/types" "^6.0.0"
     bottleneck "^2.15.3"
 
 "@octokit/plugin-throttling@^3.3.3":
