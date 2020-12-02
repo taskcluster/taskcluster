@@ -21,10 +21,7 @@ class Backends {
   async _setupBackends({ cfg, monitor, db }) {
     this._backends = new Map();
 
-    if (!cfg.backends) {
-      throw new Error('No backends configured');
-    }
-    for (const [backendId, config] of Object.entries(cfg.backends)) {
+    for (const [backendId, config] of Object.entries(cfg.backends || {})) {
       const Backend = BACKEND_TYPES[config.backendType];
 
       if (!Backend) {
@@ -46,7 +43,7 @@ class Backends {
   async _setupMatching({ cfg }) {
     // the config processing stuff defaults this to an empty object, rather than an
     // emtpy array, so coerce to be friendly
-    let backendMap = cfg.backendMap;
+    let backendMap = cfg.backendMap || [];
     if (typeof backendMap === 'object' && !Array.isArray(backendMap)) {
       backendMap = Object.entries(backendMap);
       if (backendMap.length > 0) {

@@ -948,8 +948,6 @@
       },
       "required": [
         "procs",
-        "backends",
-        "backend_map",
         "taskcluster_client_id",
         "taskcluster_access_token",
         "read_db_url",
