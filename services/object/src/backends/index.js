@@ -48,8 +48,10 @@ class Backends {
       try{
         await backend.setup();
       }catch(err){
+        this.monitor.reportError(new Error(err.message));
         continue;
       }
+    
     }
     
     }

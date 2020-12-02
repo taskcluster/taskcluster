@@ -18,8 +18,19 @@ class AwsBackend extends Backend {
       accessKeyId: this.config.accessKeyId,
       secretAccessKey: this.config.secretAccessKey,
     };
+
+    try{
     this.region = await getBucketRegion({ bucket: this.config.bucket, credentials });
+    }catch(err){
+      return;
+    }
+    
+    try{
     this.s3 = new aws.S3({ region: this.region, ...credentials });
+    }catch(err){
+      return;
+    }
+    
   }
 
   async temporaryUpload(object, data) {
