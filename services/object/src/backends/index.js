@@ -24,6 +24,11 @@ class Backends {
     if (!cfg.backends) {
       throw new Error('No backends configured');
     }
+
+    let loopOver = false;
+
+    while(!loopOver){
+
     for (const [backendId, config] of Object.entries(cfg.backends)) {
       const Backend = BACKEND_TYPES[config.backendType];
 
@@ -39,7 +44,14 @@ class Backends {
         config,
       });
       this._backends.set(backendId, backend);
-      await backend.setup();
+      
+      try{
+        await backend.setup();
+      }catch(err){
+        continue;
+      }
+    }
+    
     }
   }
 
