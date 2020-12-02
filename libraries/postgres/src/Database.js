@@ -102,7 +102,10 @@ class Database {
 
         // For now we only support named arguments that end with "_in" to make sure
         // functions that take a single object argument are not incorrectly labeled as named arguments.
-        const hasNamedArguments = args.length === 1 && _.isPlainObject(args[0]) && Object.keys(args[0]).every(key => key.endsWith('_in'));
+        const validNamedArgument = key => /^[a-z0-9_]+_in$/.test(key);
+        const hasNamedArguments = args.length === 1
+          && _.isPlainObject(args[0])
+          && Object.keys(args[0]).every(validNamedArgument);
         const res = await this._withClient(method.mode, async client => {
           await client.query(method.mode === READ ? 'begin read only' : 'begin read write');
           try {
