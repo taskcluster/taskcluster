@@ -94,14 +94,14 @@ helper.dbSuite(path.basename(__filename), function() {
             return 'got ' || x;
           end`,
         },
-        add_from_numbers_named: {
+        sub_from_numbers_named: {
           description: 'test',
           mode: 'read',
           serviceName: 'service-2',
           args: 'a_in integer, b_in integer',
           returns: 'table (total integer)',
           body: `begin
-            return query select a_in+b_in as total;
+            return query select a_in - b_in as total;
           end`,
         },
         add_from_numbers: {
@@ -599,12 +599,18 @@ helper.dbSuite(path.basename(__filename), function() {
   });
 
   suite('named arguments', async function () {
-    test('add two numbers', async function() {
+    test('subtract two numbers', async function() {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
       db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
-      const res = await db.fns.add_from_numbers_named({ a_in: 1, b_in: 2 });
+
+      let res = await db.fns.sub_from_numbers_named({ a_in: 5, b_in: 2 });
+      assert.equal(res[0].total, 3);
+
+      // check in the opposite order
+      res = await db.fns.sub_from_numbers_named({ b_in: 2, a_in: 5 });
       assert.equal(res[0].total, 3);
     });
+
     test('throws when arguments do not end with "_in"', async function() {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
       db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });

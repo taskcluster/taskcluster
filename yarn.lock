@@ -7136,11 +7136,6 @@ yarn-minify@^1.0.1:
     mock-fs "^4.12.0"
     semver "^7.3.2"
 
-yesql@^4.1.3:
-  version "4.1.3"
-  resolved "https://registry.yarnpkg.com/yesql/-/yesql-4.1.3.tgz#eb64c6e3b80c30960de0b464ae1a9780746388df"
-  integrity sha512-AqKwYcyjWmjzNYNSah53siLLt3xTblCQcAMuw5E9TX8P4X/tRmBUFtryhjP1NwmwHEqiYHhIPGtWUdkqqPkVig==
-
 yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
