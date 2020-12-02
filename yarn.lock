@@ -388,15 +388,7 @@
   dependencies:
     "@types/node" ">= 8"
 
-"@octokit/types@^6.0.0":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/@octokit/types/-/types-6.0.1.tgz#a43a667ac8fff45012d23b771b7c3199f4491910"
-  integrity sha512-H/DnTKC+U09en2GFLH/MfAPNDaYb1isieD4Hx4NLpEt/I1PgtZP/8a+Ehc/j9GHuVF/UvGtOVD8AF9XXvws53w==
-  dependencies:
-    "@octokit/openapi-types" "^1.2.0"
-    "@types/node" ">= 8"
-
-"@octokit/types@^6.0.1":
+"@octokit/types@^6.0.0", "@octokit/types@^6.0.1":
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/@octokit/types/-/types-6.0.3.tgz#df21856c3690a90e332ea36e39fbf413b0a4f25d"
   integrity sha512-6y0Emzp+uPpdC5QLzUY1YRklvqiZBMTOz2ByhXdmTFlc3lNv8Mi28dX1U1b4scNtFMUa3tkpjofNFJ5NqMJaZw==
