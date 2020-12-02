@@ -3,6 +3,86 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v39.0.0
+
+### GENERAL
+
+▶ [patch] [#3901](https://github.com/taskcluster/taskcluster/issues/3901)
+Fixed a bug where signing public S3 artifacts would result in Forbidden errors on the task and task group views.
+
+▶ [patch] [#3867](https://github.com/taskcluster/taskcluster/issues/3867)
+Taskcluster-Github should now function correctly in a deployment with no scopes in the `anonymous` role.
+
+If you have a locked-down deployment without allowing public artifacts fetching in your `anonymous` role, you must add
+`queue:get-artifact:public/github/customCheckRunText.md` and `queue:get-artifact:public/github/customCheckRunAnnotations.json`
+to the scopes of your task to avoid an error comment being added to your
+commits. Note that this will change if you choose a custom artifact name (see custom artifact docs for more)
+
+### DEPLOYERS
+
+▶ [MAJOR] [#3713](https://github.com/taskcluster/taskcluster/issues/3713)
+This version introduces a new, in-development object service.  It is currently configured for a default replica count of 0, meaning that it will not run, and this is the recommended configuration.  However, it will nonetheless require configuration of a new database user (`<prefix>_object`).
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#3669](https://github.com/taskcluster/taskcluster/issues/3669)
+The Azure worker-manager takes additional steps to verify the identity proof
+during worker registration. The identify proof is the output of the
+[attested data API](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service#attested-data),
+which includes details about the worker and is signed by the Azure platform.
+
+Previously, the worker-manager checked that the message signer was issued by
+one of four published intermediate certificates issued by a single root CA.
+Azure is planning to expand to five more root CAs (see
+[Azure TLS certificate changes](https://docs.microsoft.com/en-us/azure/security/fundamentals/tls-certificate-changes)
+for details). The worker-manager now downloads an unknown intermediate
+certificate, verifies that it was issued by a known root CAs, and adds it to
+the list of trusted certificates. The 4 legacy intermediate certificates, still
+in use in Azure as of November 2020, are pre-loaded as trusted certificates.
+
+The worker manager now verifies that the message signer is for
+`metadata.azure.com` or a subdomain. This is true for any workers in the
+Azure public cloud, but not the sovereign clouds like azure.us.
+
+One of the new root CAs uses Elliptic Curve Cryptography (ECC) instead of RSA.
+The Azure worker-manager doesn't support this or other ECC certificates.
+This is tracked in [issue #3923](https://github.com/taskcluster/taskcluster/issues/3923).
+
+There is no performance change expected until Azure ships the TLS certificate
+changes, planned by February 15, 2021. When new intermediate certificates are
+used, there will be up to a 5 second delay on worker registration while the new
+certificate is downloaded for the first time. A new manager log entry,
+``registration-new-intermediate-certificate``, is emitted after a successful
+download and verification, and includes the certificate details.
+
+### USERS
+
+▶ [patch] [#3899](https://github.com/taskcluster/taskcluster/issues/3899)
+Docker-worker now decompresses downloaded images when they have a compressed content-encoding, as artifacts produced by docker-worker now have.
+
+▶ [patch] [#3637](https://github.com/taskcluster/taskcluster/issues/3637)
+Taskcluster-Github should now avoid spamming an identical comment many times in certain situations.
+
+▶ [patch] [#3982](https://github.com/taskcluster/taskcluster/issues/3982)
+The quickstart now correctly shows whether the GitHub integration is enabled for a repository.
+
+▶ [patch] [#3578](https://github.com/taskcluster/taskcluster/issues/3578)
+There are two new API methods for the queue service: `listTaskQueues` and `getTaskQueue`
+
+### DEVELOPERS
+
+▶ [minor] [#3578](https://github.com/taskcluster/taskcluster/issues/3578)
+The queue service now uses taskQueueId internally, instead of provisionerId/workerType, for worker info
+purposes (provisioners, worker types and workers).
+The `queue_provisioners` table is dropped and the `queue_worker_types` table is renamed to `task_queues`.
+
+▶ [patch] [#3832](https://github.com/taskcluster/taskcluster/issues/3832)
+Octokit now uses github's own retry/rate-limit plugins instead of our own.
+
+### OTHER
+
+▶ Additional changes not described here: [#3712](https://github.com/taskcluster/taskcluster/issues/3712), [#3715](https://github.com/taskcluster/taskcluster/issues/3715), [#3717](https://github.com/taskcluster/taskcluster/issues/3717), [#3719](https://github.com/taskcluster/taskcluster/issues/3719), [#3808](https://github.com/taskcluster/taskcluster/issues/3808), [#3881](https://github.com/taskcluster/taskcluster/issues/3881), [#3898](https://github.com/taskcluster/taskcluster/issues/3898), [#3917](https://github.com/taskcluster/taskcluster/issues/3917), [#3935](https://github.com/taskcluster/taskcluster/issues/3935), [#3937](https://github.com/taskcluster/taskcluster/issues/3937), [#3954](https://github.com/taskcluster/taskcluster/issues/3954), [#3986](https://github.com/taskcluster/taskcluster/issues/3986), [#4009](https://github.com/taskcluster/taskcluster/issues/4009).
+
 ## v38.0.6
 
 ### GENERAL

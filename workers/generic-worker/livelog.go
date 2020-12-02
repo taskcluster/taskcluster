@@ -9,11 +9,11 @@ import (
 	"time"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
-	"github.com/taskcluster/taskcluster/v38/internal/scopes"
-	"github.com/taskcluster/taskcluster/v38/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v38/workers/generic-worker/livelog"
-	"github.com/taskcluster/taskcluster/v38/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v39/clients/client-go"
+	"github.com/taskcluster/taskcluster/v39/internal/scopes"
+	"github.com/taskcluster/taskcluster/v39/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v39/workers/generic-worker/livelog"
+	"github.com/taskcluster/taskcluster/v39/workers/generic-worker/process"
 )
 
 var (

@@ -1066,12 +1066,6 @@ on `provisioner_id_in`/`worker_type_in` workers.
 
 List the caches for this `provisioner_id_in`/`worker_type_in`.
 
-### deprecated methods
-
-* `all_purge_requests(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v39.0.0)
-* `purge_cache(provisioner_id_in text, worker_type_in text, cache_name_in text, before_in timestamptz, expires_in timestamptz)` (compatibility guaranteed until v39.0.0)
-* `purge_requests(provisioner_id_in text, worker_type_in text)` (compatibility guaranteed until v39.0.0)
-
 ## queue
 
 * [`add_task_dependency`](#add_task_dependency)
@@ -2539,8 +2533,3 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
-
-### deprecated methods
-
-* `get_non_stopped_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v39.0.0)
-* `get_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v39.0.0)

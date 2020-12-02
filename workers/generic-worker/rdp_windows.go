@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
-	"github.com/taskcluster/taskcluster/v38/internal/scopes"
-	"github.com/taskcluster/taskcluster/v38/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v39/clients/client-go"
+	"github.com/taskcluster/taskcluster/v39/internal/scopes"
+	"github.com/taskcluster/taskcluster/v39/workers/generic-worker/fileutil"
 )
 
 var (
