@@ -25,10 +25,6 @@ class Backends {
       throw new Error('No backends configured');
     }
 
-    let loopOver = false;
-
-    while(!loopOver){
-
     for (const [backendId, config] of Object.entries(cfg.backends)) {
       const Backend = BACKEND_TYPES[config.backendType];
 
@@ -54,7 +50,6 @@ class Backends {
     
     }
     
-    }
   }
 
   async _setupMatching({ cfg }) {
