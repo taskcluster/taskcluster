@@ -400,6 +400,20 @@
   },
   {
     "element": "h2",
+    "id": "middleware-types",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "Middleware Types",
+    "title": "Object Service"
+  },
+  {
+    "element": "h2",
+    "id": "middleware",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "Middleware",
+    "title": "Object Service"
+  },
+  {
+    "element": "h2",
     "id": "configuration",
     "path": "/manual/deploying/pulse",
     "subtitle": "Configuration",

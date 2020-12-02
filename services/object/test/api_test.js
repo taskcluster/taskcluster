@@ -69,6 +69,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
     });
 
+    test('downloadObject handles middleware', async function() {
+      const data = crypto.randomBytes(128);
+      await helper.apiClient.uploadObject('dl/intercept', {
+        projectId: 'x',
+        data: data.toString('base64'),
+        expires: fromNow('1 year'),
+      });
+
+      const res = await helper.apiClient.downloadObject('dl/intercept', {
+        acceptDownloadMethods: { 'simple': true },
+      });
+
+      assert.deepEqual(res, {
+        method: 'simple',
+        details: { url: 'http://intercepted' },
+      });
+    });
+
     test('downloadObject for an unsupported method returns 406', async function() {
       const data = crypto.randomBytes(128);
       await helper.apiClient.uploadObject('has/no/methods', {
@@ -98,6 +116,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const res = await request.get(downloadUrl).redirects(0).ok(res => res.status < 400);
       assert.equal(res.statusCode, 303);
       assert.equal(res.headers.location, toDataUrl(data));
+    });
+
+    test('simple download handles middleware', async function() {
+      const data = crypto.randomBytes(128);
+      await helper.apiClient.uploadObject('simple/intercept', {
+        projectId: 'x',
+        data: data.toString('base64'),
+        expires: fromNow('1 year'),
+      });
+
+      const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'simple/intercept');
+      const res = await request.get(downloadUrl).redirects(0).ok(res => res.status < 400);
+      assert.equal(res.statusCode, 303);
+      assert.equal(res.headers.location, 'http://intercepted');
     });
 
     test('simple download for missing object returns 404', async function() {

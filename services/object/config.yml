@@ -3,6 +3,9 @@ defaults:
   backends: !env:json:optional BACKENDS
   backendMap: !env:json:optional BACKEND_MAP
 
+  # middleware intercepting requests
+  middleware: !env:json:optional MIDDLEWARE
+
   # Taskcluster configuration
   taskcluster:
     rootUrl:                      !env TASKCLUSTER_ROOT_URL

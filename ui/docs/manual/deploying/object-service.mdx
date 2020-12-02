@@ -122,3 +122,14 @@ The credentials should correspond to an IAM user with the following policy, with
 
 The `signGetUrls` config controls the form of the URLs used for simple downloads (such as for loading artifacts in a browser).
 In general, if the bucket contents are public, set this to `false` as signatures are unnecessary; otherwise, set it to true.
+
+## Middleware
+
+The object service supports "middleware" that can intercept download requests.
+This is configured with the `object.middleware` configuration value.
+This is a JSON array containing a sequence of middleware specifications, which will be tried in order.
+Each is a JSON object that must have at least a `middlewareType` giving the type of middleware; the remaining properties are specific to that middleware type.
+
+## Middleware Types
+
+No middleware types are defined yet!

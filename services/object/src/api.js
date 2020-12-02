@@ -19,7 +19,7 @@ let builder = new APIBuilder({
   errorCodes: {
     NoMatchingMethod: 406,
   },
-  context: ['cfg', 'db', 'backends'],
+  context: ['cfg', 'db', 'backends', 'middleware'],
 });
 
 builder.declare({
@@ -106,6 +106,11 @@ builder.declare({
   const method = matchingMethods[0];
   const params = acceptDownloadMethods[method];
 
+  // apply middleware
+  if (!await this.middleware.downloadObjectRequest(req, res, object, method, params)) {
+    return;
+  }
+
   const result = await backend.downloadObject(object, method, params);
 
   return res.reply(result);
@@ -152,6 +157,11 @@ builder.declare({
       'NoMatchingMethod',
       'Object supports methods {{methods}}',
       { methods: backendMethods.join(', ') });
+  }
+
+  // apply middleware
+  if (!await this.middleware.simpleDownloadRequest(req, res, object)) {
+    return;
   }
 
   const result = await backend.downloadObject(object, method, true);
