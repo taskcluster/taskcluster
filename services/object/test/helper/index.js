@@ -48,9 +48,8 @@ exports.withBackends = (mock, skipping) => {
       return;
     }
 
-    // add the 'test' backend and middleware types only for testing
+    // add the 'test' backend type only for testing
     BACKEND_TYPES['test'] = TestBackend;
-    MIDDLEWARE_TYPES['test'] = TestMiddleware;
 
     await exports.load('cfg');
     exports.load.cfg('middleware', [
@@ -67,6 +66,25 @@ exports.withBackends = (mock, skipping) => {
 
   suiteTeardown('withBackends', async function() {
     delete BACKEND_TYPES['test'];
+  });
+};
+
+exports.withMiddleware = (mock, skipping, config) => {
+  suiteSetup('withMiddleware', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    // add the 'test' middleware type only for testing
+    MIDDLEWARE_TYPES['test'] = TestMiddleware;
+
+    await exports.load('cfg');
+    exports.load.cfg('middleware', config || [
+      { middlewareType: 'test' },
+    ]);
+  });
+
+  suiteTeardown('withMiddleware', async function() {
     delete MIDDLEWARE_TYPES['test'];
   });
 };

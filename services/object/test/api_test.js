@@ -10,6 +10,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.resetTables(mock, skipping);
   helper.withBackends(mock, skipping);
+  helper.withMiddleware(mock, skipping);
   helper.withServer(mock, skipping);
 
   test('ping', async function() {

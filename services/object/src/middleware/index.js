@@ -1,4 +1,7 @@
+const { CdnMiddleware } = require('./cdn');
+
 const MIDDLEWARE_TYPES = {
+  cdn: CdnMiddleware,
 };
 
 /**

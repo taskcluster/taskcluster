@@ -399,6 +399,13 @@
     "title": "Object Service"
   },
   {
+    "element": "h3",
+    "id": "cdn",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "CDN",
+    "title": "Object Service"
+  },
+  {
     "element": "h2",
     "id": "middleware-types",
     "path": "/manual/deploying/object-service",
