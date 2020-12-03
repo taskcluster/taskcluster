@@ -5,7 +5,7 @@ npm-debug.log*
 lerna-debug.log
 
 # Build directories
-build
+dist
 lib
 .coverage
 
