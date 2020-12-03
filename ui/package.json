@@ -47,7 +47,7 @@
     "escape-string-regexp": "^4.0.0",
     "fast-memoize": "^2.5.1",
     "graphql": "^15.0.0",
-    "highlight.js": "^10.0.0",
+    "highlight.js": "^10.4.0",
     "hterm-umd": "^1.0.1",
     "is-absolute-url": "^3.0.0",
     "js-yaml": "^3.12.0",
