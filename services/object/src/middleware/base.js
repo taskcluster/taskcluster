@@ -31,7 +31,7 @@ class Middleware {
   }
 
   /**
-   * Similar to downloadObjectRequest, but for the simple-downloda API.
+   * Similar to downloadObjectRequest, but for the simple-download API.
    */
   async simpleDownloadRequest(req, res, object) {
     return true;

@@ -48,7 +48,7 @@ exports.withBackends = (mock, skipping) => {
       return;
     }
 
-    // add the 'test' backend and middelware types only for testing
+    // add the 'test' backend and middleware types only for testing
     BACKEND_TYPES['test'] = TestBackend;
     MIDDLEWARE_TYPES['test'] = TestMiddleware;
 
