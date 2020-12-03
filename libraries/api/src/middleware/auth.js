@@ -123,7 +123,7 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
         status: 'auth-failed',
         message: 'Cannot use two authentication schemes at once ' +
                   'this request has both bewit in querystring and ' +
-                  'and \'authorization\' header',
+                  '\'authorization\' header',
       };
     }
 
