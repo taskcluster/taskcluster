@@ -371,6 +371,13 @@
     "title": "Object Service"
   },
   {
+    "element": "h3",
+    "id": "aws",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "AWS",
+    "title": "Object Service"
+  },
+  {
     "element": "h2",
     "id": "backend-configuration",
     "path": "/manual/deploying/object-service",
