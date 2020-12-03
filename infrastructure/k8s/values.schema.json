@@ -886,6 +886,17 @@
         "level": {
           "type": "string"
         },
+        "middleware": {
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
         "procs": {
           "additionalProperties": false,
           "properties": {

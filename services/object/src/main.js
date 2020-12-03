@@ -8,6 +8,7 @@ const { App } = require('taskcluster-lib-app');
 const libReferences = require('taskcluster-lib-references');
 const config = require('taskcluster-lib-config');
 const { Backends } = require('./backends');
+const { Middleware } = require('./middleware');
 const expireObjects = require('./expire');
 
 let load = loader({
@@ -62,11 +63,16 @@ let load = loader({
     setup: ({ cfg, db, monitor }) => new Backends().setup({ cfg, db, monitor }),
   },
 
+  middleware: {
+    requires: ['cfg', 'monitor'],
+    setup: ({ cfg, monitor }) => new Middleware().setup({ cfg, monitor }),
+  },
+
   api: {
-    requires: ['cfg', 'db', 'schemaset', 'monitor', 'backends'],
-    setup: async ({ cfg, db, schemaset, monitor, backends }) => builder.build({
+    requires: ['cfg', 'db', 'schemaset', 'monitor', 'backends', 'middleware'],
+    setup: async ({ cfg, db, schemaset, monitor, backends, middleware }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: { cfg, db, backends },
+      context: { cfg, db, backends, middleware },
       monitor: monitor.childMonitor('api'),
       schemaset,
     }),

@@ -11,6 +11,14 @@ Each object is assigned a backend when it is created.
 
 The base class for backends, in `src/backends/base.js`, is authoritative for the methods and behaviors that a backend must display.
 
+## Download Middleware
+
+Within this service, "middleware" modules can inspect and modify requests and responses for calls to the download API.
+The most common use of this support is to redirect simple downloads of public objects to a CDN.
+
+Middleware is defined in `src/middleware` and middleware implementations inherit from `src/backends/base.js`.
+The capabilities of middleware are fairly limited, but can easily be expanded as necessary.
+
 ## Development
 
 No special configuration is required for development.
