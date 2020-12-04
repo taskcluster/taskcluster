@@ -14,10 +14,6 @@ type (
 		URL string `json:"url"`
 	}
 
-	Details1 struct {
-		URL string `json:"url"`
-	}
-
 	// See [Download Methods](https://docs.taskcluster.net/docs/docs/reference/platform/object/download-methods) for details.
 	DownloadObjectRequest struct {
 
@@ -43,10 +39,11 @@ type (
 	// A simple download returns a URL to which the caller should make a GET request.
 	// See [Simple Downloads](https://docs.taskcluster.net/docs/docs/reference/platform/object/simple-downloads) for details.
 	SimpleDownloadResponse struct {
-		Details Details1 `json:"details"`
 
 		// Constant value: "simple"
 		Method string `json:"method"`
+
+		URL string `json:"url"`
 	}
 
 	// Download methods that the caller can suport, together with parameters for each method.

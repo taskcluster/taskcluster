@@ -11,7 +11,7 @@ class TestMiddleware extends Middleware {
       case 'dl/intercept': {
         res.reply({
           method: 'simple',
-          details: { url: 'http://intercepted' },
+          url: 'http://intercepted',
         });
         return false;
       }

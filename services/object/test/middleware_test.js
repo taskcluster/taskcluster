@@ -21,7 +21,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const object = { name: 'dl/intercept' };
 
     assert(!await middleware.downloadObjectRequest({}, res, object, 'meth', {}));
-    assert.deepEqual(reply, { method: 'simple', details: { url: 'http://intercepted' } });
+    assert.deepEqual(reply, { method: 'simple', url: 'http://intercepted' });
   });
 
   test('calls middleware for simpleDownloadRequest', async function() {
