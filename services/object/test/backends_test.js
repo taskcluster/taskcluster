@@ -3,6 +3,7 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const { Backends } = require('../src/backends');
 const { TestBackend } = require('../src/backends/test');
+const { capitalize } = require('lodash');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -29,17 +30,30 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('sets up multiple backends with the same type', async function() {
-    const backends = await new Backends().setup({ cfg: {
-      ...cfg,
-      backends: {
-        test1: { backendType: 'test', number: 1 },
-        test2: { backendType: 'test', number: 2 },
-      },
-    }, db, monitor });
-    assert(backends.get('test1') instanceof TestBackend);
-    assert.equal(backends.get('test1').backendId, 'test1');
-    assert(backends.get('test2') instanceof TestBackend);
-    assert.equal(backends.get('test2').backendId, 'test2');
+    const backends = await new Backends();
+    
+    try{
+      backends.setup({ cfg: {
+        ...cfg,
+        backends: {
+          test1: { backendType: 'test', number: 1 },
+          test2: { backendType: 'test', number: 2 },
+        },
+      }, db, monitor });
+    }catch(err){
+      console.log('uhoh');
+      return;
+    }
+    
+    try{
+      assert(backends.get('test1') instanceof TestBackend);
+      assert.equal(backends.get('test1').backendId, 'test1');
+      assert(backends.get('test2') instanceof TestBackend);
+      assert.equal(backends.get('test2').backendId, 'test2');
+    }catch(err){
+      this.monitor.reportError(err.message);
+    }
+
   });
 
   test('get returns undefined for unknown backends', async function() {
