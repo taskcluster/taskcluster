@@ -132,4 +132,19 @@ Each is a JSON object that must have at least a `middlewareType` giving the type
 
 ## Middleware Types
 
-No middleware types are defined yet!
+### CDN
+
+The `cdn` middleware supports redirecting simple download requests to fetch instead from a CDN.
+Its configuration has `middlewareType` `"cdn"` and
+
+ * `regexp` - a regular expression over object names, matching objects that should be redirected
+ * `baseUrl` the base URL to which the object name should be suffixed to generate the CDN URL.
+
+For example:
+
+```yaml
+middleware:
+  - { middlewareType: "cdn", regexp: "^public/.*", baseUrl: "https://d111111abcdef8.cloudfront.net/" }
+```
+
+This configuration would redirect all objects beginning with `public/` to be served at URLs like `https://d111111abcdef8.cloudfront.net/public/some/object`.

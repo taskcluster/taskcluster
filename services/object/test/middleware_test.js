@@ -3,15 +3,10 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
-  helper.withBackends(mock, skipping);
-
-  setup(async function() {
-    await helper.load('cfg');
-    helper.load.cfg('middleware', [
-      { 'middlewareType': 'test', downloadObject: { intercept: 'dl' } },
-      { 'middlewareType': 'test', simpleDownload: { intercept: 'simple' } },
-    ]);
-  });
+  helper.withMiddleware(mock, skipping, [
+    { 'middlewareType': 'test', downloadObject: { intercept: 'dl' } },
+    { 'middlewareType': 'test', simpleDownload: { intercept: 'simple' } },
+  ]);
 
   test('calls middleware for downloadObjectRequest', async function() {
     const middleware = await helper.load('middleware');
