@@ -160,7 +160,6 @@ tasks:
   metadata: jsonb not null
   payload: jsonb not null
   priority: task_priority not null
-  provisioner_id: text not null
   requires: task_requires not null
   ever_resolved: boolean not null
   retries: integer not null
@@ -172,8 +171,7 @@ tasks:
   tags: jsonb not null
   taken_until: timestamp with time zone
   task_group_id: text not null
-  task_queue_id: text
-  worker_type: text not null
+  task_queue_id: text not null
 queue_artifacts:
   task_id: text not null
   run_id: integer not null
