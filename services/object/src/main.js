@@ -42,7 +42,6 @@ let load = loader({
     setup: ({ cfg, process, monitor }) => tcdb.setup({
       readDbUrl: cfg.postgres.readDbUrl,
       writeDbUrl: cfg.postgres.writeDbUrl,
-      azureCryptoKey: cfg.azure.cryptoKey,
       dbCryptoKeys: cfg.postgres.dbCryptoKeys,
       serviceName: 'object',
       monitor: monitor.childMonitor('db'),
