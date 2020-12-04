@@ -10,12 +10,11 @@ suite(testing.suiteName(), function() {
   // A helper to make it easier to create tasks with dummy values within queries
   const makeFieldsForCreation = (opts) => {
     let result = `${opts.taskId || `'tid'`}, ${opts.provisionerId || `'pp'`}, ${opts.workerType || `'wt'`},
-            'sid', 'tgid', jsonb_object('{}'), 'all-completed',
-            jsonb_object('{}'), 'normal', 0, now(), now(), now(), jsonb_object('{}'),
-            jsonb_object('{}'), jsonb_object('{}'), jsonb_object('{}'),
-            jsonb_object('{}')`;
+            'sid', 'tgid', '{}'::jsonb, 'all-completed',
+            '{}'::jsonb, 'normal', 0, now(), now(), now(), '{}'::jsonb,
+            '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb`;
     if (opts.withDefaults) {
-      result += `, 0, jsonb_build_array(), null, false`;
+      result += `, 0, '[]'::jsonb, null, false`;
     }
     return result;
   };

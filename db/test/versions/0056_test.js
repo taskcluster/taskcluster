@@ -11,14 +11,13 @@ suite(testing.suiteName(), function() {
   const makeFieldsForCreation = (opts) => {
     const pp = opts.provisionerId || `'pp'`;
     const wt = opts.workerType || `'wt'`;
-    let result = `${opts.taskId || `'tid'`}, ${opts.provisionerId || `'pp'`}, ${wt},
-            'sid', 'tgid', jsonb_object('{}'), 'all-completed',
-            jsonb_object('{}'), 'normal', 0, now(), now(), now(), jsonb_object('{}'),
-            jsonb_object('{}'), jsonb_object('{}'), jsonb_object('{}'),
-            jsonb_object('{}')`;
+    let result = `${opts.taskId || `'tid'`}, ${pp}, ${wt},
+            'sid', 'tgid', '{}'::jsonb, 'all-completed',
+            '{}'::jsonb, 'normal', 0, now(), now(), now(), '{}'::jsonb,
+            '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb`;
     if (opts.withDefaults) {
       const tqid = `${pp} || '/' || ${wt}`;
-      result += `, 0, jsonb_build_array(), null, false, ${tqid}`;
+      result += `, 0, '[]'::jsonb, null, false, ${tqid}`;
     }
     return result;
   };
@@ -71,6 +70,8 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(tqids, _.range(1, nextTaskId).map(i => `pp/wt-${i}`).sort());
 
       // check the schema
+      await helper.assertTableColumn('tasks', 'provisioner_id');
+      await helper.assertTableColumn('tasks', 'worker_type');
       await helper.assertTableColumn('tasks', 'task_queue_id');
     },
     concurrentCheck: async client => {
