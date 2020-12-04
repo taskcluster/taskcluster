@@ -52,6 +52,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   suite('downloadObject method', function() {
+    test('downloadObject for simple method succeeds', async function() {
+      const data = crypto.randomBytes(128);
+      await helper.apiClient.uploadObject('public/foo', {
+        projectId: 'x',
+        data: data.toString('base64'),
+        expires: fromNow('1 year'),
+      });
+      const res = await helper.apiClient.downloadObject('public/foo', {
+        acceptDownloadMethods: { 'simple': true },
+      });
+      assert.deepEqual(res, {
+        method: 'simple',
+        url: toDataUrl(data),
+      });
+    });
+
     test('downloadObject for a supported method succeeds', async function() {
       const data = crypto.randomBytes(128);
       await helper.apiClient.uploadObject('public/foo', {
@@ -84,7 +100,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.deepEqual(res, {
         method: 'simple',
-        details: { url: 'http://intercepted' },
+        url: 'http://intercepted',
       });
     });
 

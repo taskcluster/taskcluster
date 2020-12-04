@@ -4173,27 +4173,18 @@
           "additionalProperties": false,
           "description": "A simple download returns a URL to which the caller should make a GET request.\nSee [Simple Downloads](https://docs.taskcluster.net/docs/docs/reference/platform/object/simple-downloads) for details.",
           "properties": {
-            "details": {
-              "additionalProperties": false,
-              "properties": {
-                "url": {
-                  "format": "uri",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "url"
-              ],
-              "type": "object"
-            },
             "method": {
               "const": "simple",
+              "type": "string"
+            },
+            "url": {
+              "format": "uri",
               "type": "string"
             }
           },
           "required": [
             "method",
-            "details"
+            "url"
           ],
           "title": "simple Download Response",
           "type": "object"
