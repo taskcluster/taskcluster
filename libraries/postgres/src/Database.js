@@ -235,8 +235,6 @@ class Database {
           const fromVersion = schema.getVersion(v);
           const toVersion = v === 1 ? { version: 0, methods: [] } : schema.getVersion(v - 1);
           await db._withClient('admin', async client => {
-            // always run the fromVersion's online downgrade first, before its downgrade script
-            await runOnlineDowngrade({ client, showProgress, versionNum: fromVersion.version });
             await runDowngrade({
               client,
               schema,
@@ -245,6 +243,7 @@ class Database {
               showProgress,
               usernamePrefix,
             });
+            await runOnlineDowngrade({ client, showProgress, versionNum: toVersion.version });
           });
           showProgress(`downgrade to version ${v - 1} successful`);
         }

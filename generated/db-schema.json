@@ -276,7 +276,7 @@
       "taken_until": "timestamp with time zone",
       "task_group_id": "text not null",
       "task_id": "text not null",
-      "task_queue_id": "text not null"
+      "task_queue_id": "text"
     },
     "worker_pool_errors": {
       "description": "text not null",
@@ -5715,7 +5715,7 @@
     },
     {
       "description": "Add task_queue_id column to tasks table and populate with online migration",
-      "downgradeScript": "begin\n  alter table tasks drop column task_queue_id;\n\n  drop function online_migration_v55_batch(batch_size_in integer, state_in jsonb);\n  drop function online_migration_v55_is_complete();\nend",
+      "downgradeScript": "begin\n  alter table tasks drop column task_queue_id;\n\n  drop function online_migration_v55_batch(batch_size_in integer, state_in jsonb);\n  drop function online_migration_v55_is_complete();\n  drop function if exists online_downgrade_v55_batch(batch_size_in integer, state_in jsonb);\n  drop function if exists online_downgrade_v55_is_complete();\n\nend",
       "methods": {
         "create_task": {
           "args": "task_id text,\nprovisioner_id text,\nworker_type text,\nscheduler_id text,\ntask_group_id text,\ndependencies jsonb,\nrequires task_requires,\nroutes jsonb,\npriority task_priority,\nretries integer,\ncreated timestamptz,\ndeadline timestamptz,\nexpires timestamptz,\nscopes jsonb,\npayload jsonb,\nmetadata jsonb,\ntags jsonb,\nextra jsonb",
@@ -5732,7 +5732,7 @@
     },
     {
       "description": "Use task_queue_id instead of provisioner_id / worker_type in queues",
-      "downgradeScript": "begin\n  alter table tasks drop constraint task_queue_id_not_null;\n  alter table tasks add column provisioner_id text, add column worker_type text;\n\n  drop function online_downgrade_v56_batch(batch_size_in integer, state_in jsonb);\n  drop function online_downgrade_v56_is_complete();\nend",
+      "downgradeScript": "begin\n  alter table tasks drop constraint task_queue_id_not_null;\n  alter table tasks add column provisioner_id text, add column worker_type text;\nend",
       "methods": {
         "create_task": {
           "args": "task_id text,\nprovisioner_id text,\nworker_type text,\nscheduler_id text,\ntask_group_id text,\ndependencies jsonb,\nrequires task_requires,\nroutes jsonb,\npriority task_priority,\nretries integer,\ncreated timestamptz,\ndeadline timestamptz,\nexpires timestamptz,\nscopes jsonb,\npayload jsonb,\nmetadata jsonb,\ntags jsonb,\nextra jsonb",
@@ -5789,7 +5789,7 @@
           "serviceName": "queue"
         }
       },
-      "migrationScript": "begin\n  alter table tasks drop column provisioner_id, drop column worker_type;\n  alter table tasks add constraint task_queue_id_not_null check (task_queue_id is not null) not valid;\n\n  create function online_downgrade_v56_batch(batch_size_in integer, state_in jsonb)\n  returns table (count integer, state jsonb) as $$\n  declare\n    item record;\n    count integer;\n  begin\n    count := 0;\n\n    for item in\n      select task_id\n      from tasks\n      where worker_type is null or provisioner_id is null\n      limit batch_size_in\n    loop\n      update tasks\n      set\n        provisioner_id = split_part(tasks.task_queue_id, '/', 1),\n        worker_type = split_part(tasks.task_queue_id, '/', 2)\n      where tasks.task_id = item.id;\n      count := count + 1;\n    end loop;\n    return query select\n      count as count,\n      '{}'::jsonb as state;\n  end\n  $$ language plpgsql;\n\n  create function online_downgrade_v56_is_complete() returns boolean as $$\n  begin\n    perform * from tasks where worker_type is null or provisioner_id is null limit 1;\n    return not found; \n  end\n  $$ language plpgsql;\n  \nend",
+      "migrationScript": "begin\n  alter table tasks drop column provisioner_id, drop column worker_type;\n  alter table tasks add constraint task_queue_id_not_null check (task_queue_id is not null) not valid;\n\n  create or replace function online_downgrade_v55_batch(batch_size_in integer, state_in jsonb)\n  returns table (count integer, state jsonb) as $$\n  declare\n    item record;\n    count integer;\n  begin\n    count := 0;\n\n    for item in\n      select task_id\n      from tasks\n      where worker_type is null or provisioner_id is null\n      limit batch_size_in\n    loop\n      update tasks\n      set\n        provisioner_id = split_part(tasks.task_queue_id, '/', 1),\n        worker_type = split_part(tasks.task_queue_id, '/', 2)\n      where tasks.task_id = item.task_id;\n      count := count + 1;\n    end loop;\n    return query select\n      count as count,\n      '{}'::jsonb as state;\n  end\n  $$ language plpgsql;\n\n  create or replace function online_downgrade_v55_is_complete() returns boolean as $$\n  begin\n    perform * from tasks where worker_type is null or provisioner_id is null limit 1;\n    return not found; \n  end\n  $$ language plpgsql;\n  \nend",
       "version": 56
     }
   ]
