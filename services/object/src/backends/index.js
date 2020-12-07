@@ -39,7 +39,6 @@ class Backends {
         rootUrl: cfg.taskcluster.rootUrl,
         config,
       });
-      this._backends.set(backendId, backend);
       
       try{
         await backend.setup();
@@ -47,7 +46,8 @@ class Backends {
         this.monitor.reportError(err.message);
         continue;
       }
-    
+
+      this._backends.set(backendId, backend);
     }
     
   }
