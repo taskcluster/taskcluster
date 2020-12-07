@@ -2,6 +2,7 @@ const _ = require('lodash');
 const helper = require('../helper');
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
+const { UNDEFINED_COLUMN } = require('taskcluster-lib-postgres');
 
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
 
@@ -76,12 +77,39 @@ suite(testing.suiteName(), function() {
     },
     concurrentCheck: async client => {
       // check that the inserted data looks as expected
-      const res = await client.query('select task_id, task_queue_id from tasks');
+      let res = await client.query('select task_id, task_queue_id from tasks');
       const nextTaskId = res.rows.length + 1;
       const tids = res.rows.map(({ task_id }) => task_id).sort();
       assert.deepEqual(tids, _.range(1, nextTaskId).map(i => `tid-${i}`).sort());
       const tqids = res.rows.map(({ task_queue_id }) => task_queue_id).sort();
       assert.deepEqual(tqids, _.range(1, nextTaskId).map(i => `pp/wt-${i}`).sort());
+
+      // check that get_task function works with items that may not yet have
+      // provisioner_id and worker_type during a downgrade
+      try {
+        res = await client.query(`select task_id from tasks 
+                                where worker_type is null or provisioner_id is null`);
+      } catch (err) {
+        if (err.code !== UNDEFINED_COLUMN) {
+          throw err;
+        }
+        res = null;
+      }
+      if (res && res.rows.length > 0) {
+        res = await client.query(`
+          select task_id, provisioner_id, worker_type from get_task('${res.rows[0].task_id}')`);
+        assert(res.rows[0].provisioner_id && res.rows[0].worker_type,
+          'get_task returned a task without provisioner_id or worker_type');
+      }
+
+      // check that get_task_by_task_groups works during upgrade, downgrade
+      res = await client.query(`
+        select task_id, provisioner_id, worker_type 
+          from get_tasks_by_task_group('tgid', 200, 0)`);
+      const pps = res.rows.map(({ provisioner_id }) => provisioner_id);
+      assert.deepEqual(new Set(pps), new Set(['pp']));
+      const wts = res.rows.map(({ worker_type }) => worker_type).sort();
+      assert.deepEqual(wts, _.range(1, nextTaskId).map(i => `wt-${i}`).sort());
 
       // check functions that use provisioner_id and worker_type (which should still work during an online downgrade)
       // check that create_task works as expected
