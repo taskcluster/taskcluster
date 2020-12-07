@@ -17,47 +17,53 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('expiration deletes row when backend returns true', async function() {
-    await helper.db.fns.create_object({
+    await helper.db.fns.create_object_for_upload({
       name_in: 'test-obj',
       project_id_in: 'proj',
       backend_id_in: 'testBackend',
+      upload_id_in: taskcluster.slugid(),
+      upload_expires_in: taskcluster.fromNow('1 hour'),
       data_in: { expirationReturns: true },
       expires_in: taskcluster.fromNow('-1 day'),
     });
 
     await helper.load('expire');
 
-    const res = await helper.db.fns.get_object({ name_in: 'test-obj' });
+    const res = await helper.db.fns.get_object_with_upload({ name_in: 'test-obj' });
     assert.deepEqual(res, []);
   });
 
   test('expiration does not delete row when backend returns false', async function() {
-    await helper.db.fns.create_object({
+    await helper.db.fns.create_object_for_upload({
       name_in: 'test-obj',
       project_id_in: 'proj',
       backend_id_in: 'testBackend',
+      upload_id_in: taskcluster.slugid(),
+      upload_expires_in: taskcluster.fromNow('1 hour'),
       data_in: { expirationReturns: false },
       expires_in: taskcluster.fromNow('-1 day'),
     });
 
     await helper.load('expire');
 
-    const res = await helper.db.fns.get_object({ name_in: 'test-obj' });
+    const res = await helper.db.fns.get_object_with_upload({ name_in: 'test-obj' });
     assert.deepEqual(res.map(obj => obj.name), ['test-obj']);
   });
 
   test('expiration does not fail row when backend fails', async function() {
-    await helper.db.fns.create_object({
+    await helper.db.fns.create_object_for_upload({
       name_in: 'test-obj',
       project_id_in: 'proj',
       backend_id_in: 'testBackend',
+      upload_id_in: taskcluster.slugid(),
+      upload_expires_in: taskcluster.fromNow('1 hour'),
       data_in: { expirationReturns: 'fail' },
       expires_in: taskcluster.fromNow('-1 day'),
     });
 
     await helper.load('expire');
 
-    const res = await helper.db.fns.get_object({ name_in: 'test-obj' });
+    const res = await helper.db.fns.get_object_with_upload({ name_in: 'test-obj' });
     assert.deepEqual(res.map(obj => obj.name), ['test-obj']);
 
     const monitor = await helper.load('monitor');
@@ -70,17 +76,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('expiration does not fail row when backend does not exist', async function() {
-    await helper.db.fns.create_object({
+    await helper.db.fns.create_object_for_upload({
       name_in: 'test-obj',
       project_id_in: 'proj',
       backend_id_in: 'nosuch',
+      upload_id_in: taskcluster.slugid(),
+      upload_expires_in: taskcluster.fromNow('1 hour'),
       data_in: { expirationReturns: 'fail' },
       expires_in: taskcluster.fromNow('-1 day'),
     });
 
     await helper.load('expire');
 
-    const res = await helper.db.fns.get_object({ name_in: 'test-obj' });
+    const res = await helper.db.fns.get_object_with_upload({ name_in: 'test-obj' });
     assert.deepEqual(res.map(obj => obj.name), ['test-obj']);
 
     const monitor = await helper.load('monitor');

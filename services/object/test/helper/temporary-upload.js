@@ -39,11 +39,15 @@ exports.testTemporaryUpload = ({
     test('upload an object', async function() {
       const data = crypto.randomBytes(256);
       const name = `${prefix}test!obj%ect/slash`;
+      const expires = taskcluster.fromNow('1 hour');
+      const uploadId = taskcluster.slugid();
 
-      await helper.db.fns.create_object(name, 'test-proj', backendId, {}, taskcluster.fromNow('1 hour'));
-      const [object] = await helper.db.fns.get_object(name);
+      await helper.db.fns.create_object_for_upload(name, 'test-proj', backendId, uploadId, expires, {}, expires);
+      const [object] = await helper.db.fns.get_object_with_upload(name);
 
       await backend.temporaryUpload(object, data);
+
+      await helper.db.fns.object_upload_complete(name, uploadId);
 
       const stored = await getObjectContent({ name });
       assert.deepEqual(stored, data);

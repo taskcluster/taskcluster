@@ -68,6 +68,13 @@ type (
 
 		// Project identifier.
 		ProjectID string `json:"projectId"`
+
+		// Unique identifier for this upload.   Once an object is created with an uploadId,
+		// uploads of the same object with different uploadIds will be rejected.  Callers
+		// should pass a randomly-generated slugid here.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		UploadID string `json:"uploadId"`
 	}
 )
 
