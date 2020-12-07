@@ -21,11 +21,7 @@ class Backends {
   async _setupBackends({ cfg, monitor, db }) {
     this._backends = new Map();
 
-    if (!cfg.backends) {
-      throw new Error('No backends configured');
-    }
-
-    for (const [backendId, config] of Object.entries(cfg.backends)) {
+    for (const [backendId, config] of Object.entries(cfg.backends || {})) {
       const Backend = BACKEND_TYPES[config.backendType];
 
       if (!Backend) {
