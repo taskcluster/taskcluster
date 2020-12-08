@@ -93,7 +93,7 @@
     "sanitize-html": "^2.0.0",
     "sentry-api": "^0.2.0",
     "serialize-error": "^7.0.0",
-    "sift": "^13.0.0",
+    "sift": "8.x",
     "slugid": "^2.0.0",
     "subscriptions-transport-ws": "^0.9.7",
     "superagent": "^6.0.0",
