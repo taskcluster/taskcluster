@@ -34,7 +34,6 @@ migrationScript: |-
       return not found; 
     end
     $$ language plpgsql;
-
   end
 downgradeScript: |-
   begin
@@ -42,9 +41,6 @@ downgradeScript: |-
 
     drop function online_migration_v55_batch(batch_size_in integer, state_in jsonb);
     drop function online_migration_v55_is_complete();
-    drop function if exists online_downgrade_v55_batch(batch_size_in integer, state_in jsonb);
-    drop function if exists online_downgrade_v55_is_complete();
-
   end
 methods:
   create_task:
