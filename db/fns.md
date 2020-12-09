@@ -91,6 +91,7 @@
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts`](#get_queue_artifacts)
+   * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
    * [`get_queue_worker_tqid`](#get_queue_worker_tqid)
    * [`get_queue_workers_tqid`](#get_queue_workers_tqid)
    * [`get_task`](#get_task)
@@ -1125,6 +1126,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts`](#get_queue_artifacts)
+* [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
 * [`get_queue_worker_tqid`](#get_queue_worker_tqid)
 * [`get_queue_workers_tqid`](#get_queue_workers_tqid)
 * [`get_task`](#get_task)
@@ -1539,6 +1541,33 @@ Get existing queue artifacts filtered by the optional arguments,
 ordered by the `task_id`, `run_id`, and `name`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
+
+### get_queue_artifacts_paginated
+
+* *Mode*: read
+* *Arguments*:
+  * `task_id_in text`
+  * `run_id_in integer`
+  * `expires_in timestamptz`
+  * `page_size_in integer`
+  * `after_task_id_in text`
+  * `after_run_id_in integer`
+  * `after_name_in text`
+* *Returns*: `table`
+  * `task_id text`
+  * `run_id integer`
+  * `name text`
+  * `storage_type text`
+  * `content_type text`
+  * `details jsonb`
+  * `present boolean`
+  * `expires timestamptz`
+
+Get existing queue artifacts, filtered by the optional arguments, ordered
+by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify
+where the page of results should begin, and must all be specified if any
+are specified.  Typically these values would be drawn from the last item
+in the previous page.
 
 ### get_queue_worker_tqid
 
