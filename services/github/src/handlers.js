@@ -462,10 +462,11 @@ async function requestArtifact(artifactName, { taskId, runId, debug, instGithub,
     const res = await utils.throttleRequest({ url, method: 'GET' });
 
     if (res.status >= 400 && res.status !== 404) {
-      let errorMessage = "Failed to get your artifact.\n";
+      const requiredScope = `queue:get-artifact:${artifactName}`;
+      let errorMessage = `Failed to fetch task artifact \`${artifactName}\` for GitHub integration.\n`;
       switch (res.status) {
         case 403:
-          errorMessage = errorMessage.concat("Make sure your artifact is public. See the documentation on the artifact naming.");
+          errorMessage = errorMessage.concat(`Make sure your task has the scope \`${requiredScope}\`. See the documentation on the artifact naming.`);
           break;
         case 404:
           errorMessage = errorMessage.concat("Make sure the artifact exists, and there are no typos in its name.");
@@ -474,7 +475,7 @@ async function requestArtifact(artifactName, { taskId, runId, debug, instGithub,
           errorMessage = errorMessage.concat("Make sure the artifact exists on the worker or other location.");
           break;
         default:
-          if (res.response && res.response.error & res.response.error.message) {
+          if (res.response && res.response.error && res.response.error.message) {
             errorMessage = errorMessage.concat(res.response.error.message);
           }
           break;
