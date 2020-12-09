@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
 const { Octokit } = require('@octokit/rest');
+const { createAppAuth } = require("@octokit/auth-app");
 const { throttling } = require("@octokit/plugin-throttling");
 const { retry } = require("@octokit/plugin-retry");
 
@@ -50,14 +50,12 @@ module.exports = async ({ cfg, monitor }) => {
   };
 
   const getAppGithub = async () => {
-    const inteToken = jwt.sign(
-      { iss: cfg.github.credentials.appId },
-      privatePEM,
-      { algorithm: 'RS256', expiresIn: '1m' },
-    );
-
     return new PluggedOctokit({
-      auth: `bearer ${inteToken}`,
+      authStrategy: createAppAuth,
+      auth: {
+        appId: cfg.github.credentials.appId,
+        privateKey: privatePEM,
+      },
       ...OctokitOptions,
     });
   };
