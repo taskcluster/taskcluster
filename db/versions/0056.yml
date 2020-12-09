@@ -24,7 +24,10 @@ downgradeScript: |-
       for item in
         select task_id
         from tasks
-        where worker_type is null or provisioner_id is null
+        where
+          (state ->> task_id is null or task_id > state ->> task_id) and
+          worker_type is null or provisioner_id is null
+        order by task_id
         limit batch_size_in
       loop
         update tasks
@@ -36,7 +39,7 @@ downgradeScript: |-
       end loop;
       return query select
         count as count,
-        '{}'::jsonb as state;
+        to_jsonb(item) as state;
     end
     $$ language plpgsql;
 
