@@ -216,6 +216,7 @@
     "semanticCommits": "disabled",
     "packageRules": [
       {
+        "_comment": "packages which get very frequent updates are limited to once per week",
         "packagePatterns": [
           "^googleapis$",
           "^aws-sdk$",
@@ -226,10 +227,18 @@
         ]
       },
       {
+        "_comment": "major updates get higher prority than minor/patch version bumps",
         "updateTypes": [
           "major"
         ],
         "prPriority": 1
+      },
+      {
+        "_comment": "automerge minor PRs for top-level package.json, as it is well-tested",
+        "updateTypes": ["minor", "patch"],
+        "matchCurrentVersion": "!/^0/",
+        "paths": ["+(package.json)"],
+        "automerge": true
       }
     ],
     "enabledManagers": [
