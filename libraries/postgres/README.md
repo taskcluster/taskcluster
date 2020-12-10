@@ -314,8 +314,19 @@ An online migration may also be interrupted and replaced with an online downgrad
 
 ## Pagination
 
-Database functions which return many rows typically have `page_size int, page_offset int` as their last two arguments, and return a page of the given size at the given offset.
-The taskcluster-lib-api function `paginatedResults` is useful for translating such paginated results into an API response.
+Pagination is the process of returning only some of the rows from a query, with a mechanism for getting the next "page" of rows in a subsequent query.
+The [taskcluster-lib-api function `paginateResults`](./api#pagination) is useful for translating such paginated results into an API response (and supports both types of pagination).
+
+### Index-Based
+
+The preferred mechanism for paginating database queries is to pass `page_size_in` giving the number of rows in a page, and one or more `after_.._in` parameters specifying where the page begins.
+The `after_.._in` parameters must correspond to an index on the table, so that Postgres can use that index to find the next row without a full scan.
+
+### Offset / Limit-Based
+
+Many database functions which return many rows have `page_size int, page_offset int` as their last two arguments, and return a page of the given size at the given offset.
+This is the "old way", and is not preferred both because it is not performant (the database must scan `page_offset` rows before it can return anything) and because it tends to result in missing or duplicate rows if insertions or deletions occur on the table.
+
 For other users in Taskcluster services, this library provides `paginatedIterator` to convert paginated results into an async iterator.
 
 ```javascript
@@ -334,6 +345,7 @@ const doTheThings = async () => {
 It's important to remember that each paginated fetch is a different transaction, and so the content of the DB may change from call to call.
 An "offset" into a set of results that is rapidly changing size is not accurate, and can easily return the same row twice or skip a row.
 For UI purposes, this is not a big deal, but may cause issues for other uses.
+Use index-based pagination in such cases.
 
 ## Encryption
 
