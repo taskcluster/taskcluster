@@ -26,6 +26,12 @@ exports.tasks = [{
         /^FROM node:[0-9.]+(.*)$/gm,
         `FROM node:${nodeVersion}$1`));
 
+    utils.status({ message: 'workers/docker-worker/test/images/test/Dockerfile' });
+    await modifyRepoFile('workers/docker-worker/test/images/test/Dockerfile',
+      contents => contents.replace(
+        /^FROM node:[0-9.]+(.*)$/gm,
+        `FROM node:${nodeVersion}$1`));
+
     utils.status({ message: '.nvmrc' });
     await writeRepoFile('.nvmrc', nodeVersion + '\n');
 
