@@ -322,12 +322,32 @@ The [taskcluster-lib-api function `paginateResults`](./api#pagination) is useful
 The preferred mechanism for paginating database queries is to pass `page_size_in` giving the number of rows in a page, and one or more `after_.._in` parameters specifying where the page begins.
 The `after_.._in` parameters must correspond to an index on the table, so that Postgres can use that index to find the next row without a full scan.
 
+For other uses in Taskcluster services, this library provides `paginatedIterator` to convert paginated results into an async iterator.
+
+```javascript
+const {paginatedIterator} = require('taskcluster-lib-postgres');
+
+const doTheThings = async () => {
+  for await (let row of paginatedIterator({
+    indexColumns: ['foo_id', 'bar_id'],
+    fetch: async (page_size_in, after) => db.fns.get_widgets({
+      ...,
+      page_size_in,
+      ...after,
+    }),
+    size: 1000, // optional, defaults to 1000
+  })) {
+    // ..do something with `row`
+  }
+}
+```
+
 ### Offset / Limit-Based
 
 Many database functions which return many rows have `page_size int, page_offset int` as their last two arguments, and return a page of the given size at the given offset.
 This is the "old way", and is not preferred both because it is not performant (the database must scan `page_offset` rows before it can return anything) and because it tends to result in missing or duplicate rows if insertions or deletions occur on the table.
 
-For other users in Taskcluster services, this library provides `paginatedIterator` to convert paginated results into an async iterator.
+The `paginatedIterator` also works for this type of pagination:
 
 ```javascript
 const {paginatedIterator} = require('taskcluster-lib-postgres');
