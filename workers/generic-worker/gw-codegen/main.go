@@ -15,8 +15,8 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/kr/text"
-	"github.com/taskcluster/taskcluster/v38/internal/jsontest"
-	"github.com/taskcluster/taskcluster/v38/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v39/internal/jsontest"
+	"github.com/taskcluster/taskcluster/v39/tools/jsonschema2go"
 )
 
 func main() {
@@ -129,7 +129,7 @@ func formatSourceAndSave(sourceCode []byte, sourceFile string) error {
 	var fixedFixedImports []byte
 	if err == nil {
 		importFixer := regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`)
-		fixedFixedImports = importFixer.ReplaceAll(fixedImports, []byte("github.com/taskcluster/taskcluster/v38/"))
+		fixedFixedImports = importFixer.ReplaceAll(fixedImports, []byte("github.com/taskcluster/taskcluster/v39/"))
 	}
 
 	// only perform general format, if that worked...

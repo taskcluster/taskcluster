@@ -127,9 +127,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       listTaskGroup: async () => ({ tasks: [] }),
       use: () => ({
         getArtifact: async() => CUSTOM_CHECKRUN_TEXT,
-        buildUrl: async() => 'http://example.com',
+        buildSignedUrl: async() => 'http://example.com',
       }),
-      buildUrl: () => 'url',
     };
 
     // set up the allowPullRequests key

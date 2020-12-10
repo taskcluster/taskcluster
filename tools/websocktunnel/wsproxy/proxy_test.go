@@ -22,9 +22,9 @@ import (
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v38/tools/websocktunnel/client"
-	"github.com/taskcluster/taskcluster/v38/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v38/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v39/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v39/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v39/tools/websocktunnel/wsmux"
 )
 
 var upgrader = websocket.Upgrader{

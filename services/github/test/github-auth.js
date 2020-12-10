@@ -171,6 +171,18 @@ class FakeGithub {
         return await (implementation || (() => {}))(options);
       });
     });
+    // super-hacky version of the pagination plugin.  See https://github.com/taskcluster/taskcluster/issues/3985
+    this.paginate = {
+      iterator: async function*(stub, options) {
+        const response = await stub(options);
+        // ugh, seriously?
+        // see https://github.com/octokit/plugin-paginate-rest.js/blob/master/src/normalize-paginated-list-response.ts
+        if (response.data.repositories) {
+          response.data = response.data.repositories;
+        }
+        yield response;
+      },
+    };
   }
 
   setTaskclusterYml({ owner, repo, ref, content }) {

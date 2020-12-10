@@ -1,7 +1,7 @@
 const util = require('util');
 const path = require('path');
 const rimraf = util.promisify(require('rimraf'));
-const mkdirp = util.promisify(require('mkdirp'));
+const mkdirp = require('mkdirp');
 const References = require('taskcluster-lib-references');
 const exec = util.promisify(require('child_process').execFile);
 const { REPO_ROOT, writeRepoJSON, listServices } = require('../../utils');

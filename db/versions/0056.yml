@@ -1,0 +1,145 @@
+version: 56
+description: Add objects.upload_id, upload_expires, and ready columns
+migrationScript: |-
+  begin
+    alter table objects
+    add column upload_id text,
+    add column upload_expires timestamptz;
+
+    -- index by upload_id when it is set
+    create unique index
+    objects_upload_id_idx
+    on objects(upload_id)
+    where objects.upload_id is not NULL;
+  end
+downgradeScript: |-
+  begin
+    drop index objects_upload_id_idx;
+
+    alter table objects
+    drop column upload_id,
+    drop column upload_expires;
+  end
+methods:
+  create_object:
+    # This method will still work on the new table as-written, since the new columns are nullable
+    deprecated: true
+  create_object_for_upload:
+    description: |-
+      Create an object record ready for upload.
+      
+      This method is idempotent, and will succeed if called multiple times with
+      the same parameters, as long as `upload_id` is still set (that is, until
+      the upload is completed).  Otherwise it will raise a UNIQUE_VIOLATION
+      exception.  `upload_expires_in` is excluded from this comparison.
+    mode: write
+    serviceName: object
+    args: |-
+      name_in text,
+      project_id_in text,
+      backend_id_in text,
+      upload_id_in text,
+      upload_expires_in timestamptz,
+      data_in jsonb,
+      expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        if upload_id_in is null or upload_expires_in is null then
+          raise exception 'upload_id and upload_expires are required' using errcode = 'NOT_NULL_VIOLATION';
+        end if;
+
+        -- NOTE: This table has two unique columns (name and upload_id).  If the inserted name is novel
+        -- but the inserted upload_id is not, this will generate a UNIQUE_VIOLATION error as desired.
+        -- If the inserted name exists, but the upload_id is novel, then the on-conflict clause will
+        -- apply and we will raise UNIQUE_VIOLATION manually.
+        insert
+          into objects (name, data, project_id, backend_id, upload_id, upload_expires, expires)
+          values (name_in, data_in, project_id_in, backend_id_in, upload_id_in, upload_expires_in, expires_in)
+        on conflict (name) do
+        update set name = name_in
+        where
+          objects.name = name_in
+          and objects.data = data_in
+          and objects.project_id = project_id_in
+          and objects.backend_id = backend_id_in
+          and objects.upload_id = upload_id_in
+          -- note that upload_expires isn't consulted
+          and objects.expires = expires_in;
+        if not found then
+          raise exception 'upload already exists' using errcode = 'unique_violation';
+        end if;
+      end
+  object_upload_complete:
+    description: |-
+      Mark an object as uploaded and ready for download.
+      
+      This method is idempotent, and will succeed if the object is already ready
+      for download.
+    mode: write
+    serviceName: object
+    args: |-
+      name_in text,
+      upload_id_in text
+    returns: void
+    body: |-
+      begin
+        update objects
+        set
+          upload_id = null,
+          upload_expires = null
+        where
+          name = name_in
+          and upload_id = upload_id_in;
+      end
+  get_object:
+    deprecated: true
+  get_object_with_upload:
+    description: |-
+      Get an object by name, or an empty set if no such object exists.
+    mode: read
+    serviceName: object
+    args: name_in text
+    returns: table (name text, data jsonb, project_id text, backend_id text, upload_id text, upload_expires timestamptz, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          objects.name,
+          objects.data,
+          objects.project_id,
+          objects.backend_id,
+          objects.upload_id,
+          objects.upload_expires,
+          objects.expires
+        from objects
+        where
+          objects.name = name_in;
+      end
+  get_expired_objects:
+    description: |-
+      Get objects with an expiration before the current time.  If given, only
+      objects with a name greater than `start_at_in` are returned.  The
+      `limit_in` argument limits the number of results returned.  This returns
+      both expired objects (expires < now) and expired uploads (upload_expires
+      < now).
+    mode: read
+    serviceName: object
+    args: 'limit_in integer, start_at_in text'
+    returns: table (name text, data jsonb, project_id text, backend_id text, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          objects.name,
+          objects.data,
+          objects.project_id,
+          objects.backend_id,
+          objects.expires
+        from objects
+        where
+          (start_at_in is null or objects.name > start_at_in) and
+          (objects.expires < now() or objects.upload_expires < now())
+        order by name
+        limit limit_in;
+      end

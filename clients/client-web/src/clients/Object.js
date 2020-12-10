@@ -11,7 +11,7 @@ export default class Object extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.uploadObject.entry = {"args":["name"],"category":"Upload","input":true,"method":"post","name":"uploadObject","query":[],"route":"/upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.uploadObject.entry = {"args":["name"],"category":"Upload","input":true,"method":"put","name":"uploadObject","query":[],"route":"/upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.downloadObject.entry = {"args":["name"],"category":"Download","input":true,"method":"put","name":"downloadObject","output":true,"query":[],"route":"/download-object/<name>","scopes":"object:download:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.download.entry = {"args":["name"],"category":"Download","method":"get","name":"download","query":[],"route":"/download/<name>","scopes":"object:download:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
   }

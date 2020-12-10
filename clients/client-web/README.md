@@ -12,51 +12,14 @@ not require a build step to use.
 
 ## Installation
 
-You can install this package using Yarn, npm, or include via script tags:
-
-**Yarn installation**
+You can install this package using Yarn ore npm:
 
 ```bash
 yarn add taskcluster-client-web
 ```
-
-**NPM installation**
-
 ```bash
 npm install --save taskcluster-client-web
 ```
-
-**Script installation**
-
-```html
-<script src="path/to/taskcluster-client-web.js"></script>
-
-<!-- You can also include it from the unpkg CDN -->
-<script src="https://unpkg.com/taskcluster-client-web"></script>
-
-<!-- or from the jsDelivr CDN -->
-<script src="https://cdn.jsdelivr.net/npm/taskcluster-client-web/lib/index.js"></script>
-```
-
-_Note: taskcluster-client-web depends on 3 external packages: hawk, query-string, and crypto-js.
-You must manually include these if you choose to use the script installation:_
-
-```html
-<script src="https://unpkg.com/hawk/lib/browser.js"></script>
-<!-- or from the jsDelivr CDN -->
-<script src="https://cdn.jsdelivr.net/npm/hawk/dist/browser.js"></script>
-<script>
-// hawk's "browser" client doesn't expose itself on window
-window.hawk = hawk;
-</script>
-<script src="https://wzrd.in/standalone/query-string"></script>
-<script src="https://unpkg.com/crypto-js"></script>
-
-<script src="https://unpkg.com/taskcluster-client-web"></script>
-<!-- or from the jsDelivr CDN -->
-<script src="https://cdn.jsdelivr.net/npm/taskcluster-client-web/lib/index.js"></script>
-```
-
 
 ## Usage
 ### Import
@@ -89,17 +52,6 @@ require(['taskcluster-client-web'], (taskcluster) => {
 require(['taskcluster-client-web'], ({ Queue }) => {
   // ...
 });
-```
-
-**Global variable from script tag**
-
-```html
-<script src="path/to/taskcluster-client-web.js"></script>
-<script>
-  const taskcluster = window.taskcluster;
-
-  const { Queue } = taskcluster;
-</script>
 ```
 
 ### Setup

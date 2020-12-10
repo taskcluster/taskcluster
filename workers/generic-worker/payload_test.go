@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
-	"github.com/taskcluster/taskcluster/v38/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v39/clients/client-go"
+	"github.com/taskcluster/taskcluster/v39/clients/client-go/tcqueue"
 	"github.com/xeipuuv/gojsonschema"
 )
 

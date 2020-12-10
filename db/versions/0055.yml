@@ -1,0 +1,28 @@
+version: 55
+description: Insert object into database, raising P0004 if name already exists, but entire row not identical.
+methods:
+  create_object:
+    description: |-
+      Upload object.
+    mode: write
+    serviceName: object
+    args: name_in text, project_id_in text, backend_id_in text, data_in jsonb, expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        insert
+          into objects (name, data, project_id, backend_id, expires)
+          values (name_in, data_in, project_id_in, backend_id_in, expires_in)
+        on conflict (name) do
+        update set name = name_in
+        where
+          objects.name = name_in
+          and objects.data = data_in
+          and objects.project_id = project_id_in
+          and objects.backend_id = backend_id_in
+          and objects.expires = expires_in;
+        if found then
+          return;
+        end if;
+        raise exception 'conflict' using errcode = 'P0004';
+      end

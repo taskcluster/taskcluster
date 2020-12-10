@@ -37,7 +37,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v39/clients/client-go"
 )
 
 type Object tcclient.Client
@@ -110,7 +110,7 @@ func (object *Object) Ping() error {
 // See #uploadObject
 func (object *Object) UploadObject(name string, payload *UploadObjectRequest) error {
 	cd := tcclient.Client(*object)
-	_, _, err := (&cd).APICall(payload, "POST", "/upload/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(payload, "PUT", "/upload/"+url.QueryEscape(name), nil, nil)
 	return err
 }
 

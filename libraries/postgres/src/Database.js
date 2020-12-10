@@ -7,7 +7,6 @@ const Keyring = require('./Keyring');
 const assert = require('assert').strict;
 const { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } = require('./constants');
 const { MonitorManager } = require('taskcluster-lib-monitor');
-const named = require('yesql').pg;
 const { parse: parseConnectionString } = require('pg-connection-string');
 const { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade } = require('./migration');
 
@@ -103,15 +102,20 @@ class Database {
 
         // For now we only support named arguments that end with "_in" to make sure
         // functions that take a single object argument are not incorrectly labeled as named arguments.
-        const hasNamedArguments = args.length === 1 && _.isPlainObject(args[0]) && Object.keys(args[0]).every(key => key.endsWith('_in'));
+        const validNamedArgument = key => /^[a-z0-9_]+_in$/.test(key);
+        const hasNamedArguments = args.length === 1
+          && _.isPlainObject(args[0])
+          && Object.keys(args[0]).every(validNamedArgument);
         const res = await this._withClient(method.mode, async client => {
           await client.query(method.mode === READ ? 'begin read only' : 'begin read write');
           try {
             let res;
             if (hasNamedArguments) {
-              const placeholders = Object.keys(args[0]).map(arg => `:${arg}`).join(',');
-              const { text, values } = named(`select * from "${method.name}"(${placeholders})`, { useNullForMissing: true })(args[0]);
-              res = await client.query(text, values);
+              const obj = args[0];
+              const keys = Object.keys(obj);
+              const values = keys.map(k => obj[k]); // order must match keys!
+              const placeholders = keys.map((key, i) => `${key} => $${i + 1}`).join(',');
+              res = await client.query(`select * from "${method.name}"(${placeholders})`, values);
             } else {
               const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
               res = await client.query(`select * from "${method.name}"(${placeholders})`, args);

@@ -9,6 +9,14 @@ properties:
     description: |
       Project identifier.
     type:           string
+  uploadId:
+    title: "Upload ID"
+    description: |-
+      Unique identifier for this upload.   Once an object is created with an uploadId,
+      uploads of the same object with different uploadIds will be rejected.  Callers
+      should pass a randomly-generated slugid here.
+    type:             string
+    pattern:          {$const: slugid-pattern}
   expires:
     title:          "Expiration"
     description: |
@@ -23,5 +31,6 @@ properties:
 additionalProperties: false
 required:
   - expires
+  - uploadId
   - projectId
   - data

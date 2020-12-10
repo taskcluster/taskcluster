@@ -1,15 +1,34 @@
-const neutrino = require('neutrino');
-
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
 module.exports = config => {
-  neutrino().karma()(config);
-
-  // The karma preset uses deepmerge to merge the options.
-  // For deepmerging, add properties to the karma preset
-  // in the options argument in`.neutrinorc.js`. For overriding
-  // config properties, use this file.
   return config.set({
+    frameworks: ['mocha'],
+    files: [
+      {
+        pattern: 'test/*_test.js',
+        watched: false,
+        included: true,
+        served: true,
+      },
+    ],
+    preprocessors: {
+      '**/*.js': ['webpack'],
+    },
+    webpackMiddleware: {
+      stats: {
+        all: false,
+        errors: true,
+        timings: true,
+        warnings: true,
+      },
+    },
+    webpack: {
+      mode: 'development',
+    },
+    reporters: ['mocha'],
     browsers: [process.env.CI ? 'FirefoxHeadless' : 'Firefox'],
+    client: {
+      args: [process.env.TASKCLUSTER_ROOT_URL],
+    },
   });
 };

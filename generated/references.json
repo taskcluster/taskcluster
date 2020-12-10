@@ -4099,10 +4099,17 @@
           "description": "Project identifier.\n",
           "title": "Project Identifier",
           "type": "string"
+        },
+        "uploadId": {
+          "description": "Unique identifier for this upload.   Once an object is created with an uploadId,\nuploads of the same object with different uploadIds will be rejected.  Callers\nshould pass a randomly-generated slugid here.",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Upload ID",
+          "type": "string"
         }
       },
       "required": [
         "expires",
+        "uploadId",
         "projectId",
         "data"
       ],
@@ -4173,27 +4180,18 @@
           "additionalProperties": false,
           "description": "A simple download returns a URL to which the caller should make a GET request.\nSee [Simple Downloads](https://docs.taskcluster.net/docs/docs/reference/platform/object/simple-downloads) for details.",
           "properties": {
-            "details": {
-              "additionalProperties": false,
-              "properties": {
-                "url": {
-                  "format": "uri",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "url"
-              ],
-              "type": "object"
-            },
             "method": {
               "const": "simple",
+              "type": "string"
+            },
+            "url": {
+              "format": "uri",
               "type": "string"
             }
           },
           "required": [
             "method",
-            "details"
+            "url"
           ],
           "title": "simple Download Response",
           "type": "object"
@@ -8793,6 +8791,17 @@
             "level": {
               "type": "string"
             },
+            "middleware": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
             "procs": {
               "additionalProperties": false,
               "properties": {
@@ -8855,8 +8864,6 @@
           },
           "required": [
             "procs",
-            "backends",
-            "backend_map",
             "taskcluster_client_id",
             "taskcluster_access_token",
             "read_db_url",
@@ -15428,7 +15435,7 @@
           "category": "Upload",
           "description": "Upload backend data.",
           "input": "v1/upload-object-request.json#",
-          "method": "post",
+          "method": "put",
           "name": "uploadObject",
           "query": [
           ],

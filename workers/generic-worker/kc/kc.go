@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/taskcluster/taskcluster/v38/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v39/workers/generic-worker/host"
 )
 
 var (

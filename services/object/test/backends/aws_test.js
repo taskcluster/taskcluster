@@ -58,15 +58,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   const makeObject = async ({ name, data }) => {
     const projectId = 'test-proj';
     const expires = taskcluster.fromNow('1 hour');
+    const uploadId = taskcluster.slugid();
 
-    await helper.db.fns.create_object(name, projectId, 'aws', {}, expires);
-    const [object] = await helper.db.fns.get_object(name);
+    await helper.db.fns.create_object_for_upload(name, projectId, 'aws', uploadId, expires, {}, expires);
+    const [object] = await helper.db.fns.get_object_with_upload(name);
 
     await s3.putObject({
       Bucket: secret.testBucket,
       Key: name,
       Body: data,
     }).promise();
+
+    await helper.db.fns.object_upload_complete(name, uploadId);
 
     return object;
   };
@@ -155,8 +158,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     test('succeeds for an object that no longer exists', async function() {
       const name = 'some/object';
-      await helper.db.fns.create_object(name, 'test-proj', 'aws', {}, taskcluster.fromNow('1 hour'));
-      const [object] = await helper.db.fns.get_object(name);
+      const uploadId = taskcluster.slugid();
+      await helper.db.fns.create_object_for_upload(
+        name, 'test-proj', 'aws', uploadId,
+        taskcluster.fromNow('1 hour'), {}, taskcluster.fromNow('1 hour'));
+      await helper.db.fns.object_upload_complete(name, uploadId);
+      const [object] = await helper.db.fns.get_object_with_upload(name);
 
       const backends = await helper.load('backends');
       const backend = backends.get('awsPrivate');

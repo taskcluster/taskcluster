@@ -6,15 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v39/clients/client-go"
 )
 
 type (
 	Details struct {
-		URL string `json:"url"`
-	}
-
-	Details1 struct {
 		URL string `json:"url"`
 	}
 
@@ -43,10 +39,11 @@ type (
 	// A simple download returns a URL to which the caller should make a GET request.
 	// See [Simple Downloads](https://docs.taskcluster.net/docs/docs/reference/platform/object/simple-downloads) for details.
 	SimpleDownloadResponse struct {
-		Details Details1 `json:"details"`
 
 		// Constant value: "simple"
 		Method string `json:"method"`
+
+		URL string `json:"url"`
 	}
 
 	// Download methods that the caller can suport, together with parameters for each method.
@@ -71,6 +68,13 @@ type (
 
 		// Project identifier.
 		ProjectID string `json:"projectId"`
+
+		// Unique identifier for this upload.   Once an object is created with an uploadId,
+		// uploads of the same object with different uploadIds will be rejected.  Callers
+		// should pass a randomly-generated slugid here.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		UploadID string `json:"uploadId"`
 	}
 )
 

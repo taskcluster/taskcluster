@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v38/clients/client-go"
-	"github.com/taskcluster/taskcluster/v38/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v39/clients/client-go"
+	"github.com/taskcluster/taskcluster/v39/clients/client-go/tcqueue"
 )
 
 type Queue struct {

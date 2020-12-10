@@ -4,7 +4,9 @@ const load = require('../../src/main');
 const builder = require('../../src/api.js');
 const { withDb } = require('taskcluster-lib-testing');
 const { BACKEND_TYPES } = require('../../src/backends');
+const { MIDDLEWARE_TYPES } = require('../../src/middleware');
 const { TestBackend } = require('../../src/backends/test');
+const { TestMiddleware } = require('../../src/middleware/test');
 const aws = require('./aws');
 
 Object.assign(exports, require('./simple-download'));
@@ -36,16 +38,23 @@ const testclients = {
   'test-server': ['*'],
 };
 
+/**
+ * Set up the backend and middleware configuration, and
+ * add the test types for both.
+ */
 exports.withBackends = (mock, skipping) => {
   suiteSetup('withBackends', async function() {
     if (skipping()) {
       return;
     }
 
-    // add the 'test' backend only for testing
+    // add the 'test' backend type only for testing
     BACKEND_TYPES['test'] = TestBackend;
 
     await exports.load('cfg');
+    exports.load.cfg('middleware', [
+      { middlewareType: 'test' },
+    ]);
     exports.load.cfg('backends', {
       testBackend: { backendType: 'test' },
     });
@@ -57,6 +66,26 @@ exports.withBackends = (mock, skipping) => {
 
   suiteTeardown('withBackends', async function() {
     delete BACKEND_TYPES['test'];
+  });
+};
+
+exports.withMiddleware = (mock, skipping, config) => {
+  suiteSetup('withMiddleware', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    // add the 'test' middleware type only for testing
+    MIDDLEWARE_TYPES['test'] = TestMiddleware;
+
+    await exports.load('cfg');
+    exports.load.cfg('middleware', config || [
+      { middlewareType: 'test' },
+    ]);
+  });
+
+  suiteTeardown('withMiddleware', async function() {
+    delete MIDDLEWARE_TYPES['test'];
   });
 };
 

@@ -16,16 +16,10 @@ definitions:
       method:
         type: string
         const: 'simple'
-      details:
-        type: object
-        properties:
-          url:
-            type: string
-            format: uri
-        additionalProperties: false
-        required:
-          - url
+      url:
+        type: string
+        format: uri
     additionalProperties: false
     required:
       - method
-      - details
+      - url

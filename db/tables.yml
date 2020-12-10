@@ -219,5 +219,7 @@ objects:
   name: text not null
   project_id: text not null
   backend_id: text not null
+  upload_id: text
+  upload_expires: timestamp with time zone
   data: jsonb not null
   expires: timestamp with time zone not null

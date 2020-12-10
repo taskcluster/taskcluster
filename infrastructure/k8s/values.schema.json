@@ -886,6 +886,17 @@
         "level": {
           "type": "string"
         },
+        "middleware": {
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
         "procs": {
           "additionalProperties": false,
           "properties": {
@@ -948,8 +959,6 @@
       },
       "required": [
         "procs",
-        "backends",
-        "backend_map",
         "taskcluster_client_id",
         "taskcluster_access_token",
         "read_db_url",

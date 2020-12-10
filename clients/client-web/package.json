@@ -1,25 +1,19 @@
 {
   "name": "taskcluster-client-web",
-  "version": "38.0.6",
-  "main": "build/index.js",
+  "version": "39.0.0",
+  "main": "src/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
   "repository": "https://github.com/taskcluster/taskcluster/tree/main/clients/client-web",
   "files": [
-    "src",
-    "build"
+    "src"
   ],
   "scripts": {
-    "build": "webpack --mode production",
-    "prepare": "yarn build",
     "lint": "eslint src/*.js test/*.js",
     "test": "karma start --single-run"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.10.4",
-    "@babel/plugin-proposal-object-rest-spread": "^7.11.0",
-    "@neutrinojs/karma": "9.4.0",
-    "@neutrinojs/library": "9.4.0",
+    "@babel/core": "^7.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "crypto-js": "^4.0.0",
@@ -28,12 +22,15 @@
     "hawk": "<7.1.0",
     "karma": "^5.2.3",
     "karma-cli": "^2.0.0",
+    "karma-coverage": "^2.0.3",
     "karma-firefox-launcher": "^2.0.0",
+    "karma-mocha": "^2.0.1",
+    "karma-mocha-reporter": "^2.2.5",
     "karma-sourcemap-loader": "^0.3.7",
-    "neutrino": "9.4.0",
+    "karma-webpack": "^4.0.2",
     "query-string": "^6.1.0",
     "webpack": "^4.29.6",
-    "webpack-cli": "^3.2.3"
+    "webpack-cli": "^4.0.0"
   },
   "dependencies": {
     "crypto-js": "^4.0.0",

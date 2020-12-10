@@ -75,4 +75,76 @@ backend_map:
 
 ## Backend Types
 
-No backend types are defined yet!
+### AWS
+
+The `aws` backend type stores objects in an S3 bucket.
+Objects are stored in the bucket using their full name.
+
+Each backend has the following configuration parameters:
+ * `bucket`
+ * `accessKeyId`
+ * `secretAccessKey`
+ * `signGetUrls` (optional, default false)
+
+The bucket parameter names the bucket in which to store the objects.
+You must pre-create the bucket in the appropriate region.
+The credentials should correspond to an IAM user with the following policy, with `$BUCKET` replaced with the bucket name:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1462988481000",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetBucketCORS",
+                "s3:PutBucketCORS",
+                "s3:DeleteObject",
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:PutObjectAcl",
+                "s3:ListBucket",
+                "s3:GetBucketLocation",
+                "s3:GetObjectTagging",
+                "s3:ListMultipartUploadParts",
+                "s3:AbortMultipartUpload",
+                "s3:PutObjectTagging"
+            ],
+            "Resource": [
+                "arn:aws:s3:::$BUCKET",
+                "arn:aws:s3:::$BUCKET/*"
+            ]
+        }
+    ]
+}
+```
+
+The `signGetUrls` config controls the form of the URLs used for simple downloads (such as for loading artifacts in a browser).
+In general, if the bucket contents are public, set this to `false` as signatures are unnecessary; otherwise, set it to true.
+
+## Middleware
+
+The object service supports "middleware" that can intercept download requests.
+This is configured with the `object.middleware` configuration value.
+This is a JSON array containing a sequence of middleware specifications, which will be tried in order.
+Each is a JSON object that must have at least a `middlewareType` giving the type of middleware; the remaining properties are specific to that middleware type.
+
+## Middleware Types
+
+### CDN
+
+The `cdn` middleware supports redirecting simple download requests to fetch instead from a CDN.
+Its configuration has `middlewareType` `"cdn"` and
+
+ * `regexp` - a regular expression over object names, matching objects that should be redirected
+ * `baseUrl` the base URL to which the object name should be suffixed to generate the CDN URL.
+
+For example:
+
+```yaml
+middleware:
+  - { middlewareType: "cdn", regexp: "^public/.*", baseUrl: "https://d111111abcdef8.cloudfront.net/" }
+```
+
+This configuration would redirect all objects beginning with `public/` to be served at URLs like `https://d111111abcdef8.cloudfront.net/public/some/object`.

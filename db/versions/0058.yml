@@ -5,15 +5,15 @@ migrationScript: |-
     alter table tasks drop column provisioner_id, drop column worker_type;
     alter table tasks add constraint task_queue_id_not_null check (task_queue_id is not null) not valid;
 
-    drop function if exists online_downgrade_v55_batch(batch_size_in integer, state_in jsonb);
-    drop function if exists online_downgrade_v55_is_complete();
+    drop function if exists online_downgrade_v57_batch(batch_size_in integer, state_in jsonb);
+    drop function if exists online_downgrade_v57_is_complete();
   end
 downgradeScript: |-
   begin
     alter table tasks drop constraint task_queue_id_not_null;
     alter table tasks add column provisioner_id text, add column worker_type text;
 
-    create function online_downgrade_v55_batch(batch_size_in integer, state_in jsonb)
+    create function online_downgrade_v57_batch(batch_size_in integer, state_in jsonb)
     returns table (count integer, state jsonb) as $$
     declare
       item record;
@@ -43,7 +43,7 @@ downgradeScript: |-
     end
     $$ language plpgsql;
 
-    create function online_downgrade_v55_is_complete() returns boolean as $$
+    create function online_downgrade_v57_is_complete() returns boolean as $$
     begin
       perform * from tasks where worker_type is null or provisioner_id is null limit 1;
       return not found; 

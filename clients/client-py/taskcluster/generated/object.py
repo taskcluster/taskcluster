@@ -109,7 +109,7 @@ class Object(BaseClient):
         "uploadObject": {
             'args': ['name'],
             'input': 'v1/upload-object-request.json#',
-            'method': 'post',
+            'method': 'put',
             'name': 'uploadObject',
             'route': '/upload/<name>',
             'stability': 'experimental',

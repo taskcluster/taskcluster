@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "38.0.6",
+  "version": "39.0.0",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "12.19.1",
+    "node": "12.20.0",
     "yarn": "^1.22.10"
   },
   "workspaces": [
@@ -18,6 +18,7 @@
     "@azure/ms-rest-azure-js": "^2.0.1",
     "@azure/ms-rest-js": "^2.0.5",
     "@azure/ms-rest-nodeauth": "^3.0.5",
+    "@octokit/core": "^3.0.0",
     "@octokit/plugin-retry": "^3.0.4",
     "@octokit/plugin-throttling": "^3.3.3",
     "@octokit/rest": "^18.0.0",
@@ -33,12 +34,12 @@
     "compression": "^1.7.2",
     "content-security-policy": "^0.3.0",
     "cors": "^2.8.4",
-    "cron-parser": "2.16.3",
+    "cron-parser": "2.18.0",
     "dataloader": "^2.0.0",
     "debug": "^4.1.1",
     "deepmerge": "^4.0.0",
     "ejs": "^3.0.0",
-    "email-templates": "^7.0.0",
+    "email-templates": "^8.0.0",
     "express": "4.17.1",
     "express-session": "^1.16.2",
     "express-sslify": "1.2.0",
@@ -69,7 +70,7 @@
     "marked": "^1.0.0",
     "matrix-js-sdk": "^9.0.0",
     "memorystore": "^1.6.1",
-    "mkdirp": "^0.5.1",
+    "mkdirp": "^1.0.0",
     "netmask": "^1.0.5",
     "newrelic": "^7.0.0",
     "node-fetch": "^2.6.0",
@@ -89,13 +90,13 @@
     "regex-escape": "^3.4.8",
     "request-ip": "^2.0.2",
     "rimraf": "^3.0.0",
-    "sanitize-html": "^1.20.1",
+    "sanitize-html": "^2.0.0",
     "sentry-api": "^0.2.0",
-    "serialize-error": "^5.0.0",
-    "sift": "^8.0.0",
+    "serialize-error": "^7.0.0",
+    "sift": "8.x",
     "slugid": "^2.0.0",
     "subscriptions-transport-ws": "^0.9.7",
-    "superagent": "^5.0.0",
+    "superagent": "^6.0.0",
     "taskcluster-client": "link:clients/client",
     "taskcluster-db": "link:db",
     "taskcluster-lib-api": "link:libraries/api",
@@ -115,8 +116,7 @@
     "topo-sort": "^1.0.0",
     "type-is": "^1.6.15",
     "uuid": "^8.0.0",
-    "walk": "^2.3.9",
-    "yesql": "^4.1.3"
+    "walk": "^2.3.9"
   },
   "devDependencies": {
     "acorn-loose": "^8.0.1",
@@ -165,7 +165,7 @@
     "zurvan": "^0.8.0"
   },
   "resolutions": {
-    "mocha/mkdirp": "^0.5.1"
+    "mocha/mkdirp": "^1.0.0"
   },
   "scripts": {
     "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
@@ -200,7 +200,8 @@
       "eslint",
       "c8",
       "cross-env",
-      "ejs"
+      "ejs",
+      "@octokit/core"
     ]
   },
   "renovate": {
@@ -229,6 +230,12 @@
           "major"
         ],
         "prPriority": 1
+      },
+      {
+        "updateTypes": ["minor", "patch"],
+        "matchCurrentVersion": "!/^0/",
+        "paths": ["+(package.json)"],
+        "automerge": true
       }
     ],
     "enabledManagers": [
