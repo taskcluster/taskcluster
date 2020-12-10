@@ -146,7 +146,7 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('get_queue_artifacts empty', async function(db) {
-    const rows = await db.fns.get_queue_artifacts(null, null, null, null, null);
+    const rows = await db.deprecatedFns.get_queue_artifacts(null, null, null, null, null);
     assert.deepEqual(rows, []);
   });
 
@@ -166,7 +166,7 @@ suite(testing.suiteName(), function() {
       );
     }
 
-    let rows = await db.fns.get_queue_artifacts(null, null, null, null, null);
+    let rows = await db.deprecatedFns.get_queue_artifacts(null, null, null, null, null);
     assert.deepEqual(
       rows.map(r => ({ task_id: r.task_id, run_id: r.run_id, name: r.name })),
       _.range(10).map(i => ({ task_id: taskId, run_id: i, name: `name-${i}` })));
@@ -176,7 +176,7 @@ suite(testing.suiteName(), function() {
     assert.equal(rows[0].present, false);
     assert.deepEqual(rows[0].expires, now);
 
-    rows = await db.fns.get_queue_artifacts(null, null, null, 2, 4);
+    rows = await db.deprecatedFns.get_queue_artifacts(null, null, null, 2, 4);
     assert.deepEqual(
       rows.map(r => ({ task_id: r.task_id, run_id: r.run_id, name: r.name })),
       [4, 5].map(i => ({ task_id: taskId, run_id: i, name: `name-${i}` })));
@@ -198,7 +198,7 @@ suite(testing.suiteName(), function() {
       );
     }
 
-    let rows = await db.fns.get_queue_artifacts(taskId, 0, null, null, null);
+    let rows = await db.deprecatedFns.get_queue_artifacts(taskId, 0, null, null, null);
     assert.deepEqual(
       rows.map(r => ({ task_id: r.task_id, run_id: r.run_id, name: r.name })),
       _.range(10).map(i => ({ task_id: taskId, run_id: 0, name: `name-${i}` })));
@@ -208,7 +208,7 @@ suite(testing.suiteName(), function() {
     assert.equal(rows[0].present, false);
     assert.deepEqual(rows[0].expires, now);
 
-    rows = await db.fns.get_queue_artifacts(taskId, 0, null, 2, 4);
+    rows = await db.deprecatedFns.get_queue_artifacts(taskId, 0, null, 2, 4);
     assert.deepEqual(
       rows.map(r => ({ task_id: r.task_id, run_id: r.run_id, name: r.name })),
       [4, 5].map(i => ({ task_id: taskId, run_id: 0, name: `name-${i}` })));

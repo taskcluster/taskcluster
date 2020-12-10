@@ -1,6 +1,8 @@
 version: 57
 description: add get_queue_artifacts_paginated with index-based pagination
 methods:
+  get_queue_artifacts:
+    deprecated: true
   get_queue_artifacts_paginated:
     description: |-
       Get existing queue artifacts, filtered by the optional arguments, ordered

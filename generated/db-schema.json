@@ -5784,6 +5784,9 @@
     {
       "description": "add get_queue_artifacts_paginated with index-based pagination",
       "methods": {
+        "get_queue_artifacts": {
+          "deprecated": true
+        },
         "get_queue_artifacts_paginated": {
           "args": "task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, after_task_id_in text, after_run_id_in integer, after_name_in text",
           "body": "begin\n  return query\n  select\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires\n  from queue_artifacts\n  where\n    (queue_artifacts.task_id = task_id_in or task_id_in is null) and\n    (queue_artifacts.run_id = run_id_in or run_id_in is null) and\n    (queue_artifacts.expires < expires_in or expires_in is null) and\n    (after_task_id_in is null or\n      (queue_artifacts.task_id > after_task_id_in or\n        (queue_artifacts.task_id = after_task_id_in and\n          (queue_artifacts.run_id > after_run_id_in or\n            (queue_artifacts.run_id = after_run_id_in and\n              queue_artifacts.name > after_name_in\n            )\n          )\n        )\n      )\n    )\n  order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name\n  limit get_page_limit(page_size_in);\nend",
