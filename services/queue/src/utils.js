@@ -41,20 +41,37 @@ const artifactUtils = {
    */
   async expire({ db, publicBucket, privateBucket, ignoreError, monitor, expires }) {
     let count = 0;
-    const pageSize = 1000;
-    let pageOffset = 0;
 
-    //  Get all expired artifacts using a handler function.
-    // This is to avoid loading all expired queue artifacts in memory.
+    // Get all expired artifacts using a handler function, operating on one
+    // page of results at a time.  This does not use paginatedIterator because
+    // that would result in a much slower one-by-one expiration, instead of
+    // the parallel handling of each batch.
     const getExpiredArtifacts = async (expires, handler) => {
+      let after_task_id_in = null;
+      let after_run_id_in = null;
+      let after_name_in = null;
+
       while (true) {
-        const rows = await db.fns.get_queue_artifacts(null, null, expires, 1000, pageOffset);
+        const rows = await db.fns.get_queue_artifacts_paginated({
+          task_id_in: null,
+          run_id_in: null,
+          expires_in: expires,
+          page_size_in: 100,
+          after_task_id_in,
+          after_run_id_in,
+          after_name_in,
+        });
+
         const entries = rows.map(exports.artifactUtils.fromDb);
         await Promise.all(entries.map((item) => handler.call(item, item)));
-        pageOffset = pageOffset + pageSize;
 
         if (!rows.length) {
           break;
+        } else {
+          const lastRow = rows[rows.length - 1];
+          after_task_id_in = lastRow.task_id;
+          after_run_id_in = lastRow.run_id;
+          after_name_in = lastRow.name;
         }
       }
     };
@@ -90,9 +107,7 @@ const artifactUtils = {
 
         // Delete entity, if underlying resource was successfully deleted
         await db.fns.delete_queue_artifact(artifact.taskId, artifact.runId, artifact.name);
-        // to avoid having the offset skip an expired artifact when
-        // we delete an artifact from the table.
-        pageOffset -= 1;
+
         count++;
       } catch (err) {
         debug('WARNING: Failed to delete expired artifact: %j, details: %j ' +
