@@ -6,6 +6,8 @@ const { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } = 
 
 exports.tasks = [];
 
+const tempDir = path.join(REPO_ROOT, 'temp');
+
 exports.tasks.push({
   title: 'Generate Generic-Worker',
   requires: ['references-json', 'target-go-version'],
@@ -43,6 +45,39 @@ exports.tasks.push({
         });
       })),
     };
+  },
+});
+
+exports.tasks.push({
+  title: 'Update generic-worker README',
+  requires: ['target-generic-worker'],
+  provides: ['generic-worker-readme'],
+  run: async (requirements, utils) => {
+    const binary = path.join(tempDir, 'generic-worker');
+    // we have to build this binary, rather than just using `go run`, because otherwise `go run` spews
+    // its own output into stdout
+    await execCommand({
+      command: ['go', 'build', '-tags', 'multiuser', '-o', binary, './workers/generic-worker'],
+      utils,
+    });
+
+    let gwHelp = await execCommand({
+      dir: REPO_ROOT,
+      command: [binary, '--help'],
+      utils,
+      keepAllOutput: true,
+    });
+
+    // replace the first line, which contains the engine and version, with a simpler string
+    gwHelp = gwHelp.replace(/^generic-worker .*/, '$ generic-worker --help');
+
+    const ticks = '```';
+    await modifyRepoFile(
+      path.join('workers', 'generic-worker', 'README.md'),
+      async content => content
+        .replace(
+          /(<!-- HELP BEGIN -->)(?:.|\n)*(<!-- HELP END -->)/m,
+          `$1\n${ticks}\n${gwHelp.trimRight()}\n${ticks}\n$2`));
   },
 });
 

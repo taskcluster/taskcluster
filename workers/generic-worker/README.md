@@ -6,9 +6,9 @@ For documentation of the worker from a user's perspective, see the [online docum
 
 # Usage
 
-To see a full description of all the config options available to you, run `generic-worker --help`:
+<!-- HELP BEGIN -->
 ```
-generic-worker (multiuser engine) 30.0.1
+$ generic-worker --help
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -192,7 +192,7 @@ and reports back results to the queue.
           taskclusterProxyPort              Port number for taskcluster-proxy HTTP requests.
                                             [default: 80]
           tasksDir                          The location where task directories should be
-                                            created on the worker. [default: "/Users"]
+                                            created on the worker. [default varies by platform]
           workerGroup                       Typically this would be an aws region - an
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.
@@ -254,6 +254,7 @@ and reports back results to the queue.
            file so that task users can't read from or write to it.
     78     Not able to connect to --worker-runner-protocol-pipe.
 ```
+<!-- HELP END -->
 
 # Start the generic worker
 
