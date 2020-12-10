@@ -3,6 +3,39 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v39.1.0
+
+### GENERAL
+
+▶ [patch] [#4059](https://github.com/taskcluster/taskcluster/issues/4059)
+Fixed an issue fetching GitHub metadata when using a Taskcluster instance without the anonymous role.
+
+This presented as unexpected 'Failed to get your artifact.' errors.
+
+### USERS
+
+▶ [minor] [#4006](https://github.com/taskcluster/taskcluster/issues/4006)
+The `takscluster-client-web` library is no longer installable from a `<script>` tag.
+Instead, it should be incorporated into the build process of the consuming application, like any other library.
+
+▶ [patch] 
+Improved error messages related to fetching artifacts for GitHub checks.
+
+▶ [patch] [#4061](https://github.com/taskcluster/taskcluster/issues/4061)
+This version fixes an issue with the "actions" button not appearing for task groups.
+
+### DEVELOPERS
+
+▶ [patch] [#3939](https://github.com/taskcluster/taskcluster/issues/3939)
+The object service now supports `uploadId` in the upload process.
+
+▶ [patch] [#4074](https://github.com/taskcluster/taskcluster/issues/4074)
+We now use github's library for generating app jwt tokens instead of making our own tokens
+
+### OTHER
+
+▶ Additional changes not described here: [#3951](https://github.com/taskcluster/taskcluster/issues/3951), [#3999](https://github.com/taskcluster/taskcluster/issues/3999), [#4036](https://github.com/taskcluster/taskcluster/issues/4036).
+
 ## v39.0.0
 
 ### GENERAL
