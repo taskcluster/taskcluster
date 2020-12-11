@@ -192,7 +192,8 @@ and reports back results to the queue.
           taskclusterProxyPort              Port number for taskcluster-proxy HTTP requests.
                                             [default: 80]
           tasksDir                          The location where task directories should be
-                                            created on the worker. [default varies by platform]
+                                            created on the worker.
+                                            [default varies by platform]
           workerGroup                       Typically this would be an aws region - an
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.

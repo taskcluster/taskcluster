@@ -71,6 +71,9 @@ exports.tasks.push({
     // replace the first line, which contains the engine and version, with a simpler string
     gwHelp = gwHelp.replace(/^generic-worker .*/, '$ generic-worker --help');
 
+    // remove platform-specific defaults
+    gwHelp = gwHelp.replace(/\[default \(varies by platform\): .*\]/, '[default varies by platform]');
+
     const ticks = '```';
     await modifyRepoFile(
       path.join('workers', 'generic-worker', 'README.md'),
