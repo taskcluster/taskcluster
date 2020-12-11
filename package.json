@@ -56,7 +56,7 @@
     "graphql-type-json": "^0.3.0",
     "graphql-validation-complexity": "^0.4.0",
     "hashids": "^2.0.0",
-    "hawk": "8.0.1",
+    "hawk": "9.0.0",
     "hsts": "^2.1.0",
     "immutable": "^3.8.2",
     "irc-upd": "^0.11.0",

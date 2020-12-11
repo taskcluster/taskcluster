@@ -19,7 +19,7 @@
     "crypto-js": "^4.0.0",
     "dotenv": "^8.0.0",
     "eslint": "^7.0.0",
-    "hawk": "<7.1.0",
+    "hawk": "<9.0.1",
     "karma": "^5.2.3",
     "karma-cli": "^2.0.0",
     "karma-coverage": "^2.0.3",
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "crypto-js": "^4.0.0",
-    "hawk": "<7.1.0",
+    "hawk": "<9.0.1",
     "query-string": "^6.1.0",
     "taskcluster-lib-urls": "^13.0.0"
   }
