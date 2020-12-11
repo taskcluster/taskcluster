@@ -174,10 +174,13 @@ suite(testing.suiteName(), function() {
 
       assert.deepEqual([], await db.fns.get_github_check_by_task_id(null));
       assert.deepEqual([], await db.fns.get_github_check_by_task_id('doesntexist'));
+    });
 
-      await assert.rejects(async () => {
-        await create_check(db, checks[0]);
-      }, /duplicate key value violates unique constraint/);
+    helper.dbTest('create idempotency', async function(db, isFake) {
+      await create_check(db, checks[0]);
+      await create_check(db, { ...checks[0], check_run_id: 'abc' });
+      let [fetched] = await db.fns.get_github_check_by_task_id(checks[0].task_id);
+      assert.deepEqual(fetched, { ...checks[0], check_run_id: 'abc' });
     });
 
   });
