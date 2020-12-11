@@ -4,7 +4,7 @@ migrationScript: |-
   begin
     alter table tasks add column task_queue_id text;
 
-    create function online_migration_v57_batch(batch_size_in integer, state_in jsonb)
+    create function online_migration_v58_batch(batch_size_in integer, state_in jsonb)
     returns table (count integer, state jsonb) as $$
     declare
       item record;
@@ -32,7 +32,7 @@ migrationScript: |-
     end
     $$ language plpgsql;
 
-    create function online_migration_v57_is_complete() returns boolean as $$
+    create function online_migration_v58_is_complete() returns boolean as $$
     begin
       perform * from tasks where task_queue_id is null limit 1;
       return not found; 

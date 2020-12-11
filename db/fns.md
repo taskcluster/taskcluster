@@ -90,7 +90,7 @@
    * [`expire_tasks`](#expire_tasks)
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_queue_artifact`](#get_queue_artifact)
-   * [`get_queue_artifacts`](#get_queue_artifacts)
+   * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
    * [`get_queue_worker_tqid`](#get_queue_worker_tqid)
    * [`get_queue_workers_tqid`](#get_queue_workers_tqid)
    * [`get_task`](#get_task)
@@ -1124,7 +1124,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`expire_tasks`](#expire_tasks)
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_queue_artifact`](#get_queue_artifact)
-* [`get_queue_artifacts`](#get_queue_artifacts)
+* [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
 * [`get_queue_worker_tqid`](#get_queue_worker_tqid)
 * [`get_queue_workers_tqid`](#get_queue_workers_tqid)
 * [`get_task`](#get_task)
@@ -1516,7 +1516,7 @@ added or removed.  Typically only one of `page_offset_in` and
 
 Get a queue artifact. The returned table will have one or zero row.
 
-### get_queue_artifacts
+### get_queue_artifacts_paginated
 
 * *Mode*: read
 * *Arguments*:
@@ -1524,7 +1524,9 @@ Get a queue artifact. The returned table will have one or zero row.
   * `run_id_in integer`
   * `expires_in timestamptz`
   * `page_size_in integer`
-  * `page_offset_in integer`
+  * `after_task_id_in text`
+  * `after_run_id_in integer`
+  * `after_name_in text`
 * *Returns*: `table`
   * `task_id text`
   * `run_id integer`
@@ -1535,10 +1537,11 @@ Get a queue artifact. The returned table will have one or zero row.
   * `present boolean`
   * `expires timestamptz`
 
-Get existing queue artifacts filtered by the optional arguments,
-ordered by the `task_id`, `run_id`, and `name`.
-If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset page_offset.
+Get existing queue artifacts, filtered by the optional arguments, ordered
+by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify
+where the page of results should begin, and must all be specified if any
+are specified.  Typically these values would be drawn from the last item
+in the previous page.
 
 ### get_queue_worker_tqid
 
@@ -1906,6 +1909,7 @@ All parameters must be supplied.
 * `create_queue_worker_type(provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text)` (compatibility guaranteed until v40.0.0)
 * `expire_queue_provisioners(expires_in timestamptz)` (compatibility guaranteed until v40.0.0)
 * `expire_queue_worker_types(expires_in timestamptz)` (compatibility guaranteed until v40.0.0)
+* `get_queue_artifacts(task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v41.0.0)
 * `get_queue_provisioner(provisioner_id_in text, expires_in timestamptz)` (compatibility guaranteed until v40.0.0)
 * `get_queue_provisioners(expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v40.0.0)
 * `get_queue_worker(provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v40.0.0)
