@@ -547,8 +547,6 @@ async function statusHandler(message) {
     };
   }
 
-  let [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
-
   // Authenticating as installation.
   let instGithub = await this.context.github.getInstallationGithub(installation_id);
 
@@ -612,6 +610,7 @@ async function statusHandler(message) {
       }
     }
 
+    let [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
     if (checkRun) {
       await instGithub.checks.update({
         ...taskState,
@@ -627,6 +626,7 @@ async function statusHandler(message) {
       });
     } else {
       const checkRun = await instGithub.checks.create({
+        ...taskState,
         owner: organization,
         repo: repository,
         name: `${taskDefinition.metadata.name}`,
@@ -634,7 +634,7 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[${CHECKRUN_TEXT}](${taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId)})\n${customCheckRunText || ''}`,
+          text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
           annotations: customCheckRunAnnotations,
         },
         details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
@@ -965,33 +965,38 @@ async function taskDefinedHandler(message) {
   const instGithub = await this.context.github.getInstallationGithub(installation_id);
   debug(`Authenticated as installation. Creating check run for task ${taskId}, task group ${taskGroupId}`);
 
-  const checkRun = await instGithub.checks.create({
-    owner: organization,
-    repo: repository,
-    name: `${taskDefinition.metadata.name}`,
-    head_sha: sha,
-    output: {
-      title: `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
-      summary: `${taskDefinition.metadata.description}`,
-      text: `[Task group](${taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId)})`,
-    },
-    details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
-  }).catch(async (err) => {
-    await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: err });
-    throw err;
-  });
+  let [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
+  if (!checkRun) {
+    const checkRun = await instGithub.checks.create({
+      owner: organization,
+      repo: repository,
+      name: `${taskDefinition.metadata.name}`,
+      head_sha: sha,
+      output: {
+        title: `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
+        summary: `${taskDefinition.metadata.description}`,
+        text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})`,
+      },
+      details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
+    }).catch(async (err) => {
+      await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: err });
+      throw err;
+    });
 
-  debug(`Created check run for task ${taskId}, task group ${taskGroupId}. Now updating data base`);
+    debug(`Created check run for task ${taskId}, task group ${taskGroupId}. Now updating data base`);
 
-  await this.context.db.fns.create_github_check(
-    taskGroupId,
-    taskId,
-    checkRun.data.check_suite.id.toString(),
-    checkRun.data.id.toString(),
-  ).catch(async (err) => {
-    await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: err });
-    throw err;
-  });
+    await this.context.db.fns.create_github_check(
+      taskGroupId,
+      taskId,
+      checkRun.data.check_suite.id.toString(),
+      checkRun.data.id.toString(),
+    ).catch(async (err) => {
+      await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: err });
+      throw err;
+    });
 
-  debug(`Status for task ${taskId}, task group ${taskGroupId} created`);
+    debug(`Status for task ${taskId}, task group ${taskGroupId} created`);
+  } else {
+    debug('Check already created by status handler so we skip updating here.');
+  }
 }
