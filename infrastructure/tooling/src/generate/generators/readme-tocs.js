@@ -11,6 +11,7 @@ exports.tasks = [{
   requires: [
     'target-worker-runner',
     'target-generic-worker',
+    'generic-worker-readme',
     'db-versions-readme',
     'db-fns-readme',
   ],
