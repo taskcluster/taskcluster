@@ -5782,7 +5782,7 @@
     },
     {
       "description": "Add task_queue_id column to tasks table and populate with online migration",
-      "downgradeScript": "begin\n  alter table tasks drop column task_queue_id;\n\n  drop function online_migration_v57_batch(batch_size_in integer, state_in jsonb);\n  drop function online_migration_v57_is_complete();\nend",
+      "downgradeScript": "begin\n  alter table tasks drop column task_queue_id;\n\nend",
       "methods": {
         "create_task": {
           "args": "task_id text,\nprovisioner_id text,\nworker_type text,\nscheduler_id text,\ntask_group_id text,\ndependencies jsonb,\nrequires task_requires,\nroutes jsonb,\npriority task_priority,\nretries integer,\ncreated timestamptz,\ndeadline timestamptz,\nexpires timestamptz,\nscopes jsonb,\npayload jsonb,\nmetadata jsonb,\ntags jsonb,\nextra jsonb",
@@ -5847,7 +5847,7 @@
           "serviceName": "queue"
         }
       },
-      "migrationScript": "begin\n  alter table tasks drop column provisioner_id, drop column worker_type;\n  alter table tasks add constraint task_queue_id_not_null check (task_queue_id is not null) not valid;\n\n  drop function if exists online_downgrade_v57_batch(batch_size_in integer, state_in jsonb);\n  drop function if exists online_downgrade_v57_is_complete();\nend",
+      "migrationScript": "begin\n  alter table tasks drop column provisioner_id, drop column worker_type;\n  alter table tasks add constraint task_queue_id_not_null check (task_queue_id is not null) not valid;\nend",
       "version": 58
     }
   ]

@@ -4,9 +4,6 @@ migrationScript: |-
   begin
     alter table tasks drop column provisioner_id, drop column worker_type;
     alter table tasks add constraint task_queue_id_not_null check (task_queue_id is not null) not valid;
-
-    drop function if exists online_downgrade_v57_batch(batch_size_in integer, state_in jsonb);
-    drop function if exists online_downgrade_v57_is_complete();
   end
 downgradeScript: |-
   begin

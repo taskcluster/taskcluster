@@ -8,7 +8,7 @@ const assert = require('assert').strict;
 const { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } = require('./constants');
 const { MonitorManager } = require('taskcluster-lib-monitor');
 const { parse: parseConnectionString } = require('pg-connection-string');
-const { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade } = require('./migration');
+const { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade, dropOnlineFns } = require('./migration');
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -174,8 +174,10 @@ class Database {
         showProgress(`upgrading database to version ${v}`);
         const version = schema.getVersion(v);
         await db._withClient('admin', async client => {
+          await dropOnlineFns({ client, kind: 'migration', versionNum: version.version, showProgress });
           await runMigration({ client, version, showProgress, usernamePrefix });
           await runOnlineMigration({ client, showProgress, versionNum: v });
+          await dropOnlineFns({ client, kind: 'migration', versionNum: version.version, showProgress });
         });
         showProgress(`upgrade to version ${v} successful`);
       }
@@ -239,6 +241,7 @@ class Database {
           const fromVersion = schema.getVersion(v);
           const toVersion = v === 1 ? { version: 0, methods: [] } : schema.getVersion(v - 1);
           await db._withClient('admin', async client => {
+            await dropOnlineFns({ client, kind: 'downgrade', versionNum: toVersion.version, showProgress });
             await runDowngrade({
               client,
               schema,
@@ -248,6 +251,7 @@ class Database {
               usernamePrefix,
             });
             await runOnlineDowngrade({ client, showProgress, versionNum: toVersion.version });
+            await dropOnlineFns({ client, kind: 'downgrade', versionNum: toVersion.version, showProgress });
           });
           showProgress(`downgrade to version ${v - 1} successful`);
         }

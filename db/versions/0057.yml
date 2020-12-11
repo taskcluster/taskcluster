@@ -43,8 +43,6 @@ downgradeScript: |-
   begin
     alter table tasks drop column task_queue_id;
 
-    drop function online_migration_v57_batch(batch_size_in integer, state_in jsonb);
-    drop function online_migration_v57_is_complete();
   end
 methods:
   create_task:

@@ -48,6 +48,14 @@ const fnExists = async ({ client, name }) => {
   }
 };
 
+const dropOnlineFns = async ({ client, kind, versionNum, showProgress }) => {
+  showProgress('..ensuring online functions are removed');
+  await client.query(`
+  drop function if exists online_${kind}_v${versionNum}_batch(batch_size_in integer, state_in jsonb)`);
+  await client.query(`
+  drop function if exists online_${kind}_v${versionNum}_is_complete()`);
+};
+
 const runMigration = async ({ client, version, showProgress, usernamePrefix }) => {
   await inTransaction(client, async () => {
     if (version.version === 1) {
@@ -233,4 +241,5 @@ module.exports = {
   runOnlineMigration,
   runOnlineDowngrade,
   runOnlineBatches,
+  dropOnlineFns,
 };
