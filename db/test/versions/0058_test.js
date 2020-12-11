@@ -10,15 +10,12 @@ suite(testing.suiteName(), function() {
 
   // A helper to make it easier to create tasks with dummy values within queries
   const makeFieldsForCreation = (opts) => {
-    const pp = opts.provisionerId || `'pp'`;
-    const wt = opts.workerType || `'wt'`;
-    let result = `${opts.taskId || `'tid'`}, ${pp}, ${wt},
+    let result = `${opts.taskId || `'tid'`}, ${opts.provisionerId || `'pp'`}, ${opts.workerType || `'wt'`},
             'sid', 'tgid', '{}'::jsonb, 'all-completed',
             '{}'::jsonb, 'normal', 0, now(), now(), now(), '{}'::jsonb,
             '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb`;
     if (opts.withDefaults) {
-      const tqid = `${pp} || '/' || ${wt}`;
-      result += `, 0, '[]'::jsonb, null, false, ${tqid}`;
+      result += `, 0, '[]'::jsonb, null, false`;
     }
     return result;
   };
@@ -27,12 +24,9 @@ suite(testing.suiteName(), function() {
 
   helper.dbVersionTest({
     version: THIS_VERSION,
-    onlineMigration: false,
-    onlineDowngrade: true,
+    onlineMigration: true,
+    onlineDowngrade: false,
     createData: async client => {
-      // create the data including a task_queue_id that must be the
-      // combined identifier of provisioner_id/worker_type.
-      // this is a safe assumption as tested for the previous version.
       await client.query(`
         with gen as (
           select generate_series(1, 99) as i
@@ -58,24 +52,27 @@ suite(testing.suiteName(), function() {
                            retries_left,
                            runs,
                            taken_until,
-                           ever_resolved,
-                           task_queue_id)
+                           ever_resolved)
         select ${makeFieldsForCreation({ taskId: `'tid-' || gen.i`, workerType: `'wt-' || gen.i`, withDefaults: true })}
         from gen`);
     },
     startCheck: async client => {
-      const res = await client.query('select task_id, task_queue_id from tasks');
+      // check data is as inserted
+      const res = await client.query('select task_id, provisioner_id, worker_type from tasks');
       const nextTaskId = res.rows.length + 1;
       assert(nextTaskId > 99, 'data was not created properly');
+      const pps = res.rows.map(({ provisioner_id }) => provisioner_id);
+      assert.deepEqual(new Set(pps), new Set(['pp']));
+      const wts = res.rows.map(({ worker_type }) => worker_type).sort();
+      assert.deepEqual(wts, _.range(1, nextTaskId).map(i => `wt-${i}`).sort());
       const tids = res.rows.map(({ task_id }) => task_id).sort();
       assert.deepEqual(tids, _.range(1, nextTaskId).map(i => `tid-${i}`).sort());
-      const tqids = res.rows.map(({ task_queue_id }) => task_queue_id).sort();
-      assert.deepEqual(tqids, _.range(1, nextTaskId).map(i => `pp/wt-${i}`).sort());
 
-      // check the schema (migration to this version should start with all three columns present)
+      // check the schema
+      // we start with no task_queue_id column
       await helper.assertTableColumn('tasks', 'provisioner_id');
       await helper.assertTableColumn('tasks', 'worker_type');
-      await helper.assertTableColumn('tasks', 'task_queue_id');
+      await helper.assertNoTableColumn('tasks', 'task_queue_id');
     },
     concurrentCheck: async client => {
       // get number of rows to infer next task id
@@ -83,11 +80,11 @@ suite(testing.suiteName(), function() {
       const nextTaskId = parseInt(countRes.rows[0].count) + 1;
 
       // check that get_task function works with items that may not yet have
-      // provisioner_id and worker_type during a downgrade
+      // task_queue_id during an upgrade
       let res;
       try {
         res = await client.query(`select task_id from tasks 
-                                where worker_type is null or provisioner_id is null`);
+                                where task_queue_id is null`);
       } catch (err) {
         if (err.code !== UNDEFINED_COLUMN) {
           throw err;
@@ -131,16 +128,16 @@ suite(testing.suiteName(), function() {
         'the last task created with create_task could not be retrieved with get_task');
     },
     finishedCheck: async client => {
-      // check that task_queue_id values are still as expected at the end
-      const res = await client.query('select task_queue_id from tasks');
-      const nextTaskId = res.rows.length + 1;
-      const tqids = res.rows.map(({ task_queue_id }) => task_queue_id).sort();
-      assert.deepEqual(tqids, _.range(1, nextTaskId).map(i => `pp/wt-${i}`).sort());
+      // check that all tasks have a task_queue_id that is not null
+      // and equal to the expected combination of old identifiers
+      const res = await client.query('select provisioner_id, worker_type, task_queue_id from tasks');
+      res.rows.forEach(({ provisioner_id, worker_type, task_queue_id }) => {
+        assert.equal(task_queue_id, `${provisioner_id}/${worker_type}`);
+      });
 
-      // check the schema
-      // we expect provisioner_id and worker_type to have been dropped
-      await helper.assertNoTableColumn('tasks', 'provisioner_id');
-      await helper.assertNoTableColumn('tasks', 'worker_type');
+      // check the schema (all three columns exist)
+      await helper.assertTableColumn('tasks', 'provisioner_id');
+      await helper.assertTableColumn('tasks', 'worker_type');
       await helper.assertTableColumn('tasks', 'task_queue_id');
     },
   });

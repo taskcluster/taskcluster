@@ -1,36 +1,28 @@
 version: 58
-description: Drop provisioner_id / worker_type in queues and only use task_queue_id instead
+description: Add task_queue_id column to tasks table and populate with online migration
 migrationScript: |-
   begin
-    alter table tasks drop column provisioner_id, drop column worker_type;
-    alter table tasks add constraint task_queue_id_not_null check (task_queue_id is not null) not valid;
-  end
-downgradeScript: |-
-  begin
-    alter table tasks drop constraint task_queue_id_not_null;
-    alter table tasks add column provisioner_id text, add column worker_type text;
+    alter table tasks add column task_queue_id text;
 
-    create function online_downgrade_v57_batch(batch_size_in integer, state_in jsonb)
+    create function online_migration_v57_batch(batch_size_in integer, state_in jsonb)
     returns table (count integer, state jsonb) as $$
     declare
       item record;
       count integer;
+      last_task_id text;
     begin
       count := 0;
-
       for item in
         select task_id
         from tasks
         where
           (state ->> task_id is null or task_id > state ->> task_id) and
-          worker_type is null or provisioner_id is null
+          task_queue_id is null
         order by task_id
         limit batch_size_in
       loop
         update tasks
-        set
-          provisioner_id = split_part(tasks.task_queue_id, '/', 1),
-          worker_type = split_part(tasks.task_queue_id, '/', 2)
+        set task_queue_id = tasks.provisioner_id || '/' || tasks.worker_type
         where tasks.task_id = item.task_id;
         count := count + 1;
       end loop;
@@ -40,12 +32,16 @@ downgradeScript: |-
     end
     $$ language plpgsql;
 
-    create function online_downgrade_v57_is_complete() returns boolean as $$
+    create function online_migration_v57_is_complete() returns boolean as $$
     begin
-      perform * from tasks where worker_type is null or provisioner_id is null limit 1;
+      perform * from tasks where task_queue_id is null limit 1;
       return not found; 
     end
     $$ language plpgsql;
+  end
+downgradeScript: |-
+  begin
+    alter table tasks drop column task_queue_id;
 
   end
 methods:
@@ -80,6 +76,8 @@ methods:
         insert
         into tasks (
           task_id,
+          provisioner_id,
+          worker_type,
           task_queue_id,
           scheduler_id,
           task_group_id,
@@ -103,6 +101,8 @@ methods:
         )
         values (
           task_id,
+          provisioner_id,
+          worker_type,
           provisioner_id || '/' || worker_type,
           scheduler_id,
           task_group_id,
@@ -162,8 +162,8 @@ methods:
         return query
         select
           tasks.task_id,
-          split_part(tasks.task_queue_id, '/', 1) as provisioner_id,
-          split_part(tasks.task_queue_id, '/', 2) as worker_type,
+          coalesce(tasks.provisioner_id, split_part(tasks.task_queue_id, '/', 1)),
+          coalesce(tasks.worker_type, split_part(tasks.task_queue_id, '/', 2)),
           tasks.scheduler_id,
           tasks.task_group_id,
           tasks.dependencies,
@@ -189,6 +189,7 @@ methods:
   get_tasks_by_task_group:
     description: |-
       Get all properties of all tasks in the given task group.
+    deprecated: true
     mode: read
     serviceName: queue
     args: task_group_id_in text, page_size_in integer, page_offset_in integer
@@ -221,8 +222,8 @@ methods:
         return query
         select
           tasks.task_id,
-          split_part(tasks.task_queue_id, '/', 1) as provisioner_id,
-          split_part(tasks.task_queue_id, '/', 2) as worker_type,
+          coalesce(tasks.provisioner_id, split_part(tasks.task_queue_id, '/', 1)),
+          coalesce(tasks.worker_type, split_part(tasks.task_queue_id, '/', 2)),
           tasks.scheduler_id,
           tasks.task_group_id,
           tasks.dependencies,
