@@ -592,7 +592,14 @@ builder.declare({
     Task.get(this.db, taskId),
     paginateResults({
       query: req.query,
-      fetch: (size, offset) => this.db.fns.get_queue_artifacts(taskId, runId, null, size, offset),
+      indexColumns: ['task_id', 'run_id', 'name'],
+      fetch: (page_size_in, after) => this.db.fns.get_queue_artifacts_paginated({
+        task_id_in: taskId,
+        run_id_in: runId,
+        expires_in: null,
+        page_size_in,
+        ...after,
+      }),
     }),
   ]);
 
@@ -680,7 +687,14 @@ builder.declare({
 
   const artifacts = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_queue_artifacts(taskId, runId, null, size, offset),
+    indexColumns: ['task_id', 'run_id', 'name'],
+    fetch: (page_size_in, after) => this.db.fns.get_queue_artifacts_paginated({
+      task_id_in: taskId,
+      run_id_in: runId,
+      expires_in: null,
+      page_size_in,
+      ...after,
+    }),
   });
 
   let result = {

@@ -1,0 +1,47 @@
+version: 57
+description: add get_queue_artifacts_paginated with index-based pagination
+methods:
+  get_queue_artifacts:
+    deprecated: true
+  get_queue_artifacts_paginated:
+    description: |-
+      Get existing queue artifacts, filtered by the optional arguments, ordered
+      by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify
+      where the page of results should begin, and must all be specified if any
+      are specified.  Typically these values would be drawn from the last item
+      in the previous page.
+    mode: read
+    serviceName: queue
+    args: task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, after_task_id_in text, after_run_id_in integer, after_name_in text
+    returns: table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          queue_artifacts.task_id,
+          queue_artifacts.run_id,
+          queue_artifacts.name,
+          queue_artifacts.storage_type,
+          queue_artifacts.content_type,
+          queue_artifacts.details,
+          queue_artifacts.present,
+          queue_artifacts.expires
+        from queue_artifacts
+        where
+          (queue_artifacts.task_id = task_id_in or task_id_in is null) and
+          (queue_artifacts.run_id = run_id_in or run_id_in is null) and
+          (queue_artifacts.expires < expires_in or expires_in is null) and
+          (after_task_id_in is null or
+            (queue_artifacts.task_id > after_task_id_in or
+              (queue_artifacts.task_id = after_task_id_in and
+                (queue_artifacts.run_id > after_run_id_in or
+                  (queue_artifacts.run_id = after_run_id_in and
+                    queue_artifacts.name > after_name_in
+                  )
+                )
+              )
+            )
+          )
+        order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name
+        limit get_page_limit(page_size_in);
+      end

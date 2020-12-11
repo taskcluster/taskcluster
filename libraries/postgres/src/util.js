@@ -81,12 +81,35 @@ exports.annotateError = (query, err) => {
  * Call the given fetch method with a given size and offset to fetch data, and
  * return an async iterator that will yield each row in turn.
  */
-exports.paginatedIterator = ({ fetch, size = 1000 }) => {
+exports.paginatedIterator = ({ fetch, indexColumns, size = 1000 }) => {
   return {
     [Symbol.asyncIterator]() {
-      let offset = 0;
       let done = false;
       let rows = [];
+
+      let getRows;
+      if (indexColumns) {
+        // index-based pagination
+        let after = Object.fromEntries(indexColumns.map(col => [`after_${col}_in`, null]));
+        getRows = async () => {
+          rows = await fetch(size, after);
+          if (rows.length > 0) {
+            const lastRow = rows[rows.length - 1];
+            after = Object.fromEntries(indexColumns.map(col => [`after_${col}_in`, lastRow[col]]));
+          } else {
+            after = null; // getRows shouldn't be called after this!
+          }
+          return rows;
+        };
+      } else {
+        // limit/offset based pagination
+        let offset = 0;
+        getRows = async () => {
+          rows = await fetch(size, offset);
+          offset += rows.length;
+          return rows;
+        };
+      }
 
       const next = async () => {
         if (rows.length > 0) {
@@ -94,13 +117,12 @@ exports.paginatedIterator = ({ fetch, size = 1000 }) => {
         }
         if (done) {
           // If this iterator has already "finished", just return that status
-          // without calling out to the DB again (and potentialyl returning more
+          // without calling out to the DB again (and potentially returning more
           // results).
           return { done };
         }
 
-        rows = await fetch(size, offset);
-        offset += rows.length;
+        rows = await getRows();
         if (rows.length === 0) {
           done = true;
           return { done };

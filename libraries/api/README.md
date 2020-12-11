@@ -495,7 +495,12 @@ builder.declare({
 }, async function(req, res) {
   const {continuationToken, rows} = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_pools(size, offset),
+    fetch: (page_size_in, after) => this.db.fns.get_widgets_paginated({
+      ...,
+      page_size_in,
+      ...after,  // after_foo_id_in and after_bar_id_in
+    }),
+    indexColumns: ['foo_id', 'bar_id'],
     maxLimit: 500,
   });
   const result = {
@@ -505,6 +510,20 @@ builder.declare({
     continuationToken,
   };
   return res.reply(result);
+});
+
+// or for the older offset/limit-based pagination
+builder.declare({
+  method: 'get',
+  query: paginateResults.query,
+  ...
+}, async function(req, res) {
+  const {continuationToken, rows} = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_worker_pools(size, offset),
+    maxLimit: 500,
+  });
+  ...
 });
 ```
 

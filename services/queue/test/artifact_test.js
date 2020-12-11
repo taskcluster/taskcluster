@@ -399,7 +399,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       });
     });
 
-    test('Check expire doesn\'t drop table', async () => {
+    test('Check expiration', async () => {
       const taskId = slugid.v4();
       debug('### Creating task');
       await helper.queue.createTask(taskId, taskDef);
@@ -411,42 +411,31 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         workerId: 'my-worker',
       });
 
-      debug('### Send post artifact request');
-      let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials });
-      const r1 = await queue.createArtifact(taskId, 0, 'public/s3.json', {
-        storageType: 's3',
-        expires: taskcluster.fromNowJSON('12 day'),
-        contentType: 'application/json',
-      });
-      assume(r1.putUrl).is.ok();
-
-      debug('### Uploading to putUrl');
-      let res = await request.put(r1.putUrl).send({ message: 'Hello World' });
-      assume(res.ok).is.ok();
+      // create more than a "batch" of artifacts, to test pagination, but skip
+      // uploading to S3 to save a bit of time..
+      for (let i of _.range(150)) {
+        debug(`### Send post artifact request ${i}`);
+        let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials });
+        const r1 = await queue.createArtifact(taskId, 0, `public/${i}.txt`, {
+          storageType: 's3',
+          expires: taskcluster.fromNowJSON('1 day'),
+          contentType: 'application/json',
+        });
+        assume(r1.putUrl).is.ok();
+      }
 
       debug('### List artifacts');
       const r2 = await helper.queue.listArtifacts(taskId, 0);
-      assume(r2.artifacts.length).equals(1);
+      assume(r2.artifacts.length).equals(150);
 
       debug('### Expire artifacts');
       // config/test.js hardcoded to expire artifact 4 days in the future
-      // in this test we should see that the artifact is still present as we
-      // set expiration to 12 days here
+      // so these artifacts should expire
       await helper.runExpiration('expire-artifacts');
-
-      debug('### Download Artifact (runId: 0)');
-      const url = helper.queue.buildSignedUrl(
-        helper.queue.getArtifact,
-        taskId, 0, 'public/s3.json',
-      );
-      debug('Fetching artifact from: %s', url);
-      res = await getWith303Redirect(url);
-      assume(res.ok).is.ok();
-      assume(res.body).to.be.eql({ message: 'Hello World' });
 
       debug('### List artifacts');
       const r3 = await helper.queue.listArtifacts(taskId, 0);
-      assume(r3.artifacts.length).equals(1);
+      assume(r3.artifacts.length).equals(0);
     });
 
     test('Post error artifact', async () => {
