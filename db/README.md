@@ -57,8 +57,8 @@ In general, this means avoiding any operations that would perform a scan of a ta
 A common example of a "slow" migration is rewriting columns into a new format, such as combining `provisioner_id`/`worker_type` into `worker_pool_id`.
 In this case, the rewriting must be done "online", and two database versions are required (one to add the new column, and one to remove the old).
 See the taskcluster-lib-postgres documentation for details of how this works.
-The following is an (untested) example of how this might be implemented for a hypothetical table with a primary key named `id`.
-See the existing migration scripts for more (tested) examples.
+The following is an example of how this might be implemented for a hypothetical table with a primary key named `id`.
+See the existing migration scripts (such as versions 58-59) for more examples.
 
 ```yaml
 version: 50
@@ -77,7 +77,7 @@ migrationScript: |-
 
       -- NOTE: a more advanced migration would use the primary key to start
       -- the search for nulls midway through the table, storing that in `state`
-      -- https://github.com/djmitche/taskcluster/blob/393053b0ec3eaebacd75d5b3ed8bc9510d40f8af/db/versions/0020-migration.sql#L59-L116
+      -- see db/versions/0058-migration.sql#L13-32
       for item in
         select id
         from worker_stuff
@@ -98,7 +98,7 @@ migrationScript: |-
     create function online_migration_v50_is_complete() returns boolean as $$
     begin
       perform * from worker_stuff where worker_pool_id is null limit 1;
-      return not found; 
+      return not found;
     end
     $$ language plpgsql;
   end
@@ -110,6 +110,12 @@ methods:
   create_worker_stuff:
     # update all methods that modify data to set the provisioner_id/worker_type
     # and worker_pool_id columns
+    ..
+  get_worker_stuff:
+    # update all other methods that access data or use the affected columns
+    # to ensure they maintain the expected functionality during online
+    # migration and downgrade, accounting for both cases of having no
+    # worker_pool_id column or having no provisioner_id and worker_type
     ..
 ```
 
@@ -126,6 +132,11 @@ migrationScript: |-
     alter table worker_stuff drop column provisioner_id, drop column worker_type;
     -- see https://medium.com/doctolib/adding-a-not-null-constraint-on-pg-faster-with-minimal-locking-38b2c00c4d1c
     alter table worker_stuff add constraint worker_pool_id_not_null check (worker_pool_id is not null) not valid;
+  end
+downgradeScript: |-
+  begin
+    alter table worker_stuff drop constraint worker_pool_id_not_null;
+    alter table worker_stuff add column provisioner_id text, add column worker_type text;
 
     create function online_downgrade_v50_batch(batch_size_in integer, state_in jsonb)
     returns table (count integer, state jsonb) as $$
@@ -158,14 +169,9 @@ migrationScript: |-
     create function online_downgrade_v50_is_complete() returns boolean as $$
     begin
       perform * from worker_stuff where worker_type is null or provisioner_id is null limit 1;
-      return not found; 
+      return not found;
     end
     $$ language plpgsql;
-  end
-downgradeScript: |-
-  begin
-    alter table worker_stuff drop constraint worker_pool_id_not_null;
-    alter table worker_stuff add column provisioner_id text, add column worker_type text;
   end
 methods:
   create_worker_stuff:
@@ -209,7 +215,7 @@ Ensure that they cover every conceivable circumstance, especially if they modify
 The helper function `dbVersionTest` can help with testing migrations and downgrades, including online operations.
 This function creates a suite of tests for various scenarios.
 Its documentation is in comments in `db/test/helper.js`.
-See version 50 for an example.
+See versions 58-59 for an example.
 
 Migrations that do not change the database schema do not need version tests, but must still include a test file with a comment explaining why.
 If the migration defines or redefines any functions, then the function tests should be updated accordingly.
