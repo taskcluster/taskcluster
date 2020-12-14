@@ -2,7 +2,6 @@ const assert = require('assert');
 const gql = require('graphql-tag');
 const testing = require('taskcluster-lib-testing');
 const helper = require('../helper');
-const getArtifact = require('../fixtures/artifact.graphql');
 const getArtifacts = require('../fixtures/artifacts.graphql');
 const getLatestArtifacts = require('../fixtures/latestArtifacts.graphql');
 const artifactsCreated = require('../fixtures/artifactsCreated.graphql');
@@ -14,26 +13,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.resetTables(mock, skipping);
 
   suite('Artifact Queries GraphQL', function() {
-    test('artifact query works', async function() {
-      const client = helper.getHttpClient();
-      const name = "artifact-name";
-      const taskId = "artifact-id";
-      const runId = 123456;
-
-      const response = await client.query({
-        query: gql`${getArtifact}`,
-        variables: {
-          taskId: taskId,
-          runId: runId,
-          name: name,
-        },
-      });
-
-      assert.equal(response.data.artifact.name, name);
-      assert.equal(response.data.artifact.runId, runId);
-      assert.equal(response.data.artifact.taskId, taskId);
-    });
-
     test('artifacts query works', async function() {
       const client = helper.getHttpClient();
       const taskId = "artifact-id";

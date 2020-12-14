@@ -18,28 +18,6 @@ module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, r
     };
   };
 
-  const artifact = new DataLoader(queries =>
-    Promise.all(
-      queries.map(async ({ taskId, runId, name }) => {
-        try{
-          const artifact = await queue.getArtifact(taskId, runId, name);
-
-          return new Artifact(
-            taskId,
-            withUrl({
-              method: queue.getArtifact,
-              taskId,
-              artifact,
-              runId,
-            }),
-            runId,
-          );
-        } catch (err) {
-          return err;
-        }
-      }),
-    ),
-  );
   const artifacts = new ConnectionLoader(
     async ({ taskId, runId, filter, options }) => {
       const raw = await queue.listArtifacts(taskId, runId, options);
@@ -73,7 +51,6 @@ module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, r
   );
 
   return {
-    artifact,
     artifacts,
     latestArtifacts,
   };

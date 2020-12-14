@@ -66,24 +66,6 @@ type ArtifactCreated {
 }
 
 extend type Query {
-  # Get an artifact by `name` from a specific task run.
-  # In order to get a public artifact you need the scope `queue:get-artifact:<name>`,
-  # where `<name>` is the name of the artifact. If the artifact `name` starts with `public/`,
-  # authentication and authorization is not necessary to fetch the artifact.
-  # Artifacts may be cached in data-centers closer to the workers in order to reduce
-  # bandwidth costs. This can lead to longer response times.
-  artifact(taskId: ID!, runId: Int!, name: String!): Artifact
-
-  # Get an artifact by `name` from the last run of a specific task.
-  # In order to get a public artifact you need the scope `queue:get-artifact:<name>`,
-  # where `<name>` is the name of the artifact. If the artifact `name` starts with `public/`,
-  # authentication and authorization is not necessary to fetch the artifact.
-  # Artifacts may be cached in data-centers closer to the workers in order to reduce
-  # bandwidth costs. This can lead to longer response times.
-  # Note: this query can be slightly slower than the querying directly for an artifact,
-  # so if you already know the `runId` of the latest run, consider querying it directly.
-  latestArtifact(taskId: ID!, runId: Int!): Artifact
-
   # Returns a list of artifacts and associated metadata for a particular task run.
   # As a task run may have many artifacts, this may return cursors to page through artifacts.
   # To continue listing artifacts, use the returned connection with the desired

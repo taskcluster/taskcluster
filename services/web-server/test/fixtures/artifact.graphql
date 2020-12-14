@@ -1,7 +1,0 @@
-query Artifact($taskId: ID!, $runId: Int!, $name: String!) {
-  artifact(taskId: $taskId, runId: $runId, name: $name,) {
-    taskId,
-    runId, 
-    name
-  }
-}
