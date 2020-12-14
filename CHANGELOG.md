@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v39.1.1
+
+### DEPLOYERS
+
+▶ [patch] [#4034](https://github.com/taskcluster/taskcluster/issues/4034)
+The queue's artifact expiration crontask now uses a much more efficient query and should be able to keep up with the load.
+
+### USERS
+
+▶ [patch] [#3797](https://github.com/taskcluster/taskcluster/issues/3797)
+A race condition in github checks updates has been resolved
+
+### DEVELOPERS
+
+▶ [patch] [#4064](https://github.com/taskcluster/taskcluster/issues/4064)
+Taskcluster services and docker-worker now use Node 14, the current LTS version.
+
+### OTHER
+
+▶ Additional changes not described here: [#2981](https://github.com/taskcluster/taskcluster/issues/2981), [#4100](https://github.com/taskcluster/taskcluster/issues/4100).
+
 ## v39.1.0
 
 ### GENERAL
