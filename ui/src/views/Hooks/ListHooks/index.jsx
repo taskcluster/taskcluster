@@ -35,6 +35,10 @@ export default class ListHooks extends Component {
     this.props.history.push('/hooks/create');
   };
 
+  handleHookUpdateSearch = () => {
+    this.props.history.push('/hooks/update');
+  };
+
   handleHookSearchSubmit = hookSearch => {
     const query = parse(window.location.search.slice(1));
 
@@ -89,7 +93,11 @@ export default class ListHooks extends Component {
             softSearch
             tree={tree}
             onEmptySearch={
-              <Typography variant="subtitle1">
+              <Typography
+                variant="subtitle1"
+                placeholder="Updated Hook contains"
+                color="inherit"
+                onClick={this.handleHookUpdateSearch}>
                 No items for search term {hookSearch}
               </Typography>
             }
