@@ -10,8 +10,6 @@ query IndexEntry($taskId: ID!, $entryConnection: PageConnection, $skip: Boolean!
     edges {
       node {
         name
-        url
-        isPublic
         contentType
       }
     }

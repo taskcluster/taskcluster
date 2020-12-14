@@ -22,6 +22,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import { withAuth } from '../../../utils/Auth';
 import notify from '../../../utils/notify';
 import Link from '../../../utils/Link';
+import { getLatestArtifactUrl } from '../../../utils/getArtifactUrl';
 import taskQuery from './task.graphql';
 import {
   INITIAL_CURSOR,
@@ -32,8 +33,11 @@ import {
 
 let previousCursor;
 const NOTIFY_KEY = 'interactive-notify';
-const getInteractiveStatus = ({ shellUrl = null, taskStatusState = null }) => {
-  if (!shellUrl) {
+const getInteractiveStatus = ({
+  shellArtifact = null,
+  taskStatusState = null,
+}) => {
+  if (!shellArtifact) {
     return INTERACTIVE_TASK_STATUS.WAITING;
   }
 
@@ -81,7 +85,7 @@ const getInteractiveStatus = ({ shellUrl = null, taskStatusState = null }) => {
 export default class InteractiveConnect extends Component {
   static getDerivedStateFromProps(
     props,
-    { shellUrl, artifactsLoading, previousTaskId, sessionReady }
+    { shellArtifact, artifactsLoading, previousTaskId, sessionReady }
   ) {
     const {
       data: { task, error },
@@ -99,7 +103,7 @@ export default class InteractiveConnect extends Component {
     // Reset state when Task ID changes
     if (previousTaskId !== taskId) {
       return {
-        shellUrl: null,
+        shellArtifact: null,
         artifactsLoading: true,
         previousTaskId: taskId,
         sessionReady: false,
@@ -107,13 +111,13 @@ export default class InteractiveConnect extends Component {
     }
 
     // Get connection URL
-    if (!shellUrl && task && task.latestArtifacts) {
+    if (!shellArtifact && task && task.latestArtifacts) {
       const artifacts = task.latestArtifacts.edges;
-      const urls = artifacts.reduce((acc, { node: { name, url } }) => {
-        if (name.endsWith('shell.html')) {
+      const interactives = artifacts.reduce((acc, { node: artifact }) => {
+        if (artifact.name.endsWith('shell.html')) {
           return {
             ...acc,
-            shellUrl: url,
+            shellArtifact: artifact,
           };
         }
 
@@ -121,7 +125,7 @@ export default class InteractiveConnect extends Component {
       }, {});
 
       return {
-        ...urls,
+        ...interactives,
         ...(artifactsLoading && !task.latestArtifacts.pageInfo.hasNextPage
           ? { artifactsLoading: false }
           : null),
@@ -129,7 +133,7 @@ export default class InteractiveConnect extends Component {
         sessionReady:
           sessionReady ||
           getInteractiveStatus({
-            shellUrl: urls.shellUrl,
+            shellArtifact: interactives.shellArtifact,
             taskStatusState: task && task.status.state,
           }) === INTERACTIVE_TASK_STATUS.READY,
       };
@@ -145,7 +149,7 @@ export default class InteractiveConnect extends Component {
   }
 
   state = {
-    shellUrl: null,
+    shellArtifact: null,
     artifactsLoading: true,
     // eslint-disable-next-line react/no-unused-state
     previousTaskId: this.props.match.params.taskId,
@@ -231,7 +235,16 @@ export default class InteractiveConnect extends Component {
   }
 
   handleShellOpen = () => {
-    window.open(this.state.shellUrl, '_blank');
+    const {
+      user,
+      match: {
+        params: { taskId },
+      },
+    } = this.props;
+    const { name } = this.state.shellArtifact;
+    const url = getLatestArtifactUrl({ user, taskId, name });
+
+    window.open(url, '_blank');
   };
 
   handleNotificationChange = async ({ target: { checked } }) => {
@@ -258,9 +271,9 @@ export default class InteractiveConnect extends Component {
       },
       user,
     } = this.props;
-    const { shellUrl, notifyOnReady } = this.state;
+    const { shellArtifact, notifyOnReady } = this.state;
     const interactiveStatus = getInteractiveStatus({
-      shellUrl,
+      shellArtifact,
       taskStatusState: task && task.status.state,
     });
     const isSessionReady = interactiveStatus === INTERACTIVE_TASK_STATUS.READY;

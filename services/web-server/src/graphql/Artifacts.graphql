@@ -18,17 +18,6 @@ type Artifact {
 
   # Mime-type for the artifact.
   contentType: String!
-
-  # URL to the artifact. This will be a signed URL if credentials were used
-  # to fetch this artifact metadata, otherwise a public URL will be generated,
-  # or not available for private artifacts.
-  url: String
-
-  # Is true when this artifact is public, otherwise false.
-  isPublic: Boolean!
-
-  # Is true when this artifact is a log, otherwise false.
-  isLog: Boolean!
 }
 
 enum ArtifactStorageType {
