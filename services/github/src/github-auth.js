@@ -1,9 +1,8 @@
 const { Octokit } = require('@octokit/rest');
 const { createAppAuth } = require("@octokit/auth-app");
-const { throttling } = require("@octokit/plugin-throttling");
 const { retry } = require("@octokit/plugin-retry");
 
-const PluggedOctokit = Octokit.plugin(retry, throttling);
+const PluggedOctokit = Octokit.plugin(retry);
 
 const getPrivatePEM = cfg => {
   const keyRe = /-----BEGIN RSA PRIVATE KEY-----(\n|\\n).*(\n|\\n)-----END RSA PRIVATE KEY-----(\n|\\n)?/s;
@@ -28,19 +27,6 @@ module.exports = async ({ cfg, monitor }) => {
       info: message => monitor.info(message),
       warn: message => monitor.warning(message),
       error: message => monitor.err(message),
-    },
-    throttle: {
-      onRateLimit: (retryAfter, options) => {
-        PluggedOctokit.log.info(`Request quota exhausted for request ${options.method} ${options.url}`);
-
-        if (options.request.retryCount < 3) {
-          PluggedOctokit.log.info(`Retrying after ${retryAfter} seconds!`);
-          return true;
-        }
-      },
-      onAbuseLimit: (retryAfter, options) => {
-        PluggedOctokit.log.warn(`Abuse detected for request ${options.method} ${options.url}`);
-      },
     },
     retry: {
       // 404 and 401 are both retried because they can occur spuriously, likely due to MySQL db replication
