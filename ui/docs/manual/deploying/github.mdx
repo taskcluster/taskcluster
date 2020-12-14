@@ -38,6 +38,7 @@ In the Helm templates, you'll need to set
 
 * `github.bot_username` -- this should match the name in the integration's URL.  For example, if the URL is https://github.com/apps/acme-taskcluster then the `bot_name` should be `acme-taskcluster`.
 * `github.github_app_id` -- numeric app_id, visible in the app settings
+* `github.webhook_secret` -- the webhook secret for the application.  Set this to the same random string here and in the GitHub UI.  In most cases, this is a single value, but multiple values can be specified separated by space characters, to allow for smooth rotation of the secret.
 * `github.github_private_pem` -- see below
 
 On the app's settings page, generate a private key, and add its PEM to your Taskcluster instance's configs.
