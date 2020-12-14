@@ -356,7 +356,7 @@ Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists.
   * `check_run_id_in text`
 * *Returns*: `void`
 
-Create a single check.
+Upsert a single check.
 
 ### delete_github_build
 

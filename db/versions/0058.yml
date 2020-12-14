@@ -1,0 +1,16 @@
+version: 58
+description: make create_github_check idempotent
+methods:
+  create_github_check:
+    serviceName: github
+    description: Upsert a single check.
+    mode: write
+    args: task_group_id_in text, task_id_in text, check_suite_id_in text, check_run_id_in text
+    returns: void
+    body: |-
+      begin
+        insert into github_checks (task_group_id, task_id, check_suite_id, check_run_id) values (task_group_id_in, task_id_in, check_suite_id_in, check_run_id_in)
+        on conflict (task_group_id, task_id) do update set
+          check_suite_id = check_suite_id_in,
+          check_run_id = check_run_id_in;
+      end
