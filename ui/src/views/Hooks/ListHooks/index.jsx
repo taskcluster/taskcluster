@@ -94,9 +94,9 @@ export default class ListHooks extends Component {
             tree={tree}
             onEmptySearch={
               <Typography
-                variant="subtitle1"
+                variant="h3"
                 placeholder="Updated Hook contains"
-                color="inherit"
+                color="primary"
                 onClick={this.handleHookUpdateSearch}>
                 No items for search term {hookSearch}
               </Typography>
