@@ -49,6 +49,11 @@ describe('Building URLs', function() {
       .to.eventually.match(signed('https://tc-tests\\.example\\.com/api/fake/v1/get-test'));
   });
 
+  it('should build signed URL synchronously', () => {
+    return expect(client.buildSignedUrlSync(client.get))
+      .to.match(signed('https://tc-tests\\.example\\.com/api/fake/v1/get-test'));
+  });
+
   it('should build URL with parameter', () => {
     expect(client.buildUrl(client.param, 'test'))
       .to.equal('https://tc-tests.example.com/api/fake/v1/url-param/test/list');

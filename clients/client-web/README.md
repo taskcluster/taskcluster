@@ -211,6 +211,7 @@ queue
 ```
 
 **NOTE**: This method returns a promise, unlike in [taskcluster-client](https://yarnpkg.com/en/package/taskcluster-client).
+If you are not using a credentials agent, but have passed `credentials` to the client constructor, you can use the synchronous `buildSignedUrlSync` instead.
 
 Please note that the `payload` parameter cannot be encoded in the signed URL
 and must be sent as request payload. This should work fine, just remember that
