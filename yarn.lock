@@ -185,14 +185,6 @@
   dependencies:
     "@hapi/hoek" "9.x.x"
 
-"@hapi/bounce@2.x.x":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@hapi/bounce/-/bounce-2.0.0.tgz#e6ef56991c366b1e2738b2cd83b01354d938cf3d"
-  integrity sha512-JesW92uyzOOyuzJKjoLHM1ThiOvHPOLDHw01YV8yh5nCso7sDwJho1h0Ad2N+E62bZyz46TG3xhAi/78Gsct6A==
-  dependencies:
-    "@hapi/boom" "9.x.x"
-    "@hapi/hoek" "9.x.x"
-
 "@hapi/cryptiles@5.x.x":
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@hapi/cryptiles/-/cryptiles-5.1.0.tgz#655de4cbbc052c947f696148c83b187fc2be8f43"
@@ -204,21 +196,6 @@
   version "9.1.0"
   resolved "https://registry.yarnpkg.com/@hapi/hoek/-/hoek-9.1.0.tgz#6c9eafc78c1529248f8f4d92b0799a712b6052c6"
   integrity sha512-i9YbZPN3QgfighY/1X1Pu118VUz2Fmmhd6b2n0/O8YVgGGfw0FbUYoA97k7FkpGJ+pLCFEDLUmAPPV4D1kpeFw==
-
-"@hapi/sntp@4.x.x":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@hapi/sntp/-/sntp-4.0.0.tgz#2095bfd7bbe0e6cf0eced55a7598035815b8e02e"
-  integrity sha512-yBXTlySZyPZKz0NPoxxFClKNMmVhsZq84Ir7+k93XNGLdSnY3iD0BosxflLpIbP7yr3p4T+QDPMNgOA3XccdFQ==
-  dependencies:
-    "@hapi/boom" "9.x.x"
-    "@hapi/bounce" "2.x.x"
-    "@hapi/hoek" "9.x.x"
-    "@hapi/teamwork" "4.x.x"
-
-"@hapi/teamwork@4.x.x":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@hapi/teamwork/-/teamwork-4.0.0.tgz#4aadbb88de13bce39ab8431565cd50c7ecc6327f"
-  integrity sha512-V6xYOrr5aFv/IJqNPneaYCu8vuGTKisamqHVRS3JJnbZr18TrpXdsJOYk9pjPhFti+M2YETPebQLUr820N5NoQ==
 
 "@istanbuljs/schema@^0.1.2":
   version "0.1.2"
@@ -3464,16 +3441,15 @@ hashids@^2.0.0:
   resolved "https://registry.yarnpkg.com/hashids/-/hashids-2.2.2.tgz#5381257b34f0d0aca2063967b14a30a9312f650d"
   integrity sha512-nqH06JLFeBBCg31jYSArbOs/XddTdnHSul/hb6XbrWg/UlUWFQc9KR21sVLoGKQGKPW1D3zgTgTew0oY7nhrhQ==
 
-hawk@8.0.1, hawk@^8.0.0:
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/hawk/-/hawk-8.0.1.tgz#f187cdd90ba28a29f626e5d38bf8c1d7b7ca7e12"
-  integrity sha512-n9yJDun8ooG+/t0SVn2iRxZBNY8x5B14JECie8rY61ZJ4CrEnTOYe9tZ5z7lpjuyoqMdrB74idO70pu4R2scqg==
+hawk@9.0.0, hawk@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/hawk/-/hawk-9.0.0.tgz#406a1f2f92dd6948a50620e5cafd5491007764de"
+  integrity sha512-xTkUIwwAI6d5//1ofvWCDM7YYAEAo/mFqhEW7S/m9+nLZqkOzSz8lTLKk6cHvJGax3UrbljfP8P+PFPybGcxZA==
   dependencies:
     "@hapi/b64" "5.x.x"
     "@hapi/boom" "9.x.x"
     "@hapi/cryptiles" "5.x.x"
     "@hapi/hoek" "9.x.x"
-    "@hapi/sntp" "4.x.x"
 
 he@1.2.0, he@^1.2.0:
   version "1.2.0"

@@ -254,7 +254,7 @@ export default class Client {
       );
     }
 
-    const bewit = hawk.client.bewit(url, {
+    const bewit = hawk.uri.getBewit(url, {
       credentials: {
         id: clientId,
         key: accessToken,
