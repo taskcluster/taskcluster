@@ -3,7 +3,7 @@ const semver = require('semver');
 const glob = require('glob');
 const chalk = require('chalk');
 const appRootDir = require('app-root-dir');
-const { REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd, gitCurrentBranch } = require('../utils');
+const { REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd, gitLog, gitCurrentBranch } = require('../utils');
 const taskcluster = require('taskcluster-client');
 const path = require('path');
 const openEditor = require('open-editor');
@@ -52,9 +52,15 @@ class ChangeLog {
   constructor() {
     this.loaded = false;
     this.snippets = [];
+    this.updates = [];
   }
 
   async load() {
+    await this.loadSnippets();
+    await this.loadUpdates();
+  }
+
+  async loadSnippets() {
     const snippetFiles = glob.sync('changelog/*.md', { cwd: appRootDir.get() })
       .filter(filename => filename !== 'changelog/README.md');
 
@@ -102,6 +108,15 @@ class ChangeLog {
     this.snippets.sort(cmp);
   }
 
+  async loadUpdates() {
+    const lastVersion = await this.lastVersion();
+    this.updates = await gitLog({
+      dir: REPO_ROOT,
+      args: [`v${lastVersion}..HEAD`, "--author=bot@renovateapp.com", "--pretty=%s (%h)"],
+    });
+    console.log(this.updates);
+  }
+
   /**
    * Get the highest snippet level, determining the overall level
    * of this release.
@@ -119,19 +134,23 @@ class ChangeLog {
     return minor ? 'minor' : 'patch';
   }
 
+  async lastVersion() {
+    const pkgJson = await readRepoJSON('package.json');
+    return pkgJson.version;
+  }
+
   /**
    * Get the next version number, given the current level.
    */
-  async next_version() {
-    const pkgJson = await readRepoJSON('package.json');
-    return semver.inc(pkgJson.version, this.level());
+  async nextVersion() {
+    return semver.inc(await this.lastVersion(), this.level());
   }
 
   /**
    * Get the formatted list of snippets as a string
    */
   async format() {
-    if (this.snippets.length === 0) {
+    if (this.snippets.length === 0 && this.updates.length === 0) {
       return 'No changes';
     }
 
@@ -161,7 +180,7 @@ class ChangeLog {
       return acc;
     }, {});
 
-    const formatted = ALLOWED_AUDIENCES
+    const formattedSnippets = ALLOWED_AUDIENCES
       .map(audience => {
         if (!categorizedSnippets[audience]) {
           return '';
@@ -175,7 +194,25 @@ class ChangeLog {
           .join('\n\n');
         return `\n\n### ${audience.toUpperCase()}\n\n${snippets}`;
       }).join('').trim();
-    return formatted + silentSuffix;
+
+    const formattedUpdates = this.updates.length > 0 ? (
+      [
+        '\n',
+        '### Automated Package Updates',
+        '',
+        '<details>',
+        `<summary>${this.updates.length} Renovate updates</summary>`,
+        '', // without this newline, the list will not render correctly
+      ]
+        .concat(this.updates.map(u => `* ${u}`))
+        .concat([
+          '',
+          '</details>',
+        ])
+        .join('\n')
+    ) : '';
+
+    return formattedSnippets + silentSuffix + formattedUpdates;
   }
 
   /**
@@ -331,7 +368,7 @@ const show = async (options) => {
   const cl = new ChangeLog();
   await cl.load();
   console.log(`${chalk.bold.cyan('Level:')}        ${cl.level()}`);
-  console.log(`${chalk.bold.cyan('Next Version:')} ${await cl.next_version()}`);
+  console.log(`${chalk.bold.cyan('Next Version:')} ${await cl.nextVersion()}`);
   console.log(chalk.bold.cyan('Changelog:'));
   console.log(await cl.format());
 };
