@@ -47,17 +47,24 @@ const strcmp = (a, b) => {
 
 /**
  * Representation of the as-yet-unreleased changelog snippets
+ *
+ * options: {
+ *   skipUpdates: if true, don't load renovate updates
+ * }
  */
 class ChangeLog {
-  constructor() {
+  constructor(options = {}) {
     this.loaded = false;
     this.snippets = [];
     this.updates = [];
+    this.options = options;
   }
 
   async load() {
     await this.loadSnippets();
-    await this.loadUpdates();
+    if (!this.options.skipUpdates) {
+      await this.loadUpdates();
+    }
   }
 
   async loadSnippets() {
@@ -364,7 +371,7 @@ const add = async (options) => {
 };
 
 const show = async (options) => {
-  const cl = new ChangeLog();
+  const cl = new ChangeLog({ skipUpdates: true });
   await cl.load();
   console.log(`${chalk.bold.cyan('Level:')}        ${cl.level()}`);
   console.log(`${chalk.bold.cyan('Next Version:')} ${await cl.nextVersion()}`);
@@ -373,7 +380,7 @@ const show = async (options) => {
 };
 
 const check = async (options) => {
-  const cl = new ChangeLog();
+  const cl = new ChangeLog({ skipUpdates: true });
   await cl.load();
   console.log(chalk.bold.green('Changelog OK'));
 
