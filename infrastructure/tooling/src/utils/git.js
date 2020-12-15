@@ -177,3 +177,17 @@ exports.gitPush = async ({ dir, remote, refs, force, utils }) => {
   const opts = { cwd: dir };
   await exec('git', ['push', ...(force ? ['-f'] : []), remote, ...refs], opts);
 };
+
+/**
+ * Run `git log` and return the results in an array of lines.
+ *
+ * - dir -- directory to run in
+ * - args -- arguments to `git log`
+ */
+exports.gitLog = async ({ dir, args }) => {
+  const opts = { cwd: dir };
+  const res = await exec('git', ['log', ...args], opts);
+  return res.stdout
+    .split(/\n/)
+    .filter(l => l !== '');
+};

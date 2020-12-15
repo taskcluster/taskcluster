@@ -5,16 +5,7 @@ const { gitLsFiles } = require('../../utils');
 const IGNORE = {
   'clients/client/yarn.lock': pkg => false,
   'clients/client-web/yarn.lock': pkg => false,
-  'yarn.lock': pkg => [
-    'base64-js',
-    'convert-source-map',
-    'graphql-tag',
-    'har-validator',
-    'mime',
-    'mime-db',
-    'nodemailer',
-    'subscriptions-transport-ws',
-  ].includes(pkg),
+  'yarn.lock': pkg => false,
   'ui/yarn.lock': pkg => [
     'acorn',
     'array-includes',

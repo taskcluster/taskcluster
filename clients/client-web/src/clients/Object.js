@@ -12,7 +12,7 @@ export default class Object extends Client {
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
     this.uploadObject.entry = {"args":["name"],"category":"Upload","input":true,"method":"put","name":"uploadObject","query":[],"route":"/upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.downloadObject.entry = {"args":["name"],"category":"Download","input":true,"method":"put","name":"downloadObject","output":true,"query":[],"route":"/download-object/<name>","scopes":"object:download:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.fetchObjectMetadata.entry = {"args":["name"],"category":"Download","input":true,"method":"put","name":"fetchObjectMetadata","output":true,"query":[],"route":"/download-object/<name>","scopes":"object:download:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.download.entry = {"args":["name"],"category":"Download","method":"get","name":"download","query":[],"route":"/download/<name>","scopes":"object:download:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
@@ -38,10 +38,10 @@ export default class Object extends Client {
   // Returns a 406 error if none of the given download methods are available.
   // See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.
   /* eslint-enable max-len */
-  downloadObject(...args) {
-    this.validate(this.downloadObject.entry, args);
+  fetchObjectMetadata(...args) {
+    this.validate(this.fetchObjectMetadata.entry, args);
 
-    return this.request(this.downloadObject.entry, args);
+    return this.request(this.fetchObjectMetadata.entry, args);
   }
   /* eslint-disable max-len */
   // Get the data in an object directly.  This method does not return a JSON body, but
@@ -52,7 +52,7 @@ export default class Object extends Client {
   // This method is limited by the common capabilities of HTTP, so it may not be
   // the most efficient, resilient, or featureful way to retrieve an artifact.
   // Situations where such functionality is required should ues the
-  // `downloadObject` API endpoint.
+  // `fetchObjectMetadata` API endpoint.
   // See [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.
   /* eslint-enable max-len */
   download(...args) {

@@ -4,29 +4,29 @@ const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withMiddleware(mock, skipping, [
-    { 'middlewareType': 'test', downloadObject: { intercept: 'dl' } },
-    { 'middlewareType': 'test', simpleDownload: { intercept: 'simple' } },
+    { 'middlewareType': 'test', fetchObjectMetadata: { intercept: 'dl' } },
+    { 'middlewareType': 'test', download: { intercept: 'simple' } },
   ]);
 
-  test('calls middleware for downloadObjectRequest', async function() {
+  test('calls middleware for fetchObjectMetadataRequest', async function() {
     const middleware = await helper.load('middleware');
 
     let reply;
     const res = { reply: x => reply = x };
     const object = { name: 'dl/intercept' };
 
-    assert(!await middleware.downloadObjectRequest({}, res, object, 'meth', {}));
+    assert(!await middleware.fetchObjectMetadataRequest({}, res, object, 'meth', {}));
     assert.deepEqual(reply, { method: 'simple', url: 'http://intercepted' });
   });
 
-  test('calls middleware for simpleDownloadRequest', async function() {
+  test('calls middleware for downloadRequest', async function() {
     const middleware = await helper.load('middleware');
 
     let redirect;
     const res = { redirect: (x, y) => redirect = [x, y] };
     const object = { name: 'simple/intercept' };
 
-    assert(!await middleware.simpleDownloadRequest({}, res, object));
+    assert(!await middleware.downloadRequest({}, res, object));
     assert.deepEqual(redirect, [303, 'http://intercepted']);
   });
 });

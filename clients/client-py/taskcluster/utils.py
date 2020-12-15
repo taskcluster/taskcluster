@@ -172,7 +172,11 @@ def encodeStringForB64Header(s):
     """ HTTP Headers can't have new lines in them, let's """
     if isinstance(s, six.text_type):
         s = s.encode()
-    return base64.encodestring(s).strip().replace(b'\n', b'')
+    if six.PY3:
+        b64str = base64.encodebytes(s)
+    else:
+        b64str = base64.encodestring(s)
+    return b64str.strip().replace(b'\n', b'')
 
 
 def slugId():

@@ -87,7 +87,7 @@ builder.declare({
 builder.declare({
   method: 'put',
   route: '/download-object/:name(*)', // name TBD; https://github.com/taskcluster/taskcluster/issues/3940
-  name: 'downloadObject',
+  name: 'fetchObjectMetadata',
   input: 'download-object-request.yml',
   output: 'download-object-response.yml',
   stability: 'experimental',
@@ -129,11 +129,11 @@ builder.declare({
   const params = acceptDownloadMethods[method];
 
   // apply middleware
-  if (!await this.middleware.downloadObjectRequest(req, res, object, method, params)) {
+  if (!await this.middleware.fetchObjectMetadataRequest(req, res, object, method, params)) {
     return;
   }
 
-  const result = await backend.downloadObject(object, method, params);
+  const result = await backend.fetchObjectMetadata(object, method, params);
 
   return res.reply(result);
 });
@@ -157,7 +157,7 @@ builder.declare({
     'This method is limited by the common capabilities of HTTP, so it may not be',
     'the most efficient, resilient, or featureful way to retrieve an artifact.',
     'Situations where such functionality is required should ues the',
-    '`downloadObject` API endpoint.',
+    '`fetchObjectMetadata` API endpoint.',
     '',
     'See [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.',
   ].join('\n'),
@@ -182,11 +182,11 @@ builder.declare({
   }
 
   // apply middleware
-  if (!await this.middleware.simpleDownloadRequest(req, res, object)) {
+  if (!await this.middleware.downloadRequest(req, res, object)) {
     return;
   }
 
-  const result = await backend.downloadObject(object, method, true);
+  const result = await backend.fetchObjectMetadata(object, method, true);
 
   return res.redirect(303, result.url);
 });

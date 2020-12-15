@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-client-web",
-  "version": "39.1.0",
+  "version": "39.1.2",
   "main": "src/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
@@ -19,7 +19,6 @@
     "crypto-js": "^4.0.0",
     "dotenv": "^8.0.0",
     "eslint": "^7.0.0",
-    "hawk": "<7.1.0",
     "karma": "^5.2.3",
     "karma-cli": "^2.0.0",
     "karma-coverage": "^2.0.3",
@@ -34,7 +33,7 @@
   },
   "dependencies": {
     "crypto-js": "^4.0.0",
-    "hawk": "<7.1.0",
+    "hawk": "^9.0.0",
     "query-string": "^6.1.0",
     "taskcluster-lib-urls": "^13.0.0"
   }

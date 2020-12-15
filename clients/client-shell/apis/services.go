@@ -942,7 +942,7 @@ var services = map[string]definitions.Service{
 				Input: "v1/upload-object-request.json#",
 			},
 			definitions.Entry{
-				Name:        "downloadObject",
+				Name:        "fetchObjectMetadata",
 				Title:       "Download object data",
 				Description: "Get information on how to download an object.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
 				Stability:   "experimental",
@@ -957,7 +957,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "download",
 				Title:       "Get an object's data",
-				Description: "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`downloadObject` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
+				Description: "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`fetchObjectMetadata` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
 				Stability:   "experimental",
 				Method:      "get",
 				Route:       "/download/<name>",
