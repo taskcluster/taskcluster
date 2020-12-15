@@ -177,20 +177,9 @@ export default class TaskRunsCard extends Component {
 
     // if this looks like a logfile, send the user to the logfile viewer
     if (isLogFile) {
-      // react-router decodes its params (via `decodeURI`)
-      // so something like '%252F' and '%2F' in the URL both become '%2F'
-      // we should be able to remove `encodeURI` once
-      // https://github.com/ReactTraining/history/issues/745 has been resolved.
-      //
-      // Context: In order to create the URIs for private artifacts we use
-      // `queue.externalBuildSignedUrl`. Internally, that method uses
-      // `decodeURIComponent` so when an artifact name has a slash in it
-      // the URI will have '`%2F'.
-      const encoded = encodeURI(encodeURIComponent(url));
-
       url = this.isLiveLog()
-        ? `/tasks/${taskId}/runs/${runId}/logs/live/${encoded}`
-        : `/tasks/${taskId}/runs/${runId}/logs/${encoded}`;
+        ? `/tasks/${taskId}/runs/${runId}/logs/live/${name}`
+        : `/tasks/${taskId}/runs/${runId}/logs/${name}`;
 
       // don't do anything special on clicking this artifact
       handleArtifactClick = () => {};
