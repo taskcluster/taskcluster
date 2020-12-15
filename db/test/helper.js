@@ -319,6 +319,7 @@ exports.dbVersionTest = ({
         debug('migration/downgrade aborted');
         return;
       }
+      throw err;
     }
     await check('done');
   };
