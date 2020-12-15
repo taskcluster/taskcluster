@@ -114,7 +114,6 @@ class ChangeLog {
       dir: REPO_ROOT,
       args: [`v${lastVersion}..HEAD`, "--author=bot@renovateapp.com", "--pretty=%s (%h)"],
     });
-    console.log(this.updates);
   }
 
   /**
