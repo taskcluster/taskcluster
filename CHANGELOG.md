@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v39.1.2
+
+### USERS
+
+▶ [patch] 
+The octokit throttling plugin has been removed in this release.
+We did not appear to understand its assumptions. It will probably
+come back later once we understand it better.
+
+### OTHER
+
+▶ Additional changes not described here: [#3892](https://github.com/taskcluster/taskcluster/issues/3892), [#4012](https://github.com/taskcluster/taskcluster/issues/4012).
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency sinon to v9.2.2 (0dc9ff6f3)
+
+</details>
+
 ## v39.1.1
 
 ### DEPLOYERS
