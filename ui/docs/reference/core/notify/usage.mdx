@@ -12,11 +12,23 @@ There are four types of notifications and four types of filters possible on thes
 
 __Email:__ We can you both nicely formatted or plain text emails depending on which email client you want to use. You can send to any email address, so long as you have the correct scopes (we'll discuss scopes later).
 
+<SiteSpecific>
+This deployment sends notification emails from `%notify_email_sender%`.
+</SiteSpecific>
+
 __Pulse:__ We can also send a Pulse message that is documented [on this page](/docs/reference/core/notify/exchanges). The message is  pretty much just the status of the task.
 
 __Matrix:__ If a deployment of taskcluster is configured with credentials for a Matrix instance, it can post to Matrix rooms. *Note: The taskcluster user must be invited to a room before it can post there*
 
+<SiteSpecific>
+This deployment uses a Matrix bot with username `%notify_matrix_bot_name%`.
+</SiteSpecific>
+
 __Slack:__ If a Taskcluster deployment has Slack credentials, you can post to it likewise. *Note: Either the Slack App must be invited to channels, or granted `chat:write.public` and be posting to a public channel.*
+
+<SiteSpecific>
+This deployment uses a Slack bot with username `%notify_slack_bot_name%`.
+</SiteSpecific>
 
 ### Filters
 
