@@ -58,7 +58,7 @@ A common example of a "slow" migration is rewriting columns into a new format, s
 In this case, the rewriting must be done "online", and two database versions are required (one to add the new column, and one to remove the old).
 See the taskcluster-lib-postgres documentation for details of how this works.
 The following is an example of how this might be implemented for a hypothetical table with a primary key named `id`.
-See the existing migration scripts (such as versions 58-59) for more examples.
+See the existing migration scripts (such as versions 59-60) for more examples.
 
 ```yaml
 version: 50
@@ -77,7 +77,7 @@ migrationScript: |-
 
       -- NOTE: a more advanced migration would use the primary key to start
       -- the search for nulls midway through the table, storing that in `state`
-      -- see db/versions/0058-migration.sql#L13-32
+      -- see db/versions/0059-migration.sql#L13-32
       for item in
         select id
         from worker_stuff
@@ -215,7 +215,7 @@ Ensure that they cover every conceivable circumstance, especially if they modify
 The helper function `dbVersionTest` can help with testing migrations and downgrades, including online operations.
 This function creates a suite of tests for various scenarios.
 Its documentation is in comments in `db/test/helper.js`.
-See versions 58-59 for an example.
+See versions 59-60 for an example.
 
 Migrations that do not change the database schema do not need version tests, but must still include a test file with a comment explaining why.
 If the migration defines or redefines any functions, then the function tests should be updated accordingly.
