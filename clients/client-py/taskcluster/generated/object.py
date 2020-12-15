@@ -44,7 +44,7 @@ class Object(BaseClient):
 
         return self._makeApiCall(self.funcinfo["uploadObject"], *args, **kwargs)
 
-    def downloadObject(self, *args, **kwargs):
+    def fetchObjectMetadata(self, *args, **kwargs):
         """
         Download object data
 
@@ -57,7 +57,7 @@ class Object(BaseClient):
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["downloadObject"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["fetchObjectMetadata"], *args, **kwargs)
 
     def download(self, *args, **kwargs):
         """
@@ -73,7 +73,7 @@ class Object(BaseClient):
         This method is limited by the common capabilities of HTTP, so it may not be
         the most efficient, resilient, or featureful way to retrieve an artifact.
         Situations where such functionality is required should ues the
-        `downloadObject` API endpoint.
+        `fetchObjectMetadata` API endpoint.
 
         See [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.
 
@@ -90,11 +90,11 @@ class Object(BaseClient):
             'route': '/download/<name>',
             'stability': 'experimental',
         },
-        "downloadObject": {
+        "fetchObjectMetadata": {
             'args': ['name'],
             'input': 'v1/download-object-request.json#',
             'method': 'put',
-            'name': 'downloadObject',
+            'name': 'fetchObjectMetadata',
             'output': 'v1/download-object-response.json#',
             'route': '/download-object/<name>',
             'stability': 'experimental',

@@ -6,7 +6,7 @@ class TestMiddleware extends Middleware {
     this.config = options.config;
   }
 
-  async downloadObjectRequest(req, res, object, method, params) {
+  async fetchObjectMetadataRequest(req, res, object, method, params) {
     switch (object.name) {
       case 'dl/intercept': {
         res.reply({
@@ -20,7 +20,7 @@ class TestMiddleware extends Middleware {
     }
   }
 
-  async simpleDownloadRequest(req, res, object) {
+  async downloadRequest(req, res, object) {
     switch (object.name) {
       case 'simple/intercept': {
         res.redirect(303, 'http://intercepted');

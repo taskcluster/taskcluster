@@ -12,7 +12,7 @@ class CdnMiddleware extends Middleware {
     this.baseUrl = config.baseUrl;
   }
 
-  async simpleDownloadRequest(req, res, object) {
+  async downloadRequest(req, res, object) {
     // If the regular expression matches, then redirect to the CDN URL instead of
     // allowing the backend URL to serve this request.
     if (this.regexp.test(object.name)) {

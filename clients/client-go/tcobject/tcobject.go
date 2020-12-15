@@ -125,8 +125,8 @@ func (object *Object) UploadObject(name string, payload *UploadObjectRequest) er
 // Required scopes:
 //   object:download:<name>
 //
-// See #downloadObject
-func (object *Object) DownloadObject(name string, payload *DownloadObjectRequest) (*DownloadObjectResponse, error) {
+// See #fetchObjectMetadata
+func (object *Object) FetchObjectMetadata(name string, payload *DownloadObjectRequest) (*DownloadObjectResponse, error) {
 	cd := tcclient.Client(*object)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/download-object/"+url.QueryEscape(name), new(DownloadObjectResponse), nil)
 	return responseObject.(*DownloadObjectResponse), err
@@ -144,7 +144,7 @@ func (object *Object) DownloadObject(name string, payload *DownloadObjectRequest
 // This method is limited by the common capabilities of HTTP, so it may not be
 // the most efficient, resilient, or featureful way to retrieve an artifact.
 // Situations where such functionality is required should ues the
-// `downloadObject` API endpoint.
+// `fetchObjectMetadata` API endpoint.
 //
 // See [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.
 //

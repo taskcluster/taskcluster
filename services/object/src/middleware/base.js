@@ -13,10 +13,10 @@ class Middleware {
   }
 
   /**
-   * Intercept the downloadObject API method.
+   * Intercept the fetchObjectMetadata API method.
    *
    * The object, method, and params arguments are those that would
-   * be passed to `backend.downloadObject`.
+   * be passed to `backend.fetchObjectMetadata`.
    *
    * If this method returns `false`, then the API implementation will
    * return immediately without further action; this indicates that the
@@ -26,14 +26,14 @@ class Middleware {
    *
    * Subclasses may override this method; the default does nothing.
    */
-  async downloadObjectRequest(req, res, object, method, params) {
+  async fetchObjectMetadataRequest(req, res, object, method, params) {
     return true;
   }
 
   /**
-   * Similar to downloadObjectRequest, but for the simple-download API.
+   * Similar to fetchObjectMetadataRequest, but for the simple-download API.
    */
-  async simpleDownloadRequest(req, res, object) {
+  async downloadRequest(req, res, object) {
     return true;
   }
 }

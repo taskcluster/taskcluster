@@ -114,8 +114,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('downloadObject method', function() {
-    test('downloadObject for simple method succeeds', async function() {
+  suite('fetchObjectMetadata method', function() {
+    test('fetchObjectMetadata for simple method succeeds', async function() {
       const data = crypto.randomBytes(128);
       await helper.apiClient.uploadObject('public/foo', {
         projectId: 'x',
@@ -123,7 +123,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         uploadId: taskcluster.slugid(),
         expires: fromNow('1 year'),
       });
-      const res = await helper.apiClient.downloadObject('public/foo', {
+      const res = await helper.apiClient.fetchObjectMetadata('public/foo', {
         acceptDownloadMethods: { 'simple': true },
       });
       assert.deepEqual(res, {
@@ -132,7 +132,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
     });
 
-    test('downloadObject for a supported method succeeds', async function() {
+    test('fetchObjectMetadata for a supported method succeeds', async function() {
       const data = crypto.randomBytes(128);
       await helper.apiClient.uploadObject('public/foo', {
         projectId: 'x',
@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         uploadId: taskcluster.slugid(),
         expires: fromNow('1 year'),
       });
-      const res = await helper.apiClient.downloadObject('public/foo', {
+      const res = await helper.apiClient.fetchObjectMetadata('public/foo', {
         acceptDownloadMethods: { 'HTTP:GET': true },
       });
       assert.deepEqual(res, {
@@ -151,7 +151,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
     });
 
-    test('downloadObject handles middleware', async function() {
+    test('fetchObjectMetadata handles middleware', async function() {
       const data = crypto.randomBytes(128);
       await helper.apiClient.uploadObject('dl/intercept', {
         projectId: 'x',
@@ -160,7 +160,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         expires: fromNow('1 year'),
       });
 
-      const res = await helper.apiClient.downloadObject('dl/intercept', {
+      const res = await helper.apiClient.fetchObjectMetadata('dl/intercept', {
         acceptDownloadMethods: { 'simple': true },
       });
 
@@ -170,7 +170,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
     });
 
-    test('downloadObject for an unsupported method returns 406', async function() {
+    test('fetchObjectMetadata for an unsupported method returns 406', async function() {
       const data = crypto.randomBytes(128);
       await helper.apiClient.uploadObject('has/no/methods', {
         projectId: 'x',
@@ -179,7 +179,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         expires: fromNow('1 year'),
       });
       await assert.rejects(
-        () => helper.apiClient.downloadObject('has/no/methods', {
+        () => helper.apiClient.fetchObjectMetadata('has/no/methods', {
           acceptDownloadMethods: { simple: true, 'HTTP:GET': true },
         }),
         err => err.code === 'NoMatchingMethod' && err.statusCode === 406,
