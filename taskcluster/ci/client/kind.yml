@@ -87,3 +87,25 @@ jobs:
           /sandbox/bin/pip install tox
       command: >-
           TOXENV=py37 /sandbox/bin/tox
+  py38:
+    description: python3.8 client tests
+    worker:
+      docker-image: python:3.8
+    run:
+      install: >-
+          cd clients/client-py &&
+          python3 -mvenv /sandbox &&
+          /sandbox/bin/pip install tox
+      command: >-
+          TOXENV=py38 /sandbox/bin/tox
+  py39:
+    description: python3.9 client tests
+    worker:
+      docker-image: python:3.9
+    run:
+      install: >-
+          cd clients/client-py &&
+          python3 -mvenv /sandbox &&
+          /sandbox/bin/pip install tox
+      command: >-
+          TOXENV=py39 /sandbox/bin/tox
