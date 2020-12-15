@@ -278,7 +278,8 @@ For example, if the migration script added a new table to store new data, that d
 
 ### Online Migrations
 
-An online migration occurs after a regular migration script completes successfully.
+An online migration occurs after a regular migration script completes successfully, as an "extension" of the migration script.
+Similarly, an online downgrade acts as an extension of the downgrade script.
 Versions with no online migration defined implicitly do nothing.
 
 An online migration is defined by functions `online_migration_v<version>_batch` and `online_migration_v<version>_is_complete`, where `<version>` is the db version number without 0-padding.
@@ -305,7 +306,7 @@ The `_is_complete` function should verify that the migration is complete, often 
 It is only called as necessary.
 
 An online downgrade is defined by functions `online_downgrade_v<version>_batch` and `online_downgrade_v<version>_is_complete`.
-These functions are created in the downgrade script, normally in the version following an online migration, and they are dropped automatically after the online downgrade completes successfully.
+These functions are created in the downgrade script, with the version number of that script, and they are dropped automatically after the online downgrade completes successfully.
 They have identical signatures and calling process to the online migration functions, and the version number has to match that of the previous version (the target version of the downgrade).
 It's not required that an online downgrade be defined to reverse every online migration.
 

@@ -138,7 +138,7 @@ downgradeScript: |-
     alter table worker_stuff drop constraint worker_pool_id_not_null;
     alter table worker_stuff add column provisioner_id text, add column worker_type text;
 
-    create function online_downgrade_v50_batch(batch_size_in integer, state_in jsonb)
+    create function online_downgrade_v51_batch(batch_size_in integer, state_in jsonb)
     returns table (count integer, state jsonb) as $$
     declare
       item record;
@@ -166,7 +166,7 @@ downgradeScript: |-
     end
     $$ language plpgsql;
 
-    create function online_downgrade_v50_is_complete() returns boolean as $$
+    create function online_downgrade_v51_is_complete() returns boolean as $$
     begin
       perform * from worker_stuff where worker_type is null or provisioner_id is null limit 1;
       return not found;

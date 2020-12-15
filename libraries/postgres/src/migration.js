@@ -133,8 +133,11 @@ const runOnlineBatches = async ({ client, showProgress, versionNum, kind }) => {
 
   const runBatch = hooks['runBatch'] || (async (batchSize, state) => {
     let res;
+    // expect the version to already be incremented (migration) or decremented (downgrade)
+    const expectedVersion = kind === 'migration' ? versionNum : versionNum - 1;
+
     await inTransaction(client, async () => {
-      await lockVersionTable({ client, expectedVersion: versionNum });
+      await lockVersionTable({ client, expectedVersion });
       res = await client.query(
         `select * from ${batchFn}($1, $2)`,
         [batchSize, state]);
