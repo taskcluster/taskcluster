@@ -49,7 +49,7 @@ class FakeCloud {
    */
   validate(value, schemaFile) {
     if (!this.ajv) {
-      const ajv = Ajv({
+      const ajv = new Ajv({
         useDefaults: true,
         format: 'full',
         verbose: true,
