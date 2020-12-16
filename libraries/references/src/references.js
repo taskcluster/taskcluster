@@ -166,7 +166,7 @@ class References {
     // validation requires an Ajv instance, so set that up without validating
     if (!this._ajv) {
       const ajv = new Ajv({
-        format: 'full',
+        validateFormats: true,
         verbose: true,
         allErrors: true,
         validateSchema: false,
