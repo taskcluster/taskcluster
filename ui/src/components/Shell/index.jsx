@@ -3,7 +3,6 @@ import { withStyles } from '@material-ui/core/styles';
 import { string } from 'prop-types';
 import { hterm, lib } from 'hterm-umd';
 import { DockerExecClient } from 'docker-exec-websocket-client';
-import { dial } from 'ws-shell';
 import withAlertOnClose from '../../utils/withAlertOnClose';
 
 const DECODER = new TextDecoder('utf-8');
@@ -79,8 +78,8 @@ export default class Shell extends Component {
         const { resize } = this.client;
 
         this.client.resize = (c, r) => resize.call(this.client, r, c);
-      } else if (version === '2') {
-        this.client = await dial(options);
+      } else {
+        io.writeUTF8(`inteactive shell API version ${version} not supported`);
       }
 
       terminal.installKeyboard();

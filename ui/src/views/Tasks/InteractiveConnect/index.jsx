@@ -13,7 +13,6 @@ import Divider from '@material-ui/core/Divider';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import ConsoleIcon from 'mdi-react/ConsoleIcon';
-import MonitorIcon from 'mdi-react/MonitorIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import Dashboard from '../../../components/Dashboard';
@@ -33,12 +32,8 @@ import {
 
 let previousCursor;
 const NOTIFY_KEY = 'interactive-notify';
-const getInteractiveStatus = ({
-  shellUrl = null,
-  displayUrl = null,
-  taskStatusState = null,
-}) => {
-  if (!shellUrl || !displayUrl) {
+const getInteractiveStatus = ({ shellUrl = null, taskStatusState = null }) => {
+  if (!shellUrl) {
     return INTERACTIVE_TASK_STATUS.WAITING;
   }
 
@@ -86,7 +81,7 @@ const getInteractiveStatus = ({
 export default class InteractiveConnect extends Component {
   static getDerivedStateFromProps(
     props,
-    { displayUrl, shellUrl, artifactsLoading, previousTaskId, sessionReady }
+    { shellUrl, artifactsLoading, previousTaskId, sessionReady }
   ) {
     const {
       data: { task, error },
@@ -104,7 +99,6 @@ export default class InteractiveConnect extends Component {
     // Reset state when Task ID changes
     if (previousTaskId !== taskId) {
       return {
-        displayUrl: null,
         shellUrl: null,
         artifactsLoading: true,
         previousTaskId: taskId,
@@ -113,20 +107,13 @@ export default class InteractiveConnect extends Component {
     }
 
     // Get connection URL
-    if ((!shellUrl || !displayUrl) && task && task.latestArtifacts) {
+    if (!shellUrl && task && task.latestArtifacts) {
       const artifacts = task.latestArtifacts.edges;
       const urls = artifacts.reduce((acc, { node: { name, url } }) => {
         if (name.endsWith('shell.html')) {
           return {
             ...acc,
             shellUrl: url,
-          };
-        }
-
-        if (name.endsWith('display.html')) {
-          return {
-            ...acc,
-            displayUrl: url,
           };
         }
 
@@ -143,7 +130,6 @@ export default class InteractiveConnect extends Component {
           sessionReady ||
           getInteractiveStatus({
             shellUrl: urls.shellUrl,
-            displayUrl: urls.displayUrl,
             taskStatusState: task && task.status.state,
           }) === INTERACTIVE_TASK_STATUS.READY,
       };
@@ -159,7 +145,6 @@ export default class InteractiveConnect extends Component {
   }
 
   state = {
-    displayUrl: null,
     shellUrl: null,
     artifactsLoading: true,
     // eslint-disable-next-line react/no-unused-state
@@ -245,10 +230,6 @@ export default class InteractiveConnect extends Component {
     }
   }
 
-  handleDisplayOpen = () => {
-    window.open(this.state.displayUrl, '_blank');
-  };
-
   handleShellOpen = () => {
     window.open(this.state.shellUrl, '_blank');
   };
@@ -277,10 +258,9 @@ export default class InteractiveConnect extends Component {
       },
       user,
     } = this.props;
-    const { shellUrl, displayUrl, notifyOnReady } = this.state;
+    const { shellUrl, notifyOnReady } = this.state;
     const interactiveStatus = getInteractiveStatus({
       shellUrl,
-      displayUrl,
       taskStatusState: task && task.status.state,
     });
     const isSessionReady = interactiveStatus === INTERACTIVE_TASK_STATUS.READY;
@@ -373,15 +353,6 @@ export default class InteractiveConnect extends Component {
                 className={classes.listItemButton}>
                 <ConsoleIcon className={classes.listItemLeftIcon} />
                 <ListItemText primary="Shell" />
-                <OpenInNewIcon />
-              </ListItem>
-              <ListItem
-                disabled={!user}
-                onClick={this.handleDisplayOpen}
-                button
-                className={classes.listItemButton}>
-                <MonitorIcon className={classes.listItemLeftIcon} />
-                <ListItemText primary="Display" />
                 <OpenInNewIcon />
               </ListItem>
             </List>
