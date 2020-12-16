@@ -17,4 +17,3 @@ cd "$(dirname "${0}")"
 #build $PWD taskcluster/docker-worker
 build $PWD/test/images/test taskcluster/docker-worker-test
 build $PWD/test/images/dind-test/ taskcluster/dind-test:v1
-build $PWD/test/images/vnc-test/ taskcluster/vnc-test:v1
