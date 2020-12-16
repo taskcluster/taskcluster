@@ -6,6 +6,7 @@ const walk = require('walk');
 const yaml = require('js-yaml');
 const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
+const Ajv = require('ajv').default;
 const { renderConstants, checkRefs } = require('./util');
 
 const REPO_ROOT = path.join(__dirname, '../../../');
@@ -103,7 +104,7 @@ class SchemaSet {
   async validator(rootUrl) {
     const ajv = new Ajv({
       useDefaults: true,
-      format: 'full',
+      validateFormats: true,
       verbose: true,
       // schema validation occurs in the tests and need not be done here
       validateSchema: false,

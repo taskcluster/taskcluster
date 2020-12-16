@@ -99,7 +99,7 @@ class SchemaSet {
   async validator(rootUrl) {
     const ajv = new Ajv({
       useDefaults: true,
-      format: 'full',
+      validateFormats: true,
       verbose: true,
       // schema validation occurs in the tests and need not be done here
       validateSchema: false,

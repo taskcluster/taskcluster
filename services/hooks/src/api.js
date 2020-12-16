@@ -201,7 +201,7 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
   const hookDef = req.body;
-  const ajv = new Ajv({ format: 'full', verbose: true, allErrors: true });
+  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -313,7 +313,7 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
   const hookDef = req.body;
-  const ajv = new Ajv({ format: 'full', verbose: true, allErrors: true });
+  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -573,7 +573,7 @@ builder.declare({
  * Common implementation of triggerHook and triggerHookWithToken
  */
 const triggerHookCommon = async function({ req, res, hook, payload, clientId, firedBy }) {
-  const ajv = new Ajv({ format: 'full', verbose: true, allErrors: true });
+  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
   const context = { firedBy, payload };
   if (clientId) {
     context.clientId = clientId;

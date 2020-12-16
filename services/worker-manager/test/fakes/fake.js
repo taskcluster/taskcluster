@@ -51,7 +51,7 @@ class FakeCloud {
     if (!this.ajv) {
       const ajv = new Ajv({
         useDefaults: true,
-        format: 'full',
+        validateFormats: true,
         verbose: true,
         validateSchema: false,
         allErrors: true,
