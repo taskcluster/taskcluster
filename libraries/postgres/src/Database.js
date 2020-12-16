@@ -8,7 +8,7 @@ const assert = require('assert').strict;
 const { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } = require('./constants');
 const { MonitorManager } = require('taskcluster-lib-monitor');
 const { parse: parseConnectionString } = require('pg-connection-string');
-const { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade } = require('./migration');
+const { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade, dropOnlineFns } = require('./migration');
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -167,6 +167,7 @@ class Database {
       // start by running the previous version's online migration, to ensure it finished
       await db._withClient('admin', async client => {
         await runOnlineMigration({ client, showProgress, versionNum: dbVersion });
+        await dropOnlineFns({ client, kind: 'migration', versionNum: dbVersion, showProgress });
       });
 
       // run each of the upgrade scripts
@@ -174,8 +175,10 @@ class Database {
         showProgress(`upgrading database to version ${v}`);
         const version = schema.getVersion(v);
         await db._withClient('admin', async client => {
+          await dropOnlineFns({ client, kind: 'migration', versionNum: version.version, showProgress });
           await runMigration({ client, version, showProgress, usernamePrefix });
           await runOnlineMigration({ client, showProgress, versionNum: v });
+          await dropOnlineFns({ client, kind: 'migration', versionNum: version.version, showProgress });
         });
         showProgress(`upgrade to version ${v} successful`);
       }
@@ -232,15 +235,21 @@ class Database {
         throw new Error(`This Taskcluster release version is too old to downgrade from DB version ${dbVersion}`);
       }
 
-      if (dbVersion > toVersion) {
+      if (dbVersion >= toVersion) {
+        // start by running the subsequent version's online downgrade, if
+        // defined, to ensure it finished
+        await db._withClient('admin', async client => {
+          await runOnlineDowngrade({ client, showProgress, versionNum: dbVersion + 1 });
+          await dropOnlineFns({ client, kind: 'downgrade', versionNum: dbVersion + 1, showProgress });
+        });
+
         // run each of the upgrade scripts
         for (let v = dbVersion; v > toVersion; v--) {
           showProgress(`downgrading database from version ${v} to version ${v - 1}`);
           const fromVersion = schema.getVersion(v);
           const toVersion = v === 1 ? { version: 0, methods: [] } : schema.getVersion(v - 1);
           await db._withClient('admin', async client => {
-            // always run the fromVersion's online downgrade first, before its downgrade script
-            await runOnlineDowngrade({ client, showProgress, versionNum: fromVersion.version });
+            await dropOnlineFns({ client, kind: 'downgrade', versionNum: fromVersion.version, showProgress });
             await runDowngrade({
               client,
               schema,
@@ -249,6 +258,8 @@ class Database {
               showProgress,
               usernamePrefix,
             });
+            await runOnlineDowngrade({ client, showProgress, versionNum: fromVersion.version });
+            await dropOnlineFns({ client, kind: 'downgrade', versionNum: fromVersion.version, showProgress });
           });
           showProgress(`downgrade to version ${v - 1} successful`);
         }

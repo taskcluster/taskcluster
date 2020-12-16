@@ -396,8 +396,6 @@ ALTER TABLE task_queues
 ```sql
 CREATE TABLE tasks (
     task_id text NOT NULL,
-    provisioner_id text NOT NULL,
-    worker_type text NOT NULL,
     scheduler_id text NOT NULL,
     task_group_id text NOT NULL,
     dependencies jsonb NOT NULL,
@@ -416,7 +414,8 @@ CREATE TABLE tasks (
     extra jsonb NOT NULL,
     runs jsonb NOT NULL,
     taken_until timestamp with time zone,
-    ever_resolved boolean NOT NULL
+    ever_resolved boolean NOT NULL,
+    task_queue_id text
 );
 ALTER TABLE tasks
     ADD CONSTRAINT tasks_pkey PRIMARY KEY (task_id);

@@ -261,14 +261,14 @@ table_name:
 Column types are a "stripped down" version of the full Postgres type definition, including only a simple type name and if necessary the suffix `not null`.
 Primary keys, constraints, defaults, sequences, and so on are not included.
 
-## Migations
+## Migrations
 
 Each version specifies how to migrate from the previous version, and how to downgrade back to that version.
 These are specified in `migrationScript` and `downgradeScript` as described in the "Version Files" section above.
 
-Each is run in a single transaction, in which the versions's updated stored fucntions are also defined.
+Each is run in a single transaction, in which the versions's updated stored functions are also defined.
 
-The `migrationScript` should perform all of the required schema changes, including adjusting permisisons using `grant` and `revoke`. 
+The `migrationScript` should perform all of the required schema changes, including adjusting permissions using `grant` and `revoke`. 
 All operations in the migration script should be "quick" as defined above: no table scans, no locks held for a long time.
 Note that Postgres locks are held until the end of the transaction, so it is wise to split up a migration that locks many tables into a sequence of independent versions.
 
@@ -278,11 +278,12 @@ For example, if the migration script added a new table to store new data, that d
 
 ### Online Migrations
 
-An online migration occurs after a regular migration script completes successfully.
+An online migration occurs after a regular migration script completes successfully, as an "extension" of the migration script.
+Similarly, an online downgrade acts as an extension of the downgrade script.
 Versions with no online migration defined implicitly do nothing.
 
 An online migration is defined by functions `online_migration_v<version>_batch` and `online_migration_v<version>_is_complete`, where `<version>` is the db version number without 0-padding.
-These functions are defined in the migration script and dropped in the downgrade script.
+These functions are defined in the migration script and dropped automatically after the online migration completes successfully.
 
 The functions should have the following signatures:
 ```sql
@@ -305,11 +306,12 @@ The `_is_complete` function should verify that the migration is complete, often 
 It is only called as necessary.
 
 An online downgrade is defined by functions `online_downgrade_v<version>_batch` and `online_downgrade_v<version>_is_complete`.
-These functions are also created in the migration script and dropped in the downgrade script, and have identical signatures and calling process to the online migration functions.
+These functions are created in the downgrade script, with the version number of that script, and have identical signatures and calling process to the online migration functions.
+They are also dropped automatically after the online downgrade completes successfully.
 It's not required that an online downgrade be defined to reverse every online migration.
 
 Online migrations must be complete before the next version's migration begins.
-The `upgrade` function will always try to complete the previous version's migration, allowing online migrations to be interupted and restarted as necessary.
+The `upgrade` function will always try to complete the previous version's migration, allowing online migrations to be interrupted and restarted as necessary.
 An online migration may also be interrupted and replaced with an online downgrade.
 
 ## Pagination

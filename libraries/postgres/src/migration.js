@@ -48,6 +48,14 @@ const fnExists = async ({ client, name }) => {
   }
 };
 
+const dropOnlineFns = async ({ client, kind, versionNum, showProgress }) => {
+  showProgress('..ensuring online functions are removed');
+  await client.query(`
+  drop function if exists online_${kind}_v${versionNum}_batch(batch_size_in integer, state_in jsonb)`);
+  await client.query(`
+  drop function if exists online_${kind}_v${versionNum}_is_complete()`);
+};
+
 const runMigration = async ({ client, version, showProgress, usernamePrefix }) => {
   await inTransaction(client, async () => {
     if (version.version === 1) {
@@ -125,8 +133,11 @@ const runOnlineBatches = async ({ client, showProgress, versionNum, kind }) => {
 
   const runBatch = hooks['runBatch'] || (async (batchSize, state) => {
     let res;
+    // expect the version to already be incremented (migration) or decremented (downgrade)
+    const expectedVersion = kind === 'migration' ? versionNum : versionNum - 1;
+
     await inTransaction(client, async () => {
-      await lockVersionTable({ client, expectedVersion: versionNum });
+      await lockVersionTable({ client, expectedVersion });
       res = await client.query(
         `select * from ${batchFn}($1, $2)`,
         [batchSize, state]);
@@ -233,4 +244,5 @@ module.exports = {
   runOnlineMigration,
   runOnlineDowngrade,
   runOnlineBatches,
+  dropOnlineFns,
 };
