@@ -97,7 +97,7 @@ class SchemaSet {
   }
 
   async validator(rootUrl) {
-    const ajv = Ajv({
+    const ajv = new Ajv({
       useDefaults: true,
       format: 'full',
       verbose: true,
