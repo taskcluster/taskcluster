@@ -5,6 +5,7 @@ const { UNIQUE_VIOLATION, paginatedIterator } = require('taskcluster-lib-postgre
 const nextDate = require('../src/nextdate');
 const _ = require('lodash');
 const Ajv = require('ajv').default;
+const addFormats = require('ajv-formats').default;
 const { hookUtils } = require('./utils');
 
 const builder = new APIBuilder({
@@ -201,7 +202,9 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
   const hookDef = req.body;
+
   const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  addFormats(ajv);
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -313,7 +316,9 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
   const hookDef = req.body;
+
   const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  addFormats(ajv);
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -574,6 +579,8 @@ builder.declare({
  */
 const triggerHookCommon = async function({ req, res, hook, payload, clientId, firedBy }) {
   const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  addFormats(ajv);
+
   const context = { firedBy, payload };
   if (clientId) {
     context.clientId = clientId;

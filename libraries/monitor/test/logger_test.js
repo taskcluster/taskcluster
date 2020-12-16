@@ -1,6 +1,7 @@
 const assert = require('assert');
 const stream = require('stream');
 const Ajv = require('ajv').default;
+const addFormats = require('ajv-formats').default;
 const MonitorManager = require('../src/monitormanager');
 const testing = require('taskcluster-lib-testing');
 
@@ -42,6 +43,7 @@ suite(testing.suiteName(), function() {
     const event = monitorManager.messages[0];
 
     const ajv = new Ajv();
+    addFormats(ajv);
     assert(ajv.validate(schema, event), ajv.errorsText());
   });
 

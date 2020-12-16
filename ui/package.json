@@ -25,6 +25,7 @@
     "@mdx-js/runtime": "^1.0.20",
     "@mozilla-frontend-infra/components": "^3.0.7",
     "@sentry/browser": "^5.0.0",
+    "ajv-formats": "^1.5.1",
     "apollo-cache-inmemory": "^1.5.1",
     "apollo-cache-persist": "^0.1.1",
     "apollo-client": "^2.5.1",

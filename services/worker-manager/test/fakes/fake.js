@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 const Ajv = require('ajv').default;
+const addFormats = require('ajv-formats').default;
 const fs = require('fs');
 const yaml = require('js-yaml');
 const path = require('path');
@@ -56,6 +57,8 @@ class FakeCloud {
         validateSchema: false,
         allErrors: true,
       });
+
+      addFormats(ajv);
       ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
 
       const dir = path.join(__dirname, 'schemas');

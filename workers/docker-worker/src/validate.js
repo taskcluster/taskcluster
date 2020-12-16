@@ -6,6 +6,7 @@ const walk = require('walk');
 const yaml = require('js-yaml');
 const assert = require('assert');
 const Ajv = require('ajv').default;
+const addFormats = require('ajv-formats').default;
 const libUrls = require('taskcluster-lib-urls');
 const { renderConstants, checkRefs } = require('./util/validate_util');
 const rootdir = require('app-root-dir');
@@ -105,6 +106,8 @@ class SchemaSet {
       validateSchema: false,
       allErrors: true,
     });
+
+    addFormats(ajv);
     ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
     _.forEach(this.absoluteSchemas(rootUrl), schema => {
       ajv.addSchema(schema);
