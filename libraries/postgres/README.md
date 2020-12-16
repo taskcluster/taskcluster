@@ -306,8 +306,8 @@ The `_is_complete` function should verify that the migration is complete, often 
 It is only called as necessary.
 
 An online downgrade is defined by functions `online_downgrade_v<version>_batch` and `online_downgrade_v<version>_is_complete`.
-These functions are created in the downgrade script, with the version number of that script, and they are dropped automatically after the online downgrade completes successfully.
-They have identical signatures and calling process to the online migration functions, and the version number has to match that of the previous version (the target version of the downgrade).
+These functions are created in the downgrade script, with the version number of that script, and have identical signatures and calling process to the online migration functions.
+They are also dropped automatically after the online downgrade completes successfully.
 It's not required that an online downgrade be defined to reverse every online migration.
 
 Online migrations must be complete before the next version's migration begins.
