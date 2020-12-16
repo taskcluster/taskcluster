@@ -4,7 +4,7 @@ const { APIBuilder } = require('taskcluster-lib-api');
 const { UNIQUE_VIOLATION, paginatedIterator } = require('taskcluster-lib-postgres');
 const nextDate = require('../src/nextdate');
 const _ = require('lodash');
-const Ajv = require('ajv');
+const Ajv = require('ajv').default;
 const { hookUtils } = require('./utils');
 
 const builder = new APIBuilder({

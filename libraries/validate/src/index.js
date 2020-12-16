@@ -5,7 +5,6 @@ const path = require('path');
 const walk = require('walk');
 const yaml = require('js-yaml');
 const assert = require('assert');
-const Ajv = require('ajv');
 const libUrls = require('taskcluster-lib-urls');
 const { renderConstants, checkRefs } = require('./util');
 

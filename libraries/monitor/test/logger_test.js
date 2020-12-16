@@ -1,6 +1,6 @@
 const assert = require('assert');
 const stream = require('stream');
-const Ajv = require('ajv');
+const Ajv = require('ajv').default;
 const MonitorManager = require('../src/monitormanager');
 const testing = require('taskcluster-lib-testing');
 
