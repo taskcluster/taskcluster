@@ -94,8 +94,7 @@
     "taskcluster-lib-urls": "^13.0.0",
     "title-case": "^3.0.2",
     "typeface-roboto": "^1.0.0",
-    "upper-case": "^2.0.1",
-    "ws-shell": "^0.2.1"
+    "upper-case": "^2.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.11.5",
