@@ -167,6 +167,7 @@ class Database {
       // start by running the previous version's online migration, to ensure it finished
       await db._withClient('admin', async client => {
         await runOnlineMigration({ client, showProgress, versionNum: dbVersion });
+        await dropOnlineFns({ client, kind: 'migration', versionNum: dbVersion, showProgress });
       });
 
       // run each of the upgrade scripts
