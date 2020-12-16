@@ -54,9 +54,6 @@ const Profile = lazy(() =>
 const Shell = lazy(() =>
   import(/* webpackChunkName: 'Shell' */ '../views/Shell')
 );
-const Display = lazy(() =>
-  import(/* webpackChunkName: 'Displays' */ '../views/Display')
-);
 const HomeOrDashboard = lazy(() =>
   import(/* webpackChunkName: 'HomeOrDashboard' */ '../views/HomeOrDashboard')
 );
@@ -140,10 +137,6 @@ export default [
   {
     component: Shell,
     path: '/shell',
-  },
-  {
-    component: Display,
-    path: '/display',
   },
   {
     component: ThirdPartyLogin,

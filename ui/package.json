@@ -84,7 +84,6 @@
     "react-lazylog": "^4.5.1",
     "react-router-dom": "^5.1.2",
     "react-virtualized": "^9.21.0",
-    "react-vnc-display": "^2.0.0",
     "react-window": "^1.8.1",
     "resolve-pathname": "^3.0.0",
     "shebang-loader": "^0.0.1",

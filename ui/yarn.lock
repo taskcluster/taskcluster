@@ -2591,11 +2591,6 @@ boolbase@~1.0.0:
   resolved "https://registry.yarnpkg.com/boolbase/-/boolbase-1.0.0.tgz#68dff5fbe60c51eb37725ea9e3ed310dcc1e776e"
   integrity sha1-aN/1++YMUes3cl6p4+0xDcwed24=
 
-bowser@^0.7.2:
-  version "0.7.3"
-  resolved "https://registry.yarnpkg.com/bowser/-/bowser-0.7.3.tgz#4fc0cb4e0e2bdd9b394df0d2038c32c2cc2712c8"
-  integrity sha1-T8DLTg4r3Zs5TfDSA4wywswnEsg=
-
 brace-expansion@^1.0.0, brace-expansion@^1.1.7:
   version "1.1.11"
   resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-1.1.11.tgz#3c7fcbf529d87226f3d2f52b966ff5271eb441dd"
@@ -8527,14 +8522,6 @@ normalize-url@1.9.1, normalize-url@^1.4.0:
     query-string "^4.1.0"
     sort-keys "^1.0.0"
 
-novnc-node@^0.5.3:
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/novnc-node/-/novnc-node-0.5.3.tgz#69f20a4a2ff0c54ca2f942ff59553f523eb61fa7"
-  integrity sha1-afIKSi/wxUyi+UL/WVU/Uj62H6c=
-  dependencies:
-    bowser "^0.7.2"
-    debug "^2.2.0"
-
 npm-run-path@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/npm-run-path/-/npm-run-path-2.0.2.tgz#35a9232dfa35d7067b4cb2ddf2357b1871536c5f"
@@ -10245,14 +10232,6 @@ react-virtualized@^9.21.0:
     loose-envify "^1.4.0"
     prop-types "^15.7.2"
     react-lifecycles-compat "^3.0.4"
-
-react-vnc-display@^2.0.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/react-vnc-display/-/react-vnc-display-2.0.1.tgz#bb5ad0f6901526da832e78ceedbf49e0cb9843fb"
-  integrity sha512-XQ+t118HfdXg8LTrTer9KLf1gyod+KYnXeXHhJI4xZivnB/iNXQnvb06ZeFLz9+WPmz6TvR36mlfkA0x8BaylQ==
-  dependencies:
-    novnc-node "^0.5.3"
-    prop-types "^15.6.1"
 
 react-window@^1.8.1:
   version "1.8.5"
