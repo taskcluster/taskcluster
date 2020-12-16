@@ -235,7 +235,14 @@ class Database {
         throw new Error(`This Taskcluster release version is too old to downgrade from DB version ${dbVersion}`);
       }
 
-      if (dbVersion > toVersion) {
+      if (dbVersion >= toVersion) {
+        // start by running the subsequent version's online downgrade, if
+        // defined, to ensure it finished
+        await db._withClient('admin', async client => {
+          await runOnlineDowngrade({ client, showProgress, versionNum: dbVersion + 1 });
+          await dropOnlineFns({ client, kind: 'downgrade', versionNum: dbVersion + 1, showProgress });
+        });
+
         // run each of the upgrade scripts
         for (let v = dbVersion; v > toVersion; v--) {
           showProgress(`downgrading database from version ${v} to version ${v - 1}`);
