@@ -3,6 +3,7 @@ const { makeSerializable, fromSerializable } = require('./serializable');
 const { writeUriStructured, readUriStructured } = require('./uri-structured');
 const { getCommonSchemas } = require('./common-schemas');
 const Ajv = require('ajv').default;
+const addFormats = require('ajv-formats').default;
 const regexEscape = require('regex-escape');
 const { validate } = require('./validate');
 
@@ -172,6 +173,7 @@ class References {
         validateSchema: false,
       });
 
+      addFormats(ajv);
       ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
 
       // identify metaschemas, so we can all addMetaSchema for them
