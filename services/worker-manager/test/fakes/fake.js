@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const Ajv = require('ajv');
+const Ajv = require('ajv').default;
 const fs = require('fs');
 const yaml = require('js-yaml');
 const path = require('path');

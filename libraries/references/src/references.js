@@ -2,7 +2,7 @@ const builtServices = require('./built-services');
 const { makeSerializable, fromSerializable } = require('./serializable');
 const { writeUriStructured, readUriStructured } = require('./uri-structured');
 const { getCommonSchemas } = require('./common-schemas');
-const Ajv = require('ajv');
+const Ajv = require('ajv').default;
 const regexEscape = require('regex-escape');
 const { validate } = require('./validate');
 
