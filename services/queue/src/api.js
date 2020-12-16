@@ -232,7 +232,7 @@ builder.declare({
     this.db.fns.get_task_group(taskGroupId),
     paginateResults({
       query: req.query,
-      fetch: (size, offset) => this.db.fns.get_tasks_by_task_group(taskGroupId, size, offset),
+      fetch: (size, offset) => this.db.deprecatedFns.get_tasks_by_task_group(taskGroupId, size, offset),
     }),
   ]);
 

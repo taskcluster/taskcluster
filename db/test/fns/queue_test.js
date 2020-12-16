@@ -184,10 +184,9 @@ suite(testing.suiteName(), function() {
     const deadline = taskcluster.fromNow('1 hour');
     const expires = taskcluster.fromNow('2 hours');
     const create = async (db, options = {}) => {
-      await db.fns.create_task(
+      await db.fns.create_task_tqid(
         taskId,
-        'prov',
-        'wt',
+        'prov/wt',
         'sched',
         '0cM7dCL2Rpaz0wdnDG4LLg',
         JSON.stringify(['jcy-h6_7SFuRuKLPByiFTg']),
@@ -240,9 +239,54 @@ suite(testing.suiteName(), function() {
       });
     };
 
-    helper.dbTest('create_task/get_task', async function(db) {
+    helper.dbTest('create_task_tqid/get_task_tqid', async function(db) {
       await create(db);
-      const res = await db.fns.get_task(taskId);
+      const res = await db.fns.get_task_tqid(taskId);
+      assert.equal(res.length, 1);
+      assert.equal(res[0].task_id, taskId);
+      assert.equal(res[0].task_queue_id, 'prov/wt');
+      assert.equal(res[0].scheduler_id, 'sched');
+      assert.equal(res[0].task_group_id, '0cM7dCL2Rpaz0wdnDG4LLg');
+      assert.deepEqual(res[0].dependencies, ['jcy-h6_7SFuRuKLPByiFTg']);
+      assert.equal(res[0].requires, 'all-completed');
+      assert.deepEqual(res[0].routes, ['index.foo']);
+      assert.equal(res[0].priority, 'high');
+      assert.equal(res[0].retries, 5);
+      assert.deepEqual(res[0].created, created);
+      assert.deepEqual(res[0].deadline, deadline);
+      assert.deepEqual(res[0].expires, expires);
+      assert.deepEqual(res[0].scopes, ['a:scope']);
+      assert.deepEqual(res[0].payload, { payload: true });
+      assert.deepEqual(res[0].metadata, { metadata: true });
+      assert.deepEqual(res[0].tags, ["you're", "it"]);
+      assert.deepEqual(res[0].extra, { extra: true });
+      assert.deepEqual(res[0].runs, []);
+      assert.equal(res[0].retries_left, 5);
+      assert.deepEqual(res[0].taken_until, null);
+    });
+
+    helper.dbTest('create_task/get_task (deprecated)', async function(db) {
+      await db.deprecatedFns.create_task(
+        taskId,
+        'prov',
+        'wt',
+        'sched',
+        '0cM7dCL2Rpaz0wdnDG4LLg',
+        JSON.stringify(['jcy-h6_7SFuRuKLPByiFTg']),
+        'all-completed',
+        JSON.stringify(['index.foo']),
+        'high',
+        5,
+        created,
+        deadline,
+        expires,
+        JSON.stringify(['a:scope']),
+        { payload: true },
+        { metadata: true },
+        JSON.stringify(["you're", "it"]),
+        { extra: true },
+      );
+      const res = await db.deprecatedFns.get_task(taskId);
       assert.equal(res.length, 1);
       assert.equal(res[0].task_id, taskId);
       assert.equal(res[0].provisioner_id, 'prov');
@@ -275,21 +319,21 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_task with no such task', async function(db) {
-      const res = await db.fns.get_task('hOTDAv0gRfW6YA2hm4n5FQ');
+      const res = await db.fns.get_task_tqid('hOTDAv0gRfW6YA2hm4n5FQ');
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('remove_task', async function(db) {
       await create(db);
       await db.fns.remove_task(taskId);
-      const res = await db.fns.get_task(taskId);
+      const res = await db.fns.get_task_tqid(taskId);
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('remove_task with no such task', async function(db) {
       await db.fns.remove_task(taskId);
       // ..didn't throw an error..
-      const res = await db.fns.get_task(taskId);
+      const res = await db.fns.get_task_tqid(taskId);
       assert.deepEqual(res, []);
     });
 
@@ -304,7 +348,7 @@ suite(testing.suiteName(), function() {
         await setTaskRuns(db, [{ state: 'pending' }]);
         const res = await db.fns.schedule_task(taskId, 'because');
         assert.deepEqual(res, []);
-        const task = await db.fns.get_task(taskId);
+        const task = await db.fns.get_task_tqid(taskId);
         // no change
         assert.deepEqual(task[0].runs, [{ state: 'pending' }]);
       });
@@ -318,7 +362,7 @@ suite(testing.suiteName(), function() {
           runs: [{ state: 'pending', reasonCreated: 'because', scheduled: 'date' }],
           taken_until: null,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
       });
     });
@@ -335,7 +379,7 @@ suite(testing.suiteName(), function() {
           await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.rerun_task(taskId));
           assert.deepEqual(res, []);
-          const task = fixRuns(await db.fns.get_task(taskId));
+          const task = fixRuns(await db.fns.get_task_tqid(taskId));
           assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
@@ -359,7 +403,7 @@ suite(testing.suiteName(), function() {
           ],
           taken_until: null,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
       });
 
@@ -372,7 +416,7 @@ suite(testing.suiteName(), function() {
           runs: [{ state: 'exception' }, { state: 'pending', reasonCreated: 'rerun', scheduled: 'date' }],
           taken_until: null,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
       });
 
@@ -385,7 +429,7 @@ suite(testing.suiteName(), function() {
           runs: [{ state: 'pending', reasonCreated: 'rerun', scheduled: 'date' }],
           taken_until: null,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
       });
     });
@@ -402,7 +446,7 @@ suite(testing.suiteName(), function() {
           await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.cancel_task(taskId, 'because'));
           assert.deepEqual(res, []);
-          const task = fixRuns(await db.fns.get_task(taskId));
+          const task = fixRuns(await db.fns.get_task_tqid(taskId));
           assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
@@ -417,7 +461,7 @@ suite(testing.suiteName(), function() {
           runs: [{ state: 'exception', reasonResolved: 'because', resolved: 'date' }],
           taken_until: null,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
       });
 
@@ -430,7 +474,7 @@ suite(testing.suiteName(), function() {
           runs: [{ state: 'exception', reasonCreated: 'exception', reasonResolved: 'because', scheduled: 'date', resolved: 'date' }],
           taken_until: null,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
       });
     });
@@ -464,7 +508,7 @@ suite(testing.suiteName(), function() {
           await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.claim_task(taskId, 0, 'wg', 'wi', 'psst', takenUntil));
           assert.deepEqual(res, []);
-          const task = fixRuns(await db.fns.get_task(taskId));
+          const task = fixRuns(await db.fns.get_task_tqid(taskId));
           assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
@@ -485,7 +529,7 @@ suite(testing.suiteName(), function() {
           }],
           taken_until: takenUntil,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
         assert.deepEqual(task[0].taken_until, res[0].taken_until);
       });
@@ -518,7 +562,7 @@ suite(testing.suiteName(), function() {
           await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.reclaim_task(taskId, 0, takenUntil));
           assert.deepEqual(res, []);
-          const task = fixRuns(await db.fns.get_task(taskId));
+          const task = fixRuns(await db.fns.get_task_tqid(taskId));
           assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
@@ -541,7 +585,7 @@ suite(testing.suiteName(), function() {
           ],
           taken_until: takenUntil,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
         assert.deepEqual(task[0].taken_until, res[0].taken_until);
       });
@@ -572,7 +616,7 @@ suite(testing.suiteName(), function() {
           await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.resolve_task(taskId, 0, 'exception', 'because', null));
           assert.deepEqual(res, []);
-          const task = fixRuns(await db.fns.get_task(taskId));
+          const task = fixRuns(await db.fns.get_task_tqid(taskId));
           assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
@@ -597,7 +641,7 @@ suite(testing.suiteName(), function() {
           // task.taken_until *is* reset
           taken_until: null,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
         assert.deepEqual(task[0].taken_until, res[0].taken_until);
       });
@@ -619,7 +663,7 @@ suite(testing.suiteName(), function() {
           ],
           taken_until: null,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
         assert.deepEqual(task[0].taken_until, res[0].taken_until);
       });
@@ -655,7 +699,7 @@ suite(testing.suiteName(), function() {
           await setTaskRuns(db, [{ state }]);
           const res = fixRuns(await db.fns.check_task_claim(taskId, 0, takenUntil));
           assert.deepEqual(res, []);
-          const task = fixRuns(await db.fns.get_task(taskId));
+          const task = fixRuns(await db.fns.get_task_tqid(taskId));
           assert.deepEqual(task[0].runs, [{ state }]);
         });
       }
@@ -720,7 +764,7 @@ suite(testing.suiteName(), function() {
           ],
           taken_until: null,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
         assert.deepEqual(task[0].taken_until, res[0].taken_until);
       });
@@ -745,7 +789,7 @@ suite(testing.suiteName(), function() {
           ],
           taken_until: null,
         }]);
-        const task = fixRuns(await db.fns.get_task(taskId));
+        const task = fixRuns(await db.fns.get_task_tqid(taskId));
         assert.deepEqual(task[0].runs, res[0].runs);
         assert.deepEqual(task[0].taken_until, res[0].taken_until);
       });
@@ -887,7 +931,7 @@ suite(testing.suiteName(), function() {
         await create(db, { expires: taskcluster.fromNow('-1 hour') });
         const res = await db.fns.expire_tasks(new Date());
         assert.equal(res[0].expire_tasks, 1);
-        const task = await db.fns.get_task(taskId);
+        const task = await db.fns.get_task_tqid(taskId);
         assert.equal(task.length, 0);
       });
     });

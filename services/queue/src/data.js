@@ -65,7 +65,7 @@ class Task {
 
   // Get a task from the DB, or undefined
   static async get(db, taskId) {
-    return Task.fromDbRows(await db.fns.get_task(taskId));
+    return Task.fromDbRows(await db.deprecatedFns.get_task(taskId));
   }
 
   // Call db.create_task with the content of this instance.  This
@@ -76,7 +76,7 @@ class Task {
     // otherwise does not correctly serialize the array values
     const arr = v => JSON.stringify(v);
     try {
-      await db.fns.create_task(
+      await db.deprecatedFns.create_task(
         this.taskId,
         this.provisionerId,
         this.workerType,
