@@ -185,10 +185,10 @@ suite(testing.suiteName(), function() {
     const expires = taskcluster.fromNow('2 hours');
     const create = async (db, options = {}) => {
       await db.fns.create_task_tqid(
-        taskId,
-        'prov/wt',
+        options.taskId || taskId,
+        options.taskQueueId || 'prov/wt',
         'sched',
-        '0cM7dCL2Rpaz0wdnDG4LLg',
+        options.taskGroupId || '0cM7dCL2Rpaz0wdnDG4LLg',
         JSON.stringify(['jcy-h6_7SFuRuKLPByiFTg']),
         'all-completed',
         JSON.stringify(['index.foo']),
@@ -309,6 +309,29 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res[0].runs, []);
       assert.equal(res[0].retries_left, 5);
       assert.deepEqual(res[0].taken_until, null);
+    });
+
+    helper.dbTest('get_tasks_by_task_group_tqid', async function(db) {
+      for (let i = 1; i <= 5; i++) {
+        await create(db, {
+          taskId: `tid-${i}`,
+          taskQueueId: 'prov/wt-1',
+          taskGroupId: 'group-1',
+        });
+      }
+      await create(db, {
+        taskId: 'tid-6',
+        taskQueueId: 'prov/wt-2',
+        taskGroupId: 'group-2',
+      });
+
+      let res = await db.fns.get_tasks_by_task_group_tqid('group-1', 20, 0);
+      assert.equal(res.length, 5);
+
+      res = await db.fns.get_tasks_by_task_group_tqid('group-2', 20, 0);
+      assert.equal(res.length, 1);
+      assert.equal(res[0].task_id, 'tid-6');
+      assert.equal(res[0].task_queue_id, 'prov/wt-2');
     });
 
     helper.dbTest('create_task twice (UNIQUE_VIOLATION)', async function(db) {
