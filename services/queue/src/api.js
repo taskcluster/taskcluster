@@ -843,8 +843,12 @@ builder.declare({
   }
 
   // Modify the task
-  task.updateStatusWith(
-    await this.db.fns.cancel_task(taskId, 'canceled'));
+  if (!task.updateStatusWith(
+    await this.db.fns.cancel_task(taskId, 'canceled'))) {
+    // modification failed, so re-fetch the task and continue; this may send
+    // a duplicate pulse message, but that's OK
+    task = await Task.get(this.db, taskId);
+  }
 
   // Get the last run, there should always be one
   let run = _.last(task.runs);

@@ -65,6 +65,68 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status, r2.status));
   });
 
+  test('createTask (unscheduled), cancelTask (race)', async () => {
+    const taskId = slugid.v4();
+
+    debug('### Create unscheduled task');
+    const r1 = await helper.queue.createTask(taskId, {
+      ...taskDef,
+      dependencies: [taskId],
+    });
+    assume(r1.status.state).equals('unscheduled');
+    assume(r1.status.runs.length).equals(0);
+    helper.assertPulseMessage('task-defined');
+
+    debug('### Cancel Task 10x at once');
+    // allSettled waits for all attempts to finish before returning
+    const res = await Promise.allSettled(_.range(10).map(async () => {
+      const r2 = await helper.queue.cancelTask(taskId);
+      assume(r2.status.state).equals('exception');
+      assume(r2.status.runs.length).equals(1);
+      assume(r2.status.runs[0].state).equals('exception');
+      assume(r2.status.runs[0].reasonCreated).equals('exception');
+      assume(r2.status.runs[0].reasonResolved).equals('canceled');
+    }));
+    // raise any exceptions in any of those calls
+    for (let { reason } of res) {
+      if (reason) {
+        throw reason;
+      }
+    }
+    helper.assertPulseMessage('task-exception');
+    helper.clearPulseMessages();
+  });
+
+  test('createTask (scheduled), cancelTask (race)', async () => {
+    const taskId = slugid.v4();
+
+    debug('### Create unscheduled task');
+    const r1 = await helper.queue.createTask(taskId, taskDef);
+    assume(r1.status.state).equals('pending');
+    assume(r1.status.runs.length).equals(1);
+    helper.assertPulseMessage('task-defined');
+    helper.assertPulseMessage('task-pending');
+
+    debug('### Cancel Task 10x at once');
+    // allSettled waits for all attempts to finish before returning
+    const res = await Promise.allSettled(_.range(10).map(async () => {
+      const r2 = await helper.queue.cancelTask(taskId);
+      assume(r2.status.state).equals('exception');
+      assume(r2.status.runs.length).equals(1);
+      assume(r2.status.runs[0].state).equals('exception');
+      assume(r2.status.runs[0].reasonCreated).equals('scheduled');
+      assume(r2.status.runs[0].reasonResolved).equals('canceled');
+    }));
+    // raise any exceptions in any of those calls
+    for (let { reason } of res) {
+      if (reason) {
+        throw reason;
+      }
+    }
+    //helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status, r2.status));
+    helper.clearPulseMessages();
+  });
+
   test('createTask, claimTask, cancelTask (idempotent)', async () => {
     const taskId = slugid.v4();
 
