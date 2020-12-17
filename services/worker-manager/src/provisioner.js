@@ -164,7 +164,7 @@ class Provisioner {
         if (!provider) {
           this.monitor.warning(
             `Worker pool ${workerPool.workerPoolId} has unknown providerId ${workerPool.providerId}`);
-          return;
+          continue;
         }
 
         if (!poolsByProvider.has(providerId)) {
