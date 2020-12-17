@@ -34,7 +34,12 @@ type CredentialsUpdate struct {
 	Certificate string `json:"certificate"`
 }
 
-var httpClient = &http.Client{}
+var httpClient = &http.Client{
+	// do not follow redirects, and instead pass them back to the caller
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
+}
 
 // NewRoutes creates a new Routes instance.
 func NewRoutes(client tcclient.Client) Routes {
