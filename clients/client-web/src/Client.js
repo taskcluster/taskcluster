@@ -201,6 +201,20 @@ export default class Client {
   }
 
   async buildSignedUrl(method, ...args) {
+    const credentials = this.options.credentialAgent
+      ? await this.options.credentialAgent.getCredentials()
+      : this.options.credentials;
+    return this._buildSignedUrlSync(method, credentials, args);
+  }
+
+  buildSignedUrlSync(method, ...args) {
+    if (this.options.credentialAgent) {
+      throw new Error('buildSignedUrlSync cannot be used with a credentialAgent');
+    }
+    return this._buildSignedUrlSync(method, this.options.credentials, args);
+  }
+
+  _buildSignedUrlSync(method, credentials, args) {
     if (!method) {
       throw new Error('buildSignedUrl is missing required `method` argument');
     }
@@ -234,9 +248,6 @@ export default class Client {
     }
 
     const url = this.buildUrl(method, ...args);
-    const credentials = this.options.credentialAgent
-      ? await this.options.credentialAgent.getCredentials()
-      : this.options.credentials;
 
     if (!credentials) {
       throw new Error('buildSignedUrl missing required credentials');
