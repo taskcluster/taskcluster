@@ -519,19 +519,21 @@ type (
 		// property is only available after the run is resolved. Some of these
 		// reasons, notably `intermittent-task`, `worker-shutdown`, and
 		// `claim-expired`, will trigger an automatic retry of the task.
+		// Note that 'superseded' is here only for compatibility, as that
+		// functionality has been removed.
 		//
 		// Possible values:
 		//   * "completed"
 		//   * "failed"
 		//   * "deadline-exceeded"
 		//   * "canceled"
-		//   * "superseded"
 		//   * "claim-expired"
 		//   * "worker-shutdown"
 		//   * "malformed-payload"
 		//   * "resource-unavailable"
 		//   * "internal-error"
 		//   * "intermittent-task"
+		//   * "superseded"
 		ReasonResolved string `json:"reasonResolved,omitempty"`
 
 		// Date-time at which this run was resolved, ie. when the run changed
@@ -1178,12 +1180,6 @@ type (
 		// resolved with this reason, but you are clearly signaling that this is a
 		// bug in the worker code.
 		//
-		// * **Report `superseded`** if the task was determined to have been
-		// superseded by another task, and its results are no longer needed.  It is
-		// convention in this case to create an artifact entitled
-		// `public/superseded-by` containing the taskId of the task that superseded
-		// this one.
-		//
 		// * **Report `intermittent-task`** if the task explicitly requested a retry
 		// because task is intermittent. Workers can choose whether or not to
 		// support this, but workers shouldn't blindly report this for every task
@@ -1194,7 +1190,6 @@ type (
 		//   * "malformed-payload"
 		//   * "resource-unavailable"
 		//   * "internal-error"
-		//   * "superseded"
 		//   * "intermittent-task"
 		Reason string `json:"reason"`
 	}
