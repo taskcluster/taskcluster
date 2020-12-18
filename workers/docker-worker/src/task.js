@@ -2,6 +2,7 @@
  * Handler of individual tasks beginning after the task is claimed and ending
  * with posting task results.
  */
+const assert = require('assert');
 const Debug = require('debug');
 const DockerProc = require('dockerode-process');
 const { PassThrough } = require('stream');
@@ -16,7 +17,6 @@ const { fmtLog, fmtErrorLog } = require('./log');
 const scopes = require('./scopes');
 const { validatePayload } = require('./util/validate_schema');
 const waitForEvent = require('./wait_for_event');
-const uploadToS3 = require('./upload_to_s3');
 const _ = require('lodash');
 const EventEmitter = require('events');
 const libUrls = require('taskcluster-lib-urls');
@@ -281,14 +281,6 @@ class Reclaimer {
       let errorMessage = `Could not reclaim task. ${e.stack || e}`;
       this.log('error reclaiming task', { error: errorMessage });
 
-      // If this is not the primary claim, just stop trying to reclaim.  The task
-      // will attempt to resolve it as superseded, and fail, but the primary task
-      // and the other superseded tasks will still be resolved correctly.
-      if (this.claim.status.taskId !== this.primaryClaim.status.taskId) {
-        this.stop();
-        return;
-      }
-
       // If status code is 409, assume that the run has already been resolved
       // and/or the deadline-exceeded.  Task run should be handled as though it were
       // canceled.
@@ -327,7 +319,8 @@ class Task extends EventEmitter {
   /**
   @param {Object} runtime global runtime.
   @param {Object} task for this instance.
-  @param {Object} claims claim details for this instance (several claims if superseding)
+  @param {Object} claims claim details for this instance
+                  (an array to support the deprecated superseding functionality)
   @param {Object} options
   @param {Number} [options.cpusetCpus] cpu(s) to use for this container/task.
   */
@@ -575,11 +568,9 @@ class Task extends EventEmitter {
       let reportDetails = [this.status.taskId, this.runId];
       if (this.taskException) {reportDetails.push({ reason: this.taskException });}
 
-      // mark any tasks that this one superseded as resolved with
-      // reason 'worker-shutdown', which means they stand to be retried
-      // immediately
-      await this.resolveSuperseded(this.status.taskId, this.runId,
-        false, 'worker-shutdown');
+      // Superseding is no longer supported, so there is only ever a single claim and nothing
+      // to resolve as superseded.
+      assert.equal(this.claims.length, 1);
 
       await reporter.apply(queue, reportDetails);
     }
@@ -631,9 +622,9 @@ class Task extends EventEmitter {
       }
     }
 
-    // mark any tasks that this one superseded as resolved, adding the
-    // necessary artifacts pointing to this build
-    await this.resolveSuperseded(this.status.taskId, this.runId, true, 'superseded');
+    // Superseding is no longer supported, so there is only ever a single claim and nothing
+    // to resolve as superseded.
+    assert.equal(this.claims.length, 1);
 
     await reporter.apply(queue, reportDetails);
 
@@ -642,69 +633,6 @@ class Task extends EventEmitter {
       runId: this.runId,
       taskState: taskState,
     });
-  }
-
-  /**
-   * Resolves all of the non-primary claims for this task, optionally
-   * adding an artifact to each one named "public/superseded-by"
-   * containing the taskId/runId of the primary claim.
-   *
-   * @param {String} primaryTaskId taskId of the primary task
-   * @param {Integer} primaryRunId runId of the primary task
-   * @param {Boolean} addArtifacts if true, add the superseded-by artifacts
-   * @param {String} reason the exception reason passed to the queue
-   */
-
-  async resolveSuperseded(primaryTaskId, primaryRunId, addArtifacts, reason) {
-    let supersedes = [];
-    let log = this.runtime.log;
-
-    await Promise.all(this.claims.map(async (c) => {
-      let taskId = c.status.taskId;
-      let runId = c.runId;
-      if (taskId === primaryTaskId && runId === primaryRunId) {
-        return;
-      }
-
-      try {
-        let queue = this.createQueue(c.credentials);
-        await queue.reportException(taskId, runId, { reason });
-
-        if (addArtifacts) {
-          let task = c.task;
-          // set the artifact expiration to match the task
-          let expiration = task.expires || taskcluster.fromNow(task.deadline, '1 year');
-          let content = { 'taskId': primaryTaskId, 'runId': primaryRunId };
-          let contentJson = JSON.stringify(content);
-          await uploadToS3(queue, taskId, runId, contentJson,
-            'public/superseded-by.json', expiration, {
-              'content-type': 'application/json',
-            });
-
-          supersedes.push({ taskId, runId });
-        }
-      } catch (e) {
-        // failing to resolve a non-primary claim is not a big deal: it will
-        // either time out and go back in the queue, or it was cancelled or
-        // otherwise modified while we were working on it.
-        log('while resolving superseded task: ' + e, {
-          primaryTaskId,
-          primaryRunId,
-          taskId,
-          runId,
-        });
-      }
-    }));
-
-    if (addArtifacts && supersedes.length > 0) {
-      let task = this.claim.task;
-      let expiration = task.expires || taskcluster.fromNow(task.deadline, '1 year');
-      let contentJson = JSON.stringify(supersedes);
-      await uploadToS3(this.queue, primaryTaskId, primaryRunId, contentJson,
-        'public/supersedes.json', expiration, {
-          'content-type': 'application/json',
-        });
-    }
   }
 
   /**

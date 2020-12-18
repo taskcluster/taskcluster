@@ -147,26 +147,5 @@ suite(suiteName(), function() {
     assert.equal(taskAction.action, 'abort');
   });
 
-  test('non-primary reclaim that fails has no effect except to stop reclaims',
-    async function() {
-      let claim = makeClaim('fakeTid', 0, soon);
-      let secondClaim = makeClaim('fakeTid2', 0, soon);
-      reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, secondClaim);
-
-      let failReclaimTask = async function(taskId, runId) {
-        let err = new Error('uhoh');
-        err.statusCode = 409;
-        throw err;
-      };
-
-      fakeRuntime.queue.reclaimTask = failReclaimTask;
-      fakeTask.queue.reclaimTask = failReclaimTask;
-
-      await reclaimer.reclaimTask();
-      assert.deepEqual(reclaims, []);
-      assert.equal(taskAction, null);
-      assert.equal(reclaimer.stopped, true);
-    });
-
   // the scheduled reclaims are adequately tested in integration tests
 });

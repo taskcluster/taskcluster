@@ -185,17 +185,9 @@ properties:
     additionalProperties:
       $ref: '#/definitions/artifact'
   supersederUrl:
-    title: >-
-      URL of the a service that can indicate tasks superseding this one; the
-      current taskId will be appended as a query argument `taskId`.  The service
-      should return an object with a `supersedes` key containing a list of
-      taskIds, including the supplied taskId.  The tasks should be ordered such
-      that each task supersedes all tasks appearing earlier in the list.  See
-      [superseding](/docs/reference/platform/taskcluster-queue/docs/superseding)
-      for more detail.
+    title: (unused)
+    description: Maintained for backward compatibility, but no longer used
     type: string
-    format: uri
-    pattern: '^https?://[\x20-\x7e]*$'
   features:
     title: Feature flags
     description: Used to enable additional functionality.
