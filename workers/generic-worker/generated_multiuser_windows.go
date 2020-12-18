@@ -325,15 +325,7 @@ type (
 		// Since: generic-worker 10.5.0
 		RdpInfo string `json:"rdpInfo,omitempty"`
 
-		// URL of a service that can indicate tasks superseding this one; the current `taskId`
-		// will be appended as a query argument `taskId`. The service should return an object with
-		// a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
-		// tasks should be ordered such that each task supersedes all tasks appearing later in the
-		// list.
-		//
-		// See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.
-		//
-		// Since: generic-worker 10.2.2
+		// This property is allowed for backward compatibility, but is unused.
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
@@ -800,9 +792,8 @@ func taskPayloadSchema() string {
       "type": "string"
     },
     "supersederUrl": {
-      "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
-      "format": "uri",
-      "title": "Superseder URL",
+      "description": "This property is allowed for backward compatibility, but is unused.",
+      "title": "unused",
       "type": "string"
     }
   },

@@ -5,7 +5,6 @@ execution of tasks.
 const TaskQueue = require('./queueservice');
 const DeviceManager = require('./devices/device_manager');
 const Debug = require('debug');
-const got = require('got');
 const { Task } = require('./task');
 const { EventEmitter } = require('events');
 const { exceedsDiskspaceThreshold } = require('./util/capacity');
@@ -25,7 +24,6 @@ class TaskListener extends EventEmitter {
     this.taskPollInterval = this.runtime.taskQueue.pollInterval;
     this.lastTaskEvent = Date.now();
     this.host = runtime.hostManager;
-    this.supersedingTimeout = 5000;
     this.lastKnownCapacity = 0;
     this.totalRunTime = 0;
     this.lastCapacityState = {
@@ -131,9 +129,9 @@ class TaskListener extends EventEmitter {
       // purge-cache on every getTasks loop
       await this.runtime.volumeCache.purgeCaches();
 
-      let tasksets = await Promise.all(claims.map(this.applySuperseding.bind(this)));
-      // call runTaskset for each taskset, but do not wait for it to complete
-      Promise.all(tasksets.map(this.runTaskset.bind(this)));
+      // call runTask for each task, but do not wait for the promise to complete;
+      // runTask handles its own errors
+      claims.map(claim => this.runTask(claim));
     }
   }
 
@@ -400,106 +398,10 @@ class TaskListener extends EventEmitter {
   }
 
   /**
-   * Look for tasks we can supersede, claiming any additional tasks directly
-   * from the TC queue service, then calling runTask with the resulting task
-   * set.
-   */
-  async applySuperseding(claim) {
-    let task = claim.task;
-    let taskId = claim.status.taskId;
-
-    try {
-      // if the task is not set up to supersede anything, then the taskset is just the one claim
-      if (!task.payload.supersederUrl) {
-        this.runtime.log('not superseding', { taskId, message: 'no supersederUrl in payload' });
-        return [claim];
-      }
-
-      let supersederUrl = task.payload.supersederUrl;
-      if (!/^https?:\/\/[\x20-\x7e]*$/.test(supersederUrl)) {
-        this.runtime.log('not superseding', { taskId, message: 'invalid supersederUrl in payload' });
-        // validatPayload will fail for this task, giving hte user a helpful error message.
-        // The important thing is that we don't fetch this supersederUrl.
-        return [claim];
-      }
-
-      let tasks = (await this.fetchSupersedingTasks(supersederUrl, taskId));
-      if (!tasks || tasks.length === 0) {
-        this.runtime.log('not superseding', { taskId, supersederUrl,
-          message: 'no tasks supersede this one' });
-        return [claim];
-      }
-
-      // if the returned list does not contain the initial taskId, then ignore
-      // the request; this is an invalid response from the superseder
-      if (!tasks.includes(taskId)) {
-        this.runtime.log('not superseding', { taskId, supersederUrl,
-          message: 'initial taskId not included in result from superseder' });
-        return [claim];
-      }
-
-      // claim runId 0 for each of those tasks; we can consider adding support
-      // for other runIds later.
-      let claims = await Promise.all(tasks.map(async tid => {
-        if (tid === taskId) {
-          return claim; // already claimed
-        }
-
-        try {
-          return await this.taskQueue.claimTask(tid, 0, {
-            workerId: this.runtime.workerId,
-            workerGroup: this.runtime.workerGroup,
-          });
-        } catch(e) {
-          this.runtime.log('while superseding - secondary claim failure', {
-            taskId: tid,
-            runId: 0,
-            message: e.toString(),
-            stack: e.stack,
-            err: e,
-          });
-          return;
-        }
-      }));
-
-      // filter out missed claims
-      claims = claims.filter(cl => cl);
-
-      return claims;
-    } catch (e) {
-      this.runtime.log('superseding error', {
-        taskId: claim.status.taskId,
-        runId: claim.runId,
-        message: e.toString(),
-        stack: e.stack,
-        err: e,
-      });
-
-      // fail quietly by just returning the primary claim
-      return [claim];
-    }
-  }
-
-  async fetchSupersedingTasks(url, taskId) {
-    url = url + '?taskId=' + taskId;
-    try {
-      return await got(url, {
-        timeout: this.supersedingTimeout,
-      }).then(res => JSON.parse(res.body)['supersedes']);
-    } catch(e) {
-      throw new Error(`Failure fetching from superseding URL ${url}: ${e}`);
-    }
-  }
-
-  /**
   * Run task that has been claimed.
   */
-  async runTaskset(claims) {
+  async runTask(claim) {
     let runningState;
-    // the claim we're actually going to execute (the primary claim) is the
-    // first one; the rest will be periodically reclaimed and then resolved,
-    // but will not actually execute.
-    let claim = claims[0];
     let task;
 
     try {
@@ -551,7 +453,7 @@ class TaskListener extends EventEmitter {
       }
 
       // Create "task" to handle all the task specific details.
-      let taskHandler = new Task(this.runtime, task, claims, options);
+      let taskHandler = new Task(this.runtime, task, claim, options);
       runningState.handler = taskHandler;
 
       this.addRunningTask(runningState);

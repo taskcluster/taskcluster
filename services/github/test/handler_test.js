@@ -695,7 +695,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       'exception': 'failure',
       'deadline-exceeded': 'timed_out',
       'canceled': 'cancelled',
-      'superseded': 'neutral', // means: is not relevant anymore
       'claim-expired': 'failure',
       'worker-shutdown': 'neutral', // means: will be retried
       'malformed-payload': 'action_required', // like, "correct your task definition"

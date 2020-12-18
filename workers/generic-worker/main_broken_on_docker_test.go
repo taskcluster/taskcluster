@@ -3,11 +3,15 @@
 package main
 
 import (
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 )
 
@@ -76,4 +80,31 @@ func TestNonExistentCommandFailsTask(t *testing.T) {
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
+}
+
+func getArtifactContent(t *testing.T, taskID string, artifact string) ([]byte, *http.Response, *http.Response, *url.URL) {
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
+	url, err := queue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
+	if err != nil {
+		t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
+	}
+	t.Logf("Getting from url %v", url.String())
+	// need to do this so Content-Encoding header isn't swallowed by Go for test later on
+	tr := &http.Transport{
+		DisableCompression: true,
+	}
+	client := &http.Client{Transport: tr}
+	rawResp, _, err := httpbackoff.ClientGet(client, url.String())
+	if err != nil {
+		t.Fatalf("Error trying to fetch decompressed artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	resp, _, err := httpbackoff.Get(url.String())
+	if err != nil {
+		t.Fatalf("Error trying to fetch artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	return b, rawResp, resp, url
 }

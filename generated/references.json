@@ -2011,19 +2011,19 @@
                 "type": "string"
               },
               "reasonResolved": {
-                "description": "Reason that run was resolved, this is mainly\nuseful for runs resolved as `exception`.\nNote, **more reasons may be added in the future**, also this\nproperty is only available after the run is resolved. Some of these\nreasons, notably `intermittent-task`, `worker-shutdown`, and\n`claim-expired`, will trigger an automatic retry of the task.\n",
+                "description": "Reason that run was resolved, this is mainly\nuseful for runs resolved as `exception`.\nNote, **more reasons may be added in the future**, also this\nproperty is only available after the run is resolved. Some of these\nreasons, notably `intermittent-task`, `worker-shutdown`, and\n`claim-expired`, will trigger an automatic retry of the task.\nNote that 'superseded' is here only for compatibility, as that\nfunctionality has been removed.\n",
                 "enum": [
                   "completed",
                   "failed",
                   "deadline-exceeded",
                   "canceled",
-                  "superseded",
                   "claim-expired",
                   "worker-shutdown",
                   "malformed-payload",
                   "resource-unavailable",
                   "internal-error",
-                  "intermittent-task"
+                  "intermittent-task",
+                  "superseded"
                 ],
                 "title": "Reason Resolved",
                 "type": "string"
@@ -2515,13 +2515,12 @@
       "description": "Request for a run of a task to be resolved with an exception\n",
       "properties": {
         "reason": {
-          "description": "Reason that the task is resolved with an exception. This is a subset\nof the values for `resolvedReason` given in the task status structure.\n\n* **Report `worker-shutdown`** if the run failed because the worker\nhad to shutdown (spot node disappearing). In case of `worker-shutdown`\nthe queue will immediately **retry** the task, by making a new run.\nThis is much faster than ignoreing the issue and letting the task _retry_\nby claim expiration. For any other _reason_ reported the queue will not\nretry the task.\n\n* **Report `malformed-payload`** if the `task.payload` doesn't match the\nschema for the worker payload, or referenced resource doesn't exists.\nIn either case, you should still log the error to a log file for the\nspecific run.\n\n* **Report `resource-unavailable`** if a resource/service needed or\nreferenced in `task.payload` is _temporarily_ unavailable. Do not use this\nunless you know the resource exists, if the resource doesn't exist you\nshould report `malformed-payload`. Example use-case if you contact the\nindex (a service) on behalf of the task, because of a declaration in\n`task.payload`, and the service (index) is temporarily down. Don't use\nthis if a URL returns 404, but if it returns 503 or hits a timeout when\nyou retry the request, then this _may_ be a valid exception. The queue\nassumes that workers have applied retries as needed, and will not retry\n the task.\n\n* **Report `internal-error`** if the worker experienced an unhandled internal\nerror from which it couldn't recover. The queue will not retry runs\nresolved with this reason, but you are clearly signaling that this is a\nbug in the worker code.\n\n* **Report `superseded`** if the task was determined to have been\nsuperseded by another task, and its results are no longer needed.  It is\nconvention in this case to create an artifact entitled\n`public/superseded-by` containing the taskId of the task that superseded\nthis one.\n\n* **Report `intermittent-task`** if the task explicitly requested a retry\nbecause task is intermittent. Workers can choose whether or not to\nsupport this, but workers shouldn't blindly report this for every task\nthat fails.\n",
+          "description": "Reason that the task is resolved with an exception. This is a subset\nof the values for `resolvedReason` given in the task status structure.\n\n* **Report `worker-shutdown`** if the run failed because the worker\nhad to shutdown (spot node disappearing). In case of `worker-shutdown`\nthe queue will immediately **retry** the task, by making a new run.\nThis is much faster than ignoreing the issue and letting the task _retry_\nby claim expiration. For any other _reason_ reported the queue will not\nretry the task.\n\n* **Report `malformed-payload`** if the `task.payload` doesn't match the\nschema for the worker payload, or referenced resource doesn't exists.\nIn either case, you should still log the error to a log file for the\nspecific run.\n\n* **Report `resource-unavailable`** if a resource/service needed or\nreferenced in `task.payload` is _temporarily_ unavailable. Do not use this\nunless you know the resource exists, if the resource doesn't exist you\nshould report `malformed-payload`. Example use-case if you contact the\nindex (a service) on behalf of the task, because of a declaration in\n`task.payload`, and the service (index) is temporarily down. Don't use\nthis if a URL returns 404, but if it returns 503 or hits a timeout when\nyou retry the request, then this _may_ be a valid exception. The queue\nassumes that workers have applied retries as needed, and will not retry\n the task.\n\n* **Report `internal-error`** if the worker experienced an unhandled internal\nerror from which it couldn't recover. The queue will not retry runs\nresolved with this reason, but you are clearly signaling that this is a\nbug in the worker code.\n\n* **Report `intermittent-task`** if the task explicitly requested a retry\nbecause task is intermittent. Workers can choose whether or not to\nsupport this, but workers shouldn't blindly report this for every task\nthat fails.\n",
           "enum": [
             "worker-shutdown",
             "malformed-payload",
             "resource-unavailable",
             "internal-error",
-            "superseded",
             "intermittent-task"
           ],
           "type": "string"
@@ -4856,19 +4855,19 @@
                     "type": "string"
                   },
                   "reasonResolved": {
-                    "description": "Reason that run was resolved, this is mainly\nuseful for runs resolved as `exception`.\nNote, **more reasons may be added in the future**, also this\nproperty is only available after the run is resolved.\n",
+                    "description": "Reason that run was resolved, this is mainly\nuseful for runs resolved as `exception`.\nNote, **more reasons may be added in the future**, also this\nproperty is only available after the run is resolved.  Note\nthat 'superseded' is here only for compatibility, as that\nfunctionality has been removed.\n",
                     "enum": [
                       "completed",
                       "failed",
                       "deadline-exceeded",
                       "canceled",
-                      "superseded",
                       "claim-expired",
                       "worker-shutdown",
                       "malformed-payload",
                       "resource-unavailable",
                       "internal-error",
-                      "intermittent-task"
+                      "intermittent-task",
+                      "superseded"
                     ],
                     "title": "Reason Resolved",
                     "type": "string"
@@ -6419,9 +6418,8 @@
           "uniqueItems": false
         },
         "supersederUrl": {
-          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
-          "format": "uri",
-          "title": "Superseder URL",
+          "description": "This property is allowed for backward compatibility, but is unused.",
+          "title": "unused",
           "type": "string"
         }
       },
@@ -6795,9 +6793,8 @@
           "type": "string"
         },
         "supersederUrl": {
-          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
-          "format": "uri",
-          "title": "Superseder URL",
+          "description": "This property is allowed for backward compatibility, but is unused.",
+          "title": "unused",
           "type": "string"
         }
       },
@@ -7167,9 +7164,8 @@
           "uniqueItems": false
         },
         "supersederUrl": {
-          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
-          "format": "uri",
-          "title": "Superseder URL",
+          "description": "This property is allowed for backward compatibility, but is unused.",
+          "title": "unused",
           "type": "string"
         }
       },
@@ -7539,9 +7535,8 @@
           "uniqueItems": false
         },
         "supersederUrl": {
-          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
-          "format": "uri",
-          "title": "Superseder URL",
+          "description": "This property is allowed for backward compatibility, but is unused.",
+          "title": "unused",
           "type": "string"
         }
       },
@@ -7822,9 +7817,8 @@
           "type": "object"
         },
         "supersederUrl": {
-          "format": "uri",
-          "pattern": "^https?://[\\x20-\\x7e]*$",
-          "title": "URL of the a service that can indicate tasks superseding this one; the current taskId will be appended as a query argument `taskId`.  The service should return an object with a `supersedes` key containing a list of taskIds, including the supplied taskId.  The tasks should be ordered such that each task supersedes all tasks appearing earlier in the list.  See [superseding](/docs/reference/platform/taskcluster-queue/docs/superseding) for more detail.",
+          "description": "Maintained for backward compatibility, but no longer used",
+          "title": "(unused)",
           "type": "string"
         }
       },

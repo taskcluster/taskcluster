@@ -302,58 +302,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
   });
 
-  test('reportException (superseded) is idempotent', async () => {
-    const taskId = slugid.v4();
-
-    debug('### Creating task');
-    await helper.queue.createTask(taskId, taskDef);
-
-    debug('### Claiming task');
-    // First runId is always 0, so we should be able to claim it here
-    let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group-extended-extended',
-      workerId: 'my-worker-extended-extended',
-    });
-
-    debug('### Reporting task exception');
-    helper.scopes(
-      'queue:resolve-task',
-      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
-      'queue:status:' + taskId,
-    );
-    await helper.queue.reportException(taskId, 0, {
-      reason: 'superseded',
-    });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'superseded'));
-    helper.clearPulseMessages();
-
-    debug('### Reporting task exception (again)');
-    await helper.queue.reportException(taskId, 0, {
-      reason: 'superseded',
-    });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'superseded'));
-    helper.clearPulseMessages();
-
-    debug('### Check status of task');
-    const { status: s2 } = helper.checkDates(await helper.queue.status(taskId));
-    assume(s2.runs[0].state).equals('exception');
-    assume(s2.runs[0].reasonResolved).equals('superseded');
-
-    debug('### Reporting task exception (using temp creds)');
-    let queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.credentials });
-    await queue.reportException(taskId, 0, {
-      reason: 'superseded',
-    });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'superseded'));
-    helper.clearPulseMessages();
-  });
-
   test('reportException can\'t overwrite reason', async () => {
     const taskId = slugid.v4();
 

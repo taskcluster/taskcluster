@@ -93,19 +93,21 @@ type (
 		// property is only available after the run is resolved. Some of these
 		// reasons, notably `intermittent-task`, `worker-shutdown`, and
 		// `claim-expired`, will trigger an automatic retry of the task.
+		// Note that 'superseded' is here only for compatibility, as that
+		// functionality has been removed.
 		//
 		// Possible values:
 		//   * "completed"
 		//   * "failed"
 		//   * "deadline-exceeded"
 		//   * "canceled"
-		//   * "superseded"
 		//   * "claim-expired"
 		//   * "worker-shutdown"
 		//   * "malformed-payload"
 		//   * "resource-unavailable"
 		//   * "internal-error"
 		//   * "intermittent-task"
+		//   * "superseded"
 		ReasonResolved string `json:"reasonResolved,omitempty"`
 
 		// Date-time at which this run was resolved, ie. when the run changed

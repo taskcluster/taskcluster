@@ -18,6 +18,7 @@ module.exports = {
     FAILED: 'failed',
     DEADLINE_EXCEEDED: 'deadline-exceeded',
     CANCELED: 'canceled',
+    // deprecated but still supported for old tasks
     SUPERSEDED: 'superseded',
     CLAIM_EXPIRED: 'claim-expired',
     WORKER_SHUTDOWN: 'worker-shutdown',

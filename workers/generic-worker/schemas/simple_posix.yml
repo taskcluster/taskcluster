@@ -216,18 +216,8 @@ properties:
     maxItems: 0
   supersederUrl:
     type: string
-    title: Superseder URL
-    description: |-
-      URL of a service that can indicate tasks superseding this one; the current `taskId`
-      will be appended as a query argument `taskId`. The service should return an object with
-      a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
-      tasks should be ordered such that each task supersedes all tasks appearing later in the
-      list.
-
-      See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.
-
-      Since: generic-worker 10.2.2
-    format: uri
+    title: unused
+    description: This property is allowed for backward compatibility, but is unused.
   onExitStatus:
     title: Exit code handling
     description: |-

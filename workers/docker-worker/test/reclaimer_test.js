@@ -76,7 +76,7 @@ suite(suiteName(), function() {
 
   test('successful reclaim', async function() {
     let claim = makeClaim('fakeTid', 0, soon);
-    reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
+    reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim);
 
     await reclaimer.reclaimTask();
     assert.deepEqual(reclaims, [{ taskId: 'fakeTid', runId: 0 }]);
@@ -85,7 +85,7 @@ suite(suiteName(), function() {
 
   test('credentials update event emitted', async function() {
     let claim = makeClaim('fakeTid', 0, soon);
-    reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
+    reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim);
 
     let updated = false;
     fakeTask.on('credentials', credentials => {
@@ -103,7 +103,7 @@ suite(suiteName(), function() {
 
   test('reclaim after stop does nothing', async function() {
     let claim = makeClaim('fakeTid', 0, soon);
-    reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
+    reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim);
     reclaimer.stop();
 
     await reclaimer.reclaimTask();
@@ -113,7 +113,7 @@ suite(suiteName(), function() {
 
   test('primary reclaim that fails with a 409 cancels the task', async function() {
     let claim = makeClaim('fakeTid', 0, soon);
-    reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
+    reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim);
 
     let failReclaimTask = async function(taskId, runId) {
       let err = new Error('uhoh');
@@ -131,7 +131,7 @@ suite(suiteName(), function() {
 
   test('primary reclaim that fails with a 401 aborts the task', async function() {
     let claim = makeClaim('fakeTid', 0, soon);
-    reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
+    reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim);
 
     let failReclaimTask = async function(taskId, runId) {
       let err = new Error('uhoh');
@@ -146,27 +146,6 @@ suite(suiteName(), function() {
     assert.deepEqual(reclaims, []);
     assert.equal(taskAction.action, 'abort');
   });
-
-  test('non-primary reclaim that fails has no effect except to stop reclaims',
-    async function() {
-      let claim = makeClaim('fakeTid', 0, soon);
-      let secondClaim = makeClaim('fakeTid2', 0, soon);
-      reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, secondClaim);
-
-      let failReclaimTask = async function(taskId, runId) {
-        let err = new Error('uhoh');
-        err.statusCode = 409;
-        throw err;
-      };
-
-      fakeRuntime.queue.reclaimTask = failReclaimTask;
-      fakeTask.queue.reclaimTask = failReclaimTask;
-
-      await reclaimer.reclaimTask();
-      assert.deepEqual(reclaims, []);
-      assert.equal(taskAction, null);
-      assert.equal(reclaimer.stopped, true);
-    });
 
   // the scheduled reclaims are adequately tested in integration tests
 });
