@@ -1,7 +1,7 @@
 ##
 # Build /app
 
-FROM node:14.15.2 as build
+FROM node:14.15.3 as build
 
 RUN mkdir -p /base/cache
 ENV YARN_CACHE_FOLDER=/base/cache
@@ -61,7 +61,7 @@ RUN rm -rf ui/node_modules ui/src
 ##
 # build the final image
 
-FROM node:14.15.2-alpine as image
+FROM node:14.15.3-alpine as image
 RUN apk update && apk add nginx && mkdir /run/nginx && apk add bash
 COPY --from=build /base/app /app
 ENV HOME=/app
