@@ -4,7 +4,7 @@
   "version": "39.1.2",
   "engine-strict": true,
   "engines": {
-    "node": "14.15.2",
+    "node": "14.15.3",
     "yarn": "^1.22.10"
   },
   "description": "Docker task host for linux.",
