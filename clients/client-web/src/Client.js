@@ -37,7 +37,7 @@ export default class Client {
 
     if (this.options.accessToken) {
       throw new Error(
-        'options.accessToken is no longer supported; use OIDCCredentialAgent',
+        'options.accessToken is no longer supported; use options.credentials',
       );
     }
 

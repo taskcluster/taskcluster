@@ -350,6 +350,7 @@ credentials and performs no cryptographic checks. It is acceptable to use the
 scopes result to determine whether to display UI elements associated with a
 particular scope, as long as the underlying API performs more reliable
 authorization checks.
+
 ### Credential Agents
 
 This is common server-side when using
@@ -358,45 +359,6 @@ for web applications the credentials are usually acquired through some
 user-login process. For such cases, the client uses a `credentialAgent` to get
 Taskcluster credentials corresponding to the logged-in user. Agents can be
 shared between multiple clients, and are inherited via `.use`.
-
-#### OIDCCredentialAgent
-
-**NOTE:** The Taskcluster login service no longer exists.  For the moment,
-this functionality is not useful.
-
-This cluster's login service
-provides credentials in exchange for an OIDC `access_token`. To use
-this functionality, construct an `OIDCCredentialAgent` and pass it to the
-client. This agent will automatically fetch credentials as needed.
-
-```js
-import { Queue, OIDCCredentialAgent } from 'taskcluster-client-web';
-
-const credentialAgent = new OIDCCredentialAgent({
-  rootUrl,
-  accessToken: '...',
-});
-
-const queue = new Queue({ rootUrl, credentialAgent });
-
-queue
-  .createTask(/* ... */)
-  .then(/* ... */);
-```
-
-To get credentials from the agent, call its `getCredentials` method:
-
-```js
-let credentials = await credentialAgent.getCredentials()
-```
-
-When the access token is refreshed, simply update it on the credential agent:
-
-```js
-credentialAgent.accessToken = newAccessToken;
-```
-
-#### Other Credential Agents
 
 Any object with an async `getCredentials()` method that returns Taskcluster
 credentials is suitable as a credential agent.  The method will be called for
