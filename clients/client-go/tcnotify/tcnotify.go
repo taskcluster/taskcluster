@@ -134,31 +134,6 @@ func (notify *Notify) Pulse(payload *PostPulseMessageRequest) error {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Post a message on IRC to a specific channel or user, or a specific user
-// on a specific channel.
-//
-// Success of this API method does not imply the message was successfully
-// posted. This API method merely inserts the IRC message into a queue
-// that will be processed by a background process.
-// This allows us to re-send the message in face of connection issues.
-//
-// However, if the user isn't online the message will be dropped without
-// error. We maybe improve this behavior in the future. For now just keep
-// in mind that IRC is a best-effort service.
-//
-// Required scopes:
-//   If channelRequest:
-//     notify:irc-channel:<channel>
-//
-// See #irc
-func (notify *Notify) Irc(payload *PostIRCMessageRequest) error {
-	cd := tcclient.Client(*notify)
-	_, _, err := (&cd).APICall(payload, "POST", "/irc", nil, nil)
-	return err
-}
-
-// Stability: *** EXPERIMENTAL ***
-//
 // Post a message to a room in Matrix. Optionally includes formatted message.
 //
 // The `roomId` in the scopes is a fully formed `roomId` with leading `!` such
@@ -198,9 +173,7 @@ func (notify *Notify) Slack(payload *SendSlackMessage) error {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Add the given address to the notification denylist. The address
-// can be of either of the three supported address type namely pulse, email
-// or IRC(user or channel). Addresses in the denylist will be ignored
+// Add the given address to the notification denylist. Addresses in the denylist will be ignored
 // by the notification service.
 //
 // Required scopes:

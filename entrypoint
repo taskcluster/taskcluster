@@ -23,7 +23,6 @@ index/handlers) exec node services/index/src/main handlers;;
 index/expire) exec node services/index/src/main expire;;
 index/write-docs) exec node services/index/src/main writeDocs;;
 notify/web) exec node services/notify/src/main server;;
-notify/irc) exec node services/notify/src/main irc;;
 notify/handler) exec node services/notify/src/main handler;;
 notify/write-docs) exec node services/notify/src/main writeDocs;;
 object/web) exec node services/object/src/main.js server;;

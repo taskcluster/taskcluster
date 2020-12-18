@@ -107,27 +107,7 @@ class Handler {
         return;
       }
 
-      let ircMessage = `Task "${task.metadata.name}" complete with status '${status.state}'. Inspect: ${href}`;
-
       switch (route[1]) {
-        case 'irc-user': {
-          if (_.has(task, 'extra.notify.ircUserMessage')) {
-            ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, { task, status, taskId });
-          }
-          return await this.notifier.irc({
-            user: route[2],
-            message: ircMessage,
-          });
-        }
-        case 'irc-channel': {
-          if (_.has(task, 'extra.notify.ircChannelMessage')) {
-            ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, { task, status, taskId });
-          }
-          return await this.notifier.irc({
-            channel: route[2],
-            message: ircMessage,
-          });
-        }
         case 'matrix-room': {
           const roomId = route.slice(2, route.length - 1).join('.');
           let body = `'${task.metadata.name}' resolved as '${status.state}': ${href}`;

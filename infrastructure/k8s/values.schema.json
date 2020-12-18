@@ -698,27 +698,6 @@
         "email_source_address": {
           "type": "string"
         },
-        "irc_debug": {
-          "type": "string"
-        },
-        "irc_nick": {
-          "type": "string"
-        },
-        "irc_password": {
-          "type": "string"
-        },
-        "irc_port": {
-          "type": "string"
-        },
-        "irc_real_name": {
-          "type": "string"
-        },
-        "irc_server": {
-          "type": "string"
-        },
-        "irc_user_name": {
-          "type": "string"
-        },
         "level": {
           "type": "string"
         },
@@ -735,26 +714,6 @@
           "additionalProperties": false,
           "properties": {
             "handler": {
-              "additionalProperties": false,
-              "properties": {
-                "cpu": {
-                  "type": "string"
-                },
-                "memory": {
-                  "type": "string"
-                },
-                "replicas": {
-                  "type": "integer"
-                }
-              },
-              "required": [
-                "replicas",
-                "memory",
-                "cpu"
-              ],
-              "type": "object"
-            },
-            "irc": {
               "additionalProperties": false,
               "properties": {
                 "cpu": {
@@ -797,7 +756,6 @@
           },
           "required": [
             "web",
-            "irc",
             "handler"
           ],
           "title": "Process settings for this service",

@@ -25,18 +25,6 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
-  name: 'irc',
-  title: 'IRC Message Sent',
-  type: 'irc',
-  version: 1,
-  level: 'info',
-  description: 'An irc message has been sent.',
-  fields: {
-    dest: 'A user or channel. Will begin with "#" if a channel.',
-  },
-});
-
-MonitorManager.register({
   name: 'matrix',
   title: 'Matrix Message Sent',
   type: 'matrix',

@@ -1467,26 +1467,6 @@ module.exports = {
           "args": [
           ],
           "category": "Notifications",
-          "description": "Post a message on IRC to a specific channel or user, or a specific user\non a specific channel.\n\nSuccess of this API method does not imply the message was successfully\nposted. This API method merely inserts the IRC message into a queue\nthat will be processed by a background process.\nThis allows us to re-send the message in face of connection issues.\n\nHowever, if the user isn't online the message will be dropped without\nerror. We maybe improve this behavior in the future. For now just keep\nin mind that IRC is a best-effort service.",
-          "input": "v1/irc-request.json#",
-          "method": "post",
-          "name": "irc",
-          "query": [
-          ],
-          "route": "/irc",
-          "scopes": {
-            "else": "notify:irc-user:<user>",
-            "if": "channelRequest",
-            "then": "notify:irc-channel:<channel>"
-          },
-          "stability": "experimental",
-          "title": "Post IRC Message",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Notifications",
           "description": "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!",
           "input": "v1/matrix-request.json#",
           "method": "post",
@@ -1519,7 +1499,7 @@ module.exports = {
           "args": [
           ],
           "category": "Denylist",
-          "description": "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
+          "description": "Add the given address to the notification denylist. Addresses in the denylist will be ignored\nby the notification service.",
           "input": "v1/notification-address.json#",
           "method": "post",
           "name": "addDenylistAddress",
@@ -1597,29 +1577,6 @@ module.exports = {
           ],
           "schema": "v1/notification-message.json#",
           "title": "Notification Messages",
-          "type": "topic-exchange"
-        },
-        {
-          "description": "A message which is to be sent to an irc channel or\nuser is published to this exchange",
-          "exchange": "irc-request",
-          "name": "ircRequest",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "v1/irc-request.json#",
-          "title": "Request for irc notification",
           "type": "topic-exchange"
         }
       ],

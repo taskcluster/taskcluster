@@ -9,8 +9,6 @@ properties:
     enum:
       - "email"
       - "pulse"
-      - "irc-user"
-      - "irc-channel"
       - "matrix-room"
       - "slack-channel"
   notificationAddress:

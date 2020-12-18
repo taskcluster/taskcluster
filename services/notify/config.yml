@@ -47,17 +47,6 @@ defaults:
     vhost: !env PULSE_VHOST
     namespace: taskcluster-notify
 
-  # All optional. If not specified, irc just won't work
-  irc:
-    server:           !env:optional IRC_SERVER
-    nick:             !env:optional IRC_NICK
-    userName:         !env:optional IRC_USER_NAME
-    realName:         !env:optional IRC_REAL_NAME
-    password:         !env:optional IRC_PASSWORD
-    port:             !env:optional IRC_PORT
-    debug:            !env:optional IRC_DEBUG
-    pulseQueueName:   irc-notifications
-
   matrix:
     baseUrl: !env:optional MATRIX_BASE_URL
     accessToken: !env:optional MATRIX_ACCESS_TOKEN
@@ -78,7 +67,6 @@ test:
     region:           us-east-1
   app:
     sourceEmail: '"Taskcluster Notify Testing" <taskcluster-noreply-testing@mozilla.com>'
-    sqsQueueName: taskcluster-notify-test-irc
     routePrefix: test-notify
     emailBlacklist: []
   server:
@@ -86,10 +74,3 @@ test:
     env:              development
     forceSSL:         false
     trustProxy:       true
-  irc:
-    server:           chat.freenode.net
-    nick:             taskcluster-test
-    userName:         taskcluster-test
-    realName:         Taskcluster Test Robot
-    port:             6697
-    pulseQueueName:   irc-test-notifications

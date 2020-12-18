@@ -18,7 +18,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     notificationAddress: "name1@name.com",
   };
   let dummyAddress2 = {
-    notificationType: "irc-user",
+    notificationType: "matrix-room",
     notificationAddress: "username",
   };
 
@@ -129,64 +129,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
     });
-  });
-
-  test('irc', async function() {
-    await helper.apiClient.irc({ message: 'Does this work?', channel: '#taskcluster-test' });
-    helper.assertPulseMessage('irc-request', m => {
-      const { channel, message } = m.payload;
-      return _.isEqual(channel, '#taskcluster-test') &&
-        _.isEqual(message, 'Does this work?');
-    });
-  });
-
-  test('irc() fails if pulse publish fails', async function() {
-    helper.onPulsePublish(() => {
-      throw new Error('uhoh');
-    });
-    const apiClient = helper.apiClient.use({ retries: 0 });
-    await assert.rejects(
-      () => apiClient.irc({ message: 'no', channel: '#taskcluster-test' }),
-      err => err.statusCode === 500);
-
-    const monitor = await helper.load('monitor');
-    assert.equal(
-      monitor.manager.messages.filter(
-        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-      ).length,
-      1);
-    monitor.manager.reset();
-  });
-
-  test('does not send notifications to denylisted irc channel', async function() {
-    // Add an irc-channel address to the denylist
-    await helper.apiClient.addDenylistAddress({
-      notificationType: 'irc-channel',
-      notificationAddress: '#taskcluster-test',
-    });
-    // Ensure sending notification to that address fails with appropriate error
-    try {
-      await helper.apiClient.irc({ message: 'Does this work?', channel: '#taskcluster-test' });
-    } catch(e) {
-      if (e.code !== "DenylistedAddress") {
-        throw e;
-      }
-      return;
-    }
-    throw new Error('expected an error');
-  });
-
-  test('does not send notifications to denylisted irc user', async function() {
-    await helper.apiClient.addDenylistAddress({ notificationType: 'irc-user', notificationAddress: 'notify-me' });
-    try {
-      await helper.apiClient.irc({ message: 'Does this work?', user: 'notify-me' });
-    } catch(e) {
-      if (e.code !== "DenylistedAddress") {
-        throw e;
-      }
-      return;
-    }
-    throw new Error('expected an error');
   });
 
   test('matrix', async function() {
