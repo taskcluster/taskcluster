@@ -3419,9 +3419,9 @@ has@^1.0.1, has@^1.0.3:
     function-bind "^1.1.1"
 
 hashids@^2.0.0:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/hashids/-/hashids-2.2.3.tgz#470cc8bd8a5f7cd297684f5ed3987b0c5ceb85e1"
-  integrity sha512-WEeaHLWDp1TKlyQzi69kuQRBshUpQzfr5HZ62kgKCzlOUiZKPTg6ZEb/bVBVdz0yNMsPQMy/OKq2KbT3ykZT0w==
+  version "2.2.8"
+  resolved "https://registry.yarnpkg.com/hashids/-/hashids-2.2.8.tgz#d1e4e1be48e711ad6e5f27b32c37c399d5eeb5b4"
+  integrity sha512-OI6rsk/OqyX60nBsqxnNl3R7CDv9eMOgxzipshZwXE6cUcBcEyHf8rNDlWVdQJZK3TEynILYybCsNUEQfJsdLA==
 
 hawk@9.0.0, hawk@^9.0.0:
   version "9.0.0"
