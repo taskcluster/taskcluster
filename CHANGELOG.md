@@ -3,6 +3,47 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v39.2.0
+
+### WORKER-DEPLOYERS
+
+▶ [patch] 
+This version fixes an error where a worker pool with an invalid providerId would cause all worker provisioning to cease.
+
+### USERS
+
+▶ [minor] [#3542](https://github.com/taskcluster/taskcluster/issues/3542)
+Docker-worker no longer supports VNC access to interactive tasks.  This support has been broken for ages and unused.
+
+▶ [patch] 
+The `taskcluster-client-web` library client classes now have a `buildSignedUrlSync` method.
+
+▶ [patch] [#4056](https://github.com/taskcluster/taskcluster/issues/4056)
+The taskcluster-proxy no longer follows redirects.  In practice, this is only an issue when calling the artifact-related API methods that return a redirect to the artifact content.  The proxy will now return the redirect response unchanged.
+
+### DEVELOPERS
+
+▶ [minor] [#3578](https://github.com/taskcluster/taskcluster/issues/3578)
+The tasks table uses `task_queue_id` instead of separate `provisioner_id/worker_type` to identify task queues.
+This change is applied through an online migration process.
+
+### OTHER
+
+▶ Additional change not described here: [#3940](https://github.com/taskcluster/taskcluster/issues/3940).
+
+### Automated Package Updates
+
+<details>
+<summary>5 Renovate updates</summary>
+
+* Update Node.js to v14.15.2 (8689b010a)
+* Update dependency hashids to v2.2.3 (7e4eec9db)
+* Update dependency commander to v6.2.1 (beef8ecea)
+* Update dependency newrelic to v7.0.2 (2068dbca1)
+* Update dependency marked to v1.2.6 (7b44747e4)
+
+</details>
+
 ## v39.1.2
 
 ### USERS
