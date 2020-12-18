@@ -164,6 +164,17 @@ def test_success_payload():
         d.raise_for_status()
 
 
+def test_redirect_response():
+    @httmock.all_requests
+    def response_content(url, request):
+        return {'status_code': 303, 'headers': {'Location': 'https://nosuch.example.com'}, 'content': {}}
+
+    with httmock.HTTMock(response_content):
+        d = subject.makeSingleHttpRequest('GET', 'http://www.example.com', None, {})
+        assert d.json() == {}
+        assert d.status_code == 303
+
+
 def test_failure():
     @httmock.all_requests
     def response_content(url, requet):

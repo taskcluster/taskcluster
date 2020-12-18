@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -16,6 +17,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v3"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/taskcluster/v39/internal/jsontest"
@@ -274,6 +276,24 @@ func TestContentTypeHeader(t *testing.T) {
 	if ct := cs.HTTPResponseBody; ct != "application/json" {
 		t.Errorf("Expected Content-Type application/json header, but got '%v'", ct)
 	}
+}
+
+// Verify that the client does not follow redirects
+func TestNoFollowRedirects(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header()["Location"] = []string{"http://nosuch.example.com"}
+		w.WriteHeader(303)
+		fmt.Fprintln(w, "{}")
+	}))
+	defer s.Close()
+	client := Client{
+		RootURL:      s.URL,
+		Authenticate: false,
+	}
+
+	_, cs, err := client.APICall(nil, "GET", "/whatever", nil, nil)
+	assert.Error(t, err) // expect an error in this case
+	assert.Equal(t, 303, cs.HTTPResponse.StatusCode)
 }
 
 type MockHTTPClient struct {

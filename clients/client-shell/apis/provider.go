@@ -7,6 +7,7 @@ import (
 	"hash"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -192,6 +193,13 @@ func execute(
 	g := got.New()
 	g.Retries = 5
 	g.MaxSize = 0
+
+	// use a custom client that does not follow redirects
+	var httpClient http.Client = *g.Client
+	httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+	g.Client = &httpClient
 
 	req := g.NewRequest(method, url, input)
 

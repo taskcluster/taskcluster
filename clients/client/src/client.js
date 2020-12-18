@@ -110,6 +110,9 @@ const makeRequest = exports.makeRequest = function(client, method, url, payload,
     req.set('x-taskcluster-trace-id', client._options.traceId);
   }
 
+  // do not follow redirects
+  req.redirects(0);
+
   // Timeout for each individual request.
   req.timeout(client._timeout);
 
@@ -399,6 +402,9 @@ exports.createClient = function(reference, name) {
               }
               if (res.status === 500) {
                 message = 'Internal Server Error';
+              }
+              if (res.status >= 300 && res.status < 400) {
+                message = 'Unexpected Redirect';
               }
               err = new Error(res.body.message || message);
               err.body = res.body;

@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	assert "github.com/stretchr/testify/require"
@@ -86,10 +87,37 @@ var servicesTest = map[string]definitions.Service{
 	},
 }
 
+func TestRedirectIserror(t *testing.T) {
+	// start test server
+	providerServer := apiServer()
+	config.SetRootURL(providerServer.URL)
+	defer providerServer.Close()
+
+	// entry for the redirect endpoing
+	entry := definitions.Entry{
+		Name:        "redirect",
+		Title:       "Do a redirect",
+		Description: "returns a redirect",
+		Stability:   "stable",
+		Method:      "get",
+		Route:       "/redirect",
+		Args:        []string{},
+		Query:       []string{},
+		Input:       "",
+	}
+
+	err := execute("test", "v1", &entry, nil, nil, nil, nil)
+
+	// this should be an error, and should mention the status code
+	assert.Error(t, err)
+	assert.Equal(t, true, strings.Contains(err.Error(), "303"))
+}
+
 // apiServer sets up the server and launches it in a new thread
 func apiServer() *httptest.Server {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/api/test/v1/test", apiHandler)
+	handler.HandleFunc("/api/test/v1/redirect", redirHandler)
 
 	return httptest.NewServer(handler)
 }
@@ -105,4 +133,11 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		_, _ = io.WriteString(w, "true")
 	}
+}
+
+// redirHandler returns a redirect, which should be treated as an error
+func redirHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header()["Location"] = []string{"http://nosuch.example.com"}
+	w.WriteHeader(303)
+	fmt.Fprintln(w, "{}")
 }

@@ -293,7 +293,7 @@ def makeSingleHttpRequest(method, url, payload, headers, session=None):
     log.debug('HTTP Headers: %s' % str(headers))
     log.debug('HTTP Payload: %s (limit 100 char)' % str(payload)[:100])
     obj = session if session else requests
-    response = obj.request(method.upper(), url, data=payload, headers=headers)
+    response = obj.request(method.upper(), url, data=payload, headers=headers, allow_redirects=False)
     log.debug('Received HTTP Status:    %s' % response.status_code)
     log.debug('Received HTTP Headers: %s' % str(response.headers))
 
