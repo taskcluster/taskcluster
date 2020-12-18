@@ -117,32 +117,6 @@ class Notifier {
     return res;
   }
 
-  async irc(messageRequest) {
-    const { channel, user, message } = messageRequest;
-    if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
-      debug('irc channel ' + channel + ' invalid format. Not attempting to send.');
-      return;
-    }
-
-    if (this.isDuplicate(channel, user, message)) {
-      debug('Duplicate irc message send detected. Not attempting resend.');
-      return;
-    }
-
-    const notificationType = user ? 'irc-user' : 'irc-channel';
-    const notificationAddress = user || channel;
-    if (await this.options.denier.isDenied(notificationType, notificationAddress)) {
-      debug('Denylist irc: denylisted send detected, discarding the notification');
-      return;
-    }
-
-    debug(`Publishing message on irc for ${user || channel}.`);
-    const res = await this.publisher.ircRequest({ channel, user, message });
-    this.markSent(channel, user, message);
-    this.monitor.log.irc({ dest: user || channel });
-    return res;
-  }
-
   async matrix({ roomId, format, formattedBody, body, notice, msgtype }) {
     if (this.isDuplicate(roomId, format, formattedBody, body, msgtype)) {
       debug('Duplicate matrix send detected. Not attempting resend.');

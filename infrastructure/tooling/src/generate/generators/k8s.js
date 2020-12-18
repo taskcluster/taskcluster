@@ -55,7 +55,6 @@ const DEFAULT_RESOURCES = {
   'index.handlers': ['50m', '50Mi'],
   'index.expire': ['50m', '50Mi'],
   'notify.web': ['100m', '100Mi'],
-  'notify.irc': ['50m', '100Mi'],
   'notify.handler': ['50m', '100Mi'],
   'purge_cache.web': ['100m', '50Mi'],
   'purge_cache.expireCachePurges': ['800m', '500Mi'],

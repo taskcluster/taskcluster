@@ -81,10 +81,6 @@ notify:
       replicas: 1
       cpu: 100m
       memory: 100Mi
-    irc:
-      replicas: 1
-      cpu: 50m
-      memory: 100Mi
     handler:
       replicas: 1
       cpu: 50m

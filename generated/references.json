@@ -4344,8 +4344,6 @@
           "enum": [
             "email",
             "pulse",
-            "irc-user",
-            "irc-channel",
             "matrix-room",
             "slack-channel"
           ],
@@ -4431,69 +4429,6 @@
       "type": "object"
     },
     "filename": "schemas/notify/v1/matrix-request.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/notify/v1/irc-request.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "definitions": {
-        "message": {
-          "description": "IRC message to send as plain text.\n",
-          "maxLength": 510,
-          "minLength": 1,
-          "title": "IRC Message Text",
-          "type": "string"
-        }
-      },
-      "description": "Request to post a message on IRC.\n",
-      "oneOf": [
-        {
-          "additionalProperties": false,
-          "properties": {
-            "channel": {
-              "description": "Channel to post the message in.\n",
-              "minLength": 1,
-              "pattern": "^[#&][^ ,\\u0007]{1,199}$",
-              "title": "Channel Name",
-              "type": "string"
-            },
-            "message": {
-              "$ref": "#/definitions/message"
-            }
-          },
-          "required": [
-            "channel",
-            "message"
-          ],
-          "title": "Channel Message",
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "message": {
-              "$ref": "#/definitions/message"
-            },
-            "user": {
-              "description": "User to post the message to.\n",
-              "maxLength": 255,
-              "minLength": 1,
-              "pattern": "^[A-Za-z\\[\\]\\\\~_\\^{|}][A-Za-z0-9\\-\\[\\]\\\\~_\\^{|}]{0,254}$",
-              "title": "IRC Handle",
-              "type": "string"
-            }
-          },
-          "required": [
-            "user",
-            "message"
-          ],
-          "title": "Private Message",
-          "type": "object"
-        }
-      ],
-      "title": "Post IRC Message Request"
-    },
-    "filename": "schemas/notify/v1/irc-request.json"
   },
   {
     "content": {
@@ -8603,27 +8538,6 @@
             "email_source_address": {
               "type": "string"
             },
-            "irc_debug": {
-              "type": "string"
-            },
-            "irc_nick": {
-              "type": "string"
-            },
-            "irc_password": {
-              "type": "string"
-            },
-            "irc_port": {
-              "type": "string"
-            },
-            "irc_real_name": {
-              "type": "string"
-            },
-            "irc_server": {
-              "type": "string"
-            },
-            "irc_user_name": {
-              "type": "string"
-            },
             "level": {
               "type": "string"
             },
@@ -8640,26 +8554,6 @@
               "additionalProperties": false,
               "properties": {
                 "handler": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "cpu": {
-                      "type": "string"
-                    },
-                    "memory": {
-                      "type": "string"
-                    },
-                    "replicas": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "replicas",
-                    "memory",
-                    "cpu"
-                  ],
-                  "type": "object"
-                },
-                "irc": {
                   "additionalProperties": false,
                   "properties": {
                     "cpu": {
@@ -8702,7 +8596,6 @@
               },
               "required": [
                 "web",
-                "irc",
                 "handler"
               ],
               "title": "Process settings for this service",
@@ -15624,17 +15517,6 @@
           "version": 1
         },
         {
-          "description": "An irc message has been sent.",
-          "fields": {
-            "dest": "A user or channel. Will begin with \"#\" if a channel."
-          },
-          "level": "info",
-          "name": "irc",
-          "title": "IRC Message Sent",
-          "type": "irc",
-          "version": 1
-        },
-        {
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
@@ -15813,29 +15695,6 @@
           "schema": "v1/notification-message.json#",
           "title": "Notification Messages",
           "type": "topic-exchange"
-        },
-        {
-          "description": "A message which is to be sent to an irc channel or\nuser is published to this exchange",
-          "exchange": "irc-request",
-          "name": "ircRequest",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "v1/irc-request.json#",
-          "title": "Request for irc notification",
-          "type": "topic-exchange"
         }
       ],
       "exchangePrefix": "exchange/taskcluster-notify/v1/",
@@ -15900,26 +15759,6 @@
           "args": [
           ],
           "category": "Notifications",
-          "description": "Post a message on IRC to a specific channel or user, or a specific user\non a specific channel.\n\nSuccess of this API method does not imply the message was successfully\nposted. This API method merely inserts the IRC message into a queue\nthat will be processed by a background process.\nThis allows us to re-send the message in face of connection issues.\n\nHowever, if the user isn't online the message will be dropped without\nerror. We maybe improve this behavior in the future. For now just keep\nin mind that IRC is a best-effort service.",
-          "input": "v1/irc-request.json#",
-          "method": "post",
-          "name": "irc",
-          "query": [
-          ],
-          "route": "/irc",
-          "scopes": {
-            "else": "notify:irc-user:<user>",
-            "if": "channelRequest",
-            "then": "notify:irc-channel:<channel>"
-          },
-          "stability": "experimental",
-          "title": "Post IRC Message",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Notifications",
           "description": "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!",
           "input": "v1/matrix-request.json#",
           "method": "post",
@@ -15952,7 +15791,7 @@
           "args": [
           ],
           "category": "Denylist",
-          "description": "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
+          "description": "Add the given address to the notification denylist. Addresses in the denylist will be ignored\nby the notification service.",
           "input": "v1/notification-address.json#",
           "method": "post",
           "name": "addDenylistAddress",

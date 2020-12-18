@@ -1,9 +1,6 @@
 web:
   type: web
   command: node services/notify/src/main server
-irc:
-  type: background
-  command: node services/notify/src/main irc
 handler:
   type: background
   command: node services/notify/src/main handler

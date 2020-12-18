@@ -28,6 +28,6 @@ import taskcluster from 'taskcluster-client';
 async function notify() {
     # specify a baseUrl via the taskcluster proxy
     var notify = new taskcluster.Notify({baseUrl: 'http://taskcluster/notify/v1'});
-    await notify.irc({'#myproject', 'example', 'the build is still running'})
+    await notify.matrix({roomId: 'whDRjjSmICCgrhFHsQ:mozilla.org', body: 'the build is stil running, hang tight'});
 }
 ```

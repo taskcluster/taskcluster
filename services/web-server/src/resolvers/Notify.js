@@ -2,8 +2,6 @@ module.exports = {
   NotificationType: {
     EMAIL: 'email',
     PULSE: 'pulse',
-    IRC_USER: 'irc-user',
-    IRC_CHANNEL: 'irc-channel',
     MATRIX_ROOM: 'matrix-room',
     SLACK_CHANNEL: 'slack-channel',
   },

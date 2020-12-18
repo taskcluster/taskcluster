@@ -13,7 +13,6 @@ export default class Notify extends Client {
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
     this.email.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"email","query":[],"route":"/email","scopes":"notify:email:<address>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.pulse.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"pulse","query":[],"route":"/pulse","scopes":"notify:pulse:<routingKey>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.irc.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"irc","query":[],"route":"/irc","scopes":{"else":"notify:irc-user:<user>","if":"channelRequest","then":"notify:irc-channel:<channel>"},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.matrix.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"matrix","query":[],"route":"/matrix","scopes":"notify:matrix-room:<roomId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.slack.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"slack","query":[],"route":"/slack","scopes":"notify:slack-channel:<channelId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.addDenylistAddress.entry = {"args":[],"category":"Denylist","input":true,"method":"post","name":"addDenylistAddress","query":[],"route":"/denylist/add","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -49,22 +48,6 @@ export default class Notify extends Client {
     return this.request(this.pulse.entry, args);
   }
   /* eslint-disable max-len */
-  // Post a message on IRC to a specific channel or user, or a specific user
-  // on a specific channel.
-  // Success of this API method does not imply the message was successfully
-  // posted. This API method merely inserts the IRC message into a queue
-  // that will be processed by a background process.
-  // This allows us to re-send the message in face of connection issues.
-  // However, if the user isn't online the message will be dropped without
-  // error. We maybe improve this behavior in the future. For now just keep
-  // in mind that IRC is a best-effort service.
-  /* eslint-enable max-len */
-  irc(...args) {
-    this.validate(this.irc.entry, args);
-
-    return this.request(this.irc.entry, args);
-  }
-  /* eslint-disable max-len */
   // Post a message to a room in Matrix. Optionally includes formatted message.
   // The `roomId` in the scopes is a fully formed `roomId` with leading `!` such
   // as `!foo:bar.com`.
@@ -88,9 +71,7 @@ export default class Notify extends Client {
     return this.request(this.slack.entry, args);
   }
   /* eslint-disable max-len */
-  // Add the given address to the notification denylist. The address
-  // can be of either of the three supported address type namely pulse, email
-  // or IRC(user or channel). Addresses in the denylist will be ignored
+  // Add the given address to the notification denylist. Addresses in the denylist will be ignored
   // by the notification service.
   /* eslint-enable max-len */
   addDenylistAddress(...args) {

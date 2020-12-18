@@ -10,13 +10,11 @@ There are four types of notifications and four types of filters possible on thes
 
 ### Notification Types
 
-__IRC:__ You can specify either an IRC user or an IRC channel to send a notification to upon task completion. You'll receive a message like the following: ``Task "Taskcluster Notify Test" complete with status 'completed'. Inspect: https://tc.example.com/tasks/f0rU3kS7RmG3xSWwbq6Ndw``. NOTE: with the shutdown of ``irc.mozilla.org``, this is not currently deployed anywhere.
-
 __Email:__ We can you both nicely formatted or plain text emails depending on which email client you want to use. You can send to any email address, so long as you have the correct scopes (we'll discuss scopes later).
 
 __Pulse:__ We can also send a Pulse message that is documented [on this page](/docs/reference/core/notify/exchanges). The message is  pretty much just the status of the task.
 
-__Matrix:__ If a deployment of taskcluster is configured with credentials for a Matrix instance, it can post in a similar way to irc as well. *Note: The taskcluster user must be invited to a room before it can post there*
+__Matrix:__ If a deployment of taskcluster is configured with credentials for a Matrix instance, it can post to Matrix rooms. *Note: The taskcluster user must be invited to a room before it can post there*
 
 __Slack:__ If a Taskcluster deployment has Slack credentials, you can post to it likewise. *Note: Either the Slack App must be invited to channels, or granted `chat:write.public` and be posting to a public channel.*
 
@@ -53,8 +51,6 @@ But what you've really been waiting for is to know how to use this, so here's a 
 {
   "routes": [
     "notify.email.<you@you.com>.on-resolved",
-    "notify.irc-user.<your-mozilla-irc-nick>.on-failed",
-    "notify.irc-channel.<a-mozilla-irc-channel>.on-completed",
     "notify.pulse.<a-pulse-routing-key>.on-exception",
     "notify.matrix-room.<a-matrix-roomId>.on-resolved",
     "notify.slack-channel.<a-slack-channelId>.on-resolved"
@@ -69,16 +65,12 @@ channel ID will be the last URL segment. Public channels start with a capital C.
 
 ### Setting Custom Messages
 
-In irc, matrix, and email you can set custom messages by adding fields to your task definition. The fields will be rendered with [jsone](https://taskcluster.github.io/json-e/)
+In matrix and email you can set custom messages by adding fields to your task definition. The fields will be rendered with [jsone](https://taskcluster.github.io/json-e/)
 given a context of the [task definition](/docs/reference/platform/queue/api#get-task-definition)
 and the `status` section of [task status](/docs/reference/platform/queue/references/events#message-payload-4).
 The task definition is in the context under the key `task` and the status is in the context under the key `status`. `taskId` is also provided.
 The matrix fields are defined in detail in the matrix specification.
 The fields you add to your task definition are all in the `task.extra` section under a key `notify`. They are as follows:
-
-__task.extra.notify.ircUserMessage:__ This should evaluate to a string and is the message sent to a user in irc if a `notify.irc-user` event occurs
-
-__task.extra.notify.ircChannelMessage:__ This should evaluate to a string and is the message posted to a channel in irc if a `notify.irc-channel` event occurs
 
 __task.extra.notify.matrixBody:__ This is a simple text message suitable to be rendered by any matrix client
 
@@ -111,12 +103,11 @@ If you're using this from the api instead of via a task definition, you'll need 
 
 The `roomId` referenced by matrix is a full `!foo:bar.com` including the leading `!`.
 
-If you're using this via task definitions, access to notifications is guarded with route scopes. As an example, to allow the taskcluster-github project to email and ping in irc when builds complete, it has the scopes
+If you're using this via task definitions, access to notifications is guarded with route scopes. As an example, to allow the taskcluster-github project to email and ping in matrix when builds complete, it has the scopes
 
 ```
 queue:route:notify.email.*
-queue:route:notify.irc-channel.*
-queue:route:notify.irc-user.*
+queue:route:notify.matrix-room.*
 ```
 
 ### Example
@@ -136,8 +127,8 @@ tasks:
     workerType: "{{ taskcluster.docker.workerType }}"
     routes:
       - "notify.email.{{event.head.user.email}}.on-resolved"
-      - "notify.irc-channel.#taskcluster-notifications.on-failed"
-      - "notify.irc-channel.#taskcluster-notifications.on-exception"
+      - "notify.matrix-room.!whDRjjSmICCgrhFHsQ:mozilla.org.on-failed"
+      - "notify.matrix-room.!whDRjjSmICCgrhFHsQ:mozilla.org.on-exception"
     extra:
       notify:
         email:

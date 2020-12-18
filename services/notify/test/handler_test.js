@@ -144,26 +144,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
-  test('irc', async () => {
-    const route = 'test-notify.irc-channel.#taskcluster-test.on-transition';
-    const task = makeTask([route]);
-    task.extra = { notify: { ircChannelMessage: 'it worked with taskid ${status.taskId}' } };
-    helper.queue.addTask(baseStatus.taskId, task);
-    await helper.fakePulseMessage({
-      payload: {
-        status: baseStatus,
-      },
-      exchange: 'exchange/taskcluster-queue/v1/task-completed',
-      routingKey: 'doesnt-matter',
-      routes: [route],
-    });
-    helper.assertPulseMessage('irc-request', m => {
-      const { channel, message } = m.payload;
-      return _.isEqual(channel, '#taskcluster-test') &&
-      _.isEqual(message, 'it worked with taskid DKPZPsvvQEiw67Pb3rkdNg');
-    });
-  });
-
   test('matrix', async () => {
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
