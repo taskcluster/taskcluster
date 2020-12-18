@@ -70,7 +70,7 @@ class Logger {
     this.name = name;
     this.service = service;
     this.destination = destination;
-    this.metadata = Object.keys(metadata).length > 0 ? metadata : null;
+    this.metadata = Object.keys(metadata || {}).length > 0 ? metadata : null;
     this.pid = process.pid;
     this.hostname = os.hostname();
     this.taskclusterVersion = taskclusterVersion;
