@@ -95,7 +95,7 @@ Create a list of cached volumes that will be mounted within the docker container
  */
 async function buildVolumeBindings(runtime, taskVolumeBindings, volumeCache, expandedScopes) {
   let scopeExpression = {
-    AllOf: Object.keys(taskVolumeBindings).map((taskVolumeBinding) => ({
+    AllOf: Object.keys(taskVolumeBindings || {}).map((taskVolumeBinding) => ({
       AnyOf: [
         `docker-worker:cache:${taskVolumeBinding}`,
         `docker-worker:cache:${taskVolumeBinding}:${runtime.workerPool}`,
@@ -160,7 +160,7 @@ function runAsPrivileged(runtime, task, allowPrivilegedTasks) {
 
 async function buildDeviceBindings(runtime, devices, expandedScopes) {
   let scopeExpression = {
-    AllOf: Object.keys(devices).map((device) => ({
+    AllOf: Object.keys(devices || {}).map((device) => ({
       AnyOf: [
         `docker-worker:capability:device:${device}`,
         `docker-worker:capability:device:${device}:${runtime.workerPool}`,
