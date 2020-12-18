@@ -22,7 +22,7 @@ properties:
     title: Checkin Timeout
     type: integer
     default: 345600   # 4 days (note this is also set in interpretLifecycle; update both if changing)
-    maximum: 2678400  # 30 days
+    maximum: 2592000  # 30 days
     description: |
       If specified, workers in this pool must re-register via `reregister()`
       within `reregistrationTimeout` seconds from the initial call to
