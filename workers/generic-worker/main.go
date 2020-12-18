@@ -82,7 +82,6 @@ func initialiseFeatures() (err error) {
 		&TaskclusterProxyFeature{},
 		&OSGroupsFeature{},
 		&MountsFeature{},
-		&SupersedeFeature{},
 	}
 	Features = append(Features, platformFeatures()...)
 	for _, feature := range Features {
