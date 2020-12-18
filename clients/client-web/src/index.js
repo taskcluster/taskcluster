@@ -1,5 +1,4 @@
 export { default as Client } from './Client';
-export { default as OIDCCredentialAgent } from './agents/OIDCCredentialAgent';
 export {
   createTemporaryCredentials,
   credentialInformation,
