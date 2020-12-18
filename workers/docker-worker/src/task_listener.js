@@ -2,7 +2,6 @@
 Primary interface which handles listening for messages and initializing the
 execution of tasks.
 */
-const assert = require('assert');
 const TaskQueue = require('./queueservice');
 const DeviceManager = require('./devices/device_manager');
 const Debug = require('debug');
@@ -130,8 +129,9 @@ class TaskListener extends EventEmitter {
       // purge-cache on every getTasks loop
       await this.runtime.volumeCache.purgeCaches();
 
-      // call runTaskset for each taskset, but do not wait for it to complete
-      Promise.all(claims.map(claim => this.runTaskset([claim])));
+      // call runTask for each task, but do not wait for the promise to complete;
+      // runTask handles its own errors
+      claims.map(claim => this.runTask(claim));
     }
   }
 
@@ -400,13 +400,8 @@ class TaskListener extends EventEmitter {
   /**
   * Run task that has been claimed.
   */
-  async runTaskset(claims) {
+  async runTask(claim) {
     let runningState;
-    // the claim we're actually going to execute (the primary claim) is the
-    // first one; this is a list to support superseding, but that functionality
-    // no longer exists.
-    assert.equal(claims.length, 1);
-    let claim = claims[0];
     let task;
 
     try {
@@ -458,7 +453,7 @@ class TaskListener extends EventEmitter {
       }
 
       // Create "task" to handle all the task specific details.
-      let taskHandler = new Task(this.runtime, task, claims, options);
+      let taskHandler = new Task(this.runtime, task, claim, options);
       runningState.handler = taskHandler;
 
       this.addRunningTask(runningState);

@@ -2,7 +2,6 @@
  * Handler of individual tasks beginning after the task is claimed and ending
  * with posting task results.
  */
-const assert = require('assert');
 const Debug = require('debug');
 const DockerProc = require('dockerode-process');
 const { PassThrough } = require('stream');
@@ -209,10 +208,9 @@ async function buildDeviceBindings(runtime, devices, expandedScopes) {
 }
 
 class Reclaimer {
-  constructor(runtime, task, primaryClaim, claim) {
+  constructor(runtime, task, claim) {
     this.runtime = runtime;
     this.task = task;
-    this.primaryClaim = primaryClaim;
     this.claim = claim;
     this.stopped = false;
 
@@ -295,10 +293,8 @@ class Reclaimer {
       return;
     }
 
-    if (this.claim.status.taskId === this.primaryClaim.status.taskId) {
-      this.task.queue = this.task.createQueue(this.claim.credentials);
-      this.task.emit('credentials', this.claim.credentials);
-    }
+    this.task.queue = this.task.createQueue(this.claim.credentials);
+    this.task.emit('credentials', this.claim.credentials);
 
     this.log('reclaimed task');
     await this.scheduleReclaim();
@@ -306,8 +302,6 @@ class Reclaimer {
 
   log(msg, options) {
     this.runtime.log(msg, _.defaults({}, options || {}, {
-      primaryTaskId: this.primaryClaim.status.taskId,
-      primaryRunId: this.primaryClaim.runId,
       taskId: this.claim.status.taskId,
       runId: this.claim.runId,
       takenUntil: this.claim.takenUntil,
@@ -319,17 +313,15 @@ class Task extends EventEmitter {
   /**
   @param {Object} runtime global runtime.
   @param {Object} task for this instance.
-  @param {Object} claims claim details for this instance
-                  (an array to support the deprecated superseding functionality)
+  @param {Object} claim details for this instance
   @param {Object} options
   @param {Number} [options.cpusetCpus] cpu(s) to use for this container/task.
   */
-  constructor(runtime, task, claims, options) {
+  constructor(runtime, task, claim, options) {
     super();
     this.runtime = runtime;
     this.task = task;
-    this.claims = claims;
-    this.claim = claims[0]; // first claim is primary -- the one actually executed
+    this.claim = claim;
     this.status = this.claim.status;
     this.runId = this.claim.runId;
     this.taskState = 'pending';
@@ -568,10 +560,6 @@ class Task extends EventEmitter {
       let reportDetails = [this.status.taskId, this.runId];
       if (this.taskException) {reportDetails.push({ reason: this.taskException });}
 
-      // Superseding is no longer supported, so there is only ever a single claim and nothing
-      // to resolve as superseded.
-      assert.equal(this.claims.length, 1);
-
       await reporter.apply(queue, reportDetails);
     }
 
@@ -622,10 +610,6 @@ class Task extends EventEmitter {
       }
     }
 
-    // Superseding is no longer supported, so there is only ever a single claim and nothing
-    // to resolve as superseded.
-    assert.equal(this.claims.length, 1);
-
     await reporter.apply(queue, reportDetails);
 
     this.runtime.log('task resolved', {
@@ -639,13 +623,12 @@ class Task extends EventEmitter {
    * Schedule reclaims of each claim
    */
   scheduleReclaims() {
-    this.reclaimers = this.claims.map(
-      c => new Reclaimer(this.runtime, this, this.claim, c));
+    this.reclaimer = new Reclaimer(this.runtime, this, this.claim);
   }
 
   stopReclaims() {
-    this.reclaimers.forEach(r => r.stop());
-    this.reclaimers = [];
+    this.reclaimer.stop();
+    this.reclaimer = null;
   }
 
   setRuntimeTimeout(maxRuntime) {
