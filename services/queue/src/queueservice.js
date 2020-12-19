@@ -5,7 +5,7 @@ let base32 = require('thirty-two');
 let crypto = require('crypto');
 let slugid = require('slugid');
 let AZQueue = require('taskcluster-lib-azqueue');
-let { joinTaskQueueId, splitTaskQueueId } = require('./utils');
+let { splitTaskQueueId } = require('./utils');
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where
