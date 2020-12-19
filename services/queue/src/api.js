@@ -4,7 +4,7 @@ const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const taskCreds = require('./task-creds');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { Task, Worker, TaskQueue, Provisioner } = require('./data');
-const { useSplitFields, joinTaskQueueId, splitTaskQueueId } = require('./utils');
+const { useSplitFields, useSingleField, joinTaskQueueId, splitTaskQueueId } = require('./utils');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -232,7 +232,7 @@ builder.declare({
     this.db.fns.get_task_group(taskGroupId),
     paginateResults({
       query: req.query,
-      fetch: (size, offset) => this.db.deprecatedFns.get_tasks_by_task_group(taskGroupId, size, offset),
+      fetch: (size, offset) => this.db.fns.get_tasks_by_task_group_tqid(taskGroupId, size, offset),
     }),
   ]);
 
@@ -540,6 +540,7 @@ builder.declare({
   );
 
   let task = Task.fromApi(taskId, taskDef);
+  useSingleField(task);
 
   // Fetch the status of the task before creation, so that `taskDefined` messages
   // have a default status. This can't be run after create, since create is
@@ -1019,11 +1020,13 @@ builder.declare({
     );
   }
 
+  const { provisionerId, workerType } = splitTaskQueueId(task.taskQueueId);
+
   await req.authorize({
     workerGroup,
     workerId,
-    provisionerId: task.provisionerId,
-    workerType: task.workerType,
+    provisionerId: provisionerId,
+    workerType: workerType,
   });
 
   // Check if task is past deadline
@@ -1038,9 +1041,7 @@ builder.declare({
     );
   }
 
-  const taskQueueId = joinTaskQueueId(task.provisionerId, task.workerType);
-
-  const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
+  const worker = await Worker.get(this.db, task.taskQueueId, workerGroup, workerId, new Date());
 
   // Don't record task when worker is quarantined
   if (worker && worker.quarantineUntil.getTime() > new Date().getTime()) {
@@ -1052,7 +1053,7 @@ builder.declare({
     this.workClaimer.claimTask(
       taskId, runId, workerGroup, workerId, task,
     ),
-    this.workerInfo.seen(taskQueueId),
+    this.workerInfo.seen(task.taskQueueId),
   ]);
 
   // If the run doesn't exist return ResourceNotFound
@@ -1076,7 +1077,7 @@ builder.declare({
     );
   }
 
-  await this.workerInfo.taskSeen(taskQueueId, workerGroup, workerId, [result]);
+  await this.workerInfo.taskSeen(task.taskQueueId, workerGroup, workerId, [result]);
 
   // Reply to caller
   return res.reply(result);
