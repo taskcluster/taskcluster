@@ -841,17 +841,6 @@ var services = map[string]definitions.Service{
 				Input:       "v1/pulse-request.json#",
 			},
 			definitions.Entry{
-				Name:        "irc",
-				Title:       "Post IRC Message",
-				Description: "Post a message on IRC to a specific channel or user, or a specific user\non a specific channel.\n\nSuccess of this API method does not imply the message was successfully\nposted. This API method merely inserts the IRC message into a queue\nthat will be processed by a background process.\nThis allows us to re-send the message in face of connection issues.\n\nHowever, if the user isn't online the message will be dropped without\nerror. We maybe improve this behavior in the future. For now just keep\nin mind that IRC is a best-effort service.",
-				Stability:   "experimental",
-				Method:      "post",
-				Route:       "/irc",
-				Args:        []string{},
-				Query:       []string{},
-				Input:       "v1/irc-request.json#",
-			},
-			definitions.Entry{
 				Name:        "matrix",
 				Title:       "Post Matrix Message",
 				Description: "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!",
@@ -876,7 +865,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "addDenylistAddress",
 				Title:       "Denylist Given Address",
-				Description: "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
+				Description: "Add the given address to the notification denylist. Addresses in the denylist will be ignored\nby the notification service.",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/denylist/add",

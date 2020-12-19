@@ -61,38 +61,6 @@ class NotifyEvents(AsyncBaseClient):
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
-    def ircRequest(self, *args, **kwargs):
-        """
-        Request for irc notification
-
-        A message which is to be sent to an irc channel or
-        user is published to this exchange
-
-        This exchange takes the following keys:
-
-         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
-
-         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-        """
-
-        ref = {
-            'exchange': 'irc-request',
-            'name': 'ircRequest',
-            'routingKey': [
-                {
-                    'constant': 'primary',
-                    'multipleWords': False,
-                    'name': 'routingKeyKind',
-                },
-                {
-                    'multipleWords': True,
-                    'name': 'reserved',
-                },
-            ],
-            'schema': 'v1/irc-request.json#',
-        }
-        return self._makeTopicExchange(ref, *args, **kwargs)
-
     funcinfo = {
     }
 

@@ -2391,35 +2391,13 @@
                 },
                 "name": "actions",
                 "next": {
-                  "path": "reference/platform/queue/superseding",
-                  "title": "Superseding"
+                  "path": "reference/platform/queue/task-life-cycle",
+                  "title": "Task Life-Cycle"
                 },
                 "path": "reference/platform/queue/actions",
                 "prev": {
                   "path": "reference/platform/queue/worker-hierarchy",
                   "title": "Worker Hierarchy"
-                },
-                "up": {
-                  "path": "reference/platform/queue/README",
-                  "title": "queue"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 40,
-                  "title": "Superseding"
-                },
-                "name": "superseding",
-                "next": {
-                  "path": "reference/platform/queue/task-life-cycle",
-                  "title": "Task Life-Cycle"
-                },
-                "path": "reference/platform/queue/superseding",
-                "prev": {
-                  "path": "reference/platform/queue/actions",
-                  "title": "Actions"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -2441,8 +2419,8 @@
                 },
                 "path": "reference/platform/queue/task-life-cycle",
                 "prev": {
-                  "path": "reference/platform/queue/superseding",
-                  "title": "Superseding"
+                  "path": "reference/platform/queue/actions",
+                  "title": "Actions"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",

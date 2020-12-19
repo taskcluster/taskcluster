@@ -1393,13 +1393,6 @@
     "title": "Handling High Load"
   },
   {
-    "element": "h2",
-    "id": "superseding",
-    "path": "/manual/using/handling-high-load",
-    "subtitle": "Superseding",
-    "title": "Handling High Load"
-  },
-  {
     "element": "h1",
     "id": "frontend-applications",
     "path": "/manual/using/integration/frontend",
@@ -2777,20 +2770,6 @@
     "path": "/reference/platform/queue/actions",
     "subtitle": "Triggering Actions in Automation",
     "title": "Actions"
-  },
-  {
-    "element": "h1",
-    "id": "superseding",
-    "path": "/reference/platform/queue/superseding",
-    "subtitle": null,
-    "title": "Superseding"
-  },
-  {
-    "element": "h2",
-    "id": "convention",
-    "path": "/reference/platform/queue/superseding",
-    "subtitle": "Convention",
-    "title": "Superseding"
   },
   {
     "element": "h1",

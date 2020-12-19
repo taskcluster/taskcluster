@@ -24,13 +24,4 @@ export default class NotifyEvents extends Client {
 
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
-  // A message which is to be sent to an irc channel or
-  // user is published to this exchange
-  /* eslint-enable max-len */
-  ircRequest(pattern) {
-    const entry = {"exchange":"irc-request","name":"ircRequest","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/irc-request.json#","type":"topic-exchange"}; // eslint-disable-line
-
-    return this.normalizePattern(entry, pattern);
-  }
 }

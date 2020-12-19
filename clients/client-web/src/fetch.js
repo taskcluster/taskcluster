@@ -60,6 +60,10 @@ export default (url, opts = {}) => {
     options.headers.Authorization = header;
   }
 
+  // do not follow redirects
+  // https://developer.mozilla.org/en-US/docs/Web/API/Response/redirected#Disallowing_redirects
+  options.redirect = "error";
+
   return new Promise((resolve, reject) => {
     (function attempt(n) {
       fetch(url, options)

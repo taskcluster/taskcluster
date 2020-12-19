@@ -68,27 +68,6 @@ func (binding Notify) NewPayloadObject() interface{} {
 	return new(NotificationMessage)
 }
 
-// A message which is to be sent to an irc channel or
-// user is published to this exchange
-//
-// See #ircRequest
-type IrcRequest struct {
-	RoutingKeyKind string `mwords:"*"`
-	Reserved       string `mwords:"#"`
-}
-
-func (binding IrcRequest) RoutingKey() string {
-	return generateRoutingKey(&binding)
-}
-
-func (binding IrcRequest) ExchangeName() string {
-	return "exchange/taskcluster-notify/v1/irc-request"
-}
-
-func (binding IrcRequest) NewPayloadObject() interface{} {
-	return new(PostIRCMessageRequest)
-}
-
 func generateRoutingKey(x interface{}) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())

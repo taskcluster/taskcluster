@@ -6,8 +6,6 @@ type NotificationAddress {
 enum NotificationType {
   EMAIL
   PULSE
-  IRC_USER
-  IRC_CHANNEL
   MATRIX_ROOM
   SLACK_CHANNEL
 }

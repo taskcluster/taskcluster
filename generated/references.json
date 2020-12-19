@@ -242,7 +242,7 @@
         "reregistrationTimeout": {
           "default": 345600,
           "description": "If specified, workers in this pool must re-register via `reregister()`\nwithin `reregistrationTimeout` seconds from the initial call to\n`register()` to get new credentials. If the worker has not done so, it\nwill be terminated.  This value also dictates the lifetime of the\ntemporary credentials granted to the worker, meaning that it must be\nless than 30 days. The default value is 4 days.\n",
-          "maximum": 2678400,
+          "maximum": 2592000,
           "title": "Checkin Timeout",
           "type": "integer"
         }
@@ -2011,19 +2011,19 @@
                 "type": "string"
               },
               "reasonResolved": {
-                "description": "Reason that run was resolved, this is mainly\nuseful for runs resolved as `exception`.\nNote, **more reasons may be added in the future**, also this\nproperty is only available after the run is resolved. Some of these\nreasons, notably `intermittent-task`, `worker-shutdown`, and\n`claim-expired`, will trigger an automatic retry of the task.\n",
+                "description": "Reason that run was resolved, this is mainly\nuseful for runs resolved as `exception`.\nNote, **more reasons may be added in the future**, also this\nproperty is only available after the run is resolved. Some of these\nreasons, notably `intermittent-task`, `worker-shutdown`, and\n`claim-expired`, will trigger an automatic retry of the task.\nNote that 'superseded' is here only for compatibility, as that\nfunctionality has been removed.\n",
                 "enum": [
                   "completed",
                   "failed",
                   "deadline-exceeded",
                   "canceled",
-                  "superseded",
                   "claim-expired",
                   "worker-shutdown",
                   "malformed-payload",
                   "resource-unavailable",
                   "internal-error",
-                  "intermittent-task"
+                  "intermittent-task",
+                  "superseded"
                 ],
                 "title": "Reason Resolved",
                 "type": "string"
@@ -2515,13 +2515,12 @@
       "description": "Request for a run of a task to be resolved with an exception\n",
       "properties": {
         "reason": {
-          "description": "Reason that the task is resolved with an exception. This is a subset\nof the values for `resolvedReason` given in the task status structure.\n\n* **Report `worker-shutdown`** if the run failed because the worker\nhad to shutdown (spot node disappearing). In case of `worker-shutdown`\nthe queue will immediately **retry** the task, by making a new run.\nThis is much faster than ignoreing the issue and letting the task _retry_\nby claim expiration. For any other _reason_ reported the queue will not\nretry the task.\n\n* **Report `malformed-payload`** if the `task.payload` doesn't match the\nschema for the worker payload, or referenced resource doesn't exists.\nIn either case, you should still log the error to a log file for the\nspecific run.\n\n* **Report `resource-unavailable`** if a resource/service needed or\nreferenced in `task.payload` is _temporarily_ unavailable. Do not use this\nunless you know the resource exists, if the resource doesn't exist you\nshould report `malformed-payload`. Example use-case if you contact the\nindex (a service) on behalf of the task, because of a declaration in\n`task.payload`, and the service (index) is temporarily down. Don't use\nthis if a URL returns 404, but if it returns 503 or hits a timeout when\nyou retry the request, then this _may_ be a valid exception. The queue\nassumes that workers have applied retries as needed, and will not retry\n the task.\n\n* **Report `internal-error`** if the worker experienced an unhandled internal\nerror from which it couldn't recover. The queue will not retry runs\nresolved with this reason, but you are clearly signaling that this is a\nbug in the worker code.\n\n* **Report `superseded`** if the task was determined to have been\nsuperseded by another task, and its results are no longer needed.  It is\nconvention in this case to create an artifact entitled\n`public/superseded-by` containing the taskId of the task that superseded\nthis one.\n\n* **Report `intermittent-task`** if the task explicitly requested a retry\nbecause task is intermittent. Workers can choose whether or not to\nsupport this, but workers shouldn't blindly report this for every task\nthat fails.\n",
+          "description": "Reason that the task is resolved with an exception. This is a subset\nof the values for `resolvedReason` given in the task status structure.\n\n* **Report `worker-shutdown`** if the run failed because the worker\nhad to shutdown (spot node disappearing). In case of `worker-shutdown`\nthe queue will immediately **retry** the task, by making a new run.\nThis is much faster than ignoreing the issue and letting the task _retry_\nby claim expiration. For any other _reason_ reported the queue will not\nretry the task.\n\n* **Report `malformed-payload`** if the `task.payload` doesn't match the\nschema for the worker payload, or referenced resource doesn't exists.\nIn either case, you should still log the error to a log file for the\nspecific run.\n\n* **Report `resource-unavailable`** if a resource/service needed or\nreferenced in `task.payload` is _temporarily_ unavailable. Do not use this\nunless you know the resource exists, if the resource doesn't exist you\nshould report `malformed-payload`. Example use-case if you contact the\nindex (a service) on behalf of the task, because of a declaration in\n`task.payload`, and the service (index) is temporarily down. Don't use\nthis if a URL returns 404, but if it returns 503 or hits a timeout when\nyou retry the request, then this _may_ be a valid exception. The queue\nassumes that workers have applied retries as needed, and will not retry\n the task.\n\n* **Report `internal-error`** if the worker experienced an unhandled internal\nerror from which it couldn't recover. The queue will not retry runs\nresolved with this reason, but you are clearly signaling that this is a\nbug in the worker code.\n\n* **Report `intermittent-task`** if the task explicitly requested a retry\nbecause task is intermittent. Workers can choose whether or not to\nsupport this, but workers shouldn't blindly report this for every task\nthat fails.\n",
           "enum": [
             "worker-shutdown",
             "malformed-payload",
             "resource-unavailable",
             "internal-error",
-            "superseded",
             "intermittent-task"
           ],
           "type": "string"
@@ -4344,8 +4343,6 @@
           "enum": [
             "email",
             "pulse",
-            "irc-user",
-            "irc-channel",
             "matrix-room",
             "slack-channel"
           ],
@@ -4431,69 +4428,6 @@
       "type": "object"
     },
     "filename": "schemas/notify/v1/matrix-request.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/notify/v1/irc-request.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "definitions": {
-        "message": {
-          "description": "IRC message to send as plain text.\n",
-          "maxLength": 510,
-          "minLength": 1,
-          "title": "IRC Message Text",
-          "type": "string"
-        }
-      },
-      "description": "Request to post a message on IRC.\n",
-      "oneOf": [
-        {
-          "additionalProperties": false,
-          "properties": {
-            "channel": {
-              "description": "Channel to post the message in.\n",
-              "minLength": 1,
-              "pattern": "^[#&][^ ,\\u0007]{1,199}$",
-              "title": "Channel Name",
-              "type": "string"
-            },
-            "message": {
-              "$ref": "#/definitions/message"
-            }
-          },
-          "required": [
-            "channel",
-            "message"
-          ],
-          "title": "Channel Message",
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "message": {
-              "$ref": "#/definitions/message"
-            },
-            "user": {
-              "description": "User to post the message to.\n",
-              "maxLength": 255,
-              "minLength": 1,
-              "pattern": "^[A-Za-z\\[\\]\\\\~_\\^{|}][A-Za-z0-9\\-\\[\\]\\\\~_\\^{|}]{0,254}$",
-              "title": "IRC Handle",
-              "type": "string"
-            }
-          },
-          "required": [
-            "user",
-            "message"
-          ],
-          "title": "Private Message",
-          "type": "object"
-        }
-      ],
-      "title": "Post IRC Message Request"
-    },
-    "filename": "schemas/notify/v1/irc-request.json"
   },
   {
     "content": {
@@ -4921,19 +4855,19 @@
                     "type": "string"
                   },
                   "reasonResolved": {
-                    "description": "Reason that run was resolved, this is mainly\nuseful for runs resolved as `exception`.\nNote, **more reasons may be added in the future**, also this\nproperty is only available after the run is resolved.\n",
+                    "description": "Reason that run was resolved, this is mainly\nuseful for runs resolved as `exception`.\nNote, **more reasons may be added in the future**, also this\nproperty is only available after the run is resolved.  Note\nthat 'superseded' is here only for compatibility, as that\nfunctionality has been removed.\n",
                     "enum": [
                       "completed",
                       "failed",
                       "deadline-exceeded",
                       "canceled",
-                      "superseded",
                       "claim-expired",
                       "worker-shutdown",
                       "malformed-payload",
                       "resource-unavailable",
                       "internal-error",
-                      "intermittent-task"
+                      "intermittent-task",
+                      "superseded"
                     ],
                     "title": "Reason Resolved",
                     "type": "string"
@@ -6484,9 +6418,8 @@
           "uniqueItems": false
         },
         "supersederUrl": {
-          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
-          "format": "uri",
-          "title": "Superseder URL",
+          "description": "This property is allowed for backward compatibility, but is unused.",
+          "title": "unused",
           "type": "string"
         }
       },
@@ -6860,9 +6793,8 @@
           "type": "string"
         },
         "supersederUrl": {
-          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
-          "format": "uri",
-          "title": "Superseder URL",
+          "description": "This property is allowed for backward compatibility, but is unused.",
+          "title": "unused",
           "type": "string"
         }
       },
@@ -7232,9 +7164,8 @@
           "uniqueItems": false
         },
         "supersederUrl": {
-          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
-          "format": "uri",
-          "title": "Superseder URL",
+          "description": "This property is allowed for backward compatibility, but is unused.",
+          "title": "unused",
           "type": "string"
         }
       },
@@ -7604,9 +7535,8 @@
           "uniqueItems": false
         },
         "supersederUrl": {
-          "description": "URL of a service that can indicate tasks superseding this one; the current `taskId`\nwill be appended as a query argument `taskId`. The service should return an object with\na `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
-          "format": "uri",
-          "title": "Superseder URL",
+          "description": "This property is allowed for backward compatibility, but is unused.",
+          "title": "unused",
           "type": "string"
         }
       },
@@ -7887,9 +7817,8 @@
           "type": "object"
         },
         "supersederUrl": {
-          "format": "uri",
-          "pattern": "^https?://[\\x20-\\x7e]*$",
-          "title": "URL of the a service that can indicate tasks superseding this one; the current taskId will be appended as a query argument `taskId`.  The service should return an object with a `supersedes` key containing a list of taskIds, including the supplied taskId.  The tasks should be ordered such that each task supersedes all tasks appearing earlier in the list.  See [superseding](/docs/reference/platform/taskcluster-queue/docs/superseding) for more detail.",
+          "description": "Maintained for backward compatibility, but no longer used",
+          "title": "(unused)",
           "type": "string"
         }
       },
@@ -8603,27 +8532,6 @@
             "email_source_address": {
               "type": "string"
             },
-            "irc_debug": {
-              "type": "string"
-            },
-            "irc_nick": {
-              "type": "string"
-            },
-            "irc_password": {
-              "type": "string"
-            },
-            "irc_port": {
-              "type": "string"
-            },
-            "irc_real_name": {
-              "type": "string"
-            },
-            "irc_server": {
-              "type": "string"
-            },
-            "irc_user_name": {
-              "type": "string"
-            },
             "level": {
               "type": "string"
             },
@@ -8640,26 +8548,6 @@
               "additionalProperties": false,
               "properties": {
                 "handler": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "cpu": {
-                      "type": "string"
-                    },
-                    "memory": {
-                      "type": "string"
-                    },
-                    "replicas": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "replicas",
-                    "memory",
-                    "cpu"
-                  ],
-                  "type": "object"
-                },
-                "irc": {
                   "additionalProperties": false,
                   "properties": {
                     "cpu": {
@@ -8702,7 +8590,6 @@
               },
               "required": [
                 "web",
-                "irc",
                 "handler"
               ],
               "title": "Process settings for this service",
@@ -15624,17 +15511,6 @@
           "version": 1
         },
         {
-          "description": "An irc message has been sent.",
-          "fields": {
-            "dest": "A user or channel. Will begin with \"#\" if a channel."
-          },
-          "level": "info",
-          "name": "irc",
-          "title": "IRC Message Sent",
-          "type": "irc",
-          "version": 1
-        },
-        {
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
@@ -15813,29 +15689,6 @@
           "schema": "v1/notification-message.json#",
           "title": "Notification Messages",
           "type": "topic-exchange"
-        },
-        {
-          "description": "A message which is to be sent to an irc channel or\nuser is published to this exchange",
-          "exchange": "irc-request",
-          "name": "ircRequest",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "v1/irc-request.json#",
-          "title": "Request for irc notification",
-          "type": "topic-exchange"
         }
       ],
       "exchangePrefix": "exchange/taskcluster-notify/v1/",
@@ -15900,26 +15753,6 @@
           "args": [
           ],
           "category": "Notifications",
-          "description": "Post a message on IRC to a specific channel or user, or a specific user\non a specific channel.\n\nSuccess of this API method does not imply the message was successfully\nposted. This API method merely inserts the IRC message into a queue\nthat will be processed by a background process.\nThis allows us to re-send the message in face of connection issues.\n\nHowever, if the user isn't online the message will be dropped without\nerror. We maybe improve this behavior in the future. For now just keep\nin mind that IRC is a best-effort service.",
-          "input": "v1/irc-request.json#",
-          "method": "post",
-          "name": "irc",
-          "query": [
-          ],
-          "route": "/irc",
-          "scopes": {
-            "else": "notify:irc-user:<user>",
-            "if": "channelRequest",
-            "then": "notify:irc-channel:<channel>"
-          },
-          "stability": "experimental",
-          "title": "Post IRC Message",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Notifications",
           "description": "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!",
           "input": "v1/matrix-request.json#",
           "method": "post",
@@ -15952,7 +15785,7 @@
           "args": [
           ],
           "category": "Denylist",
-          "description": "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
+          "description": "Add the given address to the notification denylist. Addresses in the denylist will be ignored\nby the notification service.",
           "input": "v1/notification-address.json#",
           "method": "post",
           "name": "addDenylistAddress",

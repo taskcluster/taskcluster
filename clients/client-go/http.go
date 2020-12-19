@@ -99,7 +99,12 @@ type ReducedHTTPClient interface {
 // defined in the client.
 // A single object is created and used because http.Client is thread-safe when
 // making multiple requests in various goroutines.
-var defaultHTTPClient ReducedHTTPClient = &http.Client{}
+var defaultHTTPClient ReducedHTTPClient = &http.Client{
+	// do not follow redirects
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
+}
 
 // utility function to create a URL object based on given data
 func setURL(client *Client, route string, query url.Values) (u *url.URL, err error) {

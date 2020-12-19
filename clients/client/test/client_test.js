@@ -109,6 +109,18 @@ suite(testing.suiteName(), function() {
       description: 'Place we can call to test query string with params',
       scopes: [],
     },
+    {
+      type: 'function',
+      method: 'get',
+      route: '/redirect',
+      query: [],
+      args: [],
+      name: 'redirect',
+      stability: 'experimental',
+      title: 'Redirect',
+      description: 'Place we can call to test redirection',
+      scopes: [],
+    },
   ];
 
   let referenceNameStyle = {
@@ -412,6 +424,13 @@ suite(testing.suiteName(), function() {
           .post('/v1/post-param-query/test', { hello: 'world' })
           .reply(200, {});
         await client.postParamQuery('test', { hello: 'world' }, {});
+      });
+
+      test('GET something that redirects', async () => {
+        nock(urlPrefix).get('/v1/redirect')
+          .reply(303, {}, { 'location': 'http://example.com' });
+        let c = new Fake({ rootUrl, serviceDiscoveryScheme });
+        await assert.rejects(() => c.redirect(), /Unexpected Redirect/);
       });
 
       let assertBewitUrl = function(url, expected) {

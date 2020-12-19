@@ -31,7 +31,6 @@ const (
 	malformedPayload    TaskUpdateReason = "malformed-payload"
 	resourceUnavailable TaskUpdateReason = "resource-unavailable"
 	internalError       TaskUpdateReason = "internal-error"
-	superseded          TaskUpdateReason = "superseded"
 	intermittentTask    TaskUpdateReason = "intermittent-task"
 )
 

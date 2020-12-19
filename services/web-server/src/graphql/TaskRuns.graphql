@@ -15,6 +15,7 @@ enum RunReasonResolved {
   FAILED
   DEADLINE_EXCEEDED
   CANCELED
+  # deprecated but still supported for old tasks
   SUPERSEDED
   CLAIM_EXPIRED
   WORKER_SHUTDOWN

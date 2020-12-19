@@ -1,10 +1,10 @@
 {
   "name": "docker-worker",
   "private": true,
-  "version": "39.1.2",
+  "version": "39.2.0",
   "engine-strict": true,
   "engines": {
-    "node": "14.15.1",
+    "node": "14.15.3",
     "yarn": "^1.22.10"
   },
   "description": "Docker task host for linux.",
@@ -31,7 +31,6 @@
     "co": "^4.6.0",
     "commander": "^6.0.0",
     "debug": "*",
-    "dev-null": "^0.1.0",
     "diskspace": "^2.0.0",
     "diveSync": "^0.3.0",
     "docker-exec-websocket-server": "^2.0.0",
@@ -39,7 +38,6 @@
     "dockerode": "^3.2.1",
     "dockerode-options": "^0.2.0",
     "dockerode-process": "^0.7.0",
-    "express": "^4.17.1",
     "fs-ext": "^2.0.0",
     "got": "^11.0.0",
     "got-promise": "^5.0.0",
@@ -47,7 +45,6 @@
     "js-yaml": "^3.13.1",
     "koa": "^2.8.1",
     "lodash": "^4.17.15",
-    "memory-streams": "^0.1.0",
     "mime": "^2.0.0",
     "mkdirp": "^1.0.3",
     "mocha": "^8.0.0",
@@ -72,11 +69,10 @@
     "tweetnacl": "^1.0.0",
     "typed-env-config": "^3.0.0",
     "uuid": "^8.0.0",
-    "walk": "^2.3.14",
-    "websocket-stream": "^5.0.0",
-    "ws": "^7.1.2"
+    "walk": "^2.3.14"
   },
   "devDependencies": {
+    "dev-null": "^0.1.0",
     "docker-exec-websocket-client": "^1.4.0",
     "nock": "^13.0.0",
     "taskcluster-lib-testing": "link:../../libraries/testing"

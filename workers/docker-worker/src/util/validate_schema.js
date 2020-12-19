@@ -11,7 +11,7 @@ module.exports = {
 
     let taskExpiration = new Date(status.expires);
 
-    Object.keys(payload.artifacts).forEach((name) => {
+    Object.keys(payload.artifacts || {}).forEach((name) => {
       let artifact = payload.artifacts[name];
 
       if (!artifact.expires) {

@@ -5,7 +5,6 @@ module.exports = {
     'exception': 'failure',
     'deadline-exceeded': 'timed_out',
     'canceled': 'cancelled',
-    'superseded': 'neutral', // queue status means: is not relevant anymore
     'claim-expired': 'failure',
     'worker-shutdown': 'neutral', // queue status means: will be retried
     'malformed-payload': 'action_required', // github status means "correct your task definition"

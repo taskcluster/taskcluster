@@ -15,7 +15,6 @@ const RateLimit = require('./ratelimit');
 const Denier = require('./denier');
 const Handler = require('./handler');
 const exchanges = require('./exchanges');
-const IRC = require('./irc');
 const matrix = require('matrix-js-sdk');
 const MatrixBot = require('./matrix');
 const slack = require('@slack/web-api');
@@ -190,20 +189,6 @@ const load = loader({
       sourceEmail: cfg.app.sourceEmail,
       monitor: monitor.childMonitor('notifier'),
     }),
-  },
-
-  irc: {
-    requires: ['cfg', 'pulseClient', 'monitor', 'reference'],
-    setup: async ({ cfg, pulseClient, monitor, reference }) => {
-      let client = new IRC(_.merge(cfg.irc, {
-        monitor: monitor.childMonitor('irc'),
-        pulseClient,
-        reference,
-        rootUrl: cfg.taskcluster.rootUrl,
-      }));
-      await client.start();
-      return client;
-    },
   },
 
   handler: {

@@ -1,4 +1,4 @@
-dockerImage: 'taskcluster/taskcluster:v39.1.2'
+dockerImage: 'taskcluster/taskcluster:v39.2.0'
 trustProxy: true
 forceSSL: false
 nodeEnv: production
@@ -80,10 +80,6 @@ notify:
     web:
       replicas: 1
       cpu: 100m
-      memory: 100Mi
-    irc:
-      replicas: 1
-      cpu: 50m
       memory: 100Mi
     handler:
       replicas: 1

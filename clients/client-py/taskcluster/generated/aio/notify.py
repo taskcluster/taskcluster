@@ -59,27 +59,6 @@ class Notify(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["pulse"], *args, **kwargs)
 
-    async def irc(self, *args, **kwargs):
-        """
-        Post IRC Message
-
-        Post a message on IRC to a specific channel or user, or a specific user
-        on a specific channel.
-
-        Success of this API method does not imply the message was successfully
-        posted. This API method merely inserts the IRC message into a queue
-        that will be processed by a background process.
-        This allows us to re-send the message in face of connection issues.
-
-        However, if the user isn't online the message will be dropped without
-        error. We maybe improve this behavior in the future. For now just keep
-        in mind that IRC is a best-effort service.
-
-        This method is ``experimental``
-        """
-
-        return await self._makeApiCall(self.funcinfo["irc"], *args, **kwargs)
-
     async def matrix(self, *args, **kwargs):
         """
         Post Matrix Message
@@ -117,9 +96,7 @@ class Notify(AsyncBaseClient):
         """
         Denylist Given Address
 
-        Add the given address to the notification denylist. The address
-        can be of either of the three supported address type namely pulse, email
-        or IRC(user or channel). Addresses in the denylist will be ignored
+        Add the given address to the notification denylist. Addresses in the denylist will be ignored
         by the notification service.
 
         This method is ``experimental``
@@ -182,14 +159,6 @@ class Notify(AsyncBaseClient):
             'method': 'post',
             'name': 'email',
             'route': '/email',
-            'stability': 'experimental',
-        },
-        "irc": {
-            'args': [],
-            'input': 'v1/irc-request.json#',
-            'method': 'post',
-            'name': 'irc',
-            'route': '/irc',
             'stability': 'experimental',
         },
         "listDenylist": {
