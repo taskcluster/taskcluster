@@ -5887,13 +5887,7 @@
       "description": "Deprecate functions that use provisioner_id/worker_type and add equivalents using task_queue_id instead, for tasks table",
       "methods": {
         "create_task": {
-          "args": "task_id text,\nprovisioner_id text,\nworker_type text,\nscheduler_id text,\ntask_group_id text,\ndependencies jsonb,\nrequires task_requires,\nroutes jsonb,\npriority task_priority,\nretries integer,\ncreated timestamptz,\ndeadline timestamptz,\nexpires timestamptz,\nscopes jsonb,\npayload jsonb,\nmetadata jsonb,\ntags jsonb,\nextra jsonb",
-          "body": "begin\n  insert\n  into tasks (\n    task_id,\n    task_queue_id,\n    scheduler_id,\n    task_group_id,\n    dependencies,\n    requires,\n    routes,\n    priority,\n    retries,\n    created,\n    deadline,\n    expires,\n    scopes,\n    payload,\n    metadata,\n    tags,\n    extra,\n    retries_left,\n    runs,\n    taken_until,\n    ever_resolved\n  )\n  values (\n    task_id,\n    provisioner_id || '/' || worker_type,\n    scheduler_id,\n    task_group_id,\n    dependencies,\n    requires,\n    routes,\n    priority,\n    retries,\n    created,\n    deadline,\n    expires,\n    scopes,\n    payload,\n    metadata,\n    tags,\n    extra,\n    -- default values for the mutable bits\n    retries,\n    jsonb_build_array(),\n    null, -- not taken\n    false\n  );\nend",
-          "deprecated": true,
-          "description": "Create a new task, without scheduling it, and with empty values\nfor the status information.",
-          "mode": "write",
-          "returns": "void",
-          "serviceName": "queue"
+          "deprecated": true
         },
         "create_task_tqid": {
           "args": "task_id text,\ntask_queue_id text,\nscheduler_id text,\ntask_group_id text,\ndependencies jsonb,\nrequires task_requires,\nroutes jsonb,\npriority task_priority,\nretries integer,\ncreated timestamptz,\ndeadline timestamptz,\nexpires timestamptz,\nscopes jsonb,\npayload jsonb,\nmetadata jsonb,\ntags jsonb,\nextra jsonb",
@@ -5905,13 +5899,7 @@
           "serviceName": "queue"
         },
         "get_task": {
-          "args": "task_id_in text",
-          "body": "begin\n  return query\n  select\n    tasks.task_id,\n    split_part(tasks.task_queue_id, '/', 1) as provisioner_id,\n    split_part(tasks.task_queue_id, '/', 2) as worker_type,\n    tasks.scheduler_id,\n    tasks.task_group_id,\n    tasks.dependencies,\n    tasks.requires,\n    tasks.routes,\n    tasks.priority,\n    tasks.retries,\n    tasks.retries_left,\n    tasks.created,\n    tasks.deadline,\n    tasks.expires,\n    tasks.scopes,\n    tasks.payload,\n    tasks.metadata,\n    tasks.tags,\n    tasks.extra,\n    tasks.runs,\n    tasks.taken_until\n  from tasks\n  where\n    tasks.task_id = task_id_in;\nend",
-          "deprecated": true,
-          "description": "Get all properties of a task.  Note that all properties but `runs`,\n`retries_left`, and `taken_until` are immutable.",
-          "mode": "read",
-          "returns": "table (\n  task_id text,\n  provisioner_id text,\n  worker_type text,\n  scheduler_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left int,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz\n)",
-          "serviceName": "queue"
+          "deprecated": true
         },
         "get_task_tqid": {
           "args": "task_id_in text",
@@ -5923,13 +5911,7 @@
           "serviceName": "queue"
         },
         "get_tasks_by_task_group": {
-          "args": "task_group_id_in text, page_size_in integer, page_offset_in integer",
-          "body": "begin\n  return query\n  select\n    tasks.task_id,\n    split_part(tasks.task_queue_id, '/', 1) as provisioner_id,\n    split_part(tasks.task_queue_id, '/', 2) as worker_type,\n    tasks.scheduler_id,\n    tasks.task_group_id,\n    tasks.dependencies,\n    tasks.requires,\n    tasks.routes,\n    tasks.priority,\n    tasks.retries,\n    tasks.retries_left,\n    tasks.created,\n    tasks.deadline,\n    tasks.expires,\n    tasks.scopes,\n    tasks.payload,\n    tasks.metadata,\n    tasks.tags,\n    tasks.extra,\n    tasks.runs,\n    tasks.taken_until\n  from tasks\n  where tasks.task_group_id = task_group_id_in\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
-          "deprecated": true,
-          "description": "Get all properties of all tasks in the given task group.",
-          "mode": "read",
-          "returns": "table (\n  task_id text,\n  provisioner_id text,\n  worker_type text,\n  scheduler_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left int,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz\n)",
-          "serviceName": "queue"
+          "deprecated": true
         },
         "get_tasks_by_task_group_tqid": {
           "args": "task_group_id_in text, page_size_in integer, page_offset_in integer",
