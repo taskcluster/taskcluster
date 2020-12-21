@@ -8,17 +8,40 @@ import TableRow from '@material-ui/core/TableRow';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
-import LockIcon from 'mdi-react/LockIcon';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
 import { artifact, indexedTask, date, pageInfo } from '../../utils/prop-types';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import Link from '../../utils/Link';
-import buildArtifactUrl from '../../utils/buildArtifactUrl';
+import { findArtifactFromTaskUrl } from '../../utils/getArtifactUrl';
+import getIconFromMime from '../../utils/getIconFromMime';
+import { withAuth } from '../../utils/Auth';
 
+const buildArtifactUrl = ({ user, namespace, name, contentType }) => {
+  const icon = getIconFromMime(contentType);
+
+  return {
+    icon,
+    name,
+    url: findArtifactFromTaskUrl({ user, namespace, name }),
+    // refresh the URL (with a fresh expiration time) on a click, and open it
+    // in a new window
+    handleArtifactClick(ev) {
+      const url = findArtifactFromTaskUrl({ user, namespace, name });
+
+      if (ev.altKey || ev.metaKey || ev.ctrlKey || ev.shiftKey) {
+        return;
+      }
+
+      window.open(url, '_blank', 'noopener,noreferrer');
+      ev.preventDefault();
+    },
+  };
+};
+
+@withAuth
 @withStyles(theme => ({
   listItemButton: {
     ...theme.mixins.listItemButton,
@@ -67,6 +90,7 @@ export default class IndexedEntry extends Component {
   loadArtifacts = artifactsConnection => {
     const {
       indexedTask: { taskId, namespace },
+      user,
     } = this.props;
 
     if (!taskId || !artifactsConnection.edges.length) {
@@ -81,9 +105,9 @@ export default class IndexedEntry extends Component {
           ...edge.node,
           // Build the URLs here so that they'll be updated when people login
           ...buildArtifactUrl({
+            user,
             name: edge.node.name,
             contentType: edge.node.contentType,
-            url: edge.node.url,
             namespace,
           }),
         },
@@ -116,11 +140,10 @@ export default class IndexedEntry extends Component {
               <Link
                 className={classes.artifactLink}
                 target="_blank"
-                to={artifact.url}>
+                to={artifact.url}
+                onClick={artifact.handleArtifactClick}>
                 <div className={classes.artifactIconWithName}>
                   <div className={classes.artifactIcons}>
-                    {artifact.isPublic && <LockOpenOutlineIcon />}
-                    {!artifact.isPublic && artifact.url && <LockIcon />}
                     {artifact.icon && <artifact.icon />}
                   </div>
                   {artifact.name}

@@ -11,9 +11,6 @@ fragment Artifacts on ArtifactsConnection {
     node {
       name
       contentType
-      url
-      isPublic
-      isLog
     }
   }
 }

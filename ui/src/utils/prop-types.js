@@ -58,8 +58,6 @@ export const docsPageInfo = shape({
 export const artifact = shape({
   name: string,
   contentType: string,
-  url: string,
-  isPublic: bool,
 });
 
 export const artifacts = shape({

@@ -21,7 +21,6 @@ query Task($taskId: ID!, $artifactsConnection: PageConnection) {
       edges {
         node {
           name
-          url
         }
       }
     }

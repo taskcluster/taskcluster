@@ -21,8 +21,6 @@ import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronRightIcon from 'mdi-react/ChevronRightIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
-import LockIcon from 'mdi-react/LockIcon';
-import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import Button from '../Button';
 import ConnectionDataTable from '../ConnectionDataTable';
@@ -30,13 +28,17 @@ import CopyToClipboardListItem from '../CopyToClipboardListItem';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
 import NoRunsIcon from './NoRunsIcon';
+import getIconFromMime from '../../utils/getIconFromMime';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import { runs } from '../../utils/prop-types';
+import { withAuth } from '../../utils/Auth';
+import { getArtifactUrl } from '../../utils/getArtifactUrl';
 import Link from '../../utils/Link';
 
 const DOTS_VARIANT_LIMIT = 5;
 
 @withRouter
+@withAuth
 @withStyles(
   theme => ({
     headline: {
@@ -115,7 +117,7 @@ const DOTS_VARIANT_LIMIT = 5;
         fill: 'currentcolor',
       },
     },
-    lockIconDiv: {
+    iconDiv: {
       marginRight: theme.spacing(2),
     },
   }),
@@ -164,31 +166,44 @@ export default class TaskRunsCard extends Component {
     return state === 'PENDING' || state === 'RUNNING';
   };
 
-  getArtifactUrl = ({ url, isLog }) => {
-    if (!url) {
-      return '';
-    }
-
+  getArtifactInfo = ({ name, contentType }) => {
     const { taskId, runId } = this.getCurrentRun();
+    const { user } = this.props;
+    const isLogFile =
+      contentType.startsWith('text/plain') && name.endsWith('.log');
+    const icon = getIconFromMime(contentType);
+    let handleArtifactClick;
+    let url = getArtifactUrl({ user, taskId, runId, name });
 
-    if (isLog) {
-      // react-router decodes its params (via `decodeURI`)
-      // so something like '%252F' and '%2F' in the URL both become '%2F'
-      // we should be able to remove `encodeURI` once
-      // https://github.com/ReactTraining/history/issues/745 has been resolved.
-      //
-      // Context: In order to create the URIs for private artifacts we use
-      // `queue.externalBuildSignedUrl`. Internally, that method uses
-      // `decodeURIComponent` so when an artifact name has a slash in it
-      // the URI will have '`%2F'.
-      const encoded = encodeURI(encodeURIComponent(url));
+    // if this looks like a logfile, send the user to the logfile viewer
+    if (isLogFile) {
+      url = this.isLiveLog()
+        ? `/tasks/${taskId}/runs/${runId}/logs/live/${name}`
+        : `/tasks/${taskId}/runs/${runId}/logs/${name}`;
 
-      return this.isLiveLog()
-        ? `/tasks/${taskId}/runs/${runId}/logs/live/${encoded}`
-        : `/tasks/${taskId}/runs/${runId}/logs/${encoded}`;
+      // don't do anything special on clicking this artifact
+      handleArtifactClick = () => {};
+    } else {
+      // refresh the artifact URL (with a fresh expiration time) on click and
+      // navigate to it manually in a new window
+      handleArtifactClick = ev => {
+        const url = getArtifactUrl({ user, taskId, runId, name });
+
+        if (ev.altKey || ev.metaKey || ev.ctrlKey || ev.shiftKey) {
+          return;
+        }
+
+        window.open(url, '_blank', 'noopener,noreferrer');
+        ev.preventDefault();
+      };
     }
 
-    return url;
+    return {
+      url,
+      icon,
+      isLogFile,
+      handleArtifactClick,
+    };
   };
 
   handleNext = () => {
@@ -247,8 +262,50 @@ export default class TaskRunsCard extends Component {
     };
   }
 
+  renderArtifactRow({ artifact }) {
+    const { classes } = this.props;
+    const { name } = artifact;
+    const {
+      icon: Icon,
+      isLogFile,
+      url,
+      handleArtifactClick,
+    } = this.getArtifactInfo(artifact);
+
+    return (
+      <TableRow
+        key={name}
+        className={classNames(
+          classes.listItemButton,
+          classes.artifactTableRow,
+          classes.pointer
+        )}
+        hover>
+        <TableCell>
+          <Link
+            className={classes.artifactLink}
+            to={url}
+            onClick={handleArtifactClick}>
+            <div className={classes.iconDiv}>
+              <Icon />
+            </div>
+            <div className={classes.artifactNameWrapper}>
+              {isLogFile && (
+                <Label status="info" mini className={classes.logButton}>
+                  LOG
+                </Label>
+              )}
+              <div className={classes.artifactName}>{artifact.name}</div>
+            </div>
+            <div>{isLogFile ? <LinkIcon /> : <OpenInNewIcon />}</div>
+          </Link>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
   renderArtifactsTable() {
-    const { classes, onArtifactsPageChange } = this.props;
+    const { onArtifactsPageChange } = this.props;
     const run = this.getCurrentRun();
     const artifacts = this.createSortedArtifactsConnection(run?.artifacts);
 
@@ -259,41 +316,7 @@ export default class TaskRunsCard extends Component {
         columnsSize={3}
         onPageChange={onArtifactsPageChange}
         withoutTopPagination
-        renderRow={({ node: artifact }) => (
-          <TableRow
-            key={`run-artifact-${run.taskId}-${run.runId}-${artifact.name}`}
-            className={classNames(
-              classes.listItemButton,
-              classes.artifactTableRow,
-              {
-                [classes.pointer]: !!artifact.url,
-              }
-            )}
-            hover={!!artifact.url}>
-            <TableCell>
-              <Link
-                className={classes.artifactLink}
-                to={this.getArtifactUrl(artifact)}>
-                <div className={classes.lockIconDiv}>
-                  {artifact.isPublic && <LockOpenOutlineIcon />}
-                  {!artifact.isPublic && artifact.url && <LockIcon />}
-                </div>
-                <div className={classes.artifactNameWrapper}>
-                  {artifact.isLog && (
-                    <Label status="info" mini className={classes.logButton}>
-                      LOG
-                    </Label>
-                  )}
-                  <div className={classes.artifactName}>{artifact.name}</div>
-                </div>
-                <div>
-                  {artifact.isPublic && <LinkIcon />}
-                  {!artifact.isPublic && artifact.url && <OpenInNewIcon />}
-                </div>
-              </Link>
-            </TableCell>
-          </TableRow>
-        )}
+        renderRow={({ node: artifact }) => this.renderArtifactRow({ artifact })}
       />
     );
   }
@@ -315,6 +338,9 @@ export default class TaskRunsCard extends Component {
     const run = this.getCurrentRun();
     const liveLogArtifact = this.getLiveLogArtifactFromRun(run);
     const showArtifacts = window.location.hash === '#artifacts';
+    const liveLogInfo = liveLogArtifact
+      ? this.getArtifactInfo(liveLogArtifact)
+      : {};
 
     return (
       <Card raised>
@@ -338,7 +364,9 @@ export default class TaskRunsCard extends Component {
                     />
                   </ListItem>
                   {liveLogArtifact && (
-                    <Link to={this.getArtifactUrl(liveLogArtifact)}>
+                    <Link
+                      to={liveLogInfo.url}
+                      onClick={liveLogInfo.handleArtifactClick}>
                       <ListItem button className={classes.listItemButton}>
                         <ListItemText
                           primary={

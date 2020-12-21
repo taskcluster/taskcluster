@@ -59,12 +59,12 @@ export default path => [
   },
   {
     component: TaskLog,
-    path: `${path}/:taskId/runs/:runId/logs/live/:logUrl`,
+    path: `${path}/:taskId/runs/:runId/logs/live/:name+`,
     stream: true,
   },
   {
     component: TaskLog,
-    path: `${path}/:taskId/runs/:runId/logs/:logUrl`,
+    path: `${path}/:taskId/runs/:runId/logs/:name+`,
   },
   {
     component: ViewTask,
