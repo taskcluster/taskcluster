@@ -27,3 +27,6 @@ job-defaults:
         type: directory
     max-run-time: 600
     docker-image: {taskcluster: 'ci-image'}
+    env:
+      # temporary for https://github.com/taskcluster/taskcluster/issues/3665
+      DEBUG: 'base:app'

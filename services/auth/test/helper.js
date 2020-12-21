@@ -181,10 +181,7 @@ testServiceBuilder.declare({
  * This also sets up helper.apiClient as a client of the service API.
  */
 exports.withServers = (mock, skipping) => {
-
   let webServer;
-  let testServer;
-  let proxier;
 
   suiteSetup(async function() {
     if (skipping()) {
@@ -251,14 +248,6 @@ exports.withServers = (mock, skipping) => {
     if (webServer) {
       await webServer.terminate();
       webServer = null;
-    }
-    if (testServer) {
-      await testServer.terminate();
-      testServer = null;
-    }
-    if (proxier) {
-      proxier.close();
-      proxier = null;
     }
   });
 };
