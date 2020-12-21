@@ -27,7 +27,7 @@ class SentryReporter {
   }
 
   report(error, level, extra) {
-    Sentry.configureScope(scope => {
+    Sentry.withScope(scope => {
       if (level) {
         scope.setLevel(tcToSentryLevel[level] || 'error');
       }
@@ -36,8 +36,8 @@ class SentryReporter {
           scope.setTag(k, v);
         });
       }
+      return Sentry.captureException(error);
     });
-    return Sentry.captureException(error);
   }
 
   async flush() {
