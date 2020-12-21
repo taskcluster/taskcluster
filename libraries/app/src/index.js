@@ -50,6 +50,8 @@ const createServer = function() {
     server.terminate = () => {
       return new Promise((accept, reject) => {
         server.close(accept);
+      }).then(() => {
+        debug('Server terminated on port ' + this.get('port'));
       });
     };
 
