@@ -214,6 +214,9 @@ monitor.reportError(new Error("..."), 'warning');
 
 The "extra" information is passed to the error reporting plugin and may appear there as "tags".
 
+The Sentry error reporter will look for a `sentryFingerprint` property on any reported errors, and send that string to Sentry along with the default fingerprint.
+See [the Sentry docs](https://docs.sentry.io/platforms/javascript/data-management/event-grouping/sdk-fingerprinting/#group-errors-with-greater-granularity) for details.
+
 ### Monitoring CPU & Memory
 
 ```js
