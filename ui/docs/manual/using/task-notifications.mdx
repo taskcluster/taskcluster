@@ -4,6 +4,8 @@ title: Task Notifications
 order: 80
 ---
 
+import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+
 There are two ways to have Taskcluster send notifications on your behalf.
 
 The first is by specifying certain routes in the task definition, for example:
@@ -31,3 +33,15 @@ async function notify() {
     await notify.matrix({roomId: 'whDRjjSmICCgrhFHsQ:mozilla.org', body: 'the build is stil running, hang tight'});
 }
 ```
+
+<SiteSpecific>
+This deployment sends notification emails from `%notify_email_sender%`.
+</SiteSpecific>
+
+<SiteSpecific>
+This deployment uses a Slack bot with username `%notify_slack_bot_name%`.
+</SiteSpecific>
+
+<SiteSpecific>
+This deployment uses a Matrix bot with username `%notify_matrix_bot_name%`.
+</SiteSpecific>

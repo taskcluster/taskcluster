@@ -26,6 +26,9 @@ const SITE_SPECIFIC_VARS = new Set([
   // See that file for descriptions of each variable.
   'github_app_url',
   'tutorial_worker_pool_id',
+  'notify_email_sender',
+  'notify_matrix_bot_name',
+  'notify_slack_bot_name',
 ]);
 // apply a simple templating language here, translating
 // %IDENTIFIER% into a lookup of that identifier, and
