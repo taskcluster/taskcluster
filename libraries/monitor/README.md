@@ -212,6 +212,8 @@ monitor.reportError(new Error("..."), {foo: 'bar'});
 monitor.reportError(new Error("..."), 'warning');
 ```
 
+The "extra" information is passed to the error reporting plugin and may appear there as "tags".
+
 ### Monitoring CPU & Memory
 
 ```js
