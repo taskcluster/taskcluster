@@ -72,17 +72,17 @@ class AwsBackend extends Backend {
     // or other S3 policies would accomplish the same thing, this serves as a backstop to
     // prevent removing the database record while the object itself is still on S3, thereby
     // leaking storage.  Note that s3.deleteObject is idempotent in AWS, but not in Google,
-    // and since we don't care about objects that couldn't be deleted, we swallow any errors.
+    // and since we don't care about objects that couldn't be deleted, we swallow NoSuchKey errors.
     try {
       await this.s3.deleteObject({
         Bucket: this.config.bucket,
         Key: object.name,
       }).promise();
     } catch (error) {
-      // This can happen if object expired between the time the object metadata was retrieved
-      // and the delete was executed, or if there was a network blip that caused a retry to
-      // occur.  In no case do we really care if an object couldn't be deleted, as this
-      // expiration process is only a backstop to e.g. a bucket level expiration policy.
+      // Ignore NoSuchKey errors
+      if (error.code !== "NoSuchKey") {
+        throw error;
+      }
     }
     return true;
   }
