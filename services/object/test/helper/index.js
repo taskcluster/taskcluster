@@ -8,6 +8,7 @@ const { MIDDLEWARE_TYPES } = require('../../src/middleware');
 const { TestBackend } = require('../../src/backends/test');
 const { TestMiddleware } = require('../../src/middleware/test');
 const aws = require('./aws');
+const google = require('./google');
 
 Object.assign(exports, require('./simple-download'));
 Object.assign(exports, require('./temporary-upload'));
@@ -28,6 +29,7 @@ exports.secrets = new Secrets({
   ],
   secrets: {
     aws: aws.secret,
+    google: google.secret,
   },
   load: exports.load,
 });

@@ -372,9 +372,9 @@
   },
   {
     "element": "h3",
-    "id": "aws",
+    "id": "aws-for-aws-_and_-google",
     "path": "/manual/deploying/object-service",
-    "subtitle": "AWS",
+    "subtitle": "AWS (for AWS _and_ Google!)",
     "title": "Object Service"
   },
   {
@@ -2633,17 +2633,17 @@
   },
   {
     "element": "h1",
-    "id": "aws-backend-type",
+    "id": "aws-backend-type-for-aws-_and_-google-cloud",
     "path": "/reference/platform/object/aws-backend",
     "subtitle": null,
-    "title": "AWS Backend Type"
+    "title": "AWS Backend Type (for AWS _and_ Google Cloud!)"
   },
   {
     "element": "h2",
     "id": "deployment-configuration",
     "path": "/reference/platform/object/aws-backend",
     "subtitle": "Deployment Configuration",
-    "title": "AWS Backend Type"
+    "title": "AWS Backend Type (for AWS _and_ Google Cloud!)"
   },
   {
     "element": "h1",
