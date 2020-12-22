@@ -97,6 +97,27 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assume(client2.expandedScopes).to.deeply.equal([]);
 
     helper.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
+
+    // should not crash on a second creation with the same params
+    await helper.apiClient.createClient(CLIENT_ID, {
+      expires, description,
+    });
+
+    await helper.apiClient.deleteClient(CLIENT_ID);
+  });
+
+  test('auth.createClient (conflict)', async () => {
+    let expires = taskcluster.fromNow('1 hour');
+    let description = 'Test client...';
+    await helper.apiClient.createClient(CLIENT_ID, {
+      expires, description,
+    });
+    await assert.rejects(
+      () => helper.apiClient.createClient(CLIENT_ID, {
+        expires, description: 'AGAIN',
+      }),
+      err => err.statusCode === 409);
+
     await helper.apiClient.deleteClient(CLIENT_ID);
   });
 
