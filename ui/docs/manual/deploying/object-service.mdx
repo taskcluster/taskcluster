@@ -31,7 +31,7 @@ backends:
     backendType: aws
     # ...
   proj-fuzzing:
-    backendType: google
+    backendType: aws
     # ...
 ```
 
@@ -75,9 +75,13 @@ backend_map:
 
 ## Backend Types
 
-### AWS
+### AWS (for AWS _and_ Google!)
 
-The `aws` backend type stores objects in an S3 bucket.
+The `aws` backend type stores objects using the AWS S3 protocol.
+
+Since Google Cloud provides an S3-interoperability API, this means the AWS
+Backend can _also_ be used to persist objects in Google Cloud Storage.
+
 Objects are stored in the bucket using their full name.
 
 Each backend has the following configuration parameters:
@@ -85,6 +89,12 @@ Each backend has the following configuration parameters:
  * `accessKeyId`
  * `secretAccessKey`
  * `signGetUrls` (optional, default false)
+ * `endpoint` (optional, default null)
+
+To use Google Cloud Storage, set `endpoint` to `https://storage.googleapis.com`
+and follow the [Simple Migration
+Guide](https://cloud.google.com/storage/docs/migrating#migration-simple) to set
+up appropriate HMAC key and configure your Google Cloud project appropriately.
 
 The bucket parameter names the bucket in which to store the objects.
 You must pre-create the bucket in the appropriate region.

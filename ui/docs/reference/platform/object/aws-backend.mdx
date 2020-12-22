@@ -3,9 +3,11 @@ order: 40
 title: AWS Backend Type
 ---
 
-# AWS Backend Type
+# AWS Backend Type (for AWS _and_ Google Cloud!)
 
-The AWS backend type supports storing objects in the AWS S3 service.
+The AWS backend type supports storing objects in the AWS S3 service, _and_ Google Cloud Storage service.
+
+Google cloud support is possible thanks to the [interoperability API](https://cloud.google.com/storage/docs/interoperability).
 
 The backend type stores object data in a single S3 bucket.
 The S3 Key name is identical to the object name.
@@ -27,6 +29,7 @@ backends:
     secretAccessKey: "<aws secret access key>"
     bucket: "<bucket name>"
     signGetUrls: false # or true
+    endpoint: "https://storage.googleapis.com" # for Google, or do not specify for AWS
 ```
 
 The provided AWS credentials should have the following policy (with `<BUCKET_NAME>` replaced by the bucket name):
@@ -61,6 +64,8 @@ The provided AWS credentials should have the following policy (with `<BUCKET_NAM
     ]
 }
 ```
+
+For Google Cloud, the provided credentials should have "Storage Legacy Bucket Owner" and "Storage Legacy Object Owner".
 
 The use of `signGetUrls` is described above.
 If this configuration value is `false`, then the bucket should be configured to allow public read access.
