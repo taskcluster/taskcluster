@@ -16,8 +16,7 @@ class Task {
   static fromDb(row) {
     return new Task({
       taskId: row.task_id,
-      provisionerId: row.provisioner_id,
-      workerType: row.worker_type,
+      taskQueueId: row.task_queue_id,
       schedulerId: row.scheduler_id,
       taskGroupId: row.task_group_id,
       dependencies: row.dependencies,
@@ -65,10 +64,10 @@ class Task {
 
   // Get a task from the DB, or undefined
   static async get(db, taskId) {
-    return Task.fromDbRows(await db.fns.get_task(taskId));
+    return Task.fromDbRows(await db.fns.get_task_tqid(taskId));
   }
 
-  // Call db.create_task with the content of this instance.  This
+  // Call db.create_task_tqid with the content of this instance.  This
   // implements the usual idempotency checks and returns an error with code
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
@@ -76,10 +75,9 @@ class Task {
     // otherwise does not correctly serialize the array values
     const arr = v => JSON.stringify(v);
     try {
-      await db.fns.create_task(
+      await db.fns.create_task_tqid(
         this.taskId,
-        this.provisionerId,
-        this.workerType,
+        this.taskQueueId,
         this.schedulerId,
         this.taskGroupId,
         arr(this.dependencies),
@@ -113,9 +111,10 @@ class Task {
 
   // return the definition of this task (the immutable data)
   definition() {
+    const { provisionerId, workerType } = splitTaskQueueId(this.taskQueueId);
     return {
-      provisionerId: this.provisionerId,
-      workerType: this.workerType,
+      provisionerId: provisionerId,
+      workerType: workerType,
       schedulerId: this.schedulerId,
       taskGroupId: this.taskGroupId,
       dependencies: _.cloneDeep(this.dependencies),
@@ -144,10 +143,11 @@ class Task {
     // to ensure a uniform structure.
     const ts = s => s ? new Date(s).toJSON() : s;
 
+    const { provisionerId, workerType } = splitTaskQueueId(this.taskQueueId);
     return {
       taskId: this.taskId,
-      provisionerId: this.provisionerId,
-      workerType: this.workerType,
+      provisionerId: provisionerId,
+      workerType: workerType,
       schedulerId: this.schedulerId,
       taskGroupId: this.taskGroupId,
       deadline: this.deadline.toJSON(),

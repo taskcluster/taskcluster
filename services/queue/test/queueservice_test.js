@@ -142,8 +142,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const runId = 0;
     const task = {
       taskId: taskId,
-      provisionerId: provisionerId,
-      workerType: workerType,
+      taskQueueId: `${provisionerId}/${workerType}`,
       priority: 'lowest',
       deadline: new Date(new Date().getTime() + 5 * 60 * 1000),
     };

@@ -5,7 +5,7 @@ let base32 = require('thirty-two');
 let crypto = require('crypto');
 let slugid = require('slugid');
 let AZQueue = require('taskcluster-lib-azqueue');
-let { joinTaskQueueId, splitTaskQueueId } = require('./utils');
+let { splitTaskQueueId } = require('./utils');
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where
@@ -18,9 +18,8 @@ let secondsTo = (target, relativeTo = new Date()) => {
 /** Validate task description object */
 let validateTask = task => {
   assert(typeof task.taskId === 'string', 'Expected task.taskId');
-  assert(typeof task.provisionerId === 'string',
-    'Expected task.provisionerId');
-  assert(typeof task.workerType === 'string', 'Expected task.workerType');
+  assert(typeof task.taskQueueId === 'string',
+    'Expected task.taskQueueId');
   assert(task.deadline instanceof Date, 'Expected task.deadline');
 };
 
@@ -458,8 +457,7 @@ class QueueService {
     assert(typeof runId === 'number', 'Expected runId as number');
 
     // Find name of azure queue
-    const taskQueueId = joinTaskQueueId(task.provisionerId, task.workerType);
-    let queueNames = await this.ensurePendingQueue(taskQueueId);
+    let queueNames = await this.ensurePendingQueue(task.taskQueueId);
 
     // Find the time to deadline
     let timeToDeadline = secondsTo(task.deadline);
