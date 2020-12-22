@@ -65,6 +65,24 @@ module.exports = {
       return loaders.latestArtifacts.load({ taskId, connection, filter });
     },
   },
+  DependentTask: {
+    async status(parent, args, { loaders }) {
+      // parent.status might be null if dependentTasks already determined that
+      // this task does not exist, in which case skip the status load
+      if ('status' in parent) {
+        return parent.status;
+      }
+
+      try {
+        return await loaders.status.load(parent.taskId);
+      } catch (e) {
+        if (e.code === 'ResourceNotFound') {
+          return null;
+        }
+        return e;
+      }
+    },
+  },
   Query: {
     task(parent, { taskId }, { loaders }) {
       return loaders.task.load(taskId);
@@ -82,9 +100,15 @@ module.exports = {
       const task = await loaders.task.load(args.taskId);
 
       return Promise.all(task.dependencies.map(async (dependency) => {
+        // generate a DependentTask object from the task loader's result
         try {
           return await loaders.task.load(dependency);
         } catch (e) {
+          // if the depended-on task does not exist (such as because it has expired),
+          // then return a valid DependentTask with only the taskId.
+          if (e.code === 'ResourceNotFound') {
+            return { taskId: dependency, status: null, metadata: null };
+          }
           return e;
         }
       }));

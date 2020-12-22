@@ -299,6 +299,15 @@ enum TaskSubscriptions {
   tasksException
 }
 
+# A dependent task may be expired, in which case it will only have a taskId.
+type DependentTask {
+  taskId: ID!
+
+  # status, if this task still exists
+  status(taskId: ID = taskId): TaskStatus
+  metadata: TaskMetadata
+}
+
 extend type Query {
   # Definition of a task that can be scheduled.
   # _A task definition may have been modified by the queue._
@@ -307,7 +316,7 @@ extend type Query {
   task(taskId: ID!): Task
 
   # Query the dependent tasks of this task via its dependencies' task IDs.
-  dependentTasks(taskId: ID!): [Task]
+  dependentTasks(taskId: ID!): [DependentTask]
 
   # List tasks that depend on the given `taskId`.
   dependents(taskId: ID!, connection: PageConnection, filter: JSON): TasksConnection
