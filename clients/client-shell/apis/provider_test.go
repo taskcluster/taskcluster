@@ -2,6 +2,7 @@ package apis
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -113,11 +114,38 @@ func TestRedirectIserror(t *testing.T) {
 	assert.Equal(t, true, strings.Contains(err.Error(), "303"))
 }
 
+func TestErrorHandling(t *testing.T) {
+	// start test server
+	providerServer := apiServer()
+	config.SetRootURL(providerServer.URL)
+	defer providerServer.Close()
+
+	// entry for the redirect endpoing
+	entry := definitions.Entry{
+		Name:        "error",
+		Title:       "Error",
+		Description: "returns an error",
+		Stability:   "stable",
+		Method:      "get",
+		Route:       "/err",
+		Args:        []string{},
+		Query:       []string{},
+		Input:       "",
+	}
+
+	err := execute("test", "v1", &entry, nil, nil, nil, nil)
+
+	// this should be an error and include the message
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "API Error 409: ResourceConflict\nI'm sorry dave..\nI can't let you do that.")
+}
+
 // apiServer sets up the server and launches it in a new thread
 func apiServer() *httptest.Server {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/api/test/v1/test", apiHandler)
 	handler.HandleFunc("/api/test/v1/redirect", redirHandler)
+	handler.HandleFunc("/api/test/v1/err", errorHandler)
 
 	return httptest.NewServer(handler)
 }
@@ -140,4 +168,19 @@ func redirHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header()["Location"] = []string{"http://nosuch.example.com"}
 	w.WriteHeader(303)
 	fmt.Fprintln(w, "{}")
+}
+
+// errorHandler returns an error, in the Taskcluster format
+func errorHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header()["Content-Type"] = []string{"application/json"}
+	w.WriteHeader(409)
+	body := map[string]interface{}{
+		"code":    "ResourceConflict",
+		"message": "I'm sorry dave..\nI can't let you do that.",
+	}
+	bodystr, _ := json.Marshal(body)
+	_, err := w.Write(bodystr)
+	if err != nil {
+		panic(err)
+	}
 }
