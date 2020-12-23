@@ -91,10 +91,20 @@ Each backend has the following configuration parameters:
  * `signGetUrls` (optional, default false)
  * `endpoint` (optional, default null)
 
-To use Google Cloud Storage, set `endpoint` to `https://storage.googleapis.com`
-and follow the [Simple Migration
-Guide](https://cloud.google.com/storage/docs/migrating#migration-simple) to set
-up appropriate HMAC key and configure your Google Cloud project appropriately.
+ For example:
+
+```yaml
+backends:
+  publicStuff:
+    backendType: "aws"
+    accessKeyId: "<gcp hmac access key ID>"
+    secretAccessKey: "<gcp hmac secret access key>"
+    bucket: "my-objects"
+    signGetUrls: false
+    endpoint: "https://storage.googleapis.com" # (for Google)
+```
+
+#### AWS Configuration
 
 The bucket parameter names the bucket in which to store the objects.
 You must pre-create the bucket in the appropriate region.
@@ -130,7 +140,24 @@ The credentials should correspond to an IAM user with the following policy, with
 }
 ```
 
+#### Google Cloud Configuration
+
+To use Google Cloud Storage, set `endpoint` to `https://storage.googleapis.com`
+and follow the [Simple Migration
+Guide](https://cloud.google.com/storage/docs/migrating#migration-simple) to set
+up appropriate HMAC key and configure your Google Cloud project appropriately.
+
+The provided credentials should correspond to a service account that has no directly-assigned roles.
+Set the bucket permissions to "uniform" mode and grant "Storage Legacy Bucket Owner" and "Storage Legacy Object Owner" to the service account.
+Note that there is no need to set a default project.
+
+#### Signing GET URLs
+
 The `signGetUrls` config controls the form of the URLs used for simple downloads (such as for loading artifacts in a browser).
+
+In cases where the data is public anyway, signed URL signatures can cause unnecessary friction as they are long and expire quickly.
+Setting `signGetUrls` to false in this case causes the backend to generate un-signed URLs, which are short and easy for users to pass around.
+
 In general, if the bucket contents are public, set this to `false` as signatures are unnecessary; otherwise, set it to true.
 
 ## Middleware
