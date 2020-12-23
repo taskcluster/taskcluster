@@ -36,7 +36,7 @@ func TestHttpRedirects(t *testing.T) {
 	// create a fake request to the proxy
 	req, err := http.NewRequest(
 		"GET",
-		"http://localhost:60024/api/redirector/v1/redirect-me",
+		"http://localhost:60024/redirector/v1/redirect-me",
 		new(bytes.Buffer),
 	)
 	assert.NoError(t, err)
@@ -50,4 +50,44 @@ func TestHttpRedirects(t *testing.T) {
 	respBody, err := ioutil.ReadAll(res.Body)
 	assert.NoError(t, err)
 	assert.Equal(t, "{}\n", string(respBody))
+}
+
+func TestNonCanonicalUrls(t *testing.T) {
+	// set up an upstream server that returns its path
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		fmt.Fprintf(w, "%s", r.URL)
+	}))
+	defer ts.Close()
+
+	// set up a routes object to test, using the test server as RootURL
+	routes := NewRoutes(
+		tcclient.Client{
+			Authenticate: true,
+			RootURL:      ts.URL,
+			Credentials: &tcclient.Credentials{
+				ClientID:    "some-client",
+				AccessToken: "doesn't-matter",
+			},
+		},
+	)
+	mux := setupMux(&routes)
+
+	// create a fake request to the proxy
+	req, err := http.NewRequest(
+		"GET",
+		"http://localhost:60024/queue/v1/double//slash/encode1%2F/encode2%252F/encode3%25252F",
+		new(bytes.Buffer),
+	)
+	assert.NoError(t, err)
+
+	// see how it gets handled..
+	res := httptest.NewRecorder()
+	mux.ServeHTTP(res, req)
+
+	// it should have returned the path with `/api` but otherwise unchanged
+	assert.Equal(t, 200, res.Code)
+	respBody, err := ioutil.ReadAll(res.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, "/api/queue/v1/double//slash/encode1%2F/encode2%252F/encode3%25252F\n", string(respBody))
 }

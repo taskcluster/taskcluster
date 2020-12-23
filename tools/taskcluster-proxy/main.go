@@ -48,18 +48,28 @@ func main() {
 		log.Fatalf("%v", err)
 	}
 
-	http.HandleFunc("/bewit", routes.BewitHandler)
-	http.HandleFunc("/credentials", routes.CredentialsHandler)
-	http.HandleFunc("/api/", routes.APIHandler)
-	http.HandleFunc("/", routes.RootHandler)
+	mux := setupMux(&routes)
+	server := &http.Server{
+		Handler: mux,
+		// Only listen on loopback interface to reduce attack surface. If we later
+		// wish to make this service available over the network, we could add
+		// configuration settings for this, but for now, let's lock it down.
+		Addr: address,
+	}
 
-	// Only listen on loopback interface to reduce attack surface. If we later
-	// wish to make this service available over the network, we could add
-	// configuration settings for this, but for now, let's lock it down.
-	startError := http.ListenAndServe(address, nil)
+	startError := server.ListenAndServe()
 	if startError != nil {
 		log.Fatal(startError)
 	}
+}
+
+func setupMux(routes *Routes) *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/bewit", routes.BewitHandler)
+	mux.HandleFunc("/credentials", routes.CredentialsHandler)
+	mux.HandleFunc("/api/", routes.APIHandler)
+	mux.HandleFunc("/", routes.RootHandler)
+	return mux
 }
 
 // Fetch a task by TaskID.  This is broken out to allow testing.
