@@ -43,7 +43,7 @@ func TestHttpRedirects(t *testing.T) {
 
 	// see how it gets handled..
 	res := httptest.NewRecorder()
-	routes.RootHandler(res, req)
+	routes.ServeHTTP(res, req)
 
 	// it should have returned the 303 directly, along with its body
 	assert.Equal(t, 303, res.Code)
@@ -71,7 +71,6 @@ func TestNonCanonicalUrls(t *testing.T) {
 			},
 		},
 	)
-	mux := setupMux(&routes)
 
 	// create a fake request to the proxy
 	req, err := http.NewRequest(
@@ -83,11 +82,11 @@ func TestNonCanonicalUrls(t *testing.T) {
 
 	// see how it gets handled..
 	res := httptest.NewRecorder()
-	mux.ServeHTTP(res, req)
+	routes.ServeHTTP(res, req)
 
 	// it should have returned the path with `/api` but otherwise unchanged
 	assert.Equal(t, 200, res.Code)
 	respBody, err := ioutil.ReadAll(res.Body)
 	assert.NoError(t, err)
-	assert.Equal(t, "/api/queue/v1/double//slash/encode1%2F/encode2%252F/encode3%25252F\n", string(respBody))
+	assert.Equal(t, "/api/queue/v1/double//slash/encode1%2F/encode2%252F/encode3%25252F", string(respBody))
 }
