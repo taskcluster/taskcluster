@@ -734,6 +734,7 @@ builder.declare({
   name: 'reregisterWorker',
   title: 'Reregister a Worker',
   category: 'Workers',
+  cleanPayload,
   stability: APIBuilder.stability.experimental,
   input: 'reregister-worker-request.yml',
   output: 'reregister-worker-response.yml',
