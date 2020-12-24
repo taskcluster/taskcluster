@@ -550,12 +550,9 @@ func (queue *Queue) ReportException(taskId, runId string, payload *TaskException
 // header and **must** give the `content-type` header the same value as in
 // the request to `createArtifact`.
 //
-// **Reference artifacts**, only consists of meta-data which the queue will
-// store for you. These artifacts really only have a `url` property and
-// when the artifact is requested the client will be redirect the URL
-// provided with a `303` (See Other) redirect. Please note that we cannot
-// delete artifacts you upload to other service, we can only delete the
-// reference to the artifact, when it expires.
+// **Redirect artifacts**, will redirect the caller to URL when fetched
+// with a a 303 (See Other) response.  Clients will not apply any kind of
+// authentication to that URL.
 //
 // **Error artifacts**, only consists of meta-data which the queue will
 // store for you. These artifacts are only meant to indicate that you the
