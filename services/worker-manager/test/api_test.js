@@ -1241,9 +1241,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await createWorkerPool({});
       const worker = await createWorker(config);
       // default is 96 hours when reregistrationTimeout is not specified.
+      // This is in milliseconds because interpretLifecycle does that math
+      // _before_ it is stored in the db the first time so now reregister
+      // works from that math
       const reregistrationTimeout = config.providerData.reregistrationTimeout ?
-        config.providerData.reregistrationTimeout / 3600 :
-        96;
+        config.providerData.reregistrationTimeout :
+        96 * 3600 * 1000;
 
       const firstResponse = await helper.workerManager.registerWorker({
         ...defaultRegisterWorker,
@@ -1252,6 +1255,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(firstResponse.credentials.clientId,
         `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
 
+      // This will use the values set by register in the first place
       const secondResponse = await helper.workerManager.reregisterWorker({
         workerPoolId,
         workerGroup,
@@ -1259,14 +1263,33 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         secret: firstResponse.secret,
       });
 
-      assert(new Date(secondResponse.expires) - new Date() > (reregistrationTimeout - 1) * 1000 * 60 * 60);
-      assert(new Date(secondResponse.expires) - new Date() < reregistrationTimeout * 1000 * 60 * 60);
+      assert(new Date(secondResponse.expires) - new Date() > reregistrationTimeout - 250);
+      assert(new Date(secondResponse.expires) - new Date() < reregistrationTimeout + 250);
       assert.equal(firstResponse.credentials.clientId, secondResponse.credentials.clientId);
       assert.notStrictEqual(firstResponse.secret, secondResponse.secret);
 
       await worker.reload(helper.db);
       if (worker.providerData.terminateAfter) {
         assert.equal(worker.providerData.terminateAfter, new Date(secondResponse.expires).getTime());
+      }
+
+      // This time will use the values set by reregister (notice the re in front) the first time
+      // it is called (the secondResponse thing above)
+      const thirdResponse = await helper.workerManager.reregisterWorker({
+        workerPoolId,
+        workerGroup,
+        workerId,
+        secret: secondResponse.secret,
+      });
+
+      assert(new Date(thirdResponse.expires) - new Date() > reregistrationTimeout - 250);
+      assert(new Date(thirdResponse.expires) - new Date() < reregistrationTimeout + 250);
+      assert.equal(secondResponse.credentials.clientId, thirdResponse.credentials.clientId);
+      assert.notStrictEqual(secondResponse.secret, thirdResponse.secret);
+
+      await worker.reload(helper.db);
+      if (worker.providerData.terminateAfter) {
+        assert.equal(worker.providerData.terminateAfter, new Date(thirdResponse.expires).getTime());
       }
     };
 
@@ -1288,7 +1311,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             "someKey": "someValue",
           },
           // 2 hour
-          reregistrationTimeout: 2 * 60 * 60,
+          reregistrationTimeout: 2 * 60 * 60 * 1000, // this is stored in milliseconds
         },
       };
       await testExpires(config);
@@ -1301,7 +1324,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             "someKey": "someValue",
           },
           // 2 hour
-          reregistrationTimeout: 2 * 60 * 60,
+          reregistrationTimeout: 2 * 60 * 60 * 1000, // this is stored in milliseconds
           terminateAfter: taskcluster.fromNow('1 day').getTime(),
         },
       };

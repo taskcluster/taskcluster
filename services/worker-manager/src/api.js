@@ -773,8 +773,10 @@ builder.declare({
   }
 
   // defaults to 96 hours if reregistrationTimeout is not defined
+  // make sure to turn milliseconds into seconds here since we store it in millieconds
+  // after the first interpretation.
   const { terminateAfter } = Provider.interpretLifecycle({ lifecycle: {
-    reregistrationTimeout: worker.providerData && worker.providerData.reregistrationTimeout,
+    reregistrationTimeout: worker.providerData && (worker.providerData.reregistrationTimeout / 1000),
   } });
   const expires = new Date(terminateAfter);
 
