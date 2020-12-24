@@ -42,6 +42,7 @@ properties:
         type:         string
         enum:
           - reference
+          - link
           - error
       name:
         title:    "Artifact Name"
@@ -61,7 +62,9 @@ properties:
       contentType:
         title:    "Content-Type"
         description: |
-          Mimetype for the artifact that was created.
+          Mimetype for the artifact that was created (NOTE: deprecated; this
+          value is not checked and may not correspond to the content-type of
+          the final artifact)
         type:         string
         maxLength:    255
     additionalProperties: false

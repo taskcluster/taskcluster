@@ -48,6 +48,11 @@ builder.declare({
     'with a a 303 (See Other) response.  Clients will not apply any kind of',
     'authentication to that URL.',
     '',
+    '**Link artifacts**, will be treated as if the caller requested the linked',
+    'artifact on the same task.  Links may be chained, but cycles are forbidden.',
+    'The caller must have scopes for the linked artifact, or a 403 response will',
+    'be returned.',
+    '',
     '**Error artifacts**, only consists of meta-data which the queue will',
     'store for you. These artifacts are only meant to indicate that you the',
     'worker or the task failed to generate a specific artifact, that you',
@@ -65,9 +70,11 @@ builder.declare({
     'Do not abuse this to overwrite artifacts created by another entity!',
     'Such as worker-host overwriting artifact created by worker-code.',
     '',
-    'As a special case the `url` property on _reference artifacts_ can be',
-    'updated. You should only use this to update the `url` property for',
-    'reference artifacts your process has created.',
+    '**Immutability Special Cases**:',
+    '',
+    '* A `reference` artifact can replace an existing `reference` artifact`.',
+    '* A `link` artifact can replace an existing `reference` artifact`.',
+    '* Any artifact\'s `expires` can be extended.',
   ].join('\n'),
 }, async function(req, res) {
   let taskId = req.params.taskId;
@@ -75,6 +82,7 @@ builder.declare({
   let name = req.params.name;
   let input = req.body;
   let storageType = input.storageType;
+  // NOTE: this isn't actually used anywhere
   let contentType = input.contentType || 'application/json';
 
   // Find expiration date
@@ -185,6 +193,11 @@ builder.declare({
       details.url = input.url;
       break;
 
+    case 'link':
+      present = true;
+      details.artifact = input.artifact;
+      break;
+
     case 'error':
       present = true;
       details.message = input.message;
@@ -213,51 +226,48 @@ builder.declare({
       throw err;
     }
 
-    // Load existing Artifact entity
-    artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
+    // Load original Artifact entity
+    const original = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
 
-    // Allow recreating of the same artifact, report conflict if it's not the
-    // same artifact (allow for later expiration).
-    // Note, we'll check `details` later
-    if (artifact.storageType !== storageType ||
-      artifact.contentType !== contentType ||
-      artifact.expires.getTime() > expires.getTime()) {
+    let ok = true;
+    ok = ok && original.storageType === storageType;
+    ok = ok && original.contentType === contentType;
+    ok = ok && original.expires === expires;
+    ok = ok && _.isEqual(original.details, details),
+
+    // Allow special cases:
+    // * A `reference` artifact can replace an existing `reference` artifact`.
+    ok = ok || (original.storageType === 'reference' && storageType === 'reference');
+
+    // * A `link` artifact can replace an existing `reference` artifact`.
+    ok = ok || (original.storageType === 'reference' && storageType === 'link');
+
+    // * Any artifact\'s `expires` can be extended.
+    ok = ok || (original.expires.getTime() < expires.getTime());
+
+    if (!ok) {
       return res.reportError('RequestConflict',
-        'Artifact already exists, with different type or later expiration\n\n' +
-        'Existing artifact information: {{originalArtifact}}', {
+        'Artifact already exists with different properties, and none of the ' +
+        'allowed exceptions apply: {{originalArtifact}}', {
           originalArtifact: {
-            storageType: artifact.storageType,
-            contentType: artifact.contentType,
-            expires: artifact.expires,
+            storageType: original.storageType,
+            contentType: original.contentType,
+            expires: original.expires,
           },
         });
     }
 
-    if (storageType !== 'reference' &&
-      !_.isEqual(artifact.details, details)) {
-      return res.reportError('RequestConflict',
-        'Artifact already exists, with different contentType or error message\n\n' +
-        'Existing artifact information: {{originalArtifact}}', {
-          originalArtifact: {
-            storageType: artifact.storageType,
-            contentType: artifact.contentType,
-            expires: artifact.expires,
-          },
-        });
-    }
-
-    // Update expiration and detail, which may have been modified
+    // This update is allowed, so modify the artifact in-place
     artifact = artifactUtils.fromDbRows(
       await this.db.fns.update_queue_artifact(
-        artifact.taskId, artifact.runId, artifact.name, details,
-        expires,
+        taskId, runId, name, details, expires,
       ),
     );
   }
 
   // This event is *invalid* for s3 storage types so we'll stop sending it.
-  // It's only valid for error and reference types.
-  if (artifact.storageType === 'error' || artifact.storageType === 'reference') {
+  // It's only valid for the non-storage types.
+  if (['error', 'reference', 'link'].includes(artifact.storageType)) {
     // Publish message about artifact creation
     await this.publisher.artifactCreated({
       status: task.status(),
@@ -294,6 +304,7 @@ builder.declare({
       });
     }
     case 'reference':
+    case 'link':
     case 'error':
     // For 'reference' and 'error' the response is simple
       return res.reply({ storageType });
@@ -303,8 +314,15 @@ builder.declare({
   }
 });
 
-/** Reply to an artifact request using taskId, runId, name and context */
-let replyWithArtifact = async function(taskId, runId, name, req, res) {
+/**
+ * Reply to an artifact request using taskId, runId, name and context
+ *
+ * This assumes that permission to access the named artifact has already been verified.
+ *
+ * names is used internally for tracking artifact names that have already been seen
+ * when traversing links.
+ */
+let replyWithArtifact = async function(taskId, runId, name, req, res, names) {
   // Load artifact meta-data from table storage
   let artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
 
@@ -362,9 +380,27 @@ let replyWithArtifact = async function(taskId, runId, name, req, res) {
     return res.redirect(303, url);
   }
 
-  // Handle redirect artifacts
+  // Handle redirect/reference artifacts
   if (artifact.storageType === 'reference') {
     return res.redirect(303, artifact.details.url);
+  }
+
+  // handle link artifacts
+  if (artifact.storageType === 'link') {
+    // this is a link to another artifact, so check permission on that target artifact,
+    // and then call this function recursively for it.
+    const name = artifact.details.artifact;
+    if (names.indexOf(name) !== -1) {
+      return res.reportError('InputError',
+        'Artifact leads to a link cycle',
+        {});
+    }
+    names = names.concat([name]);
+
+    await req.authorize({ names: names });
+
+    // recurse to the linked artifact
+    return replyWithArtifact.call(this, taskId, runId, name, req, res, names);
   }
 
   // Handle error artifacts
@@ -453,10 +489,11 @@ builder.declare({
   let taskId = req.params.taskId;
   let runId = parseInt(req.params.runId, 10);
   let name = req.params.name;
+  let names = [name];
 
-  await req.authorize({ names: [name] });
+  await req.authorize({ names });
 
-  return replyWithArtifact.call(this, taskId, runId, name, req, res);
+  return replyWithArtifact.call(this, taskId, runId, name, req, res, names);
 });
 
 /** Get latest artifact from task */
@@ -492,8 +529,9 @@ builder.declare({
 }, async function(req, res) {
   let taskId = req.params.taskId;
   let name = req.params.name;
+  let names = [name];
 
-  await req.authorize({ names: [name] });
+  await req.authorize({ names });
 
   // Load task status structure from table
   let task = await Task.get(this.db, taskId);
@@ -512,7 +550,7 @@ builder.declare({
   let runId = task.runs.length - 1;
 
   // Reply
-  return replyWithArtifact.call(this, taskId, runId, name, req, res);
+  return replyWithArtifact.call(this, taskId, runId, name, req, res, names);
 });
 
 /** Get artifacts from run */

@@ -2948,6 +2948,24 @@
         },
         {
           "additionalProperties": false,
+          "description": "Response for an artifact with storageType lin.\n",
+          "properties": {
+            "storageType": {
+              "description": "Artifact storage type, in this case `link`\n",
+              "enum": [
+                "link"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "storageType"
+          ],
+          "title": "Link Artifact Response",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
           "description": "Response to a request for the queue to reply `424` (Failed Dependency)\nwith `reason` and `message` to any `GET` request for this artifact.\n",
           "properties": {
             "storageType": {
@@ -3039,6 +3057,35 @@
             "contentType"
           ],
           "title": "Redirect Artifact Request",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Request the queue to link this artifact to the named artifact on the same\ntask.  When a client fetches this artifact, the request will be treated as\nif the client fetched the linked artifact (including corresponding scope\nvalidation).  Note that the target artifact need not exist when this artifact\nis created.  It is allowed to create link cycles, but they will result in a\n400 response when fetched.\n",
+          "properties": {
+            "artifact": {
+              "description": "Name of the artifact to which to link.\n",
+              "type": "string"
+            },
+            "expires": {
+              "description": "Date-time after which the queue should no longer maintain this link.\n",
+              "format": "date-time",
+              "type": "string"
+            },
+            "storageType": {
+              "description": "Artifact storage type, in this case `link`\n",
+              "enum": [
+                "link"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "storageType",
+            "expires",
+            "artifact"
+          ],
+          "title": "Link Artifact Request",
           "type": "object"
         },
         {
@@ -3819,7 +3866,7 @@
           "description": "Information about the artifact that was created\n",
           "properties": {
             "contentType": {
-              "description": "Mimetype for the artifact that was created.\n",
+              "description": "Mimetype for the artifact that was created (NOTE: deprecated; this\nvalue is not checked and may not correspond to the content-type of\nthe final artifact)\n",
               "maxLength": 255,
               "title": "Content-Type",
               "type": "string"
@@ -3840,6 +3887,7 @@
               "description": "This is the `storageType` for the request that was used to create the\nartifact.\n",
               "enum": [
                 "reference",
+                "link",
                 "error"
               ],
               "title": "Artifact Storage-Type",
@@ -14444,7 +14492,7 @@
             "name"
           ],
           "category": "Artifacts",
-          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support \"S3 Artifacts\" officially, with remaining support\nfor two deprecated types.  Do not use these deprecated types.\n\n**S3 artifacts**, is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support \"S3 Artifacts\" officially, with remaining support\nfor two deprecated types.  Do not use these deprecated types.\n\n**S3 artifacts**, is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n\n**Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\n**Immutability Special Cases**:\n\n* A `reference` artifact can replace an existing `reference` artifact`.\n* A `link` artifact can replace an existing `reference` artifact`.\n* Any artifact's `expires` can be extended.",
           "input": "v1/post-artifact-request.json#",
           "method": "post",
           "name": "createArtifact",

@@ -55,6 +55,20 @@ oneOf:
     additionalProperties: false
     required:
       - storageType
+  - title:          "Link Artifact Response"
+    description: |
+      Response for an artifact with storageType lin.
+    type:           object
+    properties:
+      storageType:
+        description: |
+          Artifact storage type, in this case `link`
+        type:       string
+        enum:
+          - link
+    additionalProperties: false
+    required:
+      - storageType
   - title:          "Error Artifact Response"
     description: |
       Response to a request for the queue to reply `424` (Failed Dependency)

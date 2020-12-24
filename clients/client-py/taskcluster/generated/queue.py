@@ -362,6 +362,11 @@ class Queue(BaseClient):
         with a a 303 (See Other) response.  Clients will not apply any kind of
         authentication to that URL.
 
+        **Link artifacts**, will be treated as if the caller requested the linked
+        artifact on the same task.  Links may be chained, but cycles are forbidden.
+        The caller must have scopes for the linked artifact, or a 403 response will
+        be returned.
+
         **Error artifacts**, only consists of meta-data which the queue will
         store for you. These artifacts are only meant to indicate that you the
         worker or the task failed to generate a specific artifact, that you
@@ -379,9 +384,11 @@ class Queue(BaseClient):
         Do not abuse this to overwrite artifacts created by another entity!
         Such as worker-host overwriting artifact created by worker-code.
 
-        As a special case the `url` property on _reference artifacts_ can be
-        updated. You should only use this to update the `url` property for
-        reference artifacts your process has created.
+        **Immutability Special Cases**:
+
+        * A `reference` artifact can replace an existing `reference` artifact`.
+        * A `link` artifact can replace an existing `reference` artifact`.
+        * Any artifact's `expires` can be extended.
 
         This method is ``stable``
         """

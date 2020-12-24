@@ -214,6 +214,37 @@ type (
 		StorageType string `json:"storageType"`
 	}
 
+	// Request the queue to link this artifact to the named artifact on the same
+	// task.  When a client fetches this artifact, the request will be treated as
+	// if the client fetched the linked artifact (including corresponding scope
+	// validation).  Note that the target artifact need not exist when this artifact
+	// is created.  It is allowed to create link cycles, but they will result in a
+	// 400 response when fetched.
+	LinkArtifactRequest struct {
+
+		// Name of the artifact to which to link.
+		Artifact string `json:"artifact"`
+
+		// Date-time after which the queue should no longer maintain this link.
+		Expires tcclient.Time `json:"expires"`
+
+		// Artifact storage type, in this case `link`
+		//
+		// Possible values:
+		//   * "link"
+		StorageType string `json:"storageType"`
+	}
+
+	// Response for an artifact with storageType lin.
+	LinkArtifactResponse struct {
+
+		// Artifact storage type, in this case `link`
+		//
+		// Possible values:
+		//   * "link"
+		StorageType string `json:"storageType"`
+	}
+
 	// List of artifacts for a given `taskId` and `runId`.
 	ListArtifactsResponse struct {
 
@@ -339,6 +370,7 @@ type (
 	// One of:
 	//   * S3ArtifactRequest
 	//   * RedirectArtifactRequest
+	//   * LinkArtifactRequest
 	//   * ErrorArtifactRequest
 	PostArtifactRequest json.RawMessage
 
@@ -348,6 +380,7 @@ type (
 	// One of:
 	//   * S3ArtifactResponse
 	//   * RedirectArtifactResponse
+	//   * LinkArtifactResponse
 	//   * ErrorArtifactResponse
 	PostArtifactResponse json.RawMessage
 

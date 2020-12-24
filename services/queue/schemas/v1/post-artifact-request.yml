@@ -78,6 +78,36 @@ oneOf:
       - expires
       - url
       - contentType
+  - title:          "Link Artifact Request"
+    description: |
+      Request the queue to link this artifact to the named artifact on the same
+      task.  When a client fetches this artifact, the request will be treated as
+      if the client fetched the linked artifact (including corresponding scope
+      validation).  Note that the target artifact need not exist when this artifact
+      is created.  It is allowed to create link cycles, but they will result in a
+      400 response when fetched.
+    type:           object
+    properties:
+      storageType:
+        description: |
+          Artifact storage type, in this case `link`
+        type:       string
+        enum:
+          - link
+      expires:
+        description: |
+          Date-time after which the queue should no longer maintain this link.
+        type:       string
+        format:     date-time
+      artifact:
+        description: |
+          Name of the artifact to which to link.
+        type:       string
+    additionalProperties: false
+    required:
+      - storageType
+      - expires
+      - artifact
   - title:          "Error Artifact Request"
     description: |
       Request the queue to reply `424` (Failed Dependency) with `reason` and 

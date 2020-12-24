@@ -531,6 +531,141 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       });
     });
 
+    test('Post and get link artifact', async () => {
+      await makeAndClaimTask();
+      await makeArtifact(s3Artifact);
+      await makeArtifact({
+        name: 'public/link.json',
+        storageType: 'link',
+        expires: taskcluster.fromNowJSON('1 day'),
+        artifact: 'public/s3.json',
+      });
+
+      debug('### Downloading artifact');
+      const url = helper.queue.buildUrl(
+        helper.queue.getArtifact,
+        taskId, 0, 'public/link.json',
+      );
+
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        let res = await getWith303Redirect(url);
+        assume(res.ok).is.ok();
+        assume(res.body).to.be.eql({ message: 'Hello World' });
+      });
+    });
+
+    test('Post and get link artifact, missing scope for link', async () => {
+      await makeAndClaimTask();
+      await makeArtifact(s3Artifact);
+      await makeArtifact({
+        name: 'public/link.json',
+        storageType: 'link',
+        expires: taskcluster.fromNowJSON('1 day'),
+        artifact: 'public/s3.json',
+      });
+
+      debug('### Downloading artifact');
+      const url = helper.queue.buildUrl(
+        helper.queue.getArtifact,
+        taskId, 0, 'public/link.json',
+      );
+
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/s3.json'], async () => {
+        await get403(url);
+      });
+    });
+
+    test('Post and get link artifact, missing scope for target', async () => {
+      await makeAndClaimTask();
+      await makeArtifact(s3Artifact);
+      await makeArtifact({
+        name: 'public/link.json',
+        storageType: 'link',
+        expires: taskcluster.fromNowJSON('1 day'),
+        artifact: 'public/s3.json',
+      });
+
+      debug('### Downloading artifact');
+      const url = helper.queue.buildUrl(
+        helper.queue.getArtifact,
+        taskId, 0, 'public/link.json',
+      );
+
+      debug('Fetching artifact from unsigned URL %s', url);
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/link.json'], async () => {
+        const res = await get403(url);
+        // check that the error message includes both scopes
+        assume(res.body.message).contains('queue:get-artifact:public/link.json');
+        assume(res.body.message).contains('queue:get-artifact:public/s3.json');
+      });
+    });
+
+    test('Post and get link artifact, chain of links', async () => {
+      await makeAndClaimTask();
+      await makeArtifact(s3Artifact);
+      let lastName = 'public/s3.json';
+      for (let i of _.range(30)) {
+        const name = `public/${i}`;
+        await makeArtifact({
+          name,
+          storageType: 'link',
+          expires: taskcluster.fromNowJSON('1 day'),
+          artifact: lastName,
+        });
+        lastName = name;
+      }
+
+      helper.scopes('queue:get-artifact:*');
+
+      debug('### Downloading artifact');
+      const url = helper.queue.buildSignedUrl(
+        helper.queue.getArtifact,
+        taskId, 0, lastName,
+      );
+
+      debug('Fetching artifact from unsigned URL %s', url);
+      let res = await getWith303Redirect(url);
+      assume(res.ok).is.ok();
+      assume(res.body).to.be.eql({ message: 'Hello World' });
+    });
+
+    test('Post reference artifact, replace with link', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({
+        name: 'public/thing.json',
+        storageType: 'reference',
+        expires: taskcluster.fromNowJSON('1 day'),
+        url: 'https://example.com',
+        contentType: 'text/html',
+      });
+      await makeArtifact({
+        name: 'public/thing.json',
+        storageType: 'link',
+        expires: taskcluster.fromNowJSON('1 day'),
+        artifact: 'public/something',
+      });
+    });
+
+    test('Post reference artifact, update its URL', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({
+        name: 'public/thing.json',
+        storageType: 'reference',
+        expires: taskcluster.fromNowJSON('1 day'),
+        url: 'https://example.com',
+        contentType: 'text/html',
+      });
+      await makeArtifact({
+        name: 'public/thing.json',
+        storageType: 'reference',
+        expires: taskcluster.fromNowJSON('1 day'),
+        url: 'https://newurl.example.com',
+        contentType: 'text/html',
+      });
+    });
+
     test('Redirect artifact doesn\'t expire too soon', async () => {
       await makeAndClaimTask();
       await makeArtifact({
