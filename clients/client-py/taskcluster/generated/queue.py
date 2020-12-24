@@ -447,22 +447,6 @@ class Queue(BaseClient):
         * location: the url of the artifact if a redirect is to be performed
         * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
 
-        The following important headers are set on responses to this method for Blob artifacts
-
-        * x-taskcluster-location-content-sha256: the SHA256 of the artifact
-        *after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})
-        * x-taskcluster-location-content-length: the number of bytes *after* any content-encoding
-        is undone
-        * x-taskcluster-location-transfer-sha256: the SHA256 of the artifact
-        *before* any content-encoding is undone.  This is the SHA256 of what is sent over
-        the wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})
-        * x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding
-        is undone
-        * x-taskcluster-location-content-encoding: the content-encoding used.  It will either
-        be `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact
-        was created and no content-negotiation occurs
-        * x-taskcluster-location-content-type: the content-type of the artifact
-
         This method is ``stable``
         """
 
