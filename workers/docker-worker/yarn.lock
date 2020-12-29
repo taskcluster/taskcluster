@@ -10,18 +10,10 @@
     "@hapi/hoek" "9.x.x"
 
 "@hapi/boom@9.x.x":
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/@hapi/boom/-/boom-9.1.0.tgz#0d9517657a56ff1e0b42d0aca9da1b37706fec56"
-  integrity sha512-4nZmpp4tXbm162LaZT45P7F7sgiem8dwAh2vHWT6XX24dozNjGMg6BvKCRvtCUcmcXqeMIUqWN8Rc5X8yKuROQ==
+  version "9.1.1"
+  resolved "https://registry.yarnpkg.com/@hapi/boom/-/boom-9.1.1.tgz#89e6f0e01637c2a4228da0d113e8157c93677b04"
+  integrity sha512-VNR8eDbBrOxBgbkddRYIe7+8DZ+vSbV6qlmaN2x7eWjsUjy2VmQgChkOKcVZIeupEZYj+I0dqNg430OhwzagjA==
   dependencies:
-    "@hapi/hoek" "9.x.x"
-
-"@hapi/bounce@2.x.x":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@hapi/bounce/-/bounce-2.0.0.tgz#e6ef56991c366b1e2738b2cd83b01354d938cf3d"
-  integrity sha512-JesW92uyzOOyuzJKjoLHM1ThiOvHPOLDHw01YV8yh5nCso7sDwJho1h0Ad2N+E62bZyz46TG3xhAi/78Gsct6A==
-  dependencies:
-    "@hapi/boom" "9.x.x"
     "@hapi/hoek" "9.x.x"
 
 "@hapi/cryptiles@5.x.x":
@@ -32,24 +24,9 @@
     "@hapi/boom" "9.x.x"
 
 "@hapi/hoek@9.x.x":
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/@hapi/hoek/-/hoek-9.1.0.tgz#6c9eafc78c1529248f8f4d92b0799a712b6052c6"
-  integrity sha512-i9YbZPN3QgfighY/1X1Pu118VUz2Fmmhd6b2n0/O8YVgGGfw0FbUYoA97k7FkpGJ+pLCFEDLUmAPPV4D1kpeFw==
-
-"@hapi/sntp@4.x.x":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@hapi/sntp/-/sntp-4.0.0.tgz#2095bfd7bbe0e6cf0eced55a7598035815b8e02e"
-  integrity sha512-yBXTlySZyPZKz0NPoxxFClKNMmVhsZq84Ir7+k93XNGLdSnY3iD0BosxflLpIbP7yr3p4T+QDPMNgOA3XccdFQ==
-  dependencies:
-    "@hapi/boom" "9.x.x"
-    "@hapi/bounce" "2.x.x"
-    "@hapi/hoek" "9.x.x"
-    "@hapi/teamwork" "4.x.x"
-
-"@hapi/teamwork@4.x.x":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@hapi/teamwork/-/teamwork-4.0.0.tgz#4aadbb88de13bce39ab8431565cd50c7ecc6327f"
-  integrity sha512-V6xYOrr5aFv/IJqNPneaYCu8vuGTKisamqHVRS3JJnbZr18TrpXdsJOYk9pjPhFti+M2YETPebQLUr820N5NoQ==
+  version "9.1.1"
+  resolved "https://registry.yarnpkg.com/@hapi/hoek/-/hoek-9.1.1.tgz#9daf5745156fd84b8e9889a2dc721f0c58e894aa"
+  integrity sha512-CAEbWH7OIur6jEOzaai83jq3FmKmv4PmX1JYfs9IrYcGEVI/lyL1EXJGCj7eFVJ0bg5QR8LMxBlEtA+xKiLpFw==
 
 "@sentry/core@5.27.0":
   version "5.27.0"
@@ -975,16 +952,15 @@ has-flag@^4.0.0:
   resolved "https://registry.yarnpkg.com/has-flag/-/has-flag-4.0.0.tgz#944771fd9c81c81265c4d6941860da06bb59479b"
   integrity sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==
 
-hawk@^8.0.0:
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/hawk/-/hawk-8.0.1.tgz#f187cdd90ba28a29f626e5d38bf8c1d7b7ca7e12"
-  integrity sha512-n9yJDun8ooG+/t0SVn2iRxZBNY8x5B14JECie8rY61ZJ4CrEnTOYe9tZ5z7lpjuyoqMdrB74idO70pu4R2scqg==
+hawk@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/hawk/-/hawk-9.0.0.tgz#406a1f2f92dd6948a50620e5cafd5491007764de"
+  integrity sha512-xTkUIwwAI6d5//1ofvWCDM7YYAEAo/mFqhEW7S/m9+nLZqkOzSz8lTLKk6cHvJGax3UrbljfP8P+PFPybGcxZA==
   dependencies:
     "@hapi/b64" "5.x.x"
     "@hapi/boom" "9.x.x"
     "@hapi/cryptiles" "5.x.x"
     "@hapi/hoek" "9.x.x"
-    "@hapi/sntp" "4.x.x"
 
 he@1.2.0:
   version "1.2.0"
@@ -1322,6 +1298,13 @@ lowercase-keys@^2.0.0:
   resolved "https://registry.yarnpkg.com/lowercase-keys/-/lowercase-keys-2.0.0.tgz#2603e78b7b4b0006cbca2fbcc8a3202558ac9479"
   integrity sha512-tqNXrS78oMOE73NMxK4EMLQsQowWf8jKooH9g7xPavRT706R6bkQJ6DY2Te7QukaZsulxa30wQ7bk0pm4XiHmA==
 
+lru-cache@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-6.0.0.tgz#6d6fe6570ebd96aaf90fcad1dafa3b2566db3a94"
+  integrity sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==
+  dependencies:
+    yallist "^4.0.0"
+
 lru_map@^0.3.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/lru_map/-/lru_map-0.3.3.tgz#b5c8351b9464cbd750335a79650a0ec0e56118dd"
@@ -1335,6 +1318,7 @@ media-typer@0.3.0:
 methods@^1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/methods/-/methods-1.1.2.tgz#5529a4d67654134edcc5266656835b0f851afcee"
+  integrity sha1-VSmk1nZUE07cxSZmVoNbD4Ua/O4=
 
 mime-db@1.44.0:
   version "1.44.0"
@@ -1827,9 +1811,11 @@ safer-buffer@^2.0.2, safer-buffer@^2.1.0, safer-buffer@~2.1.0:
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
 semver@^7.3.2:
-  version "7.3.2"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.3.2.tgz#604962b052b81ed0786aae84389ffba70ffd3938"
-  integrity sha512-OrOb32TeeambH6UrhtShmF7CRDqhL6/5XpPNp2DuRH6+9QLw/orhp72j87v8Qa1ScDkvrrBNpZcDejAirJmfXQ==
+  version "7.3.4"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.3.4.tgz#27aaa7d2e4ca76452f98d3add093a72c943edc97"
+  integrity sha512-tCfb2WLjqFAtXn4KEdxIhalnRtoKFN7nAwj0B3ZXCbQloV2tq5eDbcTmT68JJD3nRJq24/XgxtQKFIpQdtvmVw==
+  dependencies:
+    lru-cache "^6.0.0"
 
 serialize-error@^7.0.0:
   version "7.0.1"
@@ -2071,12 +2057,12 @@ tar-stream@^2.0.0, tar-stream@^2.1.3:
     readable-stream "^3.1.1"
 
 taskcluster-client@^39.0.0:
-  version "39.0.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-39.0.0.tgz#3331332061e481584df99f9c6d83f69a95188424"
-  integrity sha512-9CqaTcSavEOcqfSKUaWdIu7OHdvMLT1EzuB+HjuqpGU/jdMzqKzLkWWH/INHRHeO47bTZy3EMQaUw4i6MROPCQ==
+  version "39.2.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-39.2.0.tgz#a191fba5f404a863959a433181f6d80fc151321a"
+  integrity sha512-dvF8wJ+WvmHKj8d52zFi8GYro1+Hg3PmSVwld4cLkQqHv2rfVLgxMUJLC+E9/eEoLUlt0ene12KYgaHfbZyR0A==
   dependencies:
     debug "^4.1.1"
-    hawk "^8.0.0"
+    hawk "^9.0.0"
     lodash "^4.17.4"
     slugid "^2.0.0"
     superagent "^6.0.0"
@@ -2287,6 +2273,11 @@ y18n@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/y18n/-/y18n-4.0.0.tgz#95ef94f85ecc81d007c264e190a120f0a3c8566b"
   integrity sha512-r9S/ZyXu/Xu9q1tYlpsLIsa3EeLXXk0VwlxqTcFRfg9EhMW+17kbt9G0NrgCmhGb5vT2hyhJZLfDGx+7+5Uj/w==
+
+yallist@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/yallist/-/yallist-4.0.0.tgz#9bb92790d9c0effec63be73519e11a35019a3a72"
+  integrity sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==
 
 yargs-parser@13.1.2, yargs-parser@^13.1.2:
   version "13.1.2"
