@@ -45,9 +45,9 @@
     tslib "^1.10.0"
 
 "@azure/arm-network@^23.0.0":
-  version "23.0.0"
-  resolved "https://registry.yarnpkg.com/@azure/arm-network/-/arm-network-23.0.0.tgz#f03ecf8ce1c4bb7aa33b7f5bbfcbdaa293ae15cc"
-  integrity sha512-T33TyIg3rGfRsZfmlIwfu/BJdtf/F0gojR5q+deAWEUMtBqiNOnFFm8H0JiecR4753Ea4HATaqW8IFEjXAoKlQ==
+  version "23.1.0"
+  resolved "https://registry.yarnpkg.com/@azure/arm-network/-/arm-network-23.1.0.tgz#5ec8cc9288ffde8836585a6158b82a6049abc593"
+  integrity sha512-q8U5j4xlRI8Y6hcIE0iT81B+CScVng19HO3hDxqTuWFbOKvVPiJMFm8T8thT3PbLpB5HdcbpBwuCgydu/15QsA==
   dependencies:
     "@azure/ms-rest-azure-js" "^2.0.1"
     "@azure/ms-rest-js" "^2.0.4"
@@ -790,9 +790,9 @@
     form-data "^3.0.0"
 
 "@types/node@*", "@types/node@>= 8", "@types/node@>=6", "@types/node@>=8.9.0":
-  version "14.14.16"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.16.tgz#3cc351f8d48101deadfed4c9e4f116048d437b4b"
-  integrity sha512-naXYePhweTi+BMv11TgioE2/FXU4fSl29HAH1ffxVciNsH3rYXjNP2yM8wqmSm7jS20gM8TIklKiTen+1iVncw==
+  version "14.14.14"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.14.tgz#f7fd5f3cc8521301119f63910f0fb965c7d761ae"
+  integrity sha512-UHnOPWVWV1z+VV8k6L1HhG7UbGBgIdghqF3l9Ny9ApPghbjICXkUJSd/b9gOgQfjM1r+37cipdw/HJ3F6ICEnQ==
 
 "@types/node@^10.1.0":
   version "10.17.49"
