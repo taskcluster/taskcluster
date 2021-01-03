@@ -19,8 +19,8 @@
   "dependencies": {
     "@material-ui/core": "^4.8.3",
     "@material-ui/icons": "^4.5.1",
-    "@material-ui/lab": "4.0.0-alpha.33",
-    "@material-ui/pickers": "3.2.7",
+    "@material-ui/lab": "4.0.0-alpha.57",
+    "@material-ui/pickers": "3.2.10",
     "@mdx-js/react": "^1.0.20",
     "@mdx-js/runtime": "^1.0.20",
     "@mozilla-frontend-infra/components": "^3.0.7",
