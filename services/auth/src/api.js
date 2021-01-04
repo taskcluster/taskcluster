@@ -1,5 +1,6 @@
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const scopeUtils = require('taskcluster-lib-scopes');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const slugid = require('slugid');
 const _ = require('lodash');
 const signaturevalidator = require('./signaturevalidator');
@@ -263,15 +264,22 @@ builder.declare({
 
   let accessToken = slugid.v4() + slugid.v4();
 
-  await this.db.fns.create_client(
-    clientId,
-    input.description,
-    this.db.encrypt({ value: Buffer.from(accessToken, 'utf8') }),
-    new Date(input.expires),
-    false,
-    JSON.stringify(scopes),
-    !!input.deleteOnExpiration,
-  );
+  try {
+    await this.db.fns.create_client(
+      clientId,
+      input.description,
+      this.db.encrypt({ value: Buffer.from(accessToken, 'utf8') }),
+      new Date(input.expires),
+      false,
+      JSON.stringify(scopes),
+      !!input.deleteOnExpiration,
+    );
+  } catch (err) {
+    if (err.code !== UNIQUE_VIOLATION) {
+      throw err;
+    }
+    return res.reportError('RequestConflict', 'Client already exists', {});
+  }
 
   // Send pulse message
   await Promise.all([
