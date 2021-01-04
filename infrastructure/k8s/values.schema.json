@@ -1236,17 +1236,6 @@
         "public_artifact_bucket_cdn": {
           "type": "string"
         },
-        "public_artifact_ec2_proxies": {
-          "oneOf": [
-            {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            {
-              "type": "array"
-            }
-          ]
-        },
         "pulse_password": {
           "type": "string"
         },
@@ -1267,9 +1256,6 @@
         },
         "taskcluster_client_id": {
           "type": "string"
-        },
-        "use_cloud_mirror": {
-          "type": "boolean"
         },
         "write_db_url": {
           "type": "string"

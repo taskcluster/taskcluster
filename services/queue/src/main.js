@@ -158,11 +158,7 @@ let load = loader({
   regionResolver: {
     requires: ['cfg', 'monitor'],
     setup: async ({ cfg, monitor }) => {
-      let regionResolver = new EC2RegionResolver(
-        cfg.app.useCloudMirror ?
-          [...cfg.app.cloudMirrorRegions, cfg.aws.region] :
-          [cfg.aws.region],
-        monitor);
+      let regionResolver = new EC2RegionResolver([cfg.aws.region], monitor);
       regionResolver.start();
       return regionResolver;
     },
@@ -196,8 +192,6 @@ let load = loader({
         privateBucket: ctx.privateArtifactBucket,
         regionResolver: ctx.regionResolver,
         credentials: ctx.cfg.taskcluster.credentials,
-        useCloudMirror: !!ctx.cfg.app.useCloudMirror,
-        cloudMirrorHost: ctx.cfg.app.cloudMirrorHost,
         artifactRegion: ctx.cfg.aws.region,
         monitor: ctx.monitor.childMonitor('api-context'),
         workClaimer: ctx.workClaimer,

@@ -51,11 +51,7 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
             'public/actions.json',
           );
 
-          const raw = await fetch(url, {
-            headers: {
-              'x-taskcluster-skip-cache': true,
-            },
-          });
+          const raw = await fetch(url);
 
           return raw.actions
             ? {

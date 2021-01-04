@@ -388,12 +388,6 @@ export default class Queue extends Client {
   // be `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact
   // was created and no content-negotiation occurs
   // * x-taskcluster-location-content-type: the content-type of the artifact
-  // **Caching**, artifacts may be cached in data centers closer to the
-  // workers in-order to reduce bandwidth costs. This can lead to longer
-  // response times. Caching can be skipped by setting the header
-  // `x-taskcluster-skip-cache: true`, this should only be used for resources
-  // where request volume is known to be low, and caching not useful.
-  // (This feature may be disabled in the future, use is sparingly!)
   /* eslint-enable max-len */
   getArtifact(...args) {
     this.validate(this.getArtifact.entry, args);

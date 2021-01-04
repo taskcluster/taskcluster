@@ -63,21 +63,8 @@ defaults:
       # Number of ms to sleep after polling from an empty queue
       pollingDelay:               5000
 
-    # Mapping from EC2 region to public artifact bucket proxy
-    # (Must not end with a slash!)
-    publicArtifactBucketProxies:  !env:json:optional PUBLIC_ARTIFACT_EC2_PROXIES
-
     # CDN for public artifact bucket
     publicArtifactBucketCDN:      !env:optional PUBLIC_ARTIFACT_BUCKET_CDN
-
-    # Cloud mirror configuration
-    useCloudMirror:               !env:bool:optional USE_CLOUD_MIRROR
-    cloudMirrorHost:              'cloud-mirror.taskcluster.net'
-    cloudMirrorRegions:
-      - us-east-1
-      - us-east-2
-      - us-west-1
-      - eu-central-1
 
     taskCacheMaxSize: !env:number:optional TASK_CACHE_MAX_SIZE
 
@@ -148,8 +135,6 @@ test:
       parallelism:                1
     dependencyResolver:
       pollingDelay:               250
-    publicArtifactBucketProxies:
-      'us-east-1':    'proxy-for-us-east-1'
     taskCacheMaxSize: 10
   server:
     port:             60401
