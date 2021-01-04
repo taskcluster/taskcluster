@@ -109,7 +109,8 @@ export default class TaskDetailsCard extends Component {
      */
     dependentTasks: arrayOf(
       shape({
-        taskId: string,
+        taskId: string.isRequired,
+        // note that status and metadata may be missing
         status: shape({
           state: string,
         }),
@@ -319,16 +320,20 @@ export default class TaskDetailsCard extends Component {
                     </ListItem>
                     <List disablePadding>
                       {dependentTasks.map(task => (
+                        // note that the task might not exist, if it has
+                        // expired
                         <Link key={task.taskId} to={`/tasks/${task.taskId}`}>
                           <ListItem
                             button
                             className={classes.listItemButton}
                             title="View Task">
-                            <StatusLabel state={task.status.state} />
+                            <StatusLabel
+                              state={task.status?.state || 'EXPIRED'}
+                            />
                             <ListItemText
                               primaryTypographyProps={{ variant: 'body2' }}
                               className={classes.listItemText}
-                              primary={task.metadata.name}
+                              primary={task.metadata?.name || task.taskId}
                             />
                             <LinkIcon />
                           </ListItem>

@@ -34,6 +34,7 @@ export default {
   MULTI_KEY: 'error',
   AND: 'info',
   OR: 'info',
+  EXPIRED: 'warning',
   SUCCESS: 'success',
   ERROR: 'error',
   EMERG: 'error',
