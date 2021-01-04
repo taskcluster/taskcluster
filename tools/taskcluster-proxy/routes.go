@@ -79,6 +79,22 @@ func (routes *Routes) setHeaders(res http.ResponseWriter) {
 	}
 }
 
+// Implement the Handler interface, dispatching requests to the various
+// *Handler methods.  Note that we cannot use ServeMux for this as it mangles
+// URLs and sends redircts.
+func (routes *Routes) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	url := r.URL.String()
+	if strings.HasPrefix(url, "/bewit") {
+		routes.BewitHandler(w, r)
+	} else if strings.HasPrefix(url, "/credentials") {
+		routes.CredentialsHandler(w, r)
+	} else if strings.HasPrefix(url, "/api") {
+		routes.APIHandler(w, r)
+	} else {
+		routes.RootHandler(w, r)
+	}
+}
+
 // BewitHandler is the http handler that provides Hawk signed urls (bewits)
 func (routes *Routes) BewitHandler(res http.ResponseWriter, req *http.Request) {
 	// Using ReadAll could be sketchy here since we are reading unbounded data

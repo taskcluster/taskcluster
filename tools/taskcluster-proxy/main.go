@@ -48,15 +48,15 @@ func main() {
 		log.Fatalf("%v", err)
 	}
 
-	http.HandleFunc("/bewit", routes.BewitHandler)
-	http.HandleFunc("/credentials", routes.CredentialsHandler)
-	http.HandleFunc("/api/", routes.APIHandler)
-	http.HandleFunc("/", routes.RootHandler)
+	server := &http.Server{
+		Handler: &routes,
+		// Only listen on loopback interface to reduce attack surface. If we later
+		// wish to make this service available over the network, we could add
+		// configuration settings for this, but for now, let's lock it down.
+		Addr: address,
+	}
 
-	// Only listen on loopback interface to reduce attack surface. If we later
-	// wish to make this service available over the network, we could add
-	// configuration settings for this, but for now, let's lock it down.
-	startError := http.ListenAndServe(address, nil)
+	startError := server.ListenAndServe()
 	if startError != nil {
 		log.Fatal(startError)
 	}
