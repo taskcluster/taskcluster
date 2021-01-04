@@ -123,6 +123,7 @@ class Database {
             await client.query('commit');
             return res;
           } catch (err) {
+            // before continuing to handle the error, roll this transaction back
             try {
               await client.query('rollback');
             } catch (_) {
@@ -130,6 +131,12 @@ class Database {
               // is probably a case of a server shutting down or a failed
               // connection.
             }
+
+            // generate a sentry fingerprint for this error, to avoid lumping all
+            // errors into the same event.  This considers the method name and the
+            // response code, but not the inputs.
+            err.sentryFingerprint = `pg-${method.name}-${err.code}`;
+
             throw err;
           }
         });

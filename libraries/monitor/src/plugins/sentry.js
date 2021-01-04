@@ -27,17 +27,21 @@ class SentryReporter {
   }
 
   report(error, level, extra) {
-    Sentry.configureScope(scope => {
+    Sentry.withScope(scope => {
       if (level) {
         scope.setLevel(tcToSentryLevel[level] || 'error');
+      }
+      if ('sentryFingerprint' in error) {
+        scope.setFingerprint(['{{ default }}', error.sentryFingerprint]);
+        delete error.sentryFingerprint;
       }
       if (extra) {
         Object.entries(extra).forEach(([k, v]) => {
           scope.setTag(k, v);
         });
       }
+      return Sentry.captureException(error);
     });
-    return Sentry.captureException(error);
   }
 
   async flush() {
