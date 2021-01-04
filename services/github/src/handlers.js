@@ -344,7 +344,7 @@ class Handlers {
       throw e;
     }
 
-    return yaml.safeLoad(Buffer.from(response.data.content, 'base64').toString());
+    return yaml.load(Buffer.from(response.data.content, 'base64').toString());
   }
 }
 module.exports = Handlers;

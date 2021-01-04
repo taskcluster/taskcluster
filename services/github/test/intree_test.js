@@ -62,7 +62,7 @@ suite(testing.suiteName(), function() {
    **/
   let buildConfigTest = function(testName, configPath, params, expected, count = -1, shouldError = false) {
     test(testName, async function() {
-      params.config = yaml.safeLoad(fs.readFileSync(configPath));
+      params.config = yaml.load(fs.readFileSync(configPath));
       params.schema = {
         0: libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.yml'),
         1: libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.v1.yml'),

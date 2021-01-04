@@ -36,7 +36,7 @@ const createType = (env, vars, basename, typeName, deserialize) => {
 /*
  * This schema allows our special !env types
  */
-module.exports = (env, vars) => yaml.Schema.create(yaml.JSON_SCHEMA, _.flatten([
+module.exports = (env, vars) => yaml.JSON_SCHEMA.extend(_.flatten([
   createType(env, vars, '!env', 'string', val => {
     return val;
   }),

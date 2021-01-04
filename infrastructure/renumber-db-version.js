@@ -41,7 +41,7 @@ const main = async () => {
   renames.push([fromVersionFile, toVersionFile]);
 
   let versionContent = fs.readFileSync(fromVersionFile, 'utf8');
-  const version = yaml.safeLoad(versionContent);
+  const version = yaml.load(versionContent);
 
   versionContent = versionContent.replace(/^version: \d+/, `version: ${parseInt(toVersion)}`);
 

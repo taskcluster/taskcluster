@@ -63,7 +63,7 @@ class FakeCloud {
         if (!file.endsWith('.yml')) {
           return;
         }
-        const schema = yaml.safeLoad(fs.readFileSync(path.join(dir, file), 'utf-8'));
+        const schema = yaml.load(fs.readFileSync(path.join(dir, file), 'utf-8'));
         schema.$id = file;
         ajv.addSchema(schema);
       });

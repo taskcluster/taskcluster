@@ -28,7 +28,7 @@ class SchemaSet {
       const fullpath = path.resolve(this.cfg.constants);
       debug('Attempting to set constants by file: %s', fullpath);
       try {
-        this.cfg.constants = yaml.safeLoad(fs.readFileSync(fullpath, 'utf-8'));
+        this.cfg.constants = yaml.load(fs.readFileSync(fullpath, 'utf-8'));
       } catch (err) {
         if (err.code === 'ENOENT') {
           debug('Constants file does not exist, setting constants to {}');
@@ -47,7 +47,7 @@ class SchemaSet {
         let json = null;
         const data = fs.readFileSync(path.join(this.cfg.folder, name), 'utf-8');
         if (/\.ya?ml$/.test(name) && name !== 'constants.yml') {
-          json = yaml.safeLoad(data);
+          json = yaml.load(data);
         } else if (/\.json$/.test(name)) {
           json = JSON.parse(data);
         } else {

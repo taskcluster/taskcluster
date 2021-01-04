@@ -158,7 +158,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
     // thankfully this is the only case where this bites us (so far), so we can just do some
     // post processing
     const replicaConfigString = `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`;
-    const processed = yaml.safeDump(rendered, { lineWidth: -1 }).replace('REPLICA_CONFIG_STRING', replicaConfigString);
+    const processed = yaml.dump(rendered, { lineWidth: -1 }).replace('REPLICA_CONFIG_STRING', replicaConfigString);
 
     const filename = `taskcluster-${name}-${tmpl}-${proc}.yaml`;
     await writeRepoFile(path.join(TMPL_DIR, filename), processed);

@@ -59,7 +59,7 @@
     "hsts": "^2.1.0",
     "immutable": "^3.8.2",
     "iterall": "^1.2.2",
-    "js-yaml": "^3.13.1",
+    "js-yaml": "^4.0.0",
     "json-e": "^4.0.1",
     "json-parameterization": "^2.0.1",
     "jsonwebtoken": "^8.1.1",
