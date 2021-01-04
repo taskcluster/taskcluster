@@ -71,7 +71,15 @@ func init() {
 			Description: `Set of scopes to be used for authorizing requests, defaults to all the scopes you have.`,
 			Parse:       true,
 			Validate: func(value interface{}) error {
-				_, ok := value.([]string)
+				strs, ok := value.([]interface{})
+				if ok {
+					for _, str := range strs {
+						if _, ok2 := str.(string); !ok2 {
+							ok = false
+							break
+						}
+					}
+				}
 				if !ok {
 					return errors.New("Must be a list of strings")
 				}
