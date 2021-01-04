@@ -1236,17 +1236,6 @@
         "public_artifact_bucket_cdn": {
           "type": "string"
         },
-        "public_artifact_ec2_proxies": {
-          "oneOf": [
-            {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            {
-              "type": "array"
-            }
-          ]
-        },
         "pulse_password": {
           "type": "string"
         },
