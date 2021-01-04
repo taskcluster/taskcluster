@@ -378,6 +378,13 @@
     "title": "Object Service"
   },
   {
+    "element": "h4",
+    "id": "aws-configuration",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "AWS Configuration",
+    "title": "Object Service"
+  },
+  {
     "element": "h2",
     "id": "backend-configuration",
     "path": "/manual/deploying/object-service",
@@ -406,6 +413,13 @@
     "title": "Object Service"
   },
   {
+    "element": "h4",
+    "id": "google-cloud-configuration",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "Google Cloud Configuration",
+    "title": "Object Service"
+  },
+  {
     "element": "h2",
     "id": "middleware-types",
     "path": "/manual/deploying/object-service",
@@ -417,6 +431,13 @@
     "id": "middleware",
     "path": "/manual/deploying/object-service",
     "subtitle": "Middleware",
+    "title": "Object Service"
+  },
+  {
+    "element": "h4",
+    "id": "signing-get-urls",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "Signing GET URLs",
     "title": "Object Service"
   },
   {
@@ -2636,13 +2657,6 @@
     "id": "aws-backend-type-for-aws-_and_-google-cloud",
     "path": "/reference/platform/object/aws-backend",
     "subtitle": null,
-    "title": "AWS Backend Type (for AWS _and_ Google Cloud!)"
-  },
-  {
-    "element": "h2",
-    "id": "deployment-configuration",
-    "path": "/reference/platform/object/aws-backend",
-    "subtitle": "Deployment Configuration",
     "title": "AWS Backend Type (for AWS _and_ Google Cloud!)"
   },
   {
