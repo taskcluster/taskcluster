@@ -97,9 +97,9 @@ exports.modifyRepoJSON = async (filename, modifier) => {
  */
 exports.modifyRepoYAML = async (filename, modifier) => {
   return exports.modifyRepoFile(filename, async contents => {
-    const data = yaml.safeLoad(contents);
+    const data = yaml.load(contents);
     await modifier(data);
-    return yaml.safeDump(data, { lineWidth: -1 });
+    return yaml.dump(data, { lineWidth: -1 });
   });
 };
 
@@ -118,12 +118,12 @@ exports.gitLsFiles = async ({ patterns } = {}) => {
  * Asynchronously read a yaml file from the current working copy
  */
 exports.readRepoYAML = async filename => {
-  return yaml.safeLoad(await exports.readRepoFile(filename));
+  return yaml.load(await exports.readRepoFile(filename));
 };
 
 /**
  * Asynchronously write a yaml file to the current working copy
  */
 exports.writeRepoYAML = async (filename, data) => {
-  return await writeFile(filename, yaml.safeDump(data, { lineWidth: -1 }), { encoding: 'utf8' });
+  return await writeFile(filename, yaml.dump(data, { lineWidth: -1 }), { encoding: 'utf8' });
 };

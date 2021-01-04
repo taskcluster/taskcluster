@@ -25,7 +25,7 @@ const getCommonSchemas = () => {
     }
     const filename = path.join(dir, dentry);
     const data = fs.readFileSync(filename);
-    const content = yaml.safeLoad(data);
+    const content = yaml.load(data);
     assert(content.$id, `${filename} has no $id`);
     assert(content.$schema, `${filename} has no $id`);
     _commonSchemas.push({ content, filename: `schemas/${dentry}` });

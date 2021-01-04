@@ -44,7 +44,7 @@ const config = ({
       continue;
     }
 
-    const data = yaml.safeLoad(f, {
+    const data = yaml.load(f, {
       filename: file.path, // This just gets included in error messages
       schema,
     });

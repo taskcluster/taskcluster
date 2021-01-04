@@ -198,7 +198,7 @@ const getExtraInfo = ({ extra, workerPoolId, description, errorId }) => {
 It includes the extra information:
 
 \`\`\`
-${yaml.safeDump(extra)}
+${yaml.dump(extra)}
 \`\`\`
       `.trim();
   }

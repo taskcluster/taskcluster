@@ -31,7 +31,7 @@ class Schema {
         return;
       }
 
-      const content = yaml.safeLoad(fs.readFileSync(filename));
+      const content = yaml.load(fs.readFileSync(filename));
       const version = Version.fromYamlFileContent(content, filename);
       if (versions[version.version - 1]) {
         throw new Error(`duplicate version number ${version.version} in ${filename}`);
@@ -48,10 +48,10 @@ class Schema {
     Schema._checkMethodUpdates(versions);
 
     const access = Access.fromYamlFileContent(
-      yaml.safeLoad(fs.readFileSync(path.join(directory, 'access.yml'))),
+      yaml.load(fs.readFileSync(path.join(directory, 'access.yml'))),
       'access.yml');
     const tables = Relations.fromYamlFileContent(
-      yaml.safeLoad(fs.readFileSync(path.join(directory, 'tables.yml'))),
+      yaml.load(fs.readFileSync(path.join(directory, 'tables.yml'))),
       'tables.yml');
 
     return new Schema(versions, access, tables);
