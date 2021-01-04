@@ -13,9 +13,10 @@ var (
 // Setup presistent flags, pre-run and return root command
 func setUpRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "taskcluster",
-		Short: "Taskcluster Shell client.",
-		Long:  "A shell interface to Taskcluster",
+		Use:          "taskcluster",
+		Short:        "Taskcluster Shell client.",
+		Long:         "A shell interface to Taskcluster",
+		SilenceUsage: true,
 	}
 
 	verbose := rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose output")
