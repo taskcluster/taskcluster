@@ -106,9 +106,7 @@ let builder = new APIBuilder({
     'monitor', // base.monitor instance
     'workClaimer', // Instance of WorkClaimer
     'workerInfo', // Instance of WorkerInfo
-    'useCloudMirror', // If true, use the cloud-mirror service
-    'cloudMirrorHost', // Hostname of the cloud-mirror service
-    'artifactRegion', // Region where artifacts are stored (no cloud-mirror)
+    'artifactRegion', // Region where artifacts are stored
     'LRUcache', // LRU cache for tasks
   ],
 });

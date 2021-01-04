@@ -1268,9 +1268,6 @@
         "taskcluster_client_id": {
           "type": "string"
         },
-        "use_cloud_mirror": {
-          "type": "boolean"
-        },
         "write_db_url": {
           "type": "string"
         }

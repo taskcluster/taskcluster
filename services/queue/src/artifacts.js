@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const assert = require('assert');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const urllib = require('url');
 const builder = require('./api');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { artifactUtils } = require('./utils');
@@ -340,15 +339,9 @@ let replyWithArtifact = async function(taskId, runId, name, req, res) {
       });
     } else if (bucket === this.publicBucket.bucket) {
 
-      // We have some headers to skip the Cache (cloud-mirror) and to skip the
-      // CDN (cloudfront) for those requests which require it
-      let skipCacheHeader = (req.headers['x-taskcluster-skip-cache'] || '').toLowerCase();
+      // We have a header to skip the CDN (cloudfront) for those requests
+      // which require it
       let skipCDNHeader = (req.headers['x-taskcluster-skip-cdn'] || '').toLowerCase();
-
-      let skipCache = false;
-      if (skipCacheHeader === 'true' || skipCacheHeader === '1') {
-        skipCache = true;
-      }
 
       let skipCDN = false;
       if (skipCDNHeader === 'true' || skipCDNHeader === '1') {
@@ -356,38 +349,16 @@ let replyWithArtifact = async function(taskId, runId, name, req, res) {
       }
 
       // When we're getting a request from the region we're serving artifacts
-      // from, we want to skip both CDN and Cache always
+      // from, we want to skip the CDN and read it directly
       if (region && this.artifactRegion === region) {
         skipCDN = true;
-        skipCache = true;
       }
 
-      if (!this.useCloudMirror) {
-        skipCache = true;
-      }
-
-      if (skipCache && skipCDN) {
+      if (skipCDN) {
+        // skip the CDN by forcing an S3 URL
         url = this.publicBucket.createGetUrl(prefix, true);
-      } else if (skipCache || !region) {
-        url = this.publicBucket.createGetUrl(prefix, false);
       } else {
-        let canonicalArtifactUrl = this.publicBucket.createGetUrl(prefix, true);
-        // We need to build our url path appropriately.  Note that we URL
-        // encode the artifact URL as required by the cloud-mirror api
-        let cloudMirrorPath = [
-          'v1',
-          'redirect',
-          's3',
-          region,
-          encodeURIComponent(canonicalArtifactUrl),
-        ].join('/');
-
-        // Now generate the cloud-mirror redirect
-        url = urllib.format({
-          protocol: 'https:',
-          host: this.cloudMirrorHost,
-          pathname: cloudMirrorPath,
-        });
+        url = this.publicBucket.createGetUrl(prefix, false);
       }
     }
     assert(url, 'Url should have been constructed!');
@@ -494,13 +465,6 @@ builder.declare({
     'be `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact',
     'was created and no content-negotiation occurs',
     '* x-taskcluster-location-content-type: the content-type of the artifact',
-    '',
-    '**Caching**, artifacts may be cached in data centers closer to the',
-    'workers in-order to reduce bandwidth costs. This can lead to longer',
-    'response times. Caching can be skipped by setting the header',
-    '`x-taskcluster-skip-cache: true`, this should only be used for resources',
-    'where request volume is known to be low, and caching not useful.',
-    '(This feature may be disabled in the future, use is sparingly!)',
   ].join('\n'),
 }, async function(req, res) {
   let taskId = req.params.taskId;
