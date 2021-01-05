@@ -2170,7 +2170,15 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "scopes": "queue:get-artifact:<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
           "stability": "stable",
           "title": "Get Artifact from Run",
           "type": "function"
@@ -2187,7 +2195,15 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/artifacts/<name>",
-          "scopes": "queue:get-artifact:<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
           "stability": "stable",
           "title": "Get Artifact from Latest Run",
           "type": "function"

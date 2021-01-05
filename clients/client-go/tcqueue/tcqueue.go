@@ -645,7 +645,7 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArti
 // * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
 //
 // Required scopes:
-//   queue:get-artifact:<name>
+//   For name in names each queue:get-artifact:<name>
 //
 // See #getArtifact
 func (queue *Queue) GetArtifact(taskId, runId, name string) error {
@@ -657,7 +657,7 @@ func (queue *Queue) GetArtifact(taskId, runId, name string) error {
 // Returns a signed URL for GetArtifact, valid for the specified duration.
 //
 // Required scopes:
-//   queue:get-artifact:<name>
+//   For name in names each queue:get-artifact:<name>
 //
 // See GetArtifact for more details.
 func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
@@ -684,7 +684,7 @@ func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration t
 // the latest run. Otherwise, just us the most convenient API end-point.
 //
 // Required scopes:
-//   queue:get-artifact:<name>
+//   For name in names each queue:get-artifact:<name>
 //
 // See #getLatestArtifact
 func (queue *Queue) GetLatestArtifact(taskId, name string) error {
@@ -696,7 +696,7 @@ func (queue *Queue) GetLatestArtifact(taskId, name string) error {
 // Returns a signed URL for GetLatestArtifact, valid for the specified duration.
 //
 // Required scopes:
-//   queue:get-artifact:<name>
+//   For name in names each queue:get-artifact:<name>
 //
 // See GetLatestArtifact for more details.
 func (queue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
