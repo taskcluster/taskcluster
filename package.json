@@ -215,6 +215,12 @@
     "packageRules": [
       {
         "packagePatterns": [
+          "node"
+        ],
+        "stabilityDays": 7
+      },
+      {
+        "packagePatterns": [
           "^googleapis$",
           "^aws-sdk$",
           "^golang.org/x/.*"
