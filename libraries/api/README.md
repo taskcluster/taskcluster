@@ -297,6 +297,12 @@ the deprecation strategy.
 The `handler` argument to ``api.declare`` is a "normal" Express handler, taking
 arguments `(req, res)`.  The function can be async (return a Promise).
 
+If the request parameters are enough to create a valid scope expression from
+the `scopes` option, then the caller's scopes are checked before the handler
+begins; otherwise, the handler _must_ call `req.authorize` as described below.
+It is also valid to call `req.authorize` multiple times, such as when additional
+required scopes are only known later in the request-processing operation.
+
 Parameters are available as properties of `req.params`, with query parameters
 available on `req.query`.  The decoded and validated request payload is in
 `req.body`.
