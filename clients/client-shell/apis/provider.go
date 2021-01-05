@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	got "github.com/taskcluster/go-got"
@@ -161,9 +162,9 @@ func execute(
 	var input []byte
 	// Read all input
 	if entry.Input != "" {
-		data, err := ioutil.ReadAll(payload)
+		data, err := readInput(payload)
 		if err != nil {
-			return fmt.Errorf("Failed to read input, error: %s", err)
+			return err
 		}
 		input = data
 	}
@@ -257,4 +258,28 @@ func formatGotError(err error) error {
 		}
 	}
 	return fmt.Errorf("Request failed: %s", err)
+}
+
+// Read the input from the given reader; if nothing happens for a few seconds and the input is stdin, then
+// write a friendly message to stderr in case the user has forgotten they need to provide input.
+func readInput(payload io.Reader) ([]byte, error) {
+	// set up to issue a warning after 1s
+	timeout := time.After(1 * time.Second)
+	done := make(chan bool)
+	defer func() { close(done) }()
+	go func() {
+		select {
+		case <-timeout:
+			if payload == os.Stdin {
+				fmt.Fprintf(os.Stderr, "..waiting for request payload on stdin\n")
+			}
+		case <-done:
+		}
+	}()
+
+	data, err := ioutil.ReadAll(payload)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read input, error: %s", err)
+	}
+	return data, nil
 }
