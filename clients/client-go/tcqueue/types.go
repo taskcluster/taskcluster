@@ -1172,6 +1172,11 @@ type (
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupID string `json:"taskGroupId"`
 
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
+
 		// Unique identifier for a worker-type within a specific provisioner
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
@@ -1601,6 +1606,11 @@ type (
 		// List of 20 most recent tasks claimed by the worker.
 		RecentTasks []TaskRun `json:"recentTasks"`
 
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId,omitempty"`
+
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
 		//
@@ -1651,6 +1661,11 @@ type (
 		//   * "stable"
 		//   * "deprecated"
 		Stability string `json:"stability"`
+
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//
@@ -1780,6 +1795,11 @@ type (
 		//   * "stable"
 		//   * "deprecated"
 		Stability string `json:"stability"`
+
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
 
 		// Unique identifier for a worker-type within a specific provisioner
 		//

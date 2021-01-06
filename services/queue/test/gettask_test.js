@@ -51,6 +51,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('task(taskId) is correct', async () => {
     helper.scopes(`queue:get-task:${taskId}`);
     const taskDef2 = await helper.queue.task(taskId);
+    assume(taskDef2.taskQueueId).equals(`${taskDef.provisionerId}/${taskDef.workerType}`);
+    delete taskDef2.taskQueueId;
     assume(taskDef2).deep.equals(taskDef);
   });
 

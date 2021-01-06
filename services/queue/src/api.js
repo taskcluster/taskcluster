@@ -4,7 +4,7 @@ const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const taskCreds = require('./task-creds');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { Task, Worker, TaskQueue, Provisioner } = require('./data');
-const { useSplitFields, useSingleField, joinTaskQueueId, splitTaskQueueId } = require('./utils');
+const { addSplitFields, useSingleField, joinTaskQueueId, splitTaskQueueId } = require('./utils');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -1736,7 +1736,7 @@ builder.declare({
     result.continuationToken = continuationToken;
   }
 
-  result.workerTypes.forEach(useSplitFields);
+  result.workerTypes.forEach(addSplitFields);
   return res.reply(result);
 });
 
@@ -1770,7 +1770,7 @@ builder.declare({
   }
 
   const tqResult = tQueue.serialize();
-  useSplitFields(tqResult);
+  addSplitFields(tqResult);
 
   const actions = [];
   return res.reply(Object.assign({}, tqResult, { actions }));
@@ -1820,7 +1820,7 @@ builder.declare({
   });
 
   const tqResult = tQueue.serialize();
-  useSplitFields(tqResult);
+  addSplitFields(tqResult);
 
   const actions = [];
   return res.reply(Object.assign({}, tqResult, { actions }));
@@ -2008,7 +2008,7 @@ builder.declare({
   }
 
   const workerResult = worker.serialize();
-  useSplitFields(workerResult);
+  addSplitFields(workerResult);
 
   const actions = [];
   return res.reply(Object.assign({}, workerResult, { actions }));
@@ -2056,7 +2056,7 @@ builder.declare({
   worker = Worker.fromDbRows(result);
 
   const workerResult = worker.serialize();
-  useSplitFields(workerResult);
+  addSplitFields(workerResult);
 
   const actions = [];
   return res.reply(Object.assign({}, workerResult, { actions }));
@@ -2104,7 +2104,7 @@ builder.declare({
   ]);
 
   const workerResult = worker.serialize();
-  useSplitFields(workerResult);
+  addSplitFields(workerResult);
 
   const actions = [];
   return res.reply(Object.assign({}, workerResult, { actions }));

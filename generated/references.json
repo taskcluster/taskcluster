@@ -1486,6 +1486,9 @@
           "title": "Stability",
           "type": "string"
         },
+        "taskQueueId": {
+          "$ref": "task.json#/properties/taskQueueId"
+        },
         "workerType": {
           "$ref": "task.json#/properties/workerType"
         }
@@ -1493,6 +1496,7 @@
       "required": [
         "workerType",
         "provisionerId",
+        "taskQueueId",
         "description",
         "stability",
         "expires",
@@ -1599,6 +1603,9 @@
           "title": "Most Recent Tasks",
           "type": "array",
           "uniqueItems": false
+        },
+        "taskQueueId": {
+          "$ref": "task.json#/properties/taskQueueId"
         },
         "workerGroup": {
           "description": "Identifier for group that worker who executes this run is a part of,\nthis identifier is mainly used for efficient routing.\n",
@@ -1933,6 +1940,12 @@
           "title": "Task-Group Identifier",
           "type": "string"
         },
+        "taskQueueId": {
+          "description": "Unique identifier for a task queue\n",
+          "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
+          "title": "Task Queue Id",
+          "type": "string"
+        },
         "workerType": {
           "description": "Unique identifier for a worker-type within a specific provisioner\n",
           "pattern": "^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
@@ -1943,6 +1956,7 @@
       "required": [
         "provisionerId",
         "workerType",
+        "taskQueueId",
         "schedulerId",
         "taskGroupId",
         "dependencies",
@@ -3263,6 +3277,9 @@
                 "title": "Stability",
                 "type": "string"
               },
+              "taskQueueId": {
+                "$ref": "task.json#/properties/taskQueueId"
+              },
               "workerType": {
                 "$ref": "task.json#/properties/workerType"
               }
@@ -3270,6 +3287,7 @@
             "required": [
               "workerType",
               "provisionerId",
+              "taskQueueId",
               "stability",
               "description",
               "expires",

@@ -151,14 +151,13 @@ exports.joinTaskQueueId = joinTaskQueueId;
  * Add the provisionerId, workerType fields to an object that has a
  * taskQueueId field to maintain public interface compatibility
  */
-const useSplitFields = (obj) => {
+const addSplitFields = (obj) => {
   assert(Object.prototype.hasOwnProperty.call(obj, 'taskQueueId'), 'object is missing property `taskQueueId`');
   const { provisionerId, workerType } = splitTaskQueueId(obj.taskQueueId);
   obj.provisionerId = provisionerId;
   obj.workerType = workerType;
-  delete obj.taskQueueId;
 };
-exports.useSplitFields = useSplitFields;
+exports.addSplitFields = addSplitFields;
 
 /**
  * Replace provisionerId and workerType fields in an object with the
