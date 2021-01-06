@@ -2091,10 +2091,10 @@ tar-stream@^2.0.0, tar-stream@^2.1.3, tar-stream@^2.1.4:
     inherits "^2.0.3"
     readable-stream "^3.1.1"
 
-taskcluster-client@^39.0.0:
-  version "39.2.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-39.2.0.tgz#a191fba5f404a863959a433181f6d80fc151321a"
-  integrity sha512-dvF8wJ+WvmHKj8d52zFi8GYro1+Hg3PmSVwld4cLkQqHv2rfVLgxMUJLC+E9/eEoLUlt0ene12KYgaHfbZyR0A==
+taskcluster-client@^40.0.0:
+  version "40.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-40.0.0.tgz#99f6803e7298de1713f003e8aaff94b303ccb2d3"
+  integrity sha512-RdQyoICfC7p96r2seFjGnTi9WZNfw0rCgVTb7//RXjUxE2hp5LialxRig2opEEQfGeofOZDwfSK41GudU3Bo1A==
   dependencies:
     debug "^4.1.1"
     hawk "^9.0.0"
