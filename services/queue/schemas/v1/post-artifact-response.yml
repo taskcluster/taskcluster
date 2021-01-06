@@ -57,7 +57,7 @@ oneOf:
       - storageType
   - title:          "Link Artifact Response"
     description: |
-      Response for an artifact with storageType lin.
+      Response for an artifact with `storageType` `link`.
     type:           object
     properties:
       storageType:

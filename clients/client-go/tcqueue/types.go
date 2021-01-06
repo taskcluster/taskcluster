@@ -235,7 +235,7 @@ type (
 		StorageType string `json:"storageType"`
 	}
 
-	// Response for an artifact with storageType lin.
+	// Response for an artifact with `storageType` `link`.
 	LinkArtifactResponse struct {
 
 		// Artifact storage type, in this case `link`
@@ -491,7 +491,7 @@ type (
 	// Request the queue to redirect fetches for this artifact to a URL.  An
 	// existing artifact can be replaced with a RedirectArtifact as long as the
 	// task is still executing.  When a RedirectArtifact is fetched, the URL is
-	// returend verbatim as a Location header in a 303 (See Other) response.
+	// returned verbatim as a Location header in a 303 (See Other) response.
 	// Clients will not apply any form of authentication to that URL.
 	RedirectArtifactRequest struct {
 

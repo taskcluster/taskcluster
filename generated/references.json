@@ -2948,7 +2948,7 @@
         },
         {
           "additionalProperties": false,
-          "description": "Response for an artifact with storageType lin.\n",
+          "description": "Response for an artifact with `storageType` `link`.\n",
           "properties": {
             "storageType": {
               "description": "Artifact storage type, in this case `link`\n",
@@ -3025,7 +3025,7 @@
         },
         {
           "additionalProperties": false,
-          "description": "Request the queue to redirect fetches for this artifact to a URL.  An\nexisting artifact can be replaced with a RedirectArtifact as long as the\ntask is still executing.  When a RedirectArtifact is fetched, the URL is\nreturend verbatim as a Location header in a 303 (See Other) response.\nClients will not apply any form of authentication to that URL.\n",
+          "description": "Request the queue to redirect fetches for this artifact to a URL.  An\nexisting artifact can be replaced with a RedirectArtifact as long as the\ntask is still executing.  When a RedirectArtifact is fetched, the URL is\nreturned verbatim as a Location header in a 303 (See Other) response.\nClients will not apply any form of authentication to that URL.\n",
           "properties": {
             "contentType": {
               "description": "Artifact mime-type for the resource to which the queue should\nredirect. Please use the same `Content-Type`, consistently using\nthe correct mime-type make tooling a lot easier, specifically,\nalways using `application/json` for JSON artifacts.\n",
