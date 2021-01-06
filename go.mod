@@ -1,6 +1,6 @@
 module github.com/taskcluster/taskcluster/v39
 
-go 1.13
+go 1.15
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088

@@ -2,9 +2,9 @@
 
 cd "$(dirname "${0}")"
 
-# Support go 1.13 or higher.
+# Support go 1.15 or higher.
 GO_MAJOR_VERSION=1
-MIN_GO_MINOR_VERSION=13
+MIN_GO_MINOR_VERSION=15
 
 unset CGO_ENABLED
 unset GOOS
