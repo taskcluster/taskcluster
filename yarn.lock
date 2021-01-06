@@ -59,9 +59,9 @@
   integrity sha512-dG76W7ElfLi+fbTjnZVGj+M9e0BIEJmRxU6fHaUQ12bZBe8EJKYb2GV50YWNaP2uJiVQ5+7nXEVj1VN1UQtaEw==
 
 "@azure/ms-rest-azure-js@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@azure/ms-rest-azure-js/-/ms-rest-azure-js-2.0.1.tgz#fa1b38f039b3ee48a9e086a88c8a5b5b7776491c"
-  integrity sha512-5e+A710O7gRFISoV4KI/ZyLQbKmjXxQZ1L8Z/sx7jSUQqmswjTnN4yyIZxs5JzfLVkobU0rXxbi5/LVzaI8QXQ==
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@azure/ms-rest-azure-js/-/ms-rest-azure-js-2.0.2.tgz#d7de3c18dfcebaf28cbef48206adbffb580c5df9"
+  integrity sha512-S7cQ67qYmxPMHjf03xvRgyM8DWai7v5qyTNBqhQ1AexiAQf03PAWKNIMlox9+YZbUg8qwLXlBSo+sWNWykz7bA==
   dependencies:
     "@azure/ms-rest-js" "^2.0.4"
     tslib "^1.10.0"
