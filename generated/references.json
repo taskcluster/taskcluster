@@ -2948,6 +2948,24 @@
         },
         {
           "additionalProperties": false,
+          "description": "Response for an artifact with `storageType` `link`.\n",
+          "properties": {
+            "storageType": {
+              "description": "Artifact storage type, in this case `link`\n",
+              "enum": [
+                "link"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "storageType"
+          ],
+          "title": "Link Artifact Response",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
           "description": "Response to a request for the queue to reply `424` (Failed Dependency)\nwith `reason` and `message` to any `GET` request for this artifact.\n",
           "properties": {
             "storageType": {
@@ -3007,7 +3025,7 @@
         },
         {
           "additionalProperties": false,
-          "description": "Request the queue to redirect to a URL for a given artifact.\nThis allows you to reference artifacts that aren't managed by the queue.\nThe queue will still authenticate the request, so depending on the level\nof secrecy required, secret URLs **might** work. Note, this is mainly\nuseful for public artifacts, for example temporary files directly\nstored on the worker host and only available there for a specific\namount of time.\n",
+          "description": "Request the queue to redirect fetches for this artifact to a URL.  An\nexisting artifact can be replaced with a RedirectArtifact as long as the\ntask is still executing.  When a RedirectArtifact is fetched, the URL is\nreturned verbatim as a Location header in a 303 (See Other) response.\nClients will not apply any form of authentication to that URL.\n",
           "properties": {
             "contentType": {
               "description": "Artifact mime-type for the resource to which the queue should\nredirect. Please use the same `Content-Type`, consistently using\nthe correct mime-type make tooling a lot easier, specifically,\nalways using `application/json` for JSON artifacts.\n",
@@ -3039,6 +3057,35 @@
             "contentType"
           ],
           "title": "Redirect Artifact Request",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Request the queue to link this artifact to the named artifact on the same\ntask.  When a client fetches this artifact, the request will be treated as\nif the client fetched the linked artifact (including corresponding scope\nvalidation).  Note that the target artifact need not exist when this artifact\nis created.  It is allowed to create link cycles, but they will result in a\n400 response when fetched.\n",
+          "properties": {
+            "artifact": {
+              "description": "Name of the artifact to which to link.\n",
+              "type": "string"
+            },
+            "expires": {
+              "description": "Date-time after which the queue should no longer maintain this link.\n",
+              "format": "date-time",
+              "type": "string"
+            },
+            "storageType": {
+              "description": "Artifact storage type, in this case `link`\n",
+              "enum": [
+                "link"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "storageType",
+            "expires",
+            "artifact"
+          ],
+          "title": "Link Artifact Request",
           "type": "object"
         },
         {
@@ -3819,7 +3866,7 @@
           "description": "Information about the artifact that was created\n",
           "properties": {
             "contentType": {
-              "description": "Mimetype for the artifact that was created.\n",
+              "description": "Mimetype for the artifact that was created (NOTE: deprecated; this\nvalue is not checked and may not correspond to the content-type of\nthe final artifact)\n",
               "maxLength": 255,
               "title": "Content-Type",
               "type": "string"
@@ -3840,6 +3887,7 @@
               "description": "This is the `storageType` for the request that was used to create the\nartifact.\n",
               "enum": [
                 "reference",
+                "link",
                 "error"
               ],
               "title": "Artifact Storage-Type",
@@ -14444,7 +14492,7 @@
             "name"
           ],
           "category": "Artifacts",
-          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support \"S3 Artifacts\" officially, with remaining support\nfor two deprecated types.  Do not use these deprecated types.\n\n**S3 artifacts**, is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support \"S3 Artifacts\" officially, with remaining support\nfor two deprecated types.  Do not use these deprecated types.\n\n**S3 artifacts**, is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n\n**Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\n**Immutability Special Cases**:\n\n* A `reference` artifact can replace an existing `reference` artifact`.\n* A `link` artifact can replace an existing `reference` artifact`.\n* Any artifact's `expires` can be extended.",
           "input": "v1/post-artifact-request.json#",
           "method": "post",
           "name": "createArtifact",
@@ -14474,13 +14522,21 @@
             "name"
           ],
           "category": "Artifacts",
-          "description": "Get artifact by `<name>` from a specific run.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with an HTTP client that can handle responses correctly.\n\n**Downloading artifacts**\nThere are some special considerations for those http clients which download\nartifacts.  This api endpoint is designed to be compatible with an HTTP 1.1\ncompliant client, but has extra features to ensure the download is valid.\nIt is strongly recommend that consumers use either taskcluster-lib-artifact (JS),\ntaskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with\nartifacts.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3\n\nThe following important headers are set on responses to this method for Blob artifacts\n\n* x-taskcluster-location-content-sha256: the SHA256 of the artifact\n*after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-content-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-transfer-sha256: the SHA256 of the artifact\n*before* any content-encoding is undone.  This is the SHA256 of what is sent over\nthe wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-content-encoding: the content-encoding used.  It will either\nbe `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact\nwas created and no content-negotiation occurs\n* x-taskcluster-location-content-type: the content-type of the artifact",
+          "description": "Get artifact by `<name>` from a specific run.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with an HTTP client that can handle responses correctly.\n\n**Downloading artifacts**\nThere are some special considerations for those http clients which download\nartifacts.  This api endpoint is designed to be compatible with an HTTP 1.1\ncompliant client, but has extra features to ensure the download is valid.\nIt is strongly recommend that consumers use either taskcluster-lib-artifact (JS),\ntaskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with\nartifacts.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3",
           "method": "get",
           "name": "getArtifact",
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "scopes": "queue:get-artifact:<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
           "stability": "stable",
           "title": "Get Artifact from Run",
           "type": "function"
@@ -14497,7 +14553,15 @@
           "query": [
           ],
           "route": "/task/<taskId>/artifacts/<name>",
-          "scopes": "queue:get-artifact:<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
           "stability": "stable",
           "title": "Get Artifact from Latest Run",
           "type": "function"

@@ -26,8 +26,8 @@ export default class Queue extends Client {
     this.reportFailed.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportFailed","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/failed","scopes":{"AnyOf":["queue:resolve-task:<taskId>/<runId>",{"AllOf":["queue:resolve-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.reportException.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"reportException","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/exception","scopes":{"AnyOf":["queue:resolve-task:<taskId>/<runId>",{"AllOf":["queue:resolve-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.createArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","input":true,"method":"post","name":"createArtifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"AnyOf":["queue:create-artifact:<taskId>/<runId>",{"AllOf":["queue:create-artifact:<name>","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.getArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"getArtifact","query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":"queue:get-artifact:<name>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.getLatestArtifact.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"getLatestArtifact","query":[],"route":"/task/<taskId>/artifacts/<name>","scopes":"queue:get-artifact:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.getArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"getArtifact","query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.getLatestArtifact.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"getLatestArtifact","query":[],"route":"/task/<taskId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.listArtifacts.entry = {"args":["taskId","runId"],"category":"Artifacts","method":"get","name":"listArtifacts","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/runs/<runId>/artifacts","scopes":"queue:list-artifacts:<taskId>:<runId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listLatestArtifacts.entry = {"args":["taskId"],"category":"Artifacts","method":"get","name":"listLatestArtifacts","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/artifacts","scopes":"queue:list-artifacts:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"deprecated","type":"function"}; // eslint-disable-line
@@ -296,12 +296,13 @@ export default class Queue extends Client {
   // artifact. Note that `PUT` request **must** specify the `content-length`
   // header and **must** give the `content-type` header the same value as in
   // the request to `createArtifact`.
-  // **Reference artifacts**, only consists of meta-data which the queue will
-  // store for you. These artifacts really only have a `url` property and
-  // when the artifact is requested the client will be redirect the URL
-  // provided with a `303` (See Other) redirect. Please note that we cannot
-  // delete artifacts you upload to other service, we can only delete the
-  // reference to the artifact, when it expires.
+  // **Redirect artifacts**, will redirect the caller to URL when fetched
+  // with a a 303 (See Other) response.  Clients will not apply any kind of
+  // authentication to that URL.
+  // **Link artifacts**, will be treated as if the caller requested the linked
+  // artifact on the same task.  Links may be chained, but cycles are forbidden.
+  // The caller must have scopes for the linked artifact, or a 403 response will
+  // be returned.
   // **Error artifacts**, only consists of meta-data which the queue will
   // store for you. These artifacts are only meant to indicate that you the
   // worker or the task failed to generate a specific artifact, that you
@@ -317,9 +318,10 @@ export default class Queue extends Client {
   // This is useful if you need to refresh a signed URL while uploading.
   // Do not abuse this to overwrite artifacts created by another entity!
   // Such as worker-host overwriting artifact created by worker-code.
-  // As a special case the `url` property on _reference artifacts_ can be
-  // updated. You should only use this to update the `url` property for
-  // reference artifacts your process has created.
+  // **Immutability Special Cases**:
+  // * A `reference` artifact can replace an existing `reference` artifact`.
+  // * A `link` artifact can replace an existing `reference` artifact`.
+  // * Any artifact's `expires` can be extended.
   /* eslint-enable max-len */
   createArtifact(...args) {
     this.validate(this.createArtifact.entry, args);
@@ -374,20 +376,6 @@ export default class Queue extends Client {
   // The following important headers are set on the response to this method:
   // * location: the url of the artifact if a redirect is to be performed
   // * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
-  // The following important headers are set on responses to this method for Blob artifacts
-  // * x-taskcluster-location-content-sha256: the SHA256 of the artifact
-  // *after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})
-  // * x-taskcluster-location-content-length: the number of bytes *after* any content-encoding
-  // is undone
-  // * x-taskcluster-location-transfer-sha256: the SHA256 of the artifact
-  // *before* any content-encoding is undone.  This is the SHA256 of what is sent over
-  // the wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})
-  // * x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding
-  // is undone
-  // * x-taskcluster-location-content-encoding: the content-encoding used.  It will either
-  // be `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact
-  // was created and no content-negotiation occurs
-  // * x-taskcluster-location-content-type: the content-type of the artifact
   /* eslint-enable max-len */
   getArtifact(...args) {
     this.validate(this.getArtifact.entry, args);

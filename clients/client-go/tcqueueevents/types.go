@@ -10,7 +10,9 @@ type (
 	// Information about the artifact that was created
 	Artifact struct {
 
-		// Mimetype for the artifact that was created.
+		// Mimetype for the artifact that was created (NOTE: deprecated; this
+		// value is not checked and may not correspond to the content-type of
+		// the final artifact)
 		//
 		// Max length: 255
 		ContentType string `json:"contentType"`
@@ -31,6 +33,7 @@ type (
 		//
 		// Possible values:
 		//   * "reference"
+		//   * "link"
 		//   * "error"
 		StorageType string `json:"storageType"`
 	}
