@@ -36,4 +36,4 @@ This is pretty much exactly the standard node image but with rabbitmq-server ins
 ## Node-Go
 
 This is a base Node image with the necessary bits of the Golang image copied in.
-This takes advantage of the fact that both imgaes are based on Debian "stretch".
+This takes advantage of the fact that both imgaes are based on Debian "buster".
