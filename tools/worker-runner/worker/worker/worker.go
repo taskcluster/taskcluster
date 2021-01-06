@@ -1,8 +1,8 @@
 package worker
 
 import (
-	"github.com/taskcluster/taskcluster/v39/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v39/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v40/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v40/tools/workerproto"
 )
 
 // Worker is responsible for determining the identity of this worker and gathering

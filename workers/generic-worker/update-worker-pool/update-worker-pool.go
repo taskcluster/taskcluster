@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v39/clients/client-go"
-	"github.com/taskcluster/taskcluster/v39/clients/client-go/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
+	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcworkermanager"
 )
 
 func gitRevision(dir string) string {

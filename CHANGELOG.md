@@ -3,6 +3,130 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v40.0.0
+
+### DEPLOYERS
+
+▶ [minor] 
+This version removes the unused deployment configuration variable `queue.use_cloud_mirror` and `queue.public_artifact_ec2_proxies`.  Neither served any useful purpose, and it is unlikely that either value appears in any deployment configuration.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#4125](https://github.com/taskcluster/taskcluster/issues/4125)
+Workerpools now correctly understand the `reregistrationTimeout` option.
+
+### USERS
+
+▶ [MAJOR] [#3773](https://github.com/taskcluster/taskcluster/issues/3773)
+Support for superseding has been removed.  See the linked issue for the detailed reasoning.  While workers still allow `supersederUrl` in payloads, it has no effect.  Older workers running with newer services that try to supersede tasks will encounter errors.  No known instances of superseding exist.
+
+▶ [MAJOR] [#4123](https://github.com/taskcluster/taskcluster/issues/4123)
+The `taskcluster-client-web` library no longer implements `OIDCCredentialAgent`.  This agent interfaced with a `login.taskclutser.net` service that no longer exists.
+
+▶ [MAJOR] [#3604](https://github.com/taskcluster/taskcluster/issues/3604)
+The notify service no longer supports irc notifications.  IRC is declining in popularity and no known deployments of Taskcluster support this functionality, but it is nonetheless considered a breaking API change.
+
+▶ [minor] [#4050](https://github.com/taskcluster/taskcluster/issues/4050)
+The queue has a new artifact type, `link`, allowing links between artifacts on the same task.
+
+▶ [patch] [#4057](https://github.com/taskcluster/taskcluster/issues/4057)
+All clients (JS, Python, Go, Web, Shell) now fail when an API method results in a redirect, rather than following that redirect.  The API methods that return redirects are those related to Taskcluster artifacts, and these methods must be accessed by building and fetching a signed URL.
+
+▶ [patch] [#2721](https://github.com/taskcluster/taskcluster/issues/2721)
+Taskcluster-proxy now correctly proxies "non-canonical" URLs, such as those containing `//` or urlencoded values.
+
+▶ [patch] [#3878](https://github.com/taskcluster/taskcluster/issues/3878)
+The Taskcluster UI now handles artifacts better, avoiding huge URLs that expire quickly.
+
+▶ [patch] [#3983](https://github.com/taskcluster/taskcluster/issues/3983)
+The UI will no longer fail when viewing a task with dependencies that have expired.
+
+▶ [patch] [#4199](https://github.com/taskcluster/taskcluster/issues/4199)
+The `sift` dependency has been updated again, to a version that does not cause #4061.
+
+▶ [patch] [#1064](https://github.com/taskcluster/taskcluster/issues/1064)
+The `taskcluster` command now parses errors from the API, and does not show the command usage when an error occurs.
+
+▶ [patch] [#3758](https://github.com/taskcluster/taskcluster/issues/3758)
+The `taskcluster` command will now display a warning after a short delay if it is expecting a request payload on stdin.
+
+### DEVELOPERS
+
+▶ [minor] [#3578](https://github.com/taskcluster/taskcluster/issues/3578)
+The queue service now uses `taskQueueId` internally instead of the pair `provisionerId`/`workerType` for tasks.
+
+▶ [patch] [#3894](https://github.com/taskcluster/taskcluster/issues/3894)
+Postgres errors now include a Sentry fingerprint to help distinguish them in error reports.
+
+### OTHER
+
+▶ Additional changes not described here: [#2398](https://github.com/taskcluster/taskcluster/issues/2398), [#2875](https://github.com/taskcluster/taskcluster/issues/2875), [#3466](https://github.com/taskcluster/taskcluster/issues/3466), [#3665](https://github.com/taskcluster/taskcluster/issues/3665), [#3739](https://github.com/taskcluster/taskcluster/issues/3739), [#3751](https://github.com/taskcluster/taskcluster/issues/3751), [#3888](https://github.com/taskcluster/taskcluster/issues/3888), [#4072](https://github.com/taskcluster/taskcluster/issues/4072), [#4125](https://github.com/taskcluster/taskcluster/issues/4125), [#4209](https://github.com/taskcluster/taskcluster/issues/4209), [#3718](https://github.com/taskcluster/taskcluster/issues/3718).
+
+### Automated Package Updates
+
+<details>
+<summary>57 Renovate updates</summary>
+
+* Update dependency newrelic to v7.1.0 (2cb90683e)
+* Update Node.js to v14.15.4 (bd0d9a57a)
+* Update dependency @slack/web-api to v5.15.0 (fea65786f)
+* Update dependency acorn-walk to v8.0.1 (1d857fc33)
+* Update dependency utf-8-validate to v5.0.4 (cbbf60248)
+* Update dependency koa to v2.13.1 (cd17fccb9)
+* Update dependency googleapis to v66 (b6bd1a987)
+* Update sentry monorepo to v5.29.2 (817a223d2)
+* Update mui monorepo (c4f1f8c9c)
+* Update dependency js-yaml to v4 (b8509c2a4)
+* Update dependency bufferutil to v4.0.3 (f691ab48e)
+* Update dependency eslint to v7.17.0 (7c79a038f)
+* Update mdx monorepo to v1.6.22 (d236a70c6)
+* Update module yaml to v2.4.0 (7e637237c)
+* Update dependency prismjs to v1.23.0 (dc1886a2e)
+* Update module Microsoft/go-winio to v0.4.16 (f562e47b3)
+* Update dependency webpack-cli to v4.3.1 (d6b462978)
+* Update dependency react-window to v1.8.6 (f3a183920)
+* Update dependency react-virtualized to v9.22.3 (a481007f1)
+* Update dependency react-ga to v3.3.0 (b3ddb6bd7)
+* Update dependency codemirror to v5.59.1 (7bb0feb02)
+* Update dependency @azure/arm-network to v23.1.0 (46a8dccc2)
+* Update dependency c8 to v7.4.0 (466c3e6f7)
+* Update dependency query-string to v6.13.8 (43170db8f)
+* Update dependency tar-stream to v2.2.0 (a017d4d28)
+* Update dependency ws to v7.4.2 (3dc4ab697)
+* Update dependency sanitize-html to v2.3.0 (ff7cd00b0)
+* Update dependency webpack-dev-server to v3.11.1 (423cf40ed)
+* Update dependency tar-fs to v2.1.1 (28895e6cd)
+* Update dependency webpack-cli to v4.3.0 (7211360c8)
+* Update dependency utf-8-validate to v5.0.3 (d8d3803ec)
+* Update dependency title-case to v3.0.3 (556ed50b6)
+* Update dependency taskcluster-client to v39.2.0 (14a427606)
+* Update dependency jwks-rsa to v1.12.1 (2d29ca170)
+* Update dependency uuid to v8.3.2 (80911d9b4)
+* Update neutrino monorepo to v9.5.0 (40b45edc8)
+* Update dependency upper-case to v2.0.2 (7d5e79e58)
+* Update dependency snake-case to v3.0.4 (c1de6493d)
+* Update dependency query-string to v6.13.7 (19d86aa12)
+* Update dependency pg to v8.5.1 (baa6a87fc)
+* Update dependency highlight.js to v10.5.0 (9d1d25892)
+* Update dependency apollo-server-express to v2.19.1 (56f4a7541)
+* Update dependency @babel/plugin-proposal-decorators to v7.12.12 (a8b891eb3)
+* Update dependency param-case to v3.0.4 (3dac59740)
+* Update dependency nodemailer to v6.4.17 (501d01a1c)
+* Update dependency nock to v13.0.5 (ad95fa052)
+* Update dependency builtin-modules to v3.2.0 (e3c12a224)
+* Update dependency mime to v2.4.7 (cd1f0615f)
+* Update dependency matrix-js-sdk to v9.4.1 (2c5af7952)
+* Update dependency markdown-it to v12.0.4 (078c57cd9)
+* Update dependency codemirror to v5.59.0 (da7a9bed2)
+* Update babel monorepo (7b34e84c0)
+* Update dependency open-editor to v3 (146729258)
+* Update dependency eslint to v7.16.0 (977f6bd49)
+* Update dependency marked to v1.2.7 (605aae3d8)
+* Update dependency hashids to v2.2.8 (0a9dc3b67)
+* Update Node.js to v14.15.3 (edd186cab)
+
+</details>
+
 ## v39.2.0
 
 ### WORKER-DEPLOYERS

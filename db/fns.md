@@ -1901,24 +1901,10 @@ All parameters must be supplied.
 
 ### deprecated methods
 
-* `create_queue_provisioner(provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb)` (compatibility guaranteed until v40.0.0)
-* `create_queue_worker(provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, first_claim_in timestamptz, recent_tasks_in jsonb)` (compatibility guaranteed until v40.0.0)
-* `create_queue_worker_type(provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text)` (compatibility guaranteed until v40.0.0)
 * `create_task(task_id text, provisioner_id text, worker_type text, scheduler_id text, task_group_id text, dependencies jsonb, requires task_requires, routes jsonb, priority task_priority, retries integer, created timestamptz, deadline timestamptz, expires timestamptz, scopes jsonb, payload jsonb, metadata jsonb, tags jsonb, extra jsonb)` (compatibility guaranteed until v41.0.0)
-* `expire_queue_provisioners(expires_in timestamptz)` (compatibility guaranteed until v40.0.0)
-* `expire_queue_worker_types(expires_in timestamptz)` (compatibility guaranteed until v40.0.0)
 * `get_queue_artifacts(task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v41.0.0)
-* `get_queue_provisioner(provisioner_id_in text, expires_in timestamptz)` (compatibility guaranteed until v40.0.0)
-* `get_queue_provisioners(expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v40.0.0)
-* `get_queue_worker(provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v40.0.0)
-* `get_queue_worker_type(provisioner_id_in text, worker_type_in text, expires_in timestamptz)` (compatibility guaranteed until v40.0.0)
-* `get_queue_worker_types(provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v40.0.0)
-* `get_queue_workers(provisioner_id_in text, worker_type_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v40.0.0)
 * `get_task(task_id_in text)` (compatibility guaranteed until v41.0.0)
 * `get_tasks_by_task_group(task_group_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v41.0.0)
-* `update_queue_provisioner(provisioner_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text, actions_in jsonb)` (compatibility guaranteed until v40.0.0)
-* `update_queue_worker(provisioner_id_in text, worker_type_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, recent_tasks_in jsonb)` (compatibility guaranteed until v40.0.0)
-* `update_queue_worker_type(provisioner_id_in text, worker_type_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text)` (compatibility guaranteed until v40.0.0)
 
 ## secrets
 
