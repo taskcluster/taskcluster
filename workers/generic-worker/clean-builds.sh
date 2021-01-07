@@ -22,7 +22,13 @@ export GO_DOWNLOAD_DIR="$(mktemp -d -t go_download.XXXXXXXXXX)"
 if [ -f ~/go.tar.gz ] && shasum -a 256 ~/go.tar.gz | grep -q 8436f846b49c2b14a96d90eef6b2a6e0a0e1943bbb767299c1ecabb795b042b9; then
     cp ~/go.tar.gz target/go.tar.gz
 else
-  curl -o target/go.tar.gz -L https://storage.googleapis.com/golang/go1.13.7.darwin-amd64.tar.gz
+  ####################################################################
+  # The next line is automatically edited by
+  #   infrastructure/tooling/src/generate/generators/go-version.js
+  #
+  # DO NOT CHANGE HERE!
+  ####################################################################
+  curl -o target/go.tar.gz -L https://storage.googleapis.com/golang/go1.15.6.darwin-amd64.tar.gz
 fi
 
 tar -C "${GO_DOWNLOAD_DIR}" -xf target/go.tar.gz

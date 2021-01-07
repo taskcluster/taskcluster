@@ -4,7 +4,9 @@ Types:
     Name: 'Build/test generic-worker (${ENGINE} engine) on ${PLATFORM}'
     Description: 'This builds and tests the ${ARCH} version of generic-worker (${ENGINE} engine) on ${PLATFORM}'
     Mounts:
-      - 'go1.13.7'
+      # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
+      #   DO NOT CHANGE HERE!
+      - 'go1.15.6'
       - 'git2.24.0.2'
       - 'jq1.6'
       - 'ci-creds'
@@ -17,7 +19,9 @@ Types:
       - 'secrets:get:project/taskcluster/testing/generic-worker/ci-creds'
     Artifacts:
       - Name: 'public/build/generic-worker-${OS}-${ARCH}${EXTENSION}'
-        Path: 'gopath1.13.7/bin/generic-worker${EXTENSION}'
+        # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
+        #   DO NOT CHANGE HERE!
+        Path: 'gopath1.15.6/bin/generic-worker${EXTENSION}'
         Type: 'file'
     MaxRunTime: 3600
 
@@ -32,7 +36,9 @@ Types:
             * `go fmt` to ensure that go source code is formatted
             * `goimports` to ensure that imports are specified in their canonical form
     Mounts:
-      - 'go1.13.7'
+      # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
+      #   DO NOT CHANGE HERE!
+      - 'go1.15.6'
     Command: FormatSource
     MaxRunTime: 3600
 
@@ -106,7 +112,11 @@ WorkerPools:
   proj-taskcluster/gw-ci-windows10-arm:
     Platform: 'Windows 10 (arm)'
     OS: 'windows'
-    # There is no arm release for go 1.13.7 on windows, but 386 release works
+
+    # The next comment is edited by infrastructure/tooling/src/generate/generators/go-version.js
+    #   DO NOT CHANGE HERE!
+
+    # There is no arm release for go 1.15.6 on windows, but 386 release works
     # through emulation provided by the host OS.
     Arch: '386'
   proj-taskcluster/gw-ci-windows2012r2-amd64:
@@ -125,7 +135,9 @@ Commands:
         - -vxec
         - |
           export CGO_ENABLED=0
-          export GOROOT="$(pwd)/go1.13.7/go"
+          # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
+          #   DO NOT CHANGE HERE!
+          export GOROOT="$(pwd)/go1.15.6/go"
           export PATH="${GOROOT}/bin:${PATH}"
           go version
           go env
@@ -175,8 +187,12 @@ Commands:
             VET=
           fi
           export CGO_ENABLED=0
-          export GOROOT="$(pwd)/go1.13.7/go"
-          export GOPATH="$(pwd)/gopath1.13.7"
+
+          # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
+          #   DO NOT CHANGE HERE!
+          export GOROOT="$(pwd)/go1.15.6/go"
+          export GOPATH="$(pwd)/gopath1.15.6"
+
           export PATH="${GOPATH}/bin:${GOROOT}/bin:$(pwd)/bin:${PATH}"
           git --version
           go version
@@ -231,9 +247,12 @@ Commands:
         :: find.exe may have exited with exit code 1, so need to explicitly exit with 0
         exit /b 0
       - set CGO_ENABLED=0
-      - set GOROOT=%CD%\go1.13.7\go
-      - |
-        set GOPATH=%CD%\gopath1.13.7
+
+      # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
+      #   DO NOT CHANGE HERE!
+      - set GOROOT=%CD%\go1.15.6\go
+      - set GOPATH=%CD%\gopath1.15.6
+
       - |
         :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
         set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%CD%\bin;%PATH%;C:\cygwin\bin
@@ -290,31 +309,39 @@ Commands:
         )
 
 Mounts:
-  go1.13.7:
-    directory: go1.13.7
+
+  ################################################################################
+  # This entire section is edited by infrastructure/tooling/src/generate/generators/go-version.js to update the go version number.
+  #
+  #      DO NOT MODIFY HERE!!!
+  #
+  ################################################################################
+
+  go1.15.6:
+    directory: go1.15.6
     content:
       darwin:
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.13.7.darwin-amd64.tar.gz'
-          sha256: '8436f846b49c2b14a96d90eef6b2a6e0a0e1943bbb767299c1ecabb795b042b9'
+          url: 'https://storage.googleapis.com/golang/go1.15.6.darwin-amd64.tar.gz'
+          sha256: '940a73b45993a3bae5792cf324140dded34af97c548af4864d22fd6d49f3bd9f'
           format: tar.gz
       linux:
         armv6l:
-          url: 'https://storage.googleapis.com/golang/go1.13.7.linux-armv6l.tar.gz'
-          sha256: 'ff8b870222d82c38a0108810706811dcbd1fcdbddc877789184a0f903cbdf11a'
+          url: 'https://storage.googleapis.com/golang/go1.15.6.linux-armv6l.tar.gz'
+          sha256: '40ba9a57764e374195018ef37c38a5fbac9bbce908eab436370631a84bfc5788'
           format: tar.gz
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.13.7.linux-amd64.tar.gz'
-          sha256: 'b3dd4bd781a0271b33168e627f7f43886b4c5d1c794a4015abf34e99c6526ca3'
+          url: 'https://storage.googleapis.com/golang/go1.15.6.linux-amd64.tar.gz'
+          sha256: '3918e6cc85e7eaaa6f859f1bdbaac772e7a825b0eb423c63d3ae68b21f84b844'
           format: tar.gz
       windows:
         386:
-          url: 'https://storage.googleapis.com/golang/go1.13.7.windows-386.zip'
-          sha256: 'cf9b1a2f96240adb98dc4081121ac308bf6f8d2760f96d45f429ec571602cefc'
+          url: 'https://storage.googleapis.com/golang/go1.15.6.windows-386.zip'
+          sha256: '5872eff6746a0a5f304272b27cbe9ce186f468454e95749cce01e903fbfc0e17'
           format: zip
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.13.7.windows-amd64.zip'
-          sha256: '03befd335ee9ddf1d10cae52e84eb5a37408b8e105acc1c29e30bbbbd8143749'
+          url: 'https://storage.googleapis.com/golang/go1.15.6.windows-amd64.zip'
+          sha256: 'b7b3808bb072c2bab73175009187fd5a7f20ffe0a31739937003a14c5c4d9006'
           format: zip
   git2.24.0.2:
     directory: git

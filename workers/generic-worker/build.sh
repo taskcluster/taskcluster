@@ -2,9 +2,15 @@
 
 cd "$(dirname "${0}")"
 
-# Support go 1.13 or higher.
+####################################################################
+# The next 3 lines are automatically edited by
+#   infrastructure/tooling/src/generate/generators/go-version.js
+#
+# DO NOT CHANGE HERE!
+####################################################################
+# Support go 1.15 or higher.
 GO_MAJOR_VERSION=1
-MIN_GO_MINOR_VERSION=13
+MIN_GO_MINOR_VERSION=15
 
 unset CGO_ENABLED
 unset GOOS
