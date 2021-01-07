@@ -137,7 +137,7 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
       const valuesYaml = 'infrastructure/k8s/values.yaml';
       utils.status({ message: `Update ${valuesYaml}` });
       await modifyRepoFile(valuesYaml, contents =>
-        contents.replace(/dockerImage: .*/, `dockerImage: '${releaseImage}'`));
+        contents.replace(/dockerImage: .*/, `dockerImage: ${releaseImage}`));
       changed.push(valuesYaml);
 
       const helmchart = 'infrastructure/k8s/Chart.yaml';
