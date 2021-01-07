@@ -187,7 +187,7 @@ class TaskclusterLogs {
     // correctly we simply let it pass/fail to finish since we are going to kill
     // the connection anyway...
 
-    let backingUrl = await this.bulkLog.killed(task);
+    let backingArtifact = await this.bulkLog.killed(task);
 
     // Switch references to the new log file on s3 rather then the local worker
     // server...
@@ -198,10 +198,10 @@ class TaskclusterLogs {
       task.runId,
       this.logsLocations.live,
       {
-        storageType: 'reference',
+        storageType: 'link',
         expires: expiration,
         contentType: 'text/plain; charset=utf-8',
-        url: backingUrl,
+        artifact: backingArtifact,
       },
     );
 
