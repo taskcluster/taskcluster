@@ -4,6 +4,8 @@ Types:
     Name: 'Build/test generic-worker (${ENGINE} engine) on ${PLATFORM}'
     Description: 'This builds and tests the ${ARCH} version of generic-worker (${ENGINE} engine) on ${PLATFORM}'
     Mounts:
+      # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
+      #   DO NOT CHANGE HERE!
       - 'go1.15.6'
       - 'git2.24.0.2'
       - 'jq1.6'
@@ -17,6 +19,8 @@ Types:
       - 'secrets:get:project/taskcluster/testing/generic-worker/ci-creds'
     Artifacts:
       - Name: 'public/build/generic-worker-${OS}-${ARCH}${EXTENSION}'
+        # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
+        #   DO NOT CHANGE HERE!
         Path: 'gopath1.15.6/bin/generic-worker${EXTENSION}'
         Type: 'file'
     MaxRunTime: 3600
@@ -32,6 +36,8 @@ Types:
             * `go fmt` to ensure that go source code is formatted
             * `goimports` to ensure that imports are specified in their canonical form
     Mounts:
+      # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
+      #   DO NOT CHANGE HERE!
       - 'go1.15.6'
     Command: FormatSource
     MaxRunTime: 3600
@@ -106,6 +112,10 @@ WorkerPools:
   proj-taskcluster/gw-ci-windows10-arm:
     Platform: 'Windows 10 (arm)'
     OS: 'windows'
+
+    # The next comment is edited by infrastructure/tooling/src/generate/generators/go-version.js
+    #   DO NOT CHANGE HERE!
+
     # There is no arm release for go 1.15.6 on windows, but 386 release works
     # through emulation provided by the host OS.
     Arch: '386'
@@ -125,6 +135,8 @@ Commands:
         - -vxec
         - |
           export CGO_ENABLED=0
+          # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
+          #   DO NOT CHANGE HERE!
           export GOROOT="$(pwd)/go1.15.6/go"
           export PATH="${GOROOT}/bin:${PATH}"
           go version
@@ -175,8 +187,12 @@ Commands:
             VET=
           fi
           export CGO_ENABLED=0
+
+          # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
+          #   DO NOT CHANGE HERE!
           export GOROOT="$(pwd)/go1.15.6/go"
           export GOPATH="$(pwd)/gopath1.15.6"
+
           export PATH="${GOPATH}/bin:${GOROOT}/bin:$(pwd)/bin:${PATH}"
           git --version
           go version
@@ -231,9 +247,12 @@ Commands:
         :: find.exe may have exited with exit code 1, so need to explicitly exit with 0
         exit /b 0
       - set CGO_ENABLED=0
+
+      # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
+      #   DO NOT CHANGE HERE!
       - set GOROOT=%CD%\go1.15.6\go
-      - |
-        set GOPATH=%CD%\gopath1.15.6
+      - set GOPATH=%CD%\gopath1.15.6
+
       - |
         :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
         set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%CD%\bin;%PATH%;C:\cygwin\bin
@@ -290,6 +309,14 @@ Commands:
         )
 
 Mounts:
+
+  ################################################################################
+  # This entire section is edited by infrastructure/tooling/src/generate/generators/go-version.js to update the go version number.
+  #
+  #      DO NOT MODIFY HERE!!!
+  #
+  ################################################################################
+
   go1.15.6:
     directory: go1.15.6
     content:

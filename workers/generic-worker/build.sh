@@ -2,6 +2,12 @@
 
 cd "$(dirname "${0}")"
 
+####################################################################
+# The next 3 lines are automatically edited by
+#   infrastructure/tooling/src/generate/generators/go-version.js
+#
+# DO NOT CHANGE HERE!
+####################################################################
 # Support go 1.15 or higher.
 GO_MAJOR_VERSION=1
 MIN_GO_MINOR_VERSION=15
