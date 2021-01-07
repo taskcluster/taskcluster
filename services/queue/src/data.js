@@ -149,6 +149,7 @@ class Task {
       taskId: this.taskId,
       provisionerId: provisionerId,
       workerType: workerType,
+      taskQueueId: this.taskQueueId,
       schedulerId: this.schedulerId,
       taskGroupId: this.taskGroupId,
       deadline: this.deadline.toJSON(),

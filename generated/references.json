@@ -2141,6 +2141,9 @@
           "title": "Task Identifier",
           "type": "string"
         },
+        "taskQueueId": {
+          "$ref": "task.json#/properties/taskQueueId"
+        },
         "workerType": {
           "$ref": "task.json#/properties/workerType"
         }
@@ -2149,6 +2152,7 @@
         "taskId",
         "provisionerId",
         "workerType",
+        "taskQueueId",
         "schedulerId",
         "taskGroupId",
         "deadline",
