@@ -88,6 +88,17 @@ program.command('generate')
     run(main, options[0]);
   });
 
+program.command('minify')
+  .description('minify yarn.lock files')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    const { main } = require('./minify');
+    run(main, options[0]);
+  });
+
 program.command('changelog')
   .description('Add a changelog entry (required for every PR)')
   .option('--major', 'Add a major changelog entry')

@@ -1,5 +1,5 @@
 const minify = require('yarn-minify');
-const { gitLsFiles } = require('../../utils');
+const { gitLsFiles } = require('../utils');
 
 // Ignore packages while we slowly whittle away the requirements
 const IGNORE = {
@@ -93,15 +93,20 @@ const IGNORE = {
   ].includes(pkg),
 };
 
-exports.tasks = [{
-  title: 'Minify yarn.locks',
-  provides: ['target-yarn-minify'],
-  run: async (requirements, utils) => {
-    let yarnlocks = (await gitLsFiles())
-      .filter(file => file === 'yarn.lock' || file.endsWith('/yarn.lock'));
+exports.getTasks = async () => {
+  const tasks = [];
 
-    for (let filename of yarnlocks) {
-      minify(filename, { ignore: IGNORE[filename] });
+  for (const file of await gitLsFiles()) {
+    if (file === 'yarn.lock' || file.endsWith('/yarn.lock')) {
+      tasks.push({
+        title: `Minify ${file}`,
+        provides: [`minify-${file}`],
+        run: async (requirements, utils) => {
+          minify(file, { ignore: IGNORE[file] });
+        },
+      });
     }
-  },
-}];
+  }
+
+  return tasks;
+};

@@ -176,6 +176,7 @@
     "staging-release": "node infrastructure/tooling/src/main.js staging-release",
     "release:publish": "node infrastructure/tooling/src/main.js release:publish",
     "generate": "node infrastructure/tooling/src/main.js generate",
+    "minify": "node infrastructure/tooling/src/main.js minify",
     "changelog": "node infrastructure/tooling/src/main.js changelog",
     "changelog:show": "node infrastructure/tooling/src/main.js changelog:show",
     "changelog:check": "node infrastructure/tooling/src/main.js changelog:check",
