@@ -3220,6 +3220,9 @@
         "provisionerId": {
           "$ref": "task.json#/properties/provisionerId"
         },
+        "taskQueueId": {
+          "$ref": "task.json#/properties/taskQueueId"
+        },
         "workerType": {
           "$ref": "task.json#/properties/workerType"
         }
@@ -3227,6 +3230,7 @@
       "required": [
         "provisionerId",
         "workerType",
+        "taskQueueId",
         "pendingTasks"
       ],
       "title": "Count Pending Tasks Response",

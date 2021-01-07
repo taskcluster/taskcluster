@@ -1680,16 +1680,16 @@ builder.declare({
 }, async function(req, res) {
   let provisionerId = req.params.provisionerId;
   let workerType = req.params.workerType;
+  let taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   // Get number of pending message
-  let count = await this.queueService.countPendingMessages(
-    joinTaskQueueId(provisionerId, workerType),
-  );
+  let count = await this.queueService.countPendingMessages(taskQueueId);
 
   // Reply to call with count `pendingTasks`
   return res.reply({
     provisionerId: provisionerId,
     workerType: workerType,
+    taskQueueId: taskQueueId,
     pendingTasks: count,
   });
 });
