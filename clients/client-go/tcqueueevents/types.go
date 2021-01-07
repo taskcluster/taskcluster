@@ -453,7 +453,9 @@ type (
 		Expires tcclient.Time `json:"expires"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -517,7 +519,10 @@ type (
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		TaskQueueID string `json:"taskQueueId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`

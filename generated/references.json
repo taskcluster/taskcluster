@@ -1773,10 +1773,7 @@
           "type": "string"
         },
         "taskQueueId": {
-          "description": "Unique identifier for a task queue\n",
-          "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
-          "title": "Task Queue Id",
-          "type": "string"
+          "$ref": "task.json#/properties/taskQueueId"
         }
       },
       "required": [
@@ -1863,7 +1860,7 @@
           "type": "string"
         },
         "provisionerId": {
-          "description": "Unique identifier for a provisioner, that can supply specified\n`workerType`\n",
+          "description": "Unique identifier for a provisioner, that can supply specified\n`workerType`. Deprecation is planned for this property as it\nwill be replaced, together with `workerType`, by the new\nidentifier `taskQueueId`.\n",
           "pattern": "^[a-zA-Z0-9-_]{1,38}$",
           "title": "Provisioner Id",
           "type": "string"
@@ -1947,7 +1944,7 @@
           "type": "string"
         },
         "workerType": {
-          "description": "Unique identifier for a worker-type within a specific provisioner\n",
+          "description": "Unique identifier for a worker-type within a specific\nprovisioner. Deprecation is planned for this property as it will\nbe replaced, together with `provisionerId`, by the new\nidentifier `taskQueueId`.\n",
           "pattern": "^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
           "title": "Worker Type",
           "type": "string"
@@ -3432,10 +3429,7 @@
                 "type": "string"
               },
               "taskQueueId": {
-                "description": "Unique identifier for a task-queue\n",
-                "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
-                "title": "Task Queue Id",
-                "type": "string"
+                "$ref": "task.json#/properties/taskQueueId"
               }
             },
             "required": [

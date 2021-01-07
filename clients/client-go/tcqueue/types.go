@@ -163,7 +163,9 @@ type (
 		PendingTasks int64 `json:"pendingTasks"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -173,7 +175,10 @@ type (
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		TaskQueueID string `json:"taskQueueId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
@@ -406,7 +411,9 @@ type (
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -467,7 +474,9 @@ type (
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -914,7 +923,9 @@ type (
 		Priority string `json:"priority,omitempty"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -1006,7 +1017,10 @@ type (
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupID string `json:"taskGroupId,omitempty"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
@@ -1085,7 +1099,9 @@ type (
 		Priority string `json:"priority"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -1182,7 +1198,10 @@ type (
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		TaskQueueID string `json:"taskQueueId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
@@ -1290,7 +1309,7 @@ type (
 		//   * "deprecated"
 		Stability string `json:"stability"`
 
-		// Unique identifier for a task-queue
+		// Unique identifier for a task queue
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		TaskQueueID string `json:"taskQueueId"`
@@ -1415,7 +1434,9 @@ type (
 		Expires tcclient.Time `json:"expires"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -1479,7 +1500,10 @@ type (
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		TaskQueueID string `json:"taskQueueId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
@@ -1602,7 +1626,9 @@ type (
 		FirstClaim tcclient.Time `json:"firstClaim"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -1637,7 +1663,10 @@ type (
 		// Max length: 38
 		WorkerID string `json:"workerId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
@@ -1656,7 +1685,9 @@ type (
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -1677,7 +1708,10 @@ type (
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		TaskQueueID string `json:"taskQueueId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
@@ -1790,7 +1824,9 @@ type (
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -1811,7 +1847,10 @@ type (
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		TaskQueueID string `json:"taskQueueId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
