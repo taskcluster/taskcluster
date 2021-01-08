@@ -4,7 +4,7 @@ const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const taskCreds = require('./task-creds');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { Task, Worker, TaskQueue, Provisioner } = require('./data');
-const { addSplitFields, useSingleField, joinTaskQueueId, splitTaskQueueId } = require('./utils');
+const { addSplitFields, useOnlyTaskQueueId, joinTaskQueueId, splitTaskQueueId } = require('./utils');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -351,6 +351,7 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
     taskGroupId: taskDef.taskGroupId || taskId,
     provisionerId: taskDef.provisionerId,
     workerType: taskDef.workerType,
+    taskQueueId: taskDef.taskQueueId,
   });
 };
 
@@ -512,6 +513,25 @@ builder.declare({
   let taskId = req.params.taskId;
   let taskDef = req.body;
 
+  // During the transition to the taskQueueId identifier, we have to
+  // accept all possible incoming definitions that may contain either
+  // the old, the new, or both identifiers
+  if (taskDef.provisionerId && taskDef.workerType && taskDef.taskQueueId) {
+    if (joinTaskQueueId(taskDef.provisionerId, taskDef.workerType) !== taskDef.taskQueueId) {
+      return res.reportError('InputError',
+        'taskQueueId must match "provisionerId/workerType"',
+        {
+          provisionerId: taskDef.provisionerId,
+          workerType: taskDef.workerType,
+          taskQueueId: taskDef.taskQueueId,
+        });
+    }
+  } else if (taskDef.provisionerId && taskDef.workerType) {
+    taskDef.taskQueueId = joinTaskQueueId(taskDef.provisionerId, taskDef.workerType);
+  } else {
+    addSplitFields(taskDef);
+  }
+
   await authorizeTaskCreation(req, taskId, taskDef);
 
   // Patch default values and validate timestamps
@@ -538,7 +558,7 @@ builder.declare({
   );
 
   let task = Task.fromApi(taskId, taskDef);
-  useSingleField(task);
+  useOnlyTaskQueueId(task);
 
   // Fetch the status of the task before creation, so that `taskDefined` messages
   // have a default status. This can't be run after create, since create is

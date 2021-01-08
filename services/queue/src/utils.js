@@ -163,7 +163,7 @@ exports.addSplitFields = addSplitFields;
  * Replace provisionerId and workerType fields in an object with the
  * equivalent taskQueueId.
  */
-const useSingleField = (obj) => {
+const useOnlyTaskQueueId = (obj) => {
   assert(Object.prototype.hasOwnProperty.call(obj, 'provisionerId'), 'object is missing property `provisionerId`');
   assert(Object.prototype.hasOwnProperty.call(obj, 'workerType'), 'object is missing property `workerType`');
   const taskQueueId = joinTaskQueueId(obj.provisionerId, obj.workerType);
@@ -171,4 +171,4 @@ const useSingleField = (obj) => {
   delete obj.provisionerId;
   delete obj.workerType;
 };
-exports.useSingleField = useSingleField;
+exports.useOnlyTaskQueueId = useOnlyTaskQueueId;

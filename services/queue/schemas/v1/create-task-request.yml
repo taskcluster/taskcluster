@@ -8,6 +8,7 @@ properties:
   # they must be specified here as wel
   provisionerId: {$ref: "task.json#/properties/provisionerId"}
   workerType: {$ref: "task.json#/properties/workerType"}
+  taskQueueId: {$ref: "task.json#/properties/taskQueueId"}
   schedulerId: {$ref: "task.json#/properties/schedulerId", default: '-'}
   taskGroupId: {$ref: "task.json#/properties/taskGroupId"}
   dependencies: {$ref: "task.json#/properties/dependencies", default: []}
@@ -25,9 +26,13 @@ properties:
   extra: {$ref: "task.json#/properties/extra", default: {}}
 additionalProperties: false
 required:
-  - provisionerId
-  - workerType
   - created
   - deadline
   - payload
   - metadata
+anyOf:
+  - required:
+      - provisionerId
+      - workerType
+  - required:
+      - taskQueueId

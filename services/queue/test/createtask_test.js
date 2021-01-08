@@ -7,6 +7,7 @@ const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const { LEVELS } = require('taskcluster-lib-monitor');
+const { splitTaskQueueId } = require('../src/utils');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -19,8 +20,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   // Use the same task definition for everything
   const taskDef = {
-    provisionerId: 'no-provisioner-extended-extended',
-    workerType: 'test-worker-extended-extended',
+    taskQueueId: 'no-provisioner-extended-extended/test-worker-extended-extended',
     schedulerId: 'my-scheduler-extended-extended',
     taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
     // let's just test a large routing key too, 90 chars please :)
@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // Verify that we can't modify the task
     await helper.queue.createTask(taskId, _.defaults({
-      workerType: 'another-worker',
+      taskQueueId: 'my-provisioner/another-worker',
     }, taskDef)).then(() => {
       throw new Error('This operation should have failed!');
     }, (err) => {
@@ -190,7 +190,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // Verify that we can't modify the task
     await helper.queue.createTask(taskId, _.defaults({
-      workerType: 'another-worker',
+      taskQueueId: 'my-provisioner/another-worker',
     }, taskDef)).then(() => {
       throw new Error('This operation should have failed!');
     }, (err) => {
@@ -358,4 +358,51 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('lowest'));
   });
+
+  test('Can create a task with provisionerId/workerType', async () => {
+    const taskId = slugid.v4();
+    const tDef = _.defaults({
+      provisionerId: 'no-provisioner-extended-extended',
+      workerType: 'test-worker-extended-extended',
+    }, taskDef);
+    delete tDef.taskQueueId;
+    await helper.queue.createTask(taskId, tDef);
+  });
+
+  test('Can create a task with provisionerId/workerType and matching taskQueueId', async () => {
+    const taskId = slugid.v4();
+    await helper.queue.createTask(taskId, _.defaults({
+      taskQueueId: 'no-provisioner-extended-extended/test-worker-extended-extended',
+      provisionerId: 'no-provisioner-extended-extended',
+      workerType: 'test-worker-extended-extended',
+    }, taskDef));
+  });
+
+  test('Can\'t create a task with provisionerId/workerType and mismatched taskQueueId', async () => {
+    const taskId = slugid.v4();
+    await helper.queue.createTask(taskId, _.defaults({
+      taskQueueId: 'no-provisioner-extended-extended/test-worker-extended-extended',
+      provisionerId: 'my-provisioner',
+      workerType: 'another-worker',
+    }, taskDef)).then(() => {
+      throw new Error('This operation should have failed!');
+    }, (err) => {
+      assume(err.statusCode).equals(400);
+      debug('Expected error: %j', err, err);
+    });
+  });
+  test('creating a task with provisionerId and workerType and with taskQueueId is equivalent', async () => {
+    const taskId1 = slugid.v4();
+    const tDef = _.defaults(splitTaskQueueId(taskDef.taskQueueId), taskDef);
+    delete tDef.taskQueueId;
+    await helper.queue.createTask(taskId1, tDef);
+
+    const taskId2 = slugid.v4();
+    await helper.queue.createTask(taskId2, taskDef);
+
+    const result1 = await helper.queue.task(taskId1);
+    const result2 = await helper.queue.task(taskId2);
+    assume(result2.taskQueueId).equals(`${result1.provisionerId}/${result1.workerType}`);
+  });
+
 });

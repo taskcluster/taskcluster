@@ -3676,6 +3676,19 @@
       "$id": "/schemas/queue/v1/create-task-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "provisionerId",
+            "workerType"
+          ]
+        },
+        {
+          "required": [
+            "taskQueueId"
+          ]
+        }
+      ],
       "description": "Definition of a task that can be scheduled\n",
       "properties": {
         "created": {
@@ -3748,13 +3761,14 @@
         "taskGroupId": {
           "$ref": "task.json#/properties/taskGroupId"
         },
+        "taskQueueId": {
+          "$ref": "task.json#/properties/taskQueueId"
+        },
         "workerType": {
           "$ref": "task.json#/properties/workerType"
         }
       },
       "required": [
-        "provisionerId",
-        "workerType",
         "created",
         "deadline",
         "payload",

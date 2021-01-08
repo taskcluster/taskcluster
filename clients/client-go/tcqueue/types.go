@@ -851,7 +851,14 @@ type (
 	}
 
 	// Definition of a task that can be scheduled
-	TaskDefinitionRequest struct {
+	//
+	// Any of:
+	//   * TaskDefinitionRequest1
+	//   * TaskDefinitionRequest2
+	TaskDefinitionRequest json.RawMessage
+
+	// Definition of a task that can be scheduled
+	TaskDefinitionRequest1 struct {
 
 		// Creation time of task
 		Created tcclient.Time `json:"created"`
@@ -1016,6 +1023,192 @@ type (
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupID string `json:"taskGroupId,omitempty"`
+
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
+
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
+		//
+		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerType string `json:"workerType"`
+	}
+
+	// Definition of a task that can be scheduled
+	TaskDefinitionRequest2 struct {
+
+		// Creation time of task
+		Created tcclient.Time `json:"created"`
+
+		// Deadline of the task, by which this task must be complete. `pending` and
+		// `running` runs are resolved as **exception** if not resolved by other means
+		// before the deadline. After the deadline, a task is immutable. Note,
+		// deadline cannot be more than 5 days into the future
+		Deadline tcclient.Time `json:"deadline"`
+
+		// List of dependent tasks. These must either be _completed_ or _resolved_
+		// before this task is scheduled. See `requires` for semantics.
+		//
+		// Default:    []
+		//
+		// Array items:
+		// The `taskId` of a task that must be resolved before this task is
+		// scheduled.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		Dependencies []string `json:"dependencies,omitempty"`
+
+		// Task expiration, time at which task definition and status is deleted.
+		// Notice that all artifacts for the task must have an expiration that is no
+		// later than this. If this property isn't it will be set to `deadline`
+		// plus one year (this default may change).
+		Expires tcclient.Time `json:"expires,omitempty"`
+
+		// Object with properties that can hold any kind of extra data that should be
+		// associated with the task. This can be data for the task which doesn't
+		// fit into `payload`, or it can supplementary data for use in services
+		// listening for events from this task. For example this could be details to
+		// display on dashboard, or information for indexing the task. Please, try
+		// to put all related information under one property, so `extra` data keys
+		// don't conflict.  **Warning**, do not stuff large data-sets in here --
+		// task definitions should not take-up multiple MiBs.
+		//
+		// Default:    {}
+		//
+		// Additional properties allowed
+		Extra json.RawMessage `json:"extra,omitempty"`
+
+		// Required task metadata
+		Metadata TaskMetadata `json:"metadata"`
+
+		// Task-specific payload following worker-specific format.
+		// Refer to the documentation for the worker implementing
+		// `<provisionerId>/<workerType>` for details.
+		//
+		// Additional properties allowed
+		Payload json.RawMessage `json:"payload"`
+
+		// Priority of task. This defaults to `lowest` and the scope
+		// `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
+		// to define a task with `<priority>`. The `normal` priority is treated as
+		// `lowest`.
+		//
+		// Possible values:
+		//   * "highest"
+		//   * "very-high"
+		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
+		//   * "normal"
+		//
+		// Default:    "lowest"
+		Priority string `json:"priority,omitempty"`
+
+		// Unique identifier for a provisioner, that can supply specified
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
+		ProvisionerID string `json:"provisionerId"`
+
+		// The tasks relation to its dependencies. This property specifies the
+		// semantics of the `task.dependencies` property.
+		// If `all-completed` is given the task will be scheduled when all
+		// dependencies are resolved _completed_ (successful resolution).
+		// If `all-resolved` is given the task will be scheduled when all dependencies
+		// have been resolved, regardless of what their resolution is.
+		//
+		// Possible values:
+		//   * "all-completed"
+		//   * "all-resolved"
+		//
+		// Default:    "all-completed"
+		Requires string `json:"requires,omitempty"`
+
+		// Number of times to retry the task in case of infrastructure issues.
+		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
+		// these events are to be expected.
+		//
+		// Default:    5
+		// Mininum:    0
+		// Maximum:    49
+		Retries int64 `json:"retries,omitempty"`
+
+		// List of task-specific routes. Pulse messages about the task will be CC'ed to
+		// `route.<value>` for each `<value>` in this array.
+		//
+		// This array has a maximum size due to a limitation of the AMQP protocol,
+		// over which Pulse runs.  All routes must fit in the same "frame" of this
+		// protocol, and the frames have a fixed maximum size (typically 128k).
+		//
+		// Default:    []
+		//
+		// Array items:
+		// A task specific route.
+		//
+		// Min length: 1
+		// Max length: 249
+		Routes []string `json:"routes,omitempty"`
+
+		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
+		//
+		// * it can represent the entity that created the task;
+		// * it can limit addition of new tasks to a task group: the caller of
+		//     `createTask` must have a scope related to the `schedulerId` of the task
+		//     group;
+		// * it controls who can manipulate tasks, again by requiring
+		//     `schedulerId`-related scopes; and
+		// * it appears in the routing key for Pulse messages about the task.
+		//
+		// Default:    "-"
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		SchedulerID string `json:"schedulerId,omitempty"`
+
+		// List of scopes that the task is authorized to use during its execution.
+		//
+		// Array items:
+		// A single scope. A scope must be composed of
+		// printable ASCII characters and spaces.  Scopes ending in more than
+		// one `*` character are forbidden.
+		//
+		// Syntax:     ^[ -~]*$
+		Scopes []string `json:"scopes,omitempty"`
+
+		// Arbitrary key-value tags (only strings limited to 4k). These can be used
+		// to attach informal metadata to a task. Use this for informal tags that
+		// tasks can be classified by. You can also think of strings here as
+		// candidates for formal metadata. Something like
+		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
+		//
+		// Map entries:
+		// Max length: 4096
+		Tags map[string]string `json:"tags,omitempty"`
+
+		// Identifier for a group of tasks scheduled together with this task.
+		// Generally, all tasks related to a single event such as a version-control
+		// push or a nightly build have the same `taskGroupId`.  This property
+		// defaults to `taskId` if it isn't specified.  Tasks with `taskId` equal to
+		// the `taskGroupId` are, [by convention](/docs/manual/using/task-graph),
+		// decision tasks.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskGroupID string `json:"taskGroupId,omitempty"`
+
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
 
 		// Unique identifier for a worker-type within a specific
 		// provisioner. Deprecation is planned for this property as it will
@@ -1884,6 +2077,22 @@ func (this *PostArtifactResponse) MarshalJSON() ([]byte, error) {
 func (this *PostArtifactResponse) UnmarshalJSON(data []byte) error {
 	if this == nil {
 		return errors.New("PostArtifactResponse: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// TaskDefinitionRequest is of type json.RawMessage...
+func (this *TaskDefinitionRequest) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *TaskDefinitionRequest) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("TaskDefinitionRequest: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil
