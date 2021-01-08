@@ -90,7 +90,7 @@
     "rimraf": "^3.0.0",
     "sanitize-html": "^2.0.0",
     "sentry-api": "^0.2.0",
-    "serialize-error": "^7.0.0",
+    "serialize-error": "^8.0.0",
     "sift": "^13.5.0",
     "slugid": "^2.0.0",
     "subscriptions-transport-ws": "^0.9.7",
