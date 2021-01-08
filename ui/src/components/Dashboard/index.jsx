@@ -18,6 +18,8 @@ import HelpIcon from 'mdi-react/HelpIcon';
 import LightBulbOn from 'mdi-react/LightbulbOnIcon';
 import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 import LightBulbOnOutline from 'mdi-react/LightbulbOnOutlineIcon';
+import { ErrorBoundary } from 'react-error-boundary';
+import reportError from '../../utils/reportError';
 import PageTitle from '../PageTitle';
 import Helmet from '../Helmet';
 import UserMenu from '../UserMenu';
@@ -209,14 +211,9 @@ export default class Dashboard extends Component {
     disableAppbar: bool,
   };
 
-  static getDerivedStateFromError(error) {
-    return { error };
-  }
-
   state = {
     navOpen: false,
     showHelpView: false,
-    error: null,
     deploymentVersion: null,
   };
 
@@ -260,7 +257,7 @@ export default class Dashboard extends Component {
       disableAppbar,
       ...props
     } = this.props;
-    const { error, navOpen, showHelpView, deploymentVersion } = this.state;
+    const { navOpen, showHelpView, deploymentVersion } = this.state;
     const logoWithApplicationName = (
       <Fragment>
         <div className={classes.toolbar}>
@@ -421,7 +418,9 @@ export default class Dashboard extends Component {
             className
           )}
           {...props}>
-          {error ? <ErrorPanel fixed error={error} /> : children}
+          <ErrorBoundary FallbackComponent={ErrorPanel} onError={reportError}>
+            {children}
+          </ErrorBoundary>
         </main>
       </div>
     );
