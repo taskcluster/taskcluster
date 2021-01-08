@@ -63,7 +63,7 @@ const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, ent
     }
     // Add a reply method sending JSON replies, this will always reply with HTTP
     // code 200... errors should be sent with res.json(code, json)
-    res.reply = (json) => {
+    res.reply = (json, responseCode = 200) => {
       if (res.headersSent) {
         req.tcContext.monitor.reportError(new Error('API method implementation called res.send twice'));
         return;
@@ -90,8 +90,8 @@ const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, ent
       if (!json) {
         return res.status(204).send();
       }
-      // If JSON was valid or validation was skipped then reply with 200 OK
-      res.status(200).json(json);
+      // If JSON was valid or validation was skipped then reply normally
+      res.status(responseCode).json(json);
     };
 
     // Call next piece of middleware, typically the handler...

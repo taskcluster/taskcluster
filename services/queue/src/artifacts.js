@@ -34,8 +34,7 @@ builder.declare({
     'intermediate artifacts from data processing applications, as the',
     'artifacts can be set to expire a few days later.',
     '',
-    'We currently support "S3 Artifacts" officially, with remaining support',
-    'for two deprecated types.  Do not use these deprecated types.',
+    'We currently support "S3 Artifacts" for data storage.',
     '',
     '**S3 artifacts**, is useful for static files which will be',
     'stored on S3. When creating an S3 artifact the queue will return a',
@@ -330,14 +329,16 @@ let replyWithArtifact = async function(taskId, runId, name, req, res, names) {
     return res.reportError('ResourceNotFound', 'Artifact not found', {});
   }
 
+  const { storageType } = artifact;
+
   // Some downloading utilities need to know the artifact's storage type to be
   // able to handle their downloads most correctly.  We're going to set this
   // field on all artifact responses so that the downloading utilities can use
   // slightly different logic for each artifact type
-  res.set('x-taskcluster-artifact-storage-type', artifact.storageType);
+  res.set('x-taskcluster-artifact-storage-type', storageType);
 
   // Handle S3 artifacts
-  if (artifact.storageType === 's3') {
+  if (storageType === 's3') {
     // Find url
     let url = null;
 
@@ -377,16 +378,22 @@ let replyWithArtifact = async function(taskId, runId, name, req, res, names) {
       }
     }
     assert(url, 'Url should have been constructed!');
-    return res.redirect(303, url);
+
+    res.set('location', url);
+    res.reply({ storageType, url }, 303);
+    return;
   }
 
   // Handle redirect/reference artifacts
-  if (artifact.storageType === 'reference') {
-    return res.redirect(303, artifact.details.url);
+  if (storageType === 'reference') {
+    const url = artifact.details.url;
+    res.set('location', url);
+    res.reply({ storageType, url }, 303);
+    return;
   }
 
   // handle link artifacts
-  if (artifact.storageType === 'link') {
+  if (storageType === 'link') {
     // this is a link to another artifact, so check permission on that target artifact,
     // and then call this function recursively for it.
     const name = artifact.details.artifact;
@@ -404,8 +411,7 @@ let replyWithArtifact = async function(taskId, runId, name, req, res, names) {
   }
 
   // Handle error artifacts
-  if (artifact.storageType === 'error') {
-    // The caller is not expecting an API response, so send a JSON response
+  if (storageType === 'error') {
     return res.status(424).json({
       reason: artifact.details.reason,
       message: artifact.details.message,
@@ -413,7 +419,7 @@ let replyWithArtifact = async function(taskId, runId, name, req, res, names) {
   }
 
   // We should never arrive here
-  let err = new Error('Unknown artifact storageType: ' + artifact.storageType);
+  let err = new Error('Unknown artifact storageType: ' + storageType);
   err.artifact = artifactUtils.serialize(artifact);
   this.monitor.reportError(err);
 };
@@ -425,6 +431,7 @@ builder.declare({
   name: 'getArtifact',
   stability: APIBuilder.stability.stable,
   category: 'Artifacts',
+  output: 'get-artifact-response.json#',
   scopes: { AllOf: [
     { for: 'name', in: 'names', each: 'queue:get-artifact:<name>' },
   ] },
@@ -439,18 +446,12 @@ builder.declare({
     '`anonymous` role.  The convention is to include',
     '`queue:get-artifact:public/*`.',
     '',
-    '**API Clients**, this method will redirect you to the artifact, if it is',
-    'stored externally. Either way, the response may not be JSON. So API',
-    'client users might want to generate a signed URL for this end-point and',
-    'use that URL with an HTTP client that can handle responses correctly.',
-    '',
-    '**Downloading artifacts**',
-    'There are some special considerations for those http clients which download',
-    'artifacts.  This api endpoint is designed to be compatible with an HTTP 1.1',
-    'compliant client, but has extra features to ensure the download is valid.',
-    'It is strongly recommend that consumers use either taskcluster-lib-artifact (JS),',
-    'taskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with',
-    'artifacts.',
+    '**Response**: the HTTP response to this method is a 303 redirect to the',
+    'URL from which the artifact can be downloaded.  The body of that response',
+    'contains the data described in the output schema, contianing the same URL.',
+    'Callers are encouraged to use whichever method of gathering the URL is',
+    'most convenient.  Standard HTTP clients will follow the redirect, while',
+    'API  client libraries will return the JSON body.',
     '',
     'In order to download an artifact the following must be done:',
     '',
@@ -503,6 +504,7 @@ builder.declare({
   name: 'getLatestArtifact',
   stability: APIBuilder.stability.stable,
   category: 'Artifacts',
+  output: 'get-artifact-response.json#',
   scopes: { AllOf: [
     { for: 'name', in: 'names', each: 'queue:get-artifact:<name>' },
   ] },

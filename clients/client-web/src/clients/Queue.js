@@ -26,8 +26,8 @@ export default class Queue extends Client {
     this.reportFailed.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportFailed","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/failed","scopes":{"AnyOf":["queue:resolve-task:<taskId>/<runId>",{"AllOf":["queue:resolve-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.reportException.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"reportException","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/exception","scopes":{"AnyOf":["queue:resolve-task:<taskId>/<runId>",{"AllOf":["queue:resolve-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.createArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","input":true,"method":"post","name":"createArtifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"AnyOf":["queue:create-artifact:<taskId>/<runId>",{"AllOf":["queue:create-artifact:<name>","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.getArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"getArtifact","query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.getLatestArtifact.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"getLatestArtifact","query":[],"route":"/task/<taskId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.getArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"getArtifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.getLatestArtifact.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"getLatestArtifact","output":true,"query":[],"route":"/task/<taskId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.listArtifacts.entry = {"args":["taskId","runId"],"category":"Artifacts","method":"get","name":"listArtifacts","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/runs/<runId>/artifacts","scopes":"queue:list-artifacts:<taskId>:<runId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listLatestArtifacts.entry = {"args":["taskId"],"category":"Artifacts","method":"get","name":"listLatestArtifacts","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/artifacts","scopes":"queue:list-artifacts:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"deprecated","type":"function"}; // eslint-disable-line
@@ -288,8 +288,7 @@ export default class Queue extends Client {
   // expiration point. This features makes it feasible to upload large
   // intermediate artifacts from data processing applications, as the
   // artifacts can be set to expire a few days later.
-  // We currently support "S3 Artifacts" officially, with remaining support
-  // for two deprecated types.  Do not use these deprecated types.
+  // We currently support "S3 Artifacts" for data storage.
   // **S3 artifacts**, is useful for static files which will be
   // stored on S3. When creating an S3 artifact the queue will return a
   // pre-signed URL to which you can do a `PUT` request to upload your
@@ -336,17 +335,12 @@ export default class Queue extends Client {
   // browser, without using Taskcluster credentials, include a scope in the
   // `anonymous` role.  The convention is to include
   // `queue:get-artifact:public/*`.
-  // **API Clients**, this method will redirect you to the artifact, if it is
-  // stored externally. Either way, the response may not be JSON. So API
-  // client users might want to generate a signed URL for this end-point and
-  // use that URL with an HTTP client that can handle responses correctly.
-  // **Downloading artifacts**
-  // There are some special considerations for those http clients which download
-  // artifacts.  This api endpoint is designed to be compatible with an HTTP 1.1
-  // compliant client, but has extra features to ensure the download is valid.
-  // It is strongly recommend that consumers use either taskcluster-lib-artifact (JS),
-  // taskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with
-  // artifacts.
+  // **Response**: the HTTP response to this method is a 303 redirect to the
+  // URL from which the artifact can be downloaded.  The body of that response
+  // contains the data described in the output schema, contianing the same URL.
+  // Callers are encouraged to use whichever method of gathering the URL is
+  // most convenient.  Standard HTTP clients will follow the redirect, while
+  // API  client libraries will return the JSON body.
   // In order to download an artifact the following must be done:
   // 1. Obtain queue url.  Building a signed url with a taskcluster client is
   // recommended
