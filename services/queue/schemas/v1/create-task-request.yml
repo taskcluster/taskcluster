@@ -30,9 +30,3 @@ required:
   - deadline
   - payload
   - metadata
-anyOf:
-  - required:
-      - provisionerId
-      - workerType
-  - required:
-      - taskQueueId

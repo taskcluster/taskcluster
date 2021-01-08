@@ -528,8 +528,12 @@ builder.declare({
     }
   } else if (taskDef.provisionerId && taskDef.workerType) {
     taskDef.taskQueueId = joinTaskQueueId(taskDef.provisionerId, taskDef.workerType);
-  } else {
+  } else if (taskDef.taskQueueId) {
     addSplitFields(taskDef);
+  } else {
+    return res.reportError('InputError',
+      'at least a provisionerId and a workerType or a taskQueueId must be provided"',
+      {});
   }
 
   await authorizeTaskCreation(req, taskId, taskDef);
