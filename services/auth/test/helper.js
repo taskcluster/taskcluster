@@ -32,7 +32,10 @@ withMonitor(exports);
 
 // set up the testing secrets
 exports.secrets = new Secrets({
-  secretName: 'project/taskcluster/testing/taskcluster-auth',
+  secretName: [
+    'project/taskcluster/testing/taskcluster-auth',
+    'project/taskcluster/testing/azure',
+  ],
   secrets: {
     azure: [
       { env: 'AZURE_ACCOUNT', name: 'accountId' },
