@@ -9,6 +9,7 @@ import { getMainDefinition } from 'apollo-utilities';
 import { from, split } from 'apollo-link';
 import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
+import { ErrorBoundary } from 'react-error-boundary';
 import {
   InMemoryCache,
   IntrospectionFragmentMatcher,
@@ -25,6 +26,7 @@ import { ToggleThemeContext } from '../utils/ToggleTheme';
 import { AuthContext } from '../utils/Auth';
 import db from '../utils/db';
 import reportError from '../utils/reportError';
+import ErrorPanel from '../components/ErrorPanel';
 import theme from '../theme';
 import introspectionQueryResultData from '../fragments/fragmentTypes.json';
 import { route } from '../utils/prop-types';
@@ -156,10 +158,6 @@ export default class App extends Component {
     this.state = state;
   }
 
-  static getDerivedStateFromError(error) {
-    return { error };
-  }
-
   handleUserChanged = user => {
     this.setState({
       auth: {
@@ -212,34 +210,41 @@ export default class App extends Component {
     this.setState({ theme: newTheme });
   };
 
-  componentDidCatch(error, errorInfo) {
-    reportError(error, errorInfo);
-  }
-
   render() {
     const { routes } = this.props;
     const { auth, error, theme } = this.state;
 
+    // Note that there are two error boundaries here.  The first will catch
+    // errors in the stack of providers, but presents its error panel without
+    // the MUI theme, fonts, css baseline, and so on.  The second renders the
+    // error with all of those things in place, but as a consequence can't
+    // catch errors in those components.
     return (
-      <ApolloProvider client={this.apolloClient}>
-        <AuthContext.Provider value={auth}>
-          <ToggleThemeContext.Provider value={this.toggleTheme}>
-            <MuiThemeProvider theme={theme}>
-              <FontStager />
-              <CssBaseline />
-              <Main
-                key={
-                  auth.user && auth.user.credentials
-                    ? auth.user.credentials.clientId
-                    : ''
-                }
-                routes={routes}
-                error={error}
-              />
-            </MuiThemeProvider>
-          </ToggleThemeContext.Provider>
-        </AuthContext.Provider>
-      </ApolloProvider>
+      <ErrorBoundary FallbackComponent={ErrorPanel} onError={reportError}>
+        <ApolloProvider client={this.apolloClient}>
+          <AuthContext.Provider value={auth}>
+            <ToggleThemeContext.Provider value={this.toggleTheme}>
+              <MuiThemeProvider theme={theme}>
+                <FontStager />
+                <CssBaseline />
+                <ErrorBoundary
+                  FallbackComponent={ErrorPanel}
+                  onError={reportError}>
+                  <Main
+                    error={error}
+                    key={
+                      auth.user && auth.user.credentials
+                        ? auth.user.credentials.clientId
+                        : ''
+                    }
+                    routes={routes}
+                  />
+                </ErrorBoundary>
+              </MuiThemeProvider>
+            </ToggleThemeContext.Provider>
+          </AuthContext.Provider>
+        </ApolloProvider>
+      </ErrorBoundary>
     );
   }
 }
