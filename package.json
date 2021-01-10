@@ -47,7 +47,7 @@
     "fast-json-stable-stringify": "^2.0.0",
     "generate-password": "^1.5.0",
     "get-caller-file": "^2.0.5",
-    "googleapis": "^66.0.0",
+    "googleapis": "^67.0.0",
     "graphql": "^15.0.0",
     "graphql-depth-limit": "^1.1.0",
     "graphql-iso-date": "^3.5.0",
