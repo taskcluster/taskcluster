@@ -52,6 +52,8 @@ module.exports = function ({ session, db, options = {} }) {
 
         if (!row) {
           return callback();
+        } else if (db.decrypt({ value: row.data.encrypted_session_id }).toString('utf8') !== sessionId){
+          return callback();
         }
 
         return callback(null, row.data);
