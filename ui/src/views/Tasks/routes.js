@@ -19,6 +19,9 @@ const CreateTask = lazy(() =>
 const TaskGroup = lazy(() =>
   import(/* webpackChunkName: 'Tasks.TaskGroup' */ './TaskGroup')
 );
+const TaskDefinition = lazy(() =>
+  import(/* webpackChunkName: 'Tasks.TaskDefinition' */ './TaskDefinition')
+);
 const TaskIndex = lazy(() =>
   import(/* webpackChunkName: 'Tasks.TaskIndex' */ './TaskIndex')
 );
@@ -70,6 +73,10 @@ export default path => [
     component: ViewTask,
     path: `${path}/:taskId/runs/:runId`,
     description: taskDescription,
+  },
+  {
+    component: TaskDefinition,
+    path: `${path}/:taskId/definition`,
   },
   {
     component: InteractiveConnect,

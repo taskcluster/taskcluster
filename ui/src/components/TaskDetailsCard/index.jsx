@@ -24,7 +24,6 @@ import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
 import { DEPENDENTS_PAGE_SIZE } from '../../utils/constants';
 import { pageInfo, task } from '../../utils/prop-types';
-import urls from '../../utils/urls';
 import Link from '../../utils/Link';
 
 @withStyles(theme => ({
@@ -216,16 +215,13 @@ export default class TaskDetailsCard extends Component {
                   </ListItem>
                 </List>
               </Collapse>
-              <ListItem
-                button
+              <Link
                 className={classes.listItemButton}
-                component="a"
-                href={urls.api('queue', 'v1', `task/${task.taskId}`)}
-                target="_blank"
-                rel="noopener noreferrer">
-                <ListItemText primary="View task definition" />
-                <OpenInNewIcon />
-              </ListItem>
+                to={`/tasks/${task.taskId}/definition`}>
+                <ListItem button className={classes.listItemButton}>
+                  <ListItemText primary="Full Task Definition" />
+                </ListItem>
+              </Link>
               <ListItem
                 button
                 className={classes.listItemButton}
