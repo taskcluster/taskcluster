@@ -30,7 +30,8 @@
   {
     "clientId": "static/taskcluster/index",
     "scopes": [
-      "queue:get-artifact:*"
+      "queue:get-artifact:*",
+      "queue:get-task:*"
     ]
   },
   {
