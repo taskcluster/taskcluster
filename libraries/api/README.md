@@ -347,9 +347,6 @@ fails, the error will be logged and the user will get a 500 error response.
 To return a successful result with an empty body, return `res.reply()`. 
 This will send an empty 204 response.
 
-An optional second argument to `res.reply` gives the HTTP response code,
-defaulting to 200 (for successful results) or 204 (for empty results).
-
 Return errors with `res.reportError(code, messagePattern, details)`.  The
 `code` argument must be one of those specified in the API declaration, or one
 of the built-in codes (most of which you probably shouldn't use, as they are

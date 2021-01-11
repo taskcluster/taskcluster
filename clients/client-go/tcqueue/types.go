@@ -214,20 +214,6 @@ type (
 		StorageType string `json:"storageType"`
 	}
 
-	// Response to the `getArtifact` method.  This method returns a simple URL from
-	// which the artifact data can be read.  Not that this response is provided as
-	// the body of an HTTP 303 response, so clients which automatically follow
-	// redirects may not see this content.
-	GetArtifactResponse struct {
-
-		// Artifact storage type.  Note that this is also available in the
-		// `x-taskcluster-artifact-storage-type` header.
-		StorageType string `json:"storageType"`
-
-		// URL from which to download the artifact
-		URL string `json:"url"`
-	}
-
 	// Request the queue to link this artifact to the named artifact on the same
 	// task.  When a client fetches this artifact, the request will be treated as
 	// if the client fetched the linked artifact (including corresponding scope

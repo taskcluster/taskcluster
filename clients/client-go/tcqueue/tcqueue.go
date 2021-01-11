@@ -540,7 +540,8 @@ func (queue *Queue) ReportException(taskId, runId string, payload *TaskException
 // intermediate artifacts from data processing applications, as the
 // artifacts can be set to expire a few days later.
 //
-// We currently support "S3 Artifacts" for data storage.
+// We currently support "S3 Artifacts" officially, with remaining support
+// for two deprecated types.  Do not use these deprecated types.
 //
 // **S3 artifacts**, is useful for static files which will be
 // stored on S3. When creating an S3 artifact the queue will return a
@@ -604,12 +605,18 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArti
 // `anonymous` role.  The convention is to include
 // `queue:get-artifact:public/*`.
 //
-// **Response**: the HTTP response to this method is a 303 redirect to the
-// URL from which the artifact can be downloaded.  The body of that response
-// contains the data described in the output schema, contianing the same URL.
-// Callers are encouraged to use whichever method of gathering the URL is
-// most convenient.  Standard HTTP clients will follow the redirect, while
-// API  client libraries will return the JSON body.
+// **API Clients**, this method will redirect you to the artifact, if it is
+// stored externally. Either way, the response may not be JSON. So API
+// client users might want to generate a signed URL for this end-point and
+// use that URL with an HTTP client that can handle responses correctly.
+//
+// **Downloading artifacts**
+// There are some special considerations for those http clients which download
+// artifacts.  This api endpoint is designed to be compatible with an HTTP 1.1
+// compliant client, but has extra features to ensure the download is valid.
+// It is strongly recommend that consumers use either taskcluster-lib-artifact (JS),
+// taskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with
+// artifacts.
 //
 // In order to download an artifact the following must be done:
 //
@@ -648,10 +655,10 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArti
 //   For name in names each queue:get-artifact:<name>
 //
 // See #getArtifact
-func (queue *Queue) GetArtifact(taskId, runId, name string) (*GetArtifactResponse, error) {
+func (queue *Queue) GetArtifact(taskId, runId, name string) error {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(GetArtifactResponse), nil)
-	return responseObject.(*GetArtifactResponse), err
+	_, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil, nil)
+	return err
 }
 
 // Returns a signed URL for GetArtifact, valid for the specified duration.
@@ -687,10 +694,10 @@ func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration t
 //   For name in names each queue:get-artifact:<name>
 //
 // See #getLatestArtifact
-func (queue *Queue) GetLatestArtifact(taskId, name string) (*GetArtifactResponse, error) {
+func (queue *Queue) GetLatestArtifact(taskId, name string) error {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), new(GetArtifactResponse), nil)
-	return responseObject.(*GetArtifactResponse), err
+	_, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil, nil)
+	return err
 }
 
 // Returns a signed URL for GetLatestArtifact, valid for the specified duration.
