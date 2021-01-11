@@ -11,7 +11,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Switch from '@material-ui/core/Switch';
-import { safeLoad, safeDump } from 'js-yaml';
+import { load, dump } from 'js-yaml';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
@@ -244,9 +244,9 @@ export default class HookForm extends Component {
       hook: props.hook,
       hookLastFires: props.hookLastFires,
       previousHook: props.hook,
-      taskInput: safeDump(removeKeys(cloneDeep(hook.task), ['__typename'])),
-      triggerSchemaInput: safeDump(hook.triggerSchema),
-      triggerContextInput: safeDump({}),
+      taskInput: dump(removeKeys(cloneDeep(hook.task), ['__typename'])),
+      triggerSchemaInput: dump(hook.triggerSchema),
+      triggerContextInput: dump({}),
       scheduleTextField: '',
       taskValidYaml: true,
       triggerSchemaValidYaml: true,
@@ -350,7 +350,7 @@ export default class HookForm extends Component {
     try {
       this.setState({
         taskInput: value,
-        hook: assocPath(['task'], safeLoad(value), hook),
+        hook: assocPath(['task'], load(value), hook),
         taskValidYaml: true,
       });
     } catch (err) {
@@ -375,7 +375,7 @@ export default class HookForm extends Component {
     return onTriggerHook({
       hookId,
       hookGroupId,
-      payload: safeLoad(triggerContextInput),
+      payload: load(triggerContextInput),
     });
   };
 
@@ -383,7 +383,7 @@ export default class HookForm extends Component {
     try {
       this.setState({
         triggerSchemaInput: value,
-        hook: assocPath(['triggerSchema'], safeLoad(value), this.state.hook),
+        hook: assocPath(['triggerSchema'], load(value), this.state.hook),
         triggerSchemaValidYaml: true,
       });
     } catch (err) {
@@ -893,7 +893,7 @@ export default class HookForm extends Component {
                       Schema
                     </Typography>
                     <Code language="yaml" className={classes.code}>
-                      {safeDump(hook.triggerSchema)}
+                      {dump(hook.triggerSchema)}
                     </Code>
                   </Grid>
                 </Grid>

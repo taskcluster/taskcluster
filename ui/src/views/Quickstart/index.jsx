@@ -17,7 +17,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import AlertCircleOutlineIcon from 'mdi-react/AlertCircleOutlineIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import RestartIcon from 'mdi-react/RestartIcon';
-import { safeDump } from 'js-yaml';
+import { dump } from 'js-yaml';
 import debounce from 'lodash.debounce';
 import TextField from '../../components/TextField';
 import Dashboard from '../../components/Dashboard';
@@ -76,7 +76,7 @@ const getTaskDefinition = state => {
     'proj-getting-started/tutorial';
   const [provisionerId, workerType] = tutorialWorkerPool.split('/');
 
-  return safeDump({
+  return dump({
     version: 1,
     policy: {
       pullRequests: access,
