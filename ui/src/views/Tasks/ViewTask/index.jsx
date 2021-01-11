@@ -13,7 +13,7 @@ import ListItem from '@material-ui/core/ListItem';
 import Checkbox from '@material-ui/core/Checkbox';
 import dotProp from 'dot-prop-immutable';
 import jsonSchemaDefaults from 'json-schema-defaults';
-import { safeDump } from 'js-yaml';
+import { dump } from 'js-yaml';
 import HammerIcon from 'mdi-react/HammerIcon';
 import CreationIcon from 'mdi-react/CreationIcon';
 import PencilIcon from 'mdi-react/PencilIcon';
@@ -156,9 +156,7 @@ export default class ViewTask extends Component {
             return;
           }
 
-          actionInputs[action.name] = safeDump(
-            jsonSchemaDefaults(schema) || {}
-          );
+          actionInputs[action.name] = dump(jsonSchemaDefaults(schema) || {});
           actionData[action.name] = {
             action,
           };
