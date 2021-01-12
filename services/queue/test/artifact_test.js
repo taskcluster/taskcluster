@@ -631,6 +631,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assume(res.body).to.be.eql({ message: 'Hello World' });
     });
 
+    test('Post and list chain of link artifacts', async () => {
+      const chainLength = 30;
+
+      await makeAndClaimTask();
+      await makeArtifact(s3Artifact);
+      let lastName = 'public/s3.json';
+      for (let i of _.range(chainLength)) {
+        const name = `public/${i}`;
+        await makeArtifact({
+          name,
+          storageType: 'link',
+          expires: taskcluster.fromNowJSON('1 day'),
+          artifact: lastName,
+        });
+        lastName = name;
+      }
+
+      debug('### List artifacts');
+      const r2 = await helper.queue.listArtifacts(taskId, 0);
+      assume(r2.artifacts.length).equals(chainLength + 1);
+    });
+
     test('Post reference artifact, replace with link', async () => {
       await makeAndClaimTask();
       await makeArtifact({
