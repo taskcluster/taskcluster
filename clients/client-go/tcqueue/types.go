@@ -111,6 +111,7 @@ type (
 		// Possible values:
 		//   * "s3"
 		//   * "reference"
+		//   * "link"
 		//   * "error"
 		StorageType string `json:"storageType"`
 	}

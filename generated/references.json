@@ -3617,6 +3617,7 @@
                 "enum": [
                   "s3",
                   "reference",
+                  "link",
                   "error"
                 ],
                 "title": "Artifact Storage-Type",
