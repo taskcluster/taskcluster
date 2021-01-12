@@ -25,6 +25,7 @@ properties:
           enum:
             - s3
             - reference
+            - link
             - error
         name:
           title:    "Artifact Name"
