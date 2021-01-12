@@ -1,0 +1,53 @@
+version: 62
+description: add update_queue_artifact_2 to update artifact storage-type as well
+methods:
+  update_queue_artifact:
+    deprecated: true
+  update_queue_artifact_2:
+    serviceName: queue
+    description: |-
+      Update a queue artifact, including its storageType.
+      Returns the up-to-date artifact row that have the same task id, run id, and name.
+    mode: write
+    args: task_id_in text, run_id_in integer, name_in text, storage_type_in text, details_in jsonb, expires_in timestamptz
+    returns: table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)
+    body: |-
+      declare
+        updated_row queue_artifacts%ROWTYPE;
+      begin
+        update queue_artifacts
+        set (details, storage_type, expires) = (
+          coalesce(details_in, queue_artifacts.details),
+          coalesce(storage_type_in, queue_artifacts.storage_type),
+          coalesce(expires_in, queue_artifacts.expires)
+        )
+        where
+          queue_artifacts.task_id = task_id_in and
+          queue_artifacts.run_id = run_id_in and
+          queue_artifacts.name = name_in
+        returning
+          queue_artifacts.task_id,
+          queue_artifacts.run_id,
+          queue_artifacts.name,
+          queue_artifacts.storage_type,
+          queue_artifacts.content_type,
+          queue_artifacts.details,
+          queue_artifacts.present,
+          queue_artifacts.expires
+        into updated_row;
+        if found then
+          return query select
+            updated_row.task_id,
+            updated_row.run_id,
+            updated_row.name,
+            updated_row.storage_type,
+            updated_row.content_type,
+            updated_row.details,
+            updated_row.present,
+            updated_row.expires
+          return;
+        else
+          raise exception 'no such row' using errcode = 'P0002';
+        end if;
+      end
+

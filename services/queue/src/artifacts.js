@@ -259,9 +259,14 @@ builder.declare({
 
     // This update is allowed, so modify the artifact in-place
     artifact = artifactUtils.fromDbRows(
-      await this.db.fns.update_queue_artifact(
-        taskId, runId, name, details, expires,
-      ),
+      await this.db.fns.update_queue_artifact_2({
+        task_id_in: taskId,
+        run_id_in: runId,
+        name_in: name,
+        details_in: details,
+        storage_type_in: storageType,
+        expires_in: expires,
+      }),
     );
   }
 

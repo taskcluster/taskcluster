@@ -5924,6 +5924,24 @@
         }
       },
       "version": 61
+    },
+    {
+      "description": "add update_queue_artifact_2 to update artifact storage-type as well",
+      "methods": {
+        "update_queue_artifact": {
+          "deprecated": true
+        },
+        "update_queue_artifact_2": {
+          "args": "task_id_in text, run_id_in integer, name_in text, storage_type_in text, details_in jsonb, expires_in timestamptz",
+          "body": "declare\n  updated_row queue_artifacts%ROWTYPE;\nbegin\n  update queue_artifacts\n  set (details, storage_type, expires) = (\n    coalesce(details_in, queue_artifacts.details),\n    coalesce(storage_type_in, queue_artifacts.storage_type),\n    coalesce(expires_in, queue_artifacts.expires)\n  )\n  where\n    queue_artifacts.task_id = task_id_in and\n    queue_artifacts.run_id = run_id_in and\n    queue_artifacts.name = name_in\n  returning\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires\n  into updated_row;\n  if found then\n    return query select\n      updated_row.task_id,\n      updated_row.run_id,\n      updated_row.name,\n      updated_row.storage_type,\n      updated_row.content_type,\n      updated_row.details,\n      updated_row.present,\n      updated_row.expires\n    return;\n  else\n    raise exception 'no such row' using errcode = 'P0002';\n  end if;\nend",
+          "deprecated": false,
+          "description": "Update a queue artifact, including its storageType.\nReturns the up-to-date artifact row that have the same task id, run id, and name.",
+          "mode": "write",
+          "returns": "table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 62
     }
   ]
 }
