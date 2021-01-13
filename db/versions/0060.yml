@@ -22,7 +22,7 @@ downgradeScript: |-
         select task_id
         from tasks
         where
-          (state ->> task_id is null or task_id > state ->> task_id) and
+          (state ->> 'task_id' is null or task_id > state ->> 'task_id') and
           worker_type is null or provisioner_id is null
         order by task_id
         limit batch_size_in
