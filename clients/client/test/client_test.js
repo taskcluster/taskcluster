@@ -428,9 +428,10 @@ suite(testing.suiteName(), function() {
 
       test('GET something that redirects', async () => {
         nock(urlPrefix).get('/v1/redirect')
-          .reply(303, {}, { 'location': 'http://example.com' });
+          .reply(303, { url: 'http://example.com' }, { 'location': 'http://example.com' });
         let c = new Fake({ rootUrl, serviceDiscoveryScheme });
-        await assert.rejects(() => c.redirect(), /Unexpected Redirect/);
+        let res = await c.redirect();
+        assert.deepEqual(res, { url: 'http://example.com' });
       });
 
       let assertBewitUrl = function(url, expected) {

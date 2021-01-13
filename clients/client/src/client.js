@@ -110,8 +110,9 @@ const makeRequest = exports.makeRequest = function(client, method, url, payload,
     req.set('x-taskcluster-trace-id', client._options.traceId);
   }
 
-  // do not follow redirects
+  // do not follow redirects, and treat them as success
   req.redirects(0);
+  req.ok(res => res.status < 400);
 
   // Timeout for each individual request.
   req.timeout(client._timeout);

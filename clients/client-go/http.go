@@ -244,12 +244,19 @@ func (client *Client) APICall(payload interface{}, method, route string, result 
 		if client.Context != nil && client.Context.Err() != nil {
 			return result, callSummary, client.Context.Err()
 		}
-		return result,
-			callSummary,
-			&APICallException{
-				CallSummary: callSummary,
-				RootCause:   err,
-			}
+
+		// httpbackoff considers a 3xx response to be an error, but the client
+		// treats it as success, so do not return an error in that case.
+		if callSummary.HTTPResponse.StatusCode >= 400 {
+			return result,
+				callSummary,
+				&APICallException{
+					CallSummary: callSummary,
+					RootCause:   err,
+				}
+		} else {
+			err = nil
+		}
 	}
 	// if result is passed in as nil, it means the API defines no response body
 	// json

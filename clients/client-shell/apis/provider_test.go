@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	assert "github.com/stretchr/testify/require"
@@ -88,13 +87,13 @@ var servicesTest = map[string]definitions.Service{
 	},
 }
 
-func TestRedirectIserror(t *testing.T) {
+func TestRedirectIsNotError(t *testing.T) {
 	// start test server
 	providerServer := apiServer()
 	config.SetRootURL(providerServer.URL)
 	defer providerServer.Close()
 
-	// entry for the redirect endpoing
+	// entry for the redirect endpoint
 	entry := definitions.Entry{
 		Name:        "redirect",
 		Title:       "Do a redirect",
@@ -107,11 +106,13 @@ func TestRedirectIserror(t *testing.T) {
 		Input:       "",
 	}
 
-	err := execute("test", "v1", &entry, nil, nil, nil, nil)
+	output := bytes.NewBuffer([]byte{})
 
-	// this should be an error, and should mention the status code
-	assert.Error(t, err)
-	assert.Equal(t, true, strings.Contains(err.Error(), "303"))
+	err := execute("test", "v1", &entry, nil, nil, nil, output)
+
+	// this should not be an error, instead showing the JSON response
+	assert.NoError(t, err)
+	assert.Equal(t, output.String(), "{\"url\":\"http://nosuch.example.com\"}")
 }
 
 func TestErrorHandling(t *testing.T) {
@@ -167,7 +168,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 func redirHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header()["Location"] = []string{"http://nosuch.example.com"}
 	w.WriteHeader(303)
-	fmt.Fprintln(w, "{}")
+	fmt.Fprintf(w, "{\"url\":\"http://nosuch.example.com\"}")
 }
 
 // errorHandler returns an error, in the Taskcluster format
