@@ -654,20 +654,39 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     test('Post reference artifact, replace with link', async () => {
+      const expires = taskcluster.fromNow('1 day');
       await makeAndClaimTask();
+      await makeArtifact(s3Artifact);
       await makeArtifact({
         name: 'public/thing.json',
         storageType: 'reference',
-        expires: taskcluster.fromNowJSON('1 day'),
+        expires,
         url: 'https://example.com',
         contentType: 'text/html',
       });
       await makeArtifact({
         name: 'public/thing.json',
         storageType: 'link',
-        expires: taskcluster.fromNowJSON('1 day'),
-        artifact: 'public/something',
+        expires,
+        artifact: 'public/s3.json',
       });
+      let res = await helper.queue.listArtifacts(taskId, 0);
+      assume(res.artifacts.find(a => a.name === 'public/thing.json')).to.eql({
+        storageType: 'link',
+        name: 'public/thing.json',
+        expires: expires.toJSON(),
+        contentType: 'text/html',
+      });
+
+      helper.scopes('queue:get-artifact:*');
+
+      const url = helper.queue.buildSignedUrl(
+        helper.queue.getArtifact,
+        taskId, 0, 'public/thing.json',
+      );
+      res = await getWith303Redirect(url);
+      assume(res.ok).is.ok();
+      assume(res.body).to.be.eql({ message: 'Hello World' });
     });
 
     test('Post reference artifact, update its URL', async () => {
@@ -685,6 +704,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         expires: taskcluster.fromNowJSON('1 day'),
         url: 'https://newurl.example.com',
         contentType: 'text/html',
+      });
+
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:*'], async () => {
+        let url = helper.queue.buildUrl(
+          helper.queue.getArtifact,
+          taskId, 0, 'public/thing.json',
+        );
+        debug('Fetching artifact from: %s', url);
+        let res = await request.get(url).ok(() => true).redirects(0);
+        assume(res.status).equals(303);
+        assume(res.headers.location).to.eql('https://newurl.example.com');
       });
     });
 

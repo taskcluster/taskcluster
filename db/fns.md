@@ -109,7 +109,7 @@
    * [`resolve_task_at_deadline`](#resolve_task_at_deadline)
    * [`satisfy_task_dependency`](#satisfy_task_dependency)
    * [`schedule_task`](#schedule_task)
-   * [`update_queue_artifact`](#update_queue_artifact)
+   * [`update_queue_artifact_2`](#update_queue_artifact_2)
    * [`update_queue_worker_tqid`](#update_queue_worker_tqid)
    * [`update_task_queue`](#update_task_queue)
  * [secrets functions](#secrets)
@@ -1143,7 +1143,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`resolve_task_at_deadline`](#resolve_task_at_deadline)
 * [`satisfy_task_dependency`](#satisfy_task_dependency)
 * [`schedule_task`](#schedule_task)
-* [`update_queue_artifact`](#update_queue_artifact)
+* [`update_queue_artifact_2`](#update_queue_artifact_2)
 * [`update_queue_worker_tqid`](#update_queue_worker_tqid)
 * [`update_task_queue`](#update_task_queue)
 
@@ -1834,13 +1834,14 @@ Schedule the initial run for a task, moving the task from "unscheduled" to "pend
 This returns the task's updated status, or nothing if the current status was not
 as expected.
 
-### update_queue_artifact
+### update_queue_artifact_2
 
 * *Mode*: write
 * *Arguments*:
   * `task_id_in text`
   * `run_id_in integer`
   * `name_in text`
+  * `storage_type_in text`
   * `details_in jsonb`
   * `expires_in timestamptz`
 * *Returns*: `table`
@@ -1853,7 +1854,7 @@ as expected.
   * `present boolean`
   * `expires timestamptz`
 
-Update a queue artifact.
+Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
 
 ### update_queue_worker_tqid
@@ -1905,6 +1906,7 @@ All parameters must be supplied.
 * `get_queue_artifacts(task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v41.0.0)
 * `get_task(task_id_in text)` (compatibility guaranteed until v41.0.0)
 * `get_tasks_by_task_group(task_group_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v41.0.0)
+* `update_queue_artifact(task_id_in text, run_id_in integer, name_in text, details_in jsonb, expires_in timestamptz)` (compatibility guaranteed until v42.0.0)
 
 ## secrets
 
