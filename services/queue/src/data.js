@@ -64,10 +64,10 @@ class Task {
 
   // Get a task from the DB, or undefined
   static async get(db, taskId) {
-    return Task.fromDbRows(await db.fns.get_task_tqid(taskId));
+    return Task.fromDbRows(await db.fns.get_task_projid(taskId));
   }
 
-  // Call db.create_task_tqid with the content of this instance.  This
+  // Call db.create_task_projid with the content of this instance.  This
   // implements the usual idempotency checks and returns an error with code
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
@@ -75,10 +75,11 @@ class Task {
     // otherwise does not correctly serialize the array values
     const arr = v => JSON.stringify(v);
     try {
-      await db.fns.create_task_tqid(
+      await db.fns.create_task_projid(
         this.taskId,
         this.taskQueueId,
         this.schedulerId,
+        this.projectId,
         this.taskGroupId,
         arr(this.dependencies),
         this.requires,

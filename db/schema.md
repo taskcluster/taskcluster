@@ -415,7 +415,8 @@ CREATE TABLE tasks (
     runs jsonb NOT NULL,
     taken_until timestamp with time zone,
     ever_resolved boolean NOT NULL,
-    task_queue_id text
+    task_queue_id text,
+    project_id text
 );
 ALTER TABLE tasks
     ADD CONSTRAINT tasks_pkey PRIMARY KEY (task_id);

@@ -230,7 +230,7 @@ builder.declare({
     this.db.fns.get_task_group(taskGroupId),
     paginateResults({
       query: req.query,
-      fetch: (size, offset) => this.db.fns.get_tasks_by_task_group_tqid(taskGroupId, size, offset),
+      fetch: (size, offset) => this.db.fns.get_tasks_by_task_group_projid(taskGroupId, size, offset),
     }),
   ]);
 
@@ -430,6 +430,11 @@ let patchAndValidateTaskDef = function(taskId, taskDef) {
   // Migrate normal -> lowest, as it is the new default
   if (taskDef.priority === 'normal') {
     taskDef.priority = 'lowest';
+  }
+
+  // fill in the default `none` projectId if none was given
+  if (!taskDef.projectId) {
+    taskDef.projectId = 'none';
   }
 
   return null;

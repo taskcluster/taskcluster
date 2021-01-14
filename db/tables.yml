@@ -172,6 +172,7 @@ tasks:
   taken_until: timestamp with time zone
   task_group_id: text not null
   task_queue_id: text
+  project_id: text
 queue_artifacts:
   task_id: text not null
   run_id: integer not null
