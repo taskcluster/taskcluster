@@ -229,6 +229,16 @@ func execute(
 
 	res, err := req.Send()
 	if err != nil {
+		// Got considers redirects an error, but we would like to read the body as if it
+		// was success, so ignore such errors
+		if brcerr, ok := err.(got.BadResponseCodeError); ok {
+			if brcerr.Response.StatusCode < 400 {
+				res = brcerr.Response
+				err = nil
+			}
+		}
+	}
+	if err != nil {
 		return formatGotError(err)
 	}
 
