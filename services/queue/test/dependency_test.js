@@ -19,8 +19,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.resetTables(mock, skipping);
 
   const taskDef = () => ({
-    provisionerId: 'no-provisioner-extended-extendeda',
-    workerType: 'test-worker-extended-extended',
+    taskQueueId: 'no-provisioner-extended-extended/test-worker-extended-extended',
     created: taskcluster.fromNowJSON(),
     deadline: taskcluster.fromNowJSON('1 days'),
     expires: taskcluster.fromNowJSON('2 days'),

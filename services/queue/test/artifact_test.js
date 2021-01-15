@@ -67,8 +67,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   // Use the same task definition for everything
   const taskDef = {
-    provisionerId: 'no-provisioner',
-    workerType: 'test-worker',
+    taskQueueId: 'no-provisioner/test-worker',
     schedulerId: 'my-scheduler',
     taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
     routes: [],

@@ -4,7 +4,7 @@ const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const taskCreds = require('./task-creds');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { Task, Worker, TaskQueue, Provisioner } = require('./data');
-const { useSplitFields, useSingleField, joinTaskQueueId, splitTaskQueueId } = require('./utils');
+const { addSplitFields, useOnlyTaskQueueId, joinTaskQueueId, splitTaskQueueId } = require('./utils');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -351,6 +351,7 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
     taskGroupId: taskDef.taskGroupId || taskId,
     provisionerId: taskDef.provisionerId,
     workerType: taskDef.workerType,
+    taskQueueId: taskDef.taskQueueId,
   });
 };
 
@@ -512,6 +513,29 @@ builder.declare({
   let taskId = req.params.taskId;
   let taskDef = req.body;
 
+  // During the transition to the taskQueueId identifier, we have to
+  // accept all possible incoming definitions that may contain either
+  // the old, the new, or both identifiers
+  if (taskDef.provisionerId && taskDef.workerType && taskDef.taskQueueId) {
+    if (joinTaskQueueId(taskDef.provisionerId, taskDef.workerType) !== taskDef.taskQueueId) {
+      return res.reportError('InputError',
+        'taskQueueId must match "provisionerId/workerType"',
+        {
+          provisionerId: taskDef.provisionerId,
+          workerType: taskDef.workerType,
+          taskQueueId: taskDef.taskQueueId,
+        });
+    }
+  } else if (taskDef.provisionerId && taskDef.workerType) {
+    taskDef.taskQueueId = joinTaskQueueId(taskDef.provisionerId, taskDef.workerType);
+  } else if (taskDef.taskQueueId) {
+    addSplitFields(taskDef);
+  } else {
+    return res.reportError('InputError',
+      'at least a provisionerId and a workerType or a taskQueueId must be provided"',
+      {});
+  }
+
   await authorizeTaskCreation(req, taskId, taskDef);
 
   // Patch default values and validate timestamps
@@ -538,7 +562,7 @@ builder.declare({
   );
 
   let task = Task.fromApi(taskId, taskDef);
-  useSingleField(task);
+  useOnlyTaskQueueId(task);
 
   // Fetch the status of the task before creation, so that `taskDefined` messages
   // have a default status. This can't be run after create, since create is
@@ -1680,16 +1704,16 @@ builder.declare({
 }, async function(req, res) {
   let provisionerId = req.params.provisionerId;
   let workerType = req.params.workerType;
+  let taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   // Get number of pending message
-  let count = await this.queueService.countPendingMessages(
-    joinTaskQueueId(provisionerId, workerType),
-  );
+  let count = await this.queueService.countPendingMessages(taskQueueId);
 
   // Reply to call with count `pendingTasks`
   return res.reply({
     provisionerId: provisionerId,
     workerType: workerType,
+    taskQueueId: taskQueueId,
     pendingTasks: count,
   });
 });
@@ -1736,7 +1760,7 @@ builder.declare({
     result.continuationToken = continuationToken;
   }
 
-  result.workerTypes.forEach(useSplitFields);
+  result.workerTypes.forEach(addSplitFields);
   return res.reply(result);
 });
 
@@ -1770,7 +1794,7 @@ builder.declare({
   }
 
   const tqResult = tQueue.serialize();
-  useSplitFields(tqResult);
+  addSplitFields(tqResult);
 
   const actions = [];
   return res.reply(Object.assign({}, tqResult, { actions }));
@@ -1820,7 +1844,7 @@ builder.declare({
   });
 
   const tqResult = tQueue.serialize();
-  useSplitFields(tqResult);
+  addSplitFields(tqResult);
 
   const actions = [];
   return res.reply(Object.assign({}, tqResult, { actions }));
@@ -2008,7 +2032,7 @@ builder.declare({
   }
 
   const workerResult = worker.serialize();
-  useSplitFields(workerResult);
+  addSplitFields(workerResult);
 
   const actions = [];
   return res.reply(Object.assign({}, workerResult, { actions }));
@@ -2056,7 +2080,7 @@ builder.declare({
   worker = Worker.fromDbRows(result);
 
   const workerResult = worker.serialize();
-  useSplitFields(workerResult);
+  addSplitFields(workerResult);
 
   const actions = [];
   return res.reply(Object.assign({}, workerResult, { actions }));
@@ -2104,7 +2128,7 @@ builder.declare({
   ]);
 
   const workerResult = worker.serialize();
-  useSplitFields(workerResult);
+  addSplitFields(workerResult);
 
   const actions = [];
   return res.reply(Object.assign({}, workerResult, { actions }));

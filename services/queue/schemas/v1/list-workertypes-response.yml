@@ -16,6 +16,7 @@ properties:
       properties:
         provisionerId: {$ref: "task.json#/properties/provisionerId"}
         workerType: {$ref: "task.json#/properties/workerType"}
+        taskQueueId: {$ref: "task.json#/properties/taskQueueId"}
         stability:
           title:        "Stability"
           description: |
@@ -47,6 +48,7 @@ properties:
       required:
         - workerType
         - provisionerId
+        - taskQueueId
         - stability
         - description
         - expires

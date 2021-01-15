@@ -6,6 +6,7 @@ type:           object
 properties:
   provisionerId: {$ref: "task.json#/properties/provisionerId"}
   workerType: {$ref: "task.json#/properties/workerType"}
+  taskQueueId: {$ref: "task.json#/properties/taskQueueId"}
   stability:
     title:        "Stability"
     description: |
@@ -86,6 +87,7 @@ additionalProperties: false
 required:
   - workerType
   - provisionerId
+  - taskQueueId
   - description
   - stability
   - expires

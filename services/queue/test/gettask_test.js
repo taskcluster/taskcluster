@@ -15,8 +15,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.resetTables(mock, skipping);
 
   const taskDef = {
-    provisionerId: 'no-provisioner-extended-extended',
-    workerType: 'test-worker-extended-extended',
+    taskQueueId: 'no-provisioner-extended-extended/test-worker-extended-extended',
     schedulerId: 'my-scheduler-extended-extended',
     taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
     dependencies: [],
@@ -51,6 +50,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('task(taskId) is correct', async () => {
     helper.scopes(`queue:get-task:${taskId}`);
     const taskDef2 = await helper.queue.task(taskId);
+    assume(`${taskDef2.provisionerId}/${taskDef2.workerType}`).equals(taskDef.taskQueueId);
+    delete taskDef2.provisionerId;
+    delete taskDef2.workerType;
     assume(taskDef2).deep.equals(taskDef);
   });
 
@@ -72,4 +74,5 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(`queue:status:${taskId}`);
     await helper.queue.status(taskId); // doesn't fail..
   });
+
 });
