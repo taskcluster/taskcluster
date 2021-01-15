@@ -385,10 +385,6 @@ func UACEnabled() bool {
 	return enableLUA == 1
 }
 
-func rebootBetweenTasks() bool {
-	return true
-}
-
 func platformTargets(arguments map[string]interface{}) ExitCode {
 	switch {
 	case arguments["grant-winsta-access"]:

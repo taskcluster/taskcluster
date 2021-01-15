@@ -28,6 +28,10 @@ func secure(configFile string) {
 	}
 }
 
+func rebootBetweenTasks() bool {
+	return config.HeadlessTasks
+}
+
 func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	reboot = true
 	_, err := os.Stat("next-task-user.json")

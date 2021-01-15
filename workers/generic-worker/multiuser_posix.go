@@ -86,10 +86,6 @@ func defaultTasksDir() string {
 	return filepath.Dir(os.Getenv("HOME"))
 }
 
-func rebootBetweenTasks() bool {
-	return true
-}
-
 func platformTargets(arguments map[string]interface{}) ExitCode {
 	log.Print("Internal error - no target found to run, yet command line parsing successful")
 	return INTERNAL_ERROR
