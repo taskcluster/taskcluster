@@ -19,14 +19,14 @@ type PlatformData struct {
 	SysProcAttr *syscall.SysProcAttr
 }
 
-func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
+func NewPlatformData(currentUser bool, user *runtime.OSUser) (pd *PlatformData, err error) {
 	if currentUser {
 		return &PlatformData{}, nil
 	}
-	return TaskUserPlatformData()
+	return TaskUserPlatformData(user)
 }
 
-func TaskUserPlatformData() (pd *PlatformData, err error) {
+func TaskUserPlatformData(user *runtime.OSUser) (pd *PlatformData, err error) {
 	user, err := runtime.InteractiveUsername()
 	if err != nil {
 		return nil, fmt.Errorf("Could not determine interactive username: %v", err)

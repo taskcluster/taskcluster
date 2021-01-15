@@ -23,13 +23,13 @@ type PlatformData struct {
 	LoginInfo          *LoginInfo
 }
 
-func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
+func NewPlatformData(currentUser bool, user *gwruntime.OSUser) (pd *PlatformData, err error) {
 	if currentUser {
 		return &PlatformData{
 			LoginInfo: &LoginInfo{},
 		}, nil
 	}
-	pd, err = TaskUserPlatformData()
+	pd, err = TaskUserPlatformData(user)
 	if err != nil {
 		return
 	}
@@ -40,9 +40,13 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 	return
 }
 
-func TaskUserPlatformData() (pd *PlatformData, err error) {
+func TaskUserPlatformData(user *gwruntime.OSUser) (pd *PlatformData, err error) {
 	pd = &PlatformData{}
-	pd.LoginInfo, err = InteractiveLoginInfo(3 * time.Minute)
+	if config.HeadlessTasks {
+		pd.LoginInfo, err = NewLoginInfo(user.User, user.Password)
+	} else {
+		pd.LoginInfo, err = InteractiveLoginInfo(3 * time.Minute)
+	}
 	if err != nil {
 		return
 	}

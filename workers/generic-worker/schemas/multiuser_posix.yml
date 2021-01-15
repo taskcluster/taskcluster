@@ -47,7 +47,7 @@ properties:
 
       The following environment variables will automatically be set in the task
       commands, and may not be overridden by environment variables in the task payload:
-        * `DISPLAY` - `:0` (Linux only)
+        * `DISPLAY` - `:0` (Linux only, and only when `headlessTasks` is `false`)
         * `TASK_ID` - the task ID of the currently running task
         * `RUN_ID` - the run ID of the currently running task
         * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment

@@ -48,16 +48,18 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 		if err != nil {
 			panic(err)
 		}
-		err = runtime.WaitForLoginCompletion(5 * time.Minute)
-		if err != nil {
-			panic(err)
-		}
-		interactiveUsername, err := runtime.InteractiveUsername()
-		if err != nil {
-			panic(err)
-		}
-		if taskUserCredentials.Name != interactiveUsername {
-			panic(fmt.Errorf("Interactive username %v does not match task user %v from next-task-user.json file", interactiveUsername, taskUserCredentials.Name))
+		if !config.HeadlessTasks {
+			err = runtime.WaitForLoginCompletion(5 * time.Minute)
+			if err != nil {
+				panic(err)
+			}
+			interactiveUsername, err := runtime.InteractiveUsername()
+			if err != nil {
+				panic(err)
+			}
+			if taskUserCredentials.Name != interactiveUsername {
+				panic(fmt.Errorf("Interactive username %v does not match task user %v from next-task-user.json file", interactiveUsername, taskUserCredentials.Name))
+			}
 		}
 		reboot = false
 		pd, err := process.NewPlatformData(config.RunTasksAsCurrentUser)
@@ -92,7 +94,7 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 			// See https://bugzil.la/1559210
 			// Regardless of whether we are running tasks as current user or
 			// not, task initialisation steps should be run as task user.
-			pdTaskUser, err := process.TaskUserPlatformData()
+			pdTaskUser, err := process.TaskUserPlatformData(taskContext.User)
 			if err != nil {
 				panic(err)
 			}

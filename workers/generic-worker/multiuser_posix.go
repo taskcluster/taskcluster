@@ -124,7 +124,7 @@ func (task *TaskRun) EnvVars() []string {
 	if config.RunTasksAsCurrentUser {
 		taskEnv["TASK_USER_CREDENTIALS"] = filepath.Join(cwd, "current-task-user.json")
 	}
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == "linux" && !config.HeadlessTasks {
 		taskEnv["DISPLAY"] = ":0"
 	}
 	if config.WorkerLocation != "" {
