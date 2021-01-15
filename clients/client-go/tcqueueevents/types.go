@@ -452,6 +452,18 @@ type (
 		// must have an expiration that is no later than this.
 		Expires tcclient.Time `json:"expires"`
 
+		// The name for the "project" with which this task is associated.  This
+		// value can be used to control permission to manipulate tasks as well as
+		// for usage reporting.  Project ids are typically simple identifiers,
+		// optionally in a hierarchical namespace separated by `/` characters.
+		// This value defaults to `none`.
+		//
+		// Default:    "none"
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId"`
+
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
 		// will be replaced, together with `workerType`, by the new

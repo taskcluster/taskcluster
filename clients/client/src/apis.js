@@ -1858,6 +1858,7 @@ module.exports = {
                 "for": "route",
                 "in": "routes"
               },
+              "queue:create-task:project:<projectId>",
               "queue:scheduler-id:<schedulerId>",
               {
                 "AnyOf": [

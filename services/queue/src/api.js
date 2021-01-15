@@ -348,6 +348,7 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
     routes: taskDef.routes,
     scopes: taskDef.scopes,
     schedulerId: taskDef.schedulerId,
+    projectId: taskDef.projectId,
     taskGroupId: taskDef.taskGroupId || taskId,
     provisionerId: taskDef.provisionerId,
     workerType: taskDef.workerType,
@@ -432,11 +433,6 @@ let patchAndValidateTaskDef = function(taskId, taskDef) {
     taskDef.priority = 'lowest';
   }
 
-  // fill in the default `none` projectId if none was given
-  if (!taskDef.projectId) {
-    taskDef.projectId = 'none';
-  }
-
   return null;
 };
 
@@ -475,6 +471,7 @@ builder.declare({
   scopes: { AllOf: [
     { for: 'scope', in: 'scopes', each: '<scope>' },
     { for: 'route', in: 'routes', each: 'queue:route:<route>' },
+    'queue:create-task:project:<projectId>',
     'queue:scheduler-id:<schedulerId>',
     { AnyOf: [
       {
@@ -539,6 +536,11 @@ builder.declare({
     return res.reportError('InputError',
       'at least a provisionerId and a workerType or a taskQueueId must be provided"',
       {});
+  }
+
+  // fill in the default `none` projectId if none was given
+  if (!taskDef.projectId) {
+    taskDef.projectId = 'none';
   }
 
   await authorizeTaskCreation(req, taskId, taskDef);

@@ -290,6 +290,7 @@ func (queue *Queue) ListDependentTasks_SignedURL(taskId, continuationToken, limi
 //   All of:
 //   * For scope in scopes each <scope>
 //   * For route in routes each queue:route:<route>
+//   * queue:create-task:project:<projectId>
 //   * queue:scheduler-id:<schedulerId>
 //   * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
 //

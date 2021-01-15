@@ -67,6 +67,10 @@ type (
 		Expires tcclient.Time `json:"expires"`
 
 		// Project identifier.
+		//
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
 		ProjectID string `json:"projectId"`
 
 		// Unique identifier for this upload.   Once an object is created with an uploadId,
