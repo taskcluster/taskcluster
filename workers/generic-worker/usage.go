@@ -137,7 +137,7 @@ and reports back results to the queue.
                                             populating preloaded caches and readonly mounts. The
                                             directory will be created if it does not exist. This
                                             may be a relative path to the current directory, or
-                                            an absolute path. [default: "downloads"]
+                                            an absolute path. [default: "downloads"]` + headlessTasksUsage() + `
           idleTimeoutSecs                   How many seconds to wait without getting a new
                                             task to perform, before the worker process exits.
                                             An integer, >= 0. A value of 0 means "never reach
