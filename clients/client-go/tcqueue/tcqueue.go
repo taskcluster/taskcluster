@@ -386,7 +386,7 @@ func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 	return responseObject.(*TaskStatusResponse), err
 }
 
-// Claim pending task(s) for the given `provisionerId`/`workerType` queue.
+// Claim pending task(s) for the given `taskQueueId` queue.
 //
 // If any work is available (even if fewer than the requested number of
 // tasks, this will return immediately. Otherwise, it will block for tens of
@@ -397,13 +397,13 @@ func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 //
 // Required scopes:
 //   All of:
-//   * queue:claim-work:<provisionerId>/<workerType>
+//   * queue:claim-work:<taskQueueId>
 //   * queue:worker-id:<workerGroup>/<workerId>
 //
 // See #claimWork
-func (queue *Queue) ClaimWork(provisionerId, workerType string, payload *ClaimWorkRequest) (*ClaimWorkResponse, error) {
+func (queue *Queue) ClaimWork(taskQueueId string, payload *ClaimWorkRequest) (*ClaimWorkResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/claim-work/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(ClaimWorkResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/claim-work/"+url.QueryEscape(taskQueueId), new(ClaimWorkResponse), nil)
 	return responseObject.(*ClaimWorkResponse), err
 }
 

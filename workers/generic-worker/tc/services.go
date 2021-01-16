@@ -39,7 +39,7 @@ type Secrets interface {
 
 type Queue interface {
 	CancelTask(taskId string) (*tcqueue.TaskStatusResponse, error)
-	ClaimWork(provisionerId, workerType string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error)
+	ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error)
 	CreateArtifact(taskId, runId, name string, payload *tcqueue.PostArtifactRequest) (*tcqueue.PostArtifactResponse, error)
 	CreateTask(taskId string, payload *tcqueue.TaskDefinitionRequest) (*tcqueue.TaskStatusResponse, error)
 	GetLatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error)

@@ -1,6 +1,7 @@
 package mocktc
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -41,7 +42,7 @@ func (qp *QueueProvider) ClaimWork(w http.ResponseWriter, r *http.Request) {
 	vars := Vars(r)
 	var payload tcqueue.ClaimWorkRequest
 	Marshal(r, &payload)
-	out, err := qp.queue.ClaimWork(vars["provisionerId"], vars["workerType"], &payload)
+	out, err := qp.queue.ClaimWork(fmt.Sprintf("%s/%s", vars["provisionerId"], vars["workerType"]), &payload)
 	JSON(w, out, err)
 }
 

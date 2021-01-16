@@ -227,7 +227,7 @@ class Queue(BaseClient):
         """
         Claim Work
 
-        Claim pending task(s) for the given `provisionerId`/`workerType` queue.
+        Claim pending task(s) for the given `taskQueueId` queue.
 
         If any work is available (even if fewer than the requested number of
         tasks, this will return immediately. Otherwise, it will block for tens of
@@ -735,12 +735,12 @@ class Queue(BaseClient):
             'stability': 'deprecated',
         },
         "claimWork": {
-            'args': ['provisionerId', 'workerType'],
+            'args': ['taskQueueId'],
             'input': 'v1/claim-work-request.json#',
             'method': 'post',
             'name': 'claimWork',
             'output': 'v1/claim-work-response.json#',
-            'route': '/claim-work/<provisionerId>/<workerType>',
+            'route': '/claim-work/<taskQueueId>',
             'stability': 'stable',
         },
         "createArtifact": {

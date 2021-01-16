@@ -16,13 +16,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  // Generate random workerType id to use for this test
-  const workerType = helper.makeWorkerType();
+  // Generate random task queue id to use for this test
+  const taskQueueId = helper.makeTaskQueueId('no-provisioner-extended-extended');
 
   const makeTask = (retries) => {
     return {
-      provisionerId: 'no-provisioner-extended-extended',
-      workerType,
+      taskQueueId,
       priority: "normal",
       retries,
       created: taskcluster.fromNowJSON(),
@@ -56,7 +55,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     monitor.manager.reset(); // clear the first task-pending message
 
     debug('### Claim task');
-    let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+    let r1 = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
       tasks: 2,
@@ -93,7 +92,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     monitor.manager.reset(); // clear the first task-pending message
 
     debug('### Claim task');
-    let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+    let r1 = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
       tasks: 2,

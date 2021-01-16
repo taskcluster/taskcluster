@@ -51,14 +51,14 @@ func (queue *Queue) CancelTask(taskId string) (*tcqueue.TaskStatusResponse, erro
 	return queue.Status(taskId)
 }
 
-func (queue *Queue) ClaimWork(provisionerId, workerType string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error) {
+func (queue *Queue) ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error) {
 	queue.mu.Lock()
 	defer queue.mu.Unlock()
 	maxTasks := payload.Tasks
 	tasks := []tcqueue.TaskClaim{}
 	for _, taskId := range queue.orderedTasks {
 		j := queue.tasks[taskId]
-		if j.Task.WorkerType == workerType && j.Task.ProvisionerID == provisionerId && j.Status.State == "pending" {
+		if j.Task.TaskQueueID == taskQueueId && j.Status.State == "pending" {
 			j.Status.State = "running"
 			j.Status.Runs = []tcqueue.RunInformation{
 				{

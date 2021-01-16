@@ -1151,13 +1151,12 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "claimWork",
 				Title:       "Claim Work",
-				Description: "Claim pending task(s) for the given `provisionerId`/`workerType` queue.\n\nIf any work is available (even if fewer than the requested number of\ntasks, this will return immediately. Otherwise, it will block for tens of\nseconds waiting for work.  If no work appears, it will return an emtpy\nlist of tasks.  Callers should sleep a short while (to avoid denial of\nservice in an error condition) and call the endpoint again.  This is a\nsimple implementation of \"long polling\".",
+				Description: "Claim pending task(s) for the given `taskQueueId` queue.\n\nIf any work is available (even if fewer than the requested number of\ntasks, this will return immediately. Otherwise, it will block for tens of\nseconds waiting for work.  If no work appears, it will return an emtpy\nlist of tasks.  Callers should sleep a short while (to avoid denial of\nservice in an error condition) and call the endpoint again.  This is a\nsimple implementation of \"long polling\".",
 				Stability:   "stable",
 				Method:      "post",
-				Route:       "/claim-work/<provisionerId>/<workerType>",
+				Route:       "/claim-work/<taskQueueId>",
 				Args: []string{
-					"provisionerId",
-					"workerType",
+					"taskQueueId",
 				},
 				Query: []string{},
 				Input: "v1/claim-work-request.json#",
