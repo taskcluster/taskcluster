@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -55,10 +56,14 @@ func (queue *Queue) ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequ
 	queue.mu.Lock()
 	defer queue.mu.Unlock()
 	maxTasks := payload.Tasks
+	splitId := strings.Split(taskQueueId, "/")
+	provisionerId := splitId[0]
+	workerType := splitId[1]
 	tasks := []tcqueue.TaskClaim{}
 	for _, taskId := range queue.orderedTasks {
 		j := queue.tasks[taskId]
-		if j.Task.TaskQueueID == taskQueueId && j.Status.State == "pending" {
+
+		if j.Task.WorkerType == workerType && j.Task.ProvisionerID == provisionerId && j.Status.State == "pending" {
 			j.Status.State = "running"
 			j.Status.Runs = []tcqueue.RunInformation{
 				{

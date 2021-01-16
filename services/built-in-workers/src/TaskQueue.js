@@ -13,7 +13,7 @@ class TaskQueue {
   }
 
   async claimTask() {
-    let result = await this.queue.claimWork('built-in', this.builtinType, {
+    let result = await this.queue.claimWork(`built-in/${this.builtinType}`, {
       tasks: 1,
       workerGroup: 'built-in',
       workerId: this.builtinType,
@@ -23,10 +23,9 @@ class TaskQueue {
     }
     const task = result.tasks[0];
     if (Object.keys(task.task.payload).length === 0) {
-      const taskQueueId = `${task.task.provisionerId}/${task.task.workerType}`;
-      if (taskQueueId === 'built-in/succeed') {
+      if (task.task.taskQueueId === 'built-in/succeed') {
         return await this.queue.reportCompleted(task.status.taskId, task.runId);
-      } else if (taskQueueId === 'built-in/fail') {
+      } else if (task.task.taskQueueId === 'built-in/fail') {
         return await this.queue.reportFailed(task.status.taskId, task.runId);
       }
     } else {
