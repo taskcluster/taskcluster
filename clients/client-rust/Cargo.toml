@@ -19,7 +19,5 @@ tokio = { version = "0.2", features = ["macros", "time"] }
 
 [dev-dependencies]
 chrono = "0.4.11"
-httptest = "0.13.1"
+httptest = "^0.15.1"
 lazy_static = "1.4.0"
-# note that this must match the version used by httptest
-http = "0.2"

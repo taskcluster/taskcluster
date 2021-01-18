@@ -431,7 +431,6 @@ mod tests {
     use super::*;
     use crate::err_status_code;
     use anyhow::bail;
-    use http::header::AUTHORIZATION;
     use httptest::{matchers::*, responders::*, Expectation, Server};
     use serde_json::json;
     use std::fmt;
@@ -446,9 +445,16 @@ mod tests {
     #[derive(Debug)]
     pub struct SignedWith(Credentials, SocketAddr);
 
-    impl<B> Matcher<http::Request<B>> for SignedWith {
-        fn matches(&mut self, input: &http::Request<B>, _ctx: &mut ExecutionContext) -> bool {
-            let auth_header = input.headers().get(AUTHORIZATION).unwrap();
+    impl<B> Matcher<httptest::http::Request<B>> for SignedWith {
+        fn matches(
+            &mut self,
+            input: &httptest::http::Request<B>,
+            _ctx: &mut ExecutionContext,
+        ) -> bool {
+            let auth_header = input
+                .headers()
+                .get(httptest::http::header::AUTHORIZATION)
+                .unwrap();
             let auth_header = auth_header.to_str().unwrap();
             if !auth_header.starts_with("Hawk ") {
                 println!("Authorization header does not start with Hawk");
