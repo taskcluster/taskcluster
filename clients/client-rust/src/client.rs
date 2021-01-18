@@ -435,6 +435,7 @@ mod tests {
     use serde_json::json;
     use std::fmt;
     use std::net::SocketAddr;
+    use std::time::Duration;
     use tokio;
 
     /// An httptest matcher that will check Hawk authentication with the given cedentials.
@@ -473,7 +474,7 @@ mod tests {
 
             let key = hawk::Key::new(&self.0.access_token, hawk::SHA256).unwrap();
 
-            if !hawk_req.validate_header(&auth_header, &key, std::time::Duration::from_secs(1)) {
+            if !hawk_req.validate_header(&auth_header, &key, Duration::from_secs(1)) {
                 println!("Validation failed");
                 return false;
             }
@@ -541,6 +542,32 @@ mod tests {
             .build()?;
         let resp = client.request("GET", "ping", None, None).await?;
         assert!(resp.status().is_success());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_timeout() -> Result<(), Error> {
+        let server = Server::run();
+        server.expect(
+            Expectation::matching(request::method_path("GET", "/api/queue/v1/ping")).respond_with(
+                // note that the tests do not wait for this to actually time out,
+                // so this is a very long delay to avoid any test intermittency
+                delay_and_then(Duration::from_secs(30), status_code(200)),
+            ),
+        );
+        let root_url = format!("http://{}", server.addr());
+
+        let client = ClientBuilder::new(&root_url)
+            .path_prefix("api/queue/v1/")
+            .retry(Retry {
+                retries: 0,
+                timeout: Duration::from_millis(5),
+                ..Default::default()
+            })
+            .build()?;
+        let err = client.request("GET", "ping", None, None).await.unwrap_err();
+        let reqerr = err.downcast::<reqwest::Error>().unwrap();
+        assert!(reqerr.is_timeout());
         Ok(())
     }
 
