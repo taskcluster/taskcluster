@@ -37,29 +37,23 @@ export default class ListHooks extends Component {
 
   handleHookSearchSubmit = hookSearch => {
     const query = parse(window.location.search.slice(1));
-    const { location, history } = this.props;
 
-    if (query.search !== hookSearch) {
-      const newQuery = {
+    this.props.history.push({
+      search: stringify({
         ...query,
         search: hookSearch,
-
-      };
-      history.push({
-        search: stringify(newQuery, {addQueryPrefix: true}),
-      });
-    }
+      }),
+    });
   };
 
   render() {
     const {
       classes,
       description,
-      location,
       data: { loading, error, hookGroups },
     } = this.props;
     const query = qs.parse(this.props.location.search.slice(1));
-    const hookSearch = query.search ? query.search : '';
+    const hookSearch = query.search;
     const tree = hookGroups
       ? hookGroups.map(group => ({
           value: group.hookGroupId,
@@ -91,12 +85,12 @@ export default class ListHooks extends Component {
             key={hookSearch}
             defaultExpanded={Boolean(hookSearch)}
             listItemProps={{ color: classes.listItemProps }}
-            searchTerm={hookSearch}
+            searchTerm={hookSearch || null}
             softSearch
             tree={tree}
             onEmptySearch={
-              <Typography variant="h3" color="secondary">
-                No hooks are defined {hookSearch}
+              <Typography variant="subtitle1">
+                 {`No hooks are defined ${hookSearch}`}
               </Typography>
             }
             Link={Link}
