@@ -11,7 +11,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withFakeAuth(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
-  helper.withDbClient = fn => helper.db._withClient('write', fn);
 
   const getStore = (shouldPromisify = true, options) => {
     const SessionStore = PostgresSessionStore({
