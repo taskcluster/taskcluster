@@ -1685,16 +1685,18 @@ builder.declare({
 /** Count pending tasks for workerType */
 builder.declare({
   method: 'get',
-  route: '/pending/:provisionerId/:workerType',
+  route: '/pending/:taskQueueId(*)',
   name: 'pendingTasks',
-  scopes: 'queue:pending-count:<provisionerId>/<workerType>',
+  scopes: 'queue:pending-count:<taskQueueId>',
   stability: APIBuilder.stability.stable,
   category: 'Worker Metadata',
   output: 'pending-tasks-response.yml',
   title: 'Get Number of Pending Tasks',
+  params: {
+    taskQueueId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
+  },
   description: [
-    'Get an approximate number of pending tasks for the given `provisionerId`',
-    'and `workerType`.',
+    'Get an approximate number of pending tasks for the given `taskQueueId`.',
     '',
     'The underlying Azure Storage Queues only promises to give us an estimate.',
     'Furthermore, we cache the result in memory for 20 seconds. So consumers',
@@ -1702,9 +1704,8 @@ builder.declare({
     'It is, however, a solid estimate of the number of pending tasks.',
   ].join('\n'),
 }, async function(req, res) {
-  let provisionerId = req.params.provisionerId;
-  let workerType = req.params.workerType;
-  let taskQueueId = joinTaskQueueId(provisionerId, workerType);
+  let taskQueueId = req.params.taskQueueId;
+  let { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
   // Get number of pending message
   let count = await this.queueService.countPendingMessages(taskQueueId);

@@ -895,8 +895,7 @@ func (queue *Queue) DeclareProvisioner(provisionerId string, payload *Provisione
 	return responseObject.(*ProvisionerResponse), err
 }
 
-// Get an approximate number of pending tasks for the given `provisionerId`
-// and `workerType`.
+// Get an approximate number of pending tasks for the given `taskQueueId`.
 //
 // The underlying Azure Storage Queues only promises to give us an estimate.
 // Furthermore, we cache the result in memory for 20 seconds. So consumers
@@ -904,24 +903,24 @@ func (queue *Queue) DeclareProvisioner(provisionerId string, payload *Provisione
 // It is, however, a solid estimate of the number of pending tasks.
 //
 // Required scopes:
-//   queue:pending-count:<provisionerId>/<workerType>
+//   queue:pending-count:<taskQueueId>
 //
 // See #pendingTasks
-func (queue *Queue) PendingTasks(provisionerId, workerType string) (*CountPendingTasksResponse, error) {
+func (queue *Queue) PendingTasks(taskQueueId string) (*CountPendingTasksResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(taskQueueId), new(CountPendingTasksResponse), nil)
 	return responseObject.(*CountPendingTasksResponse), err
 }
 
 // Returns a signed URL for PendingTasks, valid for the specified duration.
 //
 // Required scopes:
-//   queue:pending-count:<provisionerId>/<workerType>
+//   queue:pending-count:<taskQueueId>
 //
 // See PendingTasks for more details.
-func (queue *Queue) PendingTasks_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
+func (queue *Queue) PendingTasks_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
+	return (&cd).SignedURL("/pending/"+url.QueryEscape(taskQueueId), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***

@@ -33,7 +33,7 @@ export default class Queue extends Client {
     this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.getProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"getProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":"queue:get-provisioner:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.declareProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","input":true,"method":"put","name":"declareProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":{"AllOf":[{"each":"queue:declare-provisioner:<provisionerId>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.pendingTasks.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<provisionerId>/<workerType>","scopes":"queue:pending-count:<provisionerId>/<workerType>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.pendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<taskQueueId>","scopes":"queue:pending-count:<taskQueueId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkerTypes.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/provisioners/<provisionerId>/worker-types","scopes":"queue:list-worker-types:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.getWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"getWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":"queue:get-worker-type:<provisionerId>/<workerType>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.declareWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","input":true,"method":"put","name":"declareWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":{"AllOf":[{"each":"queue:declare-worker-type:<provisionerId>/<workerType>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
@@ -468,8 +468,7 @@ export default class Queue extends Client {
     return this.request(this.declareProvisioner.entry, args);
   }
   /* eslint-disable max-len */
-  // Get an approximate number of pending tasks for the given `provisionerId`
-  // and `workerType`.
+  // Get an approximate number of pending tasks for the given `taskQueueId`.
   // The underlying Azure Storage Queues only promises to give us an estimate.
   // Furthermore, we cache the result in memory for 20 seconds. So consumers
   // should be no means expect this to be an accurate number.

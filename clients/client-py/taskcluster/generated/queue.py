@@ -577,8 +577,7 @@ class Queue(BaseClient):
         """
         Get Number of Pending Tasks
 
-        Get an approximate number of pending tasks for the given `provisionerId`
-        and `workerType`.
+        Get an approximate number of pending tasks for the given `taskQueueId`.
 
         The underlying Azure Storage Queues only promises to give us an estimate.
         Furthermore, we cache the result in memory for 20 seconds. So consumers
@@ -909,11 +908,11 @@ class Queue(BaseClient):
             'stability': 'experimental',
         },
         "pendingTasks": {
-            'args': ['provisionerId', 'workerType'],
+            'args': ['taskQueueId'],
             'method': 'get',
             'name': 'pendingTasks',
             'output': 'v1/pending-tasks-response.json#',
-            'route': '/pending/<provisionerId>/<workerType>',
+            'route': '/pending/<taskQueueId>',
             'stability': 'stable',
         },
         "ping": {
