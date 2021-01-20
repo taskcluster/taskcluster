@@ -1,14 +1,18 @@
 import React, { PureComponent, Fragment } from 'react';
-import { graphql } from 'react-apollo';
+import { graphql, withApollo } from 'react-apollo';
 import { string } from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Typography from '@material-ui/core/Typography';
 import dotProp from 'dot-prop-immutable';
 import escapeStringRegexp from 'escape-string-regexp';
 import RolesTable from '../../../components/RolesTable';
 import ErrorPanel from '../../../components/ErrorPanel';
+import DialogAction from '../../../components/DialogAction';
 import rolesQuery from './roles.graphql';
+import deleteRoleQuery from './deleteRole.graphql';
 import { VIEW_ROLES_PAGE_SIZE } from '../../../utils/constants';
 
+@withApollo
 @graphql(rolesQuery, {
   options: props => ({
     fetchPolicy: 'network-only',
@@ -37,6 +41,12 @@ export default class Roles extends PureComponent {
 
   static defaultProps = {
     searchTerm: null,
+  };
+
+  state = {
+    dialogOpen: false,
+    deleteRoleId: null,
+    dialogError: null,
   };
 
   handlePageChange = ({ cursor, previousCursor }) => {
@@ -78,11 +88,47 @@ export default class Roles extends PureComponent {
     });
   };
 
+  handleDialogActionOpen = roleId => {
+    this.setState({ dialogOpen: true, deleteRoleId: roleId });
+  };
+
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error, loading: false });
+  };
+
+  handleDialogActionComplete = () => {
+    this.setState({ deleteRoleId: null, dialogError: null, loading: false });
+  };
+
+  handleDialogActionClose = () => {
+    this.setState({
+      dialogOpen: false,
+      deleteRoleId: null,
+      dialogError: null,
+      error: null,
+    });
+  };
+
+  handleDeleteRole = async () => {
+    this.setState({ dialogError: null, loading: true });
+
+    const roleId = this.state.deleteRoleId;
+
+    await this.props.client.mutate({
+      mutation: deleteRoleQuery,
+      variables: { roleId },
+    });
+
+    this.props.history.push(`/auth/roles`);
+  };
+
   render() {
     const {
       data: { loading, error, listRoleIds },
       searchTerm,
     } = this.props;
+
+    const { dialogOpen, deleteRoleId, dialogError } = this.state;
 
     return (
       <Fragment>
@@ -93,6 +139,24 @@ export default class Roles extends PureComponent {
             searchTerm={searchTerm}
             onPageChange={this.handlePageChange}
             rolesConnection={listRoleIds}
+            onDialogActionOpen={this.handleDialogActionOpen}
+          />
+        )}
+        {dialogOpen && (
+          <DialogAction
+            open={dialogOpen}
+            onSubmit={this.handleDeleteRole}
+            onComplete={this.handleDialogActionComplete}
+            onClose={this.handleDialogActionClose}
+            onError={this.handleDialogActionError}
+            error={dialogError}
+            title="Delete Role?"
+            body={
+              <Typography variant="body2">
+                This will delete the {deleteRoleId} role.
+              </Typography>
+            }
+            confirmText="Delete Role"
           />
         )}
       </Fragment>
