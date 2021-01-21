@@ -12,8 +12,8 @@ program.option('--this-chunk <this-chunk>', 'current chunk');
 program.option('--total-chunks <total-chunks>', 'total number of chunks');
 program.parse(process.argv);
 
-let thisChunk = program.thisChunk;
-let totalChunks = program.totalChunks;
+let thisChunk = program.opts().thisChunk;
+let totalChunks = program.opts().totalChunks;
 
 if (!thisChunk || !totalChunks) thisChunk = totalChunks = 1;
 

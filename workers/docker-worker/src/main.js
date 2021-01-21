@@ -85,6 +85,7 @@ program.parse(process.argv);
 // Main.
 (async () => {
   let profile = program.args[0];
+  let cliOpts = program.opts();
 
   if (!profile) {
     console.error('Config profile must be specified: test, production');
@@ -99,17 +100,17 @@ program.parse(process.argv);
 
   // Use a target specific configuration helper if available.
   let host;
-  if (program.host) {
-    if (allowedHosts.indexOf(program.host) === -1) {
+  if (cliOpts.host) {
+    if (allowedHosts.indexOf(cliOpts.host) === -1) {
       console.log(
         '%s is not an allowed host use one of: %s',
-        program.host,
+        cliOpts.host,
         allowedHosts.join(', '),
       );
       return process.exit(1);
     }
 
-    host = require('./host/' + program.host);
+    host = require('./host/' + cliOpts.host);
 
     if (host.setup) {
       host.setup();
@@ -131,8 +132,8 @@ program.parse(process.argv);
 
   // process CLI specific overrides
   overridableFields.forEach(function(field) {
-    if (!(field in program)) {return;}
-    config[field] = program[field];
+    if (!(field in cliOpts)) {return;}
+    config[field] = cliOpts[field];
   });
 
   // If restrict CPU is set override capacity (as long as capacity is > 0)
