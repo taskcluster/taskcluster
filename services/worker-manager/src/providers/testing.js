@@ -6,6 +6,14 @@ class TestingProvider extends Provider {
   constructor(conf) {
     super(conf);
     this.configSchema = 'config-testing';
+    this.setupFailure = conf.providerConfig.setupFailure;
+  }
+
+  async setup() {
+    if (this.setupFailure > 0) {
+      this.setupFailure--;
+      throw new Error('setup failure');
+    }
   }
 
   async createResources({ workerPool }) {

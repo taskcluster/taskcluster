@@ -87,6 +87,15 @@ class Provisioner {
       return;
     }
 
+    if (provider.setupFailed) {
+      // if setup has failed for this provider, there's not much we can do:
+      // the message cannot remain queued forever.  These messages occur
+      // when an API operation such as createWorkerPool is called, and those
+      // methods will fail if provider setup has failed, so we ignore such
+      // messages in hopes that they rarely or never occur.
+      return;
+    }
+
     switch (exchange.split('/').pop()) {
       case 'worker-pool-created': {
         await provider.createResources({ workerPool });
@@ -165,6 +174,9 @@ class Provisioner {
           this.monitor.warning(
             `Worker pool ${workerPool.workerPoolId} has unknown providerId ${workerPool.providerId}`);
           continue;
+        } else if (provider.setupFailed) {
+          // ignore provisioning for providers that have not been setup correctly
+          continue;
         }
 
         if (!poolsByProvider.has(providerId)) {
@@ -193,6 +205,10 @@ class Provisioner {
           if (!provider) {
             this.monitor.info(
               `Worker pool ${workerPool.workerPoolId} has unknown previousProviderIds entry ${pId} (ignoring)`);
+            return;
+          } else if (provider.setupFailed) {
+            // if setup failed for this previous provider, then it will remain in the list of previous
+            // providers for this pool until it is up and running again, so we can skip this iteration.
             return;
           }
 
