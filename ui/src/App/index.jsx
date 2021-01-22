@@ -152,7 +152,10 @@ export default class App extends Component {
 
     if (window.env.SENTRY_DSN) {
       // Data Source Name (DSN), a configuration required by the Sentry SDK
-      initSentry({ dsn: window.env.SENTRY_DSN });
+      initSentry({
+        dsn: window.env.SENTRY_DSN,
+        autoSessionTracking: false,
+      });
     }
 
     this.state = state;
