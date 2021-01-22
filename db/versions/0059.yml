@@ -16,7 +16,7 @@ migrationScript: |-
         select task_id
         from tasks
         where
-          (state ->> 'task_id' is null or task_id > state ->> 'task_id') and
+          (state_in ->> 'task_id' is null or task_id > state_in ->> 'task_id') and
           task_queue_id is null
         order by task_id
         limit batch_size_in
