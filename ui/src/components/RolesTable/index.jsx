@@ -22,14 +22,13 @@ const sorted = pipe(
   map(({ node: { roleId } }) => roleId)
 );
 const tableHeaders = ['Role ID'];
-
 const iconSize = 16;
 
 @withStyles(theme => ({
   roleLinkIcon: {
     display: 'block',
-    height: iconSize + 'px',
-    lineHeight: iconSize + 'px',
+    height: `${iconSize}px`,
+    lineHeight: `${iconSize}px`,
   },
   roleLinkContainer: {
     paddingLeft: theme.spacing(1),
@@ -41,9 +40,9 @@ const iconSize = 16;
     alignItems: 'center',
   },
   roleIdContainer: {
-    flexGrow: 1
-  }
-})) 
+    flexGrow: 1,
+  },
+}))
 export default class RolesTable extends Component {
   static propTypes = {
     rolesConnection: shape({
@@ -53,12 +52,11 @@ export default class RolesTable extends Component {
     onPageChange: func.isRequired,
     /** A search term to refine the list of roles */
     searchTerm: string,
-    onDialogActionOpen: func,
+    onDialogActionOpen: func.isRequired,
   };
 
   static defaultProps = {
     searchTerm: null,
-    onDialogActionOpen: null,
   };
 
   state = {
@@ -107,7 +105,13 @@ export default class RolesTable extends Component {
   };
 
   render() {
-    const { classes, onPageChange, rolesConnection, searchTerm, onDialogActionOpen } = this.props;
+    const {
+      classes,
+      onPageChange,
+      rolesConnection,
+      searchTerm,
+      onDialogActionOpen,
+    } = this.props;
     const { sortBy, sortDirection } = this.state;
     const sortedRolesConnection = this.createSortedRolesConnection(
       rolesConnection,
@@ -136,7 +140,9 @@ export default class RolesTable extends Component {
                     </Link>
                   </Box>
                   <Box className={classes.roleLinkContainer}>
-                    <Link to={`/auth/roles/${encodeURIComponent(role.roleId)}`} className={classes.roleLinkIcon}>
+                    <Link
+                      to={`/auth/roles/${encodeURIComponent(role.roleId)}`}
+                      className={classes.roleLinkIcon}>
                       <LinkIcon size={iconSize} />
                     </Link>
                   </Box>

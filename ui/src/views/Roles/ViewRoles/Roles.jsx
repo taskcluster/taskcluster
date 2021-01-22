@@ -93,11 +93,11 @@ export default class Roles extends PureComponent {
   };
 
   handleDialogActionError = error => {
-    this.setState({ dialogError: error, loading: false });
+    this.setState({ dialogError: error });
   };
 
   handleDialogActionComplete = () => {
-    this.setState({ deleteRoleId: null, dialogError: null, loading: false });
+    this.setState({ deleteRoleId: null, dialogError: null });
   };
 
   handleDialogActionClose = () => {
@@ -105,12 +105,11 @@ export default class Roles extends PureComponent {
       dialogOpen: false,
       deleteRoleId: null,
       dialogError: null,
-      error: null,
     });
   };
 
   handleDeleteRole = async () => {
-    this.setState({ dialogError: null, loading: true });
+    this.setState({ dialogError: null });
 
     const roleId = this.state.deleteRoleId;
 
@@ -127,7 +126,6 @@ export default class Roles extends PureComponent {
       data: { loading, error, listRoleIds },
       searchTerm,
     } = this.props;
-
     const { dialogOpen, deleteRoleId, dialogError } = this.state;
 
     return (
