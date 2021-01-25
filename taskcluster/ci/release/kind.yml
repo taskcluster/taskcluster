@@ -21,6 +21,10 @@ job-defaults:
           url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
         directory: 'go'
         format: tar.gz
+      - content:
+          url: 'https://static.rust-lang.org/dist/rust-{rust_version}-x86_64-unknown-linux-gnu.tar.gz'
+        directory: 'rust'
+        format: tar.gz
   description: Perform an actual taskcluster release
   run:
     using: bare
@@ -33,6 +37,8 @@ job-defaults:
       - go version
       # set up gox
       - go get github.com/mitchellh/gox
+      # set up rust, based on the mounted tarball
+      - "./rust/rust-$RUST_VERSION-x86_64-unknown-linux-gnu/install.sh"
       # set up Node, using nvm (generic-worker does not support .xz, so we can't use mounts)
       - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh | bash
       - . ~/.nvm/nvm.sh
