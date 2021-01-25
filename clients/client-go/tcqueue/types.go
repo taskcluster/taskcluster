@@ -90,7 +90,10 @@ type (
 	// Information about an artifact for the given `taskId` and `runId`.
 	Artifact struct {
 
-		// Mimetype for the artifact that was created.
+		// Expected content-type of the artifact.  This is informational only:
+		// it is suitable for use to choose an icon for the artifact, for example.
+		// The accurate content-type of the artifact can only be determined by
+		// downloading it.
 		//
 		// Max length: 255
 		ContentType string `json:"contentType"`
@@ -524,10 +527,10 @@ type (
 	// Clients will not apply any form of authentication to that URL.
 	RedirectArtifactRequest struct {
 
-		// Artifact mime-type for the resource to which the queue should
-		// redirect. Please use the same `Content-Type`, consistently using
-		// the correct mime-type make tooling a lot easier, specifically,
-		// always using `application/json` for JSON artifacts.
+		// Expected content-type of the artifact.  This is informational only:
+		// it is suitable for use to choose an icon for the artifact, for example.
+		// The accurate content-type of the artifact can only be determined by
+		// downloading it.
 		//
 		// Max length: 255
 		ContentType string `json:"contentType"`
