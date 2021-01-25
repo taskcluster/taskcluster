@@ -200,14 +200,13 @@ let load = loader({
   },
 
   provisioner: {
-    requires: ['cfg', 'monitor', 'providers', 'notify', 'pulseClient', 'reference', 'db'],
-    setup: async ({ cfg, monitor, providers, notify, pulseClient, reference, db }, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'notify', 'reference', 'db'],
+    setup: async ({ cfg, monitor, providers, notify, reference, db }, ownName) => {
       return new Provisioner({
         ownName,
         monitor: monitor.childMonitor('provisioner'),
         providers,
         notify,
-        pulseClient,
         db,
         reference,
         rootUrl: cfg.taskcluster.rootUrl,

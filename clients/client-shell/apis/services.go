@@ -1578,7 +1578,7 @@ var services = map[string]definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "worker-manager",
 		Title:       "Worker Manager Service",
-		Description: "This service manages workers, including provisioning for dynamic worker pools.",
+		Description: "This service manages workers, including provisioning for dynamic worker pools.\n\nMethods interacting with a provider may return a 503 response if that provider has\nnot been able to start up, such as if the service to which it interfaces has an\noutage.  Such requests can be retried as for any other 5xx response.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
 				Name:        "ping",

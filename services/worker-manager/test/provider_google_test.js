@@ -361,15 +361,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert(workerPool.previousProviderIds.includes('google'));
   });
 
-  test('removeResources', async function() {
-    const workerPool = await makeWorkerPool({
-      providerData: { google: {} },
-    });
-    await provider.removeResources({ workerPool });
-    // nothing has changed..
-    assert.deepEqual(workerPool.providerData.google, {});
-  });
-
   test('removeWorker', async function() {
     const workerId = '12345';
     const worker = await makeWorker({

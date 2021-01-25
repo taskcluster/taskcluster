@@ -221,117 +221,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           config: {},
           owner: 'foo@example.com',
           emailOnError: false,
-          providerData: {
-            // make removeResources fail on the first try, to test error handling
-            failRemoveResources: 1,
-          },
+          providerData: {},
         },
       ],
       expectErrors: true,
       assertion: async () => {
-        assert.deepEqual(monitor.manager.messages.find(
-          msg => msg.Type === 'remove-resource' && msg.Logger.endsWith('testing1')), {
-          Logger: `taskcluster.test.provider.testing1`,
-          Type: 'remove-resource',
-          Fields: { workerPoolId: 'ff/ee' },
-          Severity: LEVELS.notice,
-        });
+        const wp = await WorkerPool.get(helper.db, 'ff/ee');
+        assert.deepEqual(wp.previousProviderIds, []);
       },
     }));
-  });
-
-  suite('worker pool exchanges', function() {
-    let workerPool;
-    setup(async function() {
-      const now = new Date();
-      workerPool = WorkerPool.fromApi({
-        workerPoolId: 'pp/foo',
-        providerId: 'testing1',
-        description: 'none',
-        previousProviderIds: [],
-        created: now,
-        lastModified: now,
-        config: {},
-        owner: 'whoever@example.com',
-        providerData: {},
-        emailOnError: false,
-      });
-      await workerPool.create(helper.db);
-      await helper.initiateProvisioner();
-    });
-    teardown(async function() {
-      await helper.terminateProvisioner();
-    });
-
-    test('worker pool created', async function() {
-      await helper.fakePulseMessage({
-        payload: {
-          workerPoolId: 'pp/foo',
-          providerId: 'testing1',
-        },
-        exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-created',
-        routingKey: 'primary.#',
-        routes: [],
-      });
-      assert.deepEqual(monitor.manager.messages.find(msg => msg.Type === 'create-resource'), {
-        Logger: 'taskcluster.test.provider.testing1',
-        Type: 'create-resource',
-        Severity: LEVELS.notice,
-        Fields: { workerPoolId: 'pp/foo' },
-      });
-    });
-
-    test('message with unknown provider', async function() {
-      await helper.fakePulseMessage({
-        payload: {
-          workerPoolId: 'pp/foo',
-          providerId: 'no-such-provider',
-        },
-        exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-created',
-        routingKey: 'primary.#',
-        routes: [],
-      });
-      assert.deepEqual(monitor.manager.messages.find(msg => msg.Type === 'create-resource'), undefined);
-    });
-
-    test('worker pool modified, same provider', async function() {
-      await helper.fakePulseMessage({
-        payload: {
-          workerPoolId: 'pp/foo',
-          providerId: 'testing1',
-          previousProviderId: 'testing1',
-        },
-        exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-updated',
-        routingKey: 'primary.#',
-        routes: [],
-      });
-      assert.deepEqual(monitor.manager.messages.find(msg => msg.Type === 'update-resource'), {
-        Logger: 'taskcluster.test.provider.testing1',
-        Type: 'update-resource',
-        Severity: LEVELS.notice,
-        Fields: { workerPoolId: 'pp/foo' },
-      });
-    });
-
-    test('worker pool modified, different provider', async function() {
-      // pretend this changed from testing2 to testing1..
-      await helper.fakePulseMessage({
-        payload: {
-          workerPoolId: 'pp/foo',
-          providerId: 'testing1',
-          previousProviderId: 'testing2',
-        },
-        exchange: 'exchange/taskcluster-worker-manager/v1/worker-pool-updated',
-        routingKey: 'primary.#',
-        routes: [],
-      });
-      assert.deepEqual(monitor.manager.messages.find(msg => msg.Type === 'create-resource'), {
-        Logger: 'taskcluster.test.provider.testing1',
-        Type: 'create-resource',
-        Severity: LEVELS.notice,
-        Fields: { workerPoolId: 'pp/foo' },
-      });
-    });
   });
 
   suite('provision', function() {
