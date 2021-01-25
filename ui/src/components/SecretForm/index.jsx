@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { oneOfType, object, string, func, bool } from 'prop-types';
 import classNames from 'classnames';
 import { addYears } from 'date-fns';
-import { safeDump, safeLoad } from 'js-yaml';
+import { dump, load } from 'js-yaml';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -109,9 +109,7 @@ export default class SecretForm extends Component {
     expires: this.props.isNewSecret
       ? addYears(new Date(), 1000)
       : this.props.secret.expires,
-    editorValue: this.props.isNewSecret
-      ? ''
-      : safeDump(this.props.secret.secret),
+    editorValue: this.props.isNewSecret ? '' : dump(this.props.secret.secret),
     showSecret: this.props.isNewSecret,
   };
 
@@ -138,7 +136,7 @@ export default class SecretForm extends Component {
 
     this.props.onSaveSecret(secretName, {
       expires,
-      secret: safeLoad(editorValue),
+      secret: load(editorValue),
     });
   };
 
@@ -146,7 +144,7 @@ export default class SecretForm extends Component {
     const { editorValue, secretName, expires } = this.state;
 
     try {
-      safeLoad(editorValue);
+      load(editorValue);
 
       return secretName && expires && editorValue;
     } catch (err) {
@@ -175,7 +173,7 @@ export default class SecretForm extends Component {
     const isSecretDirty =
       isNewSecret ||
       secretName !== secret.name ||
-      editorValue !== safeDump(secret.secret) ||
+      editorValue !== dump(secret.secret) ||
       expires !== secret.expires;
 
     return (

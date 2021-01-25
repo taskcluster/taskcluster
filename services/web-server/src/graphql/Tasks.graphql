@@ -168,6 +168,9 @@ type Task {
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
   latestArtifacts(taskId: ID! = taskId, connection: PageConnection, filter: JSON): ArtifactsConnection
+
+  # the "raw" JSON task definition, without any interpretation
+  rawDefinition: JSON
 }
 
 input TaskInput {

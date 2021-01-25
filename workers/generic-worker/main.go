@@ -779,11 +779,7 @@ func (e *ExecutionErrors) Error() string {
 	if !e.Occurred() {
 		return ""
 	}
-	lines := make([]string, len(*e))
-	for i, err := range *e {
-		lines[i] = err.Error()
-	}
-	return strings.Join(lines, "\n")
+	return (*e)[0].Error()
 }
 
 // WorkerShutdown returns true if any of the accumlated errors is a worker-shutdown

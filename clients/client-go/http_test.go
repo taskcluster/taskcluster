@@ -278,12 +278,12 @@ func TestContentTypeHeader(t *testing.T) {
 	}
 }
 
-// Verify that the client does not follow redirects
+// Verify that the client does not follow redirects and returns the body
 func TestNoFollowRedirects(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header()["Location"] = []string{"http://nosuch.example.com"}
 		w.WriteHeader(303)
-		fmt.Fprintln(w, "{}")
+		fmt.Fprintln(w, "{\"url\": \"http://nosuch.example.com\"}")
 	}))
 	defer s.Close()
 	client := Client{
@@ -291,9 +291,13 @@ func TestNoFollowRedirects(t *testing.T) {
 		Authenticate: false,
 	}
 
-	_, cs, err := client.APICall(nil, "GET", "/whatever", nil, nil)
-	assert.Error(t, err) // expect an error in this case
+	var result map[string]interface{}
+	res, cs, err := client.APICall(nil, "GET", "/whatever", &result, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, 303, cs.HTTPResponse.StatusCode)
+	assert.Equal(t,
+		&map[string]interface{}{"url": "http://nosuch.example.com"},
+		res)
 }
 
 type MockHTTPClient struct {

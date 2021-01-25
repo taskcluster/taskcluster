@@ -90,7 +90,10 @@ type (
 	// Information about an artifact for the given `taskId` and `runId`.
 	Artifact struct {
 
-		// Mimetype for the artifact that was created.
+		// Expected content-type of the artifact.  This is informational only:
+		// it is suitable for use to choose an icon for the artifact, for example.
+		// The accurate content-type of the artifact can only be determined by
+		// downloading it.
 		//
 		// Max length: 255
 		ContentType string `json:"contentType"`
@@ -111,6 +114,7 @@ type (
 		// Possible values:
 		//   * "s3"
 		//   * "reference"
+		//   * "link"
 		//   * "error"
 		StorageType string `json:"storageType"`
 	}
@@ -162,12 +166,22 @@ type (
 		PendingTasks int64 `json:"pendingTasks"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
+
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
@@ -212,6 +226,20 @@ type (
 		// Possible values:
 		//   * "error"
 		StorageType string `json:"storageType"`
+	}
+
+	// Response to the `getArtifact` method.  This method returns a simple URL from
+	// which the artifact data can be read.  Not that this response is provided as
+	// the body of an HTTP 303 response, so clients which automatically follow
+	// redirects may not see this content.
+	GetArtifactResponse struct {
+
+		// Artifact storage type.  Note that this is also available in the
+		// `x-taskcluster-artifact-storage-type` header.
+		StorageType string `json:"storageType"`
+
+		// URL from which to download the artifact
+		URL string `json:"url"`
 	}
 
 	// Request the queue to link this artifact to the named artifact on the same
@@ -400,7 +428,9 @@ type (
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -461,7 +491,9 @@ type (
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -495,10 +527,10 @@ type (
 	// Clients will not apply any form of authentication to that URL.
 	RedirectArtifactRequest struct {
 
-		// Artifact mime-type for the resource to which the queue should
-		// redirect. Please use the same `Content-Type`, consistently using
-		// the correct mime-type make tooling a lot easier, specifically,
-		// always using `application/json` for JSON artifacts.
+		// Expected content-type of the artifact.  This is informational only:
+		// it is suitable for use to choose an icon for the artifact, for example.
+		// The accurate content-type of the artifact can only be determined by
+		// downloading it.
 		//
 		// Max length: 255
 		ContentType string `json:"contentType"`
@@ -907,11 +939,25 @@ type (
 		// Default:    "lowest"
 		Priority string `json:"priority,omitempty"`
 
+		// The name for the "project" with which this task is associated.  This
+		// value can be used to control permission to manipulate tasks as well as
+		// for usage reporting.  Project ids are typically simple identifiers,
+		// optionally in a hierarchical namespace separated by `/` characters.
+		// This value defaults to `none`.
+		//
+		// Default:    "none"
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId,omitempty"`
+
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
-		ProvisionerID string `json:"provisionerId"`
+		ProvisionerID string `json:"provisionerId,omitempty"`
 
 		// The tasks relation to its dependencies. This property specifies the
 		// semantics of the `task.dependencies` property.
@@ -1000,10 +1046,18 @@ type (
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupID string `json:"taskGroupId,omitempty"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId,omitempty"`
+
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		WorkerType string `json:"workerType"`
+		WorkerType string `json:"workerType,omitempty"`
 	}
 
 	// Definition of a task that can be scheduled
@@ -1078,8 +1132,22 @@ type (
 		// Default:    "lowest"
 		Priority string `json:"priority"`
 
+		// The name for the "project" with which this task is associated.  This
+		// value can be used to control permission to manipulate tasks as well as
+		// for usage reporting.  Project ids are typically simple identifiers,
+		// optionally in a hierarchical namespace separated by `/` characters.
+		// This value defaults to `none`.
+		//
+		// Default:    "none"
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId,omitempty"`
+
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -1171,7 +1239,15 @@ type (
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupID string `json:"taskGroupId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
+
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
@@ -1279,7 +1355,7 @@ type (
 		//   * "deprecated"
 		Stability string `json:"stability"`
 
-		// Unique identifier for a task-queue
+		// Unique identifier for a task queue
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		TaskQueueID string `json:"taskQueueId"`
@@ -1403,8 +1479,22 @@ type (
 		// must have an expiration that is no later than this.
 		Expires tcclient.Time `json:"expires"`
 
+		// The name for the "project" with which this task is associated.  This
+		// value can be used to control permission to manipulate tasks as well as
+		// for usage reporting.  Project ids are typically simple identifiers,
+		// optionally in a hierarchical namespace separated by `/` characters.
+		// This value defaults to `none`.
+		//
+		// Default:    "none"
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId"`
+
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -1463,7 +1553,15 @@ type (
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskID string `json:"taskId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
+
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
@@ -1586,7 +1684,9 @@ type (
 		FirstClaim tcclient.Time `json:"firstClaim"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -1599,6 +1699,11 @@ type (
 
 		// List of 20 most recent tasks claimed by the worker.
 		RecentTasks []TaskRun `json:"recentTasks"`
+
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId,omitempty"`
 
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
@@ -1616,7 +1721,10 @@ type (
 		// Max length: 38
 		WorkerID string `json:"workerId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
@@ -1635,7 +1743,9 @@ type (
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -1651,7 +1761,15 @@ type (
 		//   * "deprecated"
 		Stability string `json:"stability"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
+
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
@@ -1764,7 +1882,9 @@ type (
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -1780,7 +1900,15 @@ type (
 		//   * "deprecated"
 		Stability string `json:"stability"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
+
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`

@@ -7,7 +7,9 @@ properties:
   taskId: {$const: "taskId"}
   provisionerId: {$ref: "task.json#/properties/provisionerId"}
   workerType: {$ref: "task.json#/properties/workerType"}
+  taskQueueId: {$ref: "task.json#/properties/taskQueueId"}
   schedulerId: {$ref: "task.json#/properties/schedulerId", default: '-'}
+  projectId: {$ref: "task.json#/properties/projectId"}
   taskGroupId: {$ref: "task.json#/properties/taskGroupId"}
   deadline:         {$const: deadline}
   expires:          {$const: expires}
@@ -159,7 +161,9 @@ required:
   - taskId
   - provisionerId
   - workerType
+  - taskQueueId
   - schedulerId
+  - projectId
   - taskGroupId
   - deadline
   - expires

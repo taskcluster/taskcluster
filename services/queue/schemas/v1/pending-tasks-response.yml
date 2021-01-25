@@ -7,6 +7,7 @@ type:               object
 properties:
   provisionerId: {$ref: "task.json#/properties/provisionerId"}
   workerType: {$ref: "task.json#/properties/workerType"}
+  taskQueueId: {$ref: "task.json#/properties/taskQueueId"}
   pendingTasks:
     type:           integer
     minimum:        0
@@ -21,4 +22,5 @@ additionalProperties: false
 required:
   - provisionerId
   - workerType
+  - taskQueueId
   - pendingTasks

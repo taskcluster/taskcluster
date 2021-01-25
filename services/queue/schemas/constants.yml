@@ -40,6 +40,13 @@ workertype-pattern: '^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$'
 # taskQueueId that will replace provisionerId / workerType in new hierarchy
 taskqueueid-pattern: '^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$'
 
+# ProjectIds can be embedded in scopes, bounded by `:`, so they cannot contain
+# that character.  The maximum length is defined only to dissuade silly things
+# like embedding huge pieces of data.
+projectId-pattern:     ^([a-zA-Z0-9._/-]*)$
+projectId-min-length:  1
+projectId-max-length:  500
+
 # Run identifier limitations, these are also somewhat founded in RabbitMQ
 # routing key limitations
 min-run-id:     0

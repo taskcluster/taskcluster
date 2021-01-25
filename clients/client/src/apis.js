@@ -588,8 +588,9 @@ module.exports = {
         }
       ],
       "serviceName": "auth",
-      "title": "Authentication API"
-    }
+      "title": "Auth Service"
+    },
+    "referenceKind": "api"
   },
   "AuthEvents": {
     "reference": {
@@ -697,7 +698,8 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-auth/v1/",
       "serviceName": "auth",
       "title": "Auth Pulse Exchanges"
-    }
+    },
+    "referenceKind": "exchanges"
   },
   "Github": {
     "reference": {
@@ -848,8 +850,9 @@ module.exports = {
         }
       ],
       "serviceName": "github",
-      "title": "Taskcluster GitHub API Documentation"
-    }
+      "title": "GitHub Service"
+    },
+    "referenceKind": "api"
   },
   "GithubEvents": {
     "reference": {
@@ -983,7 +986,8 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-github/v1/",
       "serviceName": "github",
       "title": "Taskcluster-Github Exchanges"
-    }
+    },
+    "referenceKind": "exchanges"
   },
   "Hooks": {
     "reference": {
@@ -1233,8 +1237,9 @@ module.exports = {
         }
       ],
       "serviceName": "hooks",
-      "title": "Hooks API Documentation"
-    }
+      "title": "Hooks Service"
+    },
+    "referenceKind": "api"
   },
   "HooksEvents": {
     "reference": {
@@ -1294,7 +1299,8 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-hooks/v1/",
       "serviceName": "hooks",
       "title": "Exchanges to manage hooks"
-    }
+    },
+    "referenceKind": "exchanges"
   },
   "Index": {
     "reference": {
@@ -1408,8 +1414,9 @@ module.exports = {
         }
       ],
       "serviceName": "index",
-      "title": "Task Index API Documentation"
-    }
+      "title": "Index Service"
+    },
+    "referenceKind": "api"
   },
   "Notify": {
     "reference": {
@@ -1548,7 +1555,8 @@ module.exports = {
       ],
       "serviceName": "notify",
       "title": "Notification Service"
-    }
+    },
+    "referenceKind": "api"
   },
   "NotifyEvents": {
     "reference": {
@@ -1583,7 +1591,8 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-notify/v1/",
       "serviceName": "notify",
       "title": "Notify AMQP Exchanges"
-    }
+    },
+    "referenceKind": "exchanges"
   },
   "Object": {
     "reference": {
@@ -1658,8 +1667,9 @@ module.exports = {
         }
       ],
       "serviceName": "object",
-      "title": "Taskcluster Object Service API Documentation"
-    }
+      "title": "Object Service"
+    },
+    "referenceKind": "api"
   },
   "PurgeCache": {
     "reference": {
@@ -1738,8 +1748,9 @@ module.exports = {
         }
       ],
       "serviceName": "purge-cache",
-      "title": "Purge Cache API"
-    }
+      "title": "Purge Cache Service"
+    },
+    "referenceKind": "api"
   },
   "Queue": {
     "reference": {
@@ -1858,6 +1869,7 @@ module.exports = {
                 "for": "route",
                 "in": "routes"
               },
+              "queue:create-task:project:<projectId>",
               "queue:scheduler-id:<schedulerId>",
               {
                 "AnyOf": [
@@ -2134,7 +2146,7 @@ module.exports = {
             "name"
           ],
           "category": "Artifacts",
-          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support \"S3 Artifacts\" officially, with remaining support\nfor two deprecated types.  Do not use these deprecated types.\n\n**S3 artifacts**, is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n\n**Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\n**Immutability Special Cases**:\n\n* A `reference` artifact can replace an existing `reference` artifact`.\n* A `link` artifact can replace an existing `reference` artifact`.\n* Any artifact's `expires` can be extended.",
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support \"S3 Artifacts\" for data storage.\n\n**S3 artifacts**, is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n\n**Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\n**Immutability Special Cases**:\n\n* A `reference` artifact can replace an existing `reference` artifact`.\n* A `link` artifact can replace an existing `reference` artifact`.\n* Any artifact's `expires` can be extended.",
           "input": "v1/post-artifact-request.json#",
           "method": "post",
           "name": "createArtifact",
@@ -2164,9 +2176,10 @@ module.exports = {
             "name"
           ],
           "category": "Artifacts",
-          "description": "Get artifact by `<name>` from a specific run.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with an HTTP client that can handle responses correctly.\n\n**Downloading artifacts**\nThere are some special considerations for those http clients which download\nartifacts.  This api endpoint is designed to be compatible with an HTTP 1.1\ncompliant client, but has extra features to ensure the download is valid.\nIt is strongly recommend that consumers use either taskcluster-lib-artifact (JS),\ntaskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with\nartifacts.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3",
+          "description": "Get artifact by `<name>` from a specific run.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**Response**: the HTTP response to this method is a 303 redirect to the\nURL from which the artifact can be downloaded.  The body of that response\ncontains the data described in the output schema, contianing the same URL.\nCallers are encouraged to use whichever method of gathering the URL is\nmost convenient.  Standard HTTP clients will follow the redirect, while\nAPI client libraries will return the JSON body.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3",
           "method": "get",
           "name": "getArtifact",
+          "output": "v1/get-artifact-response.json#",
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
@@ -2192,6 +2205,7 @@ module.exports = {
           "description": "Get artifact by `<name>` from the last run of a task.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
           "method": "get",
           "name": "getLatestArtifact",
+          "output": "v1/get-artifact-response.json#",
           "query": [
           ],
           "route": "/task/<taskId>/artifacts/<name>",
@@ -2522,8 +2536,9 @@ module.exports = {
         }
       ],
       "serviceName": "queue",
-      "title": "Queue API Documentation"
-    }
+      "title": "Queue Service"
+    },
+    "referenceKind": "api"
   },
   "QueueEvents": {
     "reference": {
@@ -3067,7 +3082,8 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-queue/v1/",
       "serviceName": "queue",
       "title": "Queue AMQP Exchanges"
-    }
+    },
+    "referenceKind": "exchanges"
   },
   "Secrets": {
     "reference": {
@@ -3159,8 +3175,9 @@ module.exports = {
         }
       ],
       "serviceName": "secrets",
-      "title": "Taskcluster Secrets API Documentation"
-    }
+      "title": "Secrets Service"
+    },
+    "referenceKind": "api"
   },
   "WorkerManager": {
     "reference": {
@@ -3491,8 +3508,9 @@ module.exports = {
         }
       ],
       "serviceName": "worker-manager",
-      "title": "Taskcluster Worker Manager"
-    }
+      "title": "Worker Manager Service"
+    },
+    "referenceKind": "api"
   },
   "WorkerManagerEvents": {
     "reference": {
@@ -3550,6 +3568,7 @@ module.exports = {
       "exchangePrefix": "exchange/taskcluster-worker-manager/v1/",
       "serviceName": "worker-manager",
       "title": "Worker Manager Exchanges"
-    }
+    },
+    "referenceKind": "exchanges"
   }
 };

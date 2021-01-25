@@ -2,8 +2,10 @@ import React, { Component } from 'react';
 import { node, string } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
+import { ErrorBoundary } from 'react-error-boundary';
 import PageTitle from '../PageTitle';
 import Helmet from '../Helmet';
+import reportError from '../../utils/reportError';
 import ErrorPanel from '../ErrorPanel';
 
 @withStyles(theme => ({
@@ -43,24 +45,17 @@ export default class Landing extends Component {
     title: string,
   };
 
-  static getDerivedStateFromError(error) {
-    return { error };
-  }
-
-  state = {
-    error: null,
-  };
-
   render() {
     const { classes, className, children, title, ...props } = this.props;
-    const { error } = this.state;
 
     return (
       <div className={classes.root}>
         <Helmet />
         <PageTitle>{title}</PageTitle>
         <main className={classNames(classes.content, className)} {...props}>
-          {error ? <ErrorPanel fixed error={error} /> : children}
+          <ErrorBoundary FallbackComponent={ErrorPanel} onError={reportError}>
+            {children}
+          </ErrorBoundary>
         </main>
       </div>
     );

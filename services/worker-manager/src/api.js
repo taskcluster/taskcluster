@@ -7,7 +7,7 @@ const { WorkerPool, WorkerPoolError, Worker } = require('./data');
 const { createCredentials } = require('./util');
 
 let builder = new APIBuilder({
-  title: 'Taskcluster Worker Manager',
+  title: 'Worker Manager Service',
   description: [
     'This service manages workers, including provisioning for dynamic worker pools.',
   ].join('\n'),

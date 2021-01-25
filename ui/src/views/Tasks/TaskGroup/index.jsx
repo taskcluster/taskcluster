@@ -6,7 +6,7 @@ import dotProp from 'dot-prop-immutable';
 import { sum, isEmpty } from 'ramda';
 import { paramCase } from 'param-case';
 import jsonSchemaDefaults from 'json-schema-defaults';
-import { safeDump } from 'js-yaml';
+import { dump } from 'js-yaml';
 import { withStyles } from '@material-ui/core/styles';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Badge from '@material-ui/core/Badge';
@@ -144,9 +144,7 @@ export default class TaskGroup extends Component {
           // don't consider this version
           if (!groupActions.some(({ name }) => name === action.name)) {
             groupActions.push(action);
-            actionInputs[action.name] = safeDump(
-              jsonSchemaDefaults(schema) || {}
-            );
+            actionInputs[action.name] = dump(jsonSchemaDefaults(schema) || {});
             actionData[action.name] = {
               action,
             };

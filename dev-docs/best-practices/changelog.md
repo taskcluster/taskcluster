@@ -70,6 +70,7 @@ For example:
  * major: Breaking changes for deployment of Taskcluster
  * major: Breaking changes for administration of Taskcluster
  * major: Breaking changes for users of Taskcluster
+ * major: Any change that adds a DB version that may take more than a few seconds to run (with notes to the deployers as to how long)
  * minor: New feature users want to know about and take advantage of
  * minor: Any change that adds a new version to the database
  * patch: Bug fix users are waiting on

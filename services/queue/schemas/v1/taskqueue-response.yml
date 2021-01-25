@@ -4,12 +4,7 @@ description: |
   Response to a task queue request from a provisioner.
 type:           object
 properties:
-  taskQueueId:
-    title:          "Task Queue Id"
-    description: |
-      Unique identifier for a task queue
-    type:           string
-    pattern:        {$const: taskqueueid-pattern}
+  taskQueueId: {$ref: "task.json#/properties/taskQueueId"}
   stability:
     title:        "Stability"
     description: |

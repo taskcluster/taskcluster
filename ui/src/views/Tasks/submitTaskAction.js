@@ -2,7 +2,7 @@ import merge from 'deepmerge';
 import { satisfiesExpression } from 'taskcluster-lib-scopes';
 import cloneDeep from 'lodash.clonedeep';
 import jsone from 'json-e';
-import { safeLoad } from 'js-yaml';
+import { load } from 'js-yaml';
 import removeKeys from '../../utils/removeKeys';
 import { nice } from '../../utils/slugid';
 import expandScopesQuery from './expandScopes.graphql';
@@ -15,7 +15,7 @@ import formatTaskMutation from '../../utils/formatTaskMutation';
 export default async ({ task, form, action, apolloClient, taskActions }) => {
   const actions = removeKeys(cloneDeep(taskActions), ['__typename']);
   const taskGroup = task.taskId === task.taskGroupId ? task : task.decisionTask;
-  const input = safeLoad(form);
+  const input = load(form);
   const validate = ajv.compile(action.schema || {});
   const valid = validate(input);
   const validateActionsJsonInstance = await validateActionsJson();

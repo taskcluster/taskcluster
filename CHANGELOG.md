@@ -3,6 +3,55 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v40.0.3
+
+No changes
+
+## v40.0.2
+
+No changes
+
+## v40.0.1
+
+### GENERAL
+
+▶ [patch] [#4238](https://github.com/taskcluster/taskcluster/issues/4238)
+The index service should now work in deployments without anonymous scopes.
+
+### USERS
+
+▶ [patch] [#4240](https://github.com/taskcluster/taskcluster/issues/4240)
+The "Task Definition" link in the task view now shows the task as a normal UI page, preventing permissions errors on non-public deployments.
+
+▶ [patch] [#4239](https://github.com/taskcluster/taskcluster/issues/4239)
+This version fixes a bug in the user-interface causing messages about `yaml.safeDump` having been removed.  The developers regret te error.
+
+### DEVELOPERS
+
+▶ [patch] [#4226](https://github.com/taskcluster/taskcluster/issues/4226)
+The `yarn generate` command no longer combines redundant lines in `yarn.lock` files, so that automatic dependency upgrade PRs will succeed.  Run `yarn minify` to do this manually.
+
+### OTHER
+
+▶ Additional change not described here: [#4110](https://github.com/taskcluster/taskcluster/issues/4110).
+
+### Automated Package Updates
+
+<details>
+<summary>9 Renovate updates</summary>
+
+* Update dependency serialize-error to v8 (78c1b374f)
+* Update dependency webpack to v4.45.0 (f1b892f7a)
+* Update dependency jwks-rsa to v1.12.2 (fe86a779e)
+* Update dependency aws-sdk to v2.824.0 (4f5a1a2eb)
+* Update dependency email-templates to v8.0.3 (1594300b5)
+* Update dependency taskcluster-client-web to v40 (848d015bb)
+* Update dependency taskcluster-client to v40 (5c97645de)
+* Update dependency sinon to v9.2.3 (db38e81e6)
+* Update dependency @azure/ms-rest-azure-js to v2.0.2 (48cebac91)
+
+</details>
+
 ## v40.0.0
 
 ### DEPLOYERS

@@ -10,9 +10,10 @@ type (
 	// Information about the artifact that was created
 	Artifact struct {
 
-		// Mimetype for the artifact that was created (NOTE: deprecated; this
-		// value is not checked and may not correspond to the content-type of
-		// the final artifact)
+		// Expected content-type of the artifact.  This is informational only:
+		// it is suitable for use to choose an icon for the artifact, for example.
+		// The accurate content-type of the artifact can only be determined by
+		// downloading it.
 		//
 		// Max length: 255
 		ContentType string `json:"contentType"`
@@ -452,8 +453,22 @@ type (
 		// must have an expiration that is no later than this.
 		Expires tcclient.Time `json:"expires"`
 
+		// The name for the "project" with which this task is associated.  This
+		// value can be used to control permission to manipulate tasks as well as
+		// for usage reporting.  Project ids are typically simple identifiers,
+		// optionally in a hierarchical namespace separated by `/` characters.
+		// This value defaults to `none`.
+		//
+		// Default:    "none"
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId"`
+
 		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -512,7 +527,15 @@ type (
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskID string `json:"taskId"`
 
-		// Unique identifier for a worker-type within a specific provisioner
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
+
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`

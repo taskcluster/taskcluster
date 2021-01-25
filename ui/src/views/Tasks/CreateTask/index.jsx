@@ -5,7 +5,7 @@ import { parse, stringify } from 'qs';
 import { withApollo } from 'react-apollo';
 import storage from 'localforage';
 import merge from 'deepmerge';
-import { safeLoad, safeDump } from 'js-yaml';
+import { load, dump } from 'js-yaml';
 import { bool } from 'prop-types';
 import {
   toDate,
@@ -187,7 +187,7 @@ export default class CreateTask extends Component {
 
     if (task) {
       const taskId = nice();
-      let payload = safeLoad(task);
+      let payload = load(task);
 
       db.taskDefinitions.put(payload);
 
@@ -244,7 +244,7 @@ export default class CreateTask extends Component {
 
   handleTaskChange = value => {
     try {
-      safeLoad(value);
+      load(value);
       this.setState({ invalid: false, task: value });
     } catch (err) {
       this.setState({ invalid: true, task: value });
@@ -254,7 +254,7 @@ export default class CreateTask extends Component {
   handleUpdateTimestamps = () =>
     this.setState({
       createdTaskError: null,
-      task: this.parameterizeTask(safeLoad(this.state.task)),
+      task: this.parameterizeTask(load(this.state.task)),
     });
 
   parameterizeTask(task) {
@@ -284,7 +284,7 @@ export default class CreateTask extends Component {
       }
     };
 
-    return `${safeDump(iter(task), { noCompatMode: true, noRefs: true })}`;
+    return `${dump(iter(task), { noCompatMode: true, noRefs: true })}`;
   }
 
   render() {

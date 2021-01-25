@@ -1,1 +1,5 @@
+# from queue's constants:
 slugid-pattern: "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$"
+projectId-pattern:     ^([a-zA-Z0-9._/-]*)$
+projectId-min-length:  1
+projectId-max-length:  500

@@ -60,10 +60,10 @@ oneOf:
         format:     date-time
       contentType:
         description: |
-          Artifact mime-type for the resource to which the queue should
-          redirect. Please use the same `Content-Type`, consistently using
-          the correct mime-type make tooling a lot easier, specifically,
-          always using `application/json` for JSON artifacts.
+          Expected content-type of the artifact.  This is informational only:
+          it is suitable for use to choose an icon for the artifact, for example.
+          The accurate content-type of the artifact can only be determined by
+          downloading it.
         type:       string
         maxLength:  255
       url:

@@ -25,7 +25,7 @@ job-defaults:
     max-run-time: 10800
     docker-image: {taskcluster: worker-ci}
     env:
-      DEBUG: "*"
+      DEBUG: "*,-mocha,-babel"
       WORKER_CI: '1'
       TASKCLUSTER_ROOT_URL: https://community-tc.services.mozilla.com
       NO_TEST_SKIP: 'true'

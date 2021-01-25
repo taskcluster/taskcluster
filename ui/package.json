@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-ui",
-  "version": "40.0.0",
+  "version": "40.0.3",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
@@ -24,7 +24,7 @@
     "@mdx-js/react": "^1.0.20",
     "@mdx-js/runtime": "^1.0.20",
     "@mozilla-frontend-infra/components": "^3.0.7",
-    "@sentry/browser": "^5.0.0",
+    "@sentry/browser": "^6.0.0",
     "apollo-cache-inmemory": "^1.5.1",
     "apollo-cache-persist": "^0.1.1",
     "apollo-client": "^2.5.1",
@@ -76,6 +76,7 @@
     "react-apollo": "^3.0.0",
     "react-copy-to-clipboard": "^5.0.1",
     "react-dom": "^16.8.6",
+    "react-error-boundary": "^3.1.0",
     "react-fout-stager": "^3.0.0",
     "react-ga": "^3.0.0",
     "react-gh-like-diff": "^2.0.0",

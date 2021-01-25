@@ -128,7 +128,7 @@ func TestExecutionErrorsText(t *testing.T) {
 			TaskStatus: aborted,
 		},
 	}
-	expectedError := "Oh dear oh dear\nThis isn't good"
+	expectedError := "Oh dear oh dear"
 	actualError := errors.Error()
 	if expectedError != actualError {
 		t.Log("Was expecting error:")

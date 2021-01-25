@@ -67,7 +67,7 @@ suite(testing.suiteName(), function() {
     );
   });
 
-  helper.dbTest('update_queue_artifacts can update expires and details', async function(db) {
+  helper.dbTest('update_queue_artifacts_2 can update expires, storage_type, and details', async function(db) {
     const taskId = slugid.nice();
     await db.fns.create_queue_artifact(
       taskId,
@@ -79,18 +79,25 @@ suite(testing.suiteName(), function() {
       false,
       new Date(),
     );
-    const [artifact] = await db.fns.update_queue_artifact(taskId, 0, 'name', { details: 'updated' }, new Date(2));
+    const [artifact] = await db.fns.update_queue_artifact_2({
+      task_id_in: taskId,
+      run_id_in: 0,
+      name_in: 'name',
+      details_in: { details: 'updated' },
+      storage_type_in: 'updated',
+      expires_in: new Date(2),
+    });
 
     assert.equal(artifact.task_id, taskId);
     assert.equal(artifact.run_id, 0);
-    assert.equal(artifact.storage_type, 'storage-type');
+    assert.equal(artifact.storage_type, 'updated');
     assert.equal(artifact.content_type, 'content-type');
     assert.deepEqual(artifact.details, { details: 'updated' });
     assert.equal(artifact.present, false);
     assert.equal(artifact.expires.toJSON(), new Date(2).toJSON());
   });
 
-  helper.dbTest('update_queue_artifact no changes to expires and details', async function(db) {
+  helper.dbTest('update_queue_artifact_2 no changes to expires, storage_type, and details', async function(db) {
     const taskId = slugid.nice();
     const now = new Date();
     await db.fns.create_queue_artifact(
@@ -103,7 +110,14 @@ suite(testing.suiteName(), function() {
       false,
       now,
     );
-    const [artifact] = await db.fns.update_queue_artifact(taskId, 0, 'name', {}, now);
+    const [artifact] = await db.fns.update_queue_artifact_2({
+      task_id_in: taskId,
+      run_id_in: 0,
+      name_in: 'name',
+      details_in: null,
+      storage_type_in: null,
+      expires_in: null,
+    });
 
     assert.equal(artifact.task_id, taskId);
     assert.equal(artifact.run_id, 0);

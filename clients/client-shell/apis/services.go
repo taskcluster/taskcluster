@@ -8,7 +8,7 @@ var services = map[string]definitions.Service{
 	"Auth": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "auth",
-		Title:       "Authentication API",
+		Title:       "Auth Service",
 		Description: "Authentication related API end-points for Taskcluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authorize a request signed with Taskcluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -408,7 +408,7 @@ var services = map[string]definitions.Service{
 	"Github": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "github",
-		Title:       "Taskcluster GitHub API Documentation",
+		Title:       "GitHub Service",
 		Description: "The github service is responsible for creating tasks in response\nto GitHub events, and posting results to the GitHub UI.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -529,7 +529,7 @@ var services = map[string]definitions.Service{
 	"Hooks": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "hooks",
-		Title:       "Hooks API Documentation",
+		Title:       "Hooks Service",
 		Description: "The hooks service provides a mechanism for creating tasks in response to events.\n",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -713,7 +713,7 @@ var services = map[string]definitions.Service{
 	"Index": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "index",
-		Title:       "Task Index API Documentation",
+		Title:       "Index Service",
 		Description: "The index service is responsible for indexing tasks. The service ensures that\ntasks can be located by user-defined names.\n\nAs described in the service documentation, tasks are typically indexed via Pulse\nmessages, so the most common use of API methods is to read from the index.\n\nSlashes (`/`) aren't allowed in index paths.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -903,7 +903,7 @@ var services = map[string]definitions.Service{
 	"Object": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "object",
-		Title:       "Taskcluster Object Service API Documentation",
+		Title:       "Object Service",
 		Description: "The object service provides HTTP-accessible storage for large blobs of data.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -961,7 +961,7 @@ var services = map[string]definitions.Service{
 	"PurgeCache": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "purge-cache",
-		Title:       "Purge Cache API",
+		Title:       "Purge Cache Service",
 		Description: "The purge-cache service is responsible for tracking cache-purge requests.\n\nUser create purge requests for specific caches on specific workers, and\nthese requests are timestamped.  Workers consult the service before\nstarting a new task, and purge any caches older than the timestamp.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -1024,7 +1024,7 @@ var services = map[string]definitions.Service{
 	"Queue": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "queue",
-		Title:       "Queue API Documentation",
+		Title:       "Queue Service",
 		Description: "The queue service is responsible for accepting tasks and track their state\nas they are executed by workers. In order ensure they are eventually\nresolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -1235,7 +1235,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "createArtifact",
 				Title:       "Create Artifact",
-				Description: "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support \"S3 Artifacts\" officially, with remaining support\nfor two deprecated types.  Do not use these deprecated types.\n\n**S3 artifacts**, is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n\n**Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\n**Immutability Special Cases**:\n\n* A `reference` artifact can replace an existing `reference` artifact`.\n* A `link` artifact can replace an existing `reference` artifact`.\n* Any artifact's `expires` can be extended.",
+				Description: "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support \"S3 Artifacts\" for data storage.\n\n**S3 artifacts**, is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n\n**Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\n**Immutability Special Cases**:\n\n* A `reference` artifact can replace an existing `reference` artifact`.\n* A `link` artifact can replace an existing `reference` artifact`.\n* Any artifact's `expires` can be extended.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/task/<taskId>/runs/<runId>/artifacts/<name>",
@@ -1250,7 +1250,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "getArtifact",
 				Title:       "Get Artifact from Run",
-				Description: "Get artifact by `<name>` from a specific run.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with an HTTP client that can handle responses correctly.\n\n**Downloading artifacts**\nThere are some special considerations for those http clients which download\nartifacts.  This api endpoint is designed to be compatible with an HTTP 1.1\ncompliant client, but has extra features to ensure the download is valid.\nIt is strongly recommend that consumers use either taskcluster-lib-artifact (JS),\ntaskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with\nartifacts.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3",
+				Description: "Get artifact by `<name>` from a specific run.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**Response**: the HTTP response to this method is a 303 redirect to the\nURL from which the artifact can be downloaded.  The body of that response\ncontains the data described in the output schema, contianing the same URL.\nCallers are encouraged to use whichever method of gathering the URL is\nmost convenient.  Standard HTTP clients will follow the redirect, while\nAPI client libraries will return the JSON body.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3",
 				Stability:   "stable",
 				Method:      "get",
 				Route:       "/task/<taskId>/runs/<runId>/artifacts/<name>",
@@ -1505,7 +1505,7 @@ var services = map[string]definitions.Service{
 	"Secrets": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "secrets",
-		Title:       "Taskcluster Secrets API Documentation",
+		Title:       "Secrets Service",
 		Description: "The secrets service provides a simple key/value store for small bits of secret\ndata.  Access is limited by scopes, so values can be considered secret from\nthose who do not have the relevant scopes.\n\nSecrets also have an expiration date, and once a secret has expired it can no\nlonger be read.  This is useful for short-term secrets such as a temporary\nservice credential or a one-time signing key.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
@@ -1577,7 +1577,7 @@ var services = map[string]definitions.Service{
 	"WorkerManager": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "worker-manager",
-		Title:       "Taskcluster Worker Manager",
+		Title:       "Worker Manager Service",
 		Description: "This service manages workers, including provisioning for dynamic worker pools.",
 		Entries: []definitions.Entry{
 			definitions.Entry{

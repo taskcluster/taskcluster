@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Code from '@mozilla-frontend-infra/components/Code';
-import { safeDump } from 'js-yaml';
+import { dump } from 'js-yaml';
 import ErrorPanel from '../ErrorPanel';
 import Markdown from '../Markdown';
 
@@ -77,7 +77,7 @@ export default class TaskActionForm extends Component {
                 Schema
               </Typography>
               <Code language="yaml" className={classes.code}>
-                {safeDump(action.schema || {})}
+                {dump(action.schema || {})}
               </Code>
             </Grid>
           </Grid>

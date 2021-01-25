@@ -8,15 +8,26 @@ properties:
     title:          "Provisioner Id"
     description: |
       Unique identifier for a provisioner, that can supply specified
-      `workerType`
+      `workerType`. Deprecation is planned for this property as it
+      will be replaced, together with `workerType`, by the new
+      identifier `taskQueueId`.
     type:           string
     pattern:        {$const: provisionerid-pattern}
   workerType:
     title:          "Worker Type"
     description: |
-      Unique identifier for a worker-type within a specific provisioner
+      Unique identifier for a worker-type within a specific
+      provisioner. Deprecation is planned for this property as it will
+      be replaced, together with `provisionerId`, by the new
+      identifier `taskQueueId`.
     type:           string
     pattern:        {$const: workertype-pattern}
+  taskQueueId:
+    title:          "Task Queue Id"
+    description: |
+      Unique identifier for a task queue
+    type:           string
+    pattern:        {$const: taskqueueid-pattern}
   schedulerId:
     title:          "Scheduler Identifier"
     description: |
@@ -34,6 +45,19 @@ properties:
     minLength:      {$const: identifier-min-length}
     maxLength:      {$const: identifier-max-length}
     pattern:        {$const: identifier-pattern}
+  projectId:
+    title:          "Project Identifier"
+    description: |
+      The name for the "project" with which this task is associated.  This
+      value can be used to control permission to manipulate tasks as well as
+      for usage reporting.  Project ids are typically simple identifiers,
+      optionally in a hierarchical namespace separated by `/` characters.
+      This value defaults to `none`.
+    type:           string
+    default:        'none'
+    minLength:      {$const: projectId-min-length}
+    maxLength:      {$const: projectId-max-length}
+    pattern:        {$const: projectId-pattern}
   taskGroupId:
     title:          "Task-Group Identifier"
     description: |
@@ -177,6 +201,7 @@ additionalProperties: false
 required:
   - provisionerId
   - workerType
+  - taskQueueId
   - schedulerId
   - taskGroupId
   - dependencies

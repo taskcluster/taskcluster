@@ -17,8 +17,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   test('pendingTasks >= 1', async () => {
     const taskDef = {
-      provisionerId: 'no-provisioner-extended-extended',
-      workerType: 'query-test-worker-extended-extended',
+      taskQueueId: 'no-provisioner-extended-extended/query-test-worker-extended-extended',
       schedulerId: 'my-scheduler',
       taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
       routes: [],
