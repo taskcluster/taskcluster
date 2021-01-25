@@ -230,7 +230,7 @@ builder.declare({
     this.db.fns.get_task_group(taskGroupId),
     paginateResults({
       query: req.query,
-      fetch: (size, offset) => this.db.fns.get_tasks_by_task_group_tqid(taskGroupId, size, offset),
+      fetch: (size, offset) => this.db.fns.get_tasks_by_task_group_projid(taskGroupId, size, offset),
     }),
   ]);
 
@@ -348,6 +348,7 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
     routes: taskDef.routes,
     scopes: taskDef.scopes,
     schedulerId: taskDef.schedulerId,
+    projectId: taskDef.projectId,
     taskGroupId: taskDef.taskGroupId || taskId,
     provisionerId: taskDef.provisionerId,
     workerType: taskDef.workerType,
@@ -470,6 +471,7 @@ builder.declare({
   scopes: { AllOf: [
     { for: 'scope', in: 'scopes', each: '<scope>' },
     { for: 'route', in: 'routes', each: 'queue:route:<route>' },
+    'queue:create-task:project:<projectId>',
     'queue:scheduler-id:<schedulerId>',
     { AnyOf: [
       {
@@ -534,6 +536,11 @@ builder.declare({
     return res.reportError('InputError',
       'at least a provisionerId and a workerType or a taskQueueId must be provided"',
       {});
+  }
+
+  // fill in the default `none` projectId if none was given
+  if (!taskDef.projectId) {
+    taskDef.projectId = 'none';
   }
 
   await authorizeTaskCreation(req, taskId, taskDef);

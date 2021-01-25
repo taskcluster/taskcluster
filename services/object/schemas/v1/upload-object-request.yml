@@ -9,6 +9,9 @@ properties:
     description: |
       Project identifier.
     type:           string
+    minLength:      {$const: projectId-min-length}
+    maxLength:      {$const: projectId-max-length}
+    pattern:        {$const: projectId-pattern}
   uploadId:
     title: "Upload ID"
     description: |-

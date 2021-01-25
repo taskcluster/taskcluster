@@ -10,6 +10,7 @@ properties:
   workerType: {$ref: "task.json#/properties/workerType"}
   taskQueueId: {$ref: "task.json#/properties/taskQueueId"}
   schedulerId: {$ref: "task.json#/properties/schedulerId", default: '-'}
+  projectId: {$ref: "task.json#/properties/projectId", default: 'none'}
   taskGroupId: {$ref: "task.json#/properties/taskGroupId"}
   dependencies: {$ref: "task.json#/properties/dependencies", default: []}
   requires: {$ref: "task.json#/properties/requires", default: 'all-completed'}

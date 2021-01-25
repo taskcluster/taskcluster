@@ -17,6 +17,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   const taskDef = {
     taskQueueId: 'no-provisioner-extended-extended/test-worker-extended-extended',
     schedulerId: 'my-scheduler-extended-extended',
+    projectId: 'my-project',
     taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
     dependencies: [],
     requires: 'all-completed',
