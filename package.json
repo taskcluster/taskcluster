@@ -22,7 +22,7 @@
     "@octokit/core": "^3.0.0",
     "@octokit/plugin-retry": "^3.0.4",
     "@octokit/rest": "^18.0.0",
-    "@sentry/node": "^5.6.1",
+    "@sentry/node": "^6.0.0",
     "@slack/web-api": "^6.0.0",
     "ajv": "^6.10.0",
     "amqplib": "^0.6.0",

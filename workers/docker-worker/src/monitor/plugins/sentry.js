@@ -8,6 +8,7 @@ class SentryReporter {
     Sentry.init({
       dsn,
       release: taskclusterVersion,
+      autoSessionTracking: false,
     });
     Sentry.configureScope(scope => {
       scope.setTag('service', serviceName);
