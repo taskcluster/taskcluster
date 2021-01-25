@@ -22,6 +22,11 @@ Go version go1.15.6 is required for some development tasks, in particular to run
 For new contributors not familiar with Go, it's probably safe to skip installing Go for now -- you will see a helpful error if and when it is needed.
 We recommend using https://github.com/moovweb/gvm to support installing multiple Go versions.
 
+### Rust
+
+You do not need Rust installed unless you are working on one of the Rust components of Taskcluster.
+The currently-required version of Rust is in `rust-toolchain`.
+
 ### Postgres
 
 All Taskcluster services require a Postgres 11 server to run.

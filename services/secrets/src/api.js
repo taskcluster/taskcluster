@@ -10,7 +10,7 @@ const secretToJson = (db, item) => ({
  *
  */
 let builder = new APIBuilder({
-  title: 'Taskcluster Secrets API Documentation',
+  title: 'Secrets Service',
   description: [
     'The secrets service provides a simple key/value store for small bits of secret',
     'data.  Access is limited by scopes, so values can be considered secret from',

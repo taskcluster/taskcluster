@@ -160,7 +160,7 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
 /** API end-point for version v1/
  */
 let builder = new APIBuilder({
-  title: 'Taskcluster GitHub API Documentation',
+  title: 'GitHub Service',
   description: [
     'The github service is responsible for creating tasks in response',
     'to GitHub events, and posting results to the GitHub UI.',

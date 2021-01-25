@@ -89,7 +89,7 @@ const rolesResponseBuilder = async (that, req, res) => {
 
 /** API end-point for version v1/ */
 const builder = new APIBuilder({
-  title: 'Authentication API',
+  title: 'Auth Service',
   serviceName: 'auth',
   apiVersion: 'v1',
   description: [
