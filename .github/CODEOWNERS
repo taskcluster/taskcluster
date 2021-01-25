@@ -11,6 +11,7 @@ clients/client-web/src/clients/**
 clients/client-py/taskcluster/generated/**
 clients/client-py/README.md
 clients/client/src/apis.js
+clients/client-rust/src/generated/**
 infrastructure/k8s/templates/**
 clients/client-shell/apis/services.go
 clients/client-go/tc*/**
