@@ -3183,7 +3183,7 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "This service manages workers, including provisioning for dynamic worker pools.",
+      "description": "This service manages workers, including provisioning for dynamic worker pools.\n\nMethods interacting with a provider may return a 503 response if that provider has\nnot been able to start up, such as if the service to which it interfaces has an\noutage.  Such requests can be retried as for any other 5xx response.",
       "entries": [
         {
           "args": [
