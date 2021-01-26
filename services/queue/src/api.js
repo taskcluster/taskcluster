@@ -648,6 +648,7 @@ builder.declare({
   category: 'Tasks',
   scopes: { AnyOf: [
     'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
+    'queue:schedule-task-in-project:<projectId>',
     { AllOf: [ // Legacy scopes
       'queue:schedule-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
@@ -689,6 +690,7 @@ builder.declare({
     taskId,
     schedulerId: task.schedulerId,
     taskGroupId: task.taskGroupId,
+    projectId: task.projectId,
   });
 
   // Attempt to schedule task
@@ -718,6 +720,7 @@ builder.declare({
   category: 'Tasks',
   scopes: { AnyOf: [
     'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',
+    'queue:rerun-task-in-project:<projectId>',
     { AllOf: [ // Legacy scopes
       'queue:rerun-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
@@ -761,6 +764,7 @@ builder.declare({
     taskId,
     schedulerId: task.schedulerId,
     taskGroupId: task.taskGroupId,
+    projectId: task.projectId,
   });
 
   // Validate deadline
@@ -819,6 +823,7 @@ builder.declare({
   category: 'Tasks',
   scopes: { AnyOf: [
     'queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',
+    'queue:cancel-task-in-project:<projectId>',
     { AllOf: [ // Legacy scopes
       'queue:cancel-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
@@ -858,6 +863,7 @@ builder.declare({
     taskId,
     schedulerId: task.schedulerId,
     taskGroupId: task.taskGroupId,
+    projectId: task.projectId,
   });
 
   // Validate deadline

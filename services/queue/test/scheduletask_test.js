@@ -1,4 +1,4 @@
-const debug = require('debug')('test:rerun');
+const debug = require('debug')('test:schedule');
 const assert = require('assert');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
@@ -36,42 +36,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     },
   };
 
-  test('create, claim, complete and rerun (is idempotent)', async () => {
-    const taskId = slugid.v4();
-
-    debug('### Creating task');
-    await helper.queue.createTask(taskId, taskDef);
-    helper.assertPulseMessage('task-defined');
-    helper.assertPulseMessage('task-pending', m => m.payload.runId === 0);
-
-    debug('### Claiming task');
-    // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group-extended-extended',
-      workerId: 'my-worker-extended-extended',
-    });
-    helper.assertPulseMessage('task-running');
-
-    debug('### Reporting task completed');
-    await helper.queue.reportCompleted(taskId, 0);
-    helper.assertPulseMessage('task-completed');
-
-    debug('### Requesting task rerun');
-    helper.scopes(
-      'queue:rerun-task',
-      'assume:scheduler-id:my-scheduler-extended-extended/dSlITZ4yQgmvxxAi4A8fHQ',
-    );
-    await helper.queue.rerunTask(taskId);
-
-    debug('### Waiting for pending message again');
-    helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
-
-    debug('### Requesting task rerun (again - idempotent)');
-    await helper.queue.rerunTask(taskId);
-    helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
-  });
-
-  test('rerun with project scopes', async () => {
+  test('schedule with project scopes', async () => {
     const taskId = slugid.v4();
 
     debug('### Creating task');
@@ -80,14 +45,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       projectId: 'testproj',
     });
 
-    helper.scopes('queue:rerun-task-in-project:testproj');
-    const r2 = await helper.queue.rerunTask(taskId);
+    helper.scopes('queue:schedule-task-in-project:testproj');
+    const r2 = await helper.queue.scheduleTask(taskId);
     assert.equal(r2.status.state, 'pending');
 
     // fails with the wrong project scope
-    helper.scopes('queue:rerun-task-in-project:WRONG-PROJECT');
+    helper.scopes('queue:schedule-task-in-project:WRONG-PROJECT');
     await assert.rejects(
-      () => helper.queue.rerunTask(taskId),
+      () => helper.queue.scheduleTask(taskId),
       err => err.statusCode === 403);
 
     helper.clearPulseMessages();
@@ -95,7 +60,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   test('throw error on missing task', async () => {
     const taskId = slugid.v4();
-    await helper.queue.rerunTask(taskId).then(
+    await helper.queue.scheduleTask(taskId).then(
       () => assert(0, 'expected an error'),
       err => {
         if (err.code !== 'ResourceNotFound') {
