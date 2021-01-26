@@ -1,6 +1,6 @@
 use crate::util::collect_scopes;
 use crate::Credentials;
-use anyhow::{anyhow, Context, Error, Result};
+use anyhow::{anyhow, bail, Context, Error, Result};
 use backoff::backoff::Backoff;
 use backoff::ExponentialBackoff;
 use reqwest::header::HeaderValue;
@@ -70,9 +70,11 @@ impl ClientBuilder {
     /// Set the path_prefix; this will be included between the root URL and the path given to
     /// `request`, `make_url`, and `make_signed_url`.  This is typically used when building a
     /// client that will address a single service, such as `api/queue/v1/`.  The path prefix
-    /// must not start with `/` and must end with a `/` character.
-    pub fn path_prefix<S: Into<String>>(mut self, path_prefix: S) -> Self {
+    /// must not start with `/` and must end with a `/` character.  This is only for internal
+    /// use in constructing service-specific clients that will always use the same path prefix.
+    pub(crate) fn path_prefix<S: Into<String>>(mut self, path_prefix: S) -> Self {
         let path_prefix = path_prefix.into();
+        debug_assert!(path_prefix.ends_with('/'));
         self.path_prefix = Some(path_prefix);
         self
     }
@@ -313,6 +315,10 @@ impl Client {
         query: Option<Vec<(&str, &str)>>,
         body: Option<&Value>,
     ) -> Result<reqwest::Request, Error> {
+        if path.starts_with('/') {
+            bail!("Request path must not begin with `/`");
+        }
+
         let mut url = self.base_url.join(path)?;
 
         if let Some(q) = query {
@@ -372,6 +378,10 @@ impl Client {
     /// Make a URL for the given path, constructed as for [`request`](crate::Client::request).  The
     /// path should not begin with a `/`.
     pub fn make_url(&self, path: &str, query: Option<Vec<(&str, &str)>>) -> Result<String> {
+        if path.starts_with('/') {
+            bail!("Request path must not begin with `/`");
+        }
+
         let mut url = self.base_url.join(path)?;
 
         if let Some(q) = query {
@@ -390,6 +400,10 @@ impl Client {
         query: Option<Vec<(&str, &str)>>,
         ttl: Duration,
     ) -> Result<String> {
+        if path.starts_with('/') {
+            bail!("Request path must not begin with `/`");
+        }
+
         let creds = if let Some(ref creds) = self.credentials {
             creds
         } else {
