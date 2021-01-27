@@ -978,13 +978,12 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "purgeCache",
 				Title:       "Purge Worker Cache",
-				Description: "Publish a request to purge caches named `cacheName` with\non `provisionerId`/`workerType` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
+				Description: "Publish a request to purge caches named `cacheName` with\non `workerPoolId` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
 				Stability:   "stable",
 				Method:      "post",
-				Route:       "/purge-cache/<provisionerId>/<workerType>",
+				Route:       "/purge-cache/<workerPoolId>",
 				Args: []string{
-					"provisionerId",
-					"workerType",
+					"workerPoolId",
 				},
 				Query: []string{},
 				Input: "v1/purge-cache-request.json#",
@@ -1005,14 +1004,13 @@ var services = map[string]definitions.Service{
 			},
 			definitions.Entry{
 				Name:        "purgeRequests",
-				Title:       "Open Purge Requests for a provisionerId/workerType pair",
-				Description: "List the caches for this `provisionerId`/`workerType` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
+				Title:       "Open Purge Requests for a worker pool",
+				Description: "List the caches for this `workerPoolId` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
 				Stability:   "stable",
 				Method:      "get",
-				Route:       "/purge-cache/<provisionerId>/<workerType>",
+				Route:       "/purge-cache/<workerPoolId>",
 				Args: []string{
-					"provisionerId",
-					"workerType",
+					"workerPoolId",
 				},
 				Query: []string{
 					"since",

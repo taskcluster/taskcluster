@@ -26,7 +26,7 @@ type WorkerManager interface {
 }
 
 type PurgeCache interface {
-	PurgeRequests(provisionerId, workerType, since string) (*tcpurgecache.OpenPurgeRequestList, error)
+	PurgeRequests(workerPoolId, since string) (*tcpurgecache.OpenPurgeRequestList, error)
 }
 
 type Secrets interface {

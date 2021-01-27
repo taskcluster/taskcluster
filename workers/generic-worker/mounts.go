@@ -916,7 +916,7 @@ func (taskMount *TaskMount) purgeCaches() error {
 	}
 	lastQueriedPurgeCacheService = time.Now()
 	pc := serviceFactory.PurgeCache(config.Credentials(), config.RootURL)
-	purgeRequests, err := pc.PurgeRequests(config.ProvisionerID, config.WorkerType, since)
+	purgeRequests, err := pc.PurgeRequests(fmt.Sprintf("%s/%s", config.ProvisionerID, config.WorkerType), since)
 	if err != nil {
 		return err
 	}

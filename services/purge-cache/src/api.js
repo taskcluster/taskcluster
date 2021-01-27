@@ -3,7 +3,7 @@ const debug = require('debug')('purge-cache');
 const { APIBuilder } = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
 const { paginateResults } = require('taskcluster-lib-api');
-const { joinWorkerPoolId, splitWorkerPoolId } = require('./util');
+const { splitWorkerPoolId } = require('./util');
 
 // Common patterns URL parameters
 const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
@@ -37,28 +37,30 @@ module.exports = builder;
 /** Define tasks */
 builder.declare({
   method: 'post',
-  route: '/purge-cache/:provisionerId/:workerType',
+  route: '/purge-cache/:workerPoolId(*)',
   name: 'purgeCache',
-  scopes: 'purge-cache:<provisionerId>/<workerType>:<cacheName>',
+  scopes: 'purge-cache:<workerPoolId>:<cacheName>',
   input: 'purge-cache-request.yml',
   title: 'Purge Worker Cache',
   category: 'Purge-Cache Service',
   stability: APIBuilder.stability.stable,
+  params: {
+    workerPoolId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
+  },
   description: [
     'Publish a request to purge caches named `cacheName` with',
-    'on `provisionerId`/`workerType` workers.',
+    'on `workerPoolId` workers.',
     '',
     'If such a request already exists, its `before` timestamp is updated to',
     'the current time.',
   ].join('\n'),
 }, async function(req, res) {
-  let { provisionerId, workerType } = req.params;
-  const workerPoolId = joinWorkerPoolId(provisionerId, workerType);
+  const { workerPoolId } = req.params;
   let { cacheName } = req.body;
 
-  debug(`Processing request for ${provisionerId}/${workerType}/${cacheName}.`);
+  debug(`Processing request for ${workerPoolId}/${cacheName}.`);
 
-  await req.authorize({ provisionerId, workerType, cacheName });
+  await req.authorize({ workerPoolId, cacheName });
   await this.db.fns.purge_cache_wpid(workerPoolId, cacheName, new Date(), taskcluster.fromNow('1 day'));
   // Return 204
   res.reply();
@@ -105,26 +107,28 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: '/purge-cache/:provisionerId/:workerType',
+  route: '/purge-cache/:workerPoolId(*)',
   query: {
     since: dt => Date.parse(dt) ? null : 'Invalid Date',
   },
   name: 'purgeRequests',
-  scopes: 'purge-cache:purge-requests:<provisionerId>/<workerType>',
+  scopes: 'purge-cache:purge-requests::<workerPoolId>',
   output: 'purge-cache-request-list.yml',
-  title: 'Open Purge Requests for a provisionerId/workerType pair',
+  title: 'Open Purge Requests for a worker pool',
   stability: APIBuilder.stability.stable,
   category: 'Purge-Cache Service',
+  params: {
+    workerPoolId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
+  },
   description: [
-    'List the caches for this `provisionerId`/`workerType` that should to be',
+    'List the caches for this `workerPoolId` that should to be',
     'purged if they are from before the time given in the response.',
     '',
     'This is intended to be used by workers to determine which caches to purge.',
   ].join('\n'),
 }, async function(req, res) {
 
-  let { provisionerId, workerType } = req.params;
-  let workerPoolId = joinWorkerPoolId(provisionerId, workerType);
+  let { workerPoolId } = req.params;
   let since = new Date(req.query.since || 0);
 
   // Cache the azure query for cacheTime seconds.  Note that if a second request

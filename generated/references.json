@@ -15144,18 +15144,17 @@
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "workerPoolId"
           ],
           "category": "Purge-Cache Service",
-          "description": "Publish a request to purge caches named `cacheName` with\non `provisionerId`/`workerType` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
+          "description": "Publish a request to purge caches named `cacheName` with\non `workerPoolId` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
           "input": "v1/purge-cache-request.json#",
           "method": "post",
           "name": "purgeCache",
           "query": [
           ],
-          "route": "/purge-cache/<provisionerId>/<workerType>",
-          "scopes": "purge-cache:<provisionerId>/<workerType>:<cacheName>",
+          "route": "/purge-cache/<workerPoolId>",
+          "scopes": "purge-cache:<workerPoolId>:<cacheName>",
           "stability": "stable",
           "title": "Purge Worker Cache",
           "type": "function"
@@ -15180,21 +15179,20 @@
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "workerPoolId"
           ],
           "category": "Purge-Cache Service",
-          "description": "List the caches for this `provisionerId`/`workerType` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
+          "description": "List the caches for this `workerPoolId` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
           "method": "get",
           "name": "purgeRequests",
           "output": "v1/purge-cache-request-list.json#",
           "query": [
             "since"
           ],
-          "route": "/purge-cache/<provisionerId>/<workerType>",
-          "scopes": "purge-cache:purge-requests:<provisionerId>/<workerType>",
+          "route": "/purge-cache/<workerPoolId>",
+          "scopes": "purge-cache:purge-requests::<workerPoolId>",
           "stability": "stable",
-          "title": "Open Purge Requests for a provisionerId/workerType pair",
+          "title": "Open Purge Requests for a worker pool",
           "type": "function"
         }
       ],

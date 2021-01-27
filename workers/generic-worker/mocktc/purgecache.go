@@ -11,7 +11,7 @@ type PurgeCache struct {
 
 /////////////////////////////////////////////////
 
-func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since string) (*tcpurgecache.OpenPurgeRequestList, error) {
+func (purgeCache *PurgeCache) PurgeRequests(workerPoolId, since string) (*tcpurgecache.OpenPurgeRequestList, error) {
 	return &tcpurgecache.OpenPurgeRequestList{}, nil
 }
 
