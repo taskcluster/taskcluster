@@ -10,7 +10,18 @@ For the most part, once a task is created it is left to run to its final
 resolution. However, there are a few API methods available to modify its
 behavior after creation.
 
-Permission for these methods is based on the task's `schedulerId`.
+Permission for these methods is based on the task's `projectId`.
+There are also legacy scopes relating to the `schedulerId`, but experience has shown that these scopes are not a practical way to control access.
+
+## Rerunning
+
+"Rerunning" a task is possible when the task is completed, but not yet past its deadline.
+A rerun entails adding a new run to the task.
+This is most often used for tasks that failed due to some intermittent issue, as the result of the last run is reflected in the result of the task.
+
+However, note that task dependencies operate on the first resolution of a task.
+That is, when a task fails, any tasks depending on it are executed (or not) accordingly.
+Subsequent reruns do not affect those dependent tasks.
 
 ## Force Scheduling
 

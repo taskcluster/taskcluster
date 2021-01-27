@@ -1267,6 +1267,13 @@
     "title": "Manipulating Tasks"
   },
   {
+    "element": "h2",
+    "id": "rerunning",
+    "path": "/manual/tasks/manipulating",
+    "subtitle": "Rerunning",
+    "title": "Manipulating Tasks"
+  },
+  {
     "element": "h1",
     "id": "deployment-administration",
     "path": "/manual/using/administration",
