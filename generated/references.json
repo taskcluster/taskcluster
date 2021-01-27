@@ -14316,6 +14316,7 @@
           "scopes": {
             "AnyOf": [
               "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>",
+              "queue:schedule-task-in-project:<projectId>",
               {
                 "AllOf": [
                   "queue:schedule-task",
@@ -14343,6 +14344,7 @@
           "scopes": {
             "AnyOf": [
               "queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>",
+              "queue:rerun-task-in-project:<projectId>",
               {
                 "AllOf": [
                   "queue:rerun-task",
@@ -14370,6 +14372,7 @@
           "scopes": {
             "AnyOf": [
               "queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>",
+              "queue:cancel-task-in-project:<projectId>",
               {
                 "AllOf": [
                   "queue:cancel-task",
