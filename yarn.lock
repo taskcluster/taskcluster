@@ -82,28 +82,12 @@
     "@azure/ms-rest-js" "^2.2.0"
     tslib "^1.10.0"
 
-"@azure/ms-rest-js@^2.0.4", "@azure/ms-rest-js@^2.2.0":
+"@azure/ms-rest-js@^2.0.4", "@azure/ms-rest-js@^2.0.5", "@azure/ms-rest-js@^2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@azure/ms-rest-js/-/ms-rest-js-2.2.0.tgz#35d165f0a6fe2691e8cb456213da392562d0caae"
   integrity sha512-lmSqjNuqx/TmwXLpVs1acAExUhHGkHvXIdfyttNc3qlpcn6xoT8JqGFRVwvoh5rZKPfy84aSaXUEPf/gwfRZHg==
   dependencies:
     "@azure/core-auth" "^1.1.4"
-    "@types/node-fetch" "^2.3.7"
-    "@types/tunnel" "0.0.1"
-    abort-controller "^3.0.0"
-    form-data "^2.5.0"
-    node-fetch "^2.6.0"
-    tough-cookie "^3.0.1"
-    tslib "^1.10.0"
-    tunnel "0.0.6"
-    uuid "^3.3.2"
-    xml2js "^0.4.19"
-
-"@azure/ms-rest-js@^2.0.5":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@azure/ms-rest-js/-/ms-rest-js-2.1.0.tgz#41bc541984983b5242dfbcf699ea281acd045946"
-  integrity sha512-4BXLVImYRt+jcUmEJ5LUWglI8RBNVQndY6IcyvQ4U8O4kIXdmlRz3cJdA/RpXf5rKT38KOoTO2T6Z1f6Z1HDBg==
-  dependencies:
     "@types/node-fetch" "^2.3.7"
     "@types/tunnel" "0.0.1"
     abort-controller "^3.0.0"
