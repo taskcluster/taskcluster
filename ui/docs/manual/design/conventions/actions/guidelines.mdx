@@ -28,7 +28,7 @@ inputs that it requires. For example, a hook to re-trigger a task with
 allowing only those minimal inputs in an appropriate form (avoiding quoting
 vulnerabilities), and if possible add additional checks within the task itself
 -- for example, check that the task to be re-triggered has the expected
-schedulerId, workerType and provsionerId,
+schedulerId, and taskQueueId,
 
 Then consider who should be allowed to trigger the hook, and distribute the
 `hooks:trigger-hook` scope accordingly. Note that even if this scope is

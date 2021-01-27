@@ -20,7 +20,7 @@ Their use can result in a dramatic increase in task efficiency.
 Caches can be of arbitrary size (limited by the disk space available on the worker itself), but can be garbage-collected by the worker implementation between tasks, if necessary.
 Caching is most effective when "most" of the tasks executing on a worker use the same caches.
 Too great a variety of caches results in frequent garbage collection and a low hit rate.
-As such, caches aren't terribly useful on shared workerTypes such as `github-worker`.
+As such, caches aren't terribly useful on worker pools shared by many different kinds of tasks.
 
 ## Configuration
 
