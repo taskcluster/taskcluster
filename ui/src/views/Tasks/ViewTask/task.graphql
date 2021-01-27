@@ -11,6 +11,7 @@ query Task($taskId: ID!, $artifactsConnection: PageConnection, $dependentsConnec
     priority
     taskQueueId
     schedulerId
+    projectId
     tags
     requires
     scopes

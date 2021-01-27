@@ -411,10 +411,14 @@ export default class TaskDetailsCard extends Component {
                 )}
                 <ListItem>
                   <ListItemText
+                    primary="Project ID"
+                    secondary={task.projectId}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
                     primary="Scheduler ID"
-                    secondary={
-                      task.schedulerId === '-' ? <em>n/a</em> : task.schedulerId
-                    }
+                    secondary={task.schedulerId}
                   />
                 </ListItem>
                 <ListItem>

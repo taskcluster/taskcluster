@@ -81,6 +81,9 @@ type Task {
   # This scope is necessary to _schedule_ a defined task, or _rerun_ a task.
   schedulerId: String!
 
+  # Identifier for this task's project
+  projectId: String!
+
   # Identifier for a group of tasks scheduled together with this task,
   # by the scheduler identified by `schedulerId`. For tasks scheduled by the
   # task-graph scheduler, this is the `taskGraphId`.
