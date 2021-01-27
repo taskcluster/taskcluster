@@ -9,8 +9,7 @@ query Task($taskId: ID!, $artifactsConnection: PageConnection, $dependentsConnec
     deadline
     expires
     priority
-    provisionerId
-    workerType
+    taskQueueId
     schedulerId
     tags
     requires
