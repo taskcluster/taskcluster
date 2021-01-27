@@ -4466,9 +4466,9 @@ math-interval-parser@^2.0.1:
   integrity sha512-VmlAmb0UJwlvMyx8iPhXUDnVW1F9IrGEd9CIOmv+XL8AErCUUuozoDMrgImvnYt2A+53qVX/tPW6YJurMKYsvA==
 
 matrix-js-sdk@^9.0.0:
-  version "9.4.1"
-  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-9.4.1.tgz#dc15ed0a8c2a2b588e2ce5011f881717bc6efd53"
-  integrity sha512-6iCzKym869OpZnose+g/Xg3GMNrVXn2TFJnlPEy7rshOHeKLVCoFuQcIdApcGftnfh3fi0t3qRuD7o17xt2wiA==
+  version "9.5.1"
+  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-9.5.1.tgz#f2e27b7131a8d1a75fd2a803434e63fe672415ef"
+  integrity sha512-01YbRuU50BDYytTZ5fdmdoQLqOGDT2F7X6vDBrYHpdaRN2jWuLCspQlOKFJKgv73gNhw9V9jfoZN+NxuwuUpUQ==
   dependencies:
     "@babel/runtime" "^7.12.5"
     another-json "^0.2.0"
@@ -5536,10 +5536,15 @@ qs@6.7.0:
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.7.0.tgz#41dc1a015e3d581f1621776be31afb2876a9b1bc"
   integrity sha512-VCdBRNFTX1fyE7Nb6FYoURo/SPe62QCaAyzJvUjwRaIsc+NePBEniHlvxFmmX56+HZphIGtV0XeCirBtpDrTyQ==
 
-qs@^6.7.0, qs@^6.9.4:
+qs@^6.7.0:
   version "6.9.4"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.4.tgz#9090b290d1f91728d3c22e54843ca44aea5ab687"
   integrity sha512-A1kFqHekCTM7cz0udomYUoYNWjBebHm/5wzU/XqrBRBNWectVH0QIiN+NEcZ0Dte5hvzHwbr8+XQmguPhJ6WdQ==
+
+qs@^6.9.4:
+  version "6.9.6"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.6.tgz#26ed3c8243a431b2924aca84cc90471f35d5a0ee"
+  integrity sha512-TIRk4aqYLNoJUbd+g2lEdz5kLWIuTMRagAXxl78Q0RiVjAOugHmeKNGdd3cwo/ktpf9aL9epCfFqWDEKysUlLQ==
 
 qs@~6.5.2:
   version "6.5.2"
@@ -6672,9 +6677,9 @@ unpipe@1.0.0, unpipe@~1.0.0:
   integrity sha1-sr9O6FFKrmFltIF4KdIbLvSZBOw=
 
 uri-js@^4.2.2:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/uri-js/-/uri-js-4.4.0.tgz#aa714261de793e8a82347a7bcc9ce74e86f28602"
-  integrity sha512-B0yRTzYdUCCn9n+F4+Gh4yIDtMQcaJsmYBDsTSG8g/OejKBodLQ2IHfN3bM7jUsRXndopT7OIXWdYqc1fjmV6g==
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/uri-js/-/uri-js-4.4.1.tgz#9b1a52595225859e55f669d928f88c6c57f2a77e"
+  integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
 
