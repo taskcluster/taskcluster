@@ -1901,6 +1901,7 @@ module.exports = {
           "scopes": {
             "AnyOf": [
               "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>",
+              "queue:schedule-task-in-project:<projectId>",
               {
                 "AllOf": [
                   "queue:schedule-task",
@@ -1928,6 +1929,7 @@ module.exports = {
           "scopes": {
             "AnyOf": [
               "queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>",
+              "queue:rerun-task-in-project:<projectId>",
               {
                 "AllOf": [
                   "queue:rerun-task",
@@ -1955,6 +1957,7 @@ module.exports = {
           "scopes": {
             "AnyOf": [
               "queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>",
+              "queue:cancel-task-in-project:<projectId>",
               {
                 "AllOf": [
                   "queue:cancel-task",

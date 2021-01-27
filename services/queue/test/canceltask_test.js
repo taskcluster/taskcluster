@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const assert = require('assert').strict;
 const debug = require('debug')('test:cancel');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
@@ -123,6 +124,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       }
     }
     //helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status, r2.status));
+    helper.clearPulseMessages();
+  });
+
+  test('cancelTask with project-related scopes', async () => {
+    const taskId = slugid.v4();
+
+    debug('### Create unscheduled task');
+    await helper.queue.createTask(taskId, {
+      ...taskDef,
+      projectId: 'testproj',
+    });
+
+    helper.scopes('queue:cancel-task-in-project:testproj');
+    const r2 = await helper.queue.cancelTask(taskId);
+    assume(r2.status.state).equals('exception');
+
+    // fails with the wrong project scope
+    helper.scopes('queue:cancel-task-in-project:WRONG-PROJECT');
+    await assert.rejects(
+      () => helper.queue.cancelTask(taskId),
+      err => err.statusCode === 403);
+
     helper.clearPulseMessages();
   });
 
