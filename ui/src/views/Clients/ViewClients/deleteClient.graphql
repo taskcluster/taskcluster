@@ -1,0 +1,3 @@
+mutation DeleteClient($clientId: ID!) {
+  deleteClient(clientId: $clientId)
+}
