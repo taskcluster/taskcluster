@@ -4217,7 +4217,7 @@
         },
         "response": {
           "const": true,
-          "description": "Indication that the data has been uploaded. The upload is considered \"finished\" at this stage.",
+          "description": "Indication that the data has been uploaded.",
           "title": "`dataInline` upload response",
           "type": "boolean"
         }

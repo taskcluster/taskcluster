@@ -24,7 +24,7 @@ definitions:
   response:
     title: "`dataInline` upload response"
     description: |-
-      Indication that the data has been uploaded. The upload is considered "finished" at this stage.
+      Indication that the data has been uploaded.
     type: boolean
     const: true
 

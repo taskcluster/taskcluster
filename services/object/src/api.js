@@ -83,32 +83,19 @@ builder.declare({
     throw err;
   }
 
+  const [object] = await this.db.fns.get_object_with_upload(name);
+  if (!object) {
+    // "this should not happen"
+    throw new Error("newly created object row not found");
+  }
+
   // default uploadMethod to an empty object, meaning no matching methods
-  let uploadMethod = {};
+  let uploadMethod = await backend.createUpload(object, proposedUploadMethods);
 
-  // XXX TEMPORARY -- eventually backends will do this negotiation
-  if ('dataInline' in proposedUploadMethods) {
-    const { objectData } = proposedUploadMethods.dataInline;
-
-    const [object] = await this.db.fns.get_object_with_upload(name);
-    if (!object) {
-      // "this should not happen"
-      throw new Error("newly created object row not found");
-    }
-
-    // ..upload the object..
-    let bytes;
-    try {
-      bytes = Buffer.from(objectData, 'base64');
-    } catch (err) {
-      return res.reportError('InputError', 'Invalid base64 objectData', {});
-    }
-    await backend.temporaryUpload(object, bytes);
-
-    // ..and mark its completion
+  // XXX temporary - until we have a finishUpload endpoint, and an upload method that does
+  // not finish immediately, finish uploads automatically when they succeed
+  if (Object.keys(uploadMethod).length !== 0) {
     await this.db.fns.object_upload_complete({ name_in: name, upload_id_in: uploadId });
-
-    uploadMethod = { dataInline: true };
   }
 
   return res.reply({

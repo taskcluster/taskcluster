@@ -119,7 +119,7 @@ type (
 	// then none of the proposed methods were selected.
 	SelectedUploadMethodOrNone struct {
 
-		// Indication that the data has been uploaded. The upload is considered "finished" at this stage.
+		// Indication that the data has been uploaded.
 		//
 		// Constant value: %!q(bool=true)
 		DataInline bool `json:"dataInline,omitempty"`

@@ -1,6 +1,7 @@
 const { Backend } = require('./base');
 const assert = require('assert');
 const aws = require('aws-sdk');
+const { reportError } = require('taskcluster-lib-api');
 
 class AwsBackend extends Backend {
   constructor(options) {
@@ -29,12 +30,30 @@ class AwsBackend extends Backend {
     this.s3 = new aws.S3(options);
   }
 
-  async temporaryUpload(object, data) {
+  async createUpload(object, proposedUploadMethods) {
+    if ('dataInline' in proposedUploadMethods) {
+      return await this.createDataInlineUpload(object, proposedUploadMethods.dataInline);
+    }
+
+    return {};
+  }
+
+  async createDataInlineUpload(object, { contentType, objectData }) {
+    let bytes;
+    try {
+      bytes = Buffer.from(objectData, 'base64');
+    } catch (err) {
+      return reportError('InputError', 'Invalid base64 objectData', {});
+    }
+
     await this.s3.putObject({
       Bucket: this.config.bucket,
       Key: object.name,
-      Body: data,
+      ContentType: contentType,
+      Body: bytes,
     }).promise();
+
+    return { dataInline: true };
   }
 
   async availableDownloadMethods(object) {
