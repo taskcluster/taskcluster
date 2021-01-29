@@ -1,0 +1,30 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "dataInline upload method"
+definitions:
+
+  request:
+    title: "`dataInline` upload request"
+    description: |
+      Upload data included directly in the request.  The data has a fixed maximum length, so this should
+      be used only for value that are known to be of constant, fairly small size to avoid surprises as
+      the payload grows. In general, this is useful for testing and for metadata objects such as
+      separate cryptographic signatures.
+    type: object
+    properties:
+      contentType:
+        type: string
+        description: Content-type to be returned when downloading this data
+      objectData:
+        type: string
+        description: Base64-encoded byte data, with decoded size at most 8k.
+        maxLength: 10926 # 8k in base64 is 4/3 * 8k, rounded up and with room for padding
+    additionalProperties: false
+    required: [contentType, objectData]
+
+  response:
+    title: "`dataInline` upload response"
+    description: |-
+      Indication that the data has been uploaded. The upload is considered "finished" at this stage.
+    type: boolean
+    const: true
+

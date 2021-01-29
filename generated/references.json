@@ -4191,47 +4191,40 @@
   },
   {
     "content": {
-      "$id": "/schemas/object/v1/upload-object-request.json#",
+      "$id": "/schemas/object/v1/upload-method-data-inline.json#",
       "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Representation of the object entry to insert.  This is a temporary API.\n",
-      "properties": {
-        "data": {
-          "description": "The data to upload, base64-encoded\n",
-          "title": "Data",
-          "type": "string"
+      "definitions": {
+        "request": {
+          "additionalProperties": false,
+          "description": "Upload data included directly in the request.  The data has a fixed maximum length, so this should\nbe used only for value that are known to be of constant, fairly small size to avoid surprises as\nthe payload grows. In general, this is useful for testing and for metadata objects such as\nseparate cryptographic signatures.\n",
+          "properties": {
+            "contentType": {
+              "description": "Content-type to be returned when downloading this data",
+              "type": "string"
+            },
+            "objectData": {
+              "description": "Base64-encoded byte data, with decoded size at most 8k.",
+              "maxLength": 10926,
+              "type": "string"
+            }
+          },
+          "required": [
+            "contentType",
+            "objectData"
+          ],
+          "title": "`dataInline` upload request",
+          "type": "object"
         },
-        "expires": {
-          "description": "Date at which this entry expires from the object table.\n",
-          "format": "date-time",
-          "title": "Expiration",
-          "type": "string"
-        },
-        "projectId": {
-          "description": "Project identifier.\n",
-          "maxLength": 500,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9._/-]*)$",
-          "title": "Project Identifier",
-          "type": "string"
-        },
-        "uploadId": {
-          "description": "Unique identifier for this upload.   Once an object is created with an uploadId,\nuploads of the same object with different uploadIds will be rejected.  Callers\nshould pass a randomly-generated slugid here.",
-          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
-          "title": "Upload ID",
-          "type": "string"
+        "response": {
+          "const": true,
+          "description": "Indication that the data has been uploaded. The upload is considered \"finished\" at this stage.",
+          "title": "`dataInline` upload response",
+          "type": "boolean"
         }
       },
-      "required": [
-        "expires",
-        "uploadId",
-        "projectId",
-        "data"
-      ],
-      "title": "Upload Object Request",
-      "type": "object"
+      "title": "dataInline upload method"
     },
-    "filename": "schemas/object/v1/upload-object-request.json"
+    "filename": "schemas/object/v1/upload-method-data-inline.json"
   },
   {
     "content": {
@@ -4357,6 +4350,109 @@
       "title": "HTTP:GET Download Method"
     },
     "filename": "schemas/object/v1/download-method-http-get.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/object/v1/create-upload-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A response from the `createUpload` method, either agreeing to an upload method or\nrejecting the proposal.\n",
+      "properties": {
+        "expires": {
+          "format": "date-time",
+          "title": "Expiration",
+          "type": "string"
+        },
+        "projectId": {
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9._/-]*)$",
+          "title": "Project Identifier",
+          "type": "string"
+        },
+        "uploadId": {
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Upload ID",
+          "type": "string"
+        },
+        "uploadMethod": {
+          "additionalProperties": false,
+          "description": "The selected upload method, from those contained in the request.  At most one\nproperty will be set, indicating the selected method.  If no properties are set,\nthen none of the proposed methods were selected.\n",
+          "maxProperties": 1,
+          "minProperties": 0,
+          "properties": {
+            "dataInline": {
+              "$ref": "upload-method-data-inline.json#/definitions/response"
+            }
+          },
+          "required": [
+          ],
+          "title": "Selected Upload Method (or none)",
+          "type": "object"
+        }
+      },
+      "required": [
+        "projectId",
+        "uploadId",
+        "expires",
+        "uploadMethod"
+      ],
+      "title": "Create Upload Response",
+      "type": "object"
+    },
+    "filename": "schemas/object/v1/create-upload-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/object/v1/create-upload-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A request to begin an upload, containing proposed upload methods to which the\nserver may agree to or reject.\n",
+      "properties": {
+        "expires": {
+          "description": "Date at which this entry expires from the object table.  The expiration cannot\nbe changed in subsequent calls to the same method.\n",
+          "format": "date-time",
+          "title": "Expiration",
+          "type": "string"
+        },
+        "projectId": {
+          "description": "Project identifier.\n",
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9._/-]*)$",
+          "title": "Project Identifier",
+          "type": "string"
+        },
+        "proposedUploadMethods": {
+          "additionalProperties": false,
+          "description": "Upload methods, with details, that the caller is prepared to execute.  If this\nobject is empty, then the server will reject the request but still create the\nupload with the given `uploadId` and `expires`, so any subsequent calls must\nshare those values.  The server may choose any of the proposed methods at its\ndiscretion.\n",
+          "properties": {
+            "dataInline": {
+              "$ref": "upload-method-data-inline.json#/definitions/request"
+            }
+          },
+          "required": [
+          ],
+          "title": "Proposed Upload Methods",
+          "type": "object"
+        },
+        "uploadId": {
+          "description": "Unique identifier for this upload.   Once an object is created with an uploadId,\nuploads of the same object with different uploadIds will be rejected.  Callers\nshould pass a randomly-generated slugid here.",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Upload ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "uploadId",
+        "expires",
+        "proposedUploadMethods"
+      ],
+      "title": "Create Upload Request",
+      "type": "object"
+    },
+    "filename": "schemas/object/v1/create-upload-request.json"
   },
   {
     "content": {
@@ -15444,16 +15540,17 @@
             "name"
           ],
           "category": "Upload",
-          "description": "Upload backend data.",
-          "input": "v1/upload-object-request.json#",
+          "description": "Create a new object by initiating upload of its data.\n\nThis endpoint implements negotiation of upload methods.  It can be called\nmultiple times if necessary, either to propose new upload methods or to\nrenew credentials for an already-agreed upload.\n\nThe `uploadId` must be supplied by the caller, and any attempts to upload\nan object with the same name but a different `uploadId` will fail.\nThus the first call to this method establishes the `uploadId` for the\nobject, and as long as that value is kept secret, no other caller can\nupload an object of that name, regardless of scopes.  Object expiration\ncannot be changed after the initial call, either.  It is possible to call\nthis method with no proposed upload methods, which hsa the effect of \"locking\nin\" the `expiration` and `uploadId` properties.\n\nUnfinished uploads expire after 1 day.",
+          "input": "v1/create-upload-request.json#",
           "method": "put",
-          "name": "uploadObject",
+          "name": "createUpload",
+          "output": "v1/create-upload-response.json#",
           "query": [
           ],
           "route": "/upload/<name>",
           "scopes": "object:upload:<projectId>:<name>",
           "stability": "experimental",
-          "title": "Upload backend data (temporary)",
+          "title": "Begin upload of a new object",
           "type": "function"
         },
         {

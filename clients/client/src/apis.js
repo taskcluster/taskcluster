@@ -1619,16 +1619,17 @@ module.exports = {
             "name"
           ],
           "category": "Upload",
-          "description": "Upload backend data.",
-          "input": "v1/upload-object-request.json#",
+          "description": "Create a new object by initiating upload of its data.\n\nThis endpoint implements negotiation of upload methods.  It can be called\nmultiple times if necessary, either to propose new upload methods or to\nrenew credentials for an already-agreed upload.\n\nThe `uploadId` must be supplied by the caller, and any attempts to upload\nan object with the same name but a different `uploadId` will fail.\nThus the first call to this method establishes the `uploadId` for the\nobject, and as long as that value is kept secret, no other caller can\nupload an object of that name, regardless of scopes.  Object expiration\ncannot be changed after the initial call, either.  It is possible to call\nthis method with no proposed upload methods, which hsa the effect of \"locking\nin\" the `expiration` and `uploadId` properties.\n\nUnfinished uploads expire after 1 day.",
+          "input": "v1/create-upload-request.json#",
           "method": "put",
-          "name": "uploadObject",
+          "name": "createUpload",
+          "output": "v1/create-upload-response.json#",
           "query": [
           ],
           "route": "/upload/<name>",
           "scopes": "object:upload:<projectId>:<name>",
           "stability": "experimental",
-          "title": "Upload backend data (temporary)",
+          "title": "Begin upload of a new object",
           "type": "function"
         },
         {

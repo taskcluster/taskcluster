@@ -27,17 +27,33 @@ let builder = new APIBuilder({
 builder.declare({
   method: 'put',
   route: '/upload/:name',
-  name: 'uploadObject',
-  input: 'upload-object-request.yml',
+  name: 'createUpload',
+  input: 'create-upload-request.yml',
+  output: 'create-upload-response.yml',
   stability: 'experimental',
   category: 'Upload',
   scopes: 'object:upload:<projectId>:<name>',
-  title: 'Upload backend data (temporary)',
+  title: 'Begin upload of a new object',
   description: [
-    'Upload backend data.',
+    'Create a new object by initiating upload of its data.',
+    '',
+    'This endpoint implements negotiation of upload methods.  It can be called',
+    'multiple times if necessary, either to propose new upload methods or to',
+    'renew credentials for an already-agreed upload.',
+    '',
+    'The `uploadId` must be supplied by the caller, and any attempts to upload',
+    'an object with the same name but a different `uploadId` will fail.',
+    'Thus the first call to this method establishes the `uploadId` for the',
+    'object, and as long as that value is kept secret, no other caller can',
+    'upload an object of that name, regardless of scopes.  Object expiration',
+    'cannot be changed after the initial call, either.  It is possible to call',
+    'this method with no proposed upload methods, which hsa the effect of "locking',
+    'in" the `expiration` and `uploadId` properties.',
+    '',
+    'Unfinished uploads expire after 1 day.',
   ].join('\n'),
 }, async function(req, res) {
-  let { projectId, uploadId, expires, data } = req.body;
+  let { projectId, uploadId, expires, proposedUploadMethods } = req.body;
   let { name } = req.params;
   const uploadExpires = taskcluster.fromNow('1 day');
 
@@ -45,8 +61,7 @@ builder.declare({
 
   const backend = this.backends.forUpload({ name, projectId });
 
-  data = Buffer.from(data, 'base64');
-
+  // mark the beginning of the upload..
   try {
     await this.db.fns.create_object_for_upload({
       name_in: name,
@@ -68,20 +83,40 @@ builder.declare({
     throw err;
   }
 
-  // mark the beginning of the upload..
-  const [object] = await this.db.fns.get_object_with_upload(name);
-  if (!object) {
-    // "this should not happen"
-    throw new Error("newly created object row not found");
+  // default uploadMethod to an empty object, meaning no matching methods
+  let uploadMethod = {};
+
+  // XXX TEMPORARY -- eventually backends will do this negotiation
+  if ('dataInline' in proposedUploadMethods) {
+    const { objectData } = proposedUploadMethods.dataInline;
+
+    const [object] = await this.db.fns.get_object_with_upload(name);
+    if (!object) {
+      // "this should not happen"
+      throw new Error("newly created object row not found");
+    }
+
+    // ..upload the object..
+    let bytes;
+    try {
+      bytes = Buffer.from(objectData, 'base64');
+    } catch (err) {
+      return res.reportError('InputError', 'Invalid base64 objectData', {});
+    }
+    await backend.temporaryUpload(object, bytes);
+
+    // ..and mark its completion
+    await this.db.fns.object_upload_complete({ name_in: name, upload_id_in: uploadId });
+
+    uploadMethod = { dataInline: true };
   }
 
-  // ..upload the object..
-  await backend.temporaryUpload(object, data);
-
-  // ..and mark its completion
-  await this.db.fns.object_upload_complete({ name_in: name, upload_id_in: uploadId });
-
-  return res.reply({});
+  return res.reply({
+    projectId,
+    uploadId,
+    expires,
+    uploadMethod,
+  });
 });
 
 builder.declare({

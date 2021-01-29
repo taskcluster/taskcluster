@@ -55,20 +55,34 @@ impl Object {
         (path, query)
     }
 
-    /// Upload backend data (temporary)
+    /// Begin upload of a new object
     /// 
-    /// Upload backend data.
-    pub async fn uploadObject(&self, name: &str, payload: &Value) -> Result<(), Error> {
+    /// Create a new object by initiating upload of its data.
+    /// 
+    /// This endpoint implements negotiation of upload methods.  It can be called
+    /// multiple times if necessary, either to propose new upload methods or to
+    /// renew credentials for an already-agreed upload.
+    /// 
+    /// The `uploadId` must be supplied by the caller, and any attempts to upload
+    /// an object with the same name but a different `uploadId` will fail.
+    /// Thus the first call to this method establishes the `uploadId` for the
+    /// object, and as long as that value is kept secret, no other caller can
+    /// upload an object of that name, regardless of scopes.  Object expiration
+    /// cannot be changed after the initial call, either.  It is possible to call
+    /// this method with no proposed upload methods, which hsa the effect of "locking
+    /// in" the `expiration` and `uploadId` properties.
+    /// 
+    /// Unfinished uploads expire after 1 day.
+    pub async fn createUpload(&self, name: &str, payload: &Value) -> Result<Value, Error> {
         let method = "PUT";
-        let (path, query) = Self::uploadObject_details(name);
+        let (path, query) = Self::createUpload_details(name);
         let body = Some(payload);
         let resp = self.0.request(method, &path, query, body).await?;
-        resp.bytes().await?;
-        Ok(())
+        Ok(resp.json().await?)
     }
 
-    /// Determine the HTTP request details for uploadObject
-    fn uploadObject_details<'a>(name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+    /// Determine the HTTP request details for createUpload
+    fn createUpload_details<'a>(name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("upload/{}", urlencode(name));
         let query = None;
 
