@@ -26,8 +26,7 @@ module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, r
       queries.map(async ({ provisionerId, workerType }) => {
         try {
           const { pendingTasks } = await queue.pendingTasks(
-            provisionerId,
-            workerType,
+            `${provisionerId}/${workerType}`,
           );
 
           return pendingTasks;

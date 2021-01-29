@@ -1,5 +1,3 @@
-const { splitWorkerPoolId } = require('./util');
-
 class Estimator {
   constructor({ queue, monitor }) {
     this.queue = queue;
@@ -7,8 +5,7 @@ class Estimator {
   }
 
   async simple({ workerPoolId, minCapacity, maxCapacity, scalingRatio = 1.0, workerInfo }) {
-    const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);
-    const { pendingTasks } = await this.queue.pendingTasks(provisionerId, workerType);
+    const { pendingTasks } = await this.queue.pendingTasks(workerPoolId);
     const { existingCapacity, requestedCapacity = 0 } = workerInfo;
 
     // First we find the amount of capacity we want. This is a very simple approximation

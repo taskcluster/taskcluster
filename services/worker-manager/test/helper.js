@@ -186,7 +186,7 @@ exports.withServer = (mock, skipping) => {
  * an `setPending` method to add fake tasks.
  */
 const stubbedQueue = () => {
-  const provisioners = {};
+  const taskQueues = {};
   const queue = new taskcluster.Queue({
     rootUrl: exports.rootUrl,
     credentials: {
@@ -194,13 +194,15 @@ const stubbedQueue = () => {
       accessToken: 'none',
     },
     fake: {
-      pendingTasks: async (provisionerId, workerType) => {
+      pendingTasks: async (taskQueueId) => {
         let pendingTasks = 0;
-        if (provisioners[provisionerId] && provisioners[provisionerId][workerType]) {
-          pendingTasks = provisioners[provisionerId][workerType];
+        if (taskQueues[taskQueueId]) {
+          pendingTasks = taskQueues[taskQueueId];
         }
+        const [provisionerId, workerType] = taskQueueId.split('/');
         return {
           pendingTasks,
+          taskQueueId,
           provisionerId,
           workerType,
         };
@@ -208,9 +210,8 @@ const stubbedQueue = () => {
     },
   });
 
-  queue.setPending = function(provisionerId, workerType, pending) {
-    provisioners[provisionerId] = provisioners[provisionerId] || {};
-    provisioners[provisionerId][workerType] = pending;
+  queue.setPending = function(taskQueueId, pending) {
+    taskQueues[taskQueueId] = pending;
   };
 
   return queue;

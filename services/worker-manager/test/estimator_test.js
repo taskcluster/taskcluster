@@ -70,7 +70,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       existingCapacity: 0,
       requestedCapacity: 0,
     };
-    helper.queue.setPending('foo', 'bar', 100);
+    helper.queue.setPending('foo/bar', 100);
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
       maxCapacity: 100,
@@ -89,7 +89,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       existingCapacity: 0,
       requestedCapacity: 0,
     };
-    helper.queue.setPending('foo', 'bar', 100);
+    helper.queue.setPending('foo/bar', 100);
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
       maxCapacity: 50,
@@ -108,7 +108,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       existingCapacity: 0,
       requestedCapacity: 0,
     };
-    helper.queue.setPending('foo', 'bar', 100);
+    helper.queue.setPending('foo/bar', 100);
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
       maxCapacity: 100,
@@ -127,7 +127,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       existingCapacity: 25,
       requestedCapacity: 0,
     };
-    helper.queue.setPending('foo', 'bar', 100);
+    helper.queue.setPending('foo/bar', 100);
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
       maxCapacity: 100,
