@@ -4,7 +4,7 @@ const scopes = require('taskcluster-lib-scopes');
 const crypto = require('crypto');
 const utils = require('../utils');
 const ScopeExpressionTemplate = require('../expressions');
-const ErrorReply = require('../error-reply');
+const { ErrorReply } = require('../error-reply');
 
 /**
  * Authenticate client using remote API end-point and validate that it satisfies
