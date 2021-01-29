@@ -3,10 +3,8 @@ import { shape, func, arrayOf, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'camel-case';
-import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
-import Box from '@material-ui/core/Box';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableCellItem from '../TableCellItem';
@@ -22,28 +20,8 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),
   map(({ node: { clientId } }) => clientId)
 );
-const tableHeaders = ['Client ID', 'Last Date Used'];
-const iconSize = 16;
+const tableHeaders = ['Client ID', 'Last Date Used', ''];
 
-@withStyles(theme => ({
-  clientLinkIcon: {
-    display: 'block',
-    height: `${iconSize}px`,
-    lineHeight: `${iconSize}px`,
-  },
-  clientLinkContainer: {
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
-  },
-  clientContainer: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  clientIdContainer: {
-    flexGrow: 1,
-  },
-}))
 export default class ClientsTable extends Component {
   static propTypes = {
     clientsConnection: shape({
@@ -103,13 +81,13 @@ export default class ClientsTable extends Component {
 
   render() {
     const {
-      classes,
       onPageChange,
       clientsConnection,
       searchTerm,
       onDialogActionOpen,
     } = this.props;
     const { sortBy, sortDirection } = this.state;
+    const iconSize = 16;
 
     return (
       <ConnectionDataTable
@@ -127,38 +105,25 @@ export default class ClientsTable extends Component {
         onPageChange={onPageChange}
         renderRow={({ node: client }) => (
           <TableRow key={client.clientId}>
-            <TableCell>
-              <TableCellItem dense button>
-                <Box className={classes.clientContainer}>
-                  <Box className={classes.clientIdContainer}>
-                    <Link
-                      to={`/auth/clients/${encodeURIComponent(
-                        client.clientId
-                      )}`}>
-                      {client.clientId}
-                    </Link>
-                  </Box>
-                  <Box className={classes.clientLinkContainer}>
-                    <Link
-                      to={`/auth/clients/${encodeURIComponent(
-                        client.clientId
-                      )}`}
-                      className={classes.clientLinkIcon}>
-                      <LinkIcon size={iconSize} />
-                    </Link>
-                  </Box>
-                  <Button
-                    requiresAuth
-                    tooltipProps={{ title: 'Delete Client' }}
-                    size="small"
-                    onClick={() => onDialogActionOpen(client.clientId)}>
-                    <DeleteIcon size={iconSize} />
-                  </Button>
-                </Box>
-              </TableCellItem>
+            <TableCell width="100%">
+              <Link to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
+                <TableCellItem button>
+                  {client.clientId}
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
             </TableCell>
             <TableCell>
               <DateDistance from={client.lastDateUsed} />
+            </TableCell>
+            <TableCell>
+              <Button
+                requiresAuth
+                tooltipProps={{ title: 'Delete Client' }}
+                size="small"
+                onClick={() => onDialogActionOpen(client.clientId)}>
+                <DeleteIcon size={iconSize} />
+              </Button>
             </TableCell>
           </TableRow>
         )}

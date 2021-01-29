@@ -84,9 +84,9 @@ export default class ViewClients extends PureComponent {
   };
 
   handleDeleteClient = async () => {
-    const clientId = this.state.deleteClientId;
+    this.setState({ dialogError: null });
 
-    this.setState({ dialogError: null, deleteClientId: null });
+    const clientId = this.state.deleteClientId;
 
     return this.props.client.mutate({
       mutation: deleteClientQuery,
@@ -99,6 +99,8 @@ export default class ViewClients extends PureComponent {
   };
 
   handleDialogActionComplete = () => {
+    this.setState({ deleteClientId: null });
+
     this.props.history.push(`/auth/clients`);
   };
 
