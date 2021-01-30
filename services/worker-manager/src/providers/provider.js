@@ -82,15 +82,6 @@ class Provider {
     throw new ApiError('not supported for this provider');
   }
 
-  async createResources({ workerPool }) {
-  }
-
-  async updateResources({ workerPool }) {
-  }
-
-  async removeResources({ workerPool }) {
-  }
-
   /**
    * Takes a lifecycle block as defined in the schema and returns
    * a date when the worker should be destroyed if the provider

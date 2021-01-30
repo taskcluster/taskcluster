@@ -1,6 +1,4 @@
-const taskcluster = require('taskcluster-client');
 const Iterate = require('taskcluster-lib-iterate');
-const { consume } = require('taskcluster-lib-pulse');
 const { paginatedIterator } = require('taskcluster-lib-postgres');
 const { WorkerPool, Worker } = require('./data');
 
@@ -9,27 +7,19 @@ const { WorkerPool, Worker } = require('./data');
  */
 class Provisioner {
   constructor({ providers, iterateConf, Worker, WorkerPool,
-    monitor, notify, pulseClient, db, reference,
+    monitor, notify, db, reference,
     rootUrl, ownName }) {
     this.providers = providers;
     this.WorkerPool = WorkerPool;
     this.Worker = Worker;
     this.monitor = monitor;
     this.notify = notify;
-    this.pulseClient = pulseClient;
     this.db = db;
 
     // lib-iterate will have loops stand on top of each other
     // so we will explicitly grab a mutex in each loop to ensure
     // we're the only one going at any given time
     this.provisioningLoopAlive = false;
-
-    const WorkerManagerEvents = taskcluster.createClient(reference);
-    const workerManagerEvents = new WorkerManagerEvents({ rootUrl });
-    this.bindings = [
-      workerManagerEvents.workerPoolCreated(),
-      workerManagerEvents.workerPoolUpdated(),
-    ];
 
     this.iterate = new Iterate({
       maxFailures: 10,
@@ -55,14 +45,6 @@ class Provisioner {
   async initiate() {
     await this.providers.forAll(p => p.initiate());
     await this.iterate.start();
-
-    this.pq = await consume({
-      client: this.pulseClient,
-      bindings: this.bindings,
-      queueName: 'workerPoolUpdates',
-    },
-    this.monitor.timedHandler('notification', this.onMessage.bind(this)),
-    );
   }
 
   /**
@@ -75,33 +57,6 @@ class Provisioner {
     }
     await this.iterate.stop();
     await this.providers.forAll(p => p.terminate());
-  }
-
-  async onMessage({ exchange, payload }) {
-    const { workerPoolId, providerId, previousProviderId } = payload;
-    const workerPool = await WorkerPool.get(this.db, workerPoolId);
-    const provider = this.providers.get(providerId);
-
-    if (!workerPool || !provider) {
-      // ignore messages for unknown worker pools and providers
-      return;
-    }
-
-    switch (exchange.split('/').pop()) {
-      case 'worker-pool-created': {
-        await provider.createResources({ workerPool });
-        break;
-      }
-      case 'worker-pool-updated': {
-        if (providerId === previousProviderId) {
-          await provider.updateResources({ workerPool });
-        } else {
-          await provider.createResources({ workerPool });
-        }
-        break;
-      }
-      default: throw new Error(`Unknown exchange: ${exchange}`);
-    }
   }
 
   /**
@@ -165,6 +120,9 @@ class Provisioner {
           this.monitor.warning(
             `Worker pool ${workerPool.workerPoolId} has unknown providerId ${workerPool.providerId}`);
           continue;
+        } else if (provider.setupFailed) {
+          // ignore provisioning for providers that have not been setup correctly
+          continue;
         }
 
         if (!poolsByProvider.has(providerId)) {
@@ -194,6 +152,10 @@ class Provisioner {
             this.monitor.info(
               `Worker pool ${workerPool.workerPoolId} has unknown previousProviderIds entry ${pId} (ignoring)`);
             return;
+          } else if (provider.setupFailed) {
+            // if setup failed for this previous provider, then it will remain in the list of previous
+            // providers for this pool until it is up and running again, so we can skip this iteration.
+            return;
           }
 
           try {
@@ -203,17 +165,8 @@ class Provisioner {
           }
 
           // Now if this provider is no longer a provider for any workers that exist
-          // in this pool, we allow it to clean up any resources it has and then we remove
-          // it from the previous providers list
+          // in this pool, remove it from the previous providers list
           if (!providerByPool.providers.has(pId)) {
-            try {
-              await provider.removeResources({ workerPool });
-            } catch (err) {
-              // report error and try again next time..
-              this.monitor.reportError(err, { workerPoolId, providerId: pId });
-              return;
-            }
-            // the provider is done with this pool, so remove it from the list of previous providers
             await this.db.fns.remove_worker_pool_previous_provider_id(workerPoolId, pId);
           }
 

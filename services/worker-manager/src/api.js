@@ -7,9 +7,13 @@ const { WorkerPool, WorkerPoolError, Worker } = require('./data');
 const { createCredentials } = require('./util');
 
 let builder = new APIBuilder({
-  title: 'Taskcluster Worker Manager',
+  title: 'Worker Manager Service',
   description: [
     'This service manages workers, including provisioning for dynamic worker pools.',
+    '',
+    'Methods interacting with a provider may return a 503 response if that provider has',
+    'not been able to start up, such as if the service to which it interfaces has an',
+    'outage.  Such requests can be retried as for any other 5xx response.',
   ].join('\n'),
   serviceName: 'worker-manager',
   apiVersion: 'v1',
@@ -17,6 +21,9 @@ let builder = new APIBuilder({
     workerPoolId: /^[a-zA-Z0-9-_]{1,38}\/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/,
     workerGroup: /^([a-zA-Z0-9-_]{1,38})$/,
     workerId: /^([a-zA-Z0-9-_]{1,38})$/,
+  },
+  errorCodes: {
+    ProviderSetupFailed: 503,
   },
   context: [
     'cfg',
@@ -93,6 +100,10 @@ builder.declare({
       providerId,
       validProviderIds: this.providers.validProviderIds(),
     });
+  } else if (provider.setupFailed) {
+    return res.reportError('ProviderSetupFailed', 'Provider backend may be down or misconfigured', {
+      providerId,
+    });
   }
 
   // This has been validated at the api level to ensure that it
@@ -152,6 +163,10 @@ builder.declare({
     return res.reportError('InputError', 'Invalid Provider', {
       providerId,
       validProviderIds: this.providers.validProviderIds(),
+    });
+  } else if (provider.setupFailed) {
+    return res.reportError('ProviderSetupFailed', 'Provider backend may be down or misconfigured', {
+      providerId,
     });
   }
 
@@ -319,6 +334,15 @@ builder.declare({
   // worker.  If this distinction becomes important, this can be changed to get
   // the worker and use its providerId instead of workerPool.providerId.
   const provider = await this.providers.get(workerPool.providerId);
+  if (!provider) {
+    return res.reportError('InputError', 'Invalid Provider', {
+      providerId: workerPool.providerId,
+    });
+  } else if (provider.setupFailed) {
+    return res.reportError('ProviderSetupFailed', 'Provider backend may be down or misconfigured', {
+      providerId: workerPool.providerId,
+    });
+  }
 
   const wpe = await provider.reportError({
     workerPool,
@@ -460,6 +484,10 @@ builder.declare({
   if (!provider) {
     return res.reportError('ResourceNotFound',
       `Provider ${workerPool.providerId} for worker pool ${workerPoolId} does not exist`, {});
+  } else if (provider.setupFailed) {
+    return res.reportError('ProviderSetupFailed', 'Provider backend may be down or misconfigured', {
+      providerId: workerPool.providerId,
+    });
   }
 
   let worker;
@@ -521,6 +549,10 @@ builder.declare({
   if (!provider) {
     return res.reportError('ResourceNotFound',
       `Provider ${workerPool.providerId} for worker pool ${workerPoolId} does not exist`, {});
+  } else if (provider.setupFailed) {
+    return res.reportError('ProviderSetupFailed', 'Provider backend may be down or misconfigured', {
+      providerId: workerPool.providerId,
+    });
   }
 
   let worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
@@ -577,6 +609,10 @@ builder.declare({
   if (!provider) {
     return res.reportError('ResourceNotFound',
       `Provider ${worker.providerId} for this worker does not exist`, {});
+  } else if (provider.setupFailed) {
+    return res.reportError('ProviderSetupFailed', 'Provider backend may be down or misconfigured', {
+      providerId: worker.providerId,
+    });
   }
 
   try {
@@ -671,6 +707,10 @@ builder.declare({
   if (!provider) {
     return res.reportError('ResourceNotFound',
       `Provider ${providerId} does not exist`, {});
+  } else if (provider.setupFailed) {
+    return res.reportError('ProviderSetupFailed', 'Provider backend may be down or misconfigured', {
+      providerId,
+    });
   }
 
   if (workerPool.providerId !== providerId && !workerPool.previousProviderIds.includes(providerId)) {

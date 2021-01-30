@@ -62,9 +62,10 @@ properties:
       contentType:
         title:    "Content-Type"
         description: |
-          Mimetype for the artifact that was created (NOTE: deprecated; this
-          value is not checked and may not correspond to the content-type of
-          the final artifact)
+          Expected content-type of the artifact.  This is informational only:
+          it is suitable for use to choose an icon for the artifact, for example.
+          The accurate content-type of the artifact can only be determined by
+          downloading it.
         type:         string
         maxLength:    255
     additionalProperties: false

@@ -25,11 +25,11 @@
   "bugs": "https://github.com/taskcluster/docker-worker/issues",
   "homepage": "https://github.com/taskcluster/docker-worker",
   "dependencies": {
-    "@sentry/node": "^5.6.2",
+    "@sentry/node": "^6.0.0",
     "ajv": "^6.10.2",
     "app-root-dir": "^1.0.2",
     "co": "^4.6.0",
-    "commander": "^6.0.0",
+    "commander": "^7.0.0",
     "debug": "*",
     "diskspace": "^2.0.0",
     "diveSync": "^0.3.0",

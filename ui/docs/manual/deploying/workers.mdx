@@ -181,14 +181,16 @@ An Azure-based provider is configured in `providers` with the following structur
     "apiRateLimits": {
       "get": {"interval": 1000, "intervalCap": 20000},
       "query": {"interval": 1000, "intervalCap": 40000},
-      "list": {"interval": 1000, "intervalCap": 20000},
-    },
+      "list": {"interval": 1000, "intervalCap": 20000}
+    }
   }
 }
 ```
 
 `clientId` and `secret` are properties of Azure application secrets. See [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)
 for information on creating Azure AD Applications, assigning roles, and getting credentials.
+Note that the Azure credentials can be configured to expire.
+We recommend choosing "never" for this option, unless you have a robust credential-rotation sytem in place, as Azure will provide no warning before the expiration.
 
 Azure-based providers need permissions to manage virtual machines, network interfaces, disks, and public IP addresses.
 Here is an example custom Azure role definition that encompasses the scope of permissions an Azure-based provider needs:

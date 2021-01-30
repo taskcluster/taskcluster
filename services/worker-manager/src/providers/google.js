@@ -164,9 +164,6 @@ class GoogleProvider extends Provider {
     // nothing to do: we just wait for workers to terminate themselves
   }
 
-  async removeResources({ workerPool }) {
-  }
-
   async removeWorker({ worker, reason }) {
     this.monitor.log.workerRemoved({
       workerPoolId: worker.workerPoolId,

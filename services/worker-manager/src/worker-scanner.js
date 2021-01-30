@@ -54,6 +54,11 @@ class WorkerScanner {
       const worker = Worker.fromDb(row);
       const provider = this.providers.get(worker.providerId);
       if (provider) {
+        if (provider.setupFailed) {
+          // if setup has failed for this provider, just do nothing with the worker
+          // until it's up and running
+          continue;
+        }
         try {
           await provider.checkWorker({ worker });
         } catch (err) {

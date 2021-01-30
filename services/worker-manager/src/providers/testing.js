@@ -6,23 +6,13 @@ class TestingProvider extends Provider {
   constructor(conf) {
     super(conf);
     this.configSchema = 'config-testing';
+    this.setupFailure = conf.providerConfig.setupFailure;
   }
 
-  async createResources({ workerPool }) {
-    this.monitor.notice('create-resource', { workerPoolId: workerPool.workerPoolId });
-  }
-
-  async updateResources({ workerPool }) {
-    this.monitor.notice('update-resource', { workerPoolId: workerPool.workerPoolId });
-  }
-
-  async removeResources({ workerPool }) {
-    this.monitor.notice('remove-resource', { workerPoolId: workerPool.workerPoolId });
-    if (workerPool.providerData.failRemoveResources) {
-      workerPool.providerData.failRemoveResources -= 1;
-      await this.db.fns.update_worker_pool_provider_data(
-        workerPool.workerPoolId, this.providerId, workerPool.providerData);
-      throw new Error('uhoh removing resources');
+  async setup() {
+    if (this.setupFailure > 0) {
+      this.setupFailure--;
+      throw new Error('setup failure');
     }
   }
 

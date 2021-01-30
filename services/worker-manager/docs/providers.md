@@ -107,10 +107,6 @@ Providers may manage worker-pool-specific resources.
 For example, a provider for a cloud might isolate workers for each worker pool in a dedicated network.
 Such resources should be named after the `workerPoolId`.
 
-When a new worker pool is created, or a worker pool's provider ID is changed, the provider's `createResources` method is called.
-When a worker pool is modified, its provider's `updateResources` method is called.
-When a previous provider for a worker pool no longer has any running workers, its `removeResources` method is called.
-
 Each WorkerPool entity has a `providerData` property.
 This property is shared among all providers, so each provider should use a sub-object named after the `providerId`.
 Thus data should be accessed as `workerPool.providerData[this.providerId].propName`.

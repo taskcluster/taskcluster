@@ -290,6 +290,7 @@ func (queue *Queue) ListDependentTasks_SignedURL(taskId, continuationToken, limi
 //   All of:
 //   * For scope in scopes each <scope>
 //   * For route in routes each queue:route:<route>
+//   * queue:create-task:project:<projectId>
 //   * queue:scheduler-id:<schedulerId>
 //   * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
 //
@@ -318,6 +319,7 @@ func (queue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*
 // Required scopes:
 //   Any of:
 //   - queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>
+//   - queue:schedule-task-in-project:<projectId>
 //   - All of:
 //     * queue:schedule-task
 //     * assume:scheduler-id:<schedulerId>/<taskGroupId>
@@ -348,6 +350,7 @@ func (queue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 // Required scopes:
 //   Any of:
 //   - queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>
+//   - queue:rerun-task-in-project:<projectId>
 //   - All of:
 //     * queue:rerun-task
 //     * assume:scheduler-id:<schedulerId>/<taskGroupId>
@@ -375,6 +378,7 @@ func (queue *Queue) RerunTask(taskId string) (*TaskStatusResponse, error) {
 // Required scopes:
 //   Any of:
 //   - queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>
+//   - queue:cancel-task-in-project:<projectId>
 //   - All of:
 //     * queue:cancel-task
 //     * assume:scheduler-id:<schedulerId>/<taskGroupId>

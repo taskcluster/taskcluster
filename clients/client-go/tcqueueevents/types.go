@@ -10,9 +10,10 @@ type (
 	// Information about the artifact that was created
 	Artifact struct {
 
-		// Mimetype for the artifact that was created (NOTE: deprecated; this
-		// value is not checked and may not correspond to the content-type of
-		// the final artifact)
+		// Expected content-type of the artifact.  This is informational only:
+		// it is suitable for use to choose an icon for the artifact, for example.
+		// The accurate content-type of the artifact can only be determined by
+		// downloading it.
 		//
 		// Max length: 255
 		ContentType string `json:"contentType"`
@@ -451,6 +452,18 @@ type (
 		// status is deleted. Notice that all artifacts for the task
 		// must have an expiration that is no later than this.
 		Expires tcclient.Time `json:"expires"`
+
+		// The name for the "project" with which this task is associated.  This
+		// value can be used to control permission to manipulate tasks as well as
+		// for usage reporting.  Project ids are typically simple identifiers,
+		// optionally in a hierarchical namespace separated by `/` characters.
+		// This value defaults to `none`.
+		//
+		// Default:    "none"
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it

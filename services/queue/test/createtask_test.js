@@ -22,6 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   const taskDef = {
     taskQueueId: 'no-provisioner-extended-extended/test-worker-extended-extended',
     schedulerId: 'my-scheduler-extended-extended',
+    projectId: 'my/project/id',
     taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
     // let's just test a large routing key too, 90 chars please :)
     routes: ['--- long routing key ---.--- long routing key ---.' +
@@ -62,6 +63,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:scheduler-id:my-scheduler-extended-extended',
+      'queue:create-task:project:my/project/id',
       'queue:route:*',
       'queue:status:' + taskId,
     );
@@ -86,15 +88,51 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Wait for defined message');
     helper.assertPulseMessage('task-defined', m => (
       _.isEqual(m.payload.status.state, 'unscheduled') &&
-      _.isEqual(m.payload.task.tags, taskDef.tags)));
+      _.isEqual(m.payload.task.tags, taskDef.tags) &&
+      _.isEqual(m.payload.status.projectId, taskDef.projectId)));
 
     debug('### Wait for pending message');
     helper.assertPulseMessage('task-pending', m => (
       _.isEqual(m.payload.status, r1.status) &&
-      _.isEqual(m.payload.task.tags, taskDef.tags)));
+      _.isEqual(m.payload.task.tags, taskDef.tags) &&
+      _.isEqual(m.payload.status.projectId, taskDef.projectId)));
 
     debug('### Get task status');
     const r2 = helper.checkDates(await helper.queue.status(taskId));
+    assume(r1.status).deep.equals(r2.status);
+  });
+
+  test('createTask with default projectId', async () => {
+    const taskId = slugid.v4();
+    const { projectId, ...withoutProjectId } = taskDef;
+
+    helper.scopes(
+      'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:scheduler-id:my-scheduler-extended-extended',
+      'queue:create-task:project:none',
+      'queue:route:*',
+      'queue:status:' + taskId,
+    );
+
+    debug('### Create task');
+    const r1 = await helper.queue.createTask(taskId, withoutProjectId);
+    assert.equal(r1.status.projectId, 'none');
+
+    debug('### Wait for defined message');
+    helper.assertPulseMessage('task-defined', m => (
+      _.isEqual(m.payload.status.state, 'unscheduled') &&
+      _.isEqual(m.payload.task.tags, taskDef.tags) &&
+      _.isEqual(m.payload.status.projectId, 'none')));
+
+    debug('### Wait for pending message');
+    helper.assertPulseMessage('task-pending', m => (
+      _.isEqual(m.payload.status, r1.status) &&
+      _.isEqual(m.payload.task.tags, taskDef.tags) &&
+      _.isEqual(m.payload.status.projectId, 'none')));
+
+    debug('### Get task status');
+    const r2 = helper.checkDates(await helper.queue.status(taskId));
+    assert.equal(r2.status.projectId, 'none');
     assume(r1.status).deep.equals(r2.status);
   });
 
@@ -118,6 +156,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:create-task:lowest:*',
       'queue:scheduler-id:my-scheduler-extended-extended',
+      'queue:create-task:project:my/project/id',
       'abc:**',
       'queue:route:*',
     );
@@ -265,6 +304,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     helper.scopes(
       'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:create-task:project:none',
       'queue:scheduler-id:-',
       'queue:status:' + taskId,
     );
@@ -284,6 +324,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     helper.scopes(
       'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:create-task:project:none',
       'queue:scheduler-id:-',
       'queue:status:' + taskId,
     );
@@ -318,6 +359,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('Can create "high" w. queue:create-task:high:<provisionerId>/<workerType>', async () => {
     helper.scopes(
       'queue:create-task:high:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:create-task:project:none',
       'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('high'));
@@ -326,6 +368,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('Can create "high" w. queue:create-task:highest:<provisionerId>/<workerType>', async () => {
     helper.scopes(
       'queue:create-task:highest:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:create-task:project:none',
       'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('high'));
@@ -334,6 +377,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('Can\'t create "high" with queue:create-task:low:<provisionerId>/<workerType>', async () => {
     helper.scopes(
       'queue:create-task:low:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:create-task:project:none',
       'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('high')).then(() => {
@@ -346,6 +390,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('Can create "normal" priority task with ..:lowest:.. scope', async () => {
     helper.scopes(
       'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:create-task:project:none',
       'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('normal'));
@@ -354,6 +399,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('Can create "lowest" priority task with ..:lowest:.. scope', async () => {
     helper.scopes(
       'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
+      'queue:create-task:project:none',
       'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('lowest'));

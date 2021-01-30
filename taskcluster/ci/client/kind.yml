@@ -109,3 +109,19 @@ jobs:
           /sandbox/bin/pip install tox
       command: >-
           TOXENV=py39 /sandbox/bin/tox
+  rust:
+    description: rust client tests
+    worker:
+      docker-image: rust:1.49.0
+    run:
+      install: cd clients/client-rust
+      command: >-
+        cargo test &&
+        cargo build --release &&
+        rustup component add rustfmt &&
+        cargo fmt &&
+        if ! output=$(git status --porcelain) || [ -n "$output" ]; then
+            echo "*** cargo fmt produced changes to the repository; these changes should be checked in ***";
+            git --no-pager diff;
+            exit 1;
+        fi

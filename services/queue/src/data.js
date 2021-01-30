@@ -18,6 +18,7 @@ class Task {
       taskId: row.task_id,
       taskQueueId: row.task_queue_id,
       schedulerId: row.scheduler_id,
+      projectId: row.project_id,
       taskGroupId: row.task_group_id,
       dependencies: row.dependencies,
       requires: row.requires,
@@ -64,10 +65,10 @@ class Task {
 
   // Get a task from the DB, or undefined
   static async get(db, taskId) {
-    return Task.fromDbRows(await db.fns.get_task_tqid(taskId));
+    return Task.fromDbRows(await db.fns.get_task_projid(taskId));
   }
 
-  // Call db.create_task_tqid with the content of this instance.  This
+  // Call db.create_task_projid with the content of this instance.  This
   // implements the usual idempotency checks and returns an error with code
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
@@ -75,10 +76,11 @@ class Task {
     // otherwise does not correctly serialize the array values
     const arr = v => JSON.stringify(v);
     try {
-      await db.fns.create_task_tqid(
+      await db.fns.create_task_projid(
         this.taskId,
         this.taskQueueId,
         this.schedulerId,
+        this.projectId,
         this.taskGroupId,
         arr(this.dependencies),
         this.requires,
@@ -117,6 +119,7 @@ class Task {
       workerType: workerType,
       taskQueueId: this.taskQueueId,
       schedulerId: this.schedulerId,
+      projectId: this.projectId,
       taskGroupId: this.taskGroupId,
       dependencies: _.cloneDeep(this.dependencies),
       requires: this.requires,
@@ -151,6 +154,7 @@ class Task {
       workerType: workerType,
       taskQueueId: this.taskQueueId,
       schedulerId: this.schedulerId,
+      projectId: this.projectId,
       taskGroupId: this.taskGroupId,
       deadline: this.deadline.toJSON(),
       expires: this.expires.toJSON(),

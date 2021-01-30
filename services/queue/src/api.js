@@ -67,7 +67,7 @@ let RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
 
 /** API end-point for version v1/ */
 let builder = new APIBuilder({
-  title: 'Queue API Documentation',
+  title: 'Queue Service',
   description: [
     'The queue service is responsible for accepting tasks and track their state',
     'as they are executed by workers. In order ensure they are eventually',
@@ -230,7 +230,7 @@ builder.declare({
     this.db.fns.get_task_group(taskGroupId),
     paginateResults({
       query: req.query,
-      fetch: (size, offset) => this.db.fns.get_tasks_by_task_group_tqid(taskGroupId, size, offset),
+      fetch: (size, offset) => this.db.fns.get_tasks_by_task_group_projid(taskGroupId, size, offset),
     }),
   ]);
 
@@ -348,6 +348,7 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
     routes: taskDef.routes,
     scopes: taskDef.scopes,
     schedulerId: taskDef.schedulerId,
+    projectId: taskDef.projectId,
     taskGroupId: taskDef.taskGroupId || taskId,
     provisionerId: taskDef.provisionerId,
     workerType: taskDef.workerType,
@@ -470,6 +471,7 @@ builder.declare({
   scopes: { AllOf: [
     { for: 'scope', in: 'scopes', each: '<scope>' },
     { for: 'route', in: 'routes', each: 'queue:route:<route>' },
+    'queue:create-task:project:<projectId>',
     'queue:scheduler-id:<schedulerId>',
     { AnyOf: [
       {
@@ -534,6 +536,11 @@ builder.declare({
     return res.reportError('InputError',
       'at least a provisionerId and a workerType or a taskQueueId must be provided"',
       {});
+  }
+
+  // fill in the default `none` projectId if none was given
+  if (!taskDef.projectId) {
+    taskDef.projectId = 'none';
   }
 
   await authorizeTaskCreation(req, taskId, taskDef);
@@ -641,6 +648,7 @@ builder.declare({
   category: 'Tasks',
   scopes: { AnyOf: [
     'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
+    'queue:schedule-task-in-project:<projectId>',
     { AllOf: [ // Legacy scopes
       'queue:schedule-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
@@ -682,6 +690,7 @@ builder.declare({
     taskId,
     schedulerId: task.schedulerId,
     taskGroupId: task.taskGroupId,
+    projectId: task.projectId,
   });
 
   // Attempt to schedule task
@@ -711,6 +720,7 @@ builder.declare({
   category: 'Tasks',
   scopes: { AnyOf: [
     'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',
+    'queue:rerun-task-in-project:<projectId>',
     { AllOf: [ // Legacy scopes
       'queue:rerun-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
@@ -754,6 +764,7 @@ builder.declare({
     taskId,
     schedulerId: task.schedulerId,
     taskGroupId: task.taskGroupId,
+    projectId: task.projectId,
   });
 
   // Validate deadline
@@ -812,6 +823,7 @@ builder.declare({
   category: 'Tasks',
   scopes: { AnyOf: [
     'queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',
+    'queue:cancel-task-in-project:<projectId>',
     { AllOf: [ // Legacy scopes
       'queue:cancel-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
@@ -851,6 +863,7 @@ builder.declare({
     taskId,
     schedulerId: task.schedulerId,
     taskGroupId: task.taskGroupId,
+    projectId: task.projectId,
   });
 
   // Validate deadline

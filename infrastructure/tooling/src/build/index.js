@@ -174,6 +174,7 @@ class Publish extends Base {
     expectedVars.push('GH_TOKEN');
     if (!this.cmdOptions.staging) {
       expectedVars.push('NPM_TOKEN');
+      expectedVars.push('CRATESIO_TOKEN');
       expectedVars.push('PYPI_USERNAME');
       expectedVars.push('PYPI_PASSWORD');
       expectedVars.push('DOCKER_USERNAME');
@@ -189,6 +190,7 @@ class Publish extends Base {
     return {
       ghToken: process.env.GH_TOKEN,
       npmToken: process.env.NPM_TOKEN,
+      cratesioToken: process.env.CRATESIO_TOKEN,
       pypiUsername: process.env.PYPI_USERNAME,
       pypiPassword: process.env.PYPI_PASSWORD,
       dockerUsername: process.env.DOCKER_USERNAME,

@@ -5,6 +5,7 @@ module.exports = {
   ...require('./docker'),
   ...require('./command'),
   ...require('./config'),
+  ...require('./crates'),
   ...require('./npm'),
   ...require('./pypi'),
   ...require('./dockerflow'),

@@ -9,6 +9,10 @@
 // /references/worker-manager/v1/api.json
 // This service manages workers, including provisioning for dynamic worker pools.
 //
+// Methods interacting with a provider may return a 503 response if that provider has
+// not been able to start up, such as if the service to which it interfaces has an
+// outage.  Such requests can be retried as for any other 5xx response.
+//
 // See:
 //
 // How to use this package

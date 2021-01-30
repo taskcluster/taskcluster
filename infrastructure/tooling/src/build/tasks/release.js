@@ -5,6 +5,7 @@ const path = require('path');
 const {
   ensureTask,
   npmPublish,
+  cargoPublish,
   execCommand,
   pyClientRelease,
   readRepoFile,
@@ -287,6 +288,24 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   });
 
   ensureTask(tasks, {
+    title: `Publish clients/client-rust to crates.io`,
+    requires: [
+      'github-release', // to make sure the release finishes first..
+    ],
+    provides: [
+      `publish-clients/client-rust`,
+    ],
+    run: async (requirements, utils) => {
+      await cargoPublish({
+        dir: path.join(REPO_ROOT, 'clients', 'client-rust'),
+        token: credentials.cratesioToken,
+        push: cmdOptions.push && !cmdOptions.staging,
+        logfile: path.join(logsDir, 'publish-client-rust.log'),
+        utils });
+    },
+  });
+
+  ensureTask(tasks, {
     title: 'Publish Complete',
     requires: [
       'release-version',
@@ -295,6 +314,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'publish-clients/client',
       'publish-clients/client-web',
       'publish-clients/client-py',
+      'publish-clients/client-rust',
     ],
     provides: [
       'target-publish',

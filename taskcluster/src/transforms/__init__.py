@@ -7,17 +7,19 @@ transforms = TransformSequence()
 
 
 def _dependency_versions():
+    pg_version = 11
+    with open('clients/client-rust/rust-toolchain', 'r') as f:
+        rust_version = f.read().strip()
     with open('package.json', 'r') as pkg:
-        with open('.go-version', 'r') as goversion:
-            node_version = json.load(pkg)["engines"]["node"].strip()
-            go_version = goversion.read().strip()
-            pg_version = 11
-            return (node_version, go_version, pg_version)
+        node_version = json.load(pkg)["engines"]["node"].strip()
+    with open('.go-version', 'r') as goversion:
+        go_version = goversion.read().strip()
+    return (node_version, go_version, rust_version, pg_version)
 
 
 @transforms.add
 def taskcluster_images(config, jobs):
-    node_version, go_version, pg_version = _dependency_versions()
+    node_version, go_version, rust_version, pg_version = _dependency_versions()
     for job in jobs:
         image = job["worker"]["docker-image"]
         if isinstance(image, dict) and image.keys()[0] == "taskcluster":
@@ -34,6 +36,7 @@ def taskcluster_images(config, jobs):
             job["worker"]["docker-image"] = image.format(
                 node_version=node_version,
                 go_version=go_version,
+                rust_version=rust_version,
                 pg_version=pg_version
             ).strip()
 
@@ -42,7 +45,7 @@ def taskcluster_images(config, jobs):
 
 @transforms.add
 def add_task_env(config, jobs):
-    node_version, go_version, pg_version = _dependency_versions()
+    node_version, go_version, rust_version, pg_version = _dependency_versions()
     for job in jobs:
         env = job["worker"].setdefault("env", {})
 
@@ -62,6 +65,7 @@ def add_task_env(config, jobs):
         env["NODE_VERSION"] = node_version
         env["GO_VERSION"] = go_version
         env["GO_RELEASE"] = go_version[2:]  # Just strip the `go` prefix
+        env["RUST_VERSION"] = rust_version
         env["POSTGRES_VERSION"] = str(pg_version)
 
         # Things that g-w decision task wants
@@ -85,7 +89,7 @@ def direct_dependencies(config, jobs):
 
 @transforms.add
 def parameterize_mounts(config, jobs):
-    node_version, go_version, pg_version = _dependency_versions()
+    node_version, go_version, rust_version, pg_version = _dependency_versions()
     for job in jobs:
         mounts = job.get("worker", {}).get("mounts")
         if mounts:
@@ -93,9 +97,11 @@ def parameterize_mounts(config, jobs):
                 if mount["content"].get("url"):
                     mount["content"]["url"] = mount["content"]["url"].format(
                             go_version=go_version,
+                            rust_version=rust_version,
                             node_version=node_version)
                 if mount.get("directory"):
                     mount["directory"] = mount["directory"].format(
                             go_version=go_version,
+                            rust_version=rust_version,
                             node_version=node_version)
         yield job

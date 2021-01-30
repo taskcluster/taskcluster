@@ -71,6 +71,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
   });
 
+  test('rerun with project scopes', async () => {
+    const taskId = slugid.v4();
+
+    debug('### Creating task');
+    await helper.queue.createTask(taskId, {
+      ...taskDef,
+      projectId: 'testproj',
+    });
+
+    helper.scopes('queue:rerun-task-in-project:testproj');
+    const r2 = await helper.queue.rerunTask(taskId);
+    assert.equal(r2.status.state, 'pending');
+
+    // fails with the wrong project scope
+    helper.scopes('queue:rerun-task-in-project:WRONG-PROJECT');
+    await assert.rejects(
+      () => helper.queue.rerunTask(taskId),
+      err => err.statusCode === 403);
+
+    helper.clearPulseMessages();
+  });
+
   test('throw error on missing task', async () => {
     const taskId = slugid.v4();
     await helper.queue.rerunTask(taskId).then(

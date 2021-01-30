@@ -1859,6 +1859,15 @@
           "title": "Task Priority",
           "type": "string"
         },
+        "projectId": {
+          "default": "none",
+          "description": "The name for the \"project\" with which this task is associated.  This\nvalue can be used to control permission to manipulate tasks as well as\nfor usage reporting.  Project ids are typically simple identifiers,\noptionally in a hierarchical namespace separated by `/` characters.\nThis value defaults to `none`.\n",
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9._/-]*)$",
+          "title": "Project Identifier",
+          "type": "string"
+        },
         "provisionerId": {
           "description": "Unique identifier for a provisioner, that can supply specified\n`workerType`. Deprecation is planned for this property as it\nwill be replaced, together with `workerType`, by the new\nidentifier `taskQueueId`.\n",
           "pattern": "^[a-zA-Z0-9-_]{1,38}$",
@@ -1992,6 +2001,9 @@
           "format": "date-time",
           "title": "Expiration",
           "type": "string"
+        },
+        "projectId": {
+          "$ref": "task.json#/properties/projectId"
         },
         "provisionerId": {
           "$ref": "task.json#/properties/provisionerId"
@@ -2151,6 +2163,7 @@
         "workerType",
         "taskQueueId",
         "schedulerId",
+        "projectId",
         "taskGroupId",
         "deadline",
         "expires",
@@ -3043,7 +3056,7 @@
           "description": "Request the queue to redirect fetches for this artifact to a URL.  An\nexisting artifact can be replaced with a RedirectArtifact as long as the\ntask is still executing.  When a RedirectArtifact is fetched, the URL is\nreturned verbatim as a Location header in a 303 (See Other) response.\nClients will not apply any form of authentication to that URL.\n",
           "properties": {
             "contentType": {
-              "description": "Artifact mime-type for the resource to which the queue should\nredirect. Please use the same `Content-Type`, consistently using\nthe correct mime-type make tooling a lot easier, specifically,\nalways using `application/json` for JSON artifacts.\n",
+              "description": "Expected content-type of the artifact.  This is informational only:\nit is suitable for use to choose an icon for the artifact, for example.\nThe accurate content-type of the artifact can only be determined by\ndownloading it.\n",
               "maxLength": 255,
               "type": "string"
             },
@@ -3615,7 +3628,7 @@
             "description": "Information about an artifact for the given `taskId` and `runId`.\n",
             "properties": {
               "contentType": {
-                "description": "Mimetype for the artifact that was created.\n",
+                "description": "Expected content-type of the artifact.  This is informational only:\nit is suitable for use to choose an icon for the artifact, for example.\nThe accurate content-type of the artifact can only be determined by\ndownloading it.\n",
                 "maxLength": 255,
                 "title": "Content-Type",
                 "type": "string"
@@ -3740,6 +3753,10 @@
         "priority": {
           "$ref": "task.json#/properties/priority",
           "default": "lowest"
+        },
+        "projectId": {
+          "$ref": "task.json#/properties/projectId",
+          "default": "none"
         },
         "provisionerId": {
           "$ref": "task.json#/properties/provisionerId"
@@ -3914,7 +3931,7 @@
           "description": "Information about the artifact that was created\n",
           "properties": {
             "contentType": {
-              "description": "Mimetype for the artifact that was created (NOTE: deprecated; this\nvalue is not checked and may not correspond to the content-type of\nthe final artifact)\n",
+              "description": "Expected content-type of the artifact.  This is informational only:\nit is suitable for use to choose an icon for the artifact, for example.\nThe accurate content-type of the artifact can only be determined by\ndownloading it.\n",
               "maxLength": 255,
               "title": "Content-Type",
               "type": "string"
@@ -4192,6 +4209,9 @@
         },
         "projectId": {
           "description": "Project identifier.\n",
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9._/-]*)$",
           "title": "Project Identifier",
           "type": "string"
         },
@@ -12395,7 +12415,7 @@
     "content": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "This service manages workers, including provisioning for dynamic worker pools.",
+      "description": "This service manages workers, including provisioning for dynamic worker pools.\n\nMethods interacting with a provider may return a 503 response if that provider has\nnot been able to start up, such as if the service to which it interfaces has an\noutage.  Such requests can be retried as for any other 5xx response.",
       "entries": [
         {
           "args": [
@@ -12720,7 +12740,7 @@
         }
       ],
       "serviceName": "worker-manager",
-      "title": "Taskcluster Worker Manager"
+      "title": "Worker Manager Service"
     },
     "filename": "references/worker-manager/v1/api.json"
   },
@@ -13250,7 +13270,7 @@
         }
       ],
       "serviceName": "secrets",
-      "title": "Taskcluster Secrets API Documentation"
+      "title": "Secrets Service"
     },
     "filename": "references/secrets/v1/api.json"
   },
@@ -14264,6 +14284,7 @@
                 "for": "route",
                 "in": "routes"
               },
+              "queue:create-task:project:<projectId>",
               "queue:scheduler-id:<schedulerId>",
               {
                 "AnyOf": [
@@ -14295,6 +14316,7 @@
           "scopes": {
             "AnyOf": [
               "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>",
+              "queue:schedule-task-in-project:<projectId>",
               {
                 "AllOf": [
                   "queue:schedule-task",
@@ -14322,6 +14344,7 @@
           "scopes": {
             "AnyOf": [
               "queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>",
+              "queue:rerun-task-in-project:<projectId>",
               {
                 "AllOf": [
                   "queue:rerun-task",
@@ -14349,6 +14372,7 @@
           "scopes": {
             "AnyOf": [
               "queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>",
+              "queue:cancel-task-in-project:<projectId>",
               {
                 "AllOf": [
                   "queue:cancel-task",
@@ -14928,7 +14952,7 @@
         }
       ],
       "serviceName": "queue",
-      "title": "Queue API Documentation"
+      "title": "Queue Service"
     },
     "filename": "references/queue/v1/api.json"
   },
@@ -15197,7 +15221,7 @@
         }
       ],
       "serviceName": "purge-cache",
-      "title": "Purge Cache API"
+      "title": "Purge Cache Service"
     },
     "filename": "references/purge-cache/v1/api.json"
   },
@@ -15464,7 +15488,7 @@
         }
       ],
       "serviceName": "object",
-      "title": "Taskcluster Object Service API Documentation"
+      "title": "Object Service"
     },
     "filename": "references/object/v1/api.json"
   },
@@ -16303,7 +16327,7 @@
         }
       ],
       "serviceName": "index",
-      "title": "Task Index API Documentation"
+      "title": "Index Service"
     },
     "filename": "references/index/v1/api.json"
   },
@@ -16853,7 +16877,7 @@
         }
       ],
       "serviceName": "hooks",
-      "title": "Hooks API Documentation"
+      "title": "Hooks Service"
     },
     "filename": "references/hooks/v1/api.json"
   },
@@ -17394,7 +17418,7 @@
         }
       ],
       "serviceName": "github",
-      "title": "Taskcluster GitHub API Documentation"
+      "title": "GitHub Service"
     },
     "filename": "references/github/v1/api.json"
   },
@@ -18459,7 +18483,7 @@
         }
       ],
       "serviceName": "auth",
-      "title": "Authentication API"
+      "title": "Auth Service"
     },
     "filename": "references/auth/v1/api.json"
   }

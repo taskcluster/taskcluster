@@ -77,8 +77,8 @@
    * [`claim_task`](#claim_task)
    * [`create_queue_artifact`](#create_queue_artifact)
    * [`create_queue_worker_tqid`](#create_queue_worker_tqid)
+   * [`create_task_projid`](#create_task_projid)
    * [`create_task_queue`](#create_task_queue)
-   * [`create_task_tqid`](#create_task_tqid)
    * [`delete_queue_artifact`](#delete_queue_artifact)
    * [`delete_queue_provisioner`](#delete_queue_provisioner)
    * [`delete_queue_worker_type`](#delete_queue_worker_type)
@@ -94,10 +94,10 @@
    * [`get_queue_worker_tqid`](#get_queue_worker_tqid)
    * [`get_queue_workers_tqid`](#get_queue_workers_tqid)
    * [`get_task_group`](#get_task_group)
+   * [`get_task_projid`](#get_task_projid)
    * [`get_task_queue`](#get_task_queue)
    * [`get_task_queues`](#get_task_queues)
-   * [`get_task_tqid`](#get_task_tqid)
-   * [`get_tasks_by_task_group_tqid`](#get_tasks_by_task_group_tqid)
+   * [`get_tasks_by_task_group_projid`](#get_tasks_by_task_group_projid)
    * [`is_task_blocked`](#is_task_blocked)
    * [`is_task_group_active`](#is_task_group_active)
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
@@ -1111,8 +1111,8 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`claim_task`](#claim_task)
 * [`create_queue_artifact`](#create_queue_artifact)
 * [`create_queue_worker_tqid`](#create_queue_worker_tqid)
+* [`create_task_projid`](#create_task_projid)
 * [`create_task_queue`](#create_task_queue)
-* [`create_task_tqid`](#create_task_tqid)
 * [`delete_queue_artifact`](#delete_queue_artifact)
 * [`delete_queue_provisioner`](#delete_queue_provisioner)
 * [`delete_queue_worker_type`](#delete_queue_worker_type)
@@ -1128,10 +1128,10 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`get_queue_worker_tqid`](#get_queue_worker_tqid)
 * [`get_queue_workers_tqid`](#get_queue_workers_tqid)
 * [`get_task_group`](#get_task_group)
+* [`get_task_projid`](#get_task_projid)
 * [`get_task_queue`](#get_task_queue)
 * [`get_task_queues`](#get_task_queues)
-* [`get_task_tqid`](#get_task_tqid)
-* [`get_tasks_by_task_group_tqid`](#get_tasks_by_task_group_tqid)
+* [`get_tasks_by_task_group_projid`](#get_tasks_by_task_group_projid)
 * [`is_task_blocked`](#is_task_blocked)
 * [`is_task_group_active`](#is_task_group_active)
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
@@ -1336,26 +1336,14 @@ Returns the newly created artifact.
 
 Create a new queue worker.  Raises UNIQUE_VIOLATION if the worker already exists.
 
-### create_task_queue
-
-* *Mode*: write
-* *Arguments*:
-  * `task_queue_id_in text`
-  * `expires_in timestamptz`
-  * `last_date_active_in timestamptz`
-  * `description_in text`
-  * `stability_in text`
-* *Returns*: `uuid`
-
-Create a new task queue. Raises UNIQUE_VIOLATION if the task queue already exists.
-
-### create_task_tqid
+### create_task_projid
 
 * *Mode*: write
 * *Arguments*:
   * `task_id text`
   * `task_queue_id text`
   * `scheduler_id text`
+  * `project_id text`
   * `task_group_id text`
   * `dependencies jsonb`
   * `requires task_requires`
@@ -1374,6 +1362,19 @@ Create a new task queue. Raises UNIQUE_VIOLATION if the task queue already exist
 
 Create a new task, without scheduling it, and with empty values
 for the status information.
+
+### create_task_queue
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `expires_in timestamptz`
+  * `last_date_active_in timestamptz`
+  * `description_in text`
+  * `stability_in text`
+* *Returns*: `uuid`
+
+Create a new task queue. Raises UNIQUE_VIOLATION if the task queue already exists.
 
 ### delete_queue_artifact
 
@@ -1598,6 +1599,37 @@ Otherwise, page_size rows are returned at offset page_offset.
 
 Get a task group.
 
+### get_task_projid
+
+* *Mode*: read
+* *Arguments*:
+  * `task_id_in text`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left int`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz `
+
+Get all properties of a task.  Note that all properties but `runs`,
+`retries_left`, and `taken_until` are immutable.
+
 ### get_task_queue
 
 * *Mode*: read
@@ -1634,37 +1666,7 @@ Get task queues ordered by `task_queue_id`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
-### get_task_tqid
-
-* *Mode*: read
-* *Arguments*:
-  * `task_id_in text`
-* *Returns*: `table`
-  * `   task_id text`
-  * `  task_queue_id text`
-  * `  scheduler_id text`
-  * `  task_group_id text`
-  * `  dependencies jsonb`
-  * `  requires task_requires`
-  * `  routes jsonb`
-  * `  priority task_priority`
-  * `  retries integer`
-  * `  retries_left int`
-  * `  created timestamptz`
-  * `  deadline timestamptz`
-  * `  expires timestamptz`
-  * `  scopes jsonb`
-  * `  payload jsonb`
-  * `  metadata jsonb`
-  * `  tags jsonb`
-  * `  extra jsonb`
-  * `  runs jsonb`
-  * `  taken_until timestamptz `
-
-Get all properties of a task.  Note that all properties but `runs`,
-`retries_left`, and `taken_until` are immutable.
-
-### get_tasks_by_task_group_tqid
+### get_tasks_by_task_group_projid
 
 * *Mode*: read
 * *Arguments*:
@@ -1675,6 +1677,7 @@ Get all properties of a task.  Note that all properties but `runs`,
   * `   task_id text`
   * `  task_queue_id text`
   * `  scheduler_id text`
+  * `  project_id text`
   * `  task_group_id text`
   * `  dependencies jsonb`
   * `  requires task_requires`
@@ -1903,9 +1906,12 @@ All parameters must be supplied.
 ### deprecated methods
 
 * `create_task(task_id text, provisioner_id text, worker_type text, scheduler_id text, task_group_id text, dependencies jsonb, requires task_requires, routes jsonb, priority task_priority, retries integer, created timestamptz, deadline timestamptz, expires timestamptz, scopes jsonb, payload jsonb, metadata jsonb, tags jsonb, extra jsonb)` (compatibility guaranteed until v41.0.0)
+* `create_task_tqid(task_id text, task_queue_id text, scheduler_id text, task_group_id text, dependencies jsonb, requires task_requires, routes jsonb, priority task_priority, retries integer, created timestamptz, deadline timestamptz, expires timestamptz, scopes jsonb, payload jsonb, metadata jsonb, tags jsonb, extra jsonb)` (compatibility guaranteed until v42.0.0)
 * `get_queue_artifacts(task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v41.0.0)
 * `get_task(task_id_in text)` (compatibility guaranteed until v41.0.0)
+* `get_task_tqid(task_id_in text)` (compatibility guaranteed until v42.0.0)
 * `get_tasks_by_task_group(task_group_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v41.0.0)
+* `get_tasks_by_task_group_tqid(task_group_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v42.0.0)
 * `update_queue_artifact(task_id_in text, run_id_in integer, name_in text, details_in jsonb, expires_in timestamptz)` (compatibility guaranteed until v42.0.0)
 
 ## secrets

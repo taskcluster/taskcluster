@@ -25,7 +25,7 @@ exports.tasks = [{
         .concat(refSchema.metadata.name === 'exchanges' ? ['events'] : [])
         .map(w => `${w[0].toUpperCase()}${w.slice(1)}`)
         .join('');
-      apis[camelCaseName] = { reference: content };
+      apis[camelCaseName] = { referenceKind: refSchema.metadata.name, reference: content };
     });
 
     return { apis };

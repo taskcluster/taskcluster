@@ -94,6 +94,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'queue:create-task:highest:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:scheduler-id:dummy-scheduler-extended-extended-*',
+      'queue:create-task:project:none',
       'queue:task-group-id:*',
     );
 

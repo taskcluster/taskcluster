@@ -90,7 +90,10 @@ type (
 	// Information about an artifact for the given `taskId` and `runId`.
 	Artifact struct {
 
-		// Mimetype for the artifact that was created.
+		// Expected content-type of the artifact.  This is informational only:
+		// it is suitable for use to choose an icon for the artifact, for example.
+		// The accurate content-type of the artifact can only be determined by
+		// downloading it.
 		//
 		// Max length: 255
 		ContentType string `json:"contentType"`
@@ -524,10 +527,10 @@ type (
 	// Clients will not apply any form of authentication to that URL.
 	RedirectArtifactRequest struct {
 
-		// Artifact mime-type for the resource to which the queue should
-		// redirect. Please use the same `Content-Type`, consistently using
-		// the correct mime-type make tooling a lot easier, specifically,
-		// always using `application/json` for JSON artifacts.
+		// Expected content-type of the artifact.  This is informational only:
+		// it is suitable for use to choose an icon for the artifact, for example.
+		// The accurate content-type of the artifact can only be determined by
+		// downloading it.
 		//
 		// Max length: 255
 		ContentType string `json:"contentType"`
@@ -936,6 +939,18 @@ type (
 		// Default:    "lowest"
 		Priority string `json:"priority,omitempty"`
 
+		// The name for the "project" with which this task is associated.  This
+		// value can be used to control permission to manipulate tasks as well as
+		// for usage reporting.  Project ids are typically simple identifiers,
+		// optionally in a hierarchical namespace separated by `/` characters.
+		// This value defaults to `none`.
+		//
+		// Default:    "none"
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId,omitempty"`
+
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
 		// will be replaced, together with `workerType`, by the new
@@ -1116,6 +1131,18 @@ type (
 		//
 		// Default:    "lowest"
 		Priority string `json:"priority"`
+
+		// The name for the "project" with which this task is associated.  This
+		// value can be used to control permission to manipulate tasks as well as
+		// for usage reporting.  Project ids are typically simple identifiers,
+		// optionally in a hierarchical namespace separated by `/` characters.
+		// This value defaults to `none`.
+		//
+		// Default:    "none"
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId,omitempty"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
@@ -1451,6 +1478,18 @@ type (
 		// status is deleted. Notice that all artifacts for the task
 		// must have an expiration that is no later than this.
 		Expires tcclient.Time `json:"expires"`
+
+		// The name for the "project" with which this task is associated.  This
+		// value can be used to control permission to manipulate tasks as well as
+		// for usage reporting.  Project ids are typically simple identifiers,
+		// optionally in a hierarchical namespace separated by `/` characters.
+		// This value defaults to `none`.
+		//
+		// Default:    "none"
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
