@@ -7,27 +7,13 @@ order: 30
 
 The queue defines a hierarchy of resources that consume tasks from queues:
 
-## Provisioners
+## Worker Pools and Task Queues
 
-[Provisioners](/docs/manual/task-execution/provisioning), identified with a
-`provisionerId`, are responsible for groups of worker types. While some
-provisioners, such as the AWS provisioner, are active software components,
-others are simply identifiers within the Queue service's data structures.
+A task queue contains tasks that expect to be executed in a specific environment, where "environment" means worker implementation, base operating system, host configuration, and so on.
+A worker pool contains workers that all provide the same evironment.
 
-Provisioners can be declared, and metadata associated with them, via the
-[declareProvisioner](/docs/reference/platform/queue/api#declareProvisioner)
-API method.
-
-## Worker Types
-
-[Worker Types](/docs/manual/tasks/workertypes), identified by
-`provisionerId/workerType`, are nested under a single provisioner and gather
-interchangeable workers that can all perform the same work. Tasks are queued
-for a specific worker type, and workers claim work for a single worker type.
-
-Worker types can be declared, and metadata associated with them, via the
-[declareWorkerType](/docs/reference/platform/queue/api#declareWorkerType)
-API method.
+Task queues are identified by `taskQueueId`, while worker pools are identified by `workerPoolId`.
+These are two sides of the same coin: tasks in a task queue are executed by workers in a worker pool of the same name.
 
 ## Workers
 

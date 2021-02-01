@@ -168,7 +168,7 @@ __These instructions require macOS Mojave version 10.14.x__
       "disableReboots": false,
       "downloadsDir": "/Library/Caches/generic-worker/downloads",
       "ed25519SigningKeyLocation": "/etc/generic-worker/ed25519_key",
-      "provisionerId": "my-dear-provisioner",
+      "workerPoolId": "my/worker-pool",
       "publicIP": "1.2.3.4",
       "requiredDiskSpaceMegabytes": 2048,
       "rootURL": "https://my-root-url.com",
@@ -180,7 +180,6 @@ __These instructions require macOS Mojave version 10.14.x__
       "tasksDir": "/Users",
       "workerGroup": "my-worker-group",
       "workerId": "my-lovely-computer",
-      "workerType": "my-special-worker-type",
       "wstAudience": "taskcluster-net",
       "wstServerURL": "https://websocktunnel.tasks.build"
     }
@@ -378,11 +377,10 @@ Once you have been granted the above scope:
     "clientId":                   "<client ID of your permanent credentials>",
     "ed25519SigningKeyLocation":  "<file location you wrote ed25519 private key to>",
     "livelogSecret":              "<anything you like>",
-    "provisionerId":              "test-provisioner",
+    "workerPoolId":               "test/worker-pool",
     "publicIP":                   "<ideally an IP address of one of your network interfaces>",
     "workerGroup":                "test-worker-group",
     "workerId":                   "test-worker-id",
-    "workerType":                 "<a unique name that only you will use for your test worker(s)>"
 }
 ```
 
@@ -402,7 +400,7 @@ where `<config file>` is the generic worker config file you created above.
 
 Go to https://tools.taskcluster.net/task-creator/ and create a task to run on your generic worker.
 
-Use [this example](worker_types/win2012r2/task-definition.json) as a template, but make sure to edit `provisionerId` and `workerType` values so that they match what you set in your config file.
+Use [this example](worker_types/win2012r2/task-definition.json) as a template, but make sure to edit `taskQueueId` values so that they match what you set in your config file.
 
 Don't forget to submit the task by clicking the *Create Task* icon.
 

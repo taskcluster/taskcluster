@@ -1268,10 +1268,10 @@
   },
   {
     "element": "h2",
-    "id": "choosing-a-kind",
-    "path": "/manual/using/actions",
-    "subtitle": "Choosing a Kind",
-    "title": null
+    "id": "rerunning",
+    "path": "/manual/tasks/manipulating",
+    "subtitle": "Rerunning",
+    "title": "Manipulating Tasks"
   },
   {
     "element": "h1",
@@ -2850,16 +2850,9 @@
   },
   {
     "element": "h2",
-    "id": "provisioners",
+    "id": "worker-pools-and-task-queues",
     "path": "/reference/platform/queue/worker-hierarchy",
-    "subtitle": "Provisioners",
-    "title": "Worker Hierarchy"
-  },
-  {
-    "element": "h2",
-    "id": "worker-types",
-    "path": "/reference/platform/queue/worker-hierarchy",
-    "subtitle": "Worker Types",
+    "subtitle": "Worker Pools and Task Queues",
     "title": "Worker Hierarchy"
   },
   {

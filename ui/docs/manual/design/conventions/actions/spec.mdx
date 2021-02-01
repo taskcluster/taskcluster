@@ -247,7 +247,7 @@ timestamps and dump input JSON into environment variables:
         }
       },
       "task": {
-        "workerType": "my-worker",
+        "taskQueueId": "my/worker",
         "payload": {
           "created": {"$fromNow": ""},
           "deadline": {"$fromNow": "1 hour 15 minutes"},

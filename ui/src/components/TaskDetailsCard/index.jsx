@@ -24,6 +24,7 @@ import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
 import { DEPENDENTS_PAGE_SIZE } from '../../utils/constants';
 import { pageInfo, task } from '../../utils/prop-types';
+import splitTaskQueueId from '../../utils/splitTaskQueueId';
 import Link from '../../utils/Link';
 
 @withStyles(theme => ({
@@ -149,6 +150,7 @@ export default class TaskDetailsCard extends Component {
     const { showPayload, showMore } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
     const payload = deepSortObject(task.payload);
+    const { provisionerId, workerType } = splitTaskQueueId(task.taskQueueId);
 
     return (
       <Card raised>
@@ -175,21 +177,15 @@ export default class TaskDetailsCard extends Component {
                 primary="Created"
                 secondary={<DateDistance from={task.created} />}
               />
-              <ListItem>
-                <ListItemText
-                  primary="Provisioner"
-                  secondary={task.provisionerId}
-                />
-              </ListItem>
               <Link
-                to={`/provisioners/${task.provisionerId}/worker-types/${task.workerType}`}>
+                to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
                 <ListItem
                   title="View Workers"
                   button
                   className={classes.listItemButton}>
                   <ListItemText
-                    primary="Worker Type"
-                    secondary={task.workerType}
+                    primary="Task Queue ID"
+                    secondary={task.taskQueueId}
                   />
                   <LinkIcon />
                 </ListItem>
@@ -415,10 +411,14 @@ export default class TaskDetailsCard extends Component {
                 )}
                 <ListItem>
                   <ListItemText
+                    primary="Project ID"
+                    secondary={task.projectId}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
                     primary="Scheduler ID"
-                    secondary={
-                      task.schedulerId === '-' ? <em>n/a</em> : task.schedulerId
-                    }
+                    secondary={task.schedulerId}
                   />
                 </ListItem>
                 <ListItem>

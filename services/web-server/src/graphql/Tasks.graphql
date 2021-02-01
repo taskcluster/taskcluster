@@ -65,11 +65,14 @@ type Task {
   # stripped of `=` padding.
   taskId: ID!
 
-  # Unique identifier for a provisioner, that can supply a specified `workerType`.
+  # Deprecated first half of the taskQueueId
   provisionerId: String!
 
-  # Unique identifier for a worker-type within a specific provisioner.
+  # Deprecated second half of the taskQueueId
   workerType: String!
+
+  # Task Queue containing this task
+  taskQueueId: String!
 
   # Identifier for the scheduler that _defined_ this task.
   # This can be an identifier for a user or a service like `"task-graph-scheduler"`.
@@ -77,6 +80,9 @@ type Task {
   # `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`
   # This scope is necessary to _schedule_ a defined task, or _rerun_ a task.
   schedulerId: String!
+
+  # Identifier for this task's project
+  projectId: String!
 
   # Identifier for a group of tasks scheduled together with this task,
   # by the scheduler identified by `schedulerId`. For tasks scheduled by the

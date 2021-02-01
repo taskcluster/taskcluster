@@ -128,40 +128,29 @@ Finally, an example to tie it all together. This is the as-of-this-writing ``.ta
 
 
 ```yaml
-version: 0
+taskQueueId: tutorial/docker-worker
+routes:
+  - "notify.email.user@example.com.on-resolved"
+  - "notify.matrix-room.!whDRjjSmICCgrhFHsQ:mozilla.org.on-failed"
+  - "notify.matrix-room.!whDRjjSmICCgrhFHsQ:mozilla.org.on-exception"
+extra:
+  notify:
+    email:
+      content: 'Things worked in ${status.taskId}',
+  github:
+    env: true
+    events:
+      - pull_request.opened
+      - pull_request.synchronize
+      - pull_request.reopened
+      - push
+payload:
+  maxRunTime: 3600
+  image: "node:5"
+  command: ...
 metadata:
   name: "Taskcluster GitHub Tests"
-  description: "All non-integration tests for taskcluster github"
-  owner: "{{ event.head.user.email }}"
-  source: "{{ event.head.repo.url }}"
-tasks:
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: "{{ taskcluster.docker.workerType }}"
-    routes:
-      - "notify.email.{{event.head.user.email}}.on-resolved"
-      - "notify.matrix-room.!whDRjjSmICCgrhFHsQ:mozilla.org.on-failed"
-      - "notify.matrix-room.!whDRjjSmICCgrhFHsQ:mozilla.org.on-exception"
-    extra:
-      notify:
-        email:
-          content: 'Things worked in ${status.taskId}',
-      github:
-        env: true
-        events:
-          - pull_request.opened
-          - pull_request.synchronize
-          - pull_request.reopened
-          - push
-    payload:
-      maxRunTime: 3600
-      image: "node:5"
-      command:
-        - "/bin/bash"
-        - "-lc"
-        - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && npm install . && npm test"
-    metadata:
-      name: "Taskcluster GitHub Tests"
-      description: "All non-integration tests"
-      owner: "{{ event.head.user.email }}"
-      source: "{{ event.head.repo.url }}"
+  description: "All non-integration tests"
+  owner: "user@example.com"
+  source: "https://git.example.com"
 ```
