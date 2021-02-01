@@ -20,11 +20,16 @@ func TestHandleMessage(t *testing.T) {
 	}
 	kind := "severe"
 	title := "test error"
+	wgp := "hive-1"
+	wid := "workerbee-17"
 
 	wkr := ptesting.NewFakeWorkerWithCapabilities("error-report")
 	defer wkr.Close()
 
-	state := run.State{}
+	state := run.State{
+		WorkerGroup: wgp,
+		WorkerID:    wid,
+	}
 	er := new(&state, tc.FakeWorkerManagerClientFactory)
 
 	er.SetProtocol(wkr.RunnerProtocol)
@@ -59,6 +64,8 @@ func TestHandleMessage(t *testing.T) {
 	require.Equal(t, description, reports[0].Description)
 	require.Equal(t, kind, reports[0].Kind)
 	require.Equal(t, title, reports[0].Title)
+	require.Equal(t, wid, reports[0].WorkerID)
+	require.Equal(t, wgp, reports[0].WorkerGroup)
 
 	receivedExtra, err := reports[0].Extra.MarshalJSON()
 	require.NoError(t, err)
