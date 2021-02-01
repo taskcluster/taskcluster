@@ -90,7 +90,7 @@ builder.declare({
     fetch: (size, offset) => this.db.fns.all_purge_requests_wpid(size, offset),
   });
   return res.reply({
-    continuationToken: continuationToken || '',
+    continuationToken: continuationToken,
     requests: _.map(rows, entry => {
       const { provisionerId, workerType } = splitWorkerPoolId(entry.worker_pool_id);
       return {
