@@ -89,6 +89,29 @@ impl Object {
         (path, query)
     }
 
+    /// Mark an upload as complete.
+    /// 
+    /// This endpoint marks an upload as complete.  This indicates that all data has been
+    /// transmitted to the backend.  After this call, no further calls to `uploadObject` are
+    /// allowed, and downloads of the object may begin.  This method is idempotent, but will
+    /// fail if given an incorrect uploadId for an unfinished upload.
+    pub async fn finishUpload(&self, name: &str, payload: &Value) -> Result<(), Error> {
+        let method = "POST";
+        let (path, query) = Self::finishUpload_details(name);
+        let body = Some(payload);
+        let resp = self.0.request(method, &path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Determine the HTTP request details for finishUpload
+    fn finishUpload_details<'a>(name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("finish-upload/{}", urlencode(name));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Download object data
     /// 
     /// Start the process of downloading an object's data.  Call this endpoint with a list of acceptable

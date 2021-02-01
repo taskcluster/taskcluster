@@ -59,6 +59,20 @@ class Object(BaseClient):
 
         return self._makeApiCall(self.funcinfo["createUpload"], *args, **kwargs)
 
+    def finishUpload(self, *args, **kwargs):
+        """
+        Mark an upload as complete.
+
+        This endpoint marks an upload as complete.  This indicates that all data has been
+        transmitted to the backend.  After this call, no further calls to `uploadObject` are
+        allowed, and downloads of the object may begin.  This method is idempotent, but will
+        fail if given an incorrect uploadId for an unfinished upload.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["finishUpload"], *args, **kwargs)
+
     def startDownload(self, *args, **kwargs):
         """
         Download object data
@@ -113,6 +127,14 @@ class Object(BaseClient):
             'method': 'get',
             'name': 'download',
             'route': '/download/<name>',
+            'stability': 'experimental',
+        },
+        "finishUpload": {
+            'args': ['name'],
+            'input': 'v1/finish-upload-request.json#',
+            'method': 'post',
+            'name': 'finishUpload',
+            'route': '/finish-upload/<name>',
             'stability': 'experimental',
         },
         "ping": {

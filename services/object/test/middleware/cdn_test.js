@@ -30,6 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       uploadId,
       proposedUploadMethods,
     });
+    await helper.apiClient.finishUpload(name, { projectId: 'x', uploadId });
   };
 
   test('intercepts matching simple downloads', async function() {

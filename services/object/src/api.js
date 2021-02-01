@@ -92,18 +92,58 @@ builder.declare({
   // default uploadMethod to an empty object, meaning no matching methods
   let uploadMethod = await backend.createUpload(object, proposedUploadMethods);
 
-  // XXX temporary - until we have a finishUpload endpoint, and an upload method that does
-  // not finish immediately, finish uploads automatically when they succeed
-  if (Object.keys(uploadMethod).length !== 0) {
-    await this.db.fns.object_upload_complete({ name_in: name, upload_id_in: uploadId });
-  }
-
   return res.reply({
     projectId,
     uploadId,
     expires,
     uploadMethod,
   });
+});
+
+builder.declare({
+  method: 'post',
+  route: '/finish-upload/:name',
+  name: 'finishUpload',
+  input: 'finish-upload-request.yml',
+  stability: 'experimental',
+  category: 'Upload',
+  scopes: 'object:upload:<projectId>:<name>',
+  title: 'Mark an upload as complete.',
+  description: [
+    'This endpoint marks an upload as complete.  This indicates that all data has been',
+    'transmitted to the backend.  After this call, no further calls to `uploadObject` are',
+    'allowed, and downloads of the object may begin.  This method is idempotent, but will',
+    'fail if given an incorrect uploadId for an unfinished upload.',
+  ].join('\n'),
+}, async function(req, res) {
+  let { projectId, uploadId } = req.body;
+  let { name } = req.params;
+
+  await req.authorize({ projectId, name });
+
+  const [object] = await this.db.fns.get_object_with_upload(name);
+  if (!object) {
+    return res.reportError('ResourceNotFound', 'Object "{{name}}" not found', { name });
+  }
+
+  if (object.project_id !== projectId) {
+    return res.reportError(
+      'InputError',
+      'Object "{{name}}" does not have projectId {{projecId}}',
+      { name, projectId });
+  }
+
+  if (object.upload_id !== null && object.upload_id !== uploadId) {
+    return res.reportError(
+      'RequestConflict',
+      'Object "{{name}}" does not have uploadId {{uploadId}}',
+      { name, uploadId });
+  }
+
+  // mark its completion
+  await this.db.fns.object_upload_complete({ name_in: name, upload_id_in: uploadId });
+
+  return res.reply({});
 });
 
 builder.declare({

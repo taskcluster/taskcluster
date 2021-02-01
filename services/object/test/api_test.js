@@ -22,12 +22,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         objectData: data.toString('base64'),
       },
     };
+    const uploadId = taskcluster.slugid();
     await helper.apiClient.createUpload(name, {
       projectId: 'x',
-      uploadId: taskcluster.slugid(),
+      uploadId,
       expires: fromNow('1 year'),
       proposedUploadMethods,
     });
+    await helper.apiClient.finishUpload(name, { projectId: 'x', uploadId });
 
     return data;
   };
@@ -56,7 +58,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(rows.length, 1);
       assert.equal(rows[0].name, 'public/foo');
       assert.equal(rows[0].project_id, 'x');
-      assert.equal(rows[0].upload_id, null); // upload has been finished
+      assert.equal(rows[0].upload_id, uploadId); // upload has not been finished
       assert.equal(rows[0].backend_id, 'testBackend');
       assert.deepEqual(rows[0].data, {});
     });
@@ -78,6 +80,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         expires,
         proposedUploadMethods,
       });
+
+      await helper.apiClient.finishUpload('public/foo', { projectId: 'x', uploadId });
 
       // note that the upload is completed during the call to createUpload, so
       // idempotency doesn't apply
@@ -228,6 +232,67 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ).length,
         1);
       monitor.manager.reset();
+    });
+  });
+
+  suite('finishUpload method', function() {
+    const projectId = 'proj';
+    const makeUpload = async name => {
+      const data = crypto.randomBytes(128);
+      const uploadId = taskcluster.slugid();
+      await helper.apiClient.createUpload(name, {
+        projectId,
+        uploadId,
+        expires: fromNow('1 year'),
+        proposedUploadMethods: {
+          dataInline: {
+            contentType: 'application/binary',
+            objectData: data.toString('base64'),
+          },
+        },
+      });
+      return uploadId;
+    };
+
+    test('fails for a nonexistent object', async function() {
+      const uploadId = taskcluster.slugid();
+      await assert.rejects(
+        () => helper.apiClient.finishUpload('no/such', { uploadId, projectId }),
+        err => err.statusCode === 404);
+    });
+
+    test('fails with incorrect uploadId', async function() {
+      await makeUpload('foo/bar');
+      await assert.rejects(
+        () => helper.apiClient.finishUpload('foo/bar', { uploadId: taskcluster.slugid(), projectId }),
+        err => err.statusCode === 409);
+    });
+
+    test('fails with incorrect projectId', async function() {
+      const uploadId = await makeUpload('foo/bar');
+      await assert.rejects(
+        () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId: 'different' }),
+        err => err.statusCode === 400);
+    });
+
+    test('completes an upload', async function() {
+      const uploadId = await makeUpload('foo/bar');
+
+      // can't download this object yet..
+      assert.rejects(
+        () => helper.apiClient.startDownload('foo/bar', { acceptDownloadMethods: { simple: true } }),
+        err => err.stautsCode === 404);
+
+      await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
+
+      // now it can be downloaded
+      helper.apiClient.startDownload('foo/bar', { acceptDownloadMethods: { simple: true } });
+    });
+
+    test('succeeds for an already-completed upload', async function() {
+      const uploadId = await makeUpload('foo/bar');
+      await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
+      await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
     });
   });
 

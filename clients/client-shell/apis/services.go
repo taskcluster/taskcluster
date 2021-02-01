@@ -931,6 +931,19 @@ var services = map[string]definitions.Service{
 				Input: "v1/create-upload-request.json#",
 			},
 			definitions.Entry{
+				Name:        "finishUpload",
+				Title:       "Mark an upload as complete.",
+				Description: "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/finish-upload/<name>",
+				Args: []string{
+					"name",
+				},
+				Query: []string{},
+				Input: "v1/finish-upload-request.json#",
+			},
+			definitions.Entry{
 				Name:        "startDownload",
 				Title:       "Download object data",
 				Description: "Start the process of downloading an object's data.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\n\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
