@@ -86,8 +86,8 @@ builder.declare({
 
 builder.declare({
   method: 'put',
-  route: '/download-object/:name(*)', // name TBD; https://github.com/taskcluster/taskcluster/issues/3940
-  name: 'fetchObjectMetadata',
+  route: '/start-download/:name(*)',
+  name: 'startDownload',
   input: 'download-object-request.yml',
   output: 'download-object-response.yml',
   stability: 'experimental',
@@ -95,8 +95,9 @@ builder.declare({
   scopes: 'object:download:<name>',
   title: 'Download object data',
   description: [
-    'Get information on how to download an object.  Call this endpoint with a list of acceptable',
+    'Start the process of downloading an object\'s data.  Call this endpoint with a list of acceptable',
     'download methods, and the server will select a method and return the corresponding payload.',
+    '',
     'Returns a 406 error if none of the given download methods are available.',
     '',
     'See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.',
@@ -129,11 +130,11 @@ builder.declare({
   const params = acceptDownloadMethods[method];
 
   // apply middleware
-  if (!await this.middleware.fetchObjectMetadataRequest(req, res, object, method, params)) {
+  if (!await this.middleware.startDownloadRequest(req, res, object, method, params)) {
     return;
   }
 
-  const result = await backend.fetchObjectMetadata(object, method, params);
+  const result = await backend.startDownload(object, method, params);
 
   return res.reply(result);
 });
@@ -157,7 +158,7 @@ builder.declare({
     'This method is limited by the common capabilities of HTTP, so it may not be',
     'the most efficient, resilient, or featureful way to retrieve an artifact.',
     'Situations where such functionality is required should ues the',
-    '`fetchObjectMetadata` API endpoint.',
+    '`startDownload` API endpoint.',
     '',
     'See [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.',
   ].join('\n'),
@@ -186,7 +187,7 @@ builder.declare({
     return;
   }
 
-  const result = await backend.fetchObjectMetadata(object, method, true);
+  const result = await backend.startDownload(object, method, true);
 
   return res.redirect(303, result.url);
 });

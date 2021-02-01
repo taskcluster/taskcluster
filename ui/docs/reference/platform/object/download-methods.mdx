@@ -19,7 +19,7 @@ See ["Simple Downloads"](/simple-downloads) for details of the simple process.
 
 ## Full Downloads
 
-The full download process involves making a request to the object service, via the `object.downloadObject` endpoint.
+The full download process involves making a request to the object service, via the `object.startDownload` endpoint.
 The response to this request contains the information required to download the object data.
 
 Taskcluster will provide libraries to support this interaction.
@@ -31,12 +31,12 @@ This negotiation accomplishes two things:
  * decouples download clients from the object service, allowing new, more advanced methods to be defined while maintaining support for older methods; and
  * allows the use of "unusual" technology when all parties support it -- for example, AWS supports Bittorrent downloads.
 
-The `downloadObject` request contains a list of methods that the caller supports.
+The `startDownload` request contains a list of methods that the caller supports.
 The object service determines the methods that it can support for the requested object and which are also supported by the client, then chooses the "best" of the matching methods.
 The service then calculates a response for that method and returns it to the caller.
 
-The `downloadObject` request can contain additional parameters, specific to the chosen method, but those are not considered in the negotiation.
-The `acceptDownloadMethods` property in the `downloadObject` request contains all supported methods as properties, with their parameters as values.
+The `startDownload` request can contain additional parameters, specific to the chosen method, but those are not considered in the negotiation.
+The `acceptDownloadMethods` property in the `startDownload` request contains all supported methods as properties, with their parameters as values.
 Methods that do not need parameters simply use `true`.
 For example, a request that can use either the `simple` or `superFancy` methods might look like:
 
@@ -59,7 +59,7 @@ The known methods are defined below.
 The `simple` method implements [simple downloads](/simple-downloads).
 The response contains a URL against which a `GET` request can be made to retrieve the object's data.
 
-To use the simple method with `downloadObject`, pass the following payload:
+To use the simple method with `startDownload`, pass the following payload:
 
 ```javascript
 acceptDownloadMethods: {

@@ -6,7 +6,7 @@ class TestMiddleware extends Middleware {
     this.config = options.config;
   }
 
-  async fetchObjectMetadataRequest(req, res, object, method, params) {
+  async startDownloadRequest(req, res, object, method, params) {
     switch (object.name) {
       case 'dl/intercept': {
         res.reply({

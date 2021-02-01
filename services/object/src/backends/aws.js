@@ -41,7 +41,7 @@ class AwsBackend extends Backend {
     return ['simple'];
   }
 
-  async fetchObjectMetadata(object, method, params) {
+  async startDownload(object, method, params) {
     switch (method){
       case 'simple': {
         let url;

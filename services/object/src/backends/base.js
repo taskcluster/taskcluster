@@ -38,7 +38,7 @@ class Backend {
 
   /**
    * Return the backend-specific details required for a client to retrieve the
-   * object.  The result is returned directly from the `fetchObjectMetadata` API
+   * object.  The result is returned directly from the `startDownload` API
    * endpoint.
    *
    * The `method` argument is the selected method, and `params` is the value
@@ -46,8 +46,8 @@ class Backend {
    *
    * Subclasses should override this.
    */
-  async fetchObjectMetadata(object, method, params) {
-    throw new Error('fetchObjectMetadata is not implemented for this backend');
+  async startDownload(object, method, params) {
+    throw new Error('startDownload is not implemented for this backend');
   }
 
   /**

@@ -1636,14 +1636,14 @@ module.exports = {
             "name"
           ],
           "category": "Download",
-          "description": "Get information on how to download an object.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
+          "description": "Start the process of downloading an object's data.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\n\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
           "input": "v1/download-object-request.json#",
           "method": "put",
-          "name": "fetchObjectMetadata",
+          "name": "startDownload",
           "output": "v1/download-object-response.json#",
           "query": [
           ],
-          "route": "/download-object/<name>",
+          "route": "/start-download/<name>",
           "scopes": "object:download:<name>",
           "stability": "experimental",
           "title": "Download object data",
@@ -1654,7 +1654,7 @@ module.exports = {
             "name"
           ],
           "category": "Download",
-          "description": "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`fetchObjectMetadata` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
+          "description": "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`startDownload` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
           "method": "get",
           "name": "download",
           "query": [
