@@ -97,6 +97,9 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
       dbCryptoKeys,
     });
 
+    // wrap the withClient method as a convenience
+    helper.withDbClient = fn => helper.db._withClient('write', fn);
+
     if (helper.load) {
       helper.load.inject('db', helper.db);
     }

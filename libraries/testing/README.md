@@ -305,6 +305,7 @@ The resulting database is injected into the taskcluster-lib-loader as `db` and a
 
 It is up to the test suite implementation to reset the contents of the database between tests.
 Ideally this is done via `helper.db.fns` methods.
+If a client that can execute SQL directly is required, use `await helper.withDbClient(async client => { . })`.
 
 Note that this is intended to operate against a temporary Postgres server such as one running in a docker container.
 It's not a good idea to run this against a "real" Postgres server.
