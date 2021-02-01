@@ -342,6 +342,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
         monitor: monitor,
       });
 
+      let start = Date.now();
       let container = await docker.createContainer({ Image: imageId,
         Cmd: ['/bin/bash', '-c', 'echo "hello"'],
       });
@@ -352,7 +353,6 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
       let removedIds = [];
       gc.on('gc:container:removed', msg => { removedIds.push(msg.id); });
 
-      let start = Date.now();
       while (!removedIds.includes(containerId)) {
         await gc.sweep();
       }
