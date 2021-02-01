@@ -69,6 +69,8 @@ func (er *ErrorReporter) HandleMessage(msg workerproto.Message) {
 		Kind:        msg.Properties["kind"].(string),
 		Extra:       extraMsg,
 		Title:       msg.Properties["title"].(string),
+		WorkerGroup: er.state.WorkerGroup,
+		WorkerID:    er.state.WorkerID,
 	}
 	err = ReportWorkerError(er.state, er.factory, &errorReport)
 	if err != nil {
