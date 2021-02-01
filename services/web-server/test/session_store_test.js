@@ -11,6 +11,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withFakeAuth(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
+  helper.withDbClient = fn => helper.db._withClient('write', fn);
 
   const getStore = (shouldPromisify = true, options) => {
     const SessionStore = PostgresSessionStore({
@@ -81,7 +82,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await store.set(currentSession, { cookie: {} });
 
       // updates the hash of that session
-      await helper.db._withDbClient(async client => {
+      await helper.withDbClient(async client => {
         await client.query('update sessions set hashed_session_id = $1 where hashed_session_id = $2', [newHash, currentHash]);
       });
 
