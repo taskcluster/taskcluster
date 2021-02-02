@@ -1717,8 +1717,8 @@ builder.declare({
     'It is, however, a solid estimate of the number of pending tasks.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskQueueId = req.params.taskQueueId;
-  let { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
+  const taskQueueId = req.params.taskQueueId;
+  const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
   // Get number of pending message
   let count = await this.queueService.countPendingMessages(taskQueueId);

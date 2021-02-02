@@ -128,7 +128,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
 
-  let { workerPoolId } = req.params;
+  const { workerPoolId } = req.params;
   let since = new Date(req.query.since || 0);
 
   // Cache the azure query for cacheTime seconds.  Note that if a second request
