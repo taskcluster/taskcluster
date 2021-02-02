@@ -77,22 +77,23 @@ impl Object {
 
     /// Download object data
     /// 
-    /// Get information on how to download an object.  Call this endpoint with a list of acceptable
+    /// Start the process of downloading an object's data.  Call this endpoint with a list of acceptable
     /// download methods, and the server will select a method and return the corresponding payload.
+    /// 
     /// Returns a 406 error if none of the given download methods are available.
     /// 
     /// See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.
-    pub async fn fetchObjectMetadata(&self, name: &str, payload: &Value) -> Result<Value, Error> {
+    pub async fn startDownload(&self, name: &str, payload: &Value) -> Result<Value, Error> {
         let method = "PUT";
-        let (path, query) = Self::fetchObjectMetadata_details(name);
+        let (path, query) = Self::startDownload_details(name);
         let body = Some(payload);
         let resp = self.0.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
-    /// Determine the HTTP request details for fetchObjectMetadata
-    fn fetchObjectMetadata_details<'a>(name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("download-object/{}", urlencode(name));
+    /// Determine the HTTP request details for startDownload
+    fn startDownload_details<'a>(name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("start-download/{}", urlencode(name));
         let query = None;
 
         (path, query)
@@ -110,7 +111,7 @@ impl Object {
     /// This method is limited by the common capabilities of HTTP, so it may not be
     /// the most efficient, resilient, or featureful way to retrieve an artifact.
     /// Situations where such functionality is required should ues the
-    /// `fetchObjectMetadata` API endpoint.
+    /// `startDownload` API endpoint.
     /// 
     /// See [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.
     pub async fn download(&self, name: &str) -> Result<(), Error> {

@@ -24,7 +24,7 @@ class TestBackend extends Backend {
     return ['simple', 'HTTP:GET'];
   }
 
-  async fetchObjectMetadata(object, method, params) {
+  async startDownload(object, method, params) {
     assert(this.data.has(object.name));
     switch (method){
       case 'simple': {

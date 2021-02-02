@@ -4,18 +4,18 @@ const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withMiddleware(mock, skipping, [
-    { 'middlewareType': 'test', fetchObjectMetadata: { intercept: 'dl' } },
+    { 'middlewareType': 'test', startDownload: { intercept: 'dl' } },
     { 'middlewareType': 'test', download: { intercept: 'simple' } },
   ]);
 
-  test('calls middleware for fetchObjectMetadataRequest', async function() {
+  test('calls middleware for startDownloadRequest', async function() {
     const middleware = await helper.load('middleware');
 
     let reply;
     const res = { reply: x => reply = x };
     const object = { name: 'dl/intercept' };
 
-    assert(!await middleware.fetchObjectMetadataRequest({}, res, object, 'meth', {}));
+    assert(!await middleware.startDownloadRequest({}, res, object, 'meth', {}));
     assert.deepEqual(reply, { method: 'simple', url: 'http://intercepted' });
   });
 
