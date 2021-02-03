@@ -265,9 +265,9 @@
     methods "^1.1.2"
 
 "@octokit/auth-app@^2.10.5":
-  version "2.10.6"
-  resolved "https://registry.yarnpkg.com/@octokit/auth-app/-/auth-app-2.10.6.tgz#3f84b7fc80ecc40b0cfcd3aad5c8269abcff1208"
-  integrity sha512-o0aLU7XZ+HBTeDNv85GTA57APPchYEqA8muBDn3wnC40yGOevlAhR2IdpnLwjZhy0eaARkV/D6a66BPQzsT5yA==
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/@octokit/auth-app/-/auth-app-2.11.0.tgz#7dce17adf3b30a722aea5bf239396418151034eb"
+  integrity sha512-tC0BjqyTEjReIBHogOjLjF3rc2n4xwjZcpOaUUhybDnqkrp7Gxj5n91aGUcIFgJ3MDYf+f3XZehQd2B4ijG+4w==
   dependencies:
     "@octokit/request" "^5.4.11"
     "@octokit/request-error" "^2.0.0"
@@ -357,7 +357,7 @@
     deprecation "^2.0.0"
     once "^1.4.0"
 
-"@octokit/request@^5.3.0", "@octokit/request@^5.4.12":
+"@octokit/request@^5.3.0", "@octokit/request@^5.4.11", "@octokit/request@^5.4.12":
   version "5.4.14"
   resolved "https://registry.yarnpkg.com/@octokit/request/-/request-5.4.14.tgz#ec5f96f78333bb2af390afa5ff66f114b063bc96"
   integrity sha512-VkmtacOIQp9daSnBmDI92xNIeLuSRDOIuplp/CJomkvzt7M18NXgG044Cx/LFKLgjKt9T2tZR6AtJayba9GTSA==
@@ -365,20 +365,6 @@
     "@octokit/endpoint" "^6.0.1"
     "@octokit/request-error" "^2.0.0"
     "@octokit/types" "^6.7.1"
-    deprecation "^2.0.0"
-    is-plain-object "^5.0.0"
-    node-fetch "^2.6.1"
-    once "^1.4.0"
-    universal-user-agent "^6.0.0"
-
-"@octokit/request@^5.4.11":
-  version "5.4.13"
-  resolved "https://registry.yarnpkg.com/@octokit/request/-/request-5.4.13.tgz#eec5987b3e96f984fc5f41967e001170c6d23a18"
-  integrity sha512-WcNRH5XPPtg7i1g9Da5U9dvZ6YbTffw9BN2rVezYiE7couoSyaRsw0e+Tl8uk1fArHE7Dn14U7YqUDy59WaqEw==
-  dependencies:
-    "@octokit/endpoint" "^6.0.1"
-    "@octokit/request-error" "^2.0.0"
-    "@octokit/types" "^6.0.3"
     deprecation "^2.0.0"
     is-plain-object "^5.0.0"
     node-fetch "^2.6.1"
