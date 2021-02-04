@@ -78,7 +78,6 @@
    * [`create_queue_artifact`](#create_queue_artifact)
    * [`create_queue_worker_tqid`](#create_queue_worker_tqid)
    * [`create_task_projid`](#create_task_projid)
-   * [`create_task_queue`](#create_task_queue)
    * [`delete_queue_artifact`](#delete_queue_artifact)
    * [`delete_queue_provisioner`](#delete_queue_provisioner)
    * [`delete_queue_worker_type`](#delete_queue_worker_type)
@@ -109,9 +108,9 @@
    * [`resolve_task_at_deadline`](#resolve_task_at_deadline)
    * [`satisfy_task_dependency`](#satisfy_task_dependency)
    * [`schedule_task`](#schedule_task)
+   * [`task_queue_seen`](#task_queue_seen)
    * [`update_queue_artifact_2`](#update_queue_artifact_2)
    * [`update_queue_worker_tqid`](#update_queue_worker_tqid)
-   * [`update_task_queue`](#update_task_queue)
  * [secrets functions](#secrets)
    * [`delete_secret`](#delete_secret)
    * [`expire_secrets`](#expire_secrets)
@@ -1107,7 +1106,6 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`create_queue_artifact`](#create_queue_artifact)
 * [`create_queue_worker_tqid`](#create_queue_worker_tqid)
 * [`create_task_projid`](#create_task_projid)
-* [`create_task_queue`](#create_task_queue)
 * [`delete_queue_artifact`](#delete_queue_artifact)
 * [`delete_queue_provisioner`](#delete_queue_provisioner)
 * [`delete_queue_worker_type`](#delete_queue_worker_type)
@@ -1138,9 +1136,9 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`resolve_task_at_deadline`](#resolve_task_at_deadline)
 * [`satisfy_task_dependency`](#satisfy_task_dependency)
 * [`schedule_task`](#schedule_task)
+* [`task_queue_seen`](#task_queue_seen)
 * [`update_queue_artifact_2`](#update_queue_artifact_2)
 * [`update_queue_worker_tqid`](#update_queue_worker_tqid)
-* [`update_task_queue`](#update_task_queue)
 
 ### add_task_dependency
 
@@ -1357,19 +1355,6 @@ Create a new queue worker.  Raises UNIQUE_VIOLATION if the worker already exists
 
 Create a new task, without scheduling it, and with empty values
 for the status information.
-
-### create_task_queue
-
-* *Mode*: write
-* *Arguments*:
-  * `task_queue_id_in text`
-  * `expires_in timestamptz`
-  * `last_date_active_in timestamptz`
-  * `description_in text`
-  * `stability_in text`
-* *Returns*: `uuid`
-
-Create a new task queue. Raises UNIQUE_VIOLATION if the task queue already exists.
 
 ### delete_queue_artifact
 
@@ -1832,6 +1817,23 @@ Schedule the initial run for a task, moving the task from "unscheduled" to "pend
 This returns the task's updated status, or nothing if the current status was not
 as expected.
 
+### task_queue_seen
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `expires_in timestamptz`
+  * `description_in text`
+  * `stability_in text`
+* *Returns*: `void`
+
+Recognize that a task queue has been seen, creating it if necessary, updating
+its properties if not null, and in any case bumping its last seen time time. 
+The expiration time is not allowed to move backward.
+
+This function always writes to the DB, so calls should be suitably rate-limited at the
+client side.
+
 ### update_queue_artifact_2
 
 * *Mode*: write
@@ -1878,32 +1880,14 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
 Update a queue worker's quarantine_until, expires, and recent_tasks.
 All parameters must be supplied.
 
-### update_task_queue
-
-* *Mode*: write
-* *Arguments*:
-  * `task_queue_id_in text`
-  * `expires_in timestamptz`
-  * `last_date_active_in timestamptz`
-  * `description_in text`
-  * `stability_in text`
-* *Returns*: `table`
-  * `task_queue_id text`
-  * `expires timestamptz`
-  * `last_date_active timestamptz`
-  * `description text`
-  * `stability text`
-  * `etag uuid`
-
-Update a task queue's expires, last_date_active, description, and stability.
-All parameters must be supplied.
-
 ### deprecated methods
 
+* `create_task_queue(task_queue_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text)` (compatibility guaranteed until v43.0.0)
 * `create_task_tqid(task_id text, task_queue_id text, scheduler_id text, task_group_id text, dependencies jsonb, requires task_requires, routes jsonb, priority task_priority, retries integer, created timestamptz, deadline timestamptz, expires timestamptz, scopes jsonb, payload jsonb, metadata jsonb, tags jsonb, extra jsonb)` (compatibility guaranteed until v42.0.0)
 * `get_task_tqid(task_id_in text)` (compatibility guaranteed until v42.0.0)
 * `get_tasks_by_task_group_tqid(task_group_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v42.0.0)
 * `update_queue_artifact(task_id_in text, run_id_in integer, name_in text, details_in jsonb, expires_in timestamptz)` (compatibility guaranteed until v42.0.0)
+* `update_task_queue(task_queue_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text)` (compatibility guaranteed until v43.0.0)
 
 ## secrets
 

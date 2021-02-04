@@ -3,13 +3,9 @@ const assert = require('assert');
 const debug = require('debug')('workerinfo');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 
-const { Worker, TaskQueue } = require('./data');
+const { Worker } = require('./data');
 
-const DAY = 24 * 60 * 60 * 1000;
 const RECENT_TASKS_LIMIT = 20;
-
-const expired = expires => Date.now() > new Date(expires) - DAY;
-const shouldUpdateLastDateActive = lastDateActive => Date.now() - new Date(lastDateActive) > DAY / 4;
 
 class WorkerInfo {
   constructor(options) {
@@ -30,8 +26,7 @@ class WorkerInfo {
    * Thus the `expires` value on a row may be out-of-date by `updateFrequency`.
    *
    * Note that the cache is never purged of outdated entries; this assumes that
-   * the process is restarted on a daily
-   * basis, so there is not too much time
+   * the process is restarted on a daily basis, so there is not too much time
    * for stale cache entries to accumulate.
    */
   async valueSeen(key, updateExpires) {
@@ -49,33 +44,15 @@ class WorkerInfo {
     const expires = new Date();
     const promises = [];
 
-    // worker-type seen
+    // task queue seen
     if (taskQueueId) {
       promises.push(this.valueSeen(taskQueueId, async () => {
-        // perform an Azure upsert, trying the update first as it is more common
-        let tQueue = await TaskQueue.get(this.db, taskQueueId, expires);
-
-        if (tQueue) {
-          return tQueue.update(this.db, {
-            expires: expired(tQueue.expires) ? newExpiration : tQueue.expires,
-            lastDateActive: shouldUpdateLastDateActive(tQueue.lastDateActive) ? new Date() : tQueue.lastDateActive,
-          });
-        }
-
-        tQueue = await TaskQueue.fromApi(taskQueueId, {
-          taskQueueId,
-          expires: newExpiration,
-          lastDateActive: new Date(),
-          description: '',
-          stability: 'experimental',
+        await this.db.fns.task_queue_seen({
+          task_queue_id_in: taskQueueId,
+          expires_in: newExpiration,
+          description_in: null,
+          stability_in: null,
         });
-        try {
-          await tQueue.create(this.db);
-        } catch (err) {
-          if (err.code !== UNIQUE_VIOLATION) {
-            throw err;
-          }
-        }
       }));
     }
 
@@ -140,38 +117,6 @@ class WorkerInfo {
       ...tasks.map(({ status }) => ({ taskId: status.taskId, runId: status.runs.length - 1 })),
     ].slice(-RECENT_TASKS_LIMIT);
     await worker.update(this.db, { recentTasks });
-  }
-
-  async upsertTaskQueue({ taskQueueId, stability, description, expires }) {
-    let wType = await TaskQueue.get(this.db, taskQueueId, new Date());
-    let result;
-
-    if (wType) {
-      let rows = await wType.update(this.db, {
-        stability: stability || wType.stability,
-        description: description || wType.description,
-        expires: expires || wType.expires,
-      });
-      result = TaskQueue.fromDbRows(rows);
-    } else {
-      wType = await TaskQueue.fromApi(taskQueueId, {
-        taskQueueId,
-        expires: new Date(expires || taskcluster.fromNow('5 days')),
-        lastDateActive: new Date(),
-        description: description || '',
-        stability: stability || 'experimental',
-      });
-      try {
-        await wType.create(this.db);
-      } catch (err) {
-        if (err.code !== UNIQUE_VIOLATION) {
-          throw err;
-        }
-      }
-      result = wType;
-    }
-
-    return result;
   }
 
   async upsertWorker({ taskQueueId, workerGroup, workerId, expires }) {

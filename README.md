@@ -45,6 +45,8 @@ This repository is used to develop, build, and release the Taskcluster services.
     * [Taskcluster Client for Web](clients/client-web#readme)
 * [Taskcluster Database](db#readme)
     * [Database Versions](db/versions#readme)
+    * [Database Versions](db/versions#readme)
+    * [Database Versions](db/versions#readme)
 * [Development Documentation](dev-docs#readme)
 * [Infrastructure](infrastructure#readme)
     * [Docker Images](infrastructure/docker-images#readme)

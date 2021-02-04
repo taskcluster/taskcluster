@@ -17,17 +17,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.resetTables(mock, skipping);
 
   const makeTaskQueue = async (opts) => {
-    const tQueue = TaskQueue.fromApi('prov1-extended-extended-extended/gecko-b-2-linux-extended-extended', Object.assign({
-      taskQueueId: 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended',
-      expires: new Date('3017-07-29'),
-      lastDateActive: new Date(),
-      description: 'test-worker-type',
-      stability: 'experimental',
-    }, opts));
-
+    const taskQueueId = opts.taskQueueId || 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended';
     const db = await helper.load('db');
-    await tQueue.create(db);
-    return tQueue;
+    await db.fns.task_queue_seen({
+      task_queue_id_in: taskQueueId,
+      expires_in: opts.expires || new Date('3017-07-29'),
+      description_in: opts.description || 'test-worker-type',
+      stability_in: opts.stability || 'experimental',
+    });
+    return await TaskQueue.get(db, taskQueueId, new Date());
   };
 
   const makeWorker = async (opts) => {
@@ -539,7 +537,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     const tQueue = {
       taskQueueId: 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended',
-      lastDateActive: new Date(),
     };
     await makeTaskQueue(tQueue);
 
@@ -548,21 +545,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let [provisionerId, workerType] = tQueue.taskQueueId.split('/');
     result = await helper.queue.getWorkerType(provisionerId, workerType);
 
-    assert(
-      new Date(result.lastDateActive).getTime() === tQueue.lastDateActive.getTime(), `expected ${tQueue.lastDateActive}`,
-    );
-
-    tQueue.taskQueueId = 'prov1-extended-extended-extended/gecko-b-2-android';
-    tQueue.lastDateActive = taskcluster.fromNow('- 7h');
-    await makeTaskQueue(tQueue);
-
-    await workerInfo.seen(tQueue.taskQueueId);
-
-    [provisionerId, workerType] = tQueue.taskQueueId.split('/');
-    result = await helper.queue.getWorkerType(provisionerId, workerType);
-    assert(
-      new Date(result.lastDateActive).getTime() !== tQueue.lastDateActive.getTime(), 'expected different lastDateActive',
-    );
+    assert(Math.abs(new Date(result.lastDateActive) - new Date()) < 3600);
   });
 
   test('provisioner lastDateActive updates', async () => {
@@ -576,17 +559,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let { provisionerId } = splitTaskQueueId(tQueue.taskQueueId);
     result = await helper.queue.getProvisioner(provisionerId);
 
-    assert(new Date(result.lastDateActive).getTime() === tQueue.lastDateActive.getTime(), `expected ${tQueue.lastDateActive}`);
-
-    tQueue.lastDateActive = taskcluster.fromNow('- 7h');
-    tQueue.taskQueueId = 'prov2/not-important';
-    provisionerId = 'prov2';
-
-    await workerInfo.seen(tQueue.taskQueueId);
-
-    result = await helper.queue.getProvisioner(provisionerId);
-
-    assert(new Date(result.lastDateActive).getTime() !== tQueue.lastDateActive.getTime(), 'expected different lastDateActive');
+    assert(Math.abs(new Date(result.lastDateActive) - new Date()) < 3600);
   });
 
   test('queue.getWorker returns a worker', async () => {

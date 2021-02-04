@@ -1187,15 +1187,18 @@ suite(testing.suiteName(), function() {
     });
 
     const expires = taskcluster.fromNow('2 hours');
-    const lastDateActive = taskcluster.fromNow('0 hours');
     const create = async (db, options = {}) => {
-      await db.fns.create_task_queue(
+      await db.fns.task_queue_seen(
         options.taskQueueId || 'prov/wt',
         options.expires || expires,
-        options.lastDateActive || lastDateActive,
         options.description || 'desc',
         options.stability || 'unstable',
       );
+    };
+
+    const checkLastDateActive = row => {
+      const sinceLastDateActive = row.last_date_active - new Date();
+      assert(Math.abs(sinceLastDateActive) < 3600, `last_date_active: ${row.last_date_active} (diff = ${sinceLastDateActive}ms)`);
     };
 
     helper.dbTest('no such task queue', async function(db) {
@@ -1203,12 +1206,27 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('create_task_queue / get_task_queues', async function(db) {
+    helper.dbTest('create_task_queue (deprecated)', async function(db) {
+      await db.deprecatedFns.create_task_queue(
+        'prov/wt',
+        expires,
+        new Date(),
+        'desc',
+        'unstable',
+      );
+      const res = await db.fns.get_task_queues('prov/wt', new Date(), null, null);
+      assert.equal(res[0].task_queue_id, 'prov/wt');
+      assert.deepEqual(res[0].expires, expires);
+      checkLastDateActive(res[0]);
+      assert.deepEqual(res[0].description, 'desc');
+    });
+
+    helper.dbTest('get_task_queues', async function(db) {
       await create(db);
       const res = await db.fns.get_task_queues('prov/wt', new Date(), null, null);
       assert.equal(res[0].task_queue_id, 'prov/wt');
       assert.deepEqual(res[0].expires, expires);
-      assert.deepEqual(res[0].last_date_active, lastDateActive);
+      checkLastDateActive(res[0]);
       assert.deepEqual(res[0].description, 'desc');
     });
 
@@ -1258,9 +1276,9 @@ suite(testing.suiteName(), function() {
       assert.equal(result[5].task_queue_id, 'prov/wt-5');
     });
 
-    helper.dbTest('update_task_queue', async function(db) {
+    helper.dbTest('update_task_queue (deprecated)', async function(db) {
       await create(db);
-      const res = await db.fns.update_task_queue(
+      const res = await db.deprecatedFns.update_task_queue(
         'prov/wt',
         new Date(0),
         new Date(1),
@@ -1270,6 +1288,99 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res[0].expires, new Date(0));
       assert.deepEqual(res[0].last_date_active, new Date(1));
       assert.equal(res[0].description, 'new_desc');
+    });
+
+    helper.dbTest('task_queue_seen', async function(db) {
+      const expires1 = taskcluster.fromNow('1 day');
+      const expires2 = taskcluster.fromNow('2 days');
+
+      const taskQueueSeen = async (options) => {
+        await db.fns.task_queue_seen({
+          task_queue_id_in: 'prov/wt',
+          expires_in: options.expires,
+          description_in: options.description,
+          stability_in: options.stability,
+        });
+      };
+
+      const checkTaskQueue = async (options) => {
+        const res = await db.fns.get_task_queue('prov/wt', new Date());
+        if (options.none) {
+          assert.deepEqual(res, []);
+          return;
+        }
+
+        assert.deepEqual(res[0].expires, options.expires);
+        checkLastDateActive(res[0]);
+        assert.equal(res[0].description, options.description);
+        assert.equal(res[0].stability, options.stability);
+      };
+
+      await checkTaskQueue({ none: true });
+
+      await taskQueueSeen({
+        expires: expires1,
+        // apply defaults
+        description: null,
+        stability: null,
+      });
+
+      await checkTaskQueue({
+        expires: expires1,
+        description: '',
+        stability: 'experimental',
+      });
+
+      await taskQueueSeen({
+        expires: expires1,
+        description: 'first',
+        stability: 'stable',
+      });
+
+      await checkTaskQueue({
+        expires: expires1,
+        description: 'first',
+        stability: 'stable',
+      });
+
+      await taskQueueSeen({
+        expires: expires2,
+        // keep the existing values
+        description: null,
+        stability: null,
+      });
+
+      await checkTaskQueue({
+        expires: expires2,
+        description: 'first',
+        stability: 'stable',
+      });
+
+      await taskQueueSeen({
+        // update everything
+        expires: expires2,
+        description: 'second',
+        stability: 'deprecated',
+      });
+
+      await checkTaskQueue({
+        expires: expires2,
+        description: 'second',
+        stability: 'deprecated',
+      });
+
+      await taskQueueSeen({
+        // try to set expires backward
+        expires: expires1,
+        description: null,
+        stability: null,
+      });
+
+      await checkTaskQueue({
+        expires: expires2,
+        description: 'second',
+        stability: 'deprecated',
+      });
     });
 
     helper.dbTest('expire_task_queues deletes expired worker types', async function(db) {
@@ -1294,7 +1405,7 @@ suite(testing.suiteName(), function() {
     // functions rely on the task_queues table to simulate the old
     // behavior, we have to use create_task_queues for testing here.
     const create = async (db, options = {}) => {
-      await db.fns.create_task_queue(
+      await db.deprecatedFns.create_task_queue(
         options.taskQueueId || 'prov/wt',
         options.expires || expires,
         options.lastDateActive || lastDateActive,

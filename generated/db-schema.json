@@ -5987,6 +5987,27 @@
       },
       "migrationScript": "begin\n  alter table tasks add column project_id text;\nend",
       "version": 63
+    },
+    {
+      "description": "Add `queue_worker_seen` and `queue_task_queue_seen` functions",
+      "methods": {
+        "create_task_queue": {
+          "deprecated": true
+        },
+        "task_queue_seen": {
+          "args": "task_queue_id_in text, expires_in timestamptz, description_in text, stability_in text",
+          "body": "begin\n  insert\n    into task_queues (task_queue_id, expires, last_date_active, description, stability)\n    values (\n      task_queue_id_in,\n      expires_in,\n      now(),\n      coalesce(description_in, ''),\n      coalesce(stability_in, 'experimental')\n    )\n    on conflict (task_queue_id) do update\n    set\n      expires = greatest(coalesce(expires_in, task_queues.expires), task_queues.expires),\n      last_date_active = now(),\n      description = coalesce(description_in, task_queues.description),\n      stability = coalesce(stability_in, task_queues.stability)\n    where task_queues.task_queue_id = task_queue_id_in;\nend",
+          "deprecated": false,
+          "description": "Recognize that a task queue has been seen, creating it if necessary, updating\nits properties if not null, and in any case bumping its last seen time time. \nThe expiration time is not allowed to move backward.\n\nThis function always writes to the DB, so calls should be suitably rate-limited at the\nclient side.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "update_task_queue": {
+          "deprecated": true
+        }
+      },
+      "version": 64
     }
   ]
 }
