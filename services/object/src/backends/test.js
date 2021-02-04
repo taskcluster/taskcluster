@@ -1,5 +1,6 @@
 const assert = require('assert');
 const { Backend } = require('./base');
+const { reportError } = require('taskcluster-lib-api');
 
 /**
  * The test backend type is only available when running tests.
@@ -10,11 +11,29 @@ class TestBackend extends Backend {
     this.data = new Map();
   }
 
-  async temporaryUpload(object, data) {
+  async createUpload(object, proposedUploadMethods) {
     if (TestBackend.failUpload) {
       throw new Error('uhoh');
     }
-    this.data.set(object.name, data);
+
+    if ('dataInline' in proposedUploadMethods) {
+      return await this.createDataInlineUpload(object, proposedUploadMethods.dataInline);
+    }
+
+    return {};
+  }
+
+  async createDataInlineUpload(object, { objectData }) {
+    let bytes;
+    try {
+      bytes = Buffer.from(objectData, 'base64');
+    } catch (err) {
+      return reportError('InputError', 'Invalid base64 objectData', {});
+    }
+
+    this.data.set(object.name, bytes);
+
+    return { dataInline: true };
   }
 
   async availableDownloadMethods(object) {

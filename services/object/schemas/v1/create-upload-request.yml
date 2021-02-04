@@ -1,0 +1,49 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Create Upload Request"
+description: |
+  A request to begin an upload, containing proposed upload methods to which the
+  server may agree to or reject.
+type:               object
+properties:
+  projectId:
+    title:          "Project Identifier"
+    description: |
+      Project identifier.
+    type:           string
+    minLength:      {$const: projectId-min-length}
+    maxLength:      {$const: projectId-max-length}
+    pattern:        {$const: projectId-pattern}
+  uploadId:
+    title: "Upload ID"
+    description: |-
+      Unique identifier for this upload.   Once an object is created with an uploadId,
+      uploads of the same object with different uploadIds will be rejected.  Callers
+      should pass a randomly-generated slugid here.
+    type:             string
+    pattern:          {$const: slugid-pattern}
+  expires:
+    title:          "Expiration"
+    description: |
+      Date at which this entry expires from the object table.  The expiration cannot
+      be changed in subsequent calls to the same method.
+    type:           string
+    format:         date-time
+  proposedUploadMethods:
+    type: object
+    title: "Proposed Upload Methods"
+    description: |
+      Upload methods, with details, that the caller is prepared to execute.  If this
+      object is empty, then the server will reject the request but still create the
+      upload with the given `uploadId` and `expires`, so any subsequent calls must
+      share those values.  The server may choose any of the proposed methods at its
+      discretion.
+    properties:
+      dataInline: {$ref: "upload-method-data-inline.json#/definitions/request"}
+    additionalProperties: false
+    required: []
+additionalProperties: false
+required:
+  - projectId
+  - uploadId
+  - expires
+  - proposedUploadMethods

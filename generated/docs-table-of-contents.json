@@ -2256,13 +2256,35 @@
                 },
                 "name": "simple-downloads",
                 "next": {
-                  "path": "reference/platform/object/aws-backend",
-                  "title": "AWS Backend Type"
+                  "path": "reference/platform/object/upload-methods",
+                  "title": "Upload Methods"
                 },
                 "path": "reference/platform/object/simple-downloads",
                 "prev": {
                   "path": "reference/platform/object/download-methods",
                   "title": "Download Methods"
+                },
+                "up": {
+                  "path": "reference/platform/object/README",
+                  "title": "object"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 21,
+                  "title": "Upload Methods"
+                },
+                "name": "upload-methods",
+                "next": {
+                  "path": "reference/platform/object/aws-backend",
+                  "title": "AWS Backend Type"
+                },
+                "path": "reference/platform/object/upload-methods",
+                "prev": {
+                  "path": "reference/platform/object/simple-downloads",
+                  "title": "Simple Downloads"
                 },
                 "up": {
                   "path": "reference/platform/object/README",
@@ -2283,8 +2305,8 @@
                 },
                 "path": "reference/platform/object/aws-backend",
                 "prev": {
-                  "path": "reference/platform/object/simple-downloads",
-                  "title": "Simple Downloads"
+                  "path": "reference/platform/object/upload-methods",
+                  "title": "Upload Methods"
                 },
                 "up": {
                   "path": "reference/platform/object/README",

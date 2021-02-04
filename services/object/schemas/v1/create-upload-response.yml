@@ -1,0 +1,40 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Create Upload Response"
+description: |
+  A response from the `createUpload` method, either agreeing to an upload method or
+  rejecting the proposal.
+type:               object
+properties:
+  projectId:
+    title:          "Project Identifier"
+    type:           string
+    minLength:      {$const: projectId-min-length}
+    maxLength:      {$const: projectId-max-length}
+    pattern:        {$const: projectId-pattern}
+  uploadId:
+    title: "Upload ID"
+    type:             string
+    pattern:          {$const: slugid-pattern}
+  expires:
+    title:          "Expiration"
+    type:           string
+    format:         date-time
+  uploadMethod:
+    type: object
+    title: "Selected Upload Method (or none)"
+    description: |
+      The selected upload method, from those contained in the request.  At most one
+      property will be set, indicating the selected method.  If no properties are set,
+      then none of the proposed methods were selected.
+    properties:
+      dataInline: {$ref: "upload-method-data-inline.json#/definitions/response"}
+    minProperties: 0
+    maxProperties: 1
+    additionalProperties: false
+    required: []
+additionalProperties: false
+required:
+  - projectId
+  - uploadId
+  - expires
+  - uploadMethod

@@ -122,7 +122,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     teardown(cleanup);
   });
 
-  helper.testTemporaryUpload({
+  helper.testDataInlineUpload({
     mock, skipping, prefix,
     backendId: 'awsPrivate',
     async getObjectContent({ name }) {
@@ -130,7 +130,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         Bucket: secret.testBucket,
         Key: name,
       }).promise();
-      return res.Body;
+      return { data: res.Body, contentType: res.ContentType };
     },
   }, async function() {
     teardown(cleanup);

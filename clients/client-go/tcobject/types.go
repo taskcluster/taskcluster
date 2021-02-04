@@ -10,6 +10,70 @@ import (
 )
 
 type (
+	// A request to begin an upload, containing proposed upload methods to which the
+	// server may agree to or reject.
+	CreateUploadRequest struct {
+
+		// Date at which this entry expires from the object table.  The expiration cannot
+		// be changed in subsequent calls to the same method.
+		Expires tcclient.Time `json:"expires"`
+
+		// Project identifier.
+		//
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId"`
+
+		// Upload methods, with details, that the caller is prepared to execute.  If this
+		// object is empty, then the server will reject the request but still create the
+		// upload with the given `uploadId` and `expires`, so any subsequent calls must
+		// share those values.  The server may choose any of the proposed methods at its
+		// discretion.
+		ProposedUploadMethods ProposedUploadMethods `json:"proposedUploadMethods"`
+
+		// Unique identifier for this upload.   Once an object is created with an uploadId,
+		// uploads of the same object with different uploadIds will be rejected.  Callers
+		// should pass a randomly-generated slugid here.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		UploadID string `json:"uploadId"`
+	}
+
+	// A response from the `createUpload` method, either agreeing to an upload method or
+	// rejecting the proposal.
+	CreateUploadResponse struct {
+		Expires tcclient.Time `json:"expires"`
+
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId"`
+
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		UploadID string `json:"uploadId"`
+
+		// The selected upload method, from those contained in the request.  At most one
+		// property will be set, indicating the selected method.  If no properties are set,
+		// then none of the proposed methods were selected.
+		UploadMethod SelectedUploadMethodOrNone `json:"uploadMethod"`
+	}
+
+	// Upload data included directly in the request.  The data has a fixed maximum length, so this should
+	// be used only for value that are known to be of constant, fairly small size to avoid surprises as
+	// the payload grows. In general, this is useful for testing and for metadata objects such as
+	// separate cryptographic signatures.
+	DataInlineUploadRequest struct {
+
+		// Content-type to be returned when downloading this data
+		ContentType string `json:"contentType"`
+
+		// Base64-encoded byte data, with decoded size at most 8k.
+		//
+		// Max length: 10926
+		ObjectData string `json:"objectData"`
+	}
+
 	Details struct {
 		URL string `json:"url"`
 	}
@@ -36,6 +100,31 @@ type (
 		Method string `json:"method"`
 	}
 
+	// Upload methods, with details, that the caller is prepared to execute.  If this
+	// object is empty, then the server will reject the request but still create the
+	// upload with the given `uploadId` and `expires`, so any subsequent calls must
+	// share those values.  The server may choose any of the proposed methods at its
+	// discretion.
+	ProposedUploadMethods struct {
+
+		// Upload data included directly in the request.  The data has a fixed maximum length, so this should
+		// be used only for value that are known to be of constant, fairly small size to avoid surprises as
+		// the payload grows. In general, this is useful for testing and for metadata objects such as
+		// separate cryptographic signatures.
+		DataInline DataInlineUploadRequest `json:"dataInline,omitempty"`
+	}
+
+	// The selected upload method, from those contained in the request.  At most one
+	// property will be set, indicating the selected method.  If no properties are set,
+	// then none of the proposed methods were selected.
+	SelectedUploadMethodOrNone struct {
+
+		// Indication that the data has been uploaded.
+		//
+		// Constant value: %!q(bool=true)
+		DataInline bool `json:"dataInline,omitempty"`
+	}
+
 	// A simple download returns a URL to which the caller should make a GET request.
 	// See [Simple Downloads](https://docs.taskcluster.net/docs/docs/reference/platform/object/simple-downloads) for details.
 	SimpleDownloadResponse struct {
@@ -55,30 +144,6 @@ type (
 
 		// Constant value: %!q(bool=true)
 		Simple bool `json:"simple,omitempty"`
-	}
-
-	// Representation of the object entry to insert.  This is a temporary API.
-	UploadObjectRequest struct {
-
-		// The data to upload, base64-encoded
-		Data string `json:"data"`
-
-		// Date at which this entry expires from the object table.
-		Expires tcclient.Time `json:"expires"`
-
-		// Project identifier.
-		//
-		// Syntax:     ^([a-zA-Z0-9._/-]*)$
-		// Min length: 1
-		// Max length: 500
-		ProjectID string `json:"projectId"`
-
-		// Unique identifier for this upload.   Once an object is created with an uploadId,
-		// uploads of the same object with different uploadIds will be rejected.  Callers
-		// should pass a randomly-generated slugid here.
-		//
-		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		UploadID string `json:"uploadId"`
 	}
 )
 

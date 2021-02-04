@@ -102,16 +102,31 @@ func (object *Object) Ping() error {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Upload backend data.
+// Create a new object by initiating upload of its data.
+//
+// This endpoint implements negotiation of upload methods.  It can be called
+// multiple times if necessary, either to propose new upload methods or to
+// renew credentials for an already-agreed upload.
+//
+// The `uploadId` must be supplied by the caller, and any attempts to upload
+// an object with the same name but a different `uploadId` will fail.
+// Thus the first call to this method establishes the `uploadId` for the
+// object, and as long as that value is kept secret, no other caller can
+// upload an object of that name, regardless of scopes.  Object expiration
+// cannot be changed after the initial call, either.  It is possible to call
+// this method with no proposed upload methods, which hsa the effect of "locking
+// in" the `expiration` and `uploadId` properties.
+//
+// Unfinished uploads expire after 1 day.
 //
 // Required scopes:
 //   object:upload:<projectId>:<name>
 //
-// See #uploadObject
-func (object *Object) UploadObject(name string, payload *UploadObjectRequest) error {
+// See #createUpload
+func (object *Object) CreateUpload(name string, payload *CreateUploadRequest) (*CreateUploadResponse, error) {
 	cd := tcclient.Client(*object)
-	_, _, err := (&cd).APICall(payload, "PUT", "/upload/"+url.QueryEscape(name), nil, nil)
-	return err
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/upload/"+url.QueryEscape(name), new(CreateUploadResponse), nil)
+	return responseObject.(*CreateUploadResponse), err
 }
 
 // Stability: *** EXPERIMENTAL ***

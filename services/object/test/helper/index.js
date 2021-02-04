@@ -11,7 +11,7 @@ const aws = require('./aws');
 const google = require('./google');
 
 Object.assign(exports, require('./simple-download'));
-Object.assign(exports, require('./temporary-upload'));
+Object.assign(exports, require('./data-inline-upload'));
 
 exports.load = stickyLoader(load);
 

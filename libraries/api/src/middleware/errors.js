@@ -1,4 +1,4 @@
-const ErrorReply = require('../error-reply');
+const { reportError } = require('../error-reply');
 
 const ERROR_CODES = {
   MalformedPayload: 400, // Only for JSON.parse() errors
@@ -19,15 +19,10 @@ exports.ERROR_CODES = ERROR_CODES;
 
 /**
  * Middleware that adds `res.reportError(code, message, details)`
- *
- * The `method` is the name of the API method, `errorCodes` is a mapping from
- * allowed error codes to HTTP status codes.
  */
 const buildReportErrorMethod = () => {
   return (req, res, next) => {
-    res.reportError = (code, message, details = {}) => {
-      throw new ErrorReply({ code, message, details });
-    };
+    res.reportError = reportError;
     next();
   };
 };

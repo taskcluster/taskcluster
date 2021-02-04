@@ -20,10 +20,14 @@ class Backend {
   }
 
   /**
-   * Temporary upload method that includes the uploded data in the request body
+   * Negotiate the upload method based on the given proposed upload methods,
+   * returning the `uploadMethod` property of the response payload.  This will
+   * not be called for an empty `proposedUploadMethods`.
+   *
+   * Implementations may use taskcluster-lib-api's `reportError` method.
    */
-  async temporaryUpload(object, data) {
-    throw new Error('temporaryUpload is not implemented for this backend');
+  async createUpload(object, proposedUploadMethods) {
+    return {};
   }
 
   /**
