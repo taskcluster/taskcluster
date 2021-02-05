@@ -71,7 +71,8 @@ methods:
   quarantine_queue_worker:
     description: |-
       Update the quarantine_until date for a worker.  The Queue service interprets a date in the past
-      as "not quarantined".  Returns the worker row just as get_queue_worker would, or no rows if
+      as "not quarantined".  This function also "bumps" the expiration of the worker so that un-quarantined
+      workers do not immediately expire.  Returns the worker row just as get_queue_worker would, or no rows if
       no such worker exists.
     mode: write
     serviceName: queue
@@ -81,7 +82,8 @@ methods:
       begin
         return query update queue_workers
         set
-          quarantine_until = quarantine_until_in
+          quarantine_until = quarantine_until_in,
+          expires = greatest(queue_workers.expires, now() + interval '1 day')
         where
           queue_workers.task_queue_id = task_queue_id_in and
           queue_workers.worker_group = worker_group_in and

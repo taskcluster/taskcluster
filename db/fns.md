@@ -1710,7 +1710,8 @@ temp, removed in next commit
   * `recent_tasks jsonb`
 
 Update the quarantine_until date for a worker.  The Queue service interprets a date in the past
-as "not quarantined".  Returns the worker row just as get_queue_worker would, or no rows if
+as "not quarantined".  This function also "bumps" the expiration of the worker so that un-quarantined
+workers do not immediately expire.  Returns the worker row just as get_queue_worker would, or no rows if
 no such worker exists.
 
 ### queue_worker_seen

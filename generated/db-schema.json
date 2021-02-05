@@ -5999,9 +5999,9 @@
         },
         "quarantine_queue_worker": {
           "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz",
-          "body": "begin\n  return query update queue_workers\n  set\n    quarantine_until = quarantine_until_in\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in\n  returning\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks;\nend",
+          "body": "begin\n  return query update queue_workers\n  set\n    quarantine_until = quarantine_until_in,\n    expires = greatest(queue_workers.expires, now() + interval '1 day')\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in\n  returning\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks;\nend",
           "deprecated": false,
-          "description": "Update the quarantine_until date for a worker.  The Queue service interprets a date in the past\nas \"not quarantined\".  Returns the worker row just as get_queue_worker would, or no rows if\nno such worker exists.",
+          "description": "Update the quarantine_until date for a worker.  The Queue service interprets a date in the past\nas \"not quarantined\".  This function also \"bumps\" the expiration of the worker so that un-quarantined\nworkers do not immediately expire.  Returns the worker row just as get_queue_worker would, or no rows if\nno such worker exists.",
           "mode": "write",
           "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb)",
           "serviceName": "queue"
