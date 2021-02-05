@@ -12,7 +12,6 @@ import (
 	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcqueue"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -145,30 +144,24 @@ func TestChainOfTrustUpload(t *testing.T) {
 		t.Fatalf("Could not verify public/chain-of-trust.json.sig signature against public/chain-of-trust.json")
 	}
 
-	// This trickery is to convert a TaskDefinitionResponse into a
-	// TaskDefinitionRequest in order that we can compare. We cannot cast, so
-	// need to transform to json as an intermediary step.
-	b, err := json.Marshal(cotCert.Task)
+	// Read the task back from the queue for validation
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
+	tdRes, err := queue.Task(taskID)
 	if err != nil {
-		t.Fatalf("Cannot marshal task into json - %#v\n%v", cotCert.Task, err)
-	}
-	cotCertTaskRequest := &tcqueue.TaskDefinitionRequest{}
-	err = json.Unmarshal(b, cotCertTaskRequest)
-	if err != nil {
-		t.Fatalf("Cannot unmarshal json into task request - %#v\n%v", string(b), err)
+		t.Fatalf("Cannot get task %v from the queue", taskID)
 	}
 
 	// The Payload, Tags and Extra fields are raw bytes, so differences may not
 	// be valid. Since we are comparing the rest, let's skip these three fields,
 	// as the rest should give us good enough coverage already.
-	cotCertTaskRequest.Payload = nil
-	cotCertTaskRequest.Tags = nil
-	cotCertTaskRequest.Extra = nil
-	td.Payload = nil
-	td.Tags = nil
-	td.Extra = nil
-	if !reflect.DeepEqual(cotCertTaskRequest, td) {
-		t.Fatalf("Did not get back expected task definition in chain of trust certificate:\n%#v\n ** vs **\n%#v", cotCertTaskRequest, td)
+	cotCert.Task.Payload = nil
+	cotCert.Task.Tags = nil
+	cotCert.Task.Extra = nil
+	tdRes.Payload = nil
+	tdRes.Tags = nil
+	tdRes.Extra = nil
+	if !reflect.DeepEqual(cotCert.Task, *tdRes) {
+		t.Fatalf("Did not get back expected task definition in chain of trust certificate:\n%#v\n ** vs **\n%#v", cotCert.Task, tdRes)
 	}
 	if len(cotCert.Artifacts) != 3 {
 		t.Fatalf("Expected 3 artifact hashes to be listed, but found %v", len(cotCert.Artifacts))
