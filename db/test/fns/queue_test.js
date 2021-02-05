@@ -1044,17 +1044,29 @@ suite(testing.suiteName(), function() {
     const expires = taskcluster.fromNow('2 hours');
     const firstClaim = taskcluster.fromNow('0 hours');
     const create = async (db, options = {}) => {
-      await db.fns.create_queue_worker_tqid(
-        options.taskQueueId || 'prov/wt',
-        options.workerGroup || 'wg',
-        options.workerId || 'wi',
-        options.quarantineUntil || quarantineUntil,
-        options.expires || expires,
-        options.firstClaim || firstClaim,
-        options.recentTasks || JSON.stringify([{
-          recent: "task",
-        }]),
-      );
+      // we don't have a "create" function anymore, so we emulate it
+      await db.fns.queue_worker_seen({
+        task_queue_id_in: options.taskQueueId || 'prov/wt',
+        worker_group_in: options.workerGroup || 'wg',
+        worker_id_in: options.workerId || 'wi',
+        expires_in: options.expires || expires,
+      });
+
+      await db.fns.quarantine_queue_worker({
+        task_queue_id_in: options.taskQueueId || 'prov/wt',
+        worker_group_in: options.workerGroup || 'wg',
+        worker_id_in: options.workerId || 'wi',
+        quarantine_until_in: options.quarantineUntil || quarantineUntil,
+      });
+
+      for (let task of options.recentTasks || [{ taskId: 'recent', runId: 0 }]) {
+        await db.fns.queue_worker_task_seen({
+          task_queue_id_in: options.taskQueueId || 'prov/wt',
+          worker_group_in: options.workerGroup || 'wg',
+          worker_id_in: options.workerId || 'wi',
+          task_run_in: task,
+        });
+      }
     };
 
     helper.dbTest('no such queue worker', async function(db) {
@@ -1062,15 +1074,23 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('create_queue_worker_tqid / get_queue_worker_tqid', async function(db) {
-      await create(db);
+    helper.dbTest('create_queue_worker_tqid (deprecated) / get_queue_worker_tqid', async function(db) {
+      await db.deprecatedFns.create_queue_worker_tqid(
+        'prov/wt',
+        'wg',
+        'wi',
+        quarantineUntil,
+        expires,
+        firstClaim,
+        JSON.stringify([{ taskId: 'recent', runId: 0 }]),
+      );
       const res = await db.fns.get_queue_worker_tqid('prov/wt', 'wg', 'wi', new Date());
       assert.equal(res[0].task_queue_id, 'prov/wt');
       assert.equal(res[0].worker_group, 'wg');
       assert.deepEqual(res[0].quarantine_until, quarantineUntil);
       assert.deepEqual(res[0].expires, expires);
       assert.deepEqual(res[0].first_claim, firstClaim);
-      assert.deepEqual(res[0].recent_tasks, [{ recent: "task" }]);
+      assert.deepEqual(res[0].recent_tasks, [{ taskId: 'recent', runId: 0 }]);
     });
 
     helper.dbTest('get_queue_worker_tqid doesn\'t return expired workers', async function(db) {
@@ -1079,7 +1099,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_worker_tqid returns expired quarantined workers', async function(db) {
+    helper.dbTest('get_queue_worker_tqid returns expired but quarantined workers', async function(db) {
       await create(db, {
         expires: taskcluster.fromNow('-2 hours'),
         quarantineUntil: taskcluster.fromNow('2 hours'),
@@ -1144,9 +1164,9 @@ suite(testing.suiteName(), function() {
       assert.equal(results[5].task_queue_id, 'prov/w/5');
     });
 
-    helper.dbTest('update_queue_worker_tqid', async function(db) {
+    helper.dbTest('update_queue_worker_tqid (deprecated)', async function(db) {
       await create(db);
-      const res = await db.fns.update_queue_worker_tqid(
+      const res = await db.deprecatedFns.update_queue_worker_tqid(
         'prov/wt',
         'wg',
         'wi',
@@ -1157,6 +1177,78 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res[0].quarantine_until, new Date(0));
       assert.deepEqual(res[0].expires, new Date(1));
       assert.deepEqual(res[0].recent_tasks, []);
+    });
+
+    helper.dbTest('queue_worker_seen creates rows', async function(db) {
+      const expires = taskcluster.fromNow('1 day');
+      await db.fns.queue_worker_seen({
+        task_queue_id_in: 'prov/wt',
+        worker_group_in: 'wg',
+        worker_id_in: 'wi',
+        expires_in: expires,
+      });
+
+      const res = await db.fns.get_queue_worker_tqid('prov/wt', 'wg', 'wi', new Date());
+      assert.equal(res[0].task_queue_id, 'prov/wt');
+      assert.equal(res[0].worker_group, 'wg');
+      assert(res[0].quarantine_until < new Date()); // defaults to in the past
+      assert.deepEqual(res[0].expires, expires);
+      helper.assertDateApproximately(res[0].first_claim, new Date());
+      assert.deepEqual(res[0].recent_tasks, []);
+    });
+
+    helper.dbTest('queue_worker_seen updates rows', async function(db) {
+      // only the expires field gets updated (#4366 would add last_active_date as well)
+      const expireses = [
+        taskcluster.fromNow('1 day'),
+        taskcluster.fromNow('2 days'),
+      ];
+      for (let expires of expireses) {
+        await db.fns.queue_worker_seen({
+          task_queue_id_in: 'prov/wt',
+          worker_group_in: 'wg',
+          worker_id_in: 'wi',
+          expires_in: expires,
+        });
+      }
+
+      const res = await db.fns.get_queue_worker_tqid('prov/wt', 'wg', 'wi', new Date());
+      assert.deepEqual(res[0].expires, expireses[1]);
+    });
+
+    helper.dbTest('quarantine_queue_worker does nothing on nonexistent worker', async function(db) {
+      const res = await db.fns.quarantine_queue_worker('prov/wt', 'wg', 'wi', new Date());
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('quarantine_queue_worker updates quarantine date, returns row', async function(db) {
+      await create(db);
+      const quarantineUntil = taskcluster.fromNow('1 year');
+      const res = await db.fns.quarantine_queue_worker('prov/wt', 'wg', 'wi', quarantineUntil);
+      assert.deepEqual(res[0].quarantine_until, quarantineUntil);
+      assert.equal(res[0].task_queue_id, 'prov/wt');
+      assert.deepEqual(res[0].recent_tasks, [{ taskId: 'recent', runId: 0 }]);
+    });
+
+    helper.dbTest('queue_worker_task_seen does nothing on nonexistent worker', async function(db) {
+      await db.fns.queue_worker_task_seen('prov/wt', 'wg', 'wi', { taskId: 'new-task', runId: 0 });
+      // .. doesn't throw anything
+    });
+
+    helper.dbTest('queue_worker_task_seen updates tasks, limiting to 20', async function(db) {
+      await create(db);
+      const tasks = range(30).map(i => ({ taskId: `task-${i}`, runId: 0 }));
+      let res;
+
+      for (let task of tasks) {
+        await db.fns.queue_worker_task_seen('prov/wt', 'wg', 'wi', task);
+        res = await db.fns.get_queue_worker_tqid('prov/wt', 'wg', 'wi', new Date());
+        const recentTasks = res[0].recent_tasks;
+        assert.deepEqual(recentTasks[recentTasks.length - 1], task);
+      }
+      // first 10 tasks were dropped off the beginning of recent_tasks
+      assert.deepEqual(res[0].recent_tasks, tasks.slice(10));
+      assert.equal(res[0].recent_tasks.length, 20);
     });
 
     helper.dbTest('expire_queue_workers deletes expired workers', async function(db) {
@@ -1196,11 +1288,6 @@ suite(testing.suiteName(), function() {
       );
     };
 
-    const checkLastDateActive = row => {
-      const sinceLastDateActive = row.last_date_active - new Date();
-      assert(Math.abs(sinceLastDateActive) < 3600, `last_date_active: ${row.last_date_active} (diff = ${sinceLastDateActive}ms)`);
-    };
-
     helper.dbTest('no such task queue', async function(db) {
       const res = await db.fns.get_task_queue('prov/wt', new Date());
       assert.deepEqual(res, []);
@@ -1217,7 +1304,7 @@ suite(testing.suiteName(), function() {
       const res = await db.fns.get_task_queues('prov/wt', new Date(), null, null);
       assert.equal(res[0].task_queue_id, 'prov/wt');
       assert.deepEqual(res[0].expires, expires);
-      checkLastDateActive(res[0]);
+      helper.assertDateApproximately(res[0].last_date_active, new Date());
       assert.deepEqual(res[0].description, 'desc');
     });
 
@@ -1226,7 +1313,7 @@ suite(testing.suiteName(), function() {
       const res = await db.fns.get_task_queues('prov/wt', new Date(), null, null);
       assert.equal(res[0].task_queue_id, 'prov/wt');
       assert.deepEqual(res[0].expires, expires);
-      checkLastDateActive(res[0]);
+      helper.assertDateApproximately(res[0].last_date_active, new Date());
       assert.deepEqual(res[0].description, 'desc');
     });
 
@@ -1311,7 +1398,7 @@ suite(testing.suiteName(), function() {
         }
 
         assert.deepEqual(res[0].expires, options.expires);
-        checkLastDateActive(res[0]);
+        helper.assertDateApproximately(res[0].last_date_active, new Date());
         assert.equal(res[0].description, options.description);
         assert.equal(res[0].stability, options.stability);
       };
@@ -1514,7 +1601,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite('queue_workers deprecated', function() {
+  suite('queue_workers (deprecated)', function() {
     setup('reset tables', async function() {
       await helper.withDbClient(async client => {
         await client.query('truncate queue_workers');
@@ -1533,9 +1620,7 @@ suite(testing.suiteName(), function() {
         options.quarantineUntil || quarantineUntil,
         options.expires || expires,
         options.firstClaim || firstClaim,
-        options.recentTasks || JSON.stringify([{
-          recent: "task",
-        }]),
+        options.recentTasks || JSON.stringify([{ taskId: 'recent', runId: 0 }]),
       );
     };
 
@@ -1553,7 +1638,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res[0].quarantine_until, quarantineUntil);
       assert.deepEqual(res[0].expires, expires);
       assert.deepEqual(res[0].first_claim, firstClaim);
-      assert.deepEqual(res[0].recent_tasks, [{ recent: "task" }]);
+      assert.deepEqual(res[0].recent_tasks, [{ taskId: 'recent', runId: 0 }]);
     });
 
     helper.dbTest('get_queue_worker doesn\'t return expired workers', async function(db) {

@@ -513,54 +513,6 @@ class Worker {
     return await fetchResults(query || {});
   }
 
-  // Call db.create_queue_worker_tqid with the content of this instance.  This
-  // implements the usual idempotency checks and returns an error with code
-  // UNIQUE_VIOLATION when those checks fail.
-  async create(db) {
-    // for array values, we need to stringify manually because node-pg
-    // otherwise does not correctly serialize the array values
-    const arr = v => JSON.stringify(v);
-    try {
-      await db.fns.create_queue_worker_tqid(
-        this.taskQueueId,
-        this.workerGroup,
-        this.workerId,
-        this.quarantineUntil,
-        this.expires,
-        this.firstClaim,
-        arr(this.recentTasks),
-      );
-    } catch (err) {
-      if (err.code !== UNIQUE_VIOLATION) {
-        throw err;
-      }
-
-      const existing = await Worker.get(
-        db,
-        this.taskQueueId,
-        this.workerGroup,
-        this.workerId,
-        new Date());
-      if (!this.equals(existing)) {
-        // new worker does not match, so this is a "real" conflict
-        throw err;
-      }
-      // ..otherwise adopt the identity of the existing worker
-      Object.assign(this, existing);
-    }
-  }
-
-  async update(db, { quarantineUntil, expires, recentTasks }) {
-    return await db.fns.update_queue_worker_tqid(
-      this.taskQueueId,
-      this.workerGroup,
-      this.workerId,
-      quarantineUntil || this.quarantineUntil,
-      expires || this.expires,
-      JSON.stringify(recentTasks) || JSON.stringify(this.recentTasks),
-    );
-  }
-
   // return the serialization of this worker
   serialize() {
     return {

@@ -29,18 +29,34 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   };
 
   const makeWorker = async (opts) => {
-    const worker = Worker.fromApi('prov1-extended-extended-extended/my-worker-extended-extended', Object.assign({
-      taskQueueId: 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended',
-      workerGroup: 'my-worker-group-extended-extended',
-      workerId: 'my-worker-extended-extended',
-      recentTasks: [],
-      expires: new Date('3017-07-29'),
-      quarantineUntil: new Date(),
-      firstClaim: new Date(),
-    }, opts));
+    const task_queue_id_in = opts.taskQueueId || 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended';
+    const worker_group_in = opts.workerGroup || 'my-worker-group-extended-extended';
+    const worker_id_in = opts.workerId || 'my-worker-extended-extended';
+    const expires_in = opts.expires || new Date('3017-07-29');
+
+    // emulate "creation" by seeing the worker, quarantining if necessary, and seeing tasks
     const db = await helper.load('db');
-    await worker.create(db);
-    return worker;
+    await db.fns.queue_worker_seen({ task_queue_id_in, worker_group_in, worker_id_in, expires_in });
+
+    if (opts.quarantineUntil) {
+      // quarantine_queue_worker would bump the expires column, so we set it manually
+      await helper.withDbClient(async client => {
+        await client.query(`
+          update queue_workers
+          set quarantine_until = $1
+          where task_queue_id = $2 and worker_group = $3 and worker_id = $4`,
+        [opts.quarantineUntil, task_queue_id_in, worker_group_in, worker_id_in]);
+      });
+    }
+
+    for (let task of opts.recentTasks || []) {
+      await db.fns.queue_worker_task_seen({
+        task_queue_id_in, worker_group_in, worker_id_in,
+        task_run_in: task,
+      });
+    }
+
+    return await Worker.get(db, task_queue_id_in, worker_group_in, worker_id_in, new Date(0));
   };
 
   let workerInfo;
@@ -256,7 +272,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const [provisionerId, workerType] = workers[0].taskQueueId.split('/');
     const result = await helper.queue.listWorkers(provisionerId, workerType);
 
-    assert.equal(result.workers.length, 3, 'expected three workers');
+    assert.equal(result.workers.length, 3, `expected three workers, got ${result.workers.map(w => w.workerId).join(', ')}`);
     assert(result.workers.some(w => w.workerId === 'q'));
     assert(result.workers.some(w => w.workerId === 'new'));
     assert(result.workers.some(w => w.workerId === 'newq'));
@@ -679,6 +695,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const taskId = slugid.v4();
     const worker = await makeWorker({
       recentTasks: [{ taskId, runId: 0 }],
+      expires: new Date('2200-01-01'),
     });
 
     const updateProps = {
@@ -700,7 +717,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(result.workerId === worker.workerId, `expected ${worker.workerId}`);
     assert(result.recentTasks[0].taskId === taskId, `expected ${taskId}`);
     assert(result.recentTasks[0].runId === 0, 'expected 0');
-    assert(new Date(result.expires).getTime() === updateProps.expires.getTime(), `expected ${updateProps.expires}`);
+    assert.deepEqual(new Date(result.expires), updateProps.expires, `expected ${updateProps.expires}`);
   });
 
   test('queue.declareWorker creates a worker, workerType, and Provisioner', async () => {

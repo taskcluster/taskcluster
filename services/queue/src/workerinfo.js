@@ -1,11 +1,6 @@
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const debug = require('debug')('workerinfo');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-
-const { Worker } = require('./data');
-
-const RECENT_TASKS_LIMIT = 20;
 
 class WorkerInfo {
   constructor(options) {
@@ -41,7 +36,6 @@ class WorkerInfo {
 
   async seen(taskQueueId, workerGroup, workerId) {
     const newExpiration = workerId ? taskcluster.fromNow('1 day') : taskcluster.fromNow('5 days');
-    const expires = new Date();
     const promises = [];
 
     // task queue seen
@@ -59,29 +53,12 @@ class WorkerInfo {
     // worker seen
     if (taskQueueId && workerGroup && workerId) {
       promises.push(this.valueSeen(`${taskQueueId}/${workerGroup}/${workerId}`, async () => {
-        // perform an Azure upsert, trying the update first as it is more common
-        let worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, expires);
-
-        if (worker) {
-          let rows = await worker.update(this.db, { expires: newExpiration });
-          return Worker.fromDbRows(rows);
-        }
-
-        worker = Worker.fromApi(workerId, {
-          taskQueueId,
-          workerGroup,
-          expires: newExpiration,
-          recentTasks: [],
-          quarantineUntil: new Date(),
-          firstClaim: new Date(),
+        await this.db.fns.queue_worker_seen({
+          task_queue_id_in: taskQueueId,
+          worker_group_in: workerGroup,
+          worker_id_in: workerId,
+          expires_in: newExpiration,
         });
-        try {
-          await worker.create(this.db);
-        } catch (err) {
-          if (err.code !== UNIQUE_VIOLATION) {
-            throw err;
-          }
-        }
       }));
     }
 
@@ -101,52 +78,17 @@ class WorkerInfo {
   }
 
   async taskSeen(taskQueueId, workerGroup, workerId, tasks) {
-    if (!tasks.length) {
-      return;
-    }
-
-    // Keep track of most recent tasks of a worker
-    const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
-
-    if (!worker || worker.quarantineUntil.getTime() > new Date().getTime()) {
-      return;
-    }
-
-    const recentTasks = [
-      ...worker.recentTasks,
-      ...tasks.map(({ status }) => ({ taskId: status.taskId, runId: status.runs.length - 1 })),
-    ].slice(-RECENT_TASKS_LIMIT);
-    await worker.update(this.db, { recentTasks });
-  }
-
-  async upsertWorker({ taskQueueId, workerGroup, workerId, expires }) {
-    let worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
-    let result;
-
-    if (worker) {
-      let rows = await worker.update(this.db, { expires });
-      result = Worker.fromDbRows(rows);
-    } else {
-      worker = Worker.fromApi(workerId, {
-        taskQueueId,
-        workerGroup,
-        workerId,
-        recentTasks: [],
-        expires: expires || taskcluster.fromNow('1 day'),
-        quarantineUntil: new Date(),
-        firstClaim: new Date(),
+    // note that the common case is one task, and a DB function to insert one
+    // task is much simpler to write, so we just loop over this probably-one-element
+    // array.
+    for (let task of tasks) {
+      await this.db.fns.queue_worker_task_seen({
+        task_queue_id_in: taskQueueId,
+        worker_group_in: workerGroup,
+        worker_id_in: workerId,
+        task_run_in: { taskId: task.status.taskId, runId: task.status.runs.length - 1 },
       });
-      try {
-        await worker.create(this.db);
-      } catch (err) {
-        if (err.code !== UNIQUE_VIOLATION) {
-          throw err;
-        }
-      }
-      result = worker;
     }
-
-    return result;
   }
 }
 

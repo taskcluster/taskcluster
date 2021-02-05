@@ -445,3 +445,14 @@ exports.dbVersionTest = ({
     });
   });
 };
+
+/**
+ * Compare two dates and assert them to be approximately equal.  This is
+ * used for cases where the DB function uses `NOW()`.  It asserts the dates
+ * are within an hour of each other, to allow lots of room for time skew
+ * between the tests and the DB.
+ */
+exports.assertDateApproximately = (got, expected, message) => {
+  const diff = Math.abs(got - expected);
+  assert(diff < 3600, message || `${got} not within 1h of ${expected}`);
+};

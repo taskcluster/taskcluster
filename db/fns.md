@@ -76,7 +76,6 @@
    * [`check_task_claim`](#check_task_claim)
    * [`claim_task`](#claim_task)
    * [`create_queue_artifact`](#create_queue_artifact)
-   * [`create_queue_worker_tqid`](#create_queue_worker_tqid)
    * [`create_task_projid`](#create_task_projid)
    * [`delete_queue_artifact`](#delete_queue_artifact)
    * [`delete_queue_provisioner`](#delete_queue_provisioner)
@@ -100,6 +99,9 @@
    * [`is_task_blocked`](#is_task_blocked)
    * [`is_task_group_active`](#is_task_group_active)
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
+   * [`quarantine_queue_worker`](#quarantine_queue_worker)
+   * [`queue_worker_seen`](#queue_worker_seen)
+   * [`queue_worker_task_seen`](#queue_worker_task_seen)
    * [`reclaim_task`](#reclaim_task)
    * [`remove_task`](#remove_task)
    * [`remove_task_dependency`](#remove_task_dependency)
@@ -110,7 +112,6 @@
    * [`schedule_task`](#schedule_task)
    * [`task_queue_seen`](#task_queue_seen)
    * [`update_queue_artifact_2`](#update_queue_artifact_2)
-   * [`update_queue_worker_tqid`](#update_queue_worker_tqid)
  * [secrets functions](#secrets)
    * [`delete_secret`](#delete_secret)
    * [`expire_secrets`](#expire_secrets)
@@ -1104,7 +1105,6 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`check_task_claim`](#check_task_claim)
 * [`claim_task`](#claim_task)
 * [`create_queue_artifact`](#create_queue_artifact)
-* [`create_queue_worker_tqid`](#create_queue_worker_tqid)
 * [`create_task_projid`](#create_task_projid)
 * [`delete_queue_artifact`](#delete_queue_artifact)
 * [`delete_queue_provisioner`](#delete_queue_provisioner)
@@ -1128,6 +1128,9 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`is_task_blocked`](#is_task_blocked)
 * [`is_task_group_active`](#is_task_group_active)
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
+* [`quarantine_queue_worker`](#quarantine_queue_worker)
+* [`queue_worker_seen`](#queue_worker_seen)
+* [`queue_worker_task_seen`](#queue_worker_task_seen)
 * [`reclaim_task`](#reclaim_task)
 * [`remove_task`](#remove_task)
 * [`remove_task_dependency`](#remove_task_dependency)
@@ -1138,7 +1141,6 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`schedule_task`](#schedule_task)
 * [`task_queue_seen`](#task_queue_seen)
 * [`update_queue_artifact_2`](#update_queue_artifact_2)
-* [`update_queue_worker_tqid`](#update_queue_worker_tqid)
 
 ### add_task_dependency
 
@@ -1313,21 +1315,6 @@ status, or nothing if the current status was not as expected.
 
 Create a new artifact. Raises UNIQUE_VIOLATION if the artifact already exists.
 Returns the newly created artifact.
-
-### create_queue_worker_tqid
-
-* *Mode*: write
-* *Arguments*:
-  * `task_queue_id_in text`
-  * `worker_group_in text`
-  * `worker_id_in text`
-  * `quarantine_until_in timestamptz`
-  * `expires_in timestamptz`
-  * `first_claim_in timestamptz`
-  * `recent_tasks_in jsonb`
-* *Returns*: `uuid`
-
-Create a new queue worker.  Raises UNIQUE_VIOLATION if the worker already exists.
 
 ### create_task_projid
 
@@ -1705,6 +1692,59 @@ temp, removed in next commit
 
 temp, removed in next commit
 
+### quarantine_queue_worker
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+  * `quarantine_until_in timestamptz`
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `worker_group text`
+  * `worker_id text`
+  * `quarantine_until timestamptz`
+  * `expires timestamptz`
+  * `first_claim timestamptz`
+  * `recent_tasks jsonb`
+
+Update the quarantine_until date for a worker.  The Queue service interprets a date in the past
+as "not quarantined".  Returns the worker row just as get_queue_worker would, or no rows if
+no such worker exists.
+
+### queue_worker_seen
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+  * `expires_in timestamptz`
+* *Returns*: `void`
+
+Recognize that a worker has been seen by the queue, creating it if necessary.  This is called
+when workers claim or re-claim work.  The expiration time is not allowed to move backward.
+
+This function always writes to the DB, so calls should be suitably rate-limited at the
+client side.
+
+### queue_worker_task_seen
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+  * `task_run_in jsonb`
+* *Returns*: `void`
+
+Update the worker record to indicate that this task run was seen there.  The
+task run should be a JSON object with keys `taskId` and `runId`.  This will
+add the task to `recent_tasks`, keeping the most recent 20 tasks. This
+will do nothing, but not fail, if the worker does not exist, as it is
+unusual for a nonexistent worker to claim work.
+
 ### reclaim_task
 
 * *Mode*: write
@@ -1857,36 +1897,15 @@ client side.
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
 
-### update_queue_worker_tqid
-
-* *Mode*: write
-* *Arguments*:
-  * `task_queue_id_in text`
-  * `worker_group_in text`
-  * `worker_id_in text`
-  * `quarantine_until_in timestamptz`
-  * `expires_in timestamptz`
-  * `recent_tasks_in jsonb`
-* *Returns*: `table`
-  * `task_queue_id text`
-  * `worker_group text`
-  * `worker_id text`
-  * `quarantine_until timestamptz`
-  * `expires timestamptz`
-  * `first_claim timestamptz`
-  * `recent_tasks jsonb`
-  * `etag uuid`
-
-Update a queue worker's quarantine_until, expires, and recent_tasks.
-All parameters must be supplied.
-
 ### deprecated methods
 
+* `create_queue_worker_tqid(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, first_claim_in timestamptz, recent_tasks_in jsonb)` (compatibility guaranteed until v43.0.0)
 * `create_task_queue(task_queue_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text)` (compatibility guaranteed until v43.0.0)
 * `create_task_tqid(task_id text, task_queue_id text, scheduler_id text, task_group_id text, dependencies jsonb, requires task_requires, routes jsonb, priority task_priority, retries integer, created timestamptz, deadline timestamptz, expires timestamptz, scopes jsonb, payload jsonb, metadata jsonb, tags jsonb, extra jsonb)` (compatibility guaranteed until v42.0.0)
 * `get_task_tqid(task_id_in text)` (compatibility guaranteed until v42.0.0)
 * `get_tasks_by_task_group_tqid(task_group_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v42.0.0)
 * `update_queue_artifact(task_id_in text, run_id_in integer, name_in text, details_in jsonb, expires_in timestamptz)` (compatibility guaranteed until v42.0.0)
+* `update_queue_worker_tqid(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, recent_tasks_in jsonb)` (compatibility guaranteed until v43.0.0)
 * `update_task_queue(task_queue_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text)` (compatibility guaranteed until v43.0.0)
 
 ## secrets
