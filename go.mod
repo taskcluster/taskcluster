@@ -24,7 +24,7 @@ require (
 	github.com/iancoleman/strcase v0.1.3
 	github.com/johncgriffin/overflow v0.0.0-20170615021017-4d914c927216
 	github.com/kr/text v0.2.0
-	github.com/mholt/archiver v2.1.0+incompatible
+	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mozilla-services/go-mozlogrus v2.0.0+incompatible
 	github.com/nwaples/rardecode v1.1.0 // indirect
@@ -48,6 +48,7 @@ require (
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
+	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 	golang.org/x/net v0.0.0-20201021035429-f5854403a974
 	golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
