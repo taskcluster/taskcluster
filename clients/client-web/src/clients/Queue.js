@@ -194,7 +194,7 @@ export default class Queue extends Client {
     return this.request(this.cancelTask.entry, args);
   }
   /* eslint-disable max-len */
-  // Claim pending task(s) for the given `taskQueueId` queue.
+  // Claim pending task(s) for the given task queue.
   // If any work is available (even if fewer than the requested number of
   // tasks, this will return immediately. Otherwise, it will block for tens of
   // seconds waiting for work.  If no work appears, it will return an emtpy

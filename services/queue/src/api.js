@@ -84,6 +84,7 @@ let builder = new APIBuilder({
   params: {
     taskId: SLUGID_PATTERN,
     taskGroupId: SLUGID_PATTERN,
+    taskQueueId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
     provisionerId: GENERIC_ID_PATTERN,
     workerType: GENERIC_ID_PATTERN,
     workerGroup: GENERIC_ID_PATTERN,
@@ -946,11 +947,8 @@ builder.declare({
   input: 'claim-work-request.yml',
   output: 'claim-work-response.yml',
   title: 'Claim Work',
-  params: {
-    taskQueueId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
-  },
   description: [
-    'Claim pending task(s) for the given `taskQueueId` queue.',
+    'Claim pending task(s) for the given task queue.',
     '',
     'If any work is available (even if fewer than the requested number of',
     'tasks, this will return immediately. Otherwise, it will block for tens of',
@@ -1705,9 +1703,6 @@ builder.declare({
   category: 'Worker Metadata',
   output: 'pending-tasks-response.yml',
   title: 'Get Number of Pending Tasks',
-  params: {
-    taskQueueId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
-  },
   description: [
     'Get an approximate number of pending tasks for the given `taskQueueId`.',
     '',
