@@ -31,7 +31,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     // We should have no purge-cache requests to start with
     let openRequests = await helper.apiClient.allPurgeRequests();
     assume(openRequests.requests).is.empty();
-
+    // We should have no continuation token to start with
+    assume(openRequests.continuationToken).doesnt.exist();
     // Request a purge-cache message
     await helper.apiClient.purgeCache('dummy-provisioner-extended-extended', 'dummy-worker-extended-extended', {
       cacheName: 'my-test-cache',
