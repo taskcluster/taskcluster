@@ -84,6 +84,7 @@ let builder = new APIBuilder({
   params: {
     taskId: SLUGID_PATTERN,
     taskGroupId: SLUGID_PATTERN,
+    taskQueueId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
     provisionerId: GENERIC_ID_PATTERN,
     workerType: GENERIC_ID_PATTERN,
     workerGroup: GENERIC_ID_PATTERN,
@@ -935,19 +936,19 @@ let sleep20Seconds = () => {
 /** Claim any task */
 builder.declare({
   method: 'post',
-  route: '/claim-work/:provisionerId/:workerType',
+  route: '/claim-work/:taskQueueId(*)',
   name: 'claimWork',
   stability: APIBuilder.stability.stable,
   category: 'Worker Interface',
   scopes: { AllOf: [
-    'queue:claim-work:<provisionerId>/<workerType>',
+    'queue:claim-work:<taskQueueId>',
     'queue:worker-id:<workerGroup>/<workerId>',
   ] },
   input: 'claim-work-request.yml',
   output: 'claim-work-response.yml',
   title: 'Claim Work',
   description: [
-    'Claim pending task(s) for the given `provisionerId`/`workerType` queue.',
+    'Claim pending task(s) for the given task queue.',
     '',
     'If any work is available (even if fewer than the requested number of',
     'tasks, this will return immediately. Otherwise, it will block for tens of',
@@ -957,8 +958,7 @@ builder.declare({
     'simple implementation of "long polling".',
   ].join('\n'),
 }, async function(req, res) {
-  let provisionerId = req.params.provisionerId;
-  let workerType = req.params.workerType;
+  let taskQueueId = req.params.taskQueueId;
   let workerGroup = req.body.workerGroup;
   let workerId = req.body.workerId;
   let count = req.body.tasks;
@@ -966,11 +966,9 @@ builder.declare({
   await req.authorize({
     workerGroup,
     workerId,
-    provisionerId,
-    workerType,
+    taskQueueId,
   });
 
-  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
   const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
 
   // Don't claim tasks when worker is quarantined (but do record the worker
@@ -1698,16 +1696,15 @@ builder.declare({
 /** Count pending tasks for workerType */
 builder.declare({
   method: 'get',
-  route: '/pending/:provisionerId/:workerType',
+  route: '/pending/:taskQueueId(*)',
   name: 'pendingTasks',
-  scopes: 'queue:pending-count:<provisionerId>/<workerType>',
+  scopes: 'queue:pending-count:<taskQueueId>',
   stability: APIBuilder.stability.stable,
   category: 'Worker Metadata',
   output: 'pending-tasks-response.yml',
   title: 'Get Number of Pending Tasks',
   description: [
-    'Get an approximate number of pending tasks for the given `provisionerId`',
-    'and `workerType`.',
+    'Get an approximate number of pending tasks for the given `taskQueueId`.',
     '',
     'The underlying Azure Storage Queues only promises to give us an estimate.',
     'Furthermore, we cache the result in memory for 20 seconds. So consumers',
@@ -1715,9 +1712,8 @@ builder.declare({
     'It is, however, a solid estimate of the number of pending tasks.',
   ].join('\n'),
 }, async function(req, res) {
-  let provisionerId = req.params.provisionerId;
-  let workerType = req.params.workerType;
-  let taskQueueId = joinTaskQueueId(provisionerId, workerType);
+  const taskQueueId = req.params.taskQueueId;
+  const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
   // Get number of pending message
   let count = await this.queueService.countPendingMessages(taskQueueId);

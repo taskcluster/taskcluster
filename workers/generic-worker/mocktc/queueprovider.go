@@ -21,7 +21,7 @@ func NewQueueProvider(queue tc.Queue) *QueueProvider {
 
 func (qp *QueueProvider) RegisterService(r *mux.Router) {
 	s := r.PathPrefix("/api/queue/v1").Subrouter()
-	s.HandleFunc("/claim-work/{provisionerId}/{workerType}", qp.ClaimWork).Methods("POST")
+	s.HandleFunc("/claim-work/{taskQueueId}", qp.ClaimWork).Methods("POST")
 	s.HandleFunc("/task/{taskId}/runs/{runId}/artifacts/{name}", qp.CreateArtifact).Methods("POST")
 	s.HandleFunc("/task/{taskId}", qp.CreateTask).Methods("PUT")
 	s.HandleFunc("/task/{taskId}/artifacts/{name}", qp.GetLatestArtifact_SignedURL).Methods("GET")
@@ -41,7 +41,7 @@ func (qp *QueueProvider) ClaimWork(w http.ResponseWriter, r *http.Request) {
 	vars := Vars(r)
 	var payload tcqueue.ClaimWorkRequest
 	Marshal(r, &payload)
-	out, err := qp.queue.ClaimWork(vars["provisionerId"], vars["workerType"], &payload)
+	out, err := qp.queue.ClaimWork(vars["taskQueueId"], &payload)
 	JSON(w, out, err)
 }
 

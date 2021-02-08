@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -51,14 +52,15 @@ func (queue *Queue) CancelTask(taskId string) (*tcqueue.TaskStatusResponse, erro
 	return queue.Status(taskId)
 }
 
-func (queue *Queue) ClaimWork(provisionerId, workerType string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error) {
+func (queue *Queue) ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error) {
 	queue.mu.Lock()
 	defer queue.mu.Unlock()
 	maxTasks := payload.Tasks
 	tasks := []tcqueue.TaskClaim{}
 	for _, taskId := range queue.orderedTasks {
 		j := queue.tasks[taskId]
-		if j.Task.WorkerType == workerType && j.Task.ProvisionerID == provisionerId && j.Status.State == "pending" {
+
+		if j.Task.TaskQueueID == taskQueueId && j.Status.State == "pending" {
 			j.Status.State = "running"
 			j.Status.Runs = []tcqueue.RunInformation{
 				{
@@ -224,6 +226,29 @@ func (queue *Queue) CreateTask(taskId string, payload *tcqueue.TaskDefinitionReq
 		payload.Scopes = []string{}
 	}
 
+	// Handle different possible cases with taskQueueId and provisionerId/workerType
+	var provisionerId, workerType, taskQueueId string
+	if payload.ProvisionerID != "" && payload.WorkerType != "" && payload.TaskQueueID != "" {
+		if fmt.Sprintf("%s/%s", payload.ProvisionerID, payload.WorkerType) != payload.TaskQueueID {
+			panic("taskQueueId must match \"provisionerId/workerType\"")
+		} else {
+			provisionerId = payload.ProvisionerID
+			workerType = payload.WorkerType
+			taskQueueId = payload.TaskQueueID
+		}
+	} else if payload.ProvisionerID != "" && payload.WorkerType != "" {
+		provisionerId = payload.ProvisionerID
+		workerType = payload.WorkerType
+		taskQueueId = fmt.Sprintf("%s/%s", payload.ProvisionerID, payload.WorkerType)
+	} else if payload.TaskQueueID != "" {
+		splitId := strings.Split(payload.TaskQueueID, "/")
+		provisionerId = splitId[0]
+		workerType = splitId[1]
+		taskQueueId = payload.TaskQueueID
+	} else {
+		panic("at least a provisionerId and a workerType or a taskQueueId must be provided")
+	}
+
 	queue.tasks[taskId] = &tcqueue.TaskDefinitionAndStatus{
 		Status: tcqueue.TaskStatusStructure{
 			TaskID: taskId,
@@ -238,7 +263,7 @@ func (queue *Queue) CreateTask(taskId string, payload *tcqueue.TaskDefinitionReq
 			Metadata:      payload.Metadata,
 			Payload:       payload.Payload,
 			Priority:      payload.Priority,
-			ProvisionerID: payload.ProvisionerID,
+			ProvisionerID: provisionerId,
 			Requires:      payload.Requires,
 			Retries:       payload.Retries,
 			Routes:        payload.Routes,
@@ -246,21 +271,23 @@ func (queue *Queue) CreateTask(taskId string, payload *tcqueue.TaskDefinitionReq
 			Scopes:        payload.Scopes,
 			Tags:          payload.Tags,
 			TaskGroupID:   payload.TaskGroupID,
-			WorkerType:    payload.WorkerType,
+			TaskQueueID:   taskQueueId,
+			WorkerType:    workerType,
 		},
 	}
 	tsr := &tcqueue.TaskStatusResponse{
 		Status: tcqueue.TaskStatusStructure{
 			Deadline:      payload.Deadline,
 			Expires:       payload.Expires,
-			ProvisionerID: payload.ProvisionerID,
+			ProvisionerID: provisionerId,
 			RetriesLeft:   payload.Retries,
 			Runs:          []tcqueue.RunInformation{},
 			SchedulerID:   payload.SchedulerID,
 			State:         "pending",
 			TaskGroupID:   payload.TaskGroupID,
 			TaskID:        taskId,
-			WorkerType:    payload.WorkerType,
+			TaskQueueID:   taskQueueId,
+			WorkerType:    workerType,
 		},
 	}
 	queue.orderedTasks = append(queue.orderedTasks, taskId)

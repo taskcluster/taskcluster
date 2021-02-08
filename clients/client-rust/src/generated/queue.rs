@@ -371,7 +371,7 @@ impl Queue {
 
     /// Claim Work
     /// 
-    /// Claim pending task(s) for the given `provisionerId`/`workerType` queue.
+    /// Claim pending task(s) for the given task queue.
     /// 
     /// If any work is available (even if fewer than the requested number of
     /// tasks, this will return immediately. Otherwise, it will block for tens of
@@ -379,17 +379,17 @@ impl Queue {
     /// list of tasks.  Callers should sleep a short while (to avoid denial of
     /// service in an error condition) and call the endpoint again.  This is a
     /// simple implementation of "long polling".
-    pub async fn claimWork(&self, provisionerId: &str, workerType: &str, payload: &Value) -> Result<Value, Error> {
+    pub async fn claimWork(&self, taskQueueId: &str, payload: &Value) -> Result<Value, Error> {
         let method = "POST";
-        let (path, query) = Self::claimWork_details(provisionerId, workerType);
+        let (path, query) = Self::claimWork_details(taskQueueId);
         let body = Some(payload);
         let resp = self.0.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Determine the HTTP request details for claimWork
-    fn claimWork_details<'a>(provisionerId: &'a str, workerType: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("claim-work/{}/{}", urlencode(provisionerId), urlencode(workerType));
+    fn claimWork_details<'a>(taskQueueId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("claim-work/{}", urlencode(taskQueueId));
         let query = None;
 
         (path, query)
@@ -923,36 +923,35 @@ impl Queue {
 
     /// Get Number of Pending Tasks
     /// 
-    /// Get an approximate number of pending tasks for the given `provisionerId`
-    /// and `workerType`.
+    /// Get an approximate number of pending tasks for the given `taskQueueId`.
     /// 
     /// The underlying Azure Storage Queues only promises to give us an estimate.
     /// Furthermore, we cache the result in memory for 20 seconds. So consumers
     /// should be no means expect this to be an accurate number.
     /// It is, however, a solid estimate of the number of pending tasks.
-    pub async fn pendingTasks(&self, provisionerId: &str, workerType: &str) -> Result<Value, Error> {
+    pub async fn pendingTasks(&self, taskQueueId: &str) -> Result<Value, Error> {
         let method = "GET";
-        let (path, query) = Self::pendingTasks_details(provisionerId, workerType);
+        let (path, query) = Self::pendingTasks_details(taskQueueId);
         let body = None;
         let resp = self.0.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the pendingTasks endpoint
-    pub fn pendingTasks_url(&self, provisionerId: &str, workerType: &str) -> Result<String, Error> {
-        let (path, query) = Self::pendingTasks_details(provisionerId, workerType);
+    pub fn pendingTasks_url(&self, taskQueueId: &str) -> Result<String, Error> {
+        let (path, query) = Self::pendingTasks_details(taskQueueId);
         self.0.make_url(&path, query)
     }
 
     /// Generate a signed URL for the pendingTasks endpoint
-    pub fn pendingTasks_signed_url(&self, provisionerId: &str, workerType: &str, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::pendingTasks_details(provisionerId, workerType);
+    pub fn pendingTasks_signed_url(&self, taskQueueId: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::pendingTasks_details(taskQueueId);
         self.0.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for pendingTasks
-    fn pendingTasks_details<'a>(provisionerId: &'a str, workerType: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("pending/{}/{}", urlencode(provisionerId), urlencode(workerType));
+    fn pendingTasks_details<'a>(taskQueueId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("pending/{}", urlencode(taskQueueId));
         let query = None;
 
         (path, query)

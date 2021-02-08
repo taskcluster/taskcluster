@@ -9,14 +9,3 @@ const splitWorkerPoolId = taskQueueId => {
   return { provisionerId: split[0], workerType: split[1] };
 };
 exports.splitWorkerPoolId = splitWorkerPoolId;
-
-/**
- * Join a provisionerId and workerType to make a workerPoolId
- */
-const joinWorkerPoolId = (provisionerId, workerType) => {
-  assert(typeof provisionerId === 'string', 'provisionerId omitted');
-  assert(typeof workerType === 'string', 'workerType omitted');
-  assert(provisionerId.indexOf('/') === -1, 'provisionerId cannot contain `/`');
-  return `${provisionerId}/${workerType}`;
-};
-exports.joinWorkerPoolId = joinWorkerPoolId;

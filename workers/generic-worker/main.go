@@ -533,7 +533,7 @@ func ClaimWork() *TaskRun {
 	// avoid problems with clock skew.
 	localClaimTime := time.Now()
 	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
-	resp, err := queue.ClaimWork(config.ProvisionerID, config.WorkerType, req)
+	resp, err := queue.ClaimWork(fmt.Sprintf("%s/%s", config.ProvisionerID, config.WorkerType), req)
 	if err != nil {
 		log.Printf("Could not claim work. %v", err)
 		return nil

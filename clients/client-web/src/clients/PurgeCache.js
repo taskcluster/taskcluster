@@ -11,9 +11,9 @@ export default class PurgeCache extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.purgeCache.entry = {"args":["provisionerId","workerType"],"category":"Purge-Cache Service","input":true,"method":"post","name":"purgeCache","query":[],"route":"/purge-cache/<provisionerId>/<workerType>","scopes":"purge-cache:<provisionerId>/<workerType>:<cacheName>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.purgeCache.entry = {"args":["workerPoolId"],"category":"Purge-Cache Service","input":true,"method":"post","name":"purgeCache","query":[],"route":"/purge-cache/<workerPoolId>","scopes":"purge-cache:<workerPoolId>:<cacheName>","stability":"stable","type":"function"}; // eslint-disable-line
     this.allPurgeRequests.entry = {"args":[],"category":"Purge-Cache Service","method":"get","name":"allPurgeRequests","output":true,"query":["continuationToken","limit"],"route":"/purge-cache/list","scopes":"purge-cache:all-purge-requests","stability":"stable","type":"function"}; // eslint-disable-line
-    this.purgeRequests.entry = {"args":["provisionerId","workerType"],"category":"Purge-Cache Service","method":"get","name":"purgeRequests","output":true,"query":["since"],"route":"/purge-cache/<provisionerId>/<workerType>","scopes":"purge-cache:purge-requests:<provisionerId>/<workerType>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.purgeRequests.entry = {"args":["workerPoolId"],"category":"Purge-Cache Service","method":"get","name":"purgeRequests","output":true,"query":["since"],"route":"/purge-cache/<workerPoolId>","scopes":"purge-cache:purge-requests::<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -26,7 +26,7 @@ export default class PurgeCache extends Client {
   }
   /* eslint-disable max-len */
   // Publish a request to purge caches named `cacheName` with
-  // on `provisionerId`/`workerType` workers.
+  // on `workerPoolId` workers.
   // If such a request already exists, its `before` timestamp is updated to
   // the current time.
   /* eslint-enable max-len */
@@ -49,7 +49,7 @@ export default class PurgeCache extends Client {
     return this.request(this.allPurgeRequests.entry, args);
   }
   /* eslint-disable max-len */
-  // List the caches for this `provisionerId`/`workerType` that should to be
+  // List the caches for this `workerPoolId` that should to be
   // purged if they are from before the time given in the response.
   // This is intended to be used by workers to determine which caches to purge.
   /* eslint-enable max-len */

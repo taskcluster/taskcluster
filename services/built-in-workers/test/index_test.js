@@ -16,8 +16,7 @@ suite(testing.suiteName(), function() {
           },
           runId: 0,
           task: {
-            provisionerId: 'built-in',
-            workerType: 'succeed',
+            taskQueueId: 'built-in/succeed',
             payload: {},
           },
         },
@@ -38,8 +37,7 @@ suite(testing.suiteName(), function() {
           },
           runId: 0,
           task: {
-            provisionerId: 'built-in',
-            workerType: 'fail',
+            taskQueueId: 'built-in/fail',
             payload: {},
           },
         },

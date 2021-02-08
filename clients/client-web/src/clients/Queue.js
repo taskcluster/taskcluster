@@ -19,7 +19,7 @@ export default class Queue extends Client {
     this.scheduleTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"scheduleTask","output":true,"query":[],"route":"/task/<taskId>/schedule","scopes":{"AnyOf":["queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>","queue:schedule-task-in-project:<projectId>",{"AllOf":["queue:schedule-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.rerunTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"rerunTask","output":true,"query":[],"route":"/task/<taskId>/rerun","scopes":{"AnyOf":["queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>","queue:rerun-task-in-project:<projectId>",{"AllOf":["queue:rerun-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.cancelTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"cancelTask","output":true,"query":[],"route":"/task/<taskId>/cancel","scopes":{"AnyOf":["queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>","queue:cancel-task-in-project:<projectId>",{"AllOf":["queue:cancel-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.claimWork.entry = {"args":["provisionerId","workerType"],"category":"Worker Interface","input":true,"method":"post","name":"claimWork","output":true,"query":[],"route":"/claim-work/<provisionerId>/<workerType>","scopes":{"AllOf":["queue:claim-work:<provisionerId>/<workerType>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.claimWork.entry = {"args":["taskQueueId"],"category":"Worker Interface","input":true,"method":"post","name":"claimWork","output":true,"query":[],"route":"/claim-work/<taskQueueId>","scopes":{"AllOf":["queue:claim-work:<taskQueueId>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.claimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"claimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/claim","scopes":{"AnyOf":[{"AllOf":["queue:claim-task:<provisionerId>/<workerType>","queue:worker-id:<workerGroup>/<workerId>"]},{"AllOf":["queue:claim-task","assume:worker-type:<provisionerId>/<workerType>","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
     this.reclaimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reclaimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/reclaim","scopes":{"AnyOf":["queue:reclaim-task:<taskId>/<runId>",{"AllOf":["queue:claim-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.reportCompleted.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportCompleted","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/completed","scopes":{"AnyOf":["queue:resolve-task:<taskId>/<runId>",{"AllOf":["queue:resolve-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
@@ -33,7 +33,7 @@ export default class Queue extends Client {
     this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.getProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"getProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":"queue:get-provisioner:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.declareProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","input":true,"method":"put","name":"declareProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":{"AllOf":[{"each":"queue:declare-provisioner:<provisionerId>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.pendingTasks.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<provisionerId>/<workerType>","scopes":"queue:pending-count:<provisionerId>/<workerType>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.pendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<taskQueueId>","scopes":"queue:pending-count:<taskQueueId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkerTypes.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/provisioners/<provisionerId>/worker-types","scopes":"queue:list-worker-types:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.getWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"getWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":"queue:get-worker-type:<provisionerId>/<workerType>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.declareWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","input":true,"method":"put","name":"declareWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":{"AllOf":[{"each":"queue:declare-worker-type:<provisionerId>/<workerType>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
@@ -194,7 +194,7 @@ export default class Queue extends Client {
     return this.request(this.cancelTask.entry, args);
   }
   /* eslint-disable max-len */
-  // Claim pending task(s) for the given `provisionerId`/`workerType` queue.
+  // Claim pending task(s) for the given task queue.
   // If any work is available (even if fewer than the requested number of
   // tasks, this will return immediately. Otherwise, it will block for tens of
   // seconds waiting for work.  If no work appears, it will return an emtpy
@@ -468,8 +468,7 @@ export default class Queue extends Client {
     return this.request(this.declareProvisioner.entry, args);
   }
   /* eslint-disable max-len */
-  // Get an approximate number of pending tasks for the given `provisionerId`
-  // and `workerType`.
+  // Get an approximate number of pending tasks for the given `taskQueueId`.
   // The underlying Azure Storage Queues only promises to give us an estimate.
   // Furthermore, we cache the result in memory for 20 seconds. So consumers
   // should be no means expect this to be an accurate number.

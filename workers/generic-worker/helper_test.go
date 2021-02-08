@@ -136,6 +136,7 @@ func testTask(t *testing.T) *tcqueue.TaskDefinitionRequest {
 		Tags:          map[string]string{"CI": "generic-worker"},
 		Priority:      "lowest",
 		TaskGroupID:   taskGroupID,
+		TaskQueueID:   config.ProvisionerID + "/" + config.WorkerType,
 		WorkerType:    config.WorkerType,
 	}
 }

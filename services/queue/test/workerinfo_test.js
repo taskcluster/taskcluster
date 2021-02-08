@@ -5,7 +5,7 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
 const { Worker, TaskQueue } = require('../src/data');
-const { joinTaskQueueId, splitTaskQueueId } = require('../src/utils');
+const { splitTaskQueueId } = require('../src/utils');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -785,15 +785,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('queue.claimWork adds a task to a worker', async () => {
-    const provisionerId = 'prov1-extended-extended-extended';
-    const workerType = 'gecko-b-2-linux-extended-extended';
+    const taskQueueId = 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended';
     const workerGroup = 'my-worker-group-extended-extended';
     const workerId = 'my-worker-extended-extended';
     const taskId = slugid.v4();
 
     await helper.queue.createTask(taskId, {
-      provisionerId,
-      workerType,
+      taskQueueId,
       priority: 'normal',
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('30 min'),
@@ -807,25 +805,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     //await makeClaimable(taskStatus);
-    await helper.queue.claimWork(provisionerId, workerType, {
+    await helper.queue.claimWork(taskQueueId, {
       workerGroup,
       workerId,
       tasks: 1,
     });
 
     const db = await helper.load('db');
-    const result = await Worker.get(db, `${provisionerId}/${workerType}`, workerGroup, workerId, new Date());
+    const result = await Worker.get(db, taskQueueId, workerGroup, workerId, new Date());
 
     assert(result.recentTasks[0].taskId === taskId, `expected taskId ${taskId}`);
     assert(result.recentTasks[0].runId === 0, 'expected runId 0');
   });
 
   test('queue.getWorker returns 20 most recent taskIds', async () => {
-    const provisionerId = 'no-provisioner';
-    const workerType = 'gecko-b-1-android';
+    const taskQueueId = 'no-provisioner/gecko-b-1-android';
     const workerGroup = 'my-worker-group-extended-extended';
     const workerId = 'my-worker-extended-extended';
-    await makeTaskQueue({ taskQueueId: joinTaskQueueId(provisionerId, workerType) });
+    await makeTaskQueue({ taskQueueId });
 
     let taskIds = [];
 
@@ -834,8 +831,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       taskIds.push(taskId);
 
       await helper.queue.createTask(taskIds[i], {
-        provisionerId,
-        workerType,
+        taskQueueId,
         priority: 'normal',
         created: taskcluster.fromNowJSON(),
         deadline: taskcluster.fromNowJSON('30 min'),
@@ -855,7 +851,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       if (!retries--) {
         throw new Error('Could not claim all 30 tasks after multiple attempts');
       }
-      const res = await helper.queue.claimWork(provisionerId, workerType, {
+      const res = await helper.queue.claimWork(taskQueueId, {
         workerGroup,
         workerId,
         tasks: 30,
@@ -863,6 +859,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       claimed += res.tasks.length;
     }
 
+    const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
     const result = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
     const recentTasks = result.recentTasks;
 
