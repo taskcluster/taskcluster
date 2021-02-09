@@ -10,7 +10,7 @@ module.exports = {
       { provisionerId, workerType, payload },
       { clients },
     ) {
-      await clients.purgeCache.purgeCache(provisionerId, workerType, payload);
+      await clients.purgeCache.purgeCache(`${provisionerId}/${workerType}`, payload);
 
       return { provisionerId, workerType };
     },
