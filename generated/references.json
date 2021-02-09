@@ -4191,6 +4191,66 @@
   },
   {
     "content": {
+      "$id": "/schemas/object/v1/upload-method-put-url.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "definitions": {
+        "request": {
+          "additionalProperties": false,
+          "description": "Request a URL to which a PUT request can be made.",
+          "properties": {
+            "contentLength": {
+              "description": "Length, in bytes, of the uploaded data.",
+              "type": "number"
+            },
+            "contentType": {
+              "description": "Content-type of the data to be uploaded.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "contentType",
+            "contentLength"
+          ],
+          "title": "`putUrl` upload request",
+          "type": "object"
+        },
+        "response": {
+          "additionalProperties": false,
+          "description": "Response containing a URL to which to PUT the data.",
+          "properties": {
+            "expires": {
+              "description": "Expiration time for the URL.  After this time, the client must\ncall `createUpload` again to get a fresh URL.",
+              "format": "date-time",
+              "type": "string"
+            },
+            "headers": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Headers which must be included with the PUT request.  In many\ncases, these are included in a signature embedded in the URL,\nand must be provided verbatim.",
+              "type": "object"
+            },
+            "url": {
+              "description": "URL to which a PUT request should be made.",
+              "formt": "uri",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url",
+            "expires",
+            "headers"
+          ],
+          "title": "`putUrl` upload response",
+          "type": "object"
+        }
+      },
+      "title": "putUrl upload method"
+    },
+    "filename": "schemas/object/v1/upload-method-put-url.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/object/v1/upload-method-data-inline.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "definitions": {
@@ -4413,6 +4473,9 @@
           "properties": {
             "dataInline": {
               "$ref": "upload-method-data-inline.json#/definitions/response"
+            },
+            "putUrl": {
+              "$ref": "upload-method-put-url.json#/definitions/response"
             }
           },
           "required": [
@@ -4459,6 +4522,9 @@
           "properties": {
             "dataInline": {
               "$ref": "upload-method-data-inline.json#/definitions/request"
+            },
+            "puturl": {
+              "$ref": "upload-method-put-url.json#/definitions/request"
             }
           },
           "required": [

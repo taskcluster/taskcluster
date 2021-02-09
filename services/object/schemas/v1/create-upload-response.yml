@@ -28,6 +28,7 @@ properties:
       then none of the proposed methods were selected.
     properties:
       dataInline: {$ref: "upload-method-data-inline.json#/definitions/response"}
+      putUrl: {$ref: "upload-method-put-url.json#/definitions/response"}
     minProperties: 0
     maxProperties: 1
     additionalProperties: false

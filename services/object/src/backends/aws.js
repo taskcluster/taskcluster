@@ -2,6 +2,9 @@ const { Backend } = require('./base');
 const assert = require('assert');
 const aws = require('aws-sdk');
 const { reportError } = require('taskcluster-lib-api');
+const taskcluster = require('taskcluster-client');
+
+const PUT_URL_EXPIRES_SECONDS = 45 * 60;
 
 class AwsBackend extends Backend {
   constructor(options) {
@@ -31,8 +34,13 @@ class AwsBackend extends Backend {
   }
 
   async createUpload(object, proposedUploadMethods) {
+    // select upload methods in order of our preference
     if ('dataInline' in proposedUploadMethods) {
       return await this.createDataInlineUpload(object, proposedUploadMethods.dataInline);
+    }
+
+    if ('putUrl' in proposedUploadMethods) {
+      return await this.createPutUrlUpload(object, proposedUploadMethods.putUrl);
     }
 
     return {};
@@ -54,6 +62,25 @@ class AwsBackend extends Backend {
     }).promise();
 
     return { dataInline: true };
+  }
+
+  async createPutUrlUpload(object, { contentType }) {
+    const expires = taskcluster.fromNow(`${PUT_URL_EXPIRES_SECONDS} s`);
+    const url = await this.s3.getSignedUrlPromise('putObject', {
+      Bucket: this.config.bucket,
+      Key: object.name,
+      ContentType: contentType,
+      // NOTE: AWS does not allow us to enforce Content-Length, so that is ignored here
+      Expires: PUT_URL_EXPIRES_SECONDS + 10, // 10s for clock skew
+    });
+
+    return {
+      url,
+      expires,
+      headers: {
+        'Content-Type': contentType,
+      },
+    };
   }
 
   async availableDownloadMethods(object) {
