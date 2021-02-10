@@ -13,7 +13,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/dsnet/compress v0.0.1 // indirect
-	github.com/elastic/go-sysinfo v1.4.0
+	github.com/elastic/go-sysinfo v1.6.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/frankban/quicktest v1.10.0 // indirect
 	github.com/getsentry/raven-go v0.2.0
