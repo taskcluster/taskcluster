@@ -281,8 +281,9 @@ class VolumeCache {
     // it can still continue on.
     let purgeRequests;
     try {
-      purgeRequests = await this.purgeClient.purgeRequests(this.config.provisionerId,
-        this.config.workerType,
+      const workerPoolId = `${this.config.provisionerId}/${this.config.workerType}`;
+      purgeRequests = await this.purgeClient.purgeRequests(
+        workerPoolId,
         { since: this.lastPurgeRequest });
       this.setNextPurgeRequestTime();
     } catch (e) {

@@ -476,8 +476,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     assert.equal(result.run.reasonResolved, 'completed');
 
     await purgeCache.purgeCache(
-      worker.provisionerId,
-      worker.workerType, {
+      `${worker.provisionerId}/${worker.workerType}`, {
         cacheName: cacheName,
       });
     await Promise.all([
@@ -531,8 +530,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       // wait until the first task has started to clear the cache
       await Promise.all([
         purgeCache.purgeCache(
-          worker.provisionerId,
-          worker.workerType, {
+          `${worker.provisionerId}/${worker.workerType}`, {
             cacheName: cacheName,
           }),
         waitForEvent(worker, 'cache volume removed'),
