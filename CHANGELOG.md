@@ -3,6 +3,167 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v41.0.0
+
+### GENERAL
+
+▶ [patch] [#4272](https://github.com/taskcluster/taskcluster/issues/4272)
+The experimental `object.uploadObject` endpoint has been removed and replaced with `object.createUpload`.  The object service remains entirely experimental and further breaking changes will be made without major version bumps.
+
+### DEPLOYERS
+
+▶ [patch] [#4276](https://github.com/taskcluster/taskcluster/issues/4276)
+The worker-manager service will now start up even if one of its providers is down or misconfigured.  Worker pools using that provider will not be provisioned, but other pools will continue to operate normally.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#4336](https://github.com/taskcluster/taskcluster/issues/4336)
+Worker-Runner now correctly includes the `workerGroup` and `workerId` properties in error reports.
+
+### ADMINS
+
+▶ [MAJOR] [#4262](https://github.com/taskcluster/taskcluster/issues/4262)
+Tasks now have a `projectId` property that can be used to distinguish tasks for different purposes run in the same Taskcluster deployment.  The `queue.createTask` method now requires scope `queue:create-task:project:<projectId>`, permitting administrative control over which clients can create tasks for which projects.
+
+The default `projectId` is `none`.  To avoid permissions errors on upgrade, _we recommend that `queue:create-task:project:none` be added to the `anonymous` role_ before upgrading to this version.  Once the upgrade is complete, callers may be modified to create tasks with non-default `projectId` and given appropriate scopes.
+
+▶ [minor] [#4270](https://github.com/taskcluster/taskcluster/issues/4270)
+Task manipulation (rerun, cancel, schedule) is now controlled by scopes related to the task's `projectId`, completing implementation of [RFC#163](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0163-project-id.md).  With this change, and with the inclusion of `projectId` in task definitions, administrators can control task manipulation by granting `queue:<verb>-task-in-project:<projectId>` scopes to the appropriate entities.
+
+▶ [patch] 
+Upgrade to Sentry v6, but disable the new
+[session tracking feature](https://docs.sentry.io/product/releases/health/)
+with ``autoSessionTracking: false``, to avoid collecting more data than is
+needed.
+
+### USERS
+
+▶ [MAJOR] [#3581](https://github.com/taskcluster/taskcluster/issues/3581)
+Client methods that took two separate provisionerId and taskQueueId parameters take now a 
+single parameter (workerPoolId or taskQueueId depending on the service involved).
+Affected methods are `queue.claimWork`, `queue.pendingTasks`, `purgeCache.purgeCache` and `purgeCache.purgeRequests`.
+The API maintains compatibility at the URL level.
+
+▶ [MAJOR] [#4058](https://github.com/taskcluster/taskcluster/issues/4058)
+The `queue.getArtifact` and `queue.getLatestArtifact` methods now also return a JSON body containing the URL from which the artifact can be downlodaed, in addition to the existing behavior, returning a 303 redirect.
+
+This is a major change only because it changes the function signatures in the Go client.
+
+▶ [minor] [#3580](https://github.com/taskcluster/taskcluster/issues/3580)
+The queue service API responses will now include the taskQueueId, which will match provisionerId/workerType,
+which are also returned. Also, it is now possible to create tasks supplying a taskQueueId instead of the
+separate provisionerId and workerType identifiers.
+
+▶ [minor] [#4247](https://github.com/taskcluster/taskcluster/issues/4247)
+Updating an artifact from a `reference` type to `link` type now correctly updates the artifact type.
+
+▶ [patch] [#4248](https://github.com/taskcluster/taskcluster/issues/4248)
+Fixed an issue where listing tasks with link artifacts would cause errors.
+
+▶ [patch] [#4269](https://github.com/taskcluster/taskcluster/issues/4269)
+The task properties `projectId` and `taskQueueId` are now displayed in the Taskcluster UI, and referenced appropriately in the documentation.
+
+▶ [patch] [bug 1562993](http://bugzil.la/1562993)
+generic-worker now only reports the first error it encounters when a task fails or hits an exception.
+
+### DEVELOPERS
+
+▶ [minor] [#4058](https://github.com/taskcluster/taskcluster/issues/4058)
+Client libraries no longer treat redirects as errors.  The methods that return redirects are those which involve fetching artifacts, and typically these have required generating signed URLs.  With this change, these methods can be called directly and will return a JSON payload containing a `url` property from which the artifact can be downloaded.  The fetch API does not support reading bodies from redirects, so this functionality is not available in `taskcluster-client-web`, which treats redirects as errors.
+
+▶ [minor] [#2393](https://github.com/taskcluster/taskcluster/issues/2393)
+On the page where all roles are listed, added Delete icon beside each role. This helps to delete role faster without going to the Role page.
+
+▶ [minor] 
+Taskcluster now sports a [Rust client](https://crates.io/crates/taskcluster)!
+
+▶ [patch] [#3789](https://github.com/taskcluster/taskcluster/issues/3789)
+Fixed an issue where when there's no more data, the continuationToken property was not being omitted, but being returned as just an empty string. Depending on implementation, that could cause a caller to loop endlessly calling the purge cache endpoint.
+
+### OTHER
+
+▶ Additional changes not described here: [#3868](https://github.com/taskcluster/taskcluster/issues/3868), [#4250](https://github.com/taskcluster/taskcluster/issues/4250), [#4275](https://github.com/taskcluster/taskcluster/issues/4275), [#4279](https://github.com/taskcluster/taskcluster/issues/4279), [#4281](https://github.com/taskcluster/taskcluster/issues/4281), [#4295](https://github.com/taskcluster/taskcluster/issues/4295), [#4296](https://github.com/taskcluster/taskcluster/issues/4296), [#4298](https://github.com/taskcluster/taskcluster/issues/4298), [#4256](https://github.com/taskcluster/taskcluster/issues/4256).
+
+### Automated Package Updates
+
+<details>
+<summary>72 Renovate updates</summary>
+
+* Update dependency query-string to v6.14.0 (d70ebc565)
+* Update module spf13/cobra to v1.1.2 (7c1a3babb)
+* Update dependency apollo-server-express to v2.20.0 (fa538f309)
+* Update dependency @azure/ms-rest-js to v2.2.2 (a3e59510f)
+* Update dependency cronstrue to v1.109.0 (aa93110ef)
+* Update module iancoleman/strcase to v0.1.3 (c89c50a0e)
+* Update module stretchr/testify to v1.7.0 (96a598b19)
+* Update dependency highlight.js to v10.6.0 (cd903e6a2)
+* Update golang.org/x/crypto commit hash to eec23a3 (5fe6c1f96)
+* Update dependency marked to v2 (234a640e3)
+* Update dependency ejs to v3.1.6 (cb8cc22da)
+* Update module elastic/go-sysinfo to v1.5.0 (78f6353b2)
+* Update dependency @azure/ms-rest-js to v2.2.1 (5b3b11db5)
+* Update dependency date-fns to v2.17.0 (ce96b29ce)
+* Update sentry monorepo to v6.1.0 (0d1408eb7)
+* Update dependency chai to v4.3.0 (e6fc2405c)
+* Update babel monorepo to v7.12.13 (49950d969)
+* Update dependency marked to v1.2.9 (aa3ec7c8c)
+* Update dependency @octokit/auth-app to v2.11.0 (65396ccb9)
+* Update dependency matrix-js-sdk to v9.6.0 (6f2b477d8)
+* Update dependency @octokit/rest to v18.1.0 (b9ad5c885)
+* Update dependency ws to v7.4.3 (78b30fdb6)
+* Update dependency webpack-cli to v4.5.0 (5d6d0b831)
+* Update dependency c8 to v7.5.0 (9db09c543)
+* Update dependency newrelic to v7.1.1 (2c8519036)
+* Update sentry monorepo to v6.0.3 (dbbdb7833)
+* Update module iancoleman/strcase to v0.1.3 (de22bfbd0)
+* Update dependency eslint to v7.19.0 (f3f70a764)
+* Update dependency nock to v13.0.7 (b1ac62537)
+* Update dependency nock to v13.0.7 (8615932ef)
+* Update module stretchr/testify to v1.7.0 (3b4ea18e0)
+* Update module elastic/go-sysinfo to v1.5.0 (3794486e3)
+* Update dependency webpack-dev-server to v3.11.2 (8587aca66)
+* Update dependency webpack to v4.46.0 (6aceb7b30)
+* Update dependency webpack-cli to v4.4.0 (4982bcbbe)
+* Update dependency eslint to v7.18.0 (20b6a7527)
+* Update dependency sinon to v9.2.4 (57bca859a)
+* Update dependency sanitize-html to v2.3.2 (8fabfd6b7)
+* Update dependency nock to v13.0.6 (02ecca7d3)
+* Update dependency serialize-error to v8.0.1 (e1fdbc7da)
+* Update dependency matrix-js-sdk to v9.5.1 (cd9f945a0)
+* Update dependency marked to v1.2.8 (9d921a8ab)
+* Update dependency acorn-walk to v8.0.2 (95e5bf321)
+* Update dependency taskcluster-client-web to v40.0.3 (e5579a129)
+* Update dependency nock to v13.0.6 (5017fdf4a)
+* Update dependency mime to v2.5.0 (9bccd0435)
+* Update dependency graphql to v15.5.0 (2c59c3c26)
+* Update dependency @octokit/rest to v18.0.15 (b58a6416f)
+* Update dependency @azure/ms-rest-js to v2.2.0 (b9c8b7f4d)
+* Update dependency @azure/ms-rest-azure-js to v2.1.0 (93c81b140)
+* Update dependency @octokit/plugin-retry to v3.0.7 (4851f7ee9)
+* Update dependency @octokit/core to v3.2.5 (a15e4defe)
+* Update dependency @octokit/auth-app to v2.10.6 (64e3d72e0)
+* Update dependency acorn-loose to v8.0.2 (7af7813fd)
+* Update dependency @octokit/rest to v18.0.14 (6e0ee4824)
+* Update dependency @material-ui/core to v4.11.3 (28145c5f8)
+* Update dependency eslint to v7.18.0 (6834bebe9)
+* Update dependency cronstrue to v1.108.0 (629b69016)
+* Update dependency codemirror to v5.59.2 (a32e9b320)
+* Update dependency @azure/arm-network to v23.2.0 (e07e686ad)
+* Update github.com/pkg/browser commit hash to ce105d0 (765e463e7)
+* Update sentry monorepo to v6 (603dac189)
+* Update dependency qs to v6.9.6 (22848779d)
+* Update dependency commander to v7 (720306753)
+* Update dependency taskcluster-client to v40.0.3 (31ea584d3)
+* Update dependency react-copy-to-clipboard to v5.0.3 (2b94c9355)
+* Update dependency generate-password to v1.6.0 (5b86a0ee2)
+* Update dependency cronstrue to v1.107.0 (5c6e0349b)
+* Update dependency apollo-server-express to v2.19.2 (3fa6e81fa)
+* Update dependency @slack/web-api to v6 (cc9617816)
+* Update dependency cron-parser to v3 (a5cfda50c)
+* Update dependency googleapis to v67 (fd08b1405)
+
+</details>
+
 ## v40.0.3
 
 No changes

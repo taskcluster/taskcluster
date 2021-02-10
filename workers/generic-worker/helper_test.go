@@ -22,11 +22,11 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/mocktc"
+	tcclient "github.com/taskcluster/taskcluster/v41/clients/client-go"
+	"github.com/taskcluster/taskcluster/v41/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v41/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v41/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v41/workers/generic-worker/mocktc"
 )
 
 var (

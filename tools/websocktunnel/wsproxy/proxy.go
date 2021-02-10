@@ -12,8 +12,8 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v40/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v40/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v41/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v41/tools/websocktunnel/wsmux"
 
 	"github.com/sirupsen/logrus"
 	nullLog "github.com/sirupsen/logrus/hooks/test"

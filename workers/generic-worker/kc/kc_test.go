@@ -3,7 +3,7 @@ package kc_test
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/kc"
+	"github.com/taskcluster/taskcluster/v41/workers/generic-worker/kc"
 )
 
 func ExampleEncode() {

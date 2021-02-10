@@ -14,9 +14,9 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v40/tools/websocktunnel/wsproxy"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/mocktc"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/tc"
+	"github.com/taskcluster/taskcluster/v41/tools/websocktunnel/wsproxy"
+	"github.com/taskcluster/taskcluster/v41/workers/generic-worker/mocktc"
+	"github.com/taskcluster/taskcluster/v41/workers/generic-worker/tc"
 )
 
 const WST_WORKER_GROUP = "expose-tests"

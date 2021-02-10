@@ -1037,11 +1037,6 @@ Mark an object as uploaded and ready for download.
 This method is idempotent, and will succeed if the object is already ready
 for download.
 
-### deprecated methods
-
-* `create_object(name_in text, project_id_in text, backend_id_in text, data_in jsonb, expires_in timestamptz)` (compatibility guaranteed until v41.0.0)
-* `get_object(name_in text)` (compatibility guaranteed until v41.0.0)
-
 ## purge_cache
 
 * [`all_purge_requests_wpid`](#all_purge_requests_wpid)
@@ -1905,12 +1900,8 @@ All parameters must be supplied.
 
 ### deprecated methods
 
-* `create_task(task_id text, provisioner_id text, worker_type text, scheduler_id text, task_group_id text, dependencies jsonb, requires task_requires, routes jsonb, priority task_priority, retries integer, created timestamptz, deadline timestamptz, expires timestamptz, scopes jsonb, payload jsonb, metadata jsonb, tags jsonb, extra jsonb)` (compatibility guaranteed until v41.0.0)
 * `create_task_tqid(task_id text, task_queue_id text, scheduler_id text, task_group_id text, dependencies jsonb, requires task_requires, routes jsonb, priority task_priority, retries integer, created timestamptz, deadline timestamptz, expires timestamptz, scopes jsonb, payload jsonb, metadata jsonb, tags jsonb, extra jsonb)` (compatibility guaranteed until v42.0.0)
-* `get_queue_artifacts(task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v41.0.0)
-* `get_task(task_id_in text)` (compatibility guaranteed until v41.0.0)
 * `get_task_tqid(task_id_in text)` (compatibility guaranteed until v42.0.0)
-* `get_tasks_by_task_group(task_group_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v41.0.0)
 * `get_tasks_by_task_group_tqid(task_group_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v42.0.0)
 * `update_queue_artifact(task_id_in text, run_id_in integer, name_in text, details_in jsonb, expires_in timestamptz)` (compatibility guaranteed until v42.0.0)
 

@@ -10,7 +10,7 @@ import (
 	s "strings"
 
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster/v40/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v41/clients/client-shell/cmds/root"
 )
 
 // Asset describes a download url for a published releases.
@@ -44,7 +44,7 @@ var (
 
 	// VersionNumber is a formatted string with the version information. This is
 	// filled in by `yarn release`
-	VersionNumber = "40.0.3"
+	VersionNumber = "41.0.0"
 )
 
 var log = root.Logger

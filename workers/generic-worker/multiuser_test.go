@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v41/workers/generic-worker/gwconfig"
 )
 
 // grantingDenying returns regexp strings that match the log lines for granting
