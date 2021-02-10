@@ -18,13 +18,12 @@ exports.tasks.push({
   ],
   run: async () => {
     let purge = new taskcluster.PurgeCache(taskcluster.fromEnvVars());
-    const provisionerId = 'built-in';
-    const workerType = 'succeed';
+    const workerPoolId = 'built-in/succeed';
     const payload = {
       cacheName: 'smoketest-cache',
     };
-    await purge.purgeCache(provisionerId, workerType, payload);
-    const pretendWorker = await purge.purgeRequests(provisionerId, workerType);
+    await purge.purgeCache(workerPoolId, payload);
+    const pretendWorker = await purge.purgeRequests(workerPoolId);
     assert.equal(pretendWorker.requests[0].cacheName, payload.cacheName, "Error");
   },
 });
