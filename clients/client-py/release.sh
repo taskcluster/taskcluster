@@ -23,7 +23,8 @@ rm -rf .release
 mkdir -p .release
 
 python3 -mvenv .release/py3
-.release/py3/bin/pip install -U setuptools twine wheel
+.release/py3/bin/pip install -U pip
+.release/py3/bin/pip install -U setuptools setuptools_rust twine wheel
 .release/py3/bin/python setup.py sdist
 .release/py3/bin/python setup.py bdist_wheel
 
