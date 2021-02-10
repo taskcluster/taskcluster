@@ -288,11 +288,14 @@ func setupExposer() (err error) {
 func ReadTasksResolvedFile() uint {
 	b, err := ioutil.ReadFile("tasks-resolved-count.txt")
 	if err != nil {
+		log.Printf("could not open tasks-resolved-count.txt: %s (ignored)", err)
 		return 0
 	}
 	i, err := strconv.Atoi(string(b))
 	if err != nil {
-		panic(err)
+		// treat an invalid (usually empty) file as nonexistent
+		log.Printf("could not parse content of tasks-resolved-count.txt: %s (ignored)", err)
+		return 0
 	}
 	return uint(i)
 }
