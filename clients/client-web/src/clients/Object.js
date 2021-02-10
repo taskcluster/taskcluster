@@ -12,6 +12,7 @@ export default class Object extends Client {
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
     this.createUpload.entry = {"args":["name"],"category":"Upload","input":true,"method":"put","name":"createUpload","output":true,"query":[],"route":"/upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.finishUpload.entry = {"args":["name"],"category":"Upload","input":true,"method":"post","name":"finishUpload","query":[],"route":"/finish-upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.startDownload.entry = {"args":["name"],"category":"Download","input":true,"method":"put","name":"startDownload","output":true,"query":[],"route":"/start-download/<name>","scopes":"object:download:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.download.entry = {"args":["name"],"category":"Download","method":"get","name":"download","query":[],"route":"/download/<name>","scopes":"object:download:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
@@ -43,6 +44,17 @@ export default class Object extends Client {
     this.validate(this.createUpload.entry, args);
 
     return this.request(this.createUpload.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This endpoint marks an upload as complete.  This indicates that all data has been
+  // transmitted to the backend.  After this call, no further calls to `uploadObject` are
+  // allowed, and downloads of the object may begin.  This method is idempotent, but will
+  // fail if given an incorrect uploadId for an unfinished upload.
+  /* eslint-enable max-len */
+  finishUpload(...args) {
+    this.validate(this.finishUpload.entry, args);
+
+    return this.request(this.finishUpload.entry, args);
   }
   /* eslint-disable max-len */
   // Start the process of downloading an object's data.  Call this endpoint with a list of acceptable

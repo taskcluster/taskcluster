@@ -93,6 +93,21 @@ type (
 	//   * SimpleDownloadResponse
 	DownloadObjectResponse json.RawMessage
 
+	FinishUploadRequest struct {
+
+		// Project identifier.
+		//
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId"`
+
+		// Unique identifier for this upload.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		UploadID string `json:"uploadId"`
+	}
+
 	HTTPGETDownloadResponse struct {
 		Details Details `json:"details"`
 

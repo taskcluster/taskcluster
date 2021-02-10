@@ -131,6 +131,23 @@ func (object *Object) CreateUpload(name string, payload *CreateUploadRequest) (*
 
 // Stability: *** EXPERIMENTAL ***
 //
+// This endpoint marks an upload as complete.  This indicates that all data has been
+// transmitted to the backend.  After this call, no further calls to `uploadObject` are
+// allowed, and downloads of the object may begin.  This method is idempotent, but will
+// fail if given an incorrect uploadId for an unfinished upload.
+//
+// Required scopes:
+//   object:upload:<projectId>:<name>
+//
+// See #finishUpload
+func (object *Object) FinishUpload(name string, payload *FinishUploadRequest) error {
+	cd := tcclient.Client(*object)
+	_, _, err := (&cd).APICall(payload, "POST", "/finish-upload/"+url.QueryEscape(name), nil, nil)
+	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
 // Start the process of downloading an object's data.  Call this endpoint with a list of acceptable
 // download methods, and the server will select a method and return the corresponding payload.
 //

@@ -4228,6 +4228,36 @@
   },
   {
     "content": {
+      "$id": "/schemas/object/v1/finish-upload-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "properties": {
+        "projectId": {
+          "description": "Project identifier.\n",
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9._/-]*)$",
+          "title": "Project Identifier",
+          "type": "string"
+        },
+        "uploadId": {
+          "description": "Unique identifier for this upload.",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Upload ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "uploadId",
+        "projectId"
+      ],
+      "title": "Finish Upload Request",
+      "type": "object"
+    },
+    "filename": "schemas/object/v1/finish-upload-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/object/v1/download-object-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "description": "See [Download Methods](https://docs.taskcluster.net/docs/docs/reference/platform/object/download-methods) for details.\n",
@@ -15547,6 +15577,23 @@
           "scopes": "object:upload:<projectId>:<name>",
           "stability": "experimental",
           "title": "Begin upload of a new object",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "category": "Upload",
+          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.",
+          "input": "v1/finish-upload-request.json#",
+          "method": "post",
+          "name": "finishUpload",
+          "query": [
+          ],
+          "route": "/finish-upload/<name>",
+          "scopes": "object:upload:<projectId>:<name>",
+          "stability": "experimental",
+          "title": "Mark an upload as complete.",
           "type": "function"
         },
         {
