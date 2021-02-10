@@ -1,6 +1,7 @@
 const assert = require('assert');
 const _ = require('lodash');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
+const taskcluster = require('taskcluster-client');
 const taskCreds = require('./task-creds');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { Task, Worker, TaskQueue, Provisioner } = require('./data');
@@ -1845,13 +1846,14 @@ builder.declare({
     properties: Object.keys(req.body),
   });
 
-  const tQueue = await this.workerInfo.upsertTaskQueue({
-    taskQueueId,
-    stability,
-    description,
-    expires,
+  await this.db.fns.task_queue_seen({
+    task_queue_id_in: taskQueueId,
+    stability_in: stability,
+    description_in: description,
+    expires_in: expires || taskcluster.fromNow('5 days'),
   });
 
+  const tQueue = await TaskQueue.get(this.db, taskQueueId, new Date());
   const tqResult = tQueue.serialize();
   addSplitFields(tqResult);
 
@@ -2064,19 +2066,21 @@ builder.declare({
     'Quarantine a worker',
   ].join('\n'),
 }, async function(req, res) {
-  let result;
   const { provisionerId, workerType, workerGroup, workerId } = req.params;
   const { quarantineUntil } = req.body;
   const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
-  const expires = new Date();
-  let worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, expires);
+  const [result] = await this.db.fns.quarantine_queue_worker({
+    task_queue_id_in: taskQueueId,
+    worker_group_in: workerGroup,
+    worker_id_in: workerId,
+    quarantine_until_in: quarantineUntil,
+  });
 
-  if (!worker) {
+  if (!result) {
     return res.reportError('ResourceNotFound',
       'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
-      'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found. ' +
-      'Are you sure it was created?', {
+      'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found.', {
         workerId,
         workerGroup,
         workerType,
@@ -2084,9 +2088,7 @@ builder.declare({
       },
     );
   }
-
-  result = await worker.update(this.db, { quarantineUntil });
-  worker = Worker.fromDbRows(result);
+  const worker = Worker.fromDb(result);
 
   const workerResult = worker.serialize();
   addSplitFields(workerResult);
@@ -2131,10 +2133,20 @@ builder.declare({
     properties: Object.keys(req.body),
   });
 
-  const [worker, _] = await Promise.all([
-    this.workerInfo.upsertWorker({ taskQueueId, workerGroup, workerId, expires }),
-    this.workerInfo.upsertTaskQueue({ taskQueueId, workerType }),
-  ]);
+  await this.db.fns.task_queue_seen({
+    task_queue_id_in: taskQueueId,
+    expires_in: expires,
+    description_in: null,
+    stability_in: null,
+  });
+  await this.db.fns.queue_worker_seen({
+    task_queue_id_in: taskQueueId,
+    worker_group_in: workerGroup,
+    worker_id_in: workerId,
+    expires_in: expires,
+  });
+
+  const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
 
   const workerResult = worker.serialize();
   addSplitFields(workerResult);
