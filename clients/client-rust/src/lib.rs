@@ -213,6 +213,22 @@ assert!(resp.status().is_success());
 # }
 ```
 
+## Uploading Objects
+
+This crate contains dedicated support for resilient uploads and downloads to/from the Taskcluster object service.
+This comes in the form of functions that will both interface with the object service API and perform the negotiated upload/download method.
+In all cases, you must supply a pre-configured [`Object`](crate::Object) client, as well as required parameters to the object service API methods.
+
+The following convenience functions cover the common cases:
+
+* [`upload_to_buf`](crate::upload_to_buf) - upload from an in-memory buffer
+* [`upload_to_file`](crate::upload_to_file) - upload from an on-disk file
+* [`download_to_vec`](crate::download_to_vec) - download to a dynamically sized buffer
+* [`download_to_buf`](crate::download_to_buf) - download to a fixed-sized buffer
+* [`download_to_file`](crate::download_to_file) - download to a file
+
+For more complex cases, see the [`upload`](crate::upload) and [`download`](crate::download) modules.
+
 ## Generating URLs
 
 To generate a unsigned URL for an API method, use `<method>_url`:
@@ -280,14 +296,23 @@ Use the [slugid](https://crates.io/crates/slugid) crate to create slugIds (such 
 
 mod client;
 mod credentials;
+pub mod download;
 mod generated;
+pub mod upload;
 mod util;
+
+#[cfg(test)]
+mod test;
 
 // re-export
 pub use chrono;
 
+// internal re-exports
 pub use client::{Client, ClientBuilder, Retry};
 pub use credentials::Credentials;
 pub use generated::*;
 pub use reqwest::StatusCode;
 pub use util::err_status_code;
+
+pub use download::{download_to_buf, download_to_file, download_to_vec};
+pub use upload::{upload_from_buf, upload_from_file};
