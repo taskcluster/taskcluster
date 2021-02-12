@@ -1,13 +1,14 @@
 const taskcluster = require('taskcluster-client');
+const request = require('superagent');
 const crypto = require('crypto');
 const assert = require('assert');
 const helper = require('../helper');
 
 /**
- * Test the data-inline upload method on the given backend.  This defines a suite
+ * Test the put-url upload method on the given backend.  This defines a suite
  * of tests.
  */
-exports.testDataInlineUpload = ({
+exports.testPutUrlUpload = ({
   mock, skipping,
 
   // optional title suffix
@@ -27,7 +28,7 @@ exports.testDataInlineUpload = ({
   // suiteDefinition defines the suite; add suiteSetup, suiteTeardown here, if
   // necessary, and any extra tests
 }, suiteDefinition) => {
-  suite(`data-inline upload method API${title ? `: ${title}` : ''}`, function() {
+  suite(`put-url upload method API${title ? `: ${title}` : ''}`, function() {
     (suiteDefinition || (() => {})).call(this);
 
     let backend;
@@ -36,9 +37,9 @@ exports.testDataInlineUpload = ({
       backend = backends.get(backendId);
     });
 
-    test('upload an object', async function() {
+    const makeUpload = async () => {
       const data = crypto.randomBytes(256);
-      const name = `${prefix}test!obj%ect/slash/data-inline`;
+      const name = `${prefix}test!obj%ect/slash?put-url`;
       const expires = taskcluster.fromNow('1 hour');
       const uploadId = taskcluster.slugid();
 
@@ -46,15 +47,44 @@ exports.testDataInlineUpload = ({
       const [object] = await helper.db.fns.get_object_with_upload(name);
 
       const res = await backend.createUpload(object, {
-        dataInline: { contentType: 'application/random-bytes', objectData: data.toString('base64') },
+        putUrl: { contentType: 'application/random-bytes', contentLength: data.length },
       });
-      assert.deepEqual(res, { dataInline: true });
+
+      return { name, data, res, uploadId };
+    };
+
+    test('upload an object', async function() {
+      const { name, data, res, uploadId } = await makeUpload();
+
+      assert(new Date(res.expires) > new Date());
+
+      let req = request.put(res.url);
+      for (let [h, v] of Object.entries(res.headers)) {
+        req = req.set(h, v);
+      }
+      const putRes = await req.send(data);
+      assert(putRes.ok, putRes);
 
       await helper.db.fns.object_upload_complete(name, uploadId);
 
       const stored = await getObjectContent({ name });
       assert.equal(stored.contentType, 'application/random-bytes');
       assert.deepEqual(stored.data, data);
+    });
+
+    test('upload an object with a bad Content-Type', async function() {
+      const { data, res } = await makeUpload();
+
+      let req = request.put(res.url);
+      for (let [h, v] of Object.entries(res.headers)) {
+        req = req.set(h, v);
+      }
+      req.set('Content-Type', 'some-other/content-type');
+      req.ok(res => res.status < 500);
+      const putRes = await req.send(data);
+
+      // this request should fail, somehow (how depends on the backend)
+      assert(!putRes.ok);
     });
   });
 };

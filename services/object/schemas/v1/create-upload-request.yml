@@ -39,6 +39,7 @@ properties:
       discretion.
     properties:
       dataInline: {$ref: "upload-method-data-inline.json#/definitions/request"}
+      puturl: {$ref: "upload-method-put-url.json#/definitions/request"}
     additionalProperties: false
     required: []
 additionalProperties: false

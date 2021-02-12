@@ -136,6 +136,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     teardown(cleanup);
   });
 
+  helper.testPutUrlUpload({
+    mock, skipping, prefix,
+    backendId: 'awsPrivate',
+    async getObjectContent({ name }) {
+      const res = await s3.getObject({
+        Bucket: secret.testBucket,
+        Key: name,
+      }).promise();
+      return { data: res.Body, contentType: res.ContentType };
+    },
+  }, async function() {
+    teardown(cleanup);
+  });
+
   suite('expireObject', function() {
     teardown(cleanup);
 

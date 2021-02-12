@@ -127,6 +127,37 @@ type (
 		// the payload grows. In general, this is useful for testing and for metadata objects such as
 		// separate cryptographic signatures.
 		DataInline DataInlineUploadRequest `json:"dataInline,omitempty"`
+
+		// Request a URL to which a PUT request can be made.
+		Puturl PutURLUploadRequest `json:"puturl,omitempty"`
+	}
+
+	// Request a URL to which a PUT request can be made.
+	PutURLUploadRequest struct {
+
+		// Length, in bytes, of the uploaded data.
+		ContentLength float64 `json:"contentLength"`
+
+		// Content-type of the data to be uploaded.
+		ContentType string `json:"contentType"`
+	}
+
+	// Response containing a URL to which to PUT the data.
+	PutURLUploadResponse struct {
+
+		// Expiration time for the URL.  After this time, the client must
+		// call `createUpload` again to get a fresh URL.
+		Expires tcclient.Time `json:"expires"`
+
+		// Headers which must be included with the PUT request.  In many
+		// cases, these are included in a signature embedded in the URL,
+		// and must be provided verbatim.
+		//
+		// Map entries:
+		Headers map[string]string `json:"headers"`
+
+		// URL to which a PUT request should be made.
+		URL string `json:"url"`
 	}
 
 	// The selected upload method, from those contained in the request.  At most one
@@ -138,6 +169,9 @@ type (
 		//
 		// Constant value: %!q(bool=true)
 		DataInline bool `json:"dataInline,omitempty"`
+
+		// Response containing a URL to which to PUT the data.
+		PutURL PutURLUploadResponse `json:"putUrl,omitempty"`
 	}
 
 	// A simple download returns a URL to which the caller should make a GET request.

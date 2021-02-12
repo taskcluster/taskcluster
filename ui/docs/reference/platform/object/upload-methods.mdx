@@ -33,7 +33,16 @@ This is a universal method that supports upload of small objects (less that 8k) 
 
 ### `putUrl` Upload Method
 
-(TBD: similar to the the existing 's3' queue artifact type)
+This is a universal method which supports uploads via a `PUT` request to the given URL, containing the given headers.
+This is meant to be a "plain", broadly-compatible upload method, with optimizations implemented in other methods.
+
+The response contains a `putUrl` as well as an object containing headers (mapping name to value).
+The caller is expected to make a `PUT` request to the given URL, with the given headers.
+
+This request must begin before the expiration time given in the response.
+If retries extend beyond this time, then the client should make a new `createUpload` call to get a fresh URL.
+
+For this upload method, the content encoding _must_ be `identity` (the default value for the `Content-Encoding` header).
 
 ### `s3Multipart` Upload Method
 
