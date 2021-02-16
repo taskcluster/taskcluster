@@ -3,6 +3,52 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v41.0.1
+
+### USERS
+
+▶ [patch] [#4417](https://github.com/taskcluster/taskcluster/issues/4417)
+The `hooks.triggerHook` method no longer fails with a 500 error, and now correctly includes the `taskQueueId` property.
+
+▶ [patch] [#4411](https://github.com/taskcluster/taskcluster/issues/4411)
+The `queue.createArtifact` method now allows specifying a contentType for "link" artifacts, which is necessary to indicate to the UI that a link can be viewed as a logfile.
+
+▶ [patch] [#4304](https://github.com/taskcluster/taskcluster/issues/4304)
+The queue now better tracks workers.  In particular, it will not "lose track of" a worker which resumes claiming work a short time after it expires, and workers will not immediately expire after being un-quarantined.
+
+### OTHER
+
+▶ Additional changes not described here: [#4273](https://github.com/taskcluster/taskcluster/issues/4273), [#4274](https://github.com/taskcluster/taskcluster/issues/4274), [#4340](https://github.com/taskcluster/taskcluster/issues/4340), [#4346](https://github.com/taskcluster/taskcluster/issues/4346), [#4380](https://github.com/taskcluster/taskcluster/issues/4380), [#4388](https://github.com/taskcluster/taskcluster/issues/4388).
+
+### Automated Package Updates
+
+<details>
+<summary>21 Renovate updates</summary>
+
+* Update dependency mocha to v8.3.0 (205958586)
+* Update dependency eslint to v7.20.0 (7654b7449)
+* Update module sirupsen/logrus to v1.7.1 (87369652b)
+* Update dependency matrix-js-sdk to v9.7.0 (37289c213)
+* Update dependency commander to v7.1.0 (e62b471a5)
+* Update dependency aws-sdk to v2.843.0 (1266aaf06)
+* Update dependency eslint to v7.20.0 (981d5f82b)
+* Update dependency karma to v6.1.1 (02ee7187f)
+* Update dependency @octokit/rest to v18.1.1 (6be5adbc4)
+* Update module golang.org/x/tools to v0.1.0 (a7613ff48)
+* Update golang.org/x/sys commit hash to 22da62e (42ff3f3d2)
+* Update dependency aws-sdk to v2.842.0 (ec4e97e35)
+* Update dependency apollo-server-express to v2.21.0 (f53175ae8)
+* Update dependency mocha to v8.3.0 (deecc9b82)
+* Update dependency @azure/ms-rest-js to v2.2.3 (3826a4ccd)
+* Update babel monorepo (807282eb6)
+* Update dependency nodemailer to v6.4.18 (89cf9dff9)
+* Update module spf13/cobra to v1.1.3 (1a944988b)
+* Update module elastic/go-sysinfo to v1.6.0 (a3dc77d83)
+* Update dependency taskcluster-client-web to v41 (95d780f0c)
+* Update Node.js to v14.15.5 (24ca296cb)
+
+</details>
+
 ## v41.0.0
 
 ### GENERAL
