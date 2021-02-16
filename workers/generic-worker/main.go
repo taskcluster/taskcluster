@@ -6,6 +6,7 @@
 //go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_darwin.go    multiuser
 //go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_linux.go     multiuser
 //go:generate go run ./gw-codegen file://schemas/multiuser_windows.yml  generated_multiuser_windows.go   multiuser
+//go:generate go run ./gw-codegen file://schemas/config.yml             gwconfig/generated_config.go
 // //go:generate gw-codegen https://raw.githubusercontent.com/taskcluster/docker-worker/66dfa0ec97602285fa5f05c2d8cbf487f52c7e27/schemas/payload.json dockerworker/payload.go
 
 package main
