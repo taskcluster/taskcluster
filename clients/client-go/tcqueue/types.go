@@ -253,6 +253,15 @@ type (
 		// Name of the artifact to which to link.
 		Artifact string `json:"artifact"`
 
+		// Expected content-type of the artifact.  This is informational only:
+		// it is suitable for use to choose an icon for the artifact, for example.
+		// The accurate content-type of the artifact can only be determined by
+		// downloading it.  If this value is not provided, it will default to
+		// `application/binary`.
+		//
+		// Max length: 255
+		ContentType string `json:"contentType,omitempty"`
+
 		// Date-time after which the queue should no longer maintain this link.
 		Expires tcclient.Time `json:"expires"`
 

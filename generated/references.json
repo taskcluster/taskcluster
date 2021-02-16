@@ -3095,6 +3095,11 @@
               "description": "Name of the artifact to which to link.\n",
               "type": "string"
             },
+            "contentType": {
+              "description": "Expected content-type of the artifact.  This is informational only:\nit is suitable for use to choose an icon for the artifact, for example.\nThe accurate content-type of the artifact can only be determined by\ndownloading it.  If this value is not provided, it will default to\n`application/binary`.\n",
+              "maxLength": 255,
+              "type": "string"
+            },
             "expires": {
               "description": "Date-time after which the queue should no longer maintain this link.\n",
               "format": "date-time",
