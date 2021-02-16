@@ -31,6 +31,12 @@ properties:
         minLength:      {$const: identifier-min-length}
         maxLength:      {$const: identifier-max-length}
         pattern:        {$const: identifier-pattern}
+      taskQueueId:
+        title:          "Task Queue Id"
+        description: |
+          Unique identifier for a task queue
+        type:           string
+        pattern:        {$const: taskqueueid-pattern}
       schedulerId:
         title:          "Scheduler Identifier"
         description: |
