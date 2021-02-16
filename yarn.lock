@@ -4421,9 +4421,9 @@ math-interval-parser@^2.0.1:
   integrity sha512-VmlAmb0UJwlvMyx8iPhXUDnVW1F9IrGEd9CIOmv+XL8AErCUUuozoDMrgImvnYt2A+53qVX/tPW6YJurMKYsvA==
 
 matrix-js-sdk@^9.0.0:
-  version "9.6.0"
-  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-9.6.0.tgz#e3aee2f2a2c395aaa8a90a19023addee7af02099"
-  integrity sha512-zoNqB7z0C0QDncN7yD1K50c4C88VPofWaCQ0gNXqO/Ac1dr/xLF/46iNF9Y+dBwq7siBO9wEh20WFHMaRpeLOg==
+  version "9.7.0"
+  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-9.7.0.tgz#fbd03c188546f9733b28ea1752476b22ca63d2f2"
+  integrity sha512-cVBHhQVGk2WWQ2kv0Ov8CTcgZVJhMuZBejXZnKqp6qEgSpmb4xQRxewbxjF53ixO7uRUzGFtAlDiW4BeHZnN/g==
   dependencies:
     "@babel/runtime" "^7.12.5"
     another-json "^0.2.0"
