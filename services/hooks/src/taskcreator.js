@@ -207,6 +207,7 @@ class MockTaskCreator extends TaskCreator {
         taskId: taskId,
         provisionerId: hook.task.provisionerId,
         workerType: hook.task.workerType,
+        taskQueueId: `${hook.task.provisionerId}/${hook.task.workerType}`,
         schedulerId: '-',
         taskGroupId: taskcluster.slugid(),
         deadline: '2015-10-18T22:32:59.706Z',

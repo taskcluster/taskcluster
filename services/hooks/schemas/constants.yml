@@ -20,6 +20,8 @@ routing:
   type:         "string"
   maxLength:    128
 
+taskqueueid-pattern: '^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$'
+
 # Slugid pattern, for when-ever that is useful
 slugid-pattern:  "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$"
 
