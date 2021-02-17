@@ -5134,6 +5134,15 @@
               "title": "Expiration",
               "type": "string"
             },
+            "projectId": {
+              "default": "none",
+              "description": "The name for the \"project\" with which this task is associated.  This\nvalue can be used to control permission to manipulate tasks as well as\nfor usage reporting.  Project ids are typically simple identifiers,\noptionally in a hierarchical namespace separated by `/` characters.\nThis value defaults to `none`.\n",
+              "maxLength": 500,
+              "minLength": 1,
+              "pattern": "^([a-zA-Z0-9._/-]*)$",
+              "title": "Project Identifier",
+              "type": "string"
+            },
             "provisionerId": {
               "description": "Unique identifier for the provisioner that this task must be scheduled on\n",
               "maxLength": 38,
