@@ -129,7 +129,7 @@ type (
 		DataInline DataInlineUploadRequest `json:"dataInline,omitempty"`
 
 		// Request a URL to which a PUT request can be made.
-		Puturl PutURLUploadRequest `json:"puturl,omitempty"`
+		PutURL PutURLUploadRequest `json:"putUrl,omitempty"`
 	}
 
 	// Request a URL to which a PUT request can be made.

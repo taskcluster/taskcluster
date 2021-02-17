@@ -4528,7 +4528,7 @@
             "dataInline": {
               "$ref": "upload-method-data-inline.json#/definitions/request"
             },
-            "puturl": {
+            "putUrl": {
               "$ref": "upload-method-put-url.json#/definitions/request"
             }
           },
