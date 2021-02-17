@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v41.0.2
+
+### USERS
+
+▶ [patch] [#4417](https://github.com/taskcluster/taskcluster/issues/4417)
+In a followup to a bug partially fixed in v41.0.1, the `hooks.triggerHook` function no longer crashes due to the `projectId` property from `queue.createTask`.
+
+### OTHER
+
+▶ Additional change not described here: [#4405](https://github.com/taskcluster/taskcluster/issues/4405).
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency taskcluster-client-web to v41.0.1 (efd467ae9)
+
+</details>
+
 ## v41.0.1
 
 ### USERS
