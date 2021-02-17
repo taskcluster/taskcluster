@@ -3,6 +3,10 @@ title:              "Task Status Structure"
 description: |
   A representation of **task status** as known by the queue
 type:               object
+
+# NOTE: this is a copy of the schema for the response to `queue.createTask`,
+# and should be maintained in concert with that schema.
+
 properties:
   status:
     type: object
@@ -37,6 +41,19 @@ properties:
           Unique identifier for a task queue
         type:           string
         pattern:        {$const: taskqueueid-pattern}
+      projectId:
+        title:          "Project Identifier"
+        description: |
+          The name for the "project" with which this task is associated.  This
+          value can be used to control permission to manipulate tasks as well as
+          for usage reporting.  Project ids are typically simple identifiers,
+          optionally in a hierarchical namespace separated by `/` characters.
+          This value defaults to `none`.
+        type:           string
+        default:        'none'
+        minLength:      {$const: projectId-min-length}
+        maxLength:      {$const: projectId-max-length}
+        pattern:        {$const: projectId-pattern}
       schedulerId:
         title:          "Scheduler Identifier"
         description: |
