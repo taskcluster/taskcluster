@@ -238,6 +238,16 @@
         "prPriority": 1
       },
       {
+        "packagePatterns": [
+          "^taskcluster-client.*"
+        ],
+        "updateTypes": [
+            "minor",
+            "patch"
+        ],
+        "enabled": false
+      },
+      {
         "updateTypes": [
           "minor",
           "patch"
