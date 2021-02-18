@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const assert = require('assert');
 const helper = require('../helper');
 
+const responseSchema = 'https://tc-testing.example.com/schemas/object/v1/create-upload-response.json#/properties/uploadMethod';
+
 /**
  * Test the data-inline upload method on the given backend.  This defines a suite
  * of tests.
@@ -48,6 +50,8 @@ exports.testDataInlineUpload = ({
       const res = await backend.createUpload(object, {
         dataInline: { contentType: 'application/random-bytes', objectData: data.toString('base64') },
       });
+
+      helper.assertSatisfiesSchema(res, responseSchema);
       assert.deepEqual(res, { dataInline: true });
 
       await helper.db.fns.object_upload_complete(name, uploadId);

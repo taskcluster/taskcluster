@@ -1,3 +1,4 @@
+const assert = require('assert').strict;
 const taskcluster = require('taskcluster-client');
 const { fakeauth, stickyLoader, Secrets, withMonitor, resetTables } = require('taskcluster-lib-testing');
 const load = require('../../src/main');
@@ -149,4 +150,17 @@ exports.resetTables = (mock, skipping) => {
       tableNames: ['objects'],
     });
   });
+};
+
+let validator;
+exports.assertSatisfiesSchema = async (data, id) => {
+  if (!validator) {
+    const schemaset = await exports.load('schemaset');
+    validator = await schemaset.validator('https://tc-testing.example.com');
+  }
+
+  const validator_error = validator(data, id);
+  if (validator_error) {
+    assert(false, "validation error:\n" + validator_error);
+  }
 };
