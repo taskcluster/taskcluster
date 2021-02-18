@@ -5095,7 +5095,33 @@
       "$schema": "/schemas/common/metaschema.json#",
       "anyOf": [
         {
-          "$ref": "task-status.json#"
+          "additionalProperties": false,
+          "description": "Response identifying the created task",
+          "properties": {
+            "status": {
+              "additionalProperties": false,
+              "description": "Another copy of the taskId, at the location where it was published in\nTaskcluster versions before v42.  Prefer to use the top-level property,\nas `status.taskId` may be removed in future versions.\n",
+              "properties": {
+                "taskId": {
+                  "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                  "type": "string"
+                }
+              },
+              "required": [
+              ],
+              "type": "object"
+            },
+            "taskId": {
+              "description": "TaskId of the task created by triggering the hook.\n",
+              "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+              "title": "Task Identifier",
+              "type": "string"
+            }
+          },
+          "required": [
+            "taskId"
+          ],
+          "type": "object"
         },
         {
           "additionalProperties": false,
@@ -5107,236 +5133,10 @@
           "type": "object"
         }
       ],
-      "description": "Response to a `triggerHook` or `triggerHookWithToken` call.\n\nIn most cases, this is a task status, but in cases where the hook template\ndoes not generate a task, it is an empty object with no `status` property.\n",
+      "description": "Response to a `triggerHook` or `triggerHookWithToken` call.\n\nIn most cases, this gives a `taskId`, but in cases where the hook template\ndoes not generate a task, it is an empty object with no `taskId`.\n",
       "title": "Trigger Hook Response"
     },
     "filename": "schemas/hooks/v1/trigger-hook-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/hooks/v1/task-status.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "A representation of **task status** as known by the queue\n",
-      "properties": {
-        "status": {
-          "additionalProperties": false,
-          "properties": {
-            "deadline": {
-              "description": "Deadline of the task, `pending` and `running` runs are\nresolved as **exception** if not resolved by other means\nbefore the deadline. Note, deadline cannot be more than\n5 days into the future\n",
-              "format": "date-time",
-              "title": "Deadline",
-              "type": "string"
-            },
-            "expires": {
-              "description": "Task expiration, time at which task definition and\nstatus is deleted. Notice that all artifacts for the task\nmust have an expiration that is no later than this.\n",
-              "format": "date-time",
-              "title": "Expiration",
-              "type": "string"
-            },
-            "projectId": {
-              "default": "none",
-              "description": "The name for the \"project\" with which this task is associated.  This\nvalue can be used to control permission to manipulate tasks as well as\nfor usage reporting.  Project ids are typically simple identifiers,\noptionally in a hierarchical namespace separated by `/` characters.\nThis value defaults to `none`.\n",
-              "maxLength": 500,
-              "minLength": 1,
-              "pattern": "^([a-zA-Z0-9._/-]*)$",
-              "title": "Project Identifier",
-              "type": "string"
-            },
-            "provisionerId": {
-              "description": "Unique identifier for the provisioner that this task must be scheduled on\n",
-              "maxLength": 38,
-              "minLength": 1,
-              "pattern": "^([a-zA-Z0-9-_]*)$",
-              "title": "Provisioner Id",
-              "type": "string"
-            },
-            "retriesLeft": {
-              "description": "Number of retries left for the task in case of infrastructure issues\n",
-              "maximum": 999,
-              "minimum": 0,
-              "title": "Retries Left",
-              "type": "integer"
-            },
-            "runs": {
-              "description": "List of runs, ordered so that index `i` has `runId == i`\n",
-              "items": {
-                "additionalProperties": false,
-                "description": "JSON object with information about a run\n",
-                "properties": {
-                  "reasonCreated": {
-                    "description": "Reason for the creation of this run,\n**more reasons may be added in the future**.\n",
-                    "enum": [
-                      "scheduled",
-                      "retry",
-                      "task-retry",
-                      "rerun",
-                      "exception"
-                    ],
-                    "title": "Reason Created",
-                    "type": "string"
-                  },
-                  "reasonResolved": {
-                    "description": "Reason that run was resolved, this is mainly\nuseful for runs resolved as `exception`.\nNote, **more reasons may be added in the future**, also this\nproperty is only available after the run is resolved.  Note\nthat 'superseded' is here only for compatibility, as that\nfunctionality has been removed.\n",
-                    "enum": [
-                      "completed",
-                      "failed",
-                      "deadline-exceeded",
-                      "canceled",
-                      "claim-expired",
-                      "worker-shutdown",
-                      "malformed-payload",
-                      "resource-unavailable",
-                      "internal-error",
-                      "intermittent-task",
-                      "superseded"
-                    ],
-                    "title": "Reason Resolved",
-                    "type": "string"
-                  },
-                  "resolved": {
-                    "description": "Date-time at which this run was resolved, ie. when the run changed\nstate from `running` to either `completed`, `failed` or `exception`.\nThis property is only present after the run as been resolved.\n",
-                    "format": "date-time",
-                    "title": "Resolved",
-                    "type": "string"
-                  },
-                  "runId": {
-                    "description": "Id of this task run, `run-id`s always starts from `0`\n",
-                    "maximum": 1000,
-                    "minimum": 0,
-                    "title": "Run Identifier",
-                    "type": "integer"
-                  },
-                  "scheduled": {
-                    "description": "Date-time at which this run was scheduled, ie. when the run was\ncreated in state `pending`.\n",
-                    "format": "date-time",
-                    "title": "Scheduled",
-                    "type": "string"
-                  },
-                  "started": {
-                    "description": "Date-time at which this run was claimed, ie. when the run changed\nstate from `pending` to `running`. This property is only present\nafter the run has been claimed.\n",
-                    "format": "date-time",
-                    "title": "Started",
-                    "type": "string"
-                  },
-                  "state": {
-                    "description": "State of this run\n",
-                    "enum": [
-                      "pending",
-                      "running",
-                      "completed",
-                      "failed",
-                      "exception"
-                    ],
-                    "title": "Run State",
-                    "type": "string"
-                  },
-                  "takenUntil": {
-                    "description": "Time at which the run expires and is resolved as `failed`, if the\nrun isn't reclaimed. Note, only present after the run has been\nclaimed.\n",
-                    "format": "date-time",
-                    "title": "Taken Until",
-                    "type": "string"
-                  },
-                  "workerGroup": {
-                    "description": "Identifier for group that worker who executes this run is a part of,\nthis identifier is mainly used for efficient routing.\nNote, this property is only present after the run is claimed.\n",
-                    "maxLength": 38,
-                    "minLength": 1,
-                    "pattern": "^([a-zA-Z0-9-_]*)$",
-                    "title": "Worker Group",
-                    "type": "string"
-                  },
-                  "workerId": {
-                    "description": "Identifier for worker evaluating this run within given\n`workerGroup`. Note, this property is only available after the run\nhas been claimed.\n",
-                    "maxLength": 38,
-                    "minLength": 1,
-                    "pattern": "^([a-zA-Z0-9-_]*)$",
-                    "title": "Worker Identifier",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "runId",
-                  "state",
-                  "reasonCreated",
-                  "scheduled"
-                ],
-                "title": "Run Information",
-                "type": "object"
-              },
-              "title": "List of Runs",
-              "type": "array",
-              "uniqueItems": false
-            },
-            "schedulerId": {
-              "description": "Identifier for the scheduler that _defined_ this task.\n",
-              "maxLength": 38,
-              "minLength": 1,
-              "pattern": "^([a-zA-Z0-9-_]*)$",
-              "title": "Scheduler Identifier",
-              "type": "string"
-            },
-            "state": {
-              "description": "State of this task. This is just an auxiliary property derived from state\nof latests run, or `unscheduled` if none.\n",
-              "enum": [
-                "unscheduled",
-                "pending",
-                "running",
-                "completed",
-                "failed",
-                "exception"
-              ],
-              "title": "State",
-              "type": "string"
-            },
-            "taskGroupId": {
-              "description": "Identifier for a group of tasks scheduled together with this task, by\nscheduler identified by `schedulerId`. For tasks scheduled by the\ntask-graph scheduler, this is the `taskGraphId`.\n",
-              "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
-              "title": "Task-Group Identifier",
-              "type": "string"
-            },
-            "taskId": {
-              "description": "Unique task identifier, this is UUID encoded as\n[URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and\nstripped of `=` padding.\n",
-              "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
-              "title": "Task Identifier",
-              "type": "string"
-            },
-            "taskQueueId": {
-              "description": "Unique identifier for a task queue\n",
-              "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
-              "title": "Task Queue Id",
-              "type": "string"
-            },
-            "workerType": {
-              "description": "Identifier for worker type within the specified provisioner\n",
-              "maxLength": 38,
-              "minLength": 1,
-              "pattern": "^([a-zA-Z0-9-_]*)$",
-              "title": "Worker Type",
-              "type": "string"
-            }
-          },
-          "required": [
-            "taskId",
-            "provisionerId",
-            "workerType",
-            "schedulerId",
-            "taskGroupId",
-            "deadline",
-            "expires",
-            "retriesLeft",
-            "state",
-            "runs"
-          ],
-          "type": "object"
-        }
-      },
-      "required": [
-        "status"
-      ],
-      "title": "Task Status Structure",
-      "type": "object"
-    },
-    "filename": "schemas/hooks/v1/task-status.json"
   },
   {
     "content": {
