@@ -162,6 +162,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(res.uploadMethod, { dataInline: true });
     });
 
+    test('should allow a putUrl method', async function() {
+      const uploadId = taskcluster.slugid();
+      const expires = taskcluster.fromNow('1 day');
+      const proposedUploadMethods = {
+        putUrl: {
+          contentType: 'application/binary',
+          contentLength: 7,
+        },
+      };
+
+      let res = await helper.apiClient.createUpload('public/foo', {
+        projectId: 'x',
+        uploadId,
+        expires,
+        proposedUploadMethods,
+      });
+      assert.equal(res.projectId, 'x');
+      assert.equal(res.uploadId, uploadId);
+      assert.equal(res.expires, expires.toJSON());
+      // no method matched, as the test provider does not support putUrl
+      assert.deepEqual(res.uploadMethod, {});
+    });
+
     test('should succeed on a subsequent attempt if the upload fails', async function() {
       const data = crypto.randomBytes(128);
       const uploadId = taskcluster.slugid();
