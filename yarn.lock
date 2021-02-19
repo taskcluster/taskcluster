@@ -277,10 +277,10 @@
   dependencies:
     methods "^1.1.2"
 
-"@octokit/auth-app@^2.10.5":
-  version "2.11.0"
-  resolved "https://registry.yarnpkg.com/@octokit/auth-app/-/auth-app-2.11.0.tgz#7dce17adf3b30a722aea5bf239396418151034eb"
-  integrity sha512-tC0BjqyTEjReIBHogOjLjF3rc2n4xwjZcpOaUUhybDnqkrp7Gxj5n91aGUcIFgJ3MDYf+f3XZehQd2B4ijG+4w==
+"@octokit/auth-app@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@octokit/auth-app/-/auth-app-3.0.0.tgz#67bb0939588e8edc2be52b6ed957078fc8577faa"
+  integrity sha512-7280Oz7zsyF1cRuJEMJGG0H3zenOKY44P2QZRwN/21qRqyI+aQ0wM7IQny6uQk/xow36B7JNu2U2GtcgEdx8iA==
   dependencies:
     "@octokit/request" "^5.4.11"
     "@octokit/request-error" "^2.0.0"
