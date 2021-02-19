@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const assert = require('assert');
 const helper = require('../helper');
 
+const responseSchema = 'https://tc-testing.example.com/schemas/object/v1/create-upload-response.json#/properties/uploadMethod';
+
 /**
  * Test the put-url upload method on the given backend.  This defines a suite
  * of tests.
@@ -50,16 +52,18 @@ exports.testPutUrlUpload = ({
         putUrl: { contentType: 'application/random-bytes', contentLength: data.length },
       });
 
+      helper.assertSatisfiesSchema(res, responseSchema);
+
       return { name, data, res, uploadId };
     };
 
     test('upload an object', async function() {
       const { name, data, res, uploadId } = await makeUpload();
 
-      assert(new Date(res.expires) > new Date());
+      assert(new Date(res.putUrl.expires) > new Date());
 
-      let req = request.put(res.url);
-      for (let [h, v] of Object.entries(res.headers)) {
+      let req = request.put(res.putUrl.url);
+      for (let [h, v] of Object.entries(res.putUrl.headers)) {
         req = req.set(h, v);
       }
       const putRes = await req.send(data);
@@ -75,8 +79,8 @@ exports.testPutUrlUpload = ({
     test('upload an object with a bad Content-Type', async function() {
       const { data, res } = await makeUpload();
 
-      let req = request.put(res.url);
-      for (let [h, v] of Object.entries(res.headers)) {
+      let req = request.put(res.putUrl.url);
+      for (let [h, v] of Object.entries(res.putUrl.headers)) {
         req = req.set(h, v);
       }
       req.set('Content-Type', 'some-other/content-type');

@@ -75,10 +75,12 @@ class AwsBackend extends Backend {
     });
 
     return {
-      url,
-      expires,
-      headers: {
-        'Content-Type': contentType,
+      putUrl: {
+        url,
+        expires: expires.toJSON(),
+        headers: {
+          'Content-Type': contentType,
+        },
       },
     };
   }
