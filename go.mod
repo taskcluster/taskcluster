@@ -48,7 +48,7 @@ require (
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
 	golang.org/x/tools v0.1.0
