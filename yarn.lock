@@ -1015,10 +1015,10 @@ ajv@^7.0.2:
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
-amqplib@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/amqplib/-/amqplib-0.6.0.tgz#87857c7c95d56d22438ced4cf1f7e5f0dc43b309"
-  integrity sha512-zXCh4jQ77TBZe1YtvZ1n7sUxnTjnNagpy8MVi2yc1ive239pS3iLwm4e4d5o4XZGx1BdTKQ/U0ZmaDU3c8MxYQ==
+amqplib@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/amqplib/-/amqplib-0.7.0.tgz#83ae81d5bce3406bc8c75a90b9c4789cbbd1e6c4"
+  integrity sha512-WIH+AV/p2UU7YUaP35m0uDlG871YFLm4pz5MKVVNz11OSWUYfWvbsPMklbSDTAbXscvbUB+QO4Z8HsgkfaqNeQ==
   dependencies:
     bitsyntax "~0.1.0"
     bluebird "^3.5.2"
