@@ -89,7 +89,7 @@ let _defaultOptions = {
 };
 
 /** Make a request for a Client instance */
-const makeRequest = exports.makeRequest = function(client, method, url, payload, query) {
+const makeRequest = exports.makeRequest = async function(client, method, url, payload, query) {
   // Add query to url if present
   if (query) {
     query = querystring.stringify(query);
@@ -104,8 +104,17 @@ const makeRequest = exports.makeRequest = function(client, method, url, payload,
     followRedirect: false,
     timeout: client._timeout,
     headers: {},
-    responseType: 'json',
+    responseType: 'text',
     retry: 0,
+    hooks: {
+      afterResponse: [res => {
+        // parse the body, if one was given (Got's `responseType: json` fails to check content-type)
+        if (res.rawBody.length > 0 && (res.headers['content-type'] || '').startsWith('application/json')) {
+          res.body = JSON.parse(res.rawBody);
+        }
+        return res;
+      }],
+    },
   };
 
   if (client._options.traceId) {
@@ -133,13 +142,18 @@ const makeRequest = exports.makeRequest = function(client, method, url, payload,
     options.json = payload;
   }
 
-  return got(url, options).catch(err => {
+  let res;
+  try {
+    res = await got(url, options);
+  } catch (err) {
     // translate errors as users expect them, for compatibility
     if (err instanceof got.TimeoutError) {
       err.code = 'ECONNABORTED';
     }
     throw err;
-  });
+  }
+
+  return res;
 };
 
 /**
