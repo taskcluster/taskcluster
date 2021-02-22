@@ -354,6 +354,72 @@ const taskId = taskcluster.slugid();
 
 The generates _nice_ random slugids, refer to slugid module for further details.
 
+### Uploading and Downloading
+
+The Object service provides an API for reliable uploads and downloads of large objects.
+This library provides convenience methods to implement the client portion of those APIs, providing well-tested, resilient upload and download functionality.
+These methods will negotiate the appropriate method with the object service and perform the required steps to transfer the data.
+
+In either case, you will need to provide a configured `Object` instance with appropriate credentials for the operation.
+You must also provide a `streamFactory` which, on each call, returns a Readable or Writable stream to handle the object data.
+This function may be async (return a Promise).
+In the event of retries, this function may be called several times, and should return a fresh stream on each invocation.
+
+Both `upload` and `download` support the same retry configuration as clients, as described above, with the same defaults.
+Note that these parameters apply only to the data-transfer portion of the process.
+The calls to Object service endpoints will be governed by the retry configuration of the given `Object` instance.
+
+For upload:
+
+```javascript
+await taskcluster.upload({
+  // paramters for the createObject endpoint
+  projectId,
+  name,
+  expires,
+
+  // metadata about the data being uploaded
+  contentType,
+  contentLength,
+
+  // see above
+  object,
+  streamFactory,
+  retries.,
+  delayFactor.,
+  randomizationFactor.,
+  maxDelay.,
+});
+```
+
+For download, which returns the content type:
+
+```javascript
+let contentType = await taskcluster.download({
+  // the object to download
+  name,
+
+  // see above
+  object,
+  streamFactory,
+  retries.,
+  delayFactor.,
+  randomizationFactor.,
+  maxDelay.,
+});
+```
+
+For example:
+
+```javascript
+const object = new taskcluster.Object(taskcluster.fromEnvVars());
+const contentType = await taskcluster.download({
+  name: 'testing/data.tgz',
+  object,
+  streamFactory: () => fs.createWriteStream('data.tgz'),
+});
+```
+
 ### Inspecting Credentials
 
 Your users may find the options for Taskcluster credentials overwhelming.  You
