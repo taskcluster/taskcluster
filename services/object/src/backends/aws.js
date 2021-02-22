@@ -64,7 +64,7 @@ class AwsBackend extends Backend {
     return { dataInline: true };
   }
 
-  async createPutUrlUpload(object, { contentType }) {
+  async createPutUrlUpload(object, { contentType, contentLength }) {
     const expires = taskcluster.fromNow(`${PUT_URL_EXPIRES_SECONDS} s`);
     const url = await this.s3.getSignedUrlPromise('putObject', {
       Bucket: this.config.bucket,
@@ -80,6 +80,7 @@ class AwsBackend extends Backend {
         expires: expires.toJSON(),
         headers: {
           'Content-Type': contentType,
+          'Content-Length': contentLength,
         },
       },
     };

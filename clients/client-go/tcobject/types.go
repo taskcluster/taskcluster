@@ -153,6 +153,11 @@ type (
 		// cases, these are included in a signature embedded in the URL,
 		// and must be provided verbatim.
 		//
+		// The `Content-Length` header may be included here.  Many HTTP client
+		// libraries will also set this directly when the length is known.  In
+		// this case, the values should be identical, and the header should only
+		// be specified once.
+		//
 		// Map entries:
 		Headers map[string]string `json:"headers"`
 

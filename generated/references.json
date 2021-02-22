@@ -4232,7 +4232,7 @@
               "additionalProperties": {
                 "type": "string"
               },
-              "description": "Headers which must be included with the PUT request.  In many\ncases, these are included in a signature embedded in the URL,\nand must be provided verbatim.",
+              "description": "Headers which must be included with the PUT request.  In many\ncases, these are included in a signature embedded in the URL,\nand must be provided verbatim.\n\nThe `Content-Length` header may be included here.  Many HTTP client\nlibraries will also set this directly when the length is known.  In\nthis case, the values should be identical, and the header should only\nbe specified once.",
               "type": "object"
             },
             "url": {
