@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-let request = require('superagent');
+let got = require('got');
 let debug = require('debug')('taskcluster-client');
 let _ = require('lodash');
 let assert = require('assert');
@@ -89,7 +89,7 @@ let _defaultOptions = {
 };
 
 /** Make a request for a Client instance */
-const makeRequest = exports.makeRequest = function(client, method, url, payload, query) {
+const makeRequest = exports.makeRequest = async function(client, method, url, payload, query) {
   // Add query to url if present
   if (query) {
     query = querystring.stringify(query);
@@ -98,28 +98,27 @@ const makeRequest = exports.makeRequest = function(client, method, url, payload,
     }
   }
 
-  // Construct request object
-  let req = request(method.toUpperCase(), url);
-  // Set the http agent for this request, if supported in the current
-  // environment (browser environment doesn't support http.Agent)
-  if (req.agent) {
-    req.agent(client._httpAgent);
-  }
+  const options = {
+    method: method.toUpperCase(),
+    agent: client._httpAgent,
+    followRedirect: false,
+    timeout: client._timeout,
+    headers: {},
+    responseType: 'text',
+    retry: 0,
+    hooks: {
+      afterResponse: [res => {
+        // parse the body, if one was given (Got's `responseType: json` fails to check content-type)
+        if (res.rawBody.length > 0 && (res.headers['content-type'] || '').startsWith('application/json')) {
+          res.body = JSON.parse(res.rawBody);
+        }
+        return res;
+      }],
+    },
+  };
 
   if (client._options.traceId) {
-    req.set('x-taskcluster-trace-id', client._options.traceId);
-  }
-
-  // do not follow redirects, and treat them as success
-  req.redirects(0);
-  req.ok(res => res.status < 400);
-
-  // Timeout for each individual request.
-  req.timeout(client._timeout);
-
-  // Send payload if defined
-  if (payload !== undefined) {
-    req.send(payload);
+    options.headers['x-taskcluster-trace-id'] = client._options.traceId;
   }
 
   // Authenticate, if credentials are provided
@@ -135,19 +134,26 @@ const makeRequest = exports.makeRequest = function(client, method, url, payload,
       },
       ext: client._extData,
     });
-    req.set('Authorization', header.header);
+    options.headers['Authorization'] = header.header;
   }
 
-  return req.catch(
-    err => {
-      // superagent throws code=ABORTED for timeouts, so translate that back
-      // https://github.com/visionmedia/superagent/issues/1487
-      if (err.code === 'ABORTED') {
-        err = new Error('Request timed out');
-        err.code = 'ECONNABORTED';
-      }
-      throw err;
-    });
+  // Send payload if defined
+  if (payload !== undefined) {
+    options.json = payload;
+  }
+
+  let res;
+  try {
+    res = await got(url, options);
+  } catch (err) {
+    // translate errors as users expect them, for compatibility
+    if (err instanceof got.TimeoutError) {
+      err.code = 'ECONNABORTED';
+    }
+    throw err;
+  }
+
+  return res;
 };
 
 /**
@@ -229,19 +235,18 @@ exports.createClient = function(reference, name) {
       throw new Error('options.randomizationFactor must be between 0 and 1!');
     }
 
-    // Shortcut for which default agent to use...
-    let isHttps = this._options.rootUrl.indexOf('https') === 0;
-
     if (this._options.agent) {
       // We have explicit options for new agent create one...
-      this._httpAgent = isHttps ?
-        new https.Agent(this._options.agent) :
-        new http.Agent(this._options.agent);
+      this._httpAgent = {
+        https: new https.Agent(this._options.agent),
+        http: new http.Agent(this._options.agent),
+      };
     } else {
       // Use default global agent(s)...
-      this._httpAgent = isHttps ?
-        DEFAULT_AGENTS.https :
-        DEFAULT_AGENTS.http;
+      this._httpAgent = {
+        https: DEFAULT_AGENTS.https,
+        http: DEFAULT_AGENTS.http,
+      };
     }
 
     // Timeout for each _individual_ http request.
@@ -388,8 +393,8 @@ exports.createClient = function(reference, name) {
             if (res) {
               // Decide if we should retry
               if (attempts <= that._options.retries &&
-                  res.status >= 500 && // Check if it's a 5xx error
-                  res.status < 600) {
+                  res.statusCode >= 500 && // Check if it's a 5xx error
+                  res.statusCode < 600) {
                 debug('Error calling: %s now retrying, info: %j',
                   entry.name, res.body);
                 return retryRequest();
@@ -398,19 +403,19 @@ exports.createClient = function(reference, name) {
               debug('Error calling: %s NOT retrying!, info: %j',
                 entry.name, res.body);
               let message = 'Unknown Server Error';
-              if (res.status === 401) {
+              if (res.statusCode === 401) {
                 message = 'Authentication Error';
               }
-              if (res.status === 500) {
+              if (res.statusCode === 500) {
                 message = 'Internal Server Error';
               }
-              if (res.status >= 300 && res.status < 400) {
+              if (res.statusCode >= 300 && res.statusCode < 400) {
                 message = 'Unexpected Redirect';
               }
               err = new Error(res.body.message || message);
               err.body = res.body;
               err.code = res.body.code || 'UnknownError';
-              err.statusCode = res.status;
+              err.statusCode = res.statusCode;
               throw err;
             }
 
