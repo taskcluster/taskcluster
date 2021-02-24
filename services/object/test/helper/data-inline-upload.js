@@ -51,7 +51,7 @@ exports.testDataInlineUpload = ({
         dataInline: { contentType: 'application/random-bytes', objectData: data.toString('base64') },
       });
 
-      helper.assertSatisfiesSchema(res, responseSchema);
+      await helper.assertSatisfiesSchema(res, responseSchema);
       assert.deepEqual(res, { dataInline: true });
 
       await helper.db.fns.object_upload_complete(name, uploadId);
