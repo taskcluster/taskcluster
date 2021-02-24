@@ -200,7 +200,8 @@
       "c8",
       "cross-env",
       "ejs",
-      "@octokit/core"
+      "@octokit/core",
+      "got"
     ]
   },
   "renovate": {
