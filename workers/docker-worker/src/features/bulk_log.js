@@ -59,14 +59,7 @@ class BulkLog {
     // Unlink the temp file.
     await fs.unlink(this.file.path);
 
-    let queue = task.queue;
-
-    return queue.buildUrl(
-      queue.getArtifact,
-      task.status.taskId,
-      task.runId,
-      this.artifactName,
-    );
+    return this.artifactName;
   }
 
 }
