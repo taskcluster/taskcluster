@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-lib-iterate",
   "private": true,
-  "version": "41.0.2",
+  "version": "41.1.0",
   "description": "A library to share iteration logic",
   "main": "src/index.js",
   "scripts": {

@@ -1,6 +1,6 @@
 {
   "name": "taskcluster",
-  "version": "41.0.2",
+  "version": "41.1.0",
   "private": true,
   "engine-strict": true,
   "engines": {
@@ -242,8 +242,8 @@
           "^taskcluster-client.*"
         ],
         "updateTypes": [
-            "minor",
-            "patch"
+          "minor",
+          "patch"
         ],
         "enabled": false
       },

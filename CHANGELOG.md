@@ -3,6 +3,50 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v41.1.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#4050](https://github.com/taskcluster/taskcluster/issues/4050)
+Docker-worker and generic-worker now use `link` artifacts to connect `live.log` to `live_backing.log`.  This functionality requires Taskcluster services running at least Taskcluster-40.0.0.
+
+### USERS
+
+▶ [minor] [#4455](https://github.com/taskcluster/taskcluster/issues/4455)
+As of this version, the [Javascript client library](https://www.npmjs.com/package/taskcluster-client) now uses [got](https://github.com/sindresorhus/got) instead of superagent to make its HTTP requests.  There is no intentional user-visible impact.
+
+### OTHER
+
+▶ Additional changes not described here: [#4386](https://github.com/taskcluster/taskcluster/issues/4386), [#4444](https://github.com/taskcluster/taskcluster/issues/4444).
+
+### Automated Package Updates
+
+<details>
+<summary>20 Renovate updates</summary>
+
+* Update dependency @babel/core to v7.13.1 (ce29caebb)
+* Update babel monorepo (24d1da5a8)
+* Update babel monorepo (f618db2be)
+* Update dependency amqplib to ^0.7.0 (f70461923)
+* Update dependency cron-parser to v3.2.0 (59a72b449)
+* Update dependency lodash to v4.17.21 (b30652b40)
+* Update golang.org/x/crypto commit hash to 5ea612d (28097fc3f)
+* Update dependency googleapis to v67.1.0 (0c5d822fa)
+* Update dependency @octokit/rest to v18.2.0 (6f3c21f13)
+* Update dependency @babel/core to v7.12.17 (57ef685a2)
+* Update dependency @octokit/auth-app to v3 (937576b35)
+* Update babel monorepo to v7.12.17 (b07c8c07f)
+* Update dependency @sentry/node to v6.2.0 (740c24508)
+* Update sentry monorepo to v6.2.0 (12ec38548)
+* Update dependency taskcluster-client to v41.0.2 (3ff1a5635)
+* Update dependency c8 to v7.6.0 (19ddaf425)
+* Update module sirupsen/logrus to v1.8.0 (dfe199479)
+* Update dependency taskcluster-client-web to v41.0.2 (ba08701d5)
+* Update dependency taskcluster-client to v41 (deba99393)
+* Update dependency mime to v2.5.2 (8617ada01)
+
+</details>
+
 ## v41.0.2
 
 ### USERS
