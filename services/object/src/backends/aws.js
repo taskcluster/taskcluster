@@ -80,7 +80,7 @@ class AwsBackend extends Backend {
         expires: expires.toJSON(),
         headers: {
           'Content-Type': contentType,
-          'Content-Length': contentLength,
+          'Content-Length': contentLength.toString(),
         },
       },
     };

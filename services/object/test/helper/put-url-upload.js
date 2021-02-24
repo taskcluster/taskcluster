@@ -52,7 +52,7 @@ exports.testPutUrlUpload = ({
         putUrl: { contentType: 'application/random-bytes', contentLength: data.length },
       });
 
-      helper.assertSatisfiesSchema(res, responseSchema);
+      await helper.assertSatisfiesSchema(res, responseSchema);
 
       return { name, data, res, uploadId };
     };
