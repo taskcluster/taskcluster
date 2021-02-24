@@ -1,9 +1,11 @@
 const assert = require('assert');
+
 class TaskQueue {
-  constructor(cfg, queue, type) {
+  constructor(cfg, queue, monitor, type) {
     assert(queue, 'Instance of taskcluster queue is required');
     this.queue = queue;
     this.builtinType = type;
+    this.monitor = monitor;
   }
 
   async runWorker() {
@@ -19,9 +21,11 @@ class TaskQueue {
       workerId: this.builtinType,
     });
     if (result.tasks.length === 0) {
+      this.monitor.debug('no tasks');
       return ;
     }
     const task = result.tasks[0];
+    this.monitor.debug(`claimed task: ${task.status.taskId}`);
     if (Object.keys(task.task.payload).length === 0) {
       if (task.task.taskQueueId === 'built-in/succeed') {
         return await this.queue.reportCompleted(task.status.taskId, task.runId);
@@ -29,6 +33,7 @@ class TaskQueue {
         return await this.queue.reportFailed(task.status.taskId, task.runId);
       }
     } else {
+      this.monitor.debug(`task ${task.status.taskId} has non-empty payload`);
       let payload = {
         reason: 'malformed-payload',
       };
@@ -36,4 +41,5 @@ class TaskQueue {
     }
   }
 }
+
 exports.TaskQueue = TaskQueue;

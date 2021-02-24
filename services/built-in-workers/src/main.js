@@ -41,13 +41,13 @@ const load = loader({
   },
 
   succeedTaskQueue: {
-    requires: ['queue', 'cfg'],
-    setup: ({ cfg, queue }) => new taskqueue.TaskQueue(cfg, queue, 'succeed'),
+    requires: ['queue', 'cfg', 'monitor'],
+    setup: ({ cfg, queue, monitor }) => new taskqueue.TaskQueue(cfg, queue, monitor.childMonitor('succeed'), 'succeed'),
   },
 
   failTaskQueue: {
-    requires: ['queue', 'cfg'],
-    setup: ({ cfg, queue }) => new taskqueue.TaskQueue(cfg, queue, 'fail'),
+    requires: ['queue', 'cfg', 'monitor'],
+    setup: ({ cfg, queue, monitor }) => new taskqueue.TaskQueue(cfg, queue, monitor.childMonitor('fail'), 'fail'),
   },
 
   server: {
