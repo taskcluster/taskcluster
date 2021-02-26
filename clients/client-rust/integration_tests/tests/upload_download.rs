@@ -1,16 +1,15 @@
 use anyhow::Result;
-use chrono::{Duration, Utc};
 use ring::rand::{SecureRandom, SystemRandom};
 use std::env;
 use std::io::SeekFrom;
+use taskcluster::chrono::{Duration, Utc};
 use taskcluster::{ClientBuilder, Credentials, Object};
 use tempfile::tempfile;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 
-use taskcluster::{
-    download_to_buf, download_to_file, download_to_vec, upload_from_buf, upload_from_file,
-};
+use taskcluster_download::{download_to_buf, download_to_file, download_to_vec};
+use taskcluster_upload::{upload_from_buf, upload_from_file};
 
 /// Return a client built with TC credentials from the environment, or panic if the NO_TEST_SKIP is
 /// set and the env vars are not set.  The client is configured with authorized_scopes containing

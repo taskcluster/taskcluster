@@ -296,12 +296,16 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       `publish-clients/client-rust`,
     ],
     run: async (requirements, utils) => {
-      await cargoPublish({
-        dir: path.join(REPO_ROOT, 'clients', 'client-rust'),
-        token: credentials.cratesioToken,
-        push: cmdOptions.push && !cmdOptions.staging,
-        logfile: path.join(logsDir, 'publish-client-rust.log'),
-        utils });
+      // upload each of the individual crates, in dependency order; note that
+      // integration-tests does not get published!
+      for (const dir of ['client', 'download', 'upload']) {
+        await cargoPublish({
+          dir: path.join(REPO_ROOT, 'clients', 'client-rust', dir),
+          token: credentials.cratesioToken,
+          push: cmdOptions.push && !cmdOptions.staging,
+          logfile: path.join(logsDir, `publish-client-${dir}-rust.log`),
+          utils });
+      }
     },
   });
 

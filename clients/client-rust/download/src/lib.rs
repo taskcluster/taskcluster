@@ -1,17 +1,31 @@
-/*! Advanced support for downloading files from the object service.
+/*! Support for downloading data from the object service.
+
+This crate provides a set of functions to download data from the object service.
+These functions negotiate a download method with the object service, then perform the download, following all of the Taskcluster recommended practices.
+
+Each function takes the necessary metadata for the download, a handle to the a destination for the data, and a [taskcluster::Object] client.
+The destination can take a variety of forms, as described below.
+The client must be configured with the necessary credentials to access the object service.
+
+## Convenience Functions
+
+Most uses of this crate can utilize one of the following convenience functions:
+
+* [download_to_buf] -- download data to a fixed-size buffer;
+* [download_to_vec] -- download data to a dynamically allocated buffer; or
+* [download_to_file] -- writing to a [tokio::fs::File].
 
 ## Factories
 
-A download may be retried, in which case the download function must have a means to truncate the data
-destination and begin writing from the beginning.  This is accomplished with the
-[`AsyncWriterFactory`](crate::download::AsyncWriterFactory) trait, which defines a `get_writer`
-method to generate a fresh `AsyncWriter` for each attempt.  Users for whom the supplied factory
-implementations are inadequate can add their own implementation of this trait.
+A download may be retried, in which case the download function must have a means to truncate the data destination and begin writing from the beginning.
+This is accomplished with the [`AsyncWriterFactory`](crate::AsyncWriterFactory) trait, which defines a `get_writer` method to generate a fresh [tokio::io::AsyncWrite] for each attempt.
+Users for whom the supplied convenience functions are inadequate can add their own implementation of this trait.
+
  */
-use crate::Object;
 use anyhow::{anyhow, Result};
 use futures_util::stream::StreamExt;
 use serde_json::json;
+use taskcluster::Object;
 use tokio::fs::File;
 use tokio::io::copy;
 use tokio_util::io::StreamReader;
@@ -22,7 +36,7 @@ mod service;
 pub use factory::{AsyncWriterFactory, CursorWriterFactory, FileWriterFactory};
 use service::ObjectService;
 
-/// Download an object to a `Vec<u8>` and return that.  If the object is unexpectedly
+/// Download an object to a [Vec<u8>] and return that.  If the object is unexpectedly
 /// large, this may exhaust system memory and panic.
 pub async fn download_to_vec(name: &str, object_service: &Object) -> Result<Vec<u8>> {
     let mut factory = CursorWriterFactory::new();
@@ -32,7 +46,7 @@ pub async fn download_to_vec(name: &str, object_service: &Object) -> Result<Vec<
 
 /// Download an object into the given buffer and return the slice of that buffer containing the
 /// object.  If the object is larger than the buffer, then resulting error can be downcast to
-/// `std::io::Error` with kind `WriteZero` and the somewhat cryptic message "write zero byte into
+/// [std::io::Error] with kind `WriteZero` and the somewhat cryptic message "write zero byte into
 /// writer".
 pub async fn download_to_buf<'a>(
     name: &str,
@@ -46,7 +60,7 @@ pub async fn download_to_buf<'a>(
 }
 
 /// Download an object into the given File.  The file must be open in write mode and must be
-/// clone-able (that is, `file.try_clone()` must succeed) in order to support retried downloads.
+/// clone-able (that is, [File::try_clone()] must succeed) in order to support retried downloads.
 /// The File is returned with all write operations complete but with unspecified position.
 pub async fn download_to_file(name: &str, object_service: &Object, file: File) -> Result<File> {
     let mut factory = FileWriterFactory::new(file);
@@ -54,7 +68,7 @@ pub async fn download_to_file(name: &str, object_service: &Object, file: File) -
     Ok(factory.into_inner().await?)
 }
 
-/// Download an object using an AsyncWriterFactory.  This is useful for
+/// Download an object using an [AsyncWriterFactory].  This is useful for
 /// advanced cases where one of the convenience functions is not adequate.
 pub async fn download_with_factory<AWF: AsyncWriterFactory>(
     name: &str,
@@ -109,14 +123,47 @@ async fn download_impl<O: ObjectService, AWF: AsyncWriterFactory>(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::test::{Dbg, Logger};
     use anyhow::Error;
     use async_trait::async_trait;
     use httptest::{matchers::*, responders::*, Expectation};
     use serde_json::{json, Value};
+    use std::fmt;
     use std::io::SeekFrom;
+    use std::sync::Mutex;
     use tempfile::tempfile;
     use tokio::io::{AsyncReadExt, AsyncSeekExt};
+
+    /// Event logger, used to log events in the fake ObjectService implementations
+    #[derive(Default)]
+    pub(crate) struct Logger {
+        logged: Mutex<Vec<String>>,
+    }
+
+    impl Logger {
+        pub(crate) fn log<S: Into<String>>(&self, message: S) {
+            self.logged.lock().unwrap().push(message.into())
+        }
+
+        pub(crate) fn assert(&self, expected: Vec<String>) {
+            assert_eq!(*self.logged.lock().unwrap(), expected);
+        }
+    }
+
+    /// Log the matched value with `dbg!()` and always match.
+    pub(crate) struct Dbg;
+    impl<IN> Matcher<IN> for Dbg
+    where
+        IN: fmt::Debug + ?Sized,
+    {
+        fn matches(&mut self, input: &IN, _ctx: &mut ExecutionContext) -> bool {
+            dbg!(input);
+            true
+        }
+
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "Dbg()")
+        }
+    }
 
     /// Fake implementation of the Object service, that supports the simple method
     struct SimpleDownload {

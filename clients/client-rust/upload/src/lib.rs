@@ -1,20 +1,30 @@
-/*! Advanced support for uploading files to the object service.
+/*! Support for uploading data to the Taskcluster object server.
+
+This crate provides a set of functions to perform an object-service upload.
+These functions negotiate an upload method with the object service, and then perform the upload, following all of the Taskcluster recommended practices.
+
+Each function takes the necessary metadata for the upload, a handle to the data to be uploaded, and a [taskcluster::Object] client.
+The data to be uploaded can come in a variety of forms, described below.
+The client must be configured with the necessary credentials to access the object service.
+
+## Convenience Functions
+
+Most uses of this crate can utilize [upload_from_buf] or [upload_from_file], providing the data in the form of a buffer and a [tokio::fs::File], respectively.
 
 ## Factories
 
-An upload may be retried, in which case the upload function must have access to the object data
-from the beginning.  This is accomplished with the
-[`AsyncReaderFactory`](crate::upload::AsyncReaderFactory) trait, which defines a `get_reader`
-method to generate a fresh `AsyncReader` for each attempt.  Users for whom the supplied factory
-implementations are inadequate can add their own implementation of this trait.
+An upload may be retried, in which case the upload function must have access to the object data from the beginning.
+This is accomplished with the [`AsyncReaderFactory`](crate::AsyncReaderFactory) trait, which defines a `get_reader` method to generate a fresh [tokio::io::AsyncRead] for each attempt.
+Users for whom the supplied convenience functions are inadequate can add their own implementation of this trait.
+
  */
-use crate::Object;
 use anyhow::{bail, Result};
-use chrono::{DateTime, Utc};
 use reqwest::Body;
 use serde::Deserialize;
 use serde_json::json;
 use std::collections::HashMap;
+use taskcluster::chrono::{DateTime, Utc};
+use taskcluster::Object;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, SeekFrom};
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -49,7 +59,7 @@ pub async fn upload_from_buf(
 }
 
 /// Upload an object from a File.  The file must be open in read mode and must be clone-able (that
-/// is, `file.try_clone()` must succeed) in order to support retried uploads.
+/// is, [File::try_clone()] must succeed) in order to support retried uploads.
 pub async fn upload_from_file(
     project_id: &str,
     name: &str,
@@ -190,13 +200,46 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::test::{Dbg, Logger};
     use anyhow::Error;
     use async_trait::async_trait;
-    use chrono::Duration;
     use httptest::{matchers::*, responders::*, Expectation};
     use ring::rand::{SecureRandom, SystemRandom};
     use serde_json::{json, Value};
+    use std::fmt;
+    use std::sync::Mutex;
+    use taskcluster::chrono::Duration;
+
+    /// Event logger, used to log events in the fake ObjectService implementations
+    #[derive(Default)]
+    pub(crate) struct Logger {
+        logged: Mutex<Vec<String>>,
+    }
+
+    impl Logger {
+        pub(crate) fn log<S: Into<String>>(&self, message: S) {
+            self.logged.lock().unwrap().push(message.into())
+        }
+
+        pub(crate) fn assert(&self, expected: Vec<String>) {
+            assert_eq!(*self.logged.lock().unwrap(), expected);
+        }
+    }
+
+    /// Log the matched value with `dbg!()` and always match.
+    pub(crate) struct Dbg;
+    impl<IN> Matcher<IN> for Dbg
+    where
+        IN: fmt::Debug + ?Sized,
+    {
+        fn matches(&mut self, input: &IN, _ctx: &mut ExecutionContext) -> bool {
+            dbg!(input);
+            true
+        }
+
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "Dbg()")
+        }
+    }
 
     /// Fake implementation of the Object service, that only supports DataInline
     #[derive(Default)]

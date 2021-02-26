@@ -4,15 +4,18 @@ use std::io::{Cursor, SeekFrom};
 use tokio::fs::File;
 use tokio::io::{AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 
-/// An AsyncWriterFactory can produce, on demand, an AsyncWriter.  In the event of a download
-/// failure, the restarted download will use a fresh writer to restart writing at the beginning.
+/// An AsyncWriterFactory can produce, on demand, an [AsyncWrite] object.  In the event of a
+/// download failure, the restarted download will use a fresh writer to restart writing at the
+/// beginning.
 #[async_trait]
 pub trait AsyncWriterFactory {
+    /// Get a fresh [AsyncWrite] object, positioned at the point where downloaded data should
+    /// be written.
     async fn get_writer<'a>(&'a mut self) -> Result<Box<dyn AsyncWrite + Unpin + 'a>>;
 }
 
-/// A CusorWriterFactory creates AsyncWriters from a `std::io::Cursor`, allowing
-/// downloads to in-memory buffers.  It is specialized for `Vec<u8>` (which grows indefinitely)
+/// A CusorWriterFactory creates [AsyncWrite] objects from a [std::io::Cursor], allowing
+/// downloads to in-memory buffers.  It is specialized for [Vec<u8>] (which grows indefinitely)
 /// and `&mut [u8]` (which has a fixed maximum size)
 pub struct CursorWriterFactory<T>(Cursor<T>);
 
@@ -62,7 +65,9 @@ impl<'a> CursorWriterFactory<&'a mut [u8]> {
     }
 }
 
-/// A FileWriterFactory creates AsyncWriters by rewinding and cloning a file.
+/// A FileWriterFactory creates [AsyncWrite] objects by rewinding and cloning a [tokio::fs::File].
+/// The file must be open in write mode and must be clone-able (that is, [File::try_clone()] must
+/// succeed) in order to support retried uploads.
 pub struct FileWriterFactory(File);
 
 #[async_trait]

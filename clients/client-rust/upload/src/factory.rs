@@ -4,17 +4,20 @@ use std::io::{Cursor, SeekFrom};
 use tokio::fs::File;
 use tokio::io::{AsyncRead, AsyncSeekExt};
 
-/// An AsyncReaderFactory can produce, on demand, an AsyncReader.  In the event of an upload
-/// failure, the restarted upload will use a fresh reader to start reading object content
-/// at the beginning.
+/// An AsyncReaderFactory can produce, on demand, an [AsyncRead] object.  In the event of an upload
+/// failure, the restarted upload will use a fresh reader to start reading object content at the
+/// beginning.
 #[async_trait]
 pub trait AsyncReaderFactory {
-    async fn get_reader(&mut self) -> Result<Box<dyn AsyncRead + Sync + Send + Unpin + 'static>>;
+    /// Get a fresh [AsyncRead] object, positioned at the beginning of the data to be uploaded.
+    async fn get_reader<'a>(
+        &'a mut self,
+    ) -> Result<Box<dyn AsyncRead + Sync + Send + Unpin + 'static>>;
 }
 
-/// A CusorReaderFactory creates AsyncReaders from a `std::io::Cursor`, allowing uploads from
-/// in-memory buffers.  Note that this struct clones the given data for each retry, although this
-/// behavior may be optimized in the future.
+/// A CusorReaderFactory creates [AsyncRead] objects from a [std::io::Cursor], allowing uploads
+/// from in-memory buffers.  Note that this struct clones the given data for each retry, although
+/// this behavior may be optimized in the future.
 pub struct CursorReaderFactory(Vec<u8>);
 
 #[async_trait]
@@ -30,8 +33,8 @@ impl CursorReaderFactory {
     }
 }
 
-/// A FileReaderFactory creates AsyncReaders by rewinding and cloning a file.  The given
-/// file must be clonable (that is, `try_clone()` must succeed).
+/// A FileReaderFactory creates [AsyncRead] objects by rewinding and cloning a file.  The given
+/// file must be clonable (that is, [File::try_clone()] must succeed).
 pub struct FileReaderFactory(File);
 
 #[async_trait]
