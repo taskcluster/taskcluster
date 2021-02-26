@@ -302,7 +302,7 @@ impl Client {
             retries -= 1;
 
             match backoff.next_backoff() {
-                Some(duration) => tokio::time::delay_for(duration).await,
+                Some(duration) => tokio::time::sleep(duration).await,
                 None => return Err(retry_for.into()),
             }
         }
