@@ -32,7 +32,7 @@ install_requires = [
     'six>=1.10.0',
 
     # python-3 only
-    'aiohttp>=2.0.0,!=3.7.0; python_version>="3.6"',
+    'aiohttp>=3.7.4; python_version>="3.6"',
     'async_timeout>=2.0.0; python_version>="3.6"',
 ]
 
