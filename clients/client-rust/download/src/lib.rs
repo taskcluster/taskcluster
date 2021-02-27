@@ -22,9 +22,10 @@ This is accomplished with the [`AsyncWriterFactory`](crate::AsyncWriterFactory) 
 Users for whom the supplied convenience functions are inadequate can add their own implementation of this trait.
 
  */
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use futures_util::stream::StreamExt;
 use serde_json::json;
+use taskcluster::retry::{Backoff, Retry};
 use taskcluster::Object;
 use tokio::fs::File;
 use tokio::io::copy;
@@ -38,9 +39,13 @@ use service::ObjectService;
 
 /// Download an object to a [Vec<u8>] and return that.  If the object is unexpectedly
 /// large, this may exhaust system memory and panic.
-pub async fn download_to_vec(name: &str, object_service: &Object) -> Result<Vec<u8>> {
+pub async fn download_to_vec(
+    name: &str,
+    retry: &Retry,
+    object_service: &Object,
+) -> Result<Vec<u8>> {
     let mut factory = CursorWriterFactory::new();
-    download_impl(name, object_service, &mut factory).await?;
+    download_impl(name, retry, object_service, &mut factory).await?;
     Ok(factory.into_inner())
 }
 
@@ -50,11 +55,12 @@ pub async fn download_to_vec(name: &str, object_service: &Object) -> Result<Vec<
 /// writer".
 pub async fn download_to_buf<'a>(
     name: &str,
+    retry: &Retry,
     object_service: &Object,
     buf: &'a mut [u8],
 ) -> Result<&'a [u8]> {
     let mut factory = CursorWriterFactory::for_buf(buf);
-    download_impl(name, object_service, &mut factory).await?;
+    download_impl(name, retry, object_service, &mut factory).await?;
     let size = factory.size();
     Ok(&buf[..size])
 }
@@ -62,9 +68,14 @@ pub async fn download_to_buf<'a>(
 /// Download an object into the given File.  The file must be open in write mode and must be
 /// clone-able (that is, [File::try_clone()] must succeed) in order to support retried downloads.
 /// The File is returned with all write operations complete but with unspecified position.
-pub async fn download_to_file(name: &str, object_service: &Object, file: File) -> Result<File> {
+pub async fn download_to_file(
+    name: &str,
+    retry: &Retry,
+    object_service: &Object,
+    file: File,
+) -> Result<File> {
     let mut factory = FileWriterFactory::new(file);
-    download_impl(name, object_service, &mut factory).await?;
+    download_impl(name, retry, object_service, &mut factory).await?;
     Ok(factory.into_inner().await?)
 }
 
@@ -72,20 +83,22 @@ pub async fn download_to_file(name: &str, object_service: &Object, file: File) -
 /// advanced cases where one of the convenience functions is not adequate.
 pub async fn download_with_factory<AWF: AsyncWriterFactory>(
     name: &str,
+    retry: &Retry,
     object_service: &Object,
     writer_factory: &mut AWF,
 ) -> Result<()> {
-    download_impl(name, object_service, writer_factory).await
+    download_impl(name, retry, object_service, writer_factory).await
 }
 
 /// Internal implementation of downloads, using the ObjectService trait to allow
 /// injecting a fake dependency
 async fn download_impl<O: ObjectService, AWF: AsyncWriterFactory>(
     name: &str,
+    retry: &Retry,
     object_service: &O,
     writer_factory: &mut AWF,
 ) -> Result<()> {
-    let res = object_service
+    let response = object_service
         .startDownload(
             name,
             &json!({
@@ -96,21 +109,53 @@ async fn download_impl<O: ObjectService, AWF: AsyncWriterFactory>(
         )
         .await?;
 
-    // TODO: retries
+    let mut backoff = Backoff::new(retry);
+    let mut attempts = 0;
+    loop {
+        let res = simple_download(&response, writer_factory).await;
+        attempts += 1;
 
+        match &res {
+            Ok(_) => return Ok(()),
+            Err(err) => {
+                if let Some(reqerr) = err.downcast_ref::<reqwest::Error>() {
+                    if reqerr
+                        .status()
+                        .map(|s| s.is_client_error())
+                        .unwrap_or(false)
+                    {
+                        return res;
+                    }
+                }
+            }
+        }
+
+        match backoff.next_backoff() {
+            Some(duration) => tokio::time::sleep(duration).await,
+            None => return res.context(format!("Download failed after {} attempts", attempts)),
+        }
+    }
+}
+
+async fn simple_download<AWF: AsyncWriterFactory>(
+    start_download_response: &serde_json::Value,
+    writer_factory: &mut AWF,
+) -> Result<()> {
     // simple method is simple!
-    let url = res
+    let url = start_download_response
         .get("url")
         .and_then(|v| v.as_str())
         .ok_or_else(|| anyhow!("invalid simple download response"))?;
 
     let res = reqwest::get(url).await?;
+    println!("res {:?}", res);
+    res.error_for_status_ref()?;
 
     // copy bytes from the response to the writer
-    let stream = res.bytes_stream();
-    let stream =
-            // convert the Result::Err type to std::io::Error
-            stream.map(|r| r.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)));
+    let stream = res
+        .bytes_stream()
+        // convert the Result::Err type to std::io::Error
+        .map(|r| r.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)));
     let mut reader = StreamReader::new(stream);
 
     let mut writer = writer_factory.get_writer().await?;
@@ -202,17 +247,23 @@ mod test {
     /// the body is "hello, world".
     fn data_server(responses: &[u16]) -> httptest::Server {
         let server = httptest::Server::run();
-        for response in responses {
-            server.expect(
-                Expectation::matching(all_of![Dbg, request::method_path("GET", "/data"),])
-                    .times(1)
-                    .respond_with(if *response == 200 {
-                        status_code(200).body("hello, world")
-                    } else {
-                        status_code(*response)
-                    }),
-            );
-        }
+        server.expect(
+            Expectation::matching(all_of![Dbg, request::method_path("GET", "/data"),])
+                .times(..=responses.len())
+                .respond_with(cycle(
+                    responses
+                        .iter()
+                        .map(|response| {
+                            let responder: Box<dyn Responder> = Box::new(if *response == 200 {
+                                status_code(200).body("hello, world")
+                            } else {
+                                status_code(*response)
+                            });
+                            responder
+                        })
+                        .collect(),
+                )),
+        );
         server
     }
 
@@ -222,7 +273,13 @@ mod test {
         let object_service = SimpleDownload::new(server);
 
         let mut factory = CursorWriterFactory::new();
-        download_impl("some/object", &object_service, &mut factory).await?;
+        download_impl(
+            "some/object",
+            &Retry::default(),
+            &object_service,
+            &mut factory,
+        )
+        .await?;
 
         object_service.logger.assert(vec![format!(
             "startDownload some/object {}",
@@ -238,12 +295,98 @@ mod test {
     }
 
     #[tokio::test]
+    async fn simple_download_with_retries_for_500s_success() -> Result<()> {
+        let server = data_server(&[500, 500, 200]);
+        let object_service = SimpleDownload::new(server);
+        let retry = Retry {
+            retries: 2,
+            ..Retry::default()
+        };
+
+        let mut factory = CursorWriterFactory::new();
+        download_impl("some/object", &retry, &object_service, &mut factory).await?;
+
+        object_service.logger.assert(vec![format!(
+            "startDownload some/object {}",
+            json!({"simple": true})
+        )]);
+
+        let data = factory.into_inner();
+        assert_eq!(&data, b"hello, world");
+
+        drop(object_service); // ..and with it, server, which refs data
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn simple_download_with_failure_for_400s() -> Result<()> {
+        let server = data_server(&[400, 200]);
+        let object_service = SimpleDownload::new(server);
+        let retry = Retry::default();
+
+        let mut factory = CursorWriterFactory::new();
+        assert!(
+            download_impl("some/object", &retry, &object_service, &mut factory)
+                .await
+                .is_err()
+        );
+
+        object_service.logger.assert(vec![format!(
+            "startDownload some/object {}",
+            json!({"simple": true})
+        )]);
+
+        let data = factory.into_inner();
+        assert_eq!(&data, b"");
+
+        drop(object_service); // ..and with it, server, which refs data
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn simple_download_with_retries_for_500s_failure() -> Result<()> {
+        let server = data_server(&[500, 500, 500, 200]);
+        let object_service = SimpleDownload::new(server);
+        let retry = Retry {
+            retries: 2, // but, need 3 to succeed!
+            ..Retry::default()
+        };
+
+        let mut factory = CursorWriterFactory::new();
+        assert!(
+            download_impl("some/object", &retry, &object_service, &mut factory)
+                .await
+                .is_err()
+        );
+
+        object_service.logger.assert(vec![format!(
+            "startDownload some/object {}",
+            json!({"simple": true})
+        )]);
+
+        let data = factory.into_inner();
+        assert_eq!(&data, b"");
+
+        drop(object_service);
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn simple_download_to_file() -> Result<()> {
         let server = data_server(&[200]);
         let object_service = SimpleDownload::new(server);
 
         let mut factory = FileWriterFactory::new(tempfile()?.into());
-        download_impl("some/object", &object_service, &mut factory).await?;
+        download_impl(
+            "some/object",
+            &Retry::default(),
+            &object_service,
+            &mut factory,
+        )
+        .await?;
 
         object_service.logger.assert(vec![format!(
             "startDownload some/object {}",

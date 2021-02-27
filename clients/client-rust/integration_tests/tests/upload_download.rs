@@ -3,7 +3,7 @@ use ring::rand::{SecureRandom, SystemRandom};
 use std::env;
 use std::io::SeekFrom;
 use taskcluster::chrono::{Duration, Utc};
-use taskcluster::{ClientBuilder, Credentials, Object};
+use taskcluster::{ClientBuilder, Credentials, Object, Retry};
 use tempfile::tempfile;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
@@ -53,6 +53,7 @@ async fn test_small_upload() -> Result<()> {
         let name = format!("taskcluster/test/client-rs/{}", slugid::v4());
         let svc = Object::new(client)?;
         let data = b"hello, world";
+        let retry = Retry::default();
 
         upload_from_buf(
             "taskcluster",
@@ -60,12 +61,13 @@ async fn test_small_upload() -> Result<()> {
             "text/plain",
             &(Utc::now() + Duration::hours(1)),
             data,
+            &Retry::default(),
             &svc,
         )
         .await?;
 
         let mut buf = [0u8; 128];
-        let res = download_to_buf(&name, &svc, &mut buf).await?;
+        let res = download_to_buf(&name, &retry, &svc, &mut buf).await?;
 
         assert_eq!(&res, &data);
     }
@@ -81,6 +83,7 @@ async fn test_large_upload() -> Result<()> {
         SystemRandom::new().fill(&mut data).unwrap();
         let name = format!("taskcluster/test/client-rs/{}", slugid::v4());
         let svc = Object::new(client)?;
+        let retry = Retry::default();
 
         upload_from_buf(
             "taskcluster",
@@ -88,11 +91,12 @@ async fn test_large_upload() -> Result<()> {
             "text/plain",
             &(Utc::now() + Duration::hours(1)),
             &data,
+            &Retry::default(),
             &svc,
         )
         .await?;
 
-        let res = download_to_vec(&name, &svc).await?;
+        let res = download_to_vec(&name, &retry, &svc).await?;
         assert_eq!(&res, &data);
     }
 
@@ -106,6 +110,7 @@ async fn test_file_upload() -> Result<()> {
         let mut data = vec![1u8; 10000];
         SystemRandom::new().fill(&mut data).unwrap();
         let mut file: File = tempfile()?.into();
+        let retry = Retry::default();
 
         file.write_all(&data).await?;
         file.flush().await?;
@@ -119,11 +124,12 @@ async fn test_file_upload() -> Result<()> {
             "text/plain",
             &(Utc::now() + Duration::hours(1)),
             file,
+            &Retry::default(),
             &svc,
         )
         .await?;
 
-        let mut file = download_to_file(&name, &svc, tempfile()?.into()).await?;
+        let mut file = download_to_file(&name, &retry, &svc, tempfile()?.into()).await?;
 
         let mut res = Vec::new();
         file.seek(SeekFrom::Start(0)).await?;

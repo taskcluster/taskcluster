@@ -287,14 +287,16 @@ Use the [slugid](https://crates.io/crates/slugid) crate to create slugIds (such 
 mod client;
 mod credentials;
 mod generated;
+pub mod retry;
 mod util;
 
 // re-export
 pub use chrono;
 
 // internal re-exports
-pub use client::{Client, ClientBuilder, Retry};
+pub use client::{Client, ClientBuilder};
 pub use credentials::Credentials;
 pub use generated::*;
 pub use reqwest::StatusCode;
+pub use retry::Retry;
 pub use util::err_status_code;

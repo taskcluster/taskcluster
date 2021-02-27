@@ -18,15 +18,16 @@ This is accomplished with the [`AsyncReaderFactory`](crate::AsyncReaderFactory) 
 Users for whom the supplied convenience functions are inadequate can add their own implementation of this trait.
 
  */
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use reqwest::Body;
 use serde::Deserialize;
-use serde_json::json;
+use serde_json::{json, Value};
 use std::collections::HashMap;
 use taskcluster::chrono::{DateTime, Utc};
+use taskcluster::retry::{Backoff, Retry};
 use taskcluster::Object;
 use tokio::fs::File;
-use tokio::io::{AsyncReadExt, AsyncSeekExt, SeekFrom};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeekExt, SeekFrom};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 mod factory;
@@ -44,6 +45,7 @@ pub async fn upload_from_buf(
     content_type: &str,
     expires: &DateTime<Utc>,
     data: &[u8],
+    retry: &Retry,
     object_service: &Object,
 ) -> Result<()> {
     upload_with_factory(
@@ -53,6 +55,7 @@ pub async fn upload_from_buf(
         data.len() as u64,
         expires,
         CursorReaderFactory::new(data),
+        retry,
         object_service,
     )
     .await
@@ -66,6 +69,7 @@ pub async fn upload_from_file(
     content_type: &str,
     expires: &DateTime<Utc>,
     mut file: File,
+    retry: &Retry,
     object_service: &Object,
 ) -> Result<()> {
     let content_length = file.seek(SeekFrom::End(0)).await?;
@@ -76,6 +80,7 @@ pub async fn upload_from_file(
         content_length,
         expires,
         FileReaderFactory::new(file),
+        retry,
         object_service,
     )
     .await
@@ -90,6 +95,7 @@ pub async fn upload_with_factory<ARF: AsyncReaderFactory>(
     content_length: u64,
     expires: &DateTime<Utc>,
     reader_factory: ARF,
+    retry: &Retry,
     object_service: &Object,
 ) -> Result<()> {
     let upload_id = slugid::v4();
@@ -100,6 +106,7 @@ pub async fn upload_with_factory<ARF: AsyncReaderFactory>(
         content_length,
         expires,
         reader_factory,
+        retry,
         object_service,
         &upload_id,
     )
@@ -115,6 +122,7 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
     content_length: u64,
     expires: &DateTime<Utc>,
     mut reader_factory: ARF,
+    retry: &Retry,
     object_service: &O,
     upload_id: &str,
 ) -> Result<()> {
@@ -139,7 +147,7 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
     });
 
     // send the request to the object service
-    let res = object_service
+    let create_upload_res = object_service
         .createUpload(
             name,
             &json!({
@@ -151,36 +159,42 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
         )
         .await?;
 
-    // TODO: support retries
+    let mut backoff = Backoff::new(retry);
+    let mut attempts = 0u32;
+    loop {
+        // actually upload the data
+        let res: Result<()> = if create_upload_res
+            .pointer("/uploadMethod/dataInline")
+            .is_some()
+        {
+            Ok(()) // nothing to do - data is already in place
+        } else if let Some(method) = create_upload_res.pointer("/uploadMethod/putUrl") {
+            let reader = reader_factory.get_reader().await?;
+            simple_upload(reader, content_length, method.clone()).await
+        } else {
+            bail!("Could not negotiate an upload method") // not retriable
+        };
 
-    // actually upload the data
-    if res.pointer("/uploadMethod/dataInline").is_some() {
-        // nothing to do - data is already in place
-    } else if let Some(method) = res.pointer("/uploadMethod/putUrl") {
-        #[derive(Deserialize)]
-        struct Method {
-            url: String,
-            headers: HashMap<String, String>,
+        attempts += 1;
+        match &res {
+            Ok(_) => break,
+            Err(err) => {
+                if let Some(reqerr) = err.downcast_ref::<reqwest::Error>() {
+                    if reqerr
+                        .status()
+                        .map(|s| s.is_client_error())
+                        .unwrap_or(false)
+                    {
+                        return res;
+                    }
+                }
+            }
         }
 
-        let method: Method = serde_json::from_value(method.clone())?;
-        let client = reqwest::Client::new();
-
-        let mut req = client
-            .put(&method.url)
-            .header("Content-Length", content_length);
-        for (k, v) in method.headers.iter() {
-            req = req.header(k, v);
+        match backoff.next_backoff() {
+            Some(duration) => tokio::time::sleep(duration).await,
+            None => return res.context(format!("Download failed after {} attempts", attempts)),
         }
-
-        let reader = reader_factory.get_reader().await?;
-        let stream = FramedRead::new(reader, BytesCodec::new());
-        req = req.body(Body::wrap_stream(stream));
-
-        // if the request is successful, that's all we need to know.
-        req.send().await?.error_for_status()?;
-    } else {
-        bail!("Could not negotiate an upload method");
     }
 
     // finish the upload
@@ -197,14 +211,48 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
     Ok(())
 }
 
+/// Perform a simple upload, given the `method` property of the response from createUpload.
+async fn simple_upload(
+    reader: Box<dyn AsyncRead + Sync + Send + Unpin + 'static>,
+    content_length: u64,
+    upload_method: Value,
+) -> Result<()> {
+    #[derive(Deserialize)]
+    struct Method {
+        url: String,
+        headers: HashMap<String, String>,
+    }
+
+    let upload_method: Method = serde_json::from_value(upload_method.clone())?;
+    let client = reqwest::Client::new();
+
+    let mut req = client
+        .put(&upload_method.url)
+        .header("Content-Length", content_length);
+    for (k, v) in upload_method.headers.iter() {
+        req = req.header(k, v);
+    }
+
+    let stream = FramedRead::new(reader, BytesCodec::new());
+    req = req.body(Body::wrap_stream(stream));
+
+    req.send().await?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     use anyhow::Error;
     use async_trait::async_trait;
-    use httptest::{matchers::*, responders::*, Expectation};
+    use httptest::{
+        matchers::{all_of, contains, request, ExecutionContext, Matcher},
+        responders::status_code,
+        Expectation,
+    };
     use ring::rand::{SecureRandom, SystemRandom};
-    use serde_json::{json, Value};
+    use serde_json::json;
     use std::fmt;
     use std::sync::Mutex;
     use taskcluster::chrono::Duration;
@@ -395,6 +443,7 @@ mod test {
             data.len() as u64,
             expires,
             CursorReaderFactory::new(data),
+            &Retry::default(),
             object_service,
             &upload_id,
         )
