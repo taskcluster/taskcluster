@@ -101,7 +101,7 @@ export default class ViewClients extends PureComponent {
   handleDialogActionComplete = () => {
     this.setState({ dialogOpen: false, deleteClientId: null });
 
-    this.props.history.push(`/auth/clients`);
+    this.props.data.refetch();
   };
 
   handleDialogActionClose = () => {
