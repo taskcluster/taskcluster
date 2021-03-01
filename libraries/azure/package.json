@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-lib-azure",
   "private": true,
-  "version": "41.1.0",
+  "version": "42.0.0",
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
   "description": "Azure SAS credential shim for Taskcluster.",
   "license": "MPL-2.0",

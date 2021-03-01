@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v42.0.0
+
+### USERS
+
+▶ [MAJOR] [#4437](https://github.com/taskcluster/taskcluster/issues/4437)
+The `hooks.triggerHook` and `hooks.triggerHookWithToken` methods now returns only `{taskId: .., status: { taskId: .. } }`, where previously they returned an entire task-status data structure.  Callers which require those status fields must be modified to request the status directly (`queue.status`) before this upgrade occurs.
+
+### Automated Package Updates
+
+<details>
+<summary>12 Renovate updates</summary>
+
+* Update babel monorepo to v7.13.8 (3cd03d493)
+* Update dependency query-string to v6.14.1 (6c7ed0bcb)
+* Update dependency memorystore to v1.6.5 (4284afc0b)
+* Update dependency got to v11.8.2 (981c118eb)
+* Update dependency jwks-rsa to v1.12.3 (2ffc76841)
+* Update dependency inquirer to v8 (ea0ca23e9)
+* Update dependency nock to v13.0.8 (11b33a5e5)
+* Update dependency nock to v13.0.8 (e4dc8307b)
+* Update dependency newrelic to v7.1.2 (8c8c0ca89)
+* Update dependency @octokit/rest to v18.2.1 (7ec67f16b)
+* Update dependency codemirror to v5.59.4 (b15982674)
+* Update dependency @azure/ms-rest-nodeauth to v3.0.7 (6458929f8)
+
+</details>
+
 ## v41.1.0
 
 ### WORKER-DEPLOYERS

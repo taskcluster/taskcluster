@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-lib-validate",
   "private": true,
-  "version": "41.1.0",
+  "version": "42.0.0",
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Validate schemas for Taskcluster projects",
   "license": "MPL-2.0",

@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-web-server",
-  "version": "41.1.0",
+  "version": "42.0.0",
   "private": true,
   "main": "./src/main.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
