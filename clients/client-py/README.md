@@ -30,12 +30,13 @@ synchronously.  The classes under `taskcluster.aio` (e.g.,
 
 Here is a simple set-up of an Index client:
 
-    ```python
-    import taskcluster
-    index = taskcluster.Index({
-      'rootUrl': 'https://tc.example.com',
-      'credentials': {'clientId': 'id', 'accessToken': 'accessToken'},
-    })
+```python
+import taskcluster
+index = taskcluster.Index({
+  'rootUrl': 'https://tc.example.com',
+  'credentials': {'clientId': 'id', 'accessToken': 'accessToken'},
+})
+```
 
 The `rootUrl` option is required as it gives the Taskcluster deployment to
 which API requests should be sent.  Credentials are only required if the
@@ -83,12 +84,12 @@ methods; the calling convention is the same in either case.
 
 There are four calling conventions for methods:
 
-    ```python
-    client.method(v1, v1, payload)
-    client.method(payload, k1=v1, k2=v2)
-    client.method(payload=payload, query=query, params={k1: v1, k2: v2})
-    client.method(v1, v2, payload=payload, query=query)
-    ```
+```python
+client.method(v1, v1, payload)
+client.method(payload, k1=v1, k2=v2)
+client.method(payload=payload, query=query, params={k1: v1, k2: v2})
+client.method(v1, v2, payload=payload, query=query)
+```
 
 Here, `v1` and `v2` are URL parameters (named `k1` and `k2`), `payload` is the
 request payload, and `query` is a dictionary of query arguments.
@@ -241,15 +242,15 @@ satisfied.
 
 Example:
 
-```
-    requiredScopeSets = [
-        ["scopeA", "scopeB"],
-        ["scopeC:*"]
-    ]
-    assert scopesMatch(['scopeA', 'scopeB'], requiredScopeSets)
-    assert scopesMatch(['scopeC:xyz'], requiredScopeSets)
-    assert not scopesMatch(['scopeA'], requiredScopeSets)
-    assert not scopesMatch(['scopeC'], requiredScopeSets)
+```python
+requiredScopeSets = [
+    ["scopeA", "scopeB"],
+    ["scopeC:*"]
+]
+assert scopesMatch(['scopeA', 'scopeB'], requiredScopeSets)
+assert scopesMatch(['scopeC:xyz'], requiredScopeSets)
+assert not scopesMatch(['scopeA'], requiredScopeSets)
+assert not scopesMatch(['scopeC'], requiredScopeSets)
 ```
 
 ### Pagination
@@ -308,13 +309,13 @@ Exchanges definitions provded by each service.  This is done by instantiating a
 Options for the topic exchange methods can be in the form of either a single
 dictionary argument or keyword arguments.  Only one form is allowed.
 
-    ```python
-    from taskcluster import client
-    qEvt = client.QueueEvents({rootUrl: 'https://tc.example.com'})
-    # The following calls are equivalent
-    print(qEvt.taskCompleted({'taskId': 'atask'}))
-    print(qEvt.taskCompleted(taskId='atask'))
-    ```
+```python
+from taskcluster import client
+qEvt = client.QueueEvents({rootUrl: 'https://tc.example.com'})
+# The following calls are equivalent
+print(qEvt.taskCompleted({'taskId': 'atask'}))
+print(qEvt.taskCompleted(taskId='atask'))
+```
 
 Note that the client library does *not* provide support for interfacing with a Pulse server.
 
