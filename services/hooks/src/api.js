@@ -602,7 +602,12 @@ const triggerHookCommon = async function({ req, res, hook, payload, clientId, fi
   }
 
   if (resp) {
-    return res.reply(resp);
+    const taskId = resp.status.taskId;
+    return res.reply({
+      taskId,
+      // for compatibility, provide the taskId at the path it was at before #4437.
+      status: { taskId },
+    });
   } else if (error.body && error.body.requestInfo) {
     // handle errors from createTask specially (since they are usually about scopes)
     if (error.body.requestInfo.method === 'createTask' && error.body.code === 'InsufficientScopes') {

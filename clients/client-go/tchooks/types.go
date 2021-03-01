@@ -188,180 +188,13 @@ type (
 		Result string `json:"result"`
 	}
 
-	// JSON object with information about a run
-	RunInformation struct {
-
-		// Reason for the creation of this run,
-		// **more reasons may be added in the future**.
-		//
-		// Possible values:
-		//   * "scheduled"
-		//   * "retry"
-		//   * "task-retry"
-		//   * "rerun"
-		//   * "exception"
-		ReasonCreated string `json:"reasonCreated"`
-
-		// Reason that run was resolved, this is mainly
-		// useful for runs resolved as `exception`.
-		// Note, **more reasons may be added in the future**, also this
-		// property is only available after the run is resolved.  Note
-		// that 'superseded' is here only for compatibility, as that
-		// functionality has been removed.
-		//
-		// Possible values:
-		//   * "completed"
-		//   * "failed"
-		//   * "deadline-exceeded"
-		//   * "canceled"
-		//   * "claim-expired"
-		//   * "worker-shutdown"
-		//   * "malformed-payload"
-		//   * "resource-unavailable"
-		//   * "internal-error"
-		//   * "intermittent-task"
-		//   * "superseded"
-		ReasonResolved string `json:"reasonResolved,omitempty"`
-
-		// Date-time at which this run was resolved, ie. when the run changed
-		// state from `running` to either `completed`, `failed` or `exception`.
-		// This property is only present after the run as been resolved.
-		Resolved tcclient.Time `json:"resolved,omitempty"`
-
-		// Id of this task run, `run-id`s always starts from `0`
-		//
-		// Mininum:    0
-		// Maximum:    1000
-		RunID int64 `json:"runId"`
-
-		// Date-time at which this run was scheduled, ie. when the run was
-		// created in state `pending`.
-		Scheduled tcclient.Time `json:"scheduled"`
-
-		// Date-time at which this run was claimed, ie. when the run changed
-		// state from `pending` to `running`. This property is only present
-		// after the run has been claimed.
-		Started tcclient.Time `json:"started,omitempty"`
-
-		// State of this run
-		//
-		// Possible values:
-		//   * "pending"
-		//   * "running"
-		//   * "completed"
-		//   * "failed"
-		//   * "exception"
-		State string `json:"state"`
-
-		// Time at which the run expires and is resolved as `failed`, if the
-		// run isn't reclaimed. Note, only present after the run has been
-		// claimed.
-		TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
-
-		// Identifier for group that worker who executes this run is a part of,
-		// this identifier is mainly used for efficient routing.
-		// Note, this property is only present after the run is claimed.
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
-		WorkerGroup string `json:"workerGroup,omitempty"`
-
-		// Identifier for worker evaluating this run within given
-		// `workerGroup`. Note, this property is only available after the run
-		// has been claimed.
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
-		WorkerID string `json:"workerId,omitempty"`
-	}
-
+	// Another copy of the taskId, at the location where it was published in
+	// Taskcluster versions before v42.  Prefer to use the top-level property,
+	// as `status.taskId` may be removed in future versions.
 	Status struct {
 
-		// Deadline of the task, `pending` and `running` runs are
-		// resolved as **exception** if not resolved by other means
-		// before the deadline. Note, deadline cannot be more than
-		// 5 days into the future
-		Deadline tcclient.Time `json:"deadline"`
-
-		// Task expiration, time at which task definition and
-		// status is deleted. Notice that all artifacts for the task
-		// must have an expiration that is no later than this.
-		Expires tcclient.Time `json:"expires"`
-
-		// The name for the "project" with which this task is associated.  This
-		// value can be used to control permission to manipulate tasks as well as
-		// for usage reporting.  Project ids are typically simple identifiers,
-		// optionally in a hierarchical namespace separated by `/` characters.
-		// This value defaults to `none`.
-		//
-		// Default:    "none"
-		// Syntax:     ^([a-zA-Z0-9._/-]*)$
-		// Min length: 1
-		// Max length: 500
-		ProjectID string `json:"projectId,omitempty"`
-
-		// Unique identifier for the provisioner that this task must be scheduled on
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
-		ProvisionerID string `json:"provisionerId"`
-
-		// Number of retries left for the task in case of infrastructure issues
-		//
-		// Mininum:    0
-		// Maximum:    999
-		RetriesLeft int64 `json:"retriesLeft"`
-
-		// List of runs, ordered so that index `i` has `runId == i`
-		Runs []RunInformation `json:"runs"`
-
-		// Identifier for the scheduler that _defined_ this task.
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
-		SchedulerID string `json:"schedulerId"`
-
-		// State of this task. This is just an auxiliary property derived from state
-		// of latests run, or `unscheduled` if none.
-		//
-		// Possible values:
-		//   * "unscheduled"
-		//   * "pending"
-		//   * "running"
-		//   * "completed"
-		//   * "failed"
-		//   * "exception"
-		State string `json:"state"`
-
-		// Identifier for a group of tasks scheduled together with this task, by
-		// scheduler identified by `schedulerId`. For tasks scheduled by the
-		// task-graph scheduler, this is the `taskGraphId`.
-		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskGroupID string `json:"taskGroupId"`
-
-		// Unique task identifier, this is UUID encoded as
-		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-		// stripped of `=` padding.
-		//
-		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskID string `json:"taskId"`
-
-		// Unique identifier for a task queue
-		//
-		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		TaskQueueID string `json:"taskQueueId,omitempty"`
-
-		// Identifier for worker type within the specified provisioner
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
-		WorkerType string `json:"workerType"`
+		TaskID string `json:"taskId,omitempty"`
 	}
 
 	// Information about a successful firing of the hook
@@ -380,11 +213,6 @@ type (
 		Time tcclient.Time `json:"time"`
 	}
 
-	// A representation of **task status** as known by the queue
-	TaskStatusStructure struct {
-		Status Status `json:"status"`
-	}
-
 	// A request to trigger a hook.  The payload must be a JSON object, and is used as the context
 	// for a JSON-e rendering of the hook's task template, as described in "Firing Hooks".
 	//
@@ -393,16 +221,30 @@ type (
 
 	// Response to a `triggerHook` or `triggerHookWithToken` call.
 	//
-	// In most cases, this is a task status, but in cases where the hook template
-	// does not generate a task, it is an empty object with no `status` property.
+	// In most cases, this gives a `taskId`, but in cases where the hook template
+	// does not generate a task, it is an empty object with no `taskId`.
 	//
 	// Any of:
-	//   * TaskStatusStructure
 	//   * TriggerHookResponse1
+	//   * TriggerHookResponse2
 	TriggerHookResponse json.RawMessage
 
-	// Empty response indicating no task was created
+	// Response identifying the created task
 	TriggerHookResponse1 struct {
+
+		// Another copy of the taskId, at the location where it was published in
+		// Taskcluster versions before v42.  Prefer to use the top-level property,
+		// as `status.taskId` may be removed in future versions.
+		Status Status `json:"status,omitempty"`
+
+		// TaskId of the task created by triggering the hook.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskID string `json:"taskId"`
+	}
+
+	// Empty response indicating no task was created
+	TriggerHookResponse2 struct {
 	}
 
 	// Secret token for a trigger
