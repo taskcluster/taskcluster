@@ -215,6 +215,10 @@
     "branchConcurrentLimit": 0,
     "rangeStrategy": "update-lockfile",
     "semanticCommits": "disabled",
+    "lockFileMaintenance": {
+      "enabled": true,
+      "automerge": true
+    },
     "packageRules": [
       {
         "packagePatterns": [
