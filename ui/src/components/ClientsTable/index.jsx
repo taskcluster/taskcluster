@@ -5,8 +5,10 @@ import memoize from 'fast-memoize';
 import { camelCase } from 'camel-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableCellItem from '../TableCellItem';
+import Button from '../Button';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
 import { VIEW_CLIENTS_PAGE_SIZE } from '../../utils/constants';
@@ -18,7 +20,7 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),
   map(({ node: { clientId } }) => clientId)
 );
-const tableHeaders = ['Client ID', 'Last Date Used'];
+const tableHeaders = ['Client ID', 'Last Date Used', ''];
 
 export default class ClientsTable extends Component {
   static propTypes = {
@@ -29,6 +31,7 @@ export default class ClientsTable extends Component {
     onPageChange: func.isRequired,
     /** A search term to refine the list of clients. */
     searchTerm: string,
+    onDialogActionOpen: func.isRequired,
   };
 
   state = {
@@ -77,7 +80,12 @@ export default class ClientsTable extends Component {
   };
 
   render() {
-    const { onPageChange, clientsConnection, searchTerm } = this.props;
+    const {
+      onPageChange,
+      clientsConnection,
+      searchTerm,
+      onDialogActionOpen,
+    } = this.props;
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
 
@@ -97,7 +105,7 @@ export default class ClientsTable extends Component {
         onPageChange={onPageChange}
         renderRow={({ node: client }) => (
           <TableRow key={client.clientId}>
-            <TableCell>
+            <TableCell width="100%">
               <Link to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
                 <TableCellItem button>
                   {client.clientId}
@@ -107,6 +115,15 @@ export default class ClientsTable extends Component {
             </TableCell>
             <TableCell>
               <DateDistance from={client.lastDateUsed} />
+            </TableCell>
+            <TableCell>
+              <Button
+                requiresAuth
+                tooltipProps={{ title: 'Delete Client' }}
+                size="small"
+                onClick={() => onDialogActionOpen(client.clientId)}>
+                <DeleteIcon size={iconSize} />
+              </Button>
             </TableCell>
           </TableRow>
         )}
