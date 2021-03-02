@@ -42,7 +42,7 @@ class PurgeCache(AsyncBaseClient):
         Purge Worker Cache
 
         Publish a request to purge caches named `cacheName` with
-        on `provisionerId`/`workerType` workers.
+        on `workerPoolId` workers.
 
         If such a request already exists, its `before` timestamp is updated to
         the current time.
@@ -71,9 +71,9 @@ class PurgeCache(AsyncBaseClient):
 
     async def purgeRequests(self, *args, **kwargs):
         """
-        Open Purge Requests for a provisionerId/workerType pair
+        Open Purge Requests for a worker pool
 
-        List the caches for this `provisionerId`/`workerType` that should to be
+        List the caches for this `workerPoolId` that should to be
         purged if they are from before the time given in the response.
 
         This is intended to be used by workers to determine which caches to purge.
@@ -101,20 +101,20 @@ class PurgeCache(AsyncBaseClient):
             'stability': 'stable',
         },
         "purgeCache": {
-            'args': ['provisionerId', 'workerType'],
+            'args': ['workerPoolId'],
             'input': 'v1/purge-cache-request.json#',
             'method': 'post',
             'name': 'purgeCache',
-            'route': '/purge-cache/<provisionerId>/<workerType>',
+            'route': '/purge-cache/<workerPoolId>',
             'stability': 'stable',
         },
         "purgeRequests": {
-            'args': ['provisionerId', 'workerType'],
+            'args': ['workerPoolId'],
             'method': 'get',
             'name': 'purgeRequests',
             'output': 'v1/purge-cache-request-list.json#',
             'query': ['since'],
-            'route': '/purge-cache/<provisionerId>/<workerType>',
+            'route': '/purge-cache/<workerPoolId>',
             'stability': 'stable',
         },
     }

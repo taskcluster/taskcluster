@@ -6,11 +6,11 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
-	taskcluster "github.com/taskcluster/taskcluster/v40/clients/client-go"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v40/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v40/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v40/tools/workerproto"
+	taskcluster "github.com/taskcluster/taskcluster/v42/clients/client-go"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v42/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v42/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v42/tools/workerproto"
 )
 
 type ErrorReporter struct {
@@ -69,6 +69,8 @@ func (er *ErrorReporter) HandleMessage(msg workerproto.Message) {
 		Kind:        msg.Properties["kind"].(string),
 		Extra:       extraMsg,
 		Title:       msg.Properties["title"].(string),
+		WorkerGroup: er.state.WorkerGroup,
+		WorkerID:    er.state.WorkerID,
 	}
 	err = ReportWorkerError(er.state, er.factory, &errorReport)
 	if err != nil {

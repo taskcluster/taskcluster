@@ -27,11 +27,11 @@ The scopes available to a hook are given by a role. This allows separation of
 hook management from scope management, and the full generality of scope
 expansion. The role for a hook is named `hook-id:<hookGroupId>/<hookId>`. The
 role must include all of the scopes required to create the task, including
-`queue:create-task:<provisionerId>/<workerType>`.
+`queue:create-task:<taskQueueId>`.
 
 The scopes actually used by the hook's task are, of course, defined in
 `task.scopes`, which must be satisfied by the hook's role. These need not
-include `queue:create-task:<provisionerId>/<workerType>` unless the task will
+include `queue:create-task:<taskQueueId>` unless the task will
 be creating more tasks (for example, a [decision task](/docs/manual/conventions/decision-task)).
 
 For example, at one time the Taskcluster documentation was updated by a hook named `taskcluster/docs-update`.

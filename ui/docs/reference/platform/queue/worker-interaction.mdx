@@ -21,10 +21,10 @@ termination, sections here outline how to handle all these cases.
 ## Claiming Pending Tasks
 A worker must at a minimum have the following configuration to claim tasks:
  * A `workerGroup` and `workerId` that uniquely identifies the worker,
- * A `provisionerId` and `workerType` that the identifies the pool of workers
+ * A `workerPoolId` that the identifies the pool of workers
    the worker belongs to, and,
  * Credentials with the following scopes
-   * `queue:claim-work:<provisionerId>/<workerType>`, and,
+   * `queue:claim-work:<workerPoolId>`, and,
    * `queue:worker-id:<workerGroup>/<workerId>`.
 
 Notice that the credentials may be temporary, this allows provisioners in

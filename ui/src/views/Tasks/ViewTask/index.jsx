@@ -35,6 +35,7 @@ import SpeedDialAction from '../../../components/SpeedDialAction';
 import DialogAction from '../../../components/DialogAction';
 import TaskActionForm from '../../../components/TaskActionForm';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import splitTaskQueueId from '../../../utils/splitTaskQueueId';
 import {
   ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,
@@ -634,7 +635,9 @@ export default class ViewTask extends Component {
   };
 
   purgeWorkerCache = async () => {
-    const { provisionerId, workerType } = this.props.data.task;
+    const { provisionerId, workerType } = splitTaskQueueId(
+      this.props.data.task.taskQueueId
+    );
     const { selectedCaches } = this.state;
 
     this.preRunningAction();
@@ -912,8 +915,7 @@ export default class ViewTask extends Component {
                       : Math.max(task.status.runs.length - 1, 0)
                   }
                   runs={task.status.runs}
-                  workerType={task.workerType}
-                  provisionerId={task.provisionerId}
+                  taskQueueId={task.taskQueueId}
                   onArtifactsPageChange={this.handleArtifactsPageChange}
                 />
               </Grid>

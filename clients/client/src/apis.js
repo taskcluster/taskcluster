@@ -1619,16 +1619,34 @@ module.exports = {
             "name"
           ],
           "category": "Upload",
-          "description": "Upload backend data.",
-          "input": "v1/upload-object-request.json#",
+          "description": "Create a new object by initiating upload of its data.\n\nThis endpoint implements negotiation of upload methods.  It can be called\nmultiple times if necessary, either to propose new upload methods or to\nrenew credentials for an already-agreed upload.\n\nThe `uploadId` must be supplied by the caller, and any attempts to upload\nan object with the same name but a different `uploadId` will fail.\nThus the first call to this method establishes the `uploadId` for the\nobject, and as long as that value is kept secret, no other caller can\nupload an object of that name, regardless of scopes.  Object expiration\ncannot be changed after the initial call, either.  It is possible to call\nthis method with no proposed upload methods, which hsa the effect of \"locking\nin\" the `expiration` and `uploadId` properties.\n\nUnfinished uploads expire after 1 day.",
+          "input": "v1/create-upload-request.json#",
           "method": "put",
-          "name": "uploadObject",
+          "name": "createUpload",
+          "output": "v1/create-upload-response.json#",
           "query": [
           ],
           "route": "/upload/<name>",
           "scopes": "object:upload:<projectId>:<name>",
           "stability": "experimental",
-          "title": "Upload backend data (temporary)",
+          "title": "Begin upload of a new object",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "category": "Upload",
+          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.",
+          "input": "v1/finish-upload-request.json#",
+          "method": "post",
+          "name": "finishUpload",
+          "query": [
+          ],
+          "route": "/finish-upload/<name>",
+          "scopes": "object:upload:<projectId>:<name>",
+          "stability": "experimental",
+          "title": "Mark an upload as complete.",
           "type": "function"
         },
         {
@@ -1636,14 +1654,14 @@ module.exports = {
             "name"
           ],
           "category": "Download",
-          "description": "Get information on how to download an object.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
+          "description": "Start the process of downloading an object's data.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\n\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
           "input": "v1/download-object-request.json#",
           "method": "put",
-          "name": "fetchObjectMetadata",
+          "name": "startDownload",
           "output": "v1/download-object-response.json#",
           "query": [
           ],
-          "route": "/download-object/<name>",
+          "route": "/start-download/<name>",
           "scopes": "object:download:<name>",
           "stability": "experimental",
           "title": "Download object data",
@@ -1654,7 +1672,7 @@ module.exports = {
             "name"
           ],
           "category": "Download",
-          "description": "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`fetchObjectMetadata` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
+          "description": "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`startDownload` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
           "method": "get",
           "name": "download",
           "query": [
@@ -1693,18 +1711,17 @@ module.exports = {
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "workerPoolId"
           ],
           "category": "Purge-Cache Service",
-          "description": "Publish a request to purge caches named `cacheName` with\non `provisionerId`/`workerType` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
+          "description": "Publish a request to purge caches named `cacheName` with\non `workerPoolId` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
           "input": "v1/purge-cache-request.json#",
           "method": "post",
           "name": "purgeCache",
           "query": [
           ],
-          "route": "/purge-cache/<provisionerId>/<workerType>",
-          "scopes": "purge-cache:<provisionerId>/<workerType>:<cacheName>",
+          "route": "/purge-cache/<workerPoolId>",
+          "scopes": "purge-cache:<workerPoolId>:<cacheName>",
           "stability": "stable",
           "title": "Purge Worker Cache",
           "type": "function"
@@ -1729,21 +1746,20 @@ module.exports = {
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "workerPoolId"
           ],
           "category": "Purge-Cache Service",
-          "description": "List the caches for this `provisionerId`/`workerType` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
+          "description": "List the caches for this `workerPoolId` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
           "method": "get",
           "name": "purgeRequests",
           "output": "v1/purge-cache-request-list.json#",
           "query": [
             "since"
           ],
-          "route": "/purge-cache/<provisionerId>/<workerType>",
-          "scopes": "purge-cache:purge-requests:<provisionerId>/<workerType>",
+          "route": "/purge-cache/<workerPoolId>",
+          "scopes": "purge-cache:purge-requests::<workerPoolId>",
           "stability": "stable",
-          "title": "Open Purge Requests for a provisionerId/workerType pair",
+          "title": "Open Purge Requests for a worker pool",
           "type": "function"
         }
       ],
@@ -1972,21 +1988,20 @@ module.exports = {
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "taskQueueId"
           ],
           "category": "Worker Interface",
-          "description": "Claim pending task(s) for the given `provisionerId`/`workerType` queue.\n\nIf any work is available (even if fewer than the requested number of\ntasks, this will return immediately. Otherwise, it will block for tens of\nseconds waiting for work.  If no work appears, it will return an emtpy\nlist of tasks.  Callers should sleep a short while (to avoid denial of\nservice in an error condition) and call the endpoint again.  This is a\nsimple implementation of \"long polling\".",
+          "description": "Claim pending task(s) for the given task queue.\n\nIf any work is available (even if fewer than the requested number of\ntasks, this will return immediately. Otherwise, it will block for tens of\nseconds waiting for work.  If no work appears, it will return an emtpy\nlist of tasks.  Callers should sleep a short while (to avoid denial of\nservice in an error condition) and call the endpoint again.  This is a\nsimple implementation of \"long polling\".",
           "input": "v1/claim-work-request.json#",
           "method": "post",
           "name": "claimWork",
           "output": "v1/claim-work-response.json#",
           "query": [
           ],
-          "route": "/claim-work/<provisionerId>/<workerType>",
+          "route": "/claim-work/<taskQueueId>",
           "scopes": {
             "AllOf": [
-              "queue:claim-work:<provisionerId>/<workerType>",
+              "queue:claim-work:<taskQueueId>",
               "queue:worker-id:<workerGroup>/<workerId>"
             ]
           },
@@ -2327,18 +2342,17 @@ module.exports = {
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "taskQueueId"
           ],
           "category": "Worker Metadata",
-          "description": "Get an approximate number of pending tasks for the given `provisionerId`\nand `workerType`.\n\nThe underlying Azure Storage Queues only promises to give us an estimate.\nFurthermore, we cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.\nIt is, however, a solid estimate of the number of pending tasks.",
+          "description": "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nThe underlying Azure Storage Queues only promises to give us an estimate.\nFurthermore, we cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.\nIt is, however, a solid estimate of the number of pending tasks.",
           "method": "get",
           "name": "pendingTasks",
           "output": "v1/pending-tasks-response.json#",
           "query": [
           ],
-          "route": "/pending/<provisionerId>/<workerType>",
-          "scopes": "queue:pending-count:<provisionerId>/<workerType>",
+          "route": "/pending/<taskQueueId>",
+          "scopes": "queue:pending-count:<taskQueueId>",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
           "type": "function"

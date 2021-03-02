@@ -47,8 +47,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     ]);
 
     const r1 = await helper.queue.pendingTasks(
-      'no-provisioner-extended-extended',
-      'query-test-worker-extended-extended',
+      'no-provisioner-extended-extended/query-test-worker-extended-extended',
     );
     assume(r1.pendingTasks).is.greaterThan(1);
 
@@ -61,8 +60,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     // do: queue.createTask + queue.pendingTasks, if not that's also sort of a
     // bug we should investigate
     const r2 = await helper.queue.pendingTasks(
-      'no-provisioner-extended-extended',
-      'query-test-worker-extended-extended',
+      'no-provisioner-extended-extended/query-test-worker-extended-extended',
     );
     assume(r2.pendingTasks).is.equals(r1.pendingTasks);
   });
@@ -71,22 +69,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes('none');
     await assert.rejects(
       () => helper.queue.pendingTasks(
-        'no-provisioner-extended-extended',
-        'empty-test-worker-extended-extended',
+        'no-provisioner-extended-extended/empty-test-worker-extended-extended',
       ), err => err.code === 'InsufficientScopes');
   });
 
   test('pendingTasks == 0', async () => {
     helper.scopes('queue:pending-count:no-provisioner-extended-extended/empty-test-worker-extended-extended');
     const r1 = await helper.queue.pendingTasks(
-      'no-provisioner-extended-extended',
-      'empty-test-worker-extended-extended',
+      'no-provisioner-extended-extended/empty-test-worker-extended-extended',
     );
     assume(r1.pendingTasks).equals(0);
 
     const r2 = await helper.queue.pendingTasks(
-      'no-provisioner-extended-extended',
-      'empty-test-worker-extended-extended',
+      'no-provisioner-extended-extended/empty-test-worker-extended-extended',
     );
     assume(r2.pendingTasks).equals(0);
   });

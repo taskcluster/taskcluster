@@ -3095,6 +3095,11 @@
               "description": "Name of the artifact to which to link.\n",
               "type": "string"
             },
+            "contentType": {
+              "description": "Expected content-type of the artifact.  This is informational only:\nit is suitable for use to choose an icon for the artifact, for example.\nThe accurate content-type of the artifact can only be determined by\ndownloading it.  If this value is not provided, it will default to\n`application/binary`.\n",
+              "maxLength": 255,
+              "type": "string"
+            },
             "expires": {
               "description": "Date-time after which the queue should no longer maintain this link.\n",
               "format": "date-time",
@@ -4191,22 +4196,107 @@
   },
   {
     "content": {
-      "$id": "/schemas/object/v1/upload-object-request.json#",
+      "$id": "/schemas/object/v1/upload-method-put-url.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "definitions": {
+        "request": {
+          "additionalProperties": false,
+          "description": "Request a URL to which a PUT request can be made.",
+          "properties": {
+            "contentLength": {
+              "description": "Length, in bytes, of the uploaded data.",
+              "type": "number"
+            },
+            "contentType": {
+              "description": "Content-type of the data to be uploaded.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "contentType",
+            "contentLength"
+          ],
+          "title": "`putUrl` upload request",
+          "type": "object"
+        },
+        "response": {
+          "additionalProperties": false,
+          "description": "Response containing a URL to which to PUT the data.",
+          "properties": {
+            "expires": {
+              "description": "Expiration time for the URL.  After this time, the client must\ncall `createUpload` again to get a fresh URL.",
+              "format": "date-time",
+              "type": "string"
+            },
+            "headers": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Headers which must be included with the PUT request.  In many\ncases, these are included in a signature embedded in the URL,\nand must be provided verbatim.\n\nThe `Content-Length` header may be included here.  Many HTTP client\nlibraries will also set this directly when the length is known.  In\nthis case, the values should be identical, and the header should only\nbe specified once.",
+              "type": "object"
+            },
+            "url": {
+              "description": "URL to which a PUT request should be made.",
+              "formt": "uri",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url",
+            "expires",
+            "headers"
+          ],
+          "title": "`putUrl` upload response",
+          "type": "object"
+        }
+      },
+      "title": "putUrl upload method"
+    },
+    "filename": "schemas/object/v1/upload-method-put-url.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/object/v1/upload-method-data-inline.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "definitions": {
+        "request": {
+          "additionalProperties": false,
+          "description": "Upload data included directly in the request.  The data has a fixed maximum length, so this should\nbe used only for value that are known to be of constant, fairly small size to avoid surprises as\nthe payload grows. In general, this is useful for testing and for metadata objects such as\nseparate cryptographic signatures.\n",
+          "properties": {
+            "contentType": {
+              "description": "Content-type to be returned when downloading this data",
+              "type": "string"
+            },
+            "objectData": {
+              "description": "Base64-encoded byte data, with decoded size at most 8k.",
+              "maxLength": 10926,
+              "type": "string"
+            }
+          },
+          "required": [
+            "contentType",
+            "objectData"
+          ],
+          "title": "`dataInline` upload request",
+          "type": "object"
+        },
+        "response": {
+          "const": true,
+          "description": "Indication that the data has been uploaded.",
+          "title": "`dataInline` upload response",
+          "type": "boolean"
+        }
+      },
+      "title": "dataInline upload method"
+    },
+    "filename": "schemas/object/v1/upload-method-data-inline.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/object/v1/finish-upload-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Representation of the object entry to insert.  This is a temporary API.\n",
       "properties": {
-        "data": {
-          "description": "The data to upload, base64-encoded\n",
-          "title": "Data",
-          "type": "string"
-        },
-        "expires": {
-          "description": "Date at which this entry expires from the object table.\n",
-          "format": "date-time",
-          "title": "Expiration",
-          "type": "string"
-        },
         "projectId": {
           "description": "Project identifier.\n",
           "maxLength": 500,
@@ -4216,22 +4306,20 @@
           "type": "string"
         },
         "uploadId": {
-          "description": "Unique identifier for this upload.   Once an object is created with an uploadId,\nuploads of the same object with different uploadIds will be rejected.  Callers\nshould pass a randomly-generated slugid here.",
+          "description": "Unique identifier for this upload.",
           "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
           "title": "Upload ID",
           "type": "string"
         }
       },
       "required": [
-        "expires",
         "uploadId",
-        "projectId",
-        "data"
+        "projectId"
       ],
-      "title": "Upload Object Request",
+      "title": "Finish Upload Request",
       "type": "object"
     },
-    "filename": "schemas/object/v1/upload-object-request.json"
+    "filename": "schemas/object/v1/finish-upload-request.json"
   },
   {
     "content": {
@@ -4357,6 +4445,115 @@
       "title": "HTTP:GET Download Method"
     },
     "filename": "schemas/object/v1/download-method-http-get.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/object/v1/create-upload-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A response from the `createUpload` method, either agreeing to an upload method or\nrejecting the proposal.\n",
+      "properties": {
+        "expires": {
+          "format": "date-time",
+          "title": "Expiration",
+          "type": "string"
+        },
+        "projectId": {
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9._/-]*)$",
+          "title": "Project Identifier",
+          "type": "string"
+        },
+        "uploadId": {
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Upload ID",
+          "type": "string"
+        },
+        "uploadMethod": {
+          "additionalProperties": false,
+          "description": "The selected upload method, from those contained in the request.  At most one\nproperty will be set, indicating the selected method.  If no properties are set,\nthen none of the proposed methods were selected.\n",
+          "maxProperties": 1,
+          "minProperties": 0,
+          "properties": {
+            "dataInline": {
+              "$ref": "upload-method-data-inline.json#/definitions/response"
+            },
+            "putUrl": {
+              "$ref": "upload-method-put-url.json#/definitions/response"
+            }
+          },
+          "required": [
+          ],
+          "title": "Selected Upload Method (or none)",
+          "type": "object"
+        }
+      },
+      "required": [
+        "projectId",
+        "uploadId",
+        "expires",
+        "uploadMethod"
+      ],
+      "title": "Create Upload Response",
+      "type": "object"
+    },
+    "filename": "schemas/object/v1/create-upload-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/object/v1/create-upload-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A request to begin an upload, containing proposed upload methods to which the\nserver may agree to or reject.\n",
+      "properties": {
+        "expires": {
+          "description": "Date at which this entry expires from the object table.  The expiration cannot\nbe changed in subsequent calls to the same method.\n",
+          "format": "date-time",
+          "title": "Expiration",
+          "type": "string"
+        },
+        "projectId": {
+          "description": "Project identifier.\n",
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9._/-]*)$",
+          "title": "Project Identifier",
+          "type": "string"
+        },
+        "proposedUploadMethods": {
+          "additionalProperties": false,
+          "description": "Upload methods, with details, that the caller is prepared to execute.  If this\nobject is empty, then the server will reject the request but still create the\nupload with the given `uploadId` and `expires`, so any subsequent calls must\nshare those values.  The server may choose any of the proposed methods at its\ndiscretion.\n",
+          "properties": {
+            "dataInline": {
+              "$ref": "upload-method-data-inline.json#/definitions/request"
+            },
+            "putUrl": {
+              "$ref": "upload-method-put-url.json#/definitions/request"
+            }
+          },
+          "required": [
+          ],
+          "title": "Proposed Upload Methods",
+          "type": "object"
+        },
+        "uploadId": {
+          "description": "Unique identifier for this upload.   Once an object is created with an uploadId,\nuploads of the same object with different uploadIds will be rejected.  Callers\nshould pass a randomly-generated slugid here.",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Upload ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "uploadId",
+        "expires",
+        "proposedUploadMethods"
+      ],
+      "title": "Create Upload Request",
+      "type": "object"
+    },
+    "filename": "schemas/object/v1/create-upload-request.json"
   },
   {
     "content": {
@@ -4898,7 +5095,33 @@
       "$schema": "/schemas/common/metaschema.json#",
       "anyOf": [
         {
-          "$ref": "task-status.json#"
+          "additionalProperties": false,
+          "description": "Response identifying the created task",
+          "properties": {
+            "status": {
+              "additionalProperties": false,
+              "description": "Another copy of the taskId, at the location where it was published in\nTaskcluster versions before v42.  Prefer to use the top-level property,\nas `status.taskId` may be removed in future versions.\n",
+              "properties": {
+                "taskId": {
+                  "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                  "type": "string"
+                }
+              },
+              "required": [
+              ],
+              "type": "object"
+            },
+            "taskId": {
+              "description": "TaskId of the task created by triggering the hook.\n",
+              "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+              "title": "Task Identifier",
+              "type": "string"
+            }
+          },
+          "required": [
+            "taskId"
+          ],
+          "type": "object"
         },
         {
           "additionalProperties": false,
@@ -4910,221 +5133,10 @@
           "type": "object"
         }
       ],
-      "description": "Response to a `triggerHook` or `triggerHookWithToken` call.\n\nIn most cases, this is a task status, but in cases where the hook template\ndoes not generate a task, it is an empty object with no `status` property.\n",
+      "description": "Response to a `triggerHook` or `triggerHookWithToken` call.\n\nIn most cases, this gives a `taskId`, but in cases where the hook template\ndoes not generate a task, it is an empty object with no `taskId`.\n",
       "title": "Trigger Hook Response"
     },
     "filename": "schemas/hooks/v1/trigger-hook-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/hooks/v1/task-status.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "A representation of **task status** as known by the queue\n",
-      "properties": {
-        "status": {
-          "additionalProperties": false,
-          "properties": {
-            "deadline": {
-              "description": "Deadline of the task, `pending` and `running` runs are\nresolved as **exception** if not resolved by other means\nbefore the deadline. Note, deadline cannot be more than\n5 days into the future\n",
-              "format": "date-time",
-              "title": "Deadline",
-              "type": "string"
-            },
-            "expires": {
-              "description": "Task expiration, time at which task definition and\nstatus is deleted. Notice that all artifacts for the task\nmust have an expiration that is no later than this.\n",
-              "format": "date-time",
-              "title": "Expiration",
-              "type": "string"
-            },
-            "provisionerId": {
-              "description": "Unique identifier for the provisioner that this task must be scheduled on\n",
-              "maxLength": 38,
-              "minLength": 1,
-              "pattern": "^([a-zA-Z0-9-_]*)$",
-              "title": "Provisioner Id",
-              "type": "string"
-            },
-            "retriesLeft": {
-              "description": "Number of retries left for the task in case of infrastructure issues\n",
-              "maximum": 999,
-              "minimum": 0,
-              "title": "Retries Left",
-              "type": "integer"
-            },
-            "runs": {
-              "description": "List of runs, ordered so that index `i` has `runId == i`\n",
-              "items": {
-                "additionalProperties": false,
-                "description": "JSON object with information about a run\n",
-                "properties": {
-                  "reasonCreated": {
-                    "description": "Reason for the creation of this run,\n**more reasons may be added in the future**.\n",
-                    "enum": [
-                      "scheduled",
-                      "retry",
-                      "task-retry",
-                      "rerun",
-                      "exception"
-                    ],
-                    "title": "Reason Created",
-                    "type": "string"
-                  },
-                  "reasonResolved": {
-                    "description": "Reason that run was resolved, this is mainly\nuseful for runs resolved as `exception`.\nNote, **more reasons may be added in the future**, also this\nproperty is only available after the run is resolved.  Note\nthat 'superseded' is here only for compatibility, as that\nfunctionality has been removed.\n",
-                    "enum": [
-                      "completed",
-                      "failed",
-                      "deadline-exceeded",
-                      "canceled",
-                      "claim-expired",
-                      "worker-shutdown",
-                      "malformed-payload",
-                      "resource-unavailable",
-                      "internal-error",
-                      "intermittent-task",
-                      "superseded"
-                    ],
-                    "title": "Reason Resolved",
-                    "type": "string"
-                  },
-                  "resolved": {
-                    "description": "Date-time at which this run was resolved, ie. when the run changed\nstate from `running` to either `completed`, `failed` or `exception`.\nThis property is only present after the run as been resolved.\n",
-                    "format": "date-time",
-                    "title": "Resolved",
-                    "type": "string"
-                  },
-                  "runId": {
-                    "description": "Id of this task run, `run-id`s always starts from `0`\n",
-                    "maximum": 1000,
-                    "minimum": 0,
-                    "title": "Run Identifier",
-                    "type": "integer"
-                  },
-                  "scheduled": {
-                    "description": "Date-time at which this run was scheduled, ie. when the run was\ncreated in state `pending`.\n",
-                    "format": "date-time",
-                    "title": "Scheduled",
-                    "type": "string"
-                  },
-                  "started": {
-                    "description": "Date-time at which this run was claimed, ie. when the run changed\nstate from `pending` to `running`. This property is only present\nafter the run has been claimed.\n",
-                    "format": "date-time",
-                    "title": "Started",
-                    "type": "string"
-                  },
-                  "state": {
-                    "description": "State of this run\n",
-                    "enum": [
-                      "pending",
-                      "running",
-                      "completed",
-                      "failed",
-                      "exception"
-                    ],
-                    "title": "Run State",
-                    "type": "string"
-                  },
-                  "takenUntil": {
-                    "description": "Time at which the run expires and is resolved as `failed`, if the\nrun isn't reclaimed. Note, only present after the run has been\nclaimed.\n",
-                    "format": "date-time",
-                    "title": "Taken Until",
-                    "type": "string"
-                  },
-                  "workerGroup": {
-                    "description": "Identifier for group that worker who executes this run is a part of,\nthis identifier is mainly used for efficient routing.\nNote, this property is only present after the run is claimed.\n",
-                    "maxLength": 38,
-                    "minLength": 1,
-                    "pattern": "^([a-zA-Z0-9-_]*)$",
-                    "title": "Worker Group",
-                    "type": "string"
-                  },
-                  "workerId": {
-                    "description": "Identifier for worker evaluating this run within given\n`workerGroup`. Note, this property is only available after the run\nhas been claimed.\n",
-                    "maxLength": 38,
-                    "minLength": 1,
-                    "pattern": "^([a-zA-Z0-9-_]*)$",
-                    "title": "Worker Identifier",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "runId",
-                  "state",
-                  "reasonCreated",
-                  "scheduled"
-                ],
-                "title": "Run Information",
-                "type": "object"
-              },
-              "title": "List of Runs",
-              "type": "array",
-              "uniqueItems": false
-            },
-            "schedulerId": {
-              "description": "Identifier for the scheduler that _defined_ this task.\n",
-              "maxLength": 38,
-              "minLength": 1,
-              "pattern": "^([a-zA-Z0-9-_]*)$",
-              "title": "Scheduler Identifier",
-              "type": "string"
-            },
-            "state": {
-              "description": "State of this task. This is just an auxiliary property derived from state\nof latests run, or `unscheduled` if none.\n",
-              "enum": [
-                "unscheduled",
-                "pending",
-                "running",
-                "completed",
-                "failed",
-                "exception"
-              ],
-              "title": "State",
-              "type": "string"
-            },
-            "taskGroupId": {
-              "description": "Identifier for a group of tasks scheduled together with this task, by\nscheduler identified by `schedulerId`. For tasks scheduled by the\ntask-graph scheduler, this is the `taskGraphId`.\n",
-              "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
-              "title": "Task-Group Identifier",
-              "type": "string"
-            },
-            "taskId": {
-              "description": "Unique task identifier, this is UUID encoded as\n[URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and\nstripped of `=` padding.\n",
-              "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
-              "title": "Task Identifier",
-              "type": "string"
-            },
-            "workerType": {
-              "description": "Identifier for worker type within the specified provisioner\n",
-              "maxLength": 38,
-              "minLength": 1,
-              "pattern": "^([a-zA-Z0-9-_]*)$",
-              "title": "Worker Type",
-              "type": "string"
-            }
-          },
-          "required": [
-            "taskId",
-            "provisionerId",
-            "workerType",
-            "schedulerId",
-            "taskGroupId",
-            "deadline",
-            "expires",
-            "retriesLeft",
-            "state",
-            "runs"
-          ],
-          "type": "object"
-        }
-      },
-      "required": [
-        "status"
-      ],
-      "title": "Task Status Structure",
-      "type": "object"
-    },
-    "filename": "schemas/hooks/v1/task-status.json"
   },
   {
     "content": {
@@ -14387,21 +14399,20 @@
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "taskQueueId"
           ],
           "category": "Worker Interface",
-          "description": "Claim pending task(s) for the given `provisionerId`/`workerType` queue.\n\nIf any work is available (even if fewer than the requested number of\ntasks, this will return immediately. Otherwise, it will block for tens of\nseconds waiting for work.  If no work appears, it will return an emtpy\nlist of tasks.  Callers should sleep a short while (to avoid denial of\nservice in an error condition) and call the endpoint again.  This is a\nsimple implementation of \"long polling\".",
+          "description": "Claim pending task(s) for the given task queue.\n\nIf any work is available (even if fewer than the requested number of\ntasks, this will return immediately. Otherwise, it will block for tens of\nseconds waiting for work.  If no work appears, it will return an emtpy\nlist of tasks.  Callers should sleep a short while (to avoid denial of\nservice in an error condition) and call the endpoint again.  This is a\nsimple implementation of \"long polling\".",
           "input": "v1/claim-work-request.json#",
           "method": "post",
           "name": "claimWork",
           "output": "v1/claim-work-response.json#",
           "query": [
           ],
-          "route": "/claim-work/<provisionerId>/<workerType>",
+          "route": "/claim-work/<taskQueueId>",
           "scopes": {
             "AllOf": [
-              "queue:claim-work:<provisionerId>/<workerType>",
+              "queue:claim-work:<taskQueueId>",
               "queue:worker-id:<workerGroup>/<workerId>"
             ]
           },
@@ -14742,18 +14753,17 @@
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "taskQueueId"
           ],
           "category": "Worker Metadata",
-          "description": "Get an approximate number of pending tasks for the given `provisionerId`\nand `workerType`.\n\nThe underlying Azure Storage Queues only promises to give us an estimate.\nFurthermore, we cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.\nIt is, however, a solid estimate of the number of pending tasks.",
+          "description": "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nThe underlying Azure Storage Queues only promises to give us an estimate.\nFurthermore, we cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.\nIt is, however, a solid estimate of the number of pending tasks.",
           "method": "get",
           "name": "pendingTasks",
           "output": "v1/pending-tasks-response.json#",
           "query": [
           ],
-          "route": "/pending/<provisionerId>/<workerType>",
-          "scopes": "queue:pending-count:<provisionerId>/<workerType>",
+          "route": "/pending/<taskQueueId>",
+          "scopes": "queue:pending-count:<taskQueueId>",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
           "type": "function"
@@ -15170,18 +15180,17 @@
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "workerPoolId"
           ],
           "category": "Purge-Cache Service",
-          "description": "Publish a request to purge caches named `cacheName` with\non `provisionerId`/`workerType` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
+          "description": "Publish a request to purge caches named `cacheName` with\non `workerPoolId` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
           "input": "v1/purge-cache-request.json#",
           "method": "post",
           "name": "purgeCache",
           "query": [
           ],
-          "route": "/purge-cache/<provisionerId>/<workerType>",
-          "scopes": "purge-cache:<provisionerId>/<workerType>:<cacheName>",
+          "route": "/purge-cache/<workerPoolId>",
+          "scopes": "purge-cache:<workerPoolId>:<cacheName>",
           "stability": "stable",
           "title": "Purge Worker Cache",
           "type": "function"
@@ -15206,21 +15215,20 @@
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "workerPoolId"
           ],
           "category": "Purge-Cache Service",
-          "description": "List the caches for this `provisionerId`/`workerType` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
+          "description": "List the caches for this `workerPoolId` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
           "method": "get",
           "name": "purgeRequests",
           "output": "v1/purge-cache-request-list.json#",
           "query": [
             "since"
           ],
-          "route": "/purge-cache/<provisionerId>/<workerType>",
-          "scopes": "purge-cache:purge-requests:<provisionerId>/<workerType>",
+          "route": "/purge-cache/<workerPoolId>",
+          "scopes": "purge-cache:purge-requests::<workerPoolId>",
           "stability": "stable",
-          "title": "Open Purge Requests for a provisionerId/workerType pair",
+          "title": "Open Purge Requests for a worker pool",
           "type": "function"
         }
       ],
@@ -15444,16 +15452,34 @@
             "name"
           ],
           "category": "Upload",
-          "description": "Upload backend data.",
-          "input": "v1/upload-object-request.json#",
+          "description": "Create a new object by initiating upload of its data.\n\nThis endpoint implements negotiation of upload methods.  It can be called\nmultiple times if necessary, either to propose new upload methods or to\nrenew credentials for an already-agreed upload.\n\nThe `uploadId` must be supplied by the caller, and any attempts to upload\nan object with the same name but a different `uploadId` will fail.\nThus the first call to this method establishes the `uploadId` for the\nobject, and as long as that value is kept secret, no other caller can\nupload an object of that name, regardless of scopes.  Object expiration\ncannot be changed after the initial call, either.  It is possible to call\nthis method with no proposed upload methods, which hsa the effect of \"locking\nin\" the `expiration` and `uploadId` properties.\n\nUnfinished uploads expire after 1 day.",
+          "input": "v1/create-upload-request.json#",
           "method": "put",
-          "name": "uploadObject",
+          "name": "createUpload",
+          "output": "v1/create-upload-response.json#",
           "query": [
           ],
           "route": "/upload/<name>",
           "scopes": "object:upload:<projectId>:<name>",
           "stability": "experimental",
-          "title": "Upload backend data (temporary)",
+          "title": "Begin upload of a new object",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "category": "Upload",
+          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.",
+          "input": "v1/finish-upload-request.json#",
+          "method": "post",
+          "name": "finishUpload",
+          "query": [
+          ],
+          "route": "/finish-upload/<name>",
+          "scopes": "object:upload:<projectId>:<name>",
+          "stability": "experimental",
+          "title": "Mark an upload as complete.",
           "type": "function"
         },
         {
@@ -15461,14 +15487,14 @@
             "name"
           ],
           "category": "Download",
-          "description": "Get information on how to download an object.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
+          "description": "Start the process of downloading an object's data.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\n\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
           "input": "v1/download-object-request.json#",
           "method": "put",
-          "name": "fetchObjectMetadata",
+          "name": "startDownload",
           "output": "v1/download-object-response.json#",
           "query": [
           ],
-          "route": "/download-object/<name>",
+          "route": "/start-download/<name>",
           "scopes": "object:download:<name>",
           "stability": "experimental",
           "title": "Download object data",
@@ -15479,7 +15505,7 @@
             "name"
           ],
           "category": "Download",
-          "description": "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`fetchObjectMetadata` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
+          "description": "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`startDownload` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
           "method": "get",
           "name": "download",
           "query": [

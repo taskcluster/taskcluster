@@ -118,10 +118,12 @@ class SchemaSet {
     return (obj, id) => {
       id = id.replace(/#$/, '');
       id = id.replace(/\.ya?ml$/, '.json');
-      if (!_.endsWith(id, '.json')) {
-        id += '.json';
+      if (!/#/.test(id)) {
+        if (!_.endsWith(id, '.json')) {
+          id += '.json';
+        }
+        id += '#';
       }
-      id += '#';
       ajv.validate(id, obj);
       if (ajv.errors) {
         _.forEach(ajv.errors, function(error) {

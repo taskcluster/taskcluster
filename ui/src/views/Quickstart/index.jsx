@@ -71,10 +71,9 @@ const getTaskDefinition = state => {
     taskName,
     taskDescription,
   } = state;
-  const tutorialWorkerPool =
+  const taskQueueId =
     siteSpecificVariable('tutorial_worker_pool_id') ||
     'proj-getting-started/tutorial';
-  const [provisionerId, workerType] = tutorialWorkerPool.split('/');
 
   return dump({
     version: 1,
@@ -99,8 +98,7 @@ const getTaskDefinition = state => {
           [condition]: {
             taskId: { $eval: 'as_slugid("test")' },
             deadline: { $fromNow: '1 day' },
-            provisionerId,
-            workerType,
+            taskQueueId,
             metadata: {
               name: taskName,
               description: taskDescription,

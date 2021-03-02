@@ -1,0 +1,53 @@
+---
+order: 21
+title: Upload Methods
+---
+
+# Upload Methods
+
+## Introduction
+
+The object service does not directly handle object data, and instead coordinates with clients to send data directly to storage services.
+
+Because uploads can take some time and the resulting objects are not usable until the upload is complete, the service defines an object for which all data is not yet in place as an "upload", identified by an `uploadId`.
+Once an object is completely uploaded, its `uploadId` is invalidated and the object becomes available for download.
+The `uploadId` serves an additional purpose by preventing multiple clients with scopes to write an object from conflicting with one another, as long as they do not share an `uploadId`.
+Once an upload has been created, no other client can upload the same object without knowing the `uploadId`.
+
+As with downloads, the upload process involves some negotiation of a method that is supported by all parties and as efficient as possible.
+A request to the `createUpload` endpoint contains proposed methods, and the server responds with the best match, including any metadata the client needs to carry out the upload.
+As a special case, the request may contain no methods, which has the effect of "locking in" an `uploadId` without committing to any method.
+In this case, or if there are no matching methods, the server responds with an empty `uploadMethod` property.
+
+There are two categories of upload methods: universal methods, that are supported by any backend; and backend-specific methods.
+Any client should be capable of at least one of the universal methods, and can optionally support any of the backend-specific methods.
+
+## Upload Methods
+
+Authoritative documentation of the API for each upload method is in the request and response schemas for [createUpload](/docs/reference/platform/object/api#uploadObject).
+What follows is a description of each method's operation, including its category.
+
+### `dataInline` Upload Method
+
+This is a universal method that supports upload of small objects (less that 8k) in a single request, with the data embedded in the `createUpload` request payload.
+
+### `putUrl` Upload Method
+
+This is a universal method which supports uploads via a `PUT` request to the given URL, containing the given headers.
+This is meant to be a "plain", broadly-compatible upload method, with optimizations implemented in other methods.
+
+The response contains a `putUrl` as well as an object containing headers (mapping name to value).
+The caller is expected to make a `PUT` request to the given URL, with the given headers.
+
+This request must begin before the expiration time given in the response.
+If retries extend beyond this time, then the client should make a new `createUpload` call to get a fresh URL.
+
+For this upload method, the content encoding _must_ be `identity` (the default value for the `Content-Encoding` header).
+
+### `s3Multipart` Upload Method
+
+(TBD)
+
+### `gcsResumable` Upload Method
+
+(TBD)

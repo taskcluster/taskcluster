@@ -1,7 +1,7 @@
 package fileutil
 
 import (
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/host"
 )
 
 // SecureFiles modifies the discretionary access control list (DACL) of each

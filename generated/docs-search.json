@@ -1268,10 +1268,10 @@
   },
   {
     "element": "h2",
-    "id": "choosing-a-kind",
-    "path": "/manual/using/actions",
-    "subtitle": "Choosing a Kind",
-    "title": null
+    "id": "rerunning",
+    "path": "/manual/tasks/manipulating",
+    "subtitle": "Rerunning",
+    "title": "Manipulating Tasks"
   },
   {
     "element": "h1",
@@ -2724,6 +2724,55 @@
   },
   {
     "element": "h1",
+    "id": "upload-methods",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": null,
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h3",
+    "id": "datainline-upload-method",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "`dataInline` Upload Method",
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h3",
+    "id": "gcsresumable-upload-method",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "`gcsResumable` Upload Method",
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h3",
+    "id": "puturl-upload-method",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "`putUrl` Upload Method",
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h3",
+    "id": "s3multipart-upload-method",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "`s3Multipart` Upload Method",
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h2",
+    "id": "introduction",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "Introduction",
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h2",
+    "id": "upload-methods-1",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "Upload Methods",
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h1",
     "id": "queue-service",
     "path": "/reference/platform/queue",
     "subtitle": null,
@@ -2850,16 +2899,9 @@
   },
   {
     "element": "h2",
-    "id": "provisioners",
+    "id": "worker-pools-and-task-queues",
     "path": "/reference/platform/queue/worker-hierarchy",
-    "subtitle": "Provisioners",
-    "title": "Worker Hierarchy"
-  },
-  {
-    "element": "h2",
-    "id": "worker-types",
-    "path": "/reference/platform/queue/worker-hierarchy",
-    "subtitle": "Worker Types",
+    "subtitle": "Worker Pools and Task Queues",
     "title": "Worker Hierarchy"
   },
   {

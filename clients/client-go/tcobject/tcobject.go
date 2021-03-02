@@ -37,7 +37,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 )
 
 type Object tcclient.Client
@@ -102,22 +102,55 @@ func (object *Object) Ping() error {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Upload backend data.
+// Create a new object by initiating upload of its data.
+//
+// This endpoint implements negotiation of upload methods.  It can be called
+// multiple times if necessary, either to propose new upload methods or to
+// renew credentials for an already-agreed upload.
+//
+// The `uploadId` must be supplied by the caller, and any attempts to upload
+// an object with the same name but a different `uploadId` will fail.
+// Thus the first call to this method establishes the `uploadId` for the
+// object, and as long as that value is kept secret, no other caller can
+// upload an object of that name, regardless of scopes.  Object expiration
+// cannot be changed after the initial call, either.  It is possible to call
+// this method with no proposed upload methods, which hsa the effect of "locking
+// in" the `expiration` and `uploadId` properties.
+//
+// Unfinished uploads expire after 1 day.
 //
 // Required scopes:
 //   object:upload:<projectId>:<name>
 //
-// See #uploadObject
-func (object *Object) UploadObject(name string, payload *UploadObjectRequest) error {
+// See #createUpload
+func (object *Object) CreateUpload(name string, payload *CreateUploadRequest) (*CreateUploadResponse, error) {
 	cd := tcclient.Client(*object)
-	_, _, err := (&cd).APICall(payload, "PUT", "/upload/"+url.QueryEscape(name), nil, nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/upload/"+url.QueryEscape(name), new(CreateUploadResponse), nil)
+	return responseObject.(*CreateUploadResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// This endpoint marks an upload as complete.  This indicates that all data has been
+// transmitted to the backend.  After this call, no further calls to `uploadObject` are
+// allowed, and downloads of the object may begin.  This method is idempotent, but will
+// fail if given an incorrect uploadId for an unfinished upload.
+//
+// Required scopes:
+//   object:upload:<projectId>:<name>
+//
+// See #finishUpload
+func (object *Object) FinishUpload(name string, payload *FinishUploadRequest) error {
+	cd := tcclient.Client(*object)
+	_, _, err := (&cd).APICall(payload, "POST", "/finish-upload/"+url.QueryEscape(name), nil, nil)
 	return err
 }
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Get information on how to download an object.  Call this endpoint with a list of acceptable
+// Start the process of downloading an object's data.  Call this endpoint with a list of acceptable
 // download methods, and the server will select a method and return the corresponding payload.
+//
 // Returns a 406 error if none of the given download methods are available.
 //
 // See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.
@@ -125,10 +158,10 @@ func (object *Object) UploadObject(name string, payload *UploadObjectRequest) er
 // Required scopes:
 //   object:download:<name>
 //
-// See #fetchObjectMetadata
-func (object *Object) FetchObjectMetadata(name string, payload *DownloadObjectRequest) (*DownloadObjectResponse, error) {
+// See #startDownload
+func (object *Object) StartDownload(name string, payload *DownloadObjectRequest) (*DownloadObjectResponse, error) {
 	cd := tcclient.Client(*object)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/download-object/"+url.QueryEscape(name), new(DownloadObjectResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/start-download/"+url.QueryEscape(name), new(DownloadObjectResponse), nil)
 	return responseObject.(*DownloadObjectResponse), err
 }
 
@@ -144,7 +177,7 @@ func (object *Object) FetchObjectMetadata(name string, payload *DownloadObjectRe
 // This method is limited by the common capabilities of HTTP, so it may not be
 // the most efficient, resilient, or featureful way to retrieve an artifact.
 // Situations where such functionality is required should ues the
-// `fetchObjectMetadata` API endpoint.
+// `startDownload` API endpoint.
 //
 // See [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.
 //

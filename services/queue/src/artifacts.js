@@ -81,8 +81,7 @@ builder.declare({
   let name = req.params.name;
   let input = req.body;
   let storageType = input.storageType;
-  // NOTE: this isn't actually used anywhere
-  let contentType = input.contentType || 'application/json';
+  let contentType = input.contentType || 'application/binary';
 
   // Find expiration date
   let expires = new Date(input.expires);

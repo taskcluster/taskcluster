@@ -280,9 +280,9 @@ helper.runExpiration = async component => {
 };
 
 /**
- * Make a random workerType name
+ * Make a random task queue ID
  */
-exports.makeWorkerType = () => `test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
+exports.makeTaskQueueId = prefix => `${prefix}/test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
 
 /**
  * Check the date formats of a task status

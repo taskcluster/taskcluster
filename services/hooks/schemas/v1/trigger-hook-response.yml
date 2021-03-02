@@ -3,10 +3,33 @@ title: "Trigger Hook Response"
 description: |
   Response to a `triggerHook` or `triggerHookWithToken` call.
 
-  In most cases, this is a task status, but in cases where the hook template
-  does not generate a task, it is an empty object with no `status` property.
+  In most cases, this gives a `taskId`, but in cases where the hook template
+  does not generate a task, it is an empty object with no `taskId`.
 anyOf:
- - {$ref: "task-status.json#"}
+ - type: object
+   description: Response identifying the created task
+   properties:
+     taskId:
+       title:          "Task Identifier"
+       description: |
+         TaskId of the task created by triggering the hook.
+       type:           string
+       pattern:        {$const: slugid-pattern}
+     status:
+       type: object
+       description: |
+         Another copy of the taskId, at the location where it was published in
+         Taskcluster versions before v42.  Prefer to use the top-level property,
+         as `status.taskId` may be removed in future versions.
+       properties:
+         taskId:
+           type:           string
+           pattern:        {$const: slugid-pattern}
+       additionalProperties: false
+       required: []
+   additionalProperties: false
+   required: [taskId]
+
  - type: object
    description: Empty response indicating no task was created
    properties: {}

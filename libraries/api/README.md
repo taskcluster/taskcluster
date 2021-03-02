@@ -350,10 +350,15 @@ This will send an empty 204 response.
 An optional second argument to `res.reply` gives the HTTP response code,
 defaulting to 200 (for successful results) or 204 (for empty results).
 
-Return errors with `res.reportError(code, messagePattern, details)`.  The
-`code` argument must be one of those specified in the API declaration, or one
-of the built-in codes (most of which you probably shouldn't use, as they are
-only for very specific conditions that the API library detects):
+Return errors with `reportError(code, messagePattern, details)`.  This function
+is available on the `res` object as a convenience, but can also be imported and
+called directly.  It throws an error internally, but should be used in such a
+way as to make it clear that it does not return a value (typicaly in a `return`
+statement).
+
+The `code` argument must be one of those specified in the API declaration, or
+one of the built-in codes (most of which you probably shouldn't use, as they
+are only for very specific conditions that the API library detects):
 
  * `MalformedPayload`: HTTP 400, Only for JSON.parse() errors
  * `InvalidRequestArguments`: HTTP 400, Only for query and param validation errors

@@ -32,6 +32,13 @@ suite(testing.suiteName(), () => {
     assert.equal(error, null);
   });
 
+  test('sub-schemas', () => {
+    let error = validate(
+      42,
+      libUrls.schema(rootUrl, 'whatever', '/v1/test-schema.json#/properties/value'));
+    assert.equal(error, null);
+  });
+
   test('load yaml', () => {
     let error = validate(
       { value: 42 },

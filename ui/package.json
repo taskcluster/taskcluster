@@ -1,10 +1,10 @@
 {
   "name": "taskcluster-ui",
-  "version": "40.0.3",
+  "version": "42.0.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "14.15.4",
+    "node": "14.15.5",
     "yarn": "^1.22.10"
   },
   "scripts": {
@@ -90,7 +90,7 @@
     "shebang-loader": "^0.0.1",
     "snake-case": "^3.0.3",
     "subscriptions-transport-ws": "^0.9.16",
-    "taskcluster-client-web": "^40.0.0",
+    "taskcluster-client-web": "^41.0.0",
     "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^13.0.0",
     "title-case": "^3.0.2",
@@ -118,7 +118,7 @@
     "dotenv-cli": "^4.0.0",
     "eslint": "^7.0.0",
     "graphql-tag": "^2.8.0",
-    "karma": "^5.0.0",
+    "karma": "^6.1.0",
     "karma-cli": "^2.0.0",
     "karma-firefox-launcher": "^2.0.0",
     "mocha": "^8.0.0",

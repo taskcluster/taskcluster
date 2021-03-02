@@ -45,7 +45,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 )
 
 type Queue tcclient.Client
@@ -390,7 +390,7 @@ func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 	return responseObject.(*TaskStatusResponse), err
 }
 
-// Claim pending task(s) for the given `provisionerId`/`workerType` queue.
+// Claim pending task(s) for the given task queue.
 //
 // If any work is available (even if fewer than the requested number of
 // tasks, this will return immediately. Otherwise, it will block for tens of
@@ -401,13 +401,13 @@ func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 //
 // Required scopes:
 //   All of:
-//   * queue:claim-work:<provisionerId>/<workerType>
+//   * queue:claim-work:<taskQueueId>
 //   * queue:worker-id:<workerGroup>/<workerId>
 //
 // See #claimWork
-func (queue *Queue) ClaimWork(provisionerId, workerType string, payload *ClaimWorkRequest) (*ClaimWorkResponse, error) {
+func (queue *Queue) ClaimWork(taskQueueId string, payload *ClaimWorkRequest) (*ClaimWorkResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/claim-work/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(ClaimWorkResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/claim-work/"+url.QueryEscape(taskQueueId), new(ClaimWorkResponse), nil)
 	return responseObject.(*ClaimWorkResponse), err
 }
 
@@ -899,8 +899,7 @@ func (queue *Queue) DeclareProvisioner(provisionerId string, payload *Provisione
 	return responseObject.(*ProvisionerResponse), err
 }
 
-// Get an approximate number of pending tasks for the given `provisionerId`
-// and `workerType`.
+// Get an approximate number of pending tasks for the given `taskQueueId`.
 //
 // The underlying Azure Storage Queues only promises to give us an estimate.
 // Furthermore, we cache the result in memory for 20 seconds. So consumers
@@ -908,24 +907,24 @@ func (queue *Queue) DeclareProvisioner(provisionerId string, payload *Provisione
 // It is, however, a solid estimate of the number of pending tasks.
 //
 // Required scopes:
-//   queue:pending-count:<provisionerId>/<workerType>
+//   queue:pending-count:<taskQueueId>
 //
 // See #pendingTasks
-func (queue *Queue) PendingTasks(provisionerId, workerType string) (*CountPendingTasksResponse, error) {
+func (queue *Queue) PendingTasks(taskQueueId string) (*CountPendingTasksResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(taskQueueId), new(CountPendingTasksResponse), nil)
 	return responseObject.(*CountPendingTasksResponse), err
 }
 
 // Returns a signed URL for PendingTasks, valid for the specified duration.
 //
 // Required scopes:
-//   queue:pending-count:<provisionerId>/<workerType>
+//   queue:pending-count:<taskQueueId>
 //
 // See PendingTasks for more details.
-func (queue *Queue) PendingTasks_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
+func (queue *Queue) PendingTasks_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
+	return (&cd).SignedURL("/pending/"+url.QueryEscape(taskQueueId), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***

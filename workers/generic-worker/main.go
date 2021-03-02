@@ -27,19 +27,19 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v40/internal"
-	"github.com/taskcluster/taskcluster/v40/internal/scopes"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/errorreport"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v40/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/tc"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v42/internal"
+	"github.com/taskcluster/taskcluster/v42/internal/scopes"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/errorreport"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v42/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/tc"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -288,11 +288,14 @@ func setupExposer() (err error) {
 func ReadTasksResolvedFile() uint {
 	b, err := ioutil.ReadFile("tasks-resolved-count.txt")
 	if err != nil {
+		log.Printf("could not open tasks-resolved-count.txt: %s (ignored)", err)
 		return 0
 	}
 	i, err := strconv.Atoi(string(b))
 	if err != nil {
-		panic(err)
+		// treat an invalid (usually empty) file as nonexistent
+		log.Printf("could not parse content of tasks-resolved-count.txt: %s (ignored)", err)
+		return 0
 	}
 	return uint(i)
 }
@@ -533,7 +536,7 @@ func ClaimWork() *TaskRun {
 	// avoid problems with clock skew.
 	localClaimTime := time.Now()
 	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
-	resp, err := queue.ClaimWork(config.ProvisionerID, config.WorkerType, req)
+	resp, err := queue.ClaimWork(fmt.Sprintf("%s/%s", config.ProvisionerID, config.WorkerType), req)
 	if err != nil {
 		log.Printf("Could not claim work. %v", err)
 		return nil

@@ -3,6 +3,10 @@ title:              "Task Status Structure"
 description: |
   A representation of **task status** as known by the queue
 type:               object
+
+# NOTE: updates to this schema should be refected in
+# services/hooks/schemas/v1/task-status.yml as well.
+
 properties:
   taskId: {$const: "taskId"}
   provisionerId: {$ref: "task.json#/properties/provisionerId"}

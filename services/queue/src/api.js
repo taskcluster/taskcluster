@@ -1,6 +1,7 @@
 const assert = require('assert');
 const _ = require('lodash');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
+const taskcluster = require('taskcluster-client');
 const taskCreds = require('./task-creds');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { Task, Worker, TaskQueue, Provisioner } = require('./data');
@@ -84,6 +85,7 @@ let builder = new APIBuilder({
   params: {
     taskId: SLUGID_PATTERN,
     taskGroupId: SLUGID_PATTERN,
+    taskQueueId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
     provisionerId: GENERIC_ID_PATTERN,
     workerType: GENERIC_ID_PATTERN,
     workerGroup: GENERIC_ID_PATTERN,
@@ -935,19 +937,19 @@ let sleep20Seconds = () => {
 /** Claim any task */
 builder.declare({
   method: 'post',
-  route: '/claim-work/:provisionerId/:workerType',
+  route: '/claim-work/:taskQueueId(*)',
   name: 'claimWork',
   stability: APIBuilder.stability.stable,
   category: 'Worker Interface',
   scopes: { AllOf: [
-    'queue:claim-work:<provisionerId>/<workerType>',
+    'queue:claim-work:<taskQueueId>',
     'queue:worker-id:<workerGroup>/<workerId>',
   ] },
   input: 'claim-work-request.yml',
   output: 'claim-work-response.yml',
   title: 'Claim Work',
   description: [
-    'Claim pending task(s) for the given `provisionerId`/`workerType` queue.',
+    'Claim pending task(s) for the given task queue.',
     '',
     'If any work is available (even if fewer than the requested number of',
     'tasks, this will return immediately. Otherwise, it will block for tens of',
@@ -957,8 +959,7 @@ builder.declare({
     'simple implementation of "long polling".',
   ].join('\n'),
 }, async function(req, res) {
-  let provisionerId = req.params.provisionerId;
-  let workerType = req.params.workerType;
+  let taskQueueId = req.params.taskQueueId;
   let workerGroup = req.body.workerGroup;
   let workerId = req.body.workerId;
   let count = req.body.tasks;
@@ -966,11 +967,9 @@ builder.declare({
   await req.authorize({
     workerGroup,
     workerId,
-    provisionerId,
-    workerType,
+    taskQueueId,
   });
 
-  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
   const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
 
   // Don't claim tasks when worker is quarantined (but do record the worker
@@ -1698,16 +1697,15 @@ builder.declare({
 /** Count pending tasks for workerType */
 builder.declare({
   method: 'get',
-  route: '/pending/:provisionerId/:workerType',
+  route: '/pending/:taskQueueId(*)',
   name: 'pendingTasks',
-  scopes: 'queue:pending-count:<provisionerId>/<workerType>',
+  scopes: 'queue:pending-count:<taskQueueId>',
   stability: APIBuilder.stability.stable,
   category: 'Worker Metadata',
   output: 'pending-tasks-response.yml',
   title: 'Get Number of Pending Tasks',
   description: [
-    'Get an approximate number of pending tasks for the given `provisionerId`',
-    'and `workerType`.',
+    'Get an approximate number of pending tasks for the given `taskQueueId`.',
     '',
     'The underlying Azure Storage Queues only promises to give us an estimate.',
     'Furthermore, we cache the result in memory for 20 seconds. So consumers',
@@ -1715,9 +1713,8 @@ builder.declare({
     'It is, however, a solid estimate of the number of pending tasks.',
   ].join('\n'),
 }, async function(req, res) {
-  let provisionerId = req.params.provisionerId;
-  let workerType = req.params.workerType;
-  let taskQueueId = joinTaskQueueId(provisionerId, workerType);
+  const taskQueueId = req.params.taskQueueId;
+  const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
   // Get number of pending message
   let count = await this.queueService.countPendingMessages(taskQueueId);
@@ -1849,13 +1846,14 @@ builder.declare({
     properties: Object.keys(req.body),
   });
 
-  const tQueue = await this.workerInfo.upsertTaskQueue({
-    taskQueueId,
-    stability,
-    description,
-    expires,
+  await this.db.fns.task_queue_seen({
+    task_queue_id_in: taskQueueId,
+    stability_in: stability,
+    description_in: description,
+    expires_in: expires || taskcluster.fromNow('5 days'),
   });
 
+  const tQueue = await TaskQueue.get(this.db, taskQueueId, new Date());
   const tqResult = tQueue.serialize();
   addSplitFields(tqResult);
 
@@ -2068,19 +2066,21 @@ builder.declare({
     'Quarantine a worker',
   ].join('\n'),
 }, async function(req, res) {
-  let result;
   const { provisionerId, workerType, workerGroup, workerId } = req.params;
   const { quarantineUntil } = req.body;
   const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
-  const expires = new Date();
-  let worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, expires);
+  const [result] = await this.db.fns.quarantine_queue_worker({
+    task_queue_id_in: taskQueueId,
+    worker_group_in: workerGroup,
+    worker_id_in: workerId,
+    quarantine_until_in: quarantineUntil,
+  });
 
-  if (!worker) {
+  if (!result) {
     return res.reportError('ResourceNotFound',
       'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
-      'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found. ' +
-      'Are you sure it was created?', {
+      'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found.', {
         workerId,
         workerGroup,
         workerType,
@@ -2088,9 +2088,7 @@ builder.declare({
       },
     );
   }
-
-  result = await worker.update(this.db, { quarantineUntil });
-  worker = Worker.fromDbRows(result);
+  const worker = Worker.fromDb(result);
 
   const workerResult = worker.serialize();
   addSplitFields(workerResult);
@@ -2135,10 +2133,20 @@ builder.declare({
     properties: Object.keys(req.body),
   });
 
-  const [worker, _] = await Promise.all([
-    this.workerInfo.upsertWorker({ taskQueueId, workerGroup, workerId, expires }),
-    this.workerInfo.upsertTaskQueue({ taskQueueId, workerType }),
-  ]);
+  await this.db.fns.task_queue_seen({
+    task_queue_id_in: taskQueueId,
+    expires_in: expires,
+    description_in: null,
+    stability_in: null,
+  });
+  await this.db.fns.queue_worker_seen({
+    task_queue_id_in: taskQueueId,
+    worker_group_in: workerGroup,
+    worker_id_in: workerId,
+    expires_in: expires,
+  });
+
+  const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
 
   const workerResult = worker.serialize();
   addSplitFields(workerResult);

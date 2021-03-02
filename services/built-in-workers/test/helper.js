@@ -52,7 +52,7 @@ const stubbedQueue = () => {
         assert(task, `fake queue has no task ${taskId}`);
         return task;
       },
-      claimWork: async (provisionerId, workerType, payload) => {
+      claimWork: async (taskQueueId, payload) => {
         const work = exports.claimableWork.pop();
         work.workerGroup = payload.workerGroup;
         work.workerId = payload.workerId;

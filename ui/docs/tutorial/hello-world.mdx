@@ -34,7 +34,7 @@ Click the userpic in the upper-right corner and choose "Account", and look for s
 These represent permissions to run tasks.
 Look for one that seems general-purpose, or ask the folks who administer your deployment.
 For example, you might see `queue:create-task:highest:tutorial/docker-worker`.
-This grants access to workerPool `tutorial/docker-worker`, also known as provisionerId `tutorial` and workerType `docker-worker`.
+This grants access to workerPool `tutorial/docker-worker`.
 If possible, choose one that is running docker-worker.
 
 <SiteSpecific>
@@ -47,8 +47,7 @@ Now that you've got a worker pool in mind, go to "Create a task" on the navigati
 What you see in the resulting text box is a bare-bones task description, looking something like this (the details may evolve as features are added):
 
 ```yaml
-provisionerId: something
-workerType: something-else
+taskQueueId: some/worker-pool
 created: '2020-09-27T15:24:45.442Z'
 deadline: '2020-09-27T18:24:45.443Z'
 payload:
@@ -66,12 +65,12 @@ metadata:
 ```
 
 Happily, this is already set up to print "hello world"!
-Update the provisionerId and workerType according to your discoveries above (the worker pool is in the form `provisionerId / workerType`).
+Update the `taskQueueId` according to your discoveries above (the same as the `workerPoolId`).
 Submitting the task will load the task inspector while the task is scheduled and run.
 
 The fields in the task description are explained in greater detail throughout the rest of this documentation, but briefly:
 
- * `provisionerId` and `workerType` together identify the Taskcluster pool of workers that will execute the task.
+ * `taskQueueId` identifies the Taskcluster queue for the task, connected to the pool of workers that will execute the task.
 
  * `created` and `deadline` give a time boundary for the task.
    If the task is not completed by its deadline, it will be resolved as `exception` with reason `"deadline-exceeded"`.

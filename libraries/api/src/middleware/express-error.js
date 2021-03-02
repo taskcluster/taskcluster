@@ -1,5 +1,5 @@
 const uuid = require('uuid');
-const ErrorReply = require('../error-reply');
+const { ErrorReply } = require('../error-reply');
 
 exports.isProduction = process.env.NODE_ENV === 'production';
 

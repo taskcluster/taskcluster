@@ -27,17 +27,33 @@ let builder = new APIBuilder({
 builder.declare({
   method: 'put',
   route: '/upload/:name',
-  name: 'uploadObject',
-  input: 'upload-object-request.yml',
+  name: 'createUpload',
+  input: 'create-upload-request.yml',
+  output: 'create-upload-response.yml',
   stability: 'experimental',
   category: 'Upload',
   scopes: 'object:upload:<projectId>:<name>',
-  title: 'Upload backend data (temporary)',
+  title: 'Begin upload of a new object',
   description: [
-    'Upload backend data.',
+    'Create a new object by initiating upload of its data.',
+    '',
+    'This endpoint implements negotiation of upload methods.  It can be called',
+    'multiple times if necessary, either to propose new upload methods or to',
+    'renew credentials for an already-agreed upload.',
+    '',
+    'The `uploadId` must be supplied by the caller, and any attempts to upload',
+    'an object with the same name but a different `uploadId` will fail.',
+    'Thus the first call to this method establishes the `uploadId` for the',
+    'object, and as long as that value is kept secret, no other caller can',
+    'upload an object of that name, regardless of scopes.  Object expiration',
+    'cannot be changed after the initial call, either.  It is possible to call',
+    'this method with no proposed upload methods, which hsa the effect of "locking',
+    'in" the `expiration` and `uploadId` properties.',
+    '',
+    'Unfinished uploads expire after 1 day.',
   ].join('\n'),
 }, async function(req, res) {
-  let { projectId, uploadId, expires, data } = req.body;
+  let { projectId, uploadId, expires, proposedUploadMethods } = req.body;
   let { name } = req.params;
   const uploadExpires = taskcluster.fromNow('1 day');
 
@@ -45,8 +61,7 @@ builder.declare({
 
   const backend = this.backends.forUpload({ name, projectId });
 
-  data = Buffer.from(data, 'base64');
-
+  // mark the beginning of the upload..
   try {
     await this.db.fns.create_object_for_upload({
       name_in: name,
@@ -68,17 +83,64 @@ builder.declare({
     throw err;
   }
 
-  // mark the beginning of the upload..
   const [object] = await this.db.fns.get_object_with_upload(name);
   if (!object) {
     // "this should not happen"
     throw new Error("newly created object row not found");
   }
 
-  // ..upload the object..
-  await backend.temporaryUpload(object, data);
+  // default uploadMethod to an empty object, meaning no matching methods
+  let uploadMethod = await backend.createUpload(object, proposedUploadMethods);
 
-  // ..and mark its completion
+  return res.reply({
+    projectId,
+    uploadId,
+    expires,
+    uploadMethod,
+  });
+});
+
+builder.declare({
+  method: 'post',
+  route: '/finish-upload/:name',
+  name: 'finishUpload',
+  input: 'finish-upload-request.yml',
+  stability: 'experimental',
+  category: 'Upload',
+  scopes: 'object:upload:<projectId>:<name>',
+  title: 'Mark an upload as complete.',
+  description: [
+    'This endpoint marks an upload as complete.  This indicates that all data has been',
+    'transmitted to the backend.  After this call, no further calls to `uploadObject` are',
+    'allowed, and downloads of the object may begin.  This method is idempotent, but will',
+    'fail if given an incorrect uploadId for an unfinished upload.',
+  ].join('\n'),
+}, async function(req, res) {
+  let { projectId, uploadId } = req.body;
+  let { name } = req.params;
+
+  await req.authorize({ projectId, name });
+
+  const [object] = await this.db.fns.get_object_with_upload(name);
+  if (!object) {
+    return res.reportError('ResourceNotFound', 'Object "{{name}}" not found', { name });
+  }
+
+  if (object.project_id !== projectId) {
+    return res.reportError(
+      'InputError',
+      'Object "{{name}}" does not have projectId {{projecId}}',
+      { name, projectId });
+  }
+
+  if (object.upload_id !== null && object.upload_id !== uploadId) {
+    return res.reportError(
+      'RequestConflict',
+      'Object "{{name}}" does not have uploadId {{uploadId}}',
+      { name, uploadId });
+  }
+
+  // mark its completion
   await this.db.fns.object_upload_complete({ name_in: name, upload_id_in: uploadId });
 
   return res.reply({});
@@ -86,8 +148,8 @@ builder.declare({
 
 builder.declare({
   method: 'put',
-  route: '/download-object/:name(*)', // name TBD; https://github.com/taskcluster/taskcluster/issues/3940
-  name: 'fetchObjectMetadata',
+  route: '/start-download/:name(*)',
+  name: 'startDownload',
   input: 'download-object-request.yml',
   output: 'download-object-response.yml',
   stability: 'experimental',
@@ -95,8 +157,9 @@ builder.declare({
   scopes: 'object:download:<name>',
   title: 'Download object data',
   description: [
-    'Get information on how to download an object.  Call this endpoint with a list of acceptable',
+    'Start the process of downloading an object\'s data.  Call this endpoint with a list of acceptable',
     'download methods, and the server will select a method and return the corresponding payload.',
+    '',
     'Returns a 406 error if none of the given download methods are available.',
     '',
     'See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.',
@@ -129,11 +192,11 @@ builder.declare({
   const params = acceptDownloadMethods[method];
 
   // apply middleware
-  if (!await this.middleware.fetchObjectMetadataRequest(req, res, object, method, params)) {
+  if (!await this.middleware.startDownloadRequest(req, res, object, method, params)) {
     return;
   }
 
-  const result = await backend.fetchObjectMetadata(object, method, params);
+  const result = await backend.startDownload(object, method, params);
 
   return res.reply(result);
 });
@@ -157,7 +220,7 @@ builder.declare({
     'This method is limited by the common capabilities of HTTP, so it may not be',
     'the most efficient, resilient, or featureful way to retrieve an artifact.',
     'Situations where such functionality is required should ues the',
-    '`fetchObjectMetadata` API endpoint.',
+    '`startDownload` API endpoint.',
     '',
     'See [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.',
   ].join('\n'),
@@ -186,7 +249,7 @@ builder.declare({
     return;
   }
 
-  const result = await backend.fetchObjectMetadata(object, method, true);
+  const result = await backend.startDownload(object, method, true);
 
   return res.redirect(303, result.url);
 });

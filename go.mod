@@ -1,4 +1,4 @@
-module github.com/taskcluster/taskcluster/v40
+module github.com/taskcluster/taskcluster/v42
 
 // DO NOT MODIFY THIS LINE - automatically updated by infrastructure/tooling/src/generate/generators/go-version.js
 go 1.15
@@ -13,7 +13,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/dsnet/compress v0.0.1 // indirect
-	github.com/elastic/go-sysinfo v1.4.0
+	github.com/elastic/go-sysinfo v1.6.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/frankban/quicktest v1.10.0 // indirect
 	github.com/getsentry/raven-go v0.2.0
@@ -21,7 +21,7 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
-	github.com/iancoleman/strcase v0.1.2
+	github.com/iancoleman/strcase v0.1.3
 	github.com/johncgriffin/overflow v0.0.0-20170615021017-4d914c927216
 	github.com/kr/text v0.2.0
 	github.com/mholt/archiver v2.1.0+incompatible
@@ -33,11 +33,11 @@ require (
 	github.com/pierrec/lz4 v2.5.2+incompatible // indirect
 	github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.7.0
-	github.com/spf13/cobra v1.1.1
+	github.com/sirupsen/logrus v1.8.0
+	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
 	github.com/streadway/amqp v1.0.0
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/taskcluster/go-got v0.0.0-20190401132811-c63e3293a290
 	github.com/taskcluster/httpbackoff/v3 v3.1.0
 	github.com/taskcluster/pulse-go v1.0.0
@@ -48,10 +48,10 @@ require (
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
-	golang.org/x/net v0.0.0-20201021035429-f5854403a974
-	golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
-	golang.org/x/tools v0.0.0-20210114065538-d78b04bdf963
+	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
+	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
+	golang.org/x/tools v0.1.0
 	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776

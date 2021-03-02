@@ -62,13 +62,13 @@ impl PurgeCache {
     /// Purge Worker Cache
     /// 
     /// Publish a request to purge caches named `cacheName` with
-    /// on `provisionerId`/`workerType` workers.
+    /// on `workerPoolId` workers.
     /// 
     /// If such a request already exists, its `before` timestamp is updated to
     /// the current time.
-    pub async fn purgeCache(&self, provisionerId: &str, workerType: &str, payload: &Value) -> Result<(), Error> {
+    pub async fn purgeCache(&self, workerPoolId: &str, payload: &Value) -> Result<(), Error> {
         let method = "POST";
-        let (path, query) = Self::purgeCache_details(provisionerId, workerType);
+        let (path, query) = Self::purgeCache_details(workerPoolId);
         let body = Some(payload);
         let resp = self.0.request(method, &path, query, body).await?;
         resp.bytes().await?;
@@ -76,8 +76,8 @@ impl PurgeCache {
     }
 
     /// Determine the HTTP request details for purgeCache
-    fn purgeCache_details<'a>(provisionerId: &'a str, workerType: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("purge-cache/{}/{}", urlencode(provisionerId), urlencode(workerType));
+    fn purgeCache_details<'a>(workerPoolId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("purge-cache/{}", urlencode(workerPoolId));
         let query = None;
 
         (path, query)
@@ -126,35 +126,35 @@ impl PurgeCache {
         (path, query)
     }
 
-    /// Open Purge Requests for a provisionerId/workerType pair
+    /// Open Purge Requests for a worker pool
     /// 
-    /// List the caches for this `provisionerId`/`workerType` that should to be
+    /// List the caches for this `workerPoolId` that should to be
     /// purged if they are from before the time given in the response.
     /// 
     /// This is intended to be used by workers to determine which caches to purge.
-    pub async fn purgeRequests(&self, provisionerId: &str, workerType: &str, since: Option<&str>) -> Result<Value, Error> {
+    pub async fn purgeRequests(&self, workerPoolId: &str, since: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
-        let (path, query) = Self::purgeRequests_details(provisionerId, workerType, since);
+        let (path, query) = Self::purgeRequests_details(workerPoolId, since);
         let body = None;
         let resp = self.0.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the purgeRequests endpoint
-    pub fn purgeRequests_url(&self, provisionerId: &str, workerType: &str, since: Option<&str>) -> Result<String, Error> {
-        let (path, query) = Self::purgeRequests_details(provisionerId, workerType, since);
+    pub fn purgeRequests_url(&self, workerPoolId: &str, since: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::purgeRequests_details(workerPoolId, since);
         self.0.make_url(&path, query)
     }
 
     /// Generate a signed URL for the purgeRequests endpoint
-    pub fn purgeRequests_signed_url(&self, provisionerId: &str, workerType: &str, since: Option<&str>, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::purgeRequests_details(provisionerId, workerType, since);
+    pub fn purgeRequests_signed_url(&self, workerPoolId: &str, since: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::purgeRequests_details(workerPoolId, since);
         self.0.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for purgeRequests
-    fn purgeRequests_details<'a>(provisionerId: &'a str, workerType: &'a str, since: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("purge-cache/{}/{}", urlencode(provisionerId), urlencode(workerType));
+    fn purgeRequests_details<'a>(workerPoolId: &'a str, since: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("purge-cache/{}", urlencode(workerPoolId));
         let mut query = None;
         if let Some(q) = since {
             query.get_or_insert_with(Vec::new).push(("since", q));

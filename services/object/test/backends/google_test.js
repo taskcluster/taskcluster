@@ -121,7 +121,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     teardown(cleanup);
   });
 
-  helper.testTemporaryUpload({
+  helper.testDataInlineUpload({
     mock, skipping, prefix,
     backendId: 'googlePrivate',
     async getObjectContent({ name }) {
@@ -129,7 +129,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
         Bucket: secret.testBucket,
         Key: name,
       }).promise();
-      return res.Body;
+      return { data: res.Body, contentType: res.ContentType };
+    },
+  }, async function() {
+    teardown(cleanup);
+  });
+
+  helper.testPutUrlUpload({
+    mock, skipping, prefix,
+    backendId: 'googlePrivate',
+    async getObjectContent({ name }) {
+      const res = await s3.getObject({
+        Bucket: secret.testBucket,
+        Key: name,
+      }).promise();
+      return { data: res.Body, contentType: res.ContentType };
     },
   }, async function() {
     teardown(cleanup);

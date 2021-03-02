@@ -302,7 +302,7 @@ impl Client {
             retries -= 1;
 
             match backoff.next_backoff() {
-                Some(duration) => tokio::time::delay_for(duration).await,
+                Some(duration) => tokio::time::sleep(duration).await,
                 None => return Err(retry_for.into()),
             }
         }
@@ -480,7 +480,9 @@ mod tests {
 
             let key = hawk::Key::new(&self.0.access_token, hawk::SHA256).unwrap();
 
-            if !hawk_req.validate_header(&auth_header, &key, Duration::from_secs(1)) {
+            // this ts_skew duration needs to be large -- in CI, somehow 1s can elapse between
+            // a request and the invocation of a matcher.
+            if !hawk_req.validate_header(&auth_header, &key, Duration::from_secs(60)) {
                 println!("Validation failed");
                 return false;
             }
