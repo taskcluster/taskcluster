@@ -148,9 +148,9 @@
   integrity sha512-nEUfRiARCcaVo3ny3ZQjURjHQZUo/JkEw7rLlSZy/psWGnvwXFtPcr6jb7Yb41DVW5LTe6KRq9LGleRNsg1Frw==
 
 "@babel/runtime@^7.12.5":
-  version "7.12.13"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.12.13.tgz#0a21452352b02542db0ffb928ac2d3ca7cb6d66d"
-  integrity sha512-8+3UMPBrjFa/6TtKi/7sehPKqfAm4g6K+YQjyyFOLUTxzOngcRZTlAVY8sc2CORJYqdHQY8gRPHmn+qo15rCBw==
+  version "7.13.9"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.13.9.tgz#97dbe2116e2630c489f22e0656decd60aaa1fcee"
+  integrity sha512-aY2kU+xgJ3dJ1eU6FMB9EH8dIe8dmusF1xEku52joLvw6eAFN0AI+WxCLDnpev2LEejWBAy2sBvBOBAjI3zmvA==
   dependencies:
     regenerator-runtime "^0.13.4"
 
@@ -4427,9 +4427,9 @@ math-interval-parser@^2.0.1:
   integrity sha512-VmlAmb0UJwlvMyx8iPhXUDnVW1F9IrGEd9CIOmv+XL8AErCUUuozoDMrgImvnYt2A+53qVX/tPW6YJurMKYsvA==
 
 matrix-js-sdk@^9.0.0:
-  version "9.7.0"
-  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-9.7.0.tgz#fbd03c188546f9733b28ea1752476b22ca63d2f2"
-  integrity sha512-cVBHhQVGk2WWQ2kv0Ov8CTcgZVJhMuZBejXZnKqp6qEgSpmb4xQRxewbxjF53ixO7uRUzGFtAlDiW4BeHZnN/g==
+  version "9.8.0"
+  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-9.8.0.tgz#d71d8c777d2fea3dbc9a050060e4f1a74217dca6"
+  integrity sha512-QKRsnmId53upz4oMhQzm119lT0EcST2SZhnKRRFyykxZI0x7qSulnTTUwztpS/g9yZuZqy7PTVUTHOE2caX5IQ==
   dependencies:
     "@babel/runtime" "^7.12.5"
     another-json "^0.2.0"
