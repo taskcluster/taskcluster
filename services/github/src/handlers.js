@@ -830,8 +830,13 @@ async function jobHandler(message) {
     }
   }
 
-  taskGroupId = graphConfig.tasks[0].task.taskGroupId;
-  let { routes } = graphConfig.tasks[0].task;
+  let routes;
+  try {
+    taskGroupId = graphConfig.tasks[0].task.taskGroupId;
+    routes = graphConfig.tasks[0].task.routes;
+  } catch (e) {
+    return await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e });
+  }
 
   try {
     debug(`Trying to create a record for ${organization}/${repository}@${sha} (${groupState}) in github_builds table`);
