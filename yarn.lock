@@ -143,9 +143,9 @@
     js-tokens "^4.0.0"
 
 "@babel/parser@^7.6.0", "@babel/parser@^7.9.6":
-  version "7.12.11"
-  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.12.11.tgz#9ce3595bcd74bc5c466905e86c535b8b25011e79"
-  integrity sha512-N3UxG+uuF4CMYoNj8AhnbAcJF0PiuJ9KHuy1lQmkYsxTer/MAH9UBNHsBoAX/4s6NvlDD047No8mYVGGzLL4hg==
+  version "7.13.9"
+  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.13.9.tgz#ca34cb95e1c2dd126863a84465ae8ef66114be99"
+  integrity sha512-nEUfRiARCcaVo3ny3ZQjURjHQZUo/JkEw7rLlSZy/psWGnvwXFtPcr6jb7Yb41DVW5LTe6KRq9LGleRNsg1Frw==
 
 "@babel/runtime@^7.12.5":
   version "7.12.13"
@@ -155,9 +155,9 @@
     regenerator-runtime "^0.13.4"
 
 "@babel/types@^7.6.1", "@babel/types@^7.9.6":
-  version "7.12.12"
-  resolved "https://registry.yarnpkg.com/@babel/types/-/types-7.12.12.tgz#4608a6ec313abbd87afa55004d373ad04a96c299"
-  integrity sha512-lnIX7piTxOH22xE7fDXDbSHg9MM1/6ORnafpJmov5rs0kX5g4BZxeXNJLXsMRiO0U5Rb8/FvMS6xlTnTHvxonQ==
+  version "7.13.0"
+  resolved "https://registry.yarnpkg.com/@babel/types/-/types-7.13.0.tgz#74424d2816f0171b4100f0ab34e9a374efdf7f80"
+  integrity sha512-hE+HE8rnG1Z6Wzo+MhaKE5lM5eMx71T4EHJgku2E3xIfaULhDcxiiRxUYgwX8qwP1BBSlag+TdGOt6JAidIZTA==
   dependencies:
     "@babel/helper-validator-identifier" "^7.12.11"
     lodash "^4.17.19"
@@ -3229,7 +3229,7 @@ googleapis@^67.0.0:
     google-auth-library "^7.0.2"
     googleapis-common "^5.0.1"
 
-got@^11.7.0, got@^11.8.1:
+got@^11.7.0:
   version "11.8.1"
   resolved "https://registry.yarnpkg.com/got/-/got-11.8.1.tgz#df04adfaf2e782babb3daabc79139feec2f7e85d"
   integrity sha512-9aYdZL+6nHmvJwHALLwKSUZ0hMwGaJGYv3hoPLPgnT8BoBXm1SjnZeky+91tfwJaDzun2s4RsBRy48IEYv2q2Q==
@@ -3390,7 +3390,7 @@ hashids@^2.0.0:
   resolved "https://registry.yarnpkg.com/hashids/-/hashids-2.2.8.tgz#d1e4e1be48e711ad6e5f27b32c37c399d5eeb5b4"
   integrity sha512-OI6rsk/OqyX60nBsqxnNl3R7CDv9eMOgxzipshZwXE6cUcBcEyHf8rNDlWVdQJZK3TEynILYybCsNUEQfJsdLA==
 
-hawk@9.0.0, hawk@^9.0.0:
+hawk@9.0.0:
   version "9.0.0"
   resolved "https://registry.yarnpkg.com/hawk/-/hawk-9.0.0.tgz#406a1f2f92dd6948a50620e5cafd5491007764de"
   integrity sha512-xTkUIwwAI6d5//1ofvWCDM7YYAEAo/mFqhEW7S/m9+nLZqkOzSz8lTLKk6cHvJGax3UrbljfP8P+PFPybGcxZA==
@@ -4240,12 +4240,12 @@ lodash.sortby@^4.7.0:
   resolved "https://registry.yarnpkg.com/lodash.sortby/-/lodash.sortby-4.7.0.tgz#edd14c824e2cc9c1e0b0a1b42bb5210516a42438"
   integrity sha1-7dFMgk4sycHgsKG0K7UhBRakJDg=
 
-lodash@4.17.21, lodash@^4.17.21:
+lodash@4.17.21, lodash@^4.17.19, lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
 
-lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.4, lodash@^4.17.5:
+lodash@^4.17.15, lodash@^4.17.20, lodash@^4.17.5:
   version "4.17.20"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz#b44a9b6297bcb698f1c51a3545a2b3b368d59c52"
   integrity sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==
@@ -5343,9 +5343,9 @@ pug-attrs@^3.0.0:
     pug-runtime "^3.0.0"
 
 pug-code-gen@^3.0.0:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/pug-code-gen/-/pug-code-gen-3.0.1.tgz#ff3b337b100c494ea63ef766091d27f7d73acb7e"
-  integrity sha512-xJIGvmXTQlkJllq6hqxxjRWcay2F9CU69TuAuiVZgHK0afOhG5txrQOcZyaPHBvSWCU/QQOqEp5XCH94rRZpBQ==
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/pug-code-gen/-/pug-code-gen-3.0.2.tgz#ad190f4943133bf186b60b80de483100e132e2ce"
+  integrity sha512-nJMhW16MbiGRiyR4miDTQMRWDgKplnHyeLvioEJYbk1RsPI3FuA3saEP8uwnTb2nTJEKBU90NFVWJBk4OU5qyg==
   dependencies:
     constantinople "^4.0.1"
     doctypes "^1.1.0"
@@ -5406,9 +5406,9 @@ pug-parser@^6.0.0:
     token-stream "1.0.0"
 
 pug-runtime@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/pug-runtime/-/pug-runtime-3.0.0.tgz#d523025fdc0a1efe70929d1fd3a2d24121ffffb6"
-  integrity sha512-GoEPcmQNnaTsePEdVA05bDpY+Op5VLHKayg08AQiqJBWU/yIaywEYv7TetC5dEQS3fzBBoyb2InDcZEg3mPTIA==
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/pug-runtime/-/pug-runtime-3.0.1.tgz#f636976204723f35a8c5f6fad6acda2a191b83d7"
+  integrity sha512-L50zbvrQ35TkpHwv0G6aLSuueDRwc/97XdY8kL3tOT0FmhgG7UypU3VztfV/LATAvmUfYi4wNxSajhSAeNN+Kg==
 
 pug-strip-comments@^2.0.0:
   version "2.0.0"
@@ -6218,51 +6218,39 @@ tar-stream@^2.0.0:
 
 "taskcluster-client@link:clients/client":
   version "0.0.0"
-  uid ""
 
 "taskcluster-db@link:db":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6272,8 +6260,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6281,8 +6268,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "0.0.0"
-  uid ""
+  version "42.0.0"
 
 temporary@^1.0.0:
   version "1.1.0"
