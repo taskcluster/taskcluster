@@ -47,7 +47,7 @@ builder.declare({
     'object, and as long as that value is kept secret, no other caller can',
     'upload an object of that name, regardless of scopes.  Object expiration',
     'cannot be changed after the initial call, either.  It is possible to call',
-    'this method with no proposed upload methods, which hsa the effect of "locking',
+    'this method with no proposed upload methods, which has the effect of "locking',
     'in" the `expiration` and `uploadId` properties.',
     '',
     'Unfinished uploads expire after 1 day.',
