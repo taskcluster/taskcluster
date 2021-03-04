@@ -10,6 +10,7 @@ tests_require = [
     'pytest',
     'pytest-cov',   
     'pytest-mock',
+    'pytest-asyncio; python_version>="3.6"',
     'httmock',
     'mock',
     'setuptools-lint',
