@@ -148,9 +148,7 @@ def load_secrets(
 
 def upload_artifact(queue_service, artifact_path, content, content_type, ttl):
     """
-    Create an artifact on the current Taskcluster Task in 2 steps:
-    1. create the Artifact through the API
-    2. upload the file on the storage provider
+    DEPRECATED. Do not use.
     """
     task_id = os.environ.get("TASK_ID")
     run_id = os.environ.get("RUN_ID")
