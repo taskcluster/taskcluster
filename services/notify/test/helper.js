@@ -61,12 +61,17 @@ class MockSES {
     this.emails = [];
   }
 
-  sendRawEmail(c, callback) {
-    this.emails.push({
-      delivery: { recipients: c.Destinations },
-      data: c.RawMessage.Data.toString(),
-    });
-    callback(null, {});
+  // simulate the AWS SDK v2 API
+  sendRawEmail(c) {
+    return {
+      promise: async () => {
+        this.emails.push({
+          delivery: { recipients: c.Destinations },
+          data: c.RawMessage.Data.toString(),
+        });
+        return { MessageId: 'a-message' };
+      },
+    };
   }
 
   reset() {
