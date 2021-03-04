@@ -583,9 +583,9 @@ nanoid@3.1.20:
   integrity sha512-a1cQNyczgKbLX9jwbS/+d7W8fX/RfgYR7lVWwWOGIPNgK2m0MWvrGF6/m4kk6U3QcFMnZf3RIhL0v2Jgh/0Uxw==
 
 nock@^13.0.0:
-  version "13.0.8"
-  resolved "https://registry.yarnpkg.com/nock/-/nock-13.0.8.tgz#1375f878b4ce8c3f9cf9e4b06acf670543a99e3e"
-  integrity sha512-LVv0buXfE52eT3CTkNBDcfTelWQGxaX3AJPVRzOFxLMR76EnFvbqaPXuDRikXYoOOmc4ie1uBUHw/G/sc6gVOg==
+  version "13.0.10"
+  resolved "https://registry.yarnpkg.com/nock/-/nock-13.0.10.tgz#a9a015269408d56ec9ac57fe3ede86b0a83ecc6a"
+  integrity sha512-AvUO/tbiWVBjlC3WsuIutPXltPbPmHWfcLwDSYzykKBJhOeo9eZPczo8n9aV4AHHCgpeL70zBXLwiSE+mzx89g==
   dependencies:
     debug "^4.1.0"
     json-stringify-safe "^5.0.1"
