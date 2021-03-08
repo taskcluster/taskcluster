@@ -36,6 +36,7 @@ import DialogAction from '../../../components/DialogAction';
 import TaskActionForm from '../../../components/TaskActionForm';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import splitTaskQueueId from '../../../utils/splitTaskQueueId';
+import { gqlTaskToApi } from '../../../utils/gqlToApi';
 import {
   ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,
@@ -719,10 +720,7 @@ export default class ViewTask extends Component {
 
   retriggerTask = async () => {
     const taskId = nice();
-    const task = omit(
-      [...TASK_ADDED_FIELDS, 'dependencies'],
-      removeKeys(cloneDeep(this.props.data.task), ['__typename'])
-    );
+    const task = omit('dependencies', gqlTaskToApi(this.props.data.task));
     const now = Date.now();
     const created = Date.parse(task.created);
 

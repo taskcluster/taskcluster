@@ -1,4 +1,4 @@
-mutation CreateTask($taskId: ID!, $task: TaskInput!) {
+mutation CreateTask($taskId: ID!, $task: JSON!) {
   createTask(taskId: $taskId, task: $task) {
     taskId
   }
