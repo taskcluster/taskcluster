@@ -24,6 +24,7 @@ Users for whom the supplied convenience functions are inadequate can add their o
  */
 use anyhow::{anyhow, Context, Result};
 use futures_util::stream::StreamExt;
+use reqwest::header;
 use serde_json::json;
 use taskcluster::retry::{Backoff, Retry};
 use taskcluster::Object;
@@ -38,66 +39,68 @@ pub use factory::{AsyncWriterFactory, CursorWriterFactory, FileWriterFactory};
 use service::ObjectService;
 
 /// Download an object to a [Vec<u8>] and return that.  If the object is unexpectedly
-/// large, this may exhaust system memory and panic.
+/// large, this may exhaust system memory and panic.  Returns (data, content_type)
 pub async fn download_to_vec(
     name: &str,
     retry: &Retry,
     object_service: &Object,
-) -> Result<Vec<u8>> {
+) -> Result<(Vec<u8>, String)> {
     let mut factory = CursorWriterFactory::new();
-    download_impl(name, retry, object_service, &mut factory).await?;
-    Ok(factory.into_inner())
+    let content_type = download_impl(name, retry, object_service, &mut factory).await?;
+    Ok((factory.into_inner(), content_type))
 }
 
 /// Download an object into the given buffer and return the slice of that buffer containing the
 /// object.  If the object is larger than the buffer, then resulting error can be downcast to
 /// [std::io::Error] with kind `WriteZero` and the somewhat cryptic message "write zero byte into
-/// writer".
+/// writer".  Returns (slice, content_type)
 pub async fn download_to_buf<'a>(
     name: &str,
     retry: &Retry,
     object_service: &Object,
     buf: &'a mut [u8],
-) -> Result<&'a [u8]> {
+) -> Result<(&'a [u8], String)> {
     let mut factory = CursorWriterFactory::for_buf(buf);
-    download_impl(name, retry, object_service, &mut factory).await?;
+    let content_type = download_impl(name, retry, object_service, &mut factory).await?;
     let size = factory.size();
-    Ok(&buf[..size])
+    Ok((&buf[..size], content_type))
 }
 
 /// Download an object into the given File.  The file must be open in write mode and must be
 /// clone-able (that is, [File::try_clone()] must succeed) in order to support retried downloads.
 /// The File is returned with all write operations complete but with unspecified position.
+/// Returns (file, content_type).
 pub async fn download_to_file(
     name: &str,
     retry: &Retry,
     object_service: &Object,
     file: File,
-) -> Result<File> {
+) -> Result<(File, String)> {
     let mut factory = FileWriterFactory::new(file);
-    download_impl(name, retry, object_service, &mut factory).await?;
-    Ok(factory.into_inner().await?)
+    let content_type = download_impl(name, retry, object_service, &mut factory).await?;
+    Ok((factory.into_inner().await?, content_type))
 }
 
-/// Download an object using an [AsyncWriterFactory].  This is useful for
-/// advanced cases where one of the convenience functions is not adequate.
+/// Download an object using an [AsyncWriterFactory].  This is useful for advanced cases where one
+/// of the convenience functions is not adequate.  Returns the object's content type.
 pub async fn download_with_factory<AWF: AsyncWriterFactory>(
     name: &str,
     retry: &Retry,
     object_service: &Object,
     writer_factory: &mut AWF,
-) -> Result<()> {
-    download_impl(name, retry, object_service, writer_factory).await
+) -> Result<String> {
+    let content_type = download_impl(name, retry, object_service, writer_factory).await?;
+    Ok(content_type)
 }
 
 /// Internal implementation of downloads, using the ObjectService trait to allow
-/// injecting a fake dependency
+/// injecting a fake dependency.  Returns the object's content-type.
 async fn download_impl<O: ObjectService, AWF: AsyncWriterFactory>(
     name: &str,
     retry: &Retry,
     object_service: &O,
     writer_factory: &mut AWF,
-) -> Result<()> {
+) -> Result<String> {
     let response = object_service
         .startDownload(
             name,
@@ -115,8 +118,8 @@ async fn download_impl<O: ObjectService, AWF: AsyncWriterFactory>(
         let res = simple_download(&response, writer_factory).await;
         attempts += 1;
 
-        match &res {
-            Ok(_) => return Ok(()),
+        let res = match res {
+            Ok(content_type) => return Ok(content_type),
             Err(err) => {
                 if let Some(reqerr) = err.downcast_ref::<reqwest::Error>() {
                     if reqerr
@@ -124,11 +127,12 @@ async fn download_impl<O: ObjectService, AWF: AsyncWriterFactory>(
                         .map(|s| s.is_client_error())
                         .unwrap_or(false)
                     {
-                        return res;
+                        return Err(err);
                     }
                 }
+                Err(err)
             }
-        }
+        };
 
         match backoff.next_backoff() {
             Some(duration) => tokio::time::sleep(duration).await,
@@ -140,7 +144,7 @@ async fn download_impl<O: ObjectService, AWF: AsyncWriterFactory>(
 async fn simple_download<AWF: AsyncWriterFactory>(
     start_download_response: &serde_json::Value,
     writer_factory: &mut AWF,
-) -> Result<()> {
+) -> Result<String> {
     // simple method is simple!
     let url = start_download_response
         .get("url")
@@ -148,8 +152,15 @@ async fn simple_download<AWF: AsyncWriterFactory>(
         .ok_or_else(|| anyhow!("invalid simple download response"))?;
 
     let res = reqwest::get(url).await?;
-    println!("res {:?}", res);
     res.error_for_status_ref()?;
+
+    let default_content_type = "application/binary";
+    let content_type = res
+        .headers()
+        .get(header::CONTENT_TYPE)
+        .map(|h| h.to_str().unwrap_or(default_content_type))
+        .unwrap_or(default_content_type)
+        .to_owned();
 
     // copy bytes from the response to the writer
     let stream = res
@@ -162,7 +173,7 @@ async fn simple_download<AWF: AsyncWriterFactory>(
 
     copy(&mut reader, &mut writer).await?;
 
-    Ok(())
+    Ok(content_type)
 }
 
 #[cfg(test)]
@@ -255,7 +266,9 @@ mod test {
                         .iter()
                         .map(|response| {
                             let responder: Box<dyn Responder> = Box::new(if *response == 200 {
-                                status_code(200).body("hello, world")
+                                status_code(200)
+                                    .append_header("Content-Type", "text/plain")
+                                    .body("hello, world")
                             } else {
                                 status_code(*response)
                             });
@@ -273,7 +286,7 @@ mod test {
         let object_service = SimpleDownload::new(server);
 
         let mut factory = CursorWriterFactory::new();
-        download_impl(
+        let content_type = download_impl(
             "some/object",
             &Retry::default(),
             &object_service,
@@ -285,6 +298,8 @@ mod test {
             "startDownload some/object {}",
             json!({"simple": true})
         )]);
+
+        assert_eq!(&content_type, "text/plain");
 
         let data = factory.into_inner();
         assert_eq!(&data, b"hello, world");

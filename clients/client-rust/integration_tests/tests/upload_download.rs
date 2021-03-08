@@ -67,9 +67,10 @@ async fn test_small_upload() -> Result<()> {
         .await?;
 
         let mut buf = [0u8; 128];
-        let res = download_to_buf(&name, &retry, &svc, &mut buf).await?;
+        let (bufslice, content_type) = download_to_buf(&name, &retry, &svc, &mut buf).await?;
 
-        assert_eq!(&res, &data);
+        assert_eq!(&bufslice, &data);
+        assert_eq!(&content_type, "text/plain");
     }
 
     Ok(())
@@ -88,7 +89,7 @@ async fn test_large_upload() -> Result<()> {
         upload_from_buf(
             "taskcluster",
             &name,
-            "text/plain",
+            "application/random",
             &(Utc::now() + Duration::hours(1)),
             &data,
             &Retry::default(),
@@ -96,8 +97,9 @@ async fn test_large_upload() -> Result<()> {
         )
         .await?;
 
-        let res = download_to_vec(&name, &retry, &svc).await?;
+        let (res, content_type) = download_to_vec(&name, &retry, &svc).await?;
         assert_eq!(&res, &data);
+        assert_eq!(&content_type, "application/random");
     }
 
     Ok(())
@@ -121,7 +123,7 @@ async fn test_file_upload() -> Result<()> {
         upload_from_file(
             "taskcluster",
             &name,
-            "text/plain",
+            "binary/random",
             &(Utc::now() + Duration::hours(1)),
             file,
             &Retry::default(),
@@ -129,12 +131,14 @@ async fn test_file_upload() -> Result<()> {
         )
         .await?;
 
-        let mut file = download_to_file(&name, &retry, &svc, tempfile()?.into()).await?;
+        let (mut file, content_type) =
+            download_to_file(&name, &retry, &svc, tempfile()?.into()).await?;
 
         let mut res = Vec::new();
         file.seek(SeekFrom::Start(0)).await?;
         file.read_to_end(&mut res).await?;
         assert_eq!(&res, &data);
+        assert_eq!(&content_type, "binary/random");
     }
 
     Ok(())
