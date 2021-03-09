@@ -52,7 +52,6 @@ import formatError from '../../../utils/formatError';
 import removeKeys from '../../../utils/removeKeys';
 import parameterizeTask from '../../../utils/parameterizeTask';
 import { nice } from '../../../utils/slugid';
-import formatTaskMutation from '../../../utils/formatTaskMutation';
 import Link from '../../../utils/Link';
 import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
@@ -418,9 +417,7 @@ export default class ViewTask extends Component {
 
   handleCreateLoaner = async () => {
     const taskId = nice();
-    const task = parameterizeTask(
-      removeKeys(cloneDeep(this.props.data.task), ['__typename'])
-    );
+    const task = parameterizeTask(gqlTaskToApi(this.props.data.task));
 
     this.preRunningAction();
 
@@ -429,7 +426,7 @@ export default class ViewTask extends Component {
         mutation: createTaskQuery,
         variables: {
           taskId,
-          task: formatTaskMutation(task),
+          task,
         },
       });
 
