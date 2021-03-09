@@ -3,6 +3,53 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v42.1.0
+
+### USERS
+
+▶ [minor] [#4470](https://github.com/taskcluster/taskcluster/issues/4470)
+The task-creator and retrigger function now treat task definitions as a JSON object, accepting new properties such as `taskQueueId` and `projectId`.
+
+▶ [patch] [#4502](https://github.com/taskcluster/taskcluster/issues/4502)
+A case where an invalid .taskcluster.yml would not result in a user-visible error has been fixed
+
+### DEVELOPERS
+
+▶ [patch] [#2393](https://github.com/taskcluster/taskcluster/issues/2393)
+On the page where all clients are listed, added Delete icon beside each client. This helps to delete client faster without going to the Client page.
+
+### OTHER
+
+▶ Additional change not described here: [#4458](https://github.com/taskcluster/taskcluster/issues/4458).
+
+### Automated Package Updates
+
+<details>
+<summary>20 Renovate updates</summary>
+
+* Update dependency @octokit/rest to v18.3.4 (f5b805bbf)
+* Update dependency date-fns to v2.19.0 (c8cae454e)
+* Update dependency @octokit/rest to v18.3.3 (1b64a996e)
+* Update sentry monorepo to v6.2.1 (a52b78160)
+* Update dependency cron-parser to v3.3.0 (69a28fc11)
+* Update dependency react-error-boundary to v3.1.1 (71b86fafb)
+* Update dependency chai to v4.3.3 (e8ac053e9)
+* Update dependency matrix-js-sdk to v9.8.0 (87fad9cd5)
+* Update dependency marked to v2.0.1 (59bb9f3c6)
+* Update Node.js to v14.16.0 (2617e646a)
+* Update dependency eslint to v7.21.0 (143a2abb8)
+* Update dependency @octokit/rest to v18.3.2 (75e899684)
+* Update dependency date-fns to v2.18.0 (b3ac91860)
+* Update dependency nock to v13.0.10 (3d1f5667a)
+* Update dependency nock to v13.0.9 (5ae899c61)
+* Update dependency chai to v4.3.1 (a0b21ef23)
+* Update babel monorepo (11b91534e)
+* Update dependency @octokit/rest to v18.3.0 (aeb0296cd)
+* Update dependency taskcluster-client-web to v42 (36d2b1c01)
+* Update dependency taskcluster-client to v42 (d2211e9b2)
+
+</details>
+
 ## v42.0.0
 
 ### USERS
