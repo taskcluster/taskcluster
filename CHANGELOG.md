@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v42.1.1
+
+### USERS
+
+▶ [patch] [#4519](https://github.com/taskcluster/taskcluster/issues/4519)
+Tasks with `priority` or `requires` can once again be created via the UI. (This includes creating interactive tasks.)
+
+### Automated Package Updates
+
+<details>
+<summary>4 Renovate updates</summary>
+
+* Update babel monorepo to v7.13.10 (1026e2d45)
+* Update dependency mocha to v8.3.1 (6667e8596)
+* Update dependency @azure/arm-compute to v16 (02d180889)
+* Update dependency @sentry/browser to v6.2.1 (8fbf8ac79)
+
+</details>
+
 ## v42.1.0
 
 ### USERS
