@@ -568,9 +568,9 @@
   integrity sha512-tA7GG7Tj479vojfV3AoxbckalA48aK6giGjNtgH6ihpLwTyHE3fIgRrvt8TWfLwW8X8dyu7vgmAsGLRG7hWWOg==
 
 "@slack/web-api@^6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@slack/web-api/-/web-api-6.0.0.tgz#14c65ed73c66a187e5f20e12c3898dfd8d5cbf7c"
-  integrity sha512-YD1wqWuzrYPf4RQyD7OnYS5lImUmNWn+G5V6Qt0N97fPYxqhT72YJtRdSnsTc3VkH5R5imKOhYxb+wqI9hiHnA==
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/@slack/web-api/-/web-api-6.1.0.tgz#27a17f61eb72100d6722ff17f581349c41d19b5f"
+  integrity sha512-9MVHw+rDBaFvkvzm8lDNH/nlkvJCDKRIjFGMdpbyZlVLsm4rcht4qyiL71bqdyLATHXJnWknb/sl0FQGLLobIA==
   dependencies:
     "@slack/logger" ">=1.0.0 <3.0.0"
     "@slack/types" "^1.7.0"
@@ -808,12 +808,17 @@
     "@types/node" "*"
     form-data "^3.0.0"
 
-"@types/node@*", "@types/node@>=12.12.47":
+"@types/node@*", "@types/node@>=12.0.0", "@types/node@>=8.9.0":
+  version "14.14.33"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.33.tgz#9e4f8c64345522e4e8ce77b334a8aaa64e2b6c78"
+  integrity sha512-oJqcTrgPUF29oUP8AsUqbXGJNuPutsetaa9kTQAQce5Lx5dTYWV02ScBiT/k1BX/Z7pKeqedmvp39Wu4zR7N7g==
+
+"@types/node@>=12.12.47":
   version "14.14.31"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.31.tgz#72286bd33d137aa0d152d47ec7c1762563d34055"
   integrity sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==
 
-"@types/node@>=12.0.0", "@types/node@>=6", "@types/node@>=8.9.0":
+"@types/node@>=6":
   version "14.14.27"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.27.tgz#c7127f8da0498993e13b1a42faf1303d3110d2f2"
   integrity sha512-Ecfmo4YDQPwuqTCl1yBxLV5ihKfRlkBmzUEDcfIRvDxOTGQEeikr317Ln7Gcv0tjA8dVgKI3rniqW2G1OyKDng==
@@ -2952,9 +2957,9 @@ fn.name@^1.0.1:
   integrity sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==
 
 follow-redirects@^1.10.0:
-  version "1.13.2"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.13.2.tgz#dd73c8effc12728ba5cf4259d760ea5fb83e3147"
-  integrity sha512-6mPTgLxYm3r6Bkkg0vNM0HTjfGrOEtsfbhagQvbxDEsEkpNhw582upBaoRZylzen6krEmxXJgt9Ju6HiI4O7BA==
+  version "1.13.3"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.13.3.tgz#e5598ad50174c1bc4e872301e82ac2cd97f90267"
+  integrity sha512-DUgl6+HDzB0iEptNQEXLx/KhTmDb8tZUHSeLqpnjpknR70H0nC2t9N73BK6fN4hOvJ84pKlIQVQ4k5FFlBedKA==
 
 for-each@^0.3.3:
   version "0.3.3"
@@ -5006,9 +5011,9 @@ p-queue@^6.1.1, p-queue@^6.6.1:
     p-timeout "^3.2.0"
 
 p-retry@^4.0.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/p-retry/-/p-retry-4.2.0.tgz#ea9066c6b44f23cab4cd42f6147cdbbc6604da5d"
-  integrity sha512-jPH38/MRh263KKcq0wBNOGFJbm+U6784RilTmHjB/HM9kH9V8WlCpVUcdOmip9cjXOh6MxZ5yk1z2SjDUJfWmA==
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/p-retry/-/p-retry-4.4.0.tgz#fefc2abe883ca7c91ca0dd25060180438b61ebd4"
+  integrity sha512-gVB/tBsG+3AHI1SyDHRrX6n9ZL0Bcbifps9W9/Bgu3Oyu4/OrAh8SvDzDsvpP0oxfCt3oWNT+0fQ9LyUGwBTLg==
   dependencies:
     "@types/retry" "^0.12.0"
     retry "^0.12.0"
