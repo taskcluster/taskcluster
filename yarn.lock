@@ -55,10 +55,10 @@
   dependencies:
     tslib "^2.0.0"
 
-"@azure/arm-compute@^15.0.0":
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/@azure/arm-compute/-/arm-compute-15.0.0.tgz#5d0d0c1db16adbb6db3d33ca376b120c68e6ae23"
-  integrity sha512-ElV2MuYZ+B2+ygMx2iiM/u3C7WDRruZjkXzfk5p2O+UbWxjG6j/686OH3T+VSDqmzg+47AnIOTLu2v0u0H8FOw==
+"@azure/arm-compute@^16.0.0":
+  version "16.0.0"
+  resolved "https://registry.yarnpkg.com/@azure/arm-compute/-/arm-compute-16.0.0.tgz#bf8eda5a7451acc6e98133f9aa13e2d4712ae958"
+  integrity sha512-ZB6gqVtGHPgNTSapYB3xTRJ+kd5U/HIXk+RyDjdfG0YcmmdM9rwtdvk7W9mlroc3y9Z69BdY3ivMU9tEQ0v6ug==
   dependencies:
     "@azure/ms-rest-azure-js" "^2.0.1"
     "@azure/ms-rest-js" "^2.0.4"
@@ -6242,52 +6242,47 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
+  dependencies:
+    debug "^4.1.1"
+    got "^11.8.1"
+    hawk "^9.0.0"
+    lodash "^4.17.4"
+    slugid "^2.0.0"
+    taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-db@link:db":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6297,8 +6292,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6306,8 +6300,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "0.0.0"
-  uid ""
+  version "42.1.0"
 
 temporary@^1.0.0:
   version "1.1.0"
