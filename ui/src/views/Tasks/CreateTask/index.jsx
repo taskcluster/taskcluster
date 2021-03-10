@@ -34,7 +34,6 @@ import HelpView from '../../../components/HelpView';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { nice } from '../../../utils/slugid';
-import formatTaskMutation from '../../../utils/formatTaskMutation';
 import {
   TASKS_CREATE_STORAGE_KEY,
   UI_SCHEDULER_ID,
@@ -201,7 +200,7 @@ export default class CreateTask extends Component {
           mutation: createTaskQuery,
           variables: {
             taskId,
-            task: formatTaskMutation(payload),
+            task: payload,
           },
         });
 
