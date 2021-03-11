@@ -1,4 +1,7 @@
-import secrets
+try:
+    import secrets
+except ImportError:
+    secrets = {}
 import random
 import pytest
 

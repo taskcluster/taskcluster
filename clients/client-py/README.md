@@ -334,6 +334,9 @@ The Object service provides an API for reliable uploads and downloads of large o
 This library provides convenience methods to implement the client portion of those APIs, providing well-tested, resilient upload and download functionality.
 These methods will negotiate the appropriate method with the object service and perform the required steps to transfer the data.
 
+All methods are available in both sync and async versions, with identical APIs except for the `async`/`await` keywords.
+These methods are not available for Python-2.7.
+
 In either case, you will need to provide a configured `Object` instance with appropriate credentials for the operation.
 
 NOTE: There is an helper function to upload `s3` artifacts, `taskcluster.helper.upload_artifact`, but it is deprecated as it only supports the `s3` artifact type.
@@ -345,9 +348,12 @@ To upload, use any of the following:
 * `await taskcluster.aio.upload.uploadFromBuf(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., data=..)` - asynchronously upload data from a buffer full of bytes.
 * `await taskcluster.aio.upload.uploadFromFile(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., file=..)` - asynchronously upload data from a standard Python file.
   Note that this is [probably what you want](https://github.com/python/asyncio/wiki/ThirdParty#filesystem), even in an async context.
-* `await taskcluster.aio.upload(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., readerFactory=..)` - asynchronously upload data from a reader factory.
+* `await taskcluster.aio.upload(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., readerFactory=..)` - asynchronously upload data from an async reader factory.
+* `taskcluster.upload.uploadFromBuf(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., data=..)` - upload data from a buffer full of bytes.
+* `taskcluster.upload.uploadFromFile(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., file=..)` - upload data from a standard Python file.
+* `taskcluster.upload(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., readerFactory=..)` - upload data from a sync reader factory.
 
-A "reader" is an object with an async `read(max_size=-1)` method which reads and returns a chunk of 1 .. `max_size` bytes, or returns an empty string at EOF.
+A "reader" is an object with a `read(max_size=-1)` method which reads and returns a chunk of 1 .. `max_size` bytes, or returns an empty string at EOF, async for the async functions and sync for the remainder.
 A "reader factory" is an async callable which returns a fresh reader, ready to read the first byte of the object.
 When uploads are retried, the reader factory may be called more than once.
 
@@ -358,10 +364,14 @@ To download, use any of the following:
 * `await taskcluster.aio.download.downloadToBuf(name=.., maxRetries=.., objectService=..)` - asynchronously download an object to an in-memory buffer, returning a tuple (buffer, content-type).
   If the file is larger than available memory, this will crash.
 * `await taskcluster.aio.download.downloadToBuf(name=.., maxRetries=.., objectService=.., file=..)` - asynchronously download an object to a standard Python file, returning the content type.
-* `await taskcluster.aio.download.download(name=.., maxRetries=.., objectService=.., writerFactory=..)` - asynchronously download an object to a writer factory, returning the content type.
+* `await taskcluster.aio.download.download(name=.., maxRetries=.., objectService=.., writerFactory=..)` - asynchronously download an object to an async writer factory, returning the content type.
+* `taskcluster.download.downloadToBuf(name=.., maxRetries=.., objectService=..)` - download an object to an in-memory buffer, returning a tuple (buffer, content-type).
+  If the file is larger than available memory, this will crash.
+* `taskcluster.download.downloadToBuf(name=.., maxRetries=.., objectService=.., file=..)` - download an object to a standard Python file, returning the content type.
+* `taskcluster.download.download(name=.., maxRetries=.., objectService=.., writerFactory=..)` - download an object to a sync writer factory, returning the content type.
 
-A "writer" is an object with an async `write(data)` method which writes the given data.
-A "writer factory" is an async callable which returns a fresh writer, ready to write the first byte of the object.
+A "writer" is an object with a `write(data)` method which writes the given data, async for the async functions and sync for the remainder.
+A "writer factory" is a callable (again either async or sync) which returns a fresh writer, ready to write the first byte of the object.
 When uploads are retried, the writer factory may be called more than once.
 
 ## Integration Helpers
