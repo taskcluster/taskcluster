@@ -292,7 +292,7 @@ class VersionOne extends TcYaml {
         };
       });
 
-      config.tasks = tsort.sort().reverse().map(id => taskMap[id]);
+      config.tasks = tsort.sort().reverse().filter(id => taskMap[id]).map(id => taskMap[id]);
 
     }
     return this.createScopes(cfg, config, payload);
