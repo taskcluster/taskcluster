@@ -9,11 +9,9 @@ module.exports = async ({ token, domain, audience }) => new Promise((resolve, re
 
   const client = jwksClient({ domain });
   const getKey = (header, callback) => {
-    client.getSigningKey(header.kid, (err, key) => {
-      const signingKey = key.publicKey || key.rsaPublicKey;
-
-      callback(null, signingKey);
-    });
+    client.getSigningKey(header.kid) .then(
+      key => callback(null, key.publicKey || key.rsaPublicKey),
+      err => callback(err));
   };
 
   jwt.verify(
