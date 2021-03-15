@@ -6,6 +6,27 @@ const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { artifactUtils } = require('./utils');
 const { Task } = require('./data');
 
+/**
+ * Get the latest taskId for the given run, or throw a ResourceNotFound.
+ */
+const getLatestRunId = async function({ taskId, res }) {
+  // Load task status structure from table
+  const task = await Task.get(this.db, taskId);
+
+  // Give a 404 if not found
+  if (!task) {
+    return res.reportError('ResourceNotFound', 'Task not found', {});
+  }
+
+  // Check that we have runs
+  if (task.runs.length === 0) {
+    return res.reportError('ResourceNotFound', 'Task doesn\'t have any runs', {});
+  }
+
+  // Find highest runId
+  return task.runs.length - 1;
+};
+
 /** Post artifact */
 builder.declare({
   method: 'post',
@@ -325,7 +346,7 @@ builder.declare({
  * names is used internally for tracking artifact names that have already been seen
  * when traversing links.
  */
-let replyWithArtifact = async function(taskId, runId, name, req, res, names) {
+let replyWithArtifact = async function({ taskId, runId, name, req, res, names }) {
   // Load artifact meta-data from table storage
   let artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
 
@@ -411,7 +432,7 @@ let replyWithArtifact = async function(taskId, runId, name, req, res, names) {
     await req.authorize({ names: names });
 
     // recurse to the linked artifact
-    return replyWithArtifact.call(this, taskId, runId, name, req, res, names);
+    return replyWithArtifact.call(this, { taskId, runId, name, req, res, names });
   }
 
   // Handle error artifacts
@@ -498,7 +519,7 @@ builder.declare({
 
   await req.authorize({ names });
 
-  return replyWithArtifact.call(this, taskId, runId, name, req, res, names);
+  return replyWithArtifact.call(this, { taskId, runId, name, req, res, names });
 });
 
 /** Get latest artifact from task */
@@ -539,25 +560,33 @@ builder.declare({
 
   await req.authorize({ names });
 
-  // Load task status structure from table
-  let task = await Task.get(this.db, taskId);
+  let runId = await getLatestRunId.call(this, { taskId, res });
 
-  // Give a 404 if not found
-  if (!task) {
-    return res.reportError('ResourceNotFound', 'Task not found', {});
-  }
-
-  // Check that we have runs
-  if (task.runs.length === 0) {
-    return res.reportError('ResourceNotFound', 'Task doesn\'t have any runs', {});
-  }
-
-  // Find highest runId
-  let runId = task.runs.length - 1;
-
-  // Reply
-  return replyWithArtifact.call(this, taskId, runId, name, req, res, names);
+  return replyWithArtifact.call(this, { taskId, runId, name, req, res, names });
 });
+
+const replyWithArtifactsList = async function({ query, taskId, runId, res }) {
+  const artifacts = await paginateResults({
+    query: query,
+    indexColumns: ['task_id', 'run_id', 'name'],
+    fetch: (page_size_in, after) => this.db.fns.get_queue_artifacts_paginated({
+      task_id_in: taskId,
+      run_id_in: runId,
+      expires_in: null,
+      page_size_in,
+      ...after,
+    }),
+  });
+
+  let result = {
+    artifacts: artifacts.rows.map(r => artifactUtils.serialize(artifactUtils.fromDb(r))),
+  };
+  if (artifacts.continuationToken) {
+    result.continuationToken = artifacts.continuationToken;
+  }
+
+  return res.reply(result);
+};
 
 /** Get artifacts from run */
 builder.declare({
@@ -584,52 +613,18 @@ builder.declare({
 }, async function(req, res) {
   let taskId = req.params.taskId;
   let runId = parseInt(req.params.runId, 10);
-
-  let [task, artifacts] = await Promise.all([
-    Task.get(this.db, taskId),
-    paginateResults({
-      query: req.query,
-      indexColumns: ['task_id', 'run_id', 'name'],
-      fetch: (page_size_in, after) => this.db.fns.get_queue_artifacts_paginated({
-        task_id_in: taskId,
-        run_id_in: runId,
-        expires_in: null,
-        page_size_in,
-        ...after,
-      }),
-    }),
-  ]);
-
-  // Give a 404 if not found
-  if (!task) {
-    return res.reportError(
-      'ResourceNotFound',
-      'No task with taskId: `{{taskId}}` found',
-      { taskId },
-    );
-  }
+  let latestRunId = await getLatestRunId.call(this, { taskId, res });
 
   // Check that we have the run
-  if (!task.runs[runId]) {
+  if (runId < 0 || runId > latestRunId) {
     return res.reportError(
       'ResourceNotFound',
-      'Task with taskId: `{{taskId}}` run with runId: {{runId}}\n' +
-      'task status: {{status}}', {
-        taskId,
-        runId,
-        status: task.status(),
-      },
+      'Task with taskId: `{{taskId}}` has no run with runId: {{runId}}',
+      { taskId, runId },
     );
   }
 
-  let result = {
-    artifacts: artifacts.rows.map(r => artifactUtils.serialize(artifactUtils.fromDb(r))),
-  };
-  if (artifacts.continuationToken) {
-    result.continuationToken = artifacts.continuationToken;
-  }
-
-  return res.reply(result);
+  return await replyWithArtifactsList.call(this, { query: req.query, taskId, runId, res });
 });
 
 /** Get latest artifacts from task */
@@ -657,49 +652,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let taskId = req.params.taskId;
+  let runId = await getLatestRunId.call(this, { taskId, res });
 
-  // Load task status structure from table
-  let task = await Task.get(this.db, taskId);
-
-  // Give a 404 if not found
-  if (!task) {
-    return res.reportError(
-      'ResourceNotFound',
-      'No task with taskId: `{{taskId}}` found',
-      { taskId },
-    );
-  }
-
-  // Check that we have runs
-  if (task.runs.length === 0) {
-    return res.reportError(
-      'ResourceNotFound',
-      'Task with taskId: `{{taskId}}` does not have any runs',
-      { taskId },
-    );
-  }
-
-  // Find highest runId
-  let runId = task.runs.length - 1;
-
-  const artifacts = await paginateResults({
-    query: req.query,
-    indexColumns: ['task_id', 'run_id', 'name'],
-    fetch: (page_size_in, after) => this.db.fns.get_queue_artifacts_paginated({
-      task_id_in: taskId,
-      run_id_in: runId,
-      expires_in: null,
-      page_size_in,
-      ...after,
-    }),
-  });
-
-  let result = {
-    artifacts: artifacts.rows.map(r => artifactUtils.serialize(artifactUtils.fromDb(r))),
-  };
-  if (artifacts.continuationToken) {
-    result.continuationToken = artifacts.continuationToken;
-  }
-
-  return res.reply(result);
+  return await replyWithArtifactsList.call(this, { query: req.query, taskId, runId, res });
 });
