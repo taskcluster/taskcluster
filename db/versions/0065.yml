@@ -1,0 +1,19 @@
+version: 65
+description: add `delete_indexed_task`
+methods:
+  delete_indexed_task:
+    description: |-
+      Delete the named task from the index.  Returns succesfully even if the named
+      task does not exist.
+    mode: write
+    serviceName: index
+    args: namespace_in text, name_in text
+    returns: void
+    body: |-
+      begin
+        delete
+        from indexed_tasks
+        where
+          indexed_tasks.namespace = namespace_in and
+          indexed_tasks.name = name_in;
+      end

@@ -49,6 +49,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert(false, 'This shouldn\'t have worked');
   });
 
+  test('delete (non-existing)', async function() {
+    const ns = slugid.v4() + '.' + slugid.v4();
+    await helper.index.deleteTask(ns);
+  });
+
   test('find (no scopes)', async function() {
     const myns = slugid.v4();
     const taskId = slugid.v4();
@@ -61,6 +66,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     helper.scopes('none');
     await assert.rejects(
       () => helper.index.findTask(myns + '.my-task'),
+      err => err.code === 'InsufficientScopes');
+  });
+
+  test('delete (no scopes)', async function() {
+    const ns = slugid.v4() + '.' + slugid.v4();
+    helper.scopes('none');
+    await assert.rejects(
+      () => helper.index.deleteTask(ns),
       err => err.code === 'InsufficientScopes');
   });
 
@@ -279,5 +292,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return err.response;
     });
     assert.equal(res.statusCode, 403, 'Expected 403 Forbidden');
+  });
+
+  test('delete task', async function() {
+    const taskId = slugid.nice();
+    debug('### Insert task into index');
+    await helper.index.insertTask('some.testing.name.space', {
+      taskId: taskId,
+      rank: 41,
+      data: { hello: 'world' },
+      expires: taskcluster.fromNowJSON('24 hours'),
+    });
+
+    let result = await helper.index.findTask('some.testing.name.space');
+    assert(result.taskId === taskId, 'Wrong taskId');
+
+    await helper.index.deleteTask('some.testing.name.space');
+
+    await assert.rejects(
+      () => helper.index.findTask('some.testing.name.space'),
+      err => err.code === 'ResourceNotFound');
+
+    // parent namespace still exists
+    let listRes = await helper.index.listNamespaces('some.testing');
+    assert.deepEqual(listRes.namespaces.map(({ name }) => name), ['name']);
   });
 });

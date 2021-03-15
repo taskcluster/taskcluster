@@ -40,6 +40,7 @@
  * [index functions](#index)
    * [`create_index_namespace`](#create_index_namespace)
    * [`create_indexed_task`](#create_indexed_task)
+   * [`delete_indexed_task`](#delete_indexed_task)
    * [`expire_index_namespaces`](#expire_index_namespaces)
    * [`expire_indexed_tasks`](#expire_indexed_tasks)
    * [`get_index_namespace`](#get_index_namespace)
@@ -733,6 +734,7 @@ the return value is an empty set.
 
 * [`create_index_namespace`](#create_index_namespace)
 * [`create_indexed_task`](#create_indexed_task)
+* [`delete_indexed_task`](#delete_indexed_task)
 * [`expire_index_namespaces`](#expire_index_namespaces)
 * [`expire_indexed_tasks`](#expire_indexed_tasks)
 * [`get_index_namespace`](#get_index_namespace)
@@ -777,6 +779,17 @@ Returns the newly created namespace.
 
 Create a new indexed task. Raises UNIQUE_VIOLATION if the indexed task already exists.
 Returns the newly created indexed task.
+
+### delete_indexed_task
+
+* *Mode*: write
+* *Arguments*:
+  * `namespace_in text`
+  * `name_in text`
+* *Returns*: `void`
+
+Delete the named task from the index.  Returns succesfully even if the named
+task does not exist.
 
 ### expire_index_namespaces
 

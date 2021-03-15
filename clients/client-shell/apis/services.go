@@ -786,6 +786,19 @@ var services = map[string]definitions.Service{
 				Input: "v1/insert-task-request.json#",
 			},
 			definitions.Entry{
+				Name:        "deleteTask",
+				Title:       "Remove Task from Index",
+				Description: "Remove a task from the index.  This is intended for administrative use,\nwhere an index entry is no longer appropriate.  The parent namespace is\nnot automatically deleted.  Index entries with lower rank that were\npreviously inserted will not re-appear, as they were never stored.",
+				Stability:   "stable",
+				Method:      "delete",
+				Route:       "/task/<namespace>",
+				Args: []string{
+					"namespace",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "findArtifactFromTask",
 				Title:       "Get Artifact From Indexed Task",
 				Description: "Find a task by index path and redirect to the artifact on the most recent\nrun with the given `name`.\n\nNote that multiple calls to this endpoint may return artifacts from differen tasks\nif a new task is inserted into the index between calls. Avoid using this method as\na stable link to multiple, connected files if the index path does not contain a\nunique identifier.  For example, the following two links may return unrelated files:\n* https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/installer.exe`\n* https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`\n\nThis problem be remedied by including the revision in the index path or by bundling both\ninstaller and debug symbols into a single artifact.\n\nIf no task exists for the given index path, this API end-point responds with 404.",

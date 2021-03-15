@@ -64,7 +64,7 @@ exports.taskUtils = {
    * }
    *
    */
-  async insertTask(db, namespace, input) {
+  async insertTask(db, fullNamespace, input) {
     // Validate input
     assert(input.expires instanceof Date, 'expires must be a Date object');
     assert(input.data instanceof Object, 'data must be an object');
@@ -73,12 +73,7 @@ exports.taskUtils = {
     assert(db,
       'db must be set');
 
-    // Get namespace and ensure that we have a least one dot
-    namespace = namespace.split('.');
-
-    // Find name and namespace
-    let name = namespace.pop() || '';
-    namespace = namespace.join('.');
+    let [namespace, name] = exports.splitNamespace(fullNamespace);
 
     // Find expiration time and parse as date object
     let expires = new Date(input.expires);
@@ -306,4 +301,20 @@ exports.namespaceUtils = {
       }
     }
   },
+};
+
+/**
+ * Given a namespace, split off the final component as a name, and
+ * the rest as the parent namespace.  A value with no `.` is considered
+ * to be a name in the root namespace.
+ */
+exports.splitNamespace = namespace => {
+  // Get namespace and ensure that we have a least one dot
+  namespace = namespace.split('.');
+
+  // Find name and namespace
+  const name = namespace.pop() || '';
+  namespace = namespace.join('.');
+
+  return [namespace, name];
 };

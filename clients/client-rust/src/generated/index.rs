@@ -205,6 +205,29 @@ impl Index {
         (path, query)
     }
 
+    /// Remove Task from Index
+    /// 
+    /// Remove a task from the index.  This is intended for administrative use,
+    /// where an index entry is no longer appropriate.  The parent namespace is
+    /// not automatically deleted.  Index entries with lower rank that were
+    /// previously inserted will not re-appear, as they were never stored.
+    pub async fn deleteTask(&self, namespace: &str) -> Result<(), Error> {
+        let method = "DELETE";
+        let (path, query) = Self::deleteTask_details(namespace);
+        let body = None;
+        let resp = self.0.request(method, &path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Determine the HTTP request details for deleteTask
+    fn deleteTask_details<'a>(namespace: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}", urlencode(namespace));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Get Artifact From Indexed Task
     /// 
     /// Find a task by index path and redirect to the artifact on the most recent
