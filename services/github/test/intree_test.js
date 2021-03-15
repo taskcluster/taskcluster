@@ -329,6 +329,19 @@ suite(testing.suiteName(), function() {
     });
 
   buildConfigTest(
+    'Push Event with a task dependency not in the set of generated tasks (#4502)',
+    configPath + 'taskcluster.external-dep.v1.yml',
+    {
+      payload: buildMessage({
+        details: { 'event.type': 'push' },
+        body: require('./data/webhooks/webhook.push.json').body,
+        tasks_for: 'github-push',
+        branch: 'master',
+      }),
+    },
+    { 'tasks[0].task.workerType': 'worker' });
+
+  buildConfigTest(
     'Push Event, Single Task Config, v1',
     configPath + 'taskcluster.single.v1.yml',
     {
