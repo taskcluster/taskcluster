@@ -235,6 +235,21 @@ func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*I
 	return responseObject.(*IndexedTaskResponse), err
 }
 
+// Remove a task from the index.  This is intended for administrative use,
+// where an index entry is no longer appropriate.  The parent namespace is
+// not automatically deleted.  Index entries with lower rank that were
+// previously inserted will not re-appear, as they were never stored.
+//
+// Required scopes:
+//   index:delete-task:<namespace>
+//
+// See #deleteTask
+func (index *Index) DeleteTask(namespace string) error {
+	cd := tcclient.Client(*index)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/task/"+url.QueryEscape(namespace), nil, nil)
+	return err
+}
+
 // Find a task by index path and redirect to the artifact on the most recent
 // run with the given `name`.
 //

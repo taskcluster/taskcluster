@@ -15,6 +15,7 @@ export default class Index extends Client {
     this.listNamespaces.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listNamespaces","output":true,"query":["continuationToken","limit"],"route":"/namespaces/<namespace>","scopes":"index:list-namespaces:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listTasks.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listTasks","output":true,"query":["continuationToken","limit"],"route":"/tasks/<namespace>","scopes":"index:list-tasks:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
     this.insertTask.entry = {"args":["namespace"],"category":"Index Service","input":true,"method":"put","name":"insertTask","output":true,"query":[],"route":"/task/<namespace>","scopes":"index:insert-task:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.deleteTask.entry = {"args":["namespace"],"category":"Index Service","method":"delete","name":"deleteTask","query":[],"route":"/task/<namespace>","scopes":"index:delete-task:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
     this.findArtifactFromTask.entry = {"args":["indexPath","name"],"category":"Index Service","method":"get","name":"findArtifactFromTask","query":[],"route":"/task/<indexPath>/artifacts/<name>","scopes":"queue:get-artifact:<name>","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
@@ -73,6 +74,17 @@ export default class Index extends Client {
     this.validate(this.insertTask.entry, args);
 
     return this.request(this.insertTask.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Remove a task from the index.  This is intended for administrative use,
+  // where an index entry is no longer appropriate.  The parent namespace is
+  // not automatically deleted.  Index entries with lower rank that were
+  // previously inserted will not re-appear, as they were never stored.
+  /* eslint-enable max-len */
+  deleteTask(...args) {
+    this.validate(this.deleteTask.entry, args);
+
+    return this.request(this.deleteTask.entry, args);
   }
   /* eslint-disable max-len */
   // Find a task by index path and redirect to the artifact on the most recent

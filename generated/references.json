@@ -16340,6 +16340,22 @@
         },
         {
           "args": [
+            "namespace"
+          ],
+          "category": "Index Service",
+          "description": "Remove a task from the index.  This is intended for administrative use,\nwhere an index entry is no longer appropriate.  The parent namespace is\nnot automatically deleted.  Index entries with lower rank that were\npreviously inserted will not re-appear, as they were never stored.",
+          "method": "delete",
+          "name": "deleteTask",
+          "query": [
+          ],
+          "route": "/task/<namespace>",
+          "scopes": "index:delete-task:<namespace>",
+          "stability": "stable",
+          "title": "Remove Task from Index",
+          "type": "function"
+        },
+        {
+          "args": [
             "indexPath",
             "name"
           ],

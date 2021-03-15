@@ -6041,6 +6041,21 @@
         }
       },
       "version": 64
+    },
+    {
+      "description": "add `delete_indexed_task`",
+      "methods": {
+        "delete_indexed_task": {
+          "args": "namespace_in text, name_in text",
+          "body": "begin\n  delete\n  from indexed_tasks\n  where\n    indexed_tasks.namespace = namespace_in and\n    indexed_tasks.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Delete the named task from the index.  Returns succesfully even if the named\ntask does not exist.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "index"
+        }
+      },
+      "version": 65
     }
   ]
 }

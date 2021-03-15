@@ -252,6 +252,32 @@ builder.declare({
   });
 });
 
+builder.declare({
+  method: 'delete',
+  route: '/task/:namespace',
+  name: 'deleteTask',
+  stability: APIBuilder.stability.stable,
+  scopes: 'index:delete-task:<namespace>',
+  category: 'Index Service',
+  title: 'Remove Task from Index',
+  description: [
+    'Remove a task from the index.  This is intended for administrative use,',
+    'where an index entry is no longer appropriate.  The parent namespace is',
+    'not automatically deleted.  Index entries with lower rank that were',
+    'previously inserted will not re-appear, as they were never stored.',
+  ].join('\n'),
+}, async function(req, res) {
+  await req.authorize({ namespace: req.params.namespace || '' });
+
+  let [namespace, name] = helpers.splitNamespace(req.params.namespace || '');
+  await this.db.fns.delete_indexed_task({
+    namespace_in: namespace,
+    name_in: name,
+  });
+
+  res.reply({});
+});
+
 /** Get artifact from indexed task */
 builder.declare({
   method: 'get',
