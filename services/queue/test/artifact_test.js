@@ -346,6 +346,72 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assume(r6.artifacts[0].name).not.equals(r5.artifacts[0].name);
     });
 
+    test('artifactInfo', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+
+      helper.scopes(
+        'queue:list-artifacts:' + taskId + ':0',
+      );
+
+      const res = await helper.queue.artifactInfo(taskId, 0, s3Artifact.name);
+      assume(res.storageType).equals('s3');
+      assume(res.name).equals(s3Artifact.name);
+      assume(res.expires).equals(s3Artifact.expires);
+      assume(res.contentType).equals('application/json');
+    });
+
+    test('latestArtifactInfo', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+
+      helper.scopes(
+        'queue:list-artifacts:' + taskId,
+      );
+
+      const res = await helper.queue.latestArtifactInfo(taskId, s3Artifact.name);
+      assume(res.storageType).equals('s3');
+      assume(res.name).equals(s3Artifact.name);
+      assume(res.expires).equals(s3Artifact.expires);
+      assume(res.contentType).equals('application/json');
+    });
+
+    test('artifactInfo (missing task)', async () => {
+      await assert.rejects(
+        () => helper.queue.artifactInfo(slugid.v4(), 0, s3Artifact.name),
+        err => err.code === 'ResourceNotFound');
+    });
+
+    test('artifactInfo (missing run)', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+      await assert.rejects(
+        () => helper.queue.artifactInfo(taskId, 7, s3Artifact.name),
+        err => err.code === 'ResourceNotFound');
+    });
+
+    test('artifactInfo (missing artifact)', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+      await assert.rejects(
+        () => helper.queue.artifactInfo(taskId, 0, 'nosuchthing'),
+        err => err.code === 'ResourceNotFound');
+    });
+
+    test('latestArtifactInfo (missing task)', async () => {
+      await assert.rejects(
+        () => helper.queue.latestArtifactInfo(slugid.v4(), s3Artifact.name),
+        err => err.code === 'ResourceNotFound');
+    });
+
+    test('latestArtifactInfo (missing artifact)', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+      await assert.rejects(
+        () => helper.queue.latestArtifactInfo(taskId, 'nosuchthing'),
+        err => err.code === 'ResourceNotFound');
+    });
+
     test('Download Artifact (runId: 0) from local region', async () => {
       await makeAndClaimTask();
       await makeArtifact(s3Artifact);

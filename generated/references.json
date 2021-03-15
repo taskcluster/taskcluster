@@ -3629,47 +3629,7 @@
         "artifacts": {
           "description": "List of artifacts for given `taskId` and `runId`.\n",
           "items": {
-            "additionalProperties": false,
-            "description": "Information about an artifact for the given `taskId` and `runId`.\n",
-            "properties": {
-              "contentType": {
-                "description": "Expected content-type of the artifact.  This is informational only:\nit is suitable for use to choose an icon for the artifact, for example.\nThe accurate content-type of the artifact can only be determined by\ndownloading it.\n",
-                "maxLength": 255,
-                "title": "Content-Type",
-                "type": "string"
-              },
-              "expires": {
-                "description": "Date and time after which the artifact created will be automatically\ndeleted by the queue.\n",
-                "format": "date-time",
-                "title": "Artifact Expiration",
-                "type": "string"
-              },
-              "name": {
-                "description": "Name of the artifact that was created, this is useful if you want to\nattempt to fetch the artifact.\n",
-                "maxLength": 1024,
-                "title": "Artifact Name",
-                "type": "string"
-              },
-              "storageType": {
-                "description": "This is the `storageType` for the request that was used to create\nthe artifact.\n",
-                "enum": [
-                  "s3",
-                  "reference",
-                  "link",
-                  "error"
-                ],
-                "title": "Artifact Storage-Type",
-                "type": "string"
-              }
-            },
-            "required": [
-              "storageType",
-              "name",
-              "expires",
-              "contentType"
-            ],
-            "title": "Artifact",
-            "type": "object"
+            "$ref": "./artifact-response.json#"
           },
           "title": "Artifact List",
           "type": "array",
@@ -3923,6 +3883,54 @@
       "type": "object"
     },
     "filename": "schemas/queue/v1/claim-work-request.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/queue/v1/artifact-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Information about an artifact\n",
+      "properties": {
+        "contentType": {
+          "description": "Expected content-type of the artifact.  This is informational only:\nit is suitable for use to choose an icon for the artifact, for example.\nThe accurate content-type of the artifact can only be determined by\ndownloading it.\n",
+          "maxLength": 255,
+          "title": "Content-Type",
+          "type": "string"
+        },
+        "expires": {
+          "description": "Date and time after which the artifact created will be automatically\ndeleted by the queue.\n",
+          "format": "date-time",
+          "title": "Artifact Expiration",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the artifact that was created, this is useful if you want to\nattempt to fetch the artifact.\n",
+          "maxLength": 1024,
+          "title": "Artifact Name",
+          "type": "string"
+        },
+        "storageType": {
+          "description": "This is the `storageType` for the request that was used to create\nthe artifact.\n",
+          "enum": [
+            "s3",
+            "reference",
+            "link",
+            "error"
+          ],
+          "title": "Artifact Storage-Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "storageType",
+        "name",
+        "expires",
+        "contentType"
+      ],
+      "title": "Artifact",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/artifact-response.json"
   },
   {
     "content": {
@@ -14622,7 +14630,7 @@
             ]
           },
           "stability": "stable",
-          "title": "Get Artifact from Run",
+          "title": "Get Artifact Data from Run",
           "type": "function"
         },
         {
@@ -14648,7 +14656,7 @@
             ]
           },
           "stability": "stable",
-          "title": "Get Artifact from Latest Run",
+          "title": "Get Artifact Data from Latest Run",
           "type": "function"
         },
         {
@@ -14688,6 +14696,43 @@
           "scopes": "queue:list-artifacts:<taskId>",
           "stability": "stable",
           "title": "Get Artifacts from Latest Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns associated metadata for a given artifact, in the given task run.\nThe metadata is the same as that returned from `listArtifacts`, and does\nnot grant access to the artifact data.\n\nNote that this method does *not* automatically follow redirect artifacts.",
+          "method": "get",
+          "name": "artifactInfo",
+          "output": "v1/artifact-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/runs/<runId>/artifact-info/<name>",
+          "scopes": "queue:list-artifacts:<taskId>:<runId>",
+          "stability": "stable",
+          "title": "Get Artifact Information From Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns associated metadata for a given artifact, in the latest run of the\ntask.  The metadata is the same as that returned from `listArtifacts`,\nand does not grant access to the artifact data.\n\nNote that this method does *not* automatically follow redirect artifacts.",
+          "method": "get",
+          "name": "latestArtifactInfo",
+          "output": "v1/artifact-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/artifact-info/<name>",
+          "scopes": "queue:list-artifacts:<taskId>",
+          "stability": "stable",
+          "title": "Get Artifact Information From Latest Run",
           "type": "function"
         },
         {

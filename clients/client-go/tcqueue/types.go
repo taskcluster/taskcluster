@@ -87,7 +87,7 @@ type (
 		URL string `json:"url"`
 	}
 
-	// Information about an artifact for the given `taskId` and `runId`.
+	// Information about an artifact
 	Artifact struct {
 
 		// Expected content-type of the artifact.  This is informational only:

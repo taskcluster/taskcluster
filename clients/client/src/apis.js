@@ -2227,7 +2227,7 @@ module.exports = {
             ]
           },
           "stability": "stable",
-          "title": "Get Artifact from Run",
+          "title": "Get Artifact Data from Run",
           "type": "function"
         },
         {
@@ -2253,7 +2253,7 @@ module.exports = {
             ]
           },
           "stability": "stable",
-          "title": "Get Artifact from Latest Run",
+          "title": "Get Artifact Data from Latest Run",
           "type": "function"
         },
         {
@@ -2293,6 +2293,43 @@ module.exports = {
           "scopes": "queue:list-artifacts:<taskId>",
           "stability": "stable",
           "title": "Get Artifacts from Latest Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns associated metadata for a given artifact, in the given task run.\nThe metadata is the same as that returned from `listArtifacts`, and does\nnot grant access to the artifact data.\n\nNote that this method does *not* automatically follow redirect artifacts.",
+          "method": "get",
+          "name": "artifactInfo",
+          "output": "v1/artifact-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/runs/<runId>/artifact-info/<name>",
+          "scopes": "queue:list-artifacts:<taskId>:<runId>",
+          "stability": "stable",
+          "title": "Get Artifact Information From Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns associated metadata for a given artifact, in the latest run of the\ntask.  The metadata is the same as that returned from `listArtifacts`,\nand does not grant access to the artifact data.\n\nNote that this method does *not* automatically follow redirect artifacts.",
+          "method": "get",
+          "name": "latestArtifactInfo",
+          "output": "v1/artifact-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/artifact-info/<name>",
+          "scopes": "queue:list-artifacts:<taskId>",
+          "stability": "stable",
+          "title": "Get Artifact Information From Latest Run",
           "type": "function"
         },
         {

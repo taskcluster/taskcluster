@@ -799,6 +799,60 @@ func (queue *Queue) ListLatestArtifacts_SignedURL(taskId, continuationToken, lim
 	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts", v, duration)
 }
 
+// Returns associated metadata for a given artifact, in the given task run.
+// The metadata is the same as that returned from `listArtifacts`, and does
+// not grant access to the artifact data.
+//
+// Note that this method does *not* automatically follow redirect artifacts.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>:<runId>
+//
+// See #artifactInfo
+func (queue *Queue) ArtifactInfo(taskId, runId, name string) (*Artifact, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-info/"+url.QueryEscape(name), new(Artifact), nil)
+	return responseObject.(*Artifact), err
+}
+
+// Returns a signed URL for ArtifactInfo, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>:<runId>
+//
+// See ArtifactInfo for more details.
+func (queue *Queue) ArtifactInfo_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-info/"+url.QueryEscape(name), nil, duration)
+}
+
+// Returns associated metadata for a given artifact, in the latest run of the
+// task.  The metadata is the same as that returned from `listArtifacts`,
+// and does not grant access to the artifact data.
+//
+// Note that this method does *not* automatically follow redirect artifacts.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>
+//
+// See #latestArtifactInfo
+func (queue *Queue) LatestArtifactInfo(taskId, name string) (*Artifact, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifact-info/"+url.QueryEscape(name), new(Artifact), nil)
+	return responseObject.(*Artifact), err
+}
+
+// Returns a signed URL for LatestArtifactInfo, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>
+//
+// See LatestArtifactInfo for more details.
+func (queue *Queue) LatestArtifactInfo_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifact-info/"+url.QueryEscape(name), nil, duration)
+}
+
 // Stability: *** DEPRECATED ***
 //
 // Get all active provisioners.

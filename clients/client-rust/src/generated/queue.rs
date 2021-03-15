@@ -596,7 +596,7 @@ impl Queue {
         (path, query)
     }
 
-    /// Get Artifact from Run
+    /// Get Artifact Data from Run
     /// 
     /// Get artifact by `<name>` from a specific run.
     /// 
@@ -674,7 +674,7 @@ impl Queue {
         (path, query)
     }
 
-    /// Get Artifact from Latest Run
+    /// Get Artifact Data from Latest Run
     /// 
     /// Get artifact by `<name>` from the last run of a task.
     /// 
@@ -808,6 +808,76 @@ impl Queue {
         if let Some(q) = limit {
             query.get_or_insert_with(Vec::new).push(("limit", q));
         }
+
+        (path, query)
+    }
+
+    /// Get Artifact Information From Run
+    /// 
+    /// Returns associated metadata for a given artifact, in the given task run.
+    /// The metadata is the same as that returned from `listArtifacts`, and does
+    /// not grant access to the artifact data.
+    /// 
+    /// Note that this method does *not* automatically follow redirect artifacts.
+    pub async fn artifactInfo(&self, taskId: &str, runId: &str, name: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::artifactInfo_details(taskId, runId, name);
+        let body = None;
+        let resp = self.0.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the artifactInfo endpoint
+    pub fn artifactInfo_url(&self, taskId: &str, runId: &str, name: &str) -> Result<String, Error> {
+        let (path, query) = Self::artifactInfo_details(taskId, runId, name);
+        self.0.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the artifactInfo endpoint
+    pub fn artifactInfo_signed_url(&self, taskId: &str, runId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::artifactInfo_details(taskId, runId, name);
+        self.0.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for artifactInfo
+    fn artifactInfo_details<'a>(taskId: &'a str, runId: &'a str, name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}/runs/{}/artifact-info/{}", urlencode(taskId), urlencode(runId), urlencode(name));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Get Artifact Information From Latest Run
+    /// 
+    /// Returns associated metadata for a given artifact, in the latest run of the
+    /// task.  The metadata is the same as that returned from `listArtifacts`,
+    /// and does not grant access to the artifact data.
+    /// 
+    /// Note that this method does *not* automatically follow redirect artifacts.
+    pub async fn latestArtifactInfo(&self, taskId: &str, name: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::latestArtifactInfo_details(taskId, name);
+        let body = None;
+        let resp = self.0.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the latestArtifactInfo endpoint
+    pub fn latestArtifactInfo_url(&self, taskId: &str, name: &str) -> Result<String, Error> {
+        let (path, query) = Self::latestArtifactInfo_details(taskId, name);
+        self.0.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the latestArtifactInfo endpoint
+    pub fn latestArtifactInfo_signed_url(&self, taskId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::latestArtifactInfo_details(taskId, name);
+        self.0.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for latestArtifactInfo
+    fn latestArtifactInfo_details<'a>(taskId: &'a str, name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}/artifact-info/{}", urlencode(taskId), urlencode(name));
+        let query = None;
 
         (path, query)
     }

@@ -460,7 +460,7 @@ builder.declare({
   scopes: { AllOf: [
     { for: 'name', in: 'names', each: 'queue:get-artifact:<name>' },
   ] },
-  title: 'Get Artifact from Run',
+  title: 'Get Artifact Data from Run',
   description: [
     'Get artifact by `<name>` from a specific run.',
     '',
@@ -533,7 +533,7 @@ builder.declare({
   scopes: { AllOf: [
     { for: 'name', in: 'names', each: 'queue:get-artifact:<name>' },
   ] },
-  title: 'Get Artifact from Latest Run',
+  title: 'Get Artifact Data from Latest Run',
   description: [
     'Get artifact by `<name>` from the last run of a task.',
     '',
@@ -655,4 +655,65 @@ builder.declare({
   let runId = await getLatestRunId.call(this, { taskId, res });
 
   return await replyWithArtifactsList.call(this, { query: req.query, taskId, runId, res });
+});
+
+/**
+ * Reply to an artifact info request using taskId, runId (or latest), name and context
+ *
+ * This assumes that permission to list the artifact has already been verified.  This
+ * does not return information about the artifact's content (which would require a
+ * `queue:get-artifact:..` scope).
+ */
+const replyWithArtifactInfo = async function({ taskId, runId, name, req, res }) {
+  const artifact = artifactUtils.fromDbRows(
+    await this.db.fns.get_queue_artifact(taskId, runId, name));
+
+  if (!artifact) {
+    return res.reportError('ResourceNotFound', 'Artifact not found', {});
+  }
+
+  return res.reply(artifactUtils.serialize(artifact));
+};
+
+builder.declare({
+  method: 'get',
+  route: '/task/:taskId/runs/:runId/artifact-info/:name(*)',
+  name: 'artifactInfo',
+  scopes: 'queue:list-artifacts:<taskId>:<runId>',
+  stability: APIBuilder.stability.stable,
+  category: 'Artifacts',
+  output: 'artifact-response.json#',
+  title: 'Get Artifact Information From Run',
+  description: [
+    'Returns associated metadata for a given artifact, in the given task run.',
+    'The metadata is the same as that returned from `listArtifacts`, and does',
+    'not grant access to the artifact data.',
+    '',
+    'Note that this method does *not* automatically follow link artifacts.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { taskId, runId, name } = req.params;
+  return replyWithArtifactInfo.call(this, { taskId, runId, name, req, res });
+});
+
+builder.declare({
+  method: 'get',
+  route: '/task/:taskId/artifact-info/:name(*)',
+  name: 'latestArtifactInfo',
+  scopes: 'queue:list-artifacts:<taskId>',
+  stability: APIBuilder.stability.stable,
+  category: 'Artifacts',
+  output: 'artifact-response.json#',
+  title: 'Get Artifact Information From Latest Run',
+  description: [
+    'Returns associated metadata for a given artifact, in the latest run of the',
+    'task.  The metadata is the same as that returned from `listArtifacts`,',
+    'and does not grant access to the artifact data.',
+    '',
+    'Note that this method does *not* automatically follow link artifacts.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { taskId, name } = req.params;
+  const runId = await getLatestRunId.call(this, { taskId, res });
+  return replyWithArtifactInfo.call(this, { taskId, runId, name, req, res });
 });

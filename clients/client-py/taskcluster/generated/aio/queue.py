@@ -396,7 +396,7 @@ class Queue(AsyncBaseClient):
 
     async def getArtifact(self, *args, **kwargs):
         """
-        Get Artifact from Run
+        Get Artifact Data from Run
 
         Get artifact by `<name>` from a specific run.
 
@@ -454,7 +454,7 @@ class Queue(AsyncBaseClient):
 
     async def getLatestArtifact(self, *args, **kwargs):
         """
-        Get Artifact from Latest Run
+        Get Artifact Data from Latest Run
 
         Get artifact by `<name>` from the last run of a task.
 
@@ -517,6 +517,36 @@ class Queue(AsyncBaseClient):
         """
 
         return await self._makeApiCall(self.funcinfo["listLatestArtifacts"], *args, **kwargs)
+
+    async def artifactInfo(self, *args, **kwargs):
+        """
+        Get Artifact Information From Run
+
+        Returns associated metadata for a given artifact, in the given task run.
+        The metadata is the same as that returned from `listArtifacts`, and does
+        not grant access to the artifact data.
+
+        Note that this method does *not* automatically follow redirect artifacts.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["artifactInfo"], *args, **kwargs)
+
+    async def latestArtifactInfo(self, *args, **kwargs):
+        """
+        Get Artifact Information From Latest Run
+
+        Returns associated metadata for a given artifact, in the latest run of the
+        task.  The metadata is the same as that returned from `listArtifacts`,
+        and does not grant access to the artifact data.
+
+        Note that this method does *not* automatically follow redirect artifacts.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["latestArtifactInfo"], *args, **kwargs)
 
     async def listProvisioners(self, *args, **kwargs):
         """
@@ -716,6 +746,14 @@ class Queue(AsyncBaseClient):
         return await self._makeApiCall(self.funcinfo["declareWorker"], *args, **kwargs)
 
     funcinfo = {
+        "artifactInfo": {
+            'args': ['taskId', 'runId', 'name'],
+            'method': 'get',
+            'name': 'artifactInfo',
+            'output': 'v1/artifact-response.json#',
+            'route': '/task/<taskId>/runs/<runId>/artifact-info/<name>',
+            'stability': 'stable',
+        },
         "cancelTask": {
             'args': ['taskId'],
             'method': 'post',
@@ -834,6 +872,14 @@ class Queue(AsyncBaseClient):
             'output': 'v1/workertype-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
             'stability': 'deprecated',
+        },
+        "latestArtifactInfo": {
+            'args': ['taskId', 'name'],
+            'method': 'get',
+            'name': 'latestArtifactInfo',
+            'output': 'v1/artifact-response.json#',
+            'route': '/task/<taskId>/artifact-info/<name>',
+            'stability': 'stable',
         },
         "listArtifacts": {
             'args': ['taskId', 'runId'],
