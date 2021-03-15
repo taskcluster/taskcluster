@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const assert = require('assert');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const builder = require('./api');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
@@ -25,6 +24,74 @@ const getLatestRunId = async function({ taskId, res }) {
 
   // Find highest runId
   return task.runs.length - 1;
+};
+
+/**
+ * Return an Artifact instance, following any link artifacts while detecting cycles.
+ * It calls `req.authorize({ names })` before fetching each artifact, and `res.reportError`
+ * on error.
+ */
+const getArtifactFollowingLinks = async function({ taskId, runId, name, req, res }) {
+  const names = [];
+
+  while (true) {
+    names.push(name);
+    await req.authorize({ names: names });
+
+    // Load artifact meta-data from table storage
+    const artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
+
+    if (!artifact) {
+      return res.reportError('ResourceNotFound', 'Artifact not found', {});
+    }
+
+    if (artifact.storageType !== 'link') {
+      return artifact;
+    }
+
+    // this is a link to another artifact, so check permission on that target artifact,
+    // and then iterate.  This iteration cannot go on indefinitely, as there are a finite
+    // number of artifacts for a task.
+    const targetName = artifact.details.artifact;
+    if (names.indexOf(targetName) !== -1) {
+      return res.reportError('InputError',
+        'Artifact leads to a link cycle',
+        {});
+    }
+
+    name = targetName;
+  }
+};
+
+/**
+ * Generate a URL for an artifact with storageType `s3`.  If skipCDN is true, then the URL
+ * will point directly at the bucket and not a CDN.
+ */
+const generateS3Url = async function({ artifact, skipCDN, req }) {
+  let url;
+
+  // First, let's figure out which region the request is coming from
+  let region = this.regionResolver.getRegion(req);
+  let prefix = artifact.details.prefix;
+  let bucket = artifact.details.bucket;
+
+  if (this.signPublicArtifactUrls || bucket === this.privateBucket.bucket) {
+    let bucketObject = (bucket === this.privateBucket.bucket) ?
+      this.privateBucket : this.publicBucket;
+    url = await bucketObject.createSignedGetUrl(prefix, {
+      expires: 30 * 60,
+    });
+  } else if (bucket === this.publicBucket.bucket) {
+    // When we're getting a request from the region we're serving artifacts
+    // from, we want to skip the CDN and read it directly
+    if (region && this.artifactRegion === region) {
+      skipCDN = true;
+    }
+
+    url = this.publicBucket.createGetUrl(prefix, skipCDN);
+  }
+
+  return url;
 };
 
 /** Post artifact */
@@ -341,18 +408,14 @@ builder.declare({
 /**
  * Reply to an artifact request using taskId, runId, name and context
  *
- * This assumes that permission to access the named artifact has already been verified.
+ * This checks for permission to access artifacts via `req.authorize({ names })`, where names is the
+ * set of artifact names traversed by any link artifacts.
  *
  * names is used internally for tracking artifact names that have already been seen
  * when traversing links.
  */
-let replyWithArtifact = async function({ taskId, runId, name, req, res, names }) {
-  // Load artifact meta-data from table storage
-  let artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
-
-  if (!artifact) {
-    return res.reportError('ResourceNotFound', 'Artifact not found', {});
-  }
+let replyWithArtifactDownload = async function({ taskId, runId, name, req, res, names }) {
+  const artifact = await getArtifactFollowingLinks.call(this, { taskId, runId, name, req, res });
 
   const { storageType } = artifact;
 
@@ -364,45 +427,16 @@ let replyWithArtifact = async function({ taskId, runId, name, req, res, names })
 
   // Handle S3 artifacts
   if (storageType === 's3') {
-    // Find url
-    let url = null;
+    // We have a header to skip the CDN (cloudfront) for those requests
+    // which require it
+    let skipCDNHeader = (req.headers['x-taskcluster-skip-cdn'] || '').toLowerCase();
 
-    // First, let's figure out which region the request is coming from
-    let region = this.regionResolver.getRegion(req);
-    let prefix = artifact.details.prefix;
-    let bucket = artifact.details.bucket;
-
-    if (this.signPublicArtifactUrls || bucket === this.privateBucket.bucket) {
-      let bucketObject = (bucket === this.privateBucket.bucket) ?
-        this.privateBucket : this.publicBucket;
-      url = await bucketObject.createSignedGetUrl(prefix, {
-        expires: 30 * 60,
-      });
-    } else if (bucket === this.publicBucket.bucket) {
-
-      // We have a header to skip the CDN (cloudfront) for those requests
-      // which require it
-      let skipCDNHeader = (req.headers['x-taskcluster-skip-cdn'] || '').toLowerCase();
-
-      let skipCDN = false;
-      if (skipCDNHeader === 'true' || skipCDNHeader === '1') {
-        skipCDN = true;
-      }
-
-      // When we're getting a request from the region we're serving artifacts
-      // from, we want to skip the CDN and read it directly
-      if (region && this.artifactRegion === region) {
-        skipCDN = true;
-      }
-
-      if (skipCDN) {
-        // skip the CDN by forcing an S3 URL
-        url = this.publicBucket.createGetUrl(prefix, true);
-      } else {
-        url = this.publicBucket.createGetUrl(prefix, false);
-      }
+    let skipCDN = false;
+    if (skipCDNHeader === 'true' || skipCDNHeader === '1') {
+      skipCDN = true;
     }
-    assert(url, 'Url should have been constructed!');
+
+    const url = await generateS3Url.call(this, { artifact, skipCDN, req });
 
     res.set('location', url);
     res.reply({ storageType, url }, 303);
@@ -419,20 +453,8 @@ let replyWithArtifact = async function({ taskId, runId, name, req, res, names })
 
   // handle link artifacts
   if (storageType === 'link') {
-    // this is a link to another artifact, so check permission on that target artifact,
-    // and then call this function recursively for it.
-    const name = artifact.details.artifact;
-    if (names.indexOf(name) !== -1) {
-      return res.reportError('InputError',
-        'Artifact leads to a link cycle',
-        {});
-    }
-    names = names.concat([name]);
-
-    await req.authorize({ names: names });
-
-    // recurse to the linked artifact
-    return replyWithArtifact.call(this, { taskId, runId, name, req, res, names });
+    // links should have been evaluated already!
+    throw new Error('unexpected artifact with storageType `link`');
   }
 
   // Handle error artifacts
@@ -515,11 +537,8 @@ builder.declare({
   let taskId = req.params.taskId;
   let runId = parseInt(req.params.runId, 10);
   let name = req.params.name;
-  let names = [name];
 
-  await req.authorize({ names });
-
-  return replyWithArtifact.call(this, { taskId, runId, name, req, res, names });
+  return replyWithArtifactDownload.call(this, { taskId, runId, name, req, res, names: [name] });
 });
 
 /** Get latest artifact from task */
@@ -556,13 +575,13 @@ builder.declare({
 }, async function(req, res) {
   let taskId = req.params.taskId;
   let name = req.params.name;
-  let names = [name];
 
-  await req.authorize({ names });
+  // check permisison before possibly returning a 404 for the task or run
+  await req.authorize({ names: [name] });
 
   let runId = await getLatestRunId.call(this, { taskId, res });
 
-  return replyWithArtifact.call(this, { taskId, runId, name, req, res, names });
+  return replyWithArtifactDownload.call(this, { taskId, runId, name, req, res, names: [name] });
 });
 
 const replyWithArtifactsList = async function({ query, taskId, runId, res }) {
@@ -716,4 +735,96 @@ builder.declare({
   const { taskId, name } = req.params;
   const runId = await getLatestRunId.call(this, { taskId, res });
   return replyWithArtifactInfo.call(this, { taskId, runId, name, req, res });
+});
+
+/**
+ * Reply to an artifact request using taskId, runId (or latest), name and context
+ *
+ * This uses `names` similarly to `replyWithArtifactDownload`.
+ * does not return information about the artifact's content (which would require a
+ * `queue:get-artifact:..` scope).
+ */
+const replyWithArtifactContent = async function({ taskId, runId, name, req, res }) {
+  const artifact = await getArtifactFollowingLinks.call(this, { taskId, runId, name, req, res });
+
+  const { storageType } = artifact;
+
+  switch (storageType) {
+    case 's3': {
+      const skipCDN = false; // not supported for artifact-content
+      const url = await generateS3Url.call(this, { artifact, skipCDN, req });
+      return res.reply({ storageType, url });
+    }
+
+    case 'reference': {
+      const url = artifact.details.url;
+      return res.reply({ storageType, url });
+    }
+
+    case 'error': {
+      return res.reply({
+        storageType,
+        reason: artifact.details.reason,
+        message: artifact.details.message,
+      });
+    }
+
+    default: {
+      // (note: links should have been evaluated already)
+      let err = new Error('Unknown artifact storageType: ' + storageType);
+      err.artifact = artifactUtils.serialize(artifact);
+      this.monitor.reportError(err);
+    }
+  }
+};
+
+builder.declare({
+  method: 'get',
+  route: '/task/:taskId/runs/:runId/artifact-content/:name(*)',
+  name: 'artifact',
+  scopes: { AllOf: [
+    { for: 'name', in: 'names', each: 'queue:get-artifact:<name>' },
+  ] },
+  stability: APIBuilder.stability.stable,
+  category: 'Artifacts',
+  output: 'artifact-content-response.json#',
+  title: 'Get Artifact Content From Run',
+  description: [
+    'Returns information about the content of the artifact, in the given task run.',
+    '',
+    'Depending on the storage type, the endpoint returns the content of the artifact',
+    'or enough information to access that content.',
+    '',
+    'This method follows link artifacts, so it will not return content',
+    'for a link artifact.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { taskId, runId, name } = req.params;
+  return replyWithArtifactContent.call(this, { taskId, runId, name, req, res });
+});
+
+builder.declare({
+  method: 'get',
+  route: '/task/:taskId/artifact-content/:name(*)',
+  name: 'latestArtifact',
+  scopes: { AllOf: [
+    { for: 'name', in: 'names', each: 'queue:get-artifact:<name>' },
+  ] },
+  stability: APIBuilder.stability.stable,
+  category: 'Artifacts',
+  output: 'artifact-content-response.json#',
+  title: 'Get Artifact Content From Latest Run',
+  description: [
+    'Returns information about the content of the artifact, in the latest task run.',
+    '',
+    'Depending on the storage type, the endpoint returns the content of the artifact',
+    'or enough information to access that content.',
+    '',
+    'This method follows link artifacts, so it will not return content',
+    'for a link artifact.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { taskId, name } = req.params;
+  const runId = await getLatestRunId.call(this, { taskId, res });
+  return replyWithArtifactContent.call(this, { taskId, runId, name, req, res });
 });

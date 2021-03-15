@@ -4027,6 +4027,75 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/artifact-content-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "description": "Response to the `artifact` and `latestArtifact` methods.  It is one of the\nfollowing types, as identified by the `storageType` property.\n",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "storageType": {
+              "const": "s3"
+            },
+            "url": {
+              "description": "URL from which to download the artifact.  This may be a URL for a bucket or\na CDN, and may or may not be signed, depending on server configuration.\n",
+              "format": "uri",
+              "type": "string"
+            }
+          },
+          "required": [
+            "storageType",
+            "url"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "storageType": {
+              "const": "reference"
+            },
+            "url": {
+              "description": "Referenced URL",
+              "format": "uri",
+              "type": "string"
+            }
+          },
+          "required": [
+            "storageType",
+            "url"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "message": {
+              "description": "Error message",
+              "type": "string"
+            },
+            "reason": {
+              "description": "Error reason",
+              "type": "string"
+            },
+            "storageType": {
+              "const": "error"
+            }
+          },
+          "required": [
+            "storageType",
+            "reason",
+            "message"
+          ],
+          "type": "object"
+        }
+      ],
+      "title": "Get Artifact Content Response"
+    },
+    "filename": "schemas/queue/v1/artifact-content-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/actions.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "description": "See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.\n",
@@ -14705,7 +14774,7 @@
             "name"
           ],
           "category": "Artifacts",
-          "description": "Returns associated metadata for a given artifact, in the given task run.\nThe metadata is the same as that returned from `listArtifacts`, and does\nnot grant access to the artifact data.\n\nNote that this method does *not* automatically follow redirect artifacts.",
+          "description": "Returns associated metadata for a given artifact, in the given task run.\nThe metadata is the same as that returned from `listArtifacts`, and does\nnot grant access to the artifact data.\n\nNote that this method does *not* automatically follow link artifacts.",
           "method": "get",
           "name": "artifactInfo",
           "output": "v1/artifact-response.json#",
@@ -14723,7 +14792,7 @@
             "name"
           ],
           "category": "Artifacts",
-          "description": "Returns associated metadata for a given artifact, in the latest run of the\ntask.  The metadata is the same as that returned from `listArtifacts`,\nand does not grant access to the artifact data.\n\nNote that this method does *not* automatically follow redirect artifacts.",
+          "description": "Returns associated metadata for a given artifact, in the latest run of the\ntask.  The metadata is the same as that returned from `listArtifacts`,\nand does not grant access to the artifact data.\n\nNote that this method does *not* automatically follow link artifacts.",
           "method": "get",
           "name": "latestArtifactInfo",
           "output": "v1/artifact-response.json#",
@@ -14733,6 +14802,59 @@
           "scopes": "queue:list-artifacts:<taskId>",
           "stability": "stable",
           "title": "Get Artifact Information From Latest Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns information about the content of the artifact, in the given task run.\n\nDepending on the storage type, the endpoint returns the content of the artifact\nor enough information to access that content.\n\nThis method follows link artifacts, so it will not return content\nfor a link artifact.",
+          "method": "get",
+          "name": "artifact",
+          "output": "v1/artifact-content-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/runs/<runId>/artifact-content/<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
+          "stability": "stable",
+          "title": "Get Artifact Content From Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns information about the content of the artifact, in the latest task run.\n\nDepending on the storage type, the endpoint returns the content of the artifact\nor enough information to access that content.\n\nThis method follows link artifacts, so it will not return content\nfor a link artifact.",
+          "method": "get",
+          "name": "latestArtifact",
+          "output": "v1/artifact-content-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/artifact-content/<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
+          "stability": "stable",
+          "title": "Get Artifact Content From Latest Run",
           "type": "function"
         },
         {

@@ -2302,7 +2302,7 @@ module.exports = {
             "name"
           ],
           "category": "Artifacts",
-          "description": "Returns associated metadata for a given artifact, in the given task run.\nThe metadata is the same as that returned from `listArtifacts`, and does\nnot grant access to the artifact data.\n\nNote that this method does *not* automatically follow redirect artifacts.",
+          "description": "Returns associated metadata for a given artifact, in the given task run.\nThe metadata is the same as that returned from `listArtifacts`, and does\nnot grant access to the artifact data.\n\nNote that this method does *not* automatically follow link artifacts.",
           "method": "get",
           "name": "artifactInfo",
           "output": "v1/artifact-response.json#",
@@ -2320,7 +2320,7 @@ module.exports = {
             "name"
           ],
           "category": "Artifacts",
-          "description": "Returns associated metadata for a given artifact, in the latest run of the\ntask.  The metadata is the same as that returned from `listArtifacts`,\nand does not grant access to the artifact data.\n\nNote that this method does *not* automatically follow redirect artifacts.",
+          "description": "Returns associated metadata for a given artifact, in the latest run of the\ntask.  The metadata is the same as that returned from `listArtifacts`,\nand does not grant access to the artifact data.\n\nNote that this method does *not* automatically follow link artifacts.",
           "method": "get",
           "name": "latestArtifactInfo",
           "output": "v1/artifact-response.json#",
@@ -2330,6 +2330,59 @@ module.exports = {
           "scopes": "queue:list-artifacts:<taskId>",
           "stability": "stable",
           "title": "Get Artifact Information From Latest Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns information about the content of the artifact, in the given task run.\n\nDepending on the storage type, the endpoint returns the content of the artifact\nor enough information to access that content.\n\nThis method follows link artifacts, so it will not return content\nfor a link artifact.",
+          "method": "get",
+          "name": "artifact",
+          "output": "v1/artifact-content-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/runs/<runId>/artifact-content/<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
+          "stability": "stable",
+          "title": "Get Artifact Content From Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns information about the content of the artifact, in the latest task run.\n\nDepending on the storage type, the endpoint returns the content of the artifact\nor enough information to access that content.\n\nThis method follows link artifacts, so it will not return content\nfor a link artifact.",
+          "method": "get",
+          "name": "latestArtifact",
+          "output": "v1/artifact-content-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/artifact-content/<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
+          "stability": "stable",
+          "title": "Get Artifact Content From Latest Run",
           "type": "function"
         },
         {

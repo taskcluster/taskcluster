@@ -526,7 +526,7 @@ class Queue(BaseClient):
         The metadata is the same as that returned from `listArtifacts`, and does
         not grant access to the artifact data.
 
-        Note that this method does *not* automatically follow redirect artifacts.
+        Note that this method does *not* automatically follow link artifacts.
 
         This method is ``stable``
         """
@@ -541,12 +541,46 @@ class Queue(BaseClient):
         task.  The metadata is the same as that returned from `listArtifacts`,
         and does not grant access to the artifact data.
 
-        Note that this method does *not* automatically follow redirect artifacts.
+        Note that this method does *not* automatically follow link artifacts.
 
         This method is ``stable``
         """
 
         return self._makeApiCall(self.funcinfo["latestArtifactInfo"], *args, **kwargs)
+
+    def artifact(self, *args, **kwargs):
+        """
+        Get Artifact Content From Run
+
+        Returns information about the content of the artifact, in the given task run.
+
+        Depending on the storage type, the endpoint returns the content of the artifact
+        or enough information to access that content.
+
+        This method follows link artifacts, so it will not return content
+        for a link artifact.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["artifact"], *args, **kwargs)
+
+    def latestArtifact(self, *args, **kwargs):
+        """
+        Get Artifact Content From Latest Run
+
+        Returns information about the content of the artifact, in the latest task run.
+
+        Depending on the storage type, the endpoint returns the content of the artifact
+        or enough information to access that content.
+
+        This method follows link artifacts, so it will not return content
+        for a link artifact.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["latestArtifact"], *args, **kwargs)
 
     def listProvisioners(self, *args, **kwargs):
         """
@@ -746,6 +780,14 @@ class Queue(BaseClient):
         return self._makeApiCall(self.funcinfo["declareWorker"], *args, **kwargs)
 
     funcinfo = {
+        "artifact": {
+            'args': ['taskId', 'runId', 'name'],
+            'method': 'get',
+            'name': 'artifact',
+            'output': 'v1/artifact-content-response.json#',
+            'route': '/task/<taskId>/runs/<runId>/artifact-content/<name>',
+            'stability': 'stable',
+        },
         "artifactInfo": {
             'args': ['taskId', 'runId', 'name'],
             'method': 'get',
@@ -872,6 +914,14 @@ class Queue(BaseClient):
             'output': 'v1/workertype-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
             'stability': 'deprecated',
+        },
+        "latestArtifact": {
+            'args': ['taskId', 'name'],
+            'method': 'get',
+            'name': 'latestArtifact',
+            'output': 'v1/artifact-content-response.json#',
+            'route': '/task/<taskId>/artifact-content/<name>',
+            'stability': 'stable',
         },
         "latestArtifactInfo": {
             'args': ['taskId', 'name'],

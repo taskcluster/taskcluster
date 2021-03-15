@@ -32,6 +32,8 @@ export default class Queue extends Client {
     this.listLatestArtifacts.entry = {"args":["taskId"],"category":"Artifacts","method":"get","name":"listLatestArtifacts","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/artifacts","scopes":"queue:list-artifacts:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.artifactInfo.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"artifactInfo","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifact-info/<name>","scopes":"queue:list-artifacts:<taskId>:<runId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.latestArtifactInfo.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"latestArtifactInfo","output":true,"query":[],"route":"/task/<taskId>/artifact-info/<name>","scopes":"queue:list-artifacts:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.artifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"artifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifact-content/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.latestArtifact.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"latestArtifact","output":true,"query":[],"route":"/task/<taskId>/artifact-content/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.getProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"getProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":"queue:get-provisioner:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.declareProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","input":true,"method":"put","name":"declareProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":{"AllOf":[{"each":"queue:declare-provisioner:<provisionerId>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
@@ -432,7 +434,7 @@ export default class Queue extends Client {
   // Returns associated metadata for a given artifact, in the given task run.
   // The metadata is the same as that returned from `listArtifacts`, and does
   // not grant access to the artifact data.
-  // Note that this method does *not* automatically follow redirect artifacts.
+  // Note that this method does *not* automatically follow link artifacts.
   /* eslint-enable max-len */
   artifactInfo(...args) {
     this.validate(this.artifactInfo.entry, args);
@@ -443,12 +445,36 @@ export default class Queue extends Client {
   // Returns associated metadata for a given artifact, in the latest run of the
   // task.  The metadata is the same as that returned from `listArtifacts`,
   // and does not grant access to the artifact data.
-  // Note that this method does *not* automatically follow redirect artifacts.
+  // Note that this method does *not* automatically follow link artifacts.
   /* eslint-enable max-len */
   latestArtifactInfo(...args) {
     this.validate(this.latestArtifactInfo.entry, args);
 
     return this.request(this.latestArtifactInfo.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Returns information about the content of the artifact, in the given task run.
+  // Depending on the storage type, the endpoint returns the content of the artifact
+  // or enough information to access that content.
+  // This method follows link artifacts, so it will not return content
+  // for a link artifact.
+  /* eslint-enable max-len */
+  artifact(...args) {
+    this.validate(this.artifact.entry, args);
+
+    return this.request(this.artifact.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Returns information about the content of the artifact, in the latest task run.
+  // Depending on the storage type, the endpoint returns the content of the artifact
+  // or enough information to access that content.
+  // This method follows link artifacts, so it will not return content
+  // for a link artifact.
+  /* eslint-enable max-len */
+  latestArtifact(...args) {
+    this.validate(this.latestArtifact.entry, args);
+
+    return this.request(this.latestArtifact.entry, args);
   }
   /* eslint-disable max-len */
   // Get all active provisioners.

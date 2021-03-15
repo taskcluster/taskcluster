@@ -803,7 +803,7 @@ func (queue *Queue) ListLatestArtifacts_SignedURL(taskId, continuationToken, lim
 // The metadata is the same as that returned from `listArtifacts`, and does
 // not grant access to the artifact data.
 //
-// Note that this method does *not* automatically follow redirect artifacts.
+// Note that this method does *not* automatically follow link artifacts.
 //
 // Required scopes:
 //   queue:list-artifacts:<taskId>:<runId>
@@ -830,7 +830,7 @@ func (queue *Queue) ArtifactInfo_SignedURL(taskId, runId, name string, duration 
 // task.  The metadata is the same as that returned from `listArtifacts`,
 // and does not grant access to the artifact data.
 //
-// Note that this method does *not* automatically follow redirect artifacts.
+// Note that this method does *not* automatically follow link artifacts.
 //
 // Required scopes:
 //   queue:list-artifacts:<taskId>
@@ -851,6 +851,64 @@ func (queue *Queue) LatestArtifactInfo(taskId, name string) (*Artifact, error) {
 func (queue *Queue) LatestArtifactInfo_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
 	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifact-info/"+url.QueryEscape(name), nil, duration)
+}
+
+// Returns information about the content of the artifact, in the given task run.
+//
+// Depending on the storage type, the endpoint returns the content of the artifact
+// or enough information to access that content.
+//
+// This method follows link artifacts, so it will not return content
+// for a link artifact.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See #artifact
+func (queue *Queue) Artifact(taskId, runId, name string) (*GetArtifactContentResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-content/"+url.QueryEscape(name), new(GetArtifactContentResponse), nil)
+	return responseObject.(*GetArtifactContentResponse), err
+}
+
+// Returns a signed URL for Artifact, valid for the specified duration.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See Artifact for more details.
+func (queue *Queue) Artifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-content/"+url.QueryEscape(name), nil, duration)
+}
+
+// Returns information about the content of the artifact, in the latest task run.
+//
+// Depending on the storage type, the endpoint returns the content of the artifact
+// or enough information to access that content.
+//
+// This method follows link artifacts, so it will not return content
+// for a link artifact.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See #latestArtifact
+func (queue *Queue) LatestArtifact(taskId, name string) (*GetArtifactContentResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifact-content/"+url.QueryEscape(name), new(GetArtifactContentResponse), nil)
+	return responseObject.(*GetArtifactContentResponse), err
+}
+
+// Returns a signed URL for LatestArtifact, valid for the specified duration.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See LatestArtifact for more details.
+func (queue *Queue) LatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifact-content/"+url.QueryEscape(name), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***

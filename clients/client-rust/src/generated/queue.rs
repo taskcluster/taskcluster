@@ -818,7 +818,7 @@ impl Queue {
     /// The metadata is the same as that returned from `listArtifacts`, and does
     /// not grant access to the artifact data.
     /// 
-    /// Note that this method does *not* automatically follow redirect artifacts.
+    /// Note that this method does *not* automatically follow link artifacts.
     pub async fn artifactInfo(&self, taskId: &str, runId: &str, name: &str) -> Result<Value, Error> {
         let method = "GET";
         let (path, query) = Self::artifactInfo_details(taskId, runId, name);
@@ -853,7 +853,7 @@ impl Queue {
     /// task.  The metadata is the same as that returned from `listArtifacts`,
     /// and does not grant access to the artifact data.
     /// 
-    /// Note that this method does *not* automatically follow redirect artifacts.
+    /// Note that this method does *not* automatically follow link artifacts.
     pub async fn latestArtifactInfo(&self, taskId: &str, name: &str) -> Result<Value, Error> {
         let method = "GET";
         let (path, query) = Self::latestArtifactInfo_details(taskId, name);
@@ -877,6 +877,80 @@ impl Queue {
     /// Determine the HTTP request details for latestArtifactInfo
     fn latestArtifactInfo_details<'a>(taskId: &'a str, name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("task/{}/artifact-info/{}", urlencode(taskId), urlencode(name));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Get Artifact Content From Run
+    /// 
+    /// Returns information about the content of the artifact, in the given task run.
+    /// 
+    /// Depending on the storage type, the endpoint returns the content of the artifact
+    /// or enough information to access that content.
+    /// 
+    /// This method follows link artifacts, so it will not return content
+    /// for a link artifact.
+    pub async fn artifact(&self, taskId: &str, runId: &str, name: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::artifact_details(taskId, runId, name);
+        let body = None;
+        let resp = self.0.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the artifact endpoint
+    pub fn artifact_url(&self, taskId: &str, runId: &str, name: &str) -> Result<String, Error> {
+        let (path, query) = Self::artifact_details(taskId, runId, name);
+        self.0.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the artifact endpoint
+    pub fn artifact_signed_url(&self, taskId: &str, runId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::artifact_details(taskId, runId, name);
+        self.0.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for artifact
+    fn artifact_details<'a>(taskId: &'a str, runId: &'a str, name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}/runs/{}/artifact-content/{}", urlencode(taskId), urlencode(runId), urlencode(name));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Get Artifact Content From Latest Run
+    /// 
+    /// Returns information about the content of the artifact, in the latest task run.
+    /// 
+    /// Depending on the storage type, the endpoint returns the content of the artifact
+    /// or enough information to access that content.
+    /// 
+    /// This method follows link artifacts, so it will not return content
+    /// for a link artifact.
+    pub async fn latestArtifact(&self, taskId: &str, name: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::latestArtifact_details(taskId, name);
+        let body = None;
+        let resp = self.0.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the latestArtifact endpoint
+    pub fn latestArtifact_url(&self, taskId: &str, name: &str) -> Result<String, Error> {
+        let (path, query) = Self::latestArtifact_details(taskId, name);
+        self.0.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the latestArtifact endpoint
+    pub fn latestArtifact_signed_url(&self, taskId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::latestArtifact_details(taskId, name);
+        self.0.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for latestArtifact
+    fn latestArtifact_details<'a>(taskId: &'a str, name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}/artifact-content/{}", urlencode(taskId), urlencode(name));
         let query = None;
 
         (path, query)

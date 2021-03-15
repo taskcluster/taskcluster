@@ -164,9 +164,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         assume(res.status).equals(303);
         assume(res.headers.location).to.not.be.empty();
         assume(res.headers.location).does.not.contain('&Signature=');
-        res = await request.get(res.headers.location);
+        const location = res.headers.location;
+        res = await request.get(location);
         assume(res.ok).is.ok();
         assume(res.body).to.be.eql({ message: 'Hello World' });
+
+        let content = await helper.queue.artifact(taskId, 0, 'public/s3.json');
+        assert.equal(content.storageType, 's3');
+        assert.equal(content.url, location);
       });
     });
 
@@ -218,6 +223,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       debug('Fetching artifact from unsigned URL with anonymous scope %s', url);
       await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
         const res = await getWith303Redirect(url);
+        assume(res.ok).is.ok();
+        assume(res.body).to.be.eql({ message: 'Hello World' });
+      });
+    });
+
+    test('Download the latest artifact using latestArtifact', async () => {
+      await makeAndClaimTask();
+      await makeArtifact(s3Artifact);
+
+      const { url } = await helper.queue.latestArtifact(taskId, 'public/s3.json');
+
+      await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+        const res = await request.get(url);
         assume(res.ok).is.ok();
         assume(res.body).to.be.eql({ message: 'Hello World' });
       });
@@ -346,6 +364,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assume(r6.artifacts[0].name).not.equals(r5.artifacts[0].name);
     });
 
+    test('artifact', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+
+      helper.scopes('queue:get-artifact:public/s3.json');
+
+      const res = await helper.queue.artifact(taskId, 0, s3Artifact.name);
+      assume(res.storageType).equals('s3');
+    });
+
     test('artifactInfo', async () => {
       await makeAndClaimTask();
       await makeArtifact({ ...s3Artifact, putFn: null });
@@ -359,6 +387,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assume(res.name).equals(s3Artifact.name);
       assume(res.expires).equals(s3Artifact.expires);
       assume(res.contentType).equals('application/json');
+    });
+
+    test('latestArtifact', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+
+      helper.scopes('queue:get-artifact:public/s3.json');
+
+      const res = await helper.queue.latestArtifact(taskId, s3Artifact.name);
+      assume(res.storageType).equals('s3');
     });
 
     test('latestArtifactInfo', async () => {
@@ -376,9 +414,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assume(res.contentType).equals('application/json');
     });
 
+    test('artifact (missing task)', async () => {
+      await assert.rejects(
+        () => helper.queue.artifact(slugid.v4(), 0, s3Artifact.name),
+        err => err.code === 'ResourceNotFound');
+    });
+
     test('artifactInfo (missing task)', async () => {
       await assert.rejects(
         () => helper.queue.artifactInfo(slugid.v4(), 0, s3Artifact.name),
+        err => err.code === 'ResourceNotFound');
+    });
+
+    test('artifact (missing run)', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+      await assert.rejects(
+        () => helper.queue.artifact(taskId, 7, s3Artifact.name),
         err => err.code === 'ResourceNotFound');
     });
 
@@ -390,6 +442,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         err => err.code === 'ResourceNotFound');
     });
 
+    test('artifact (missing artifact)', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+      await assert.rejects(
+        () => helper.queue.artifact(taskId, 0, 'nosuchthing'),
+        err => err.code === 'ResourceNotFound');
+    });
+
     test('artifactInfo (missing artifact)', async () => {
       await makeAndClaimTask();
       await makeArtifact({ ...s3Artifact, putFn: null });
@@ -398,9 +458,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         err => err.code === 'ResourceNotFound');
     });
 
+    test('latestArtifact (missing task)', async () => {
+      await assert.rejects(
+        () => helper.queue.latestArtifact(slugid.v4(), s3Artifact.name),
+        err => err.code === 'ResourceNotFound');
+    });
+
     test('latestArtifactInfo (missing task)', async () => {
       await assert.rejects(
         () => helper.queue.latestArtifactInfo(slugid.v4(), s3Artifact.name),
+        err => err.code === 'ResourceNotFound');
+    });
+
+    test('latestArtifact (missing artifact)', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+      await assert.rejects(
+        () => helper.queue.latestArtifact(taskId, 'nosuchthing'),
         err => err.code === 'ResourceNotFound');
     });
 
@@ -537,11 +611,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       debug('### Wait for artifact created message');
       helper.assertPulseMessage('artifact-created');
 
+      debug('### Fetch artifact content');
+      const content = await helper.queue.artifact(taskId, 0, 'public/error.json');
+      assert.deepEqual(content, {
+        storageType: 'error',
+        reason: 'file-missing-on-worker',
+        message: 'Some user-defined message',
+      });
+
       debug('### Downloading artifact');
       const url = helper.queue.buildUrl(
         helper.queue.getArtifact,
         taskId, 0, 'public/error.json',
       );
+
       debug('Fetching artifact from unsigned URL %s', url);
       await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
         let res;
@@ -575,6 +658,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         contentType: 'text/html',
       });
 
+      debug('### Fetch artifact content');
+      const content = await helper.queue.artifact(taskId, 0, 'public/redirect.json');
+      assert.deepEqual(content, {
+        storageType: 'reference',
+        url: 'https://google.com',
+      });
+
       debug('### Downloading artifact');
       const url = helper.queue.buildUrl(
         helper.queue.getArtifact,
@@ -605,6 +695,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         expires: taskcluster.fromNowJSON('1 day'),
         artifact: 'public/s3.json',
       });
+
+      debug('### Fetch artifact content');
+      const content = await helper.queue.artifact(taskId, 0, 'public/link.json');
+      assert.equal(content.storageType, 's3');
 
       debug('### Downloading artifact');
       const url = helper.queue.buildUrl(
