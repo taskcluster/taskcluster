@@ -2510,13 +2510,35 @@
                 },
                 "name": "task-schema",
                 "next": {
-                  "path": "reference/core/README",
-                  "title": "Core Services"
+                  "path": "reference/platform/queue/artifacts",
+                  "title": "artifacts"
                 },
                 "path": "reference/platform/queue/task-schema",
                 "prev": {
                   "path": "reference/platform/queue/worker-interaction",
                   "title": "Queue-Worker Interaction"
+                },
+                "up": {
+                  "path": "reference/platform/queue/README",
+                  "title": "queue"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "artifacts"
+                },
+                "name": "artifacts",
+                "next": {
+                  "path": "reference/core/README",
+                  "title": "Core Services"
+                },
+                "path": "reference/platform/queue/artifacts",
+                "prev": {
+                  "path": "reference/platform/queue/task-schema",
+                  "title": "Task Schema"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -3266,8 +3288,8 @@
         },
         "path": "reference/core/README",
         "prev": {
-          "path": "reference/platform/queue/task-schema",
-          "title": "Task Schema"
+          "path": "reference/platform/queue/artifacts",
+          "title": "artifacts"
         },
         "up": {
           "path": "reference/README",

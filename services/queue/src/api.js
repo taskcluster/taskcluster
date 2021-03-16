@@ -70,15 +70,9 @@ let RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
 let builder = new APIBuilder({
   title: 'Queue Service',
   description: [
-    'The queue service is responsible for accepting tasks and track their state',
-    'as they are executed by workers. In order ensure they are eventually',
+    'The queue service is responsible for accepting tasks and tracking their state',
+    'as they are executed by workers, in order to ensure they are eventually',
     'resolved.',
-    '',
-    'This document describes the API end-points offered by the queue. These ',
-    'end-points targets the following audience:',
-    ' * Schedulers, who create tasks to be executed,',
-    ' * Workers, who execute tasks, and',
-    ' * Tools, that wants to inspect the state of a task.',
   ].join('\n'),
   serviceName: 'queue',
   apiVersion: 'v1',
