@@ -11,14 +11,21 @@ const BACKEND_TYPES = {
 class Backends {
   async setup({ cfg, monitor, db }) {
     this.monitor = monitor;
+    this.db = db;
 
-    await this._setupBackends({ cfg, monitor, db });
+    await this._setupBackends({ cfg });
     await this._setupMatching({ cfg });
 
     return this;
   }
 
-  async _setupBackends({ cfg, monitor, db }) {
+  // update this object with new config (only used in testing)
+  async _reconfig({ cfg }) {
+    await this._setupBackends({ cfg });
+    await this._setupMatching({ cfg });
+  }
+
+  async _setupBackends({ cfg }) {
     this._backends = new Map();
 
     for (const [backendId, config] of Object.entries(cfg.backends || {})) {
@@ -30,8 +37,8 @@ class Backends {
 
       const backend = new Backend({
         backendId,
-        db,
-        monitor: monitor.childMonitor(`backend.${backendId}`),
+        db: this.db,
+        monitor: this.monitor.childMonitor(`backend.${backendId}`),
         rootUrl: cfg.taskcluster.rootUrl,
         config,
       });

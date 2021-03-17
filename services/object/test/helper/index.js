@@ -45,9 +45,23 @@ const testclients = {
 /**
  * Set up the backend and middleware configuration, and
  * add the test types for both.
+ *
+ * Also adds:
+ *  helper.setBackendConfig({ backends, backendMap }) - set and activate the backends config,
+ *    or if no args then reset it to the default.
  */
 exports.withBackends = (mock, skipping) => {
+  let _backends;
+  const defaultBackends = {
+    testBackend: { backendType: 'test' },
+  };
+  const defaultBackendMap = [
+    { backendId: 'testBackend', when: 'all' },
+  ];
+
   suiteSetup('withBackends', async function() {
+    exports.load.save();
+
     if (skipping()) {
       return;
     }
@@ -59,17 +73,32 @@ exports.withBackends = (mock, skipping) => {
     exports.load.cfg('middleware', [
       { middlewareType: 'test' },
     ]);
-    exports.load.cfg('backends', {
-      testBackend: { backendType: 'test' },
-    });
-    exports.load.cfg('backendMap', [
-      // not anchored, so can appear anywhere in the name
-      { backendId: 'testBackend', when: 'all' },
-    ]);
+    exports.load.cfg('backends', defaultBackends);
+    exports.load.cfg('backendMap', defaultBackendMap);
+
+    // load the backends so that we can use its sticky value later
+    _backends = await exports.load('backends');
+
+    exports.setBackendConfig = async ({ backends, backendMap } = {}) => {
+      const cfg = {
+        ...(await exports.load('cfg')),
+        backends: backends || defaultBackends,
+        backendMap: backendMap || defaultBackendMap,
+      };
+      await _backends._reconfig({ cfg });
+    };
+  });
+
+  setup('withBackends', async function() {
+    // reset to default
+    await exports.setBackendConfig();
   });
 
   suiteTeardown('withBackends', async function() {
+    exports.load.restore();
     delete BACKEND_TYPES['test'];
+    delete exports.setBackendConfig;
+    _backends = null;
   });
 };
 

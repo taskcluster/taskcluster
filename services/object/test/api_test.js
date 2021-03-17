@@ -63,6 +63,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(rows[0].data, {});
     });
 
+    test('should fail if backend is not found', async function() {
+      const data = crypto.randomBytes(128);
+      const uploadId = taskcluster.slugid();
+
+      await helper.setBackendConfig({ backends: {}, backendMap: [] });
+      await assert.rejects(
+        () => helper.apiClient.createUpload('public/foo', {
+          projectId: 'x',
+          uploadId,
+          expires: fromNow('1 year'),
+          proposedUploadMethods: {
+            dataInline: {
+              contentType: 'application/binary',
+              objectData: data.toString('base64'),
+            },
+          },
+        }),
+        err => err.statusCode === 400);
+    });
+
     test('should return 409 if object is already uploaded', async function() {
       const data = crypto.randomBytes(128);
       const uploadId = taskcluster.slugid();
@@ -331,6 +351,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
     });
 
+    test('startDownload fails when backend is not defined', async function() {
+      await createTestObject('public/foo');
+      await helper.setBackendConfig({ backends: {}, backendMap: [] });
+      await assert.rejects(
+        () => helper.apiClient.startDownload('public/foo', {
+          acceptDownloadMethods: { 'simple': true },
+        }),
+        err => err.statusCode === 400);
+    });
+
     test('startDownload for a supported method succeeds', async function() {
       await createTestObject('public/foo');
       const res = await helper.apiClient.startDownload('public/foo', {
@@ -389,6 +419,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'no/such');
       const res = await request.get(downloadUrl).redirects(0).ok(res => res.status === 404);
       assert.equal(res.statusCode, 404);
+    });
+
+    test('simple download fails when backend is not defined', async function() {
+      await createTestObject('public/foo');
+      await await helper.setBackendConfig({ backends: {}, backendMap: [] });
+      await assert.rejects(
+        () => helper.apiClient.download('public/foo'),
+        err => err.statusCode === 400);
     });
 
     test('simple download for object that does not support the method returns 406', async function() {
