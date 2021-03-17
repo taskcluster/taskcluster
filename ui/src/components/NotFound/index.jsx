@@ -22,7 +22,8 @@ import Emoticon from './Emoticon';
       },
     },
     typography: {
-      fontFamily: 'Roboto500',
+      fontFamily: 'Roboto',
+      fontWeight: 500,
     },
     icon: {
       fill: theme.palette.primary.main,
