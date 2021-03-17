@@ -1,9 +1,9 @@
-const { GraphQLDate, GraphQLDateTime, GraphQLTime } = require('graphql-iso-date');
+const { DateResolver, DateTimeResolver, TimeResolver } = require('graphql-scalars');
 const GraphQLJSON = require('graphql-type-json');
 
 module.exports = {
-  Date: GraphQLDate,
-  Time: GraphQLTime,
-  DateTime: GraphQLDateTime,
+  Date: DateResolver,
+  Time: TimeResolver,
+  DateTime: DateTimeResolver,
   JSON: GraphQLJSON,
 };
