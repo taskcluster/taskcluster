@@ -25,6 +25,7 @@ jobs:
     run:
       install: >-
         {{ yarn --frozen-lockfile || exit 99; }} &&
+        eval $(python test/client-library-secrets.py) &&
         cd clients/client &&
         {{ yarn --frozen-lockfile || exit 99; }}
       command: >-
