@@ -8,9 +8,9 @@ import green from '@material-ui/core/colors/green';
 import purple from '@material-ui/core/colors/purple';
 import { THEME } from './utils/constants';
 
-const Roboto300 = { fontFamily: 'Roboto300, sans-serif' };
-const Roboto400 = { fontFamily: 'Roboto400, sans-serif' };
-const Roboto500 = { fontFamily: 'Roboto500, sans-serif' };
+const Roboto300 = { fontFamily: 'Roboto, sans-serif', fontWeight: 300 };
+const Roboto400 = { fontFamily: 'Roboto, sans-serif', fontWeight: 400 };
+const Roboto500 = { fontFamily: 'Roboto, sans-serif', fontWeight: 500 };
 const success = {
   main: green[500],
   dark: green[700],
