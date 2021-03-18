@@ -51,9 +51,13 @@ class FakeObject:
 
 
 def test_simple_download_fails():
-    "When a simple download's GET fails with a 400, an exception is raised"
+    "When a simple download's GET fails with a 400, an exception is raised and no retries occur"
+    getcount = 0
+
     class Server(httptest.Handler):
         def do_GET(self):
+            nonlocal getcount
+            getcount += 1
             self.send_response(400)
             self.end_headers()
             self.wfile.write(b'uhoh')
@@ -64,6 +68,7 @@ def test_simple_download_fails():
             download.downloadToBuf(
                 name="some/object",
                 objectService=objectService)
+        assert getcount == 1
 
 
 def test_simple_download_fails_retried():

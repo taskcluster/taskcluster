@@ -81,7 +81,8 @@ def download(*, name, maxRetries=5, objectService, writerFactory):
                     raise RuntimeError(f'Unknown download method {method}')
             except requests.HTTPError as exc:
                 # treat 4xx's as fatal, and retry others
-                if exc.response and 400 <= exc.response.status_code < 500:
+                if hasattr(exc, 'response') and 400 <= exc.response.status_code < 500:
+                    print("no retry")
                     raise exc
                 return retryFor(exc)
             except requests.RequestException as exc:
