@@ -1921,8 +1921,8 @@
           "description": "List of scopes that the task is authorized to use during its execution.\n",
           "items": {
             "description": "A single scope. A scope must be composed of\nprintable ASCII characters and spaces.  Scopes ending in more than\none `*` character are forbidden.\n",
-            "name": "Scope",
             "pattern": "^[ -~]*$",
+            "title": "Scope",
             "type": "string"
           },
           "title": "Scopes",
@@ -4237,7 +4237,7 @@
             },
             "url": {
               "description": "URL to which a PUT request should be made.",
-              "formt": "uri",
+              "format": "uri",
               "type": "string"
             }
           },
@@ -5142,8 +5142,6 @@
     "content": {
       "$id": "/schemas/hooks/v1/schedule.json#",
       "$schema": "/schemas/common/metaschema.json#",
-      "default": [
-      ],
       "description": "A list of cron-style definitions to represent a set of moments in (UTC) time.\nIf several patterns are specified, a given moment in time represented by\nmore than one pattern is considered only to be counted once, in other words\nit is allowed for the cron patterns to overlap; duplicates are redundant.\n",
       "items": {
         "description": "Cron-like specification for when tasks should be created.  The pattern is\nparsed in a UTC context.\nSee [cron-parser on npm](https://www.npmjs.com/package/cron-parser).\n",
@@ -5598,14 +5596,21 @@
       "description": "Description of a taskcluster.yml file v1, which may be used to generate a taskgraph\nand tasks.\n",
       "properties": {
         "policy": {
-          "pullRequests": {
-            "description": "Policy for creating tasks for pull requests.  The effective policy is found in this property\nin the `.taskcluster.yml` file in the repository's default branch.  See the documentation for\ndetailed definition of the options.\n",
-            "enum": [
-              "public",
-              "collaborators"
-            ],
-            "type": "string"
-          }
+          "additionalProperties": false,
+          "properties": {
+            "pullRequests": {
+              "description": "Policy for creating tasks for pull requests.  The effective policy is found in this property\nin the `.taskcluster.yml` file in the repository's default branch.  See the documentation for\ndetailed definition of the options.\n",
+              "enum": [
+                "public",
+                "collaborators"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "pullRequests"
+          ],
+          "type": "object"
         },
         "reporting": {
           "description": "Policy for reporting status of PR or a commit. If absent, Github Statuses API is used",
@@ -5907,8 +5912,6 @@
         },
         "installationId": {
           "description": "The installation which had an event.\n",
-          "maxLength": 10000000000,
-          "minLength": 0,
           "type": "integer"
         },
         "organization": {
@@ -11132,8 +11135,8 @@
           "description": "List of scopes granted anyone who assumes this role, including anything\ngranted by roles that can be assumed when you have this role.\nHence, this includes any scopes in-directly granted as well.\n",
           "items": {
             "description": "A single scope. A scope must be composed of\nprintable ASCII characters and spaces.  Scopes ending in more than\none `*` character are forbidden.\n",
-            "name": "Scope",
             "pattern": "^[ -~]*$",
+            "title": "Scope",
             "type": "string"
           },
           "type": "array",
@@ -11153,8 +11156,8 @@
           "description": "List of scopes the role grants access to.  Scopes must be composed of\nprintable ASCII characters and spaces.\n",
           "items": {
             "description": "A single scope. A scope must be composed of\nprintable ASCII characters and spaces.  Scopes ending in more than\none `*` character are forbidden.\n",
-            "name": "Scope",
             "pattern": "^[ -~]*$",
+            "title": "Scope",
             "type": "string"
           },
           "type": "array",
@@ -11309,8 +11312,8 @@
           "description": "List of scopes the role grants access to.  Scopes must be composed of\nprintable ASCII characters and spaces.\n",
           "items": {
             "description": "A single scope. A scope must be composed of\nprintable ASCII characters and spaces.  Scopes ending in more than\none `*` character are forbidden.\n",
-            "name": "Scope",
             "pattern": "^[ -~]*$",
+            "title": "Scope",
             "type": "string"
           },
           "type": "array",
@@ -11365,8 +11368,8 @@
           "description": "List of scopes granted to this client by matching roles, including the\nclient's scopes and the implicit role `client-id:<clientId>`.\n",
           "items": {
             "description": "A single scope. A scope must be composed of\nprintable ASCII characters and spaces.  Scopes ending in more than\none `*` character are forbidden.\n",
-            "name": "Scope",
             "pattern": "^[ -~]*$",
+            "title": "Scope",
             "type": "string"
           },
           "type": "array",
@@ -11398,8 +11401,8 @@
           "description": "List of scopes the client has (unexpanded).\n",
           "items": {
             "description": "A single scope. A scope must be composed of\nprintable ASCII characters and spaces.  Scopes ending in more than\none `*` character are forbidden.\n",
-            "name": "Scope",
             "pattern": "^[ -~]*$",
+            "title": "Scope",
             "type": "string"
           },
           "type": "array",
@@ -11451,8 +11454,8 @@
           "description": "List of scopes the client has (unexpanded).\n",
           "items": {
             "description": "A single scope. A scope must be composed of\nprintable ASCII characters and spaces.  Scopes ending in more than\none `*` character are forbidden.\n",
-            "name": "Scope",
             "pattern": "^[ -~]*$",
+            "title": "Scope",
             "type": "string"
           },
           "type": "array",

@@ -25,7 +25,7 @@ definitions:
     properties:
       url:
         type: string
-        formt: uri
+        format: uri
         description: URL to which a PUT request should be made.
       expires:
         type: string

@@ -83,9 +83,6 @@ type (
 		EventID string `json:"eventId"`
 
 		// The installation which had an event.
-		//
-		// Min length: 0
-		// Max length: 10000000000
 		InstallationID int64 `json:"installationId"`
 
 		// The GitHub `organization` which had an event.

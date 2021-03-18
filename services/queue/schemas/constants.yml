@@ -105,7 +105,7 @@ slugid-pattern: "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9
 
 scope:
     type: string
-    name: Scope
+    title: Scope
     description: |
       A single scope. A scope must be composed of
       printable ASCII characters and spaces.  Scopes ending in more than

@@ -17,7 +17,7 @@ message-version:
 
 scope:
     type: string
-    name: Scope
+    title: Scope
     description: |
       A single scope. A scope must be composed of
       printable ASCII characters and spaces.  Scopes ending in more than
