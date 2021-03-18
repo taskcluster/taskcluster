@@ -177,6 +177,9 @@ class References {
       addFormats(ajv);
       ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
 
+      // allow the `metadata` keyword in schemas
+      ajv.addKeyword('metadata');
+
       // identify metaschemas, so we can all addMetaSchema for them
       const metaSchemas = new Set(this.schemas.map(({ content }) => content.$schema));
       for (let { content } of this.schemas) {
