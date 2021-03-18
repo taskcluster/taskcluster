@@ -619,6 +619,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert(github.inst(5828).repos.createCommitComment.callCount === 0);
     });
+
+    test('no .taskcluster.yml, using collaborators policy', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+	repo: 'hooks-testing',
+	ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+	content: require('./data/yml/valid-yaml.json'),
+      });
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+	repo: 'hooks-testing',
+	ref: 'development', // default branch
+	content: null,
+      });
+      await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
+
+      assert(github.inst(5828).repos.createCommitComment.callCount === 0);
+    });
   });
 
   suite('Statuses API: result status handler', function() {
