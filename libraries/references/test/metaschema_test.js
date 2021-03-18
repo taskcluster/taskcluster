@@ -36,53 +36,6 @@ suite(testing.suiteName(), function() {
     };
   });
 
-  suite('metaschema', function() {
-    const $schema = 'https://tc-tests.example.com/schemas/common/metaschema.json#';
-
-    test('if properties are given, additionalProperties must be present', function() {
-      validate({
-        $schema,
-        type: 'object',
-        properties: { x: { type: 'string' } },
-        required: [],
-      }, f => f.match(/schema should have properties .* when property properties is present/));
-    });
-
-    test('if properties are given, type must be present', function() {
-      validate({
-        $schema,
-        additionalProperties: true,
-        properties: { x: { type: 'string' } },
-        required: [],
-      }, f => f.match(/schema should have properties .* when property properties is present/));
-    });
-
-    test('if properties are given, required must be present', function() {
-      validate({
-        $schema,
-        additionalProperties: true,
-        type: 'object',
-        properties: { x: { type: 'string' } },
-      }, f => f.match(/schema should have properties .* when property properties is present/));
-    });
-
-    test('if items are given, additionalProperties must be present', function() {
-      validate({
-        $schema,
-        type: 'object',
-        items: { type: 'string' },
-      }, f => f.match(/schema should have properties type, uniqueItems when property items is present/));
-    });
-
-    test('if items are given, type must be present', function() {
-      validate({
-        $schema,
-        uniqueItems: true,
-        items: { type: 'string' },
-      }, f => f.match(/schema should have properties type, uniqueItems when property items is present/));
-    });
-  });
-
   suite('metadata-metaschema', function() {
     const $schema = 'https://tc-tests.example.com/schemas/common/metadata-metaschema.json#';
     const metadata = { name: 'sch', version: 1 };

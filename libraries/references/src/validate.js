@@ -32,25 +32,42 @@ const UNREFERENCED_SCHEMAS = [
 ];
 
 /**
+ * Recurse over JSON-structured data, calling callbacks by type.
+ */
+const recurseJSON = (content, callbacks) => {
+  callbacks = {
+    array: () => {},
+    object: () => {},
+    scalar: () => {},
+    ...callbacks,
+  };
+  const recurse = (value, path) => {
+    if (Array.isArray(value)) {
+      callbacks.array(value, path);
+      value.forEach((v, i) => recurse(v, `${path}[${i}]`));
+    } else if (typeof value === 'object') {
+      callbacks.object(value, path);
+      Object.entries(value).forEach(([k, v]) => recurse(v, `${path}.${k}`));
+    } else {
+      callbacks.scalar(value, path);
+    }
+  };
+  recurse(content, 'schema');
+};
+
+/**
  * Recursively scan a schema for $ref's, calling cb(ref, path) for
  * each one.
  */
 const forAllRefs = (content, cb) => {
-  const recurse = (value, path) => {
-    if (Array.isArray(value)) {
-      value.forEach((v, i) => recurse(v, `${path}[${i}]`));
-    } else if (typeof value === 'object') {
-      if (value.$ref) {
-        cb(value.$ref, path);
-      } else {
-        for (const [k, v] of Object.entries(value)) {
-          recurse(v, `${path}.${k}`);
-        }
-      }
-    }
-  };
   try {
-    recurse(content, 'schema');
+    recurseJSON(content, {
+      object: (value, path) => {
+        if (value.$ref) {
+          cb(value.$ref, path);
+        }
+      },
+    });
   } catch (err) {
     throw new Error(`In ${content.$id}: ${err}`);
   }
@@ -158,6 +175,38 @@ exports.validate = (references) => {
           .split('%%/%%')
           .forEach(err => problems.push(`${filename}: ${err}`));
       }
+    }
+  }
+
+  // Check for some common errors in schemas
+
+  if (!problems.length) {
+    for (let { filename, content } of references.schemas) {
+      recurseJSON(content, {
+        object: (value, path) => {
+          // ignore this for objects named `properties` (as api-reference-v0.yml, for
+          // example, defines an `entries` property)
+          if (path.endsWith('.properties')) {
+            return;
+          }
+
+          const rules = [
+            // when __ is present in an object, the object must also have __
+            { whenPresent: 'properties', mustAlsoHave: ['type', 'additionalProperties'] },
+            { whenPresent: 'entries', mustAlsoHave: ['type', 'uniqueItems'] },
+          ];
+
+          for (const { whenPresent, mustAlsoHave } of rules) {
+            if (whenPresent in value) {
+              for (const p of mustAlsoHave) {
+                if (!(p in value)) {
+                  problems.push(`${filename}: ${path} has a '${whenPresent}' property but no '${p}'`);
+                }
+              }
+            }
+          }
+        },
+      });
     }
   }
 

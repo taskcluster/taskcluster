@@ -171,6 +171,7 @@ class References {
         verbose: true,
         allErrors: true,
         validateSchema: false,
+        strict: true,
       });
 
       addFormats(ajv);
