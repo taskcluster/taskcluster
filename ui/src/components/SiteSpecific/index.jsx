@@ -29,6 +29,7 @@ const SITE_SPECIFIC_VARS = new Set([
   'notify_email_sender',
   'notify_matrix_bot_name',
   'notify_slack_bot_name',
+  'cloud_credentials_docs_url',
 ]);
 // apply a simple templating language here, translating
 // %IDENTIFIER% into a lookup of that identifier, and
