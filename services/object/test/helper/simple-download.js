@@ -37,7 +37,7 @@ exports.testSimpleDownloadMethod = ({
     (suiteDefinition || (() => {})).call(this);
 
     let backend;
-    suiteSetup(async function() {
+    setup(async function() {
       const backends = await helper.load('backends');
       backend = backends.get(backendId);
     });

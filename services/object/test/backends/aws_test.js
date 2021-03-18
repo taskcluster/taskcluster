@@ -31,28 +31,32 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     };
     const region = await getBucketRegion({ bucket: secret.testBucket, credentials });
     s3 = new aws.S3({ region, ...credentials });
+  });
 
+  setup(async function() {
     // set up a backend with a public bucket, and separately with a private
     // bucket; these are in fact the same bucket, and we'll just check that the
     // URLs have a signature for the non-public version.  S3 verifies
     // signatures if they are present, even if the signature is not required.
-    helper.load.cfg('backends', {
-      awsPrivate: {
-        backendType: 'aws',
-        accessKeyId: secret.accessKeyId,
-        secretAccessKey: secret.secretAccessKey,
-        bucket: secret.testBucket,
-        signGetUrls: true,
+    await helper.setBackendConfig({
+      backends: {
+        awsPrivate: {
+          backendType: 'aws',
+          accessKeyId: secret.accessKeyId,
+          secretAccessKey: secret.secretAccessKey,
+          bucket: secret.testBucket,
+          signGetUrls: true,
+        },
+        awsPublic: {
+          backendType: 'aws',
+          accessKeyId: secret.accessKeyId,
+          secretAccessKey: secret.secretAccessKey,
+          bucket: secret.testBucket,
+          signGetUrls: false,
+        },
       },
-      awsPublic: {
-        backendType: 'aws',
-        accessKeyId: secret.accessKeyId,
-        secretAccessKey: secret.secretAccessKey,
-        bucket: secret.testBucket,
-        signGetUrls: false,
-      },
+      backendMap: [],
     });
-    helper.load.cfg('backendMap', []);
   });
 
   const makeObject = async ({ name, data }) => {
