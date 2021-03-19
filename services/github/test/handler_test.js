@@ -617,7 +617,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await simulateJobMessage({ user: 'imbstack', eventType: 'release' });
 
-      assert(github.inst(5828).repos.createCommitComment.callCount === 1);
+      assert(github.inst(5828).repos.createCommitComment.callCount === 0);
     });
 
     test('no .taskcluster.yml, using collaborators policy', async function() {
