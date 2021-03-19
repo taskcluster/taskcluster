@@ -617,25 +617,30 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await simulateJobMessage({ user: 'imbstack', eventType: 'release' });
 
-      assert(github.inst(5828).repos.createCommitComment.callCount === 0);
+      assert(github.inst(5828).repos.createCommitComment.callCount === 1);
     });
 
     test('no .taskcluster.yml, using collaborators policy', async function() {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(5828).setRepoCollaborator({
         owner: 'TaskclusterRobot',
-	repo: 'hooks-testing',
-	ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-	content: require('./data/yml/valid-yaml.json'),
+        repo: 'hooks-testing',
+        username: 'goodBuddy',
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
-	repo: 'hooks-testing',
-	ref: 'development', // default branch
-	content: null,
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        content: require('./data/yml/valid-yaml.json'),
       });
-      await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development', // default branch
+        content: null,
+      });
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
 
-      assert(github.inst(5828).repos.createCommitComment.callCount === 0);
+      assert(github.inst(5828).repos.createCommitComment.callCount === 1);
     });
   });
 

@@ -766,9 +766,10 @@ async function jobHandler(message) {
 
     if (!defaultBranchYml) {
       debug(`${organization}/${repository} has no '.taskcluster.yml' at ${defaultBranch}.`);
-      
-      // If the repository does not contain a '.taskcluster.yml' file, collaborators should be able to test before initializing.
-      defaultBranchYml = {version: 1, policy: {pullRequests: 'collaborators_quiet'}};
+
+      // If the repository does not contain a '.taskcluster.yml' file, collaborators should be able to test before
+      // initializing.
+      defaultBranchYml = { version: 1, policy: { pullRequests: 'collaborators_quiet' } };
     }
 
     if (this.getRepoPolicy(defaultBranchYml).startsWith('collaborators')) {
