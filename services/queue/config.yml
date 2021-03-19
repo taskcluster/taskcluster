@@ -2,8 +2,8 @@ defaults:
   app:
     exchangePrefix:               v1/
 
-    # Number of seconds before the claim to a run expires
-    claimTimeout:                 1200
+    # Number of seconds before the claim to a run expires, defaulting to 1200
+    claimTimeout:                 !env:number:optional TASK_CLAIM_TIMEOUT
 
     # S3 buckets where artifacts are stored
     publicArtifactBucket:         !env PUBLIC_ARTIFACT_BUCKET
