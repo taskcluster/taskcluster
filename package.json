@@ -71,7 +71,7 @@
     "matrix-js-sdk": "^9.0.0",
     "memorystore": "^1.6.1",
     "mkdirp": "^1.0.0",
-    "netmask": "^1.0.5",
+    "netmask": "^2.0.0",
     "newrelic": "^7.0.0",
     "node-fetch": "^2.6.0",
     "node-forge": "^0.10.0",
