@@ -105,7 +105,7 @@ class AwsBackend extends Backend {
             Expires: 30 * 60,
           });
         } else {
-          url = `${this.s3.endpoint.href}${this.config.bucket}/${encodeURI(object.name)}`;
+          url = `${this.s3.endpoint.href}${this.config.bucket}/${encodeURIComponent(object.name)}`;
         }
         return { method, url };
       }

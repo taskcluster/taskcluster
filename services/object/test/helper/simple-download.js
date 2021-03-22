@@ -44,7 +44,7 @@ exports.testSimpleDownloadMethod = ({
 
     test('supports simple downloads', async function() {
       const data = crypto.randomBytes(256);
-      const name = `${prefix}test!obj%ect/slash`;
+      const name = helper.testObjectName(prefix);
       const object = await makeObject({ name, data });
 
       // check it's supported..
