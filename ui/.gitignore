@@ -5,7 +5,6 @@ node_modules
 *.log
 .Rhistory
 .env
-/styleguide
 .coverage
 .DS_Store
 .eslintcache

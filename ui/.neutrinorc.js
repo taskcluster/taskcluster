@@ -73,29 +73,6 @@ module.exports = {
       },
     }),
     (neutrino) => {
-      neutrino.register('styleguide', () => ({
-        webpackConfig: neutrino.config.toConfig(),
-        components: join(
-          neutrino.options.source,
-          'components/**',
-          `*.{${neutrino.options.extensions.join(',')}}`
-        ),
-        skipComponentsWithoutExample: true,
-        theme: theme.styleguide,
-        styles: {
-          StyleGuide: theme.styleguide.StyleGuide,
-        },
-        editorConfig: {
-          theme: 'material',
-        },
-        usageMode: 'expand',
-        styleguideComponents: {
-          Wrapper: join(__dirname, 'src/styleguide/ThemeWrapper.jsx'),
-          StyleGuideRenderer: join(__dirname, 'src/styleguide/StyleGuideRenderer.jsx'),
-        },
-      }));
-    },
-    (neutrino) => {
       neutrino.config.node.set('Buffer', true);
 
       // The shell view requires this

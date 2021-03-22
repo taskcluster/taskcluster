@@ -11,8 +11,6 @@
     "build": "webpack --mode production",
     "start": "cross-env GENERATE_ENV_JS=1 webpack-dev-server --mode development",
     "test": "karma start --single-run",
-    "styleguide": "dotenv styleguidist server",
-    "styleguide:build": "styleguidist build",
     "lint": "eslint --cache --format codeframe --ext js,jsx src test",
     "create:fragment-matcher": "dotenv node src/scripts/queryServer"
   },
@@ -123,7 +121,6 @@
     "mocha": "^8.0.0",
     "neutrino": "^9.1.0",
     "node-fetch": "^2.2.0",
-    "react-styleguidist": "^7.3.11",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.2.3",
     "webpack-dev-server": "^3.10.3"
