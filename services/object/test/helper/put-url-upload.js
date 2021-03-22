@@ -41,7 +41,7 @@ exports.testPutUrlUpload = ({
 
     const makeUpload = async () => {
       const data = crypto.randomBytes(256);
-      const name = `${prefix}test!obj%ect/slash?put-url`;
+      const name = helper.testObjectName(prefix);
       const expires = taskcluster.fromNow('1 hour');
       const uploadId = taskcluster.slugid();
 

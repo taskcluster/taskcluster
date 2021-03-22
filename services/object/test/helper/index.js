@@ -193,3 +193,13 @@ exports.assertSatisfiesSchema = async (data, id) => {
     assert(false, "validation error:\n" + validator_error);
   }
 };
+
+/**
+ * Generate a test object name
+ */
+let objectCounter = 0;
+exports.testObjectName = prefix =>
+  // Use `objectCounter` to ensure every test uses a different name, and
+  // use all of the printable, problematic characters from
+  // https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html
+  `${prefix}${objectCounter++}/test/&/$/@/=/;/:/+/,/?/\\/{}/^/%/[]/<>/#/~/|/\`/`;

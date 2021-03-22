@@ -40,7 +40,7 @@ exports.testDataInlineUpload = ({
 
     test('upload an object', async function() {
       const data = crypto.randomBytes(256);
-      const name = `${prefix}test!obj%ect/slash/data-inline`;
+      const name = helper.testObjectName(prefix);
       const expires = taskcluster.fromNow('1 hour');
       const uploadId = taskcluster.slugid();
 
