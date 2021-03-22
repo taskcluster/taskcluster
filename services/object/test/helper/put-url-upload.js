@@ -39,8 +39,8 @@ exports.testPutUrlUpload = ({
       backend = backends.get(backendId);
     });
 
-    const makeUpload = async () => {
-      const data = crypto.randomBytes(256);
+    const makeUpload = async ({ length = 256 } = {}) => {
+      const data = crypto.randomBytes(length);
       const name = helper.testObjectName(prefix);
       const expires = taskcluster.fromNow('1 hour');
       const uploadId = taskcluster.slugid();
@@ -57,9 +57,7 @@ exports.testPutUrlUpload = ({
       return { name, data, res, uploadId };
     };
 
-    test('upload an object', async function() {
-      const { name, data, res, uploadId } = await makeUpload();
-
+    const performUpload = async ({ name, data, res, uploadId }) => {
       assert(new Date(res.putUrl.expires) > new Date());
 
       let req = request.put(res.putUrl.url);
@@ -70,11 +68,20 @@ exports.testPutUrlUpload = ({
       assert(putRes.ok, putRes);
 
       await helper.db.fns.object_upload_complete(name, uploadId);
+    };
 
-      const stored = await getObjectContent({ name });
-      assert.equal(stored.contentType, 'application/random-bytes');
-      assert.deepEqual(stored.data, data);
-    });
+    for (const length of [0, 1024]) {
+      test(`upload an object (length=${length})`, async function() {
+        const { name, data, res, uploadId } = await makeUpload({ length });
+        await performUpload({ name, data, res, uploadId });
+
+        await helper.db.fns.object_upload_complete(name, uploadId);
+
+        const stored = await getObjectContent({ name });
+        assert.equal(stored.contentType, 'application/random-bytes');
+        assert.deepEqual(stored.data, data);
+      });
+    }
 
     test('upload an object with a bad Content-Type', async function() {
       const { data, res } = await makeUpload();
