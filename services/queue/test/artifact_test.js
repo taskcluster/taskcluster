@@ -391,18 +391,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     test('Post S3 artifact with permacreds', async () => {
       await makeAndClaimTask();
       helper.scopes(
-        'queue:create-artifact:public/s3.json',
-        'assume:worker-id:my-worker-group/my-worker',
+        `queue:create-artifact:${taskId}/0`,
+        'queue:worker-id:my-worker-group/my-worker',
       );
       await makeArtifact({ ...s3Artifact, useClientCreds: true });
     });
 
     test('Post S3 artifact with permacreds without necessary scopes', async () => {
       await makeAndClaimTask();
-      helper.scopes(
-        'queue:create-artifact:public/s3.json',
-        // missing: 'assume:worker-id:my-worker-group/my-worker',
-      );
+      helper.scopes('none');
       await assert.rejects(
         () => makeArtifact({ ...s3Artifact, useClientCreds: true }),
         err => err.code === 'InsufficientScopes');
@@ -840,8 +837,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
       debug('### Send post artifact request');
       helper.scopes(
-        'queue:create-artifact:public/s3.json',
-        'assume:worker-id:my-worker-group/my-worker',
+        `queue:create-artifact:${taskId}/0`,
+        'queue:worker-id:my-worker-group/my-worker',
       );
       const r1 = await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
         storageType: 's3',

@@ -59,10 +59,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertNoPulseMessage('task-completed');
 
     debug('### Reporting task completed');
-    helper.scopes(
-      'queue:resolve-task',
-      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
-    );
+    helper.scopes(`queue:resolve-task:${taskId}/0`);
     await helper.queue.reportCompleted(taskId, 0);
     helper.assertPulseMessage('task-completed', m => (
       m.payload.status.runs[0].state === 'completed' &&
@@ -106,10 +103,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertNoPulseMessage('task-completed');
 
     debug('### Reporting task failed');
-    helper.scopes(
-      'queue:resolve-task',
-      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
-    );
+    helper.scopes(`queue:resolve-task:${taskId}/0`);
     await helper.queue.reportFailed(taskId, 0);
     helper.assertPulseMessage('task-failed', m => (
       m.payload.status.runs[0].state === 'failed' &&
@@ -152,8 +146,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Reporting task exception');
     helper.scopes(
-      'queue:resolve-task',
-      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      `queue:resolve-task:${taskId}/0`,
       'queue:status:' + taskId,
     );
     await helper.queue.reportException(taskId, 0, {
@@ -212,8 +205,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Reporting task exception');
     helper.scopes(
-      'queue:resolve-task',
-      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      `queue:resolve-task:${taskId}/0`,
       'queue:status:' + taskId,
     );
     await helper.queue.reportException(taskId, 0, {
@@ -264,8 +256,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Reporting task exception');
     helper.scopes(
-      'queue:resolve-task',
-      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      `queue:resolve-task:${taskId}/0`,
       'queue:status:' + taskId,
     );
     await helper.queue.reportException(taskId, 0, {
@@ -359,10 +350,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Reporting task exception (worker-shutdown)');
-    helper.scopes(
-      'queue:resolve-task',
-      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
-    );
+    helper.scopes(`queue:resolve-task:${taskId}/0`);
     const r1 = await helper.queue.reportException(taskId, 0, {
       reason: 'worker-shutdown',
     });
@@ -460,10 +448,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Reporting task exception (intermittent-task)');
-    helper.scopes(
-      'queue:resolve-task',
-      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
-    );
+    helper.scopes(`queue:resolve-task:${taskId}/0`);
     const r1 = await helper.queue.reportException(taskId, 0, {
       reason: 'intermittent-task',
     });

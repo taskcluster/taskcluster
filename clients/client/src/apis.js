@@ -2040,20 +2040,9 @@ module.exports = {
           ],
           "route": "/task/<taskId>/runs/<runId>/claim",
           "scopes": {
-            "AnyOf": [
-              {
-                "AllOf": [
-                  "queue:claim-task:<provisionerId>/<workerType>",
-                  "queue:worker-id:<workerGroup>/<workerId>"
-                ]
-              },
-              {
-                "AllOf": [
-                  "queue:claim-task",
-                  "assume:worker-type:<provisionerId>/<workerType>",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
+            "AllOf": [
+              "queue:claim-task:<provisionerId>/<workerType>",
+              "queue:worker-id:<workerGroup>/<workerId>"
             ]
           },
           "stability": "deprecated",
@@ -2073,17 +2062,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/reclaim",
-          "scopes": {
-            "AnyOf": [
-              "queue:reclaim-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:claim-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:reclaim-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Reclaim task",
           "type": "function"
@@ -2101,17 +2080,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/completed",
-          "scopes": {
-            "AnyOf": [
-              "queue:resolve-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:resolve-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:resolve-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Report Run Completed",
           "type": "function"
@@ -2129,17 +2098,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/failed",
-          "scopes": {
-            "AnyOf": [
-              "queue:resolve-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:resolve-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:resolve-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Report Run Failed",
           "type": "function"
@@ -2158,17 +2117,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/exception",
-          "scopes": {
-            "AnyOf": [
-              "queue:resolve-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:resolve-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:resolve-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Report Task Exception",
           "type": "function"
@@ -2188,17 +2137,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "scopes": {
-            "AnyOf": [
-              "queue:create-artifact:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:create-artifact:<name>",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:create-artifact:<taskId>/<runId>",
           "stability": "stable",
           "title": "Create Artifact",
           "type": "function"
