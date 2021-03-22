@@ -11,6 +11,10 @@ const DOWNLOAD_METHODS = [
   'HTTP:GET',
 ];
 
+// Object names are limited to printable ASCII, including space.
+const NAME_PATTERN = /^[\x20-\x7e]+$/;
+const PROJECT_ID_PATTERN = /^([a-zA-Z0-9._/-]*)$/;
+
 let builder = new APIBuilder({
   title: 'Object Service',
   description: [
@@ -21,6 +25,10 @@ let builder = new APIBuilder({
   errorCodes: {
     NoMatchingMethod: 406,
     NoMatchingBackend: 400,
+  },
+  params: {
+    name: NAME_PATTERN,
+    projectId: PROJECT_ID_PATTERN,
   },
   context: ['cfg', 'db', 'backends', 'middleware'],
 });
@@ -42,6 +50,7 @@ builder.declare({
     'multiple times if necessary, either to propose new upload methods or to',
     'renew credentials for an already-agreed upload.',
     '',
+    'The `name` parameter can contain any printable ASCII character (0x20 - 0x7e).',
     'The `uploadId` must be supplied by the caller, and any attempts to upload',
     'an object with the same name but a different `uploadId` will fail.',
     'Thus the first call to this method establishes the `uploadId` for the',
