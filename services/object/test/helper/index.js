@@ -60,11 +60,11 @@ exports.withBackends = (mock, skipping) => {
   ];
 
   suiteSetup('withBackends', async function() {
-    exports.load.save();
-
     if (skipping()) {
       return;
     }
+
+    exports.load.save();
 
     // add the 'test' backend type only for testing
     BACKEND_TYPES['test'] = TestBackend;
@@ -95,6 +95,10 @@ exports.withBackends = (mock, skipping) => {
   });
 
   suiteTeardown('withBackends', async function() {
+    if (skipping()) {
+      return;
+    }
+
     exports.load.restore();
     delete BACKEND_TYPES['test'];
     delete exports.setBackendConfig;
