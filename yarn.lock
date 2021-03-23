@@ -49,9 +49,9 @@
     object-path "^0.11.4"
 
 "@azure/abort-controller@^1.0.0":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@azure/abort-controller/-/abort-controller-1.0.3.tgz#9fdb8d5962bbe1fd614f1df7a590c2c49bfb9b24"
-  integrity sha512-kCibMwqffnwlw3c+e879rCE1Am1I2BfhjOeO54XNA8i/cEuzktnBQbTrzh67XwibHO05YuNgZzSWy9ocVfFAGw==
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@azure/abort-controller/-/abort-controller-1.0.4.tgz#fd3c4d46c8ed67aace42498c8e2270960250eafd"
+  integrity sha512-lNUmDRVGpanCsiUN3NWxFTdwmdFI53xwhkTFfHDGTYk46ca7Ind3nanJc+U6Zj9Tv+9nTCWRBscWEW1DyKOpTw==
   dependencies:
     tslib "^2.0.0"
 
@@ -65,9 +65,9 @@
     tslib "^1.10.0"
 
 "@azure/arm-network@^23.0.0":
-  version "23.2.0"
-  resolved "https://registry.yarnpkg.com/@azure/arm-network/-/arm-network-23.2.0.tgz#e0dd68f3bd3516e5b381cd51471d38293c7f277d"
-  integrity sha512-lt3QDc6syYN3yyOPWAlBRG3WrNPkkh9zYzmV30s4SDEpQ2hlZaUDPcSmHBiukOiwncyS3TJ4KUDcrR6GNpwXNQ==
+  version "23.3.0"
+  resolved "https://registry.yarnpkg.com/@azure/arm-network/-/arm-network-23.3.0.tgz#c5570a2343af455c1219a852b0dbb3009497d727"
+  integrity sha512-6hGLMb5I0fs01e7hjTBvfp9pbuN9zI82HokDtmPAhk6awG+Lupex2CDRUXRm08ZKLoH1Kaqly+/uH0+OTNkWpA==
   dependencies:
     "@azure/ms-rest-azure-js" "^2.0.1"
     "@azure/ms-rest-js" "^2.0.4"
@@ -6220,52 +6220,47 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
+  dependencies:
+    debug "^4.1.1"
+    got "^11.8.1"
+    hawk "^9.0.0"
+    lodash "^4.17.4"
+    slugid "^2.0.0"
+    taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-db@link:db":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6275,8 +6270,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6284,8 +6278,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "0.0.0"
-  uid ""
+  version "42.1.1"
 
 temporary@^1.0.0:
   version "1.1.0"
