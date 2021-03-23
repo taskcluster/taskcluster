@@ -14,6 +14,7 @@ let http = require('http');
 let https = require('https');
 let querystring = require('querystring');
 let tcUrl = require('taskcluster-lib-urls');
+let retry = require('./retry');
 
 /** Default options for our http/https global agents */
 let AGENT_OPTIONS = {
@@ -362,101 +363,6 @@ exports.createClient = function(reference, name) {
         });
       }
 
-      // Count request attempts
-      let attempts = 0;
-      let that = this;
-
-      // Retry the request, after a delay depending on number of retries
-      const retryRequest = function() {
-        // Send request
-        let sendRequest = function() {
-          debug('Calling: %s, retry: %s', entry.name, attempts - 1);
-          // Make request and handle response or error
-          return makeRequest(
-            that,
-            entry.method,
-            url,
-            payload,
-            query,
-          ).then(function(res) {
-            // If request was successful, accept the result
-            debug('Success calling: %s, (%s retries)',
-              entry.name, attempts - 1);
-            if (!_.includes(res.headers['content-type'], 'application/json') || !res.body) {
-              debug('Empty response from server: call: %s, method: %s', entry.name, entry.method);
-              return undefined;
-            }
-            return res.body;
-          }, function(err) {
-            // If we got a response we read the error code from the response
-            let res = err.response;
-            if (res) {
-              // Decide if we should retry
-              if (attempts <= that._options.retries &&
-                  res.statusCode >= 500 && // Check if it's a 5xx error
-                  res.statusCode < 600) {
-                debug('Error calling: %s now retrying, info: %j',
-                  entry.name, res.body);
-                return retryRequest();
-              }
-              // If not retrying, construct error object and reject
-              debug('Error calling: %s NOT retrying!, info: %j',
-                entry.name, res.body);
-              let message = 'Unknown Server Error';
-              if (res.statusCode === 401) {
-                message = 'Authentication Error';
-              }
-              if (res.statusCode === 500) {
-                message = 'Internal Server Error';
-              }
-              if (res.statusCode >= 300 && res.statusCode < 400) {
-                message = 'Unexpected Redirect';
-              }
-              err = new Error(res.body.message || message);
-              err.body = res.body;
-              err.code = res.body.code || 'UnknownError';
-              err.statusCode = res.statusCode;
-              throw err;
-            }
-
-            // Decide if we should retry
-            if (attempts <= that._options.retries) {
-              debug('Request error calling %s (retrying), err: %s, JSON: %s',
-                entry.name, err, err);
-              return retryRequest();
-            }
-            debug('Request error calling %s NOT retrying!, err: %s, JSON: %s',
-              entry.name, err, err);
-            throw err;
-          });
-        };
-
-        // Increment attempt count, but track how many we had before.
-        attempts += 1;
-
-        // If this is the first retry, ie we haven't retried yet, we make the
-        // request immediately
-        if (attempts === 1) {
-          return sendRequest();
-        } else {
-          let delay;
-          // First request is attempt = 1, so attempt = 2 is the first retry
-          // we subtract one to get exponents: 1, 2, 3, 4, 5, ...
-          delay = Math.pow(2, attempts - 1) * that._options.delayFactor;
-          // Apply randomization factor
-          let rf = that._options.randomizationFactor;
-          delay *= Math.random() * 2 * rf + 1 - rf;
-          // Always limit with a maximum delay
-          delay = Math.min(delay, that._options.maxDelay);
-          // Sleep then send the request
-          return new Promise(function(accept) {
-            setTimeout(accept, delay);
-          }).then(function() {
-            return sendRequest();
-          });
-        }
-      };
-
       // call out to the fake version, if set
       if (this._options.fake) {
         debug('Faking call to %s(%s)', entry.name, args.map(a => JSON.stringify(a, null, 2)).join(', '));
@@ -479,8 +385,61 @@ exports.createClient = function(reference, name) {
         return this._options.fake[entry.name].apply(null, args);
       }
 
-      // Start the retry request loop
-      return retryRequest();
+      return retry(this._options, (retriableError, attempt) => {
+        debug('Calling: %s, retry: %s', entry.name, attempt);
+        // Make request and handle response or error
+        return makeRequest(
+          this,
+          entry.method,
+          url,
+          payload,
+          query,
+        ).then(function(res) {
+          // If request was successful, accept the result
+          debug('Success calling: %s, (%s retries)', entry.name, attempt);
+          if (!_.includes(res.headers['content-type'], 'application/json') || !res.body) {
+            debug('Empty response from server: call: %s, method: %s', entry.name, entry.method);
+            return undefined;
+          }
+          return res.body;
+        }, function(err) {
+          // If we got a response we read the error code from the response
+          let res = err.response;
+          if (res) {
+            let message = 'Unknown Server Error';
+            if (res.statusCode === 401) {
+              message = 'Authentication Error';
+            }
+            if (res.statusCode === 500) {
+              message = 'Internal Server Error';
+            }
+            if (res.statusCode >= 300 && res.statusCode < 400) {
+              message = 'Unexpected Redirect';
+            }
+            err = new Error(res.body.message || message);
+            err.body = res.body;
+            err.code = res.body.code || 'UnknownError';
+            err.statusCode = res.statusCode;
+
+            // Decide if we should retry or just throw
+            if (res.statusCode >= 500 && // Check if it's a 5xx error
+                res.statusCode < 600) {
+              debug('Error calling: %s now retrying, info: %j',
+                entry.name, res.body);
+              return retriableError(err);
+            } else {
+              debug('Error calling: %s NOT retrying!, info: %j',
+                entry.name, res.body);
+              throw err;
+            }
+          }
+
+          // All errors without a response are treated as retriable
+          debug('Request error calling %s (retrying), err: %s, JSON: %s',
+            entry.name, err, err);
+          return retriableError(err);
+        });
+      });
     };
     // Add reference for buildUrl and signUrl
     Client.prototype[entry.name].entryReference = entry;

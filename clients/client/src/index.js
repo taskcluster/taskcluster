@@ -4,8 +4,10 @@
 
 let _ = require('lodash');
 
-// Export methods and classes from lib/
+// Export methods and classes from other files
 _.defaults(exports,
   require('./client'),
   require('./utils'),
+  require('./upload'),
+  require('./download'),
 );

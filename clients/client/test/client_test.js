@@ -4,8 +4,11 @@ const path = require('path');
 const nock = require('nock');
 const testing = require('taskcluster-lib-testing');
 const net = require('net');
+const helper = require('./helper');
 
 suite(testing.suiteName(), function() {
+  helper.withRestoredEnvVars();
+
   // This suite exercises the request and response functionality of
   // the client against a totally fake service defined by this reference
   // and implemented via Nock.
@@ -145,7 +148,7 @@ suite(testing.suiteName(), function() {
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
       serviceDiscoveryScheme: 'k8s-dns',
-      client: (() => {
+      makeClient: () => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         return new Fake({
           rootUrl: 'https://example.not-there',
@@ -155,7 +158,7 @@ suite(testing.suiteName(), function() {
             accessToken: 'nothing',
           },
         });
-      })(),
+      },
     },
     serviceDiscoveryK8sDnsDefault: {
       name: 'using k8s dns service discovery (default)',
@@ -164,7 +167,7 @@ suite(testing.suiteName(), function() {
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
       serviceDiscoveryScheme: 'k8s-dns',
-      client: (() => {
+      makeClient: () => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         taskcluster.setServiceDiscoveryScheme('k8s-dns');
         const clnt = new Fake({
@@ -176,14 +179,14 @@ suite(testing.suiteName(), function() {
         });
         taskcluster.setServiceDiscoveryScheme('default');
         return clnt;
-      })(),
+      },
     },
     justRootUrl: {
       name: 'rootUrl set via constructor',
       urlPrefix: 'https://whatever.net/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
-      client: (() => {
+      makeClient: () => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         return new Fake({
           rootUrl: 'https://whatever.net',
@@ -192,14 +195,14 @@ suite(testing.suiteName(), function() {
             accessToken: 'nothing',
           },
         });
-      })(),
+      },
     },
     rootUrlWithPath: {
       name: 'rootUrl set via constructor with path',
       urlPrefix: 'https://whatever.net/taskcluster/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net/taskcluster',
-      client: (() => {
+      makeClient: () => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         return new Fake({
           rootUrl: 'https://whatever.net/taskcluster',
@@ -208,14 +211,14 @@ suite(testing.suiteName(), function() {
             accessToken: 'nothing',
           },
         });
-      })(),
+      },
     },
     rootUrlWithPathAndSubdomain: {
       name: 'rootUrl set via constructor with path and subdomain',
       urlPrefix: 'https://foo.whatever.net/taskcluster/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://foo.whatever.net/taskcluster',
-      client: (() => {
+      makeClient: () => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         return new Fake({
           rootUrl: 'https://foo.whatever.net/taskcluster',
@@ -224,14 +227,14 @@ suite(testing.suiteName(), function() {
             accessToken: 'nothing',
           },
         });
-      })(),
+      },
     },
     usingEnvVar: {
       name: 'rootUrl set via env var',
       urlPrefix: 'https://whatever.net/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
-      client: (() => {
+      makeClient: () => {
         process.env.TASKCLUSTER_ROOT_URL = 'https://whatever.net';
         const clientPath = path.resolve(__dirname, '..', 'src', 'client.js');
         delete require.cache[clientPath];
@@ -247,7 +250,7 @@ suite(testing.suiteName(), function() {
         ));
         delete process.env.TASKCLUSTER_ROOT_URL;
         return fake;
-      })(),
+      },
     },
   };
 
@@ -277,8 +280,13 @@ suite(testing.suiteName(), function() {
   };
 
   Object.keys(subjects).forEach(subject => {
-    const { name, urlPrefix, trueUrlPrefix, client, Fake, rootUrl, serviceDiscoveryScheme } = subjects[subject];
+    const { name, urlPrefix, trueUrlPrefix, makeClient, Fake, rootUrl, serviceDiscoveryScheme } = subjects[subject];
     suite(name, () => {
+      let client;
+      suiteSetup('create client', function() {
+        client = makeClient();
+      });
+
       test('Simple GET', async () => {
         nock(urlPrefix).get('/v1/get-test')
           .reply(200, {});
