@@ -1022,16 +1022,9 @@ builder.declare({
   name: 'claimTask',
   stability: APIBuilder.stability.deprecated,
   category: 'Worker Interface',
-  scopes: { AnyOf: [
-    { AllOf: [
-      'queue:claim-task:<provisionerId>/<workerType>',
-      'queue:worker-id:<workerGroup>/<workerId>',
-    ] },
-    { AllOf: [ // Legacy
-      'queue:claim-task',
-      'assume:worker-type:<provisionerId>/<workerType>',
-      'assume:worker-id:<workerGroup>/<workerId>',
-    ] },
+  scopes: { AllOf: [
+    'queue:claim-task:<provisionerId>/<workerType>',
+    'queue:worker-id:<workerGroup>/<workerId>',
   ] },
   input: 'task-claim-request.yml',
   output: 'task-claim-response.yml',
@@ -1128,13 +1121,7 @@ builder.declare({
   name: 'reclaimTask',
   stability: APIBuilder.stability.stable,
   category: 'Worker Interface',
-  scopes: { AnyOf: [
-    'queue:reclaim-task:<taskId>/<runId>',
-    { AllOf: [ // Legacy
-      'queue:claim-task',
-      'assume:worker-id:<workerGroup>/<workerId>',
-    ] },
-  ] },
+  scopes: 'queue:reclaim-task:<taskId>/<runId>',
   output: 'task-reclaim-response.yml',
   title: 'Reclaim task',
   description: [
@@ -1370,13 +1357,7 @@ builder.declare({
   name: 'reportCompleted',
   stability: APIBuilder.stability.stable,
   category: 'Worker Interface',
-  scopes: { AnyOf: [
-    'queue:resolve-task:<taskId>/<runId>',
-    { AllOf: [ // Legacy
-      'queue:resolve-task',
-      'assume:worker-id:<workerGroup>/<workerId>',
-    ] },
-  ] },
+  scopes: 'queue:resolve-task:<taskId>/<runId>',
   input: undefined, // No input at this point
   output: 'task-status-response.yml',
   title: 'Report Run Completed',
@@ -1400,13 +1381,7 @@ builder.declare({
   name: 'reportFailed',
   stability: APIBuilder.stability.stable,
   category: 'Worker Interface',
-  scopes: { AnyOf: [
-    'queue:resolve-task:<taskId>/<runId>',
-    { AllOf: [ // Legacy
-      'queue:resolve-task',
-      'assume:worker-id:<workerGroup>/<workerId>',
-    ] },
-  ] },
+  scopes: 'queue:resolve-task:<taskId>/<runId>',
   input: undefined, // No input at this point
   output: 'task-status-response.yml',
   title: 'Report Run Failed',
@@ -1433,13 +1408,7 @@ builder.declare({
   name: 'reportException',
   stability: APIBuilder.stability.stable,
   category: 'Worker Interface',
-  scopes: { AnyOf: [
-    'queue:resolve-task:<taskId>/<runId>',
-    { AllOf: [ // Legacy
-      'queue:resolve-task',
-      'assume:worker-id:<workerGroup>/<workerId>',
-    ] },
-  ] },
+  scopes: 'queue:resolve-task:<taskId>/<runId>',
   input: 'task-exception-request.yml',
   output: 'task-status-response.yml',
   title: 'Report Task Exception',

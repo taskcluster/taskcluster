@@ -47,9 +47,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
     helper.scopes(
-      'queue:claim-task',
+      'queue:claim-task:no-provisioner-extended-extended/test-worker-extended-extended',
+      `queue:reclaim-task:${taskId}/0`,
       'assume:worker-type:no-provisioner-extended-extended/test-worker-extended-extended',
-      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
       'queue:get-task:' + taskId,
       'queue:status:' + taskId,
     );

@@ -13,13 +13,7 @@ builder.declare({
   name: 'createArtifact',
   stability: APIBuilder.stability.stable,
   category: 'Artifacts',
-  scopes: { AnyOf: [
-    'queue:create-artifact:<taskId>/<runId>',
-    { AllOf: [
-      'queue:create-artifact:<name>',
-      'assume:worker-id:<workerGroup>/<workerId>',
-    ] },
-  ] },
+  scopes: 'queue:create-artifact:<taskId>/<runId>',
   input: 'post-artifact-request.json#',
   output: 'post-artifact-response.json#',
   title: 'Create Artifact',
