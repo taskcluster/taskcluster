@@ -183,7 +183,8 @@ class Queue(AsyncBaseClient):
         This method _reruns_ a previously resolved task, even if it was
         _completed_. This is useful if your task completes unsuccessfully, and
         you just want to run it from scratch again. This will also reset the
-        number of `retries` allowed.
+        number of `retries` allowed. It will schedule a task that is _unscheduled_
+        regardless of the state of its dependencies.
 
         This method is deprecated in favour of creating a new task with the same
         task definition (but with a new taskId).
@@ -192,9 +193,8 @@ class Queue(AsyncBaseClient):
         the queue have started because the worker stopped responding, for example
         because a spot node died.
 
-        **Remark** this operation is idempotent, if you try to rerun a task that
-        is not either `failed` or `completed`, this operation will just return
-        the current task status.
+        **Remark** this operation is idempotent: if it is invoked for a task that
+        is `pending` or `running`, it will just return the current task status.
 
         This method is ``stable``
         """

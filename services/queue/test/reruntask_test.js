@@ -35,15 +35,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       purpose: 'taskcluster-testing',
     },
   };
+  let taskId;
 
-  test('create, claim, complete and rerun (is idempotent)', async () => {
-    const taskId = slugid.v4();
+  setup(() => {
+    taskId = slugid.v4();
+  });
 
+  const createTask = async taskDef => {
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
     helper.assertPulseMessage('task-defined');
-    helper.assertPulseMessage('task-pending', m => m.payload.runId === 0);
+    if (!taskDef.dependencies) {
+      helper.assertPulseMessage('task-pending', m => m.payload.runId === 0);
+    }
+  };
 
+  const claimTask = async () => {
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
@@ -51,16 +58,41 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       workerId: 'my-worker-extended-extended',
     });
     helper.assertPulseMessage('task-running');
+  };
+
+  test('rerun a scheduled task', async () => {
+    // create a self-dependent task, so it is in state 'scheduled'
+    await createTask({ ...taskDef, dependencies: [taskId] });
+
+    debug('### Requesting task rerun');
+    helper.scopes('queue:rerun-task:my-scheduler-extended-extended/dSlITZ4yQgmvxxAi4A8fHQ/*');
+    await helper.queue.rerunTask(taskId);
+
+    debug('### Waiting for pending message repated for run 0');
+    helper.assertPulseMessage('task-pending', m => m.payload.runId === 0);
+  });
+
+  test('rerun a pending task (does nothing - is idempotent)', async () => {
+    await createTask(taskDef);
+
+    debug('### Requesting task rerun');
+    helper.scopes('queue:rerun-task:my-scheduler-extended-extended/dSlITZ4yQgmvxxAi4A8fHQ/*');
+    await helper.queue.rerunTask(taskId);
+
+    debug('### Waiting for pending message repated for run 0');
+    helper.assertPulseMessage('task-pending', m => m.payload.runId === 0);
+  });
+
+  test('rerun a completed task (twice - is idempotent)', async () => {
+    await createTask(taskDef);
+    await claimTask();
 
     debug('### Reporting task completed');
     await helper.queue.reportCompleted(taskId, 0);
     helper.assertPulseMessage('task-completed');
 
     debug('### Requesting task rerun');
-    helper.scopes(
-      'queue:rerun-task',
-      'assume:scheduler-id:my-scheduler-extended-extended/dSlITZ4yQgmvxxAi4A8fHQ',
-    );
+    helper.scopes('queue:rerun-task:my-scheduler-extended-extended/dSlITZ4yQgmvxxAi4A8fHQ/*');
     await helper.queue.rerunTask(taskId);
 
     debug('### Waiting for pending message again');
@@ -68,6 +100,38 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Requesting task rerun (again - idempotent)');
     await helper.queue.rerunTask(taskId);
+    helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
+  });
+
+  test('rerun a failed task', async () => {
+    await createTask(taskDef);
+    await claimTask();
+
+    debug('### Reporting task completed');
+    await helper.queue.reportFailed(taskId, 0);
+    helper.assertPulseMessage('task-failed');
+
+    debug('### Requesting task rerun');
+    helper.scopes('queue:rerun-task:my-scheduler-extended-extended/dSlITZ4yQgmvxxAi4A8fHQ/*');
+    await helper.queue.rerunTask(taskId);
+
+    debug('### Waiting for pending message for run 1');
+    helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
+  });
+
+  test('rerun an exception task', async () => {
+    await createTask(taskDef);
+    await claimTask();
+
+    debug('### Reporting task completed');
+    await helper.queue.reportException(taskId, 0, { reason: 'malformed-payload' });
+    helper.assertPulseMessage('task-exception');
+
+    debug('### Requesting task rerun');
+    helper.scopes('queue:rerun-task:my-scheduler-extended-extended/dSlITZ4yQgmvxxAi4A8fHQ/*');
+    await helper.queue.rerunTask(taskId);
+
+    debug('### Waiting for pending message for run 1');
     helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
   });
 
