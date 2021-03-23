@@ -3839,7 +3839,7 @@
                 "$ref": "task-status.json#"
               },
               "takenUntil": {
-                "description": "Time at which the run expires and is resolved as `exception`,\nwith reason `claim-expired` if the run haven't been reclaimed.\n",
+                "description": "Time at which the run expires and is resolved as `exception`,\nwith reason `claim-expired` if the run haven't been reclaimed.\nThis will be some time in the future, with that time controlled\nby the `queue.task_claim_timeout` configuration.\n",
                 "format": "date-time",
                 "type": "string"
               },
@@ -9210,6 +9210,9 @@
               "type": "boolean"
             },
             "task_cache_max_size": {
+              "type": "number"
+            },
+            "task_claim_timeout": {
               "type": "number"
             },
             "taskcluster_access_token": {
