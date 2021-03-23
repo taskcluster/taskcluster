@@ -256,6 +256,7 @@ class Worker {
       lastChecked: row.last_checked,
       etag: row.etag,
       secret: row.secret,
+      quarantineUntil: row.quarantine_until,
     });
   }
 
@@ -278,6 +279,7 @@ class Worker {
       lastChecked: now,
       secret: null,
       expires: taskcluster.fromNow('1 week'),
+      quarantineUntil: null,
       ...input,
     });
   }
@@ -326,6 +328,7 @@ class Worker {
         lastChecked: this.lastChecked,
         etag,
         secret: this.secret,
+        quarantineUntil: null,
       });
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
