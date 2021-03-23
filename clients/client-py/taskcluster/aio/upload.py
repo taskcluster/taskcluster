@@ -61,7 +61,7 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
     """
     Upload the given data to the object service with the given metadata.
     The `maxRetries` parameter has the same meaning as for service clients.
-    The `objectService` paraemter is an instance of the Object class,
+    The `objectService` parameter is an instance of the Object class,
     configured with credentials for the upload.
     """
     async with aiohttp.ClientSession() as session:

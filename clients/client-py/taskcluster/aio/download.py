@@ -61,7 +61,7 @@ async def download(*, name, maxRetries=5, objectService, writerFactory):
     """
     Download the named object from the object service, using a writer returned
     from `writerFactory` to write the data.  The `maxRetries` parameter has
-    the same meaning as for service clients.  The `objectService` paraemter is
+    the same meaning as for service clients.  The `objectService` parameter is
     an instance of the Object class, configured with credentials for the
     upload.  Returns the content-type.
     """

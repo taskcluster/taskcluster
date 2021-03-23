@@ -13,8 +13,7 @@ pytestmark = [
 
 @pytest.mark.asyncio
 async def test_async_works_with_permanent_credentials():
-    """we can call methods which require authentication with valid
-    permacreds"""
+    """we can call methods which require authentication with valid permacreds"""
 
     client = subjectAsync.Auth({
         'rootUrl': base.REAL_ROOT_URL,
