@@ -127,9 +127,12 @@ def test_simple_download_fails_retried_succeeds(randbytes):
 def test_putUrl_upload_fails(randbytes):
     "When a putUrl upload's PUT fails with a 400, an exception is raised"
     data = randbytes(10240)  # >8k to avoid using dataInline
+    attempts = 0
 
     class Server(httptest.Handler):
         def do_PUT(self):
+            nonlocal attempts
+            attempts += 1
             self.send_response(400)
             self.end_headers()
             self.wfile.write(b'uhoh')
@@ -145,6 +148,8 @@ def test_putUrl_upload_fails(randbytes):
                 name="some/object",
                 data=data,
                 objectService=objectService)
+
+    assert attempts == 1
 
 
 def test_putUrl_upload_fails_retried(randbytes):
