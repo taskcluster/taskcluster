@@ -5,7 +5,7 @@ const azure = require('fast-azure-storage');
 const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure'], function(mock, skipping) {
   if (mock) {
     return; // We only test this with real creds
   }
@@ -18,12 +18,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   let testaccount;
   suiteSetup('get azure test account name', async function() {
     const cfg = await helper.load('cfg');
-    testaccount = _.keys(cfg.app.azureAccounts)[0];
+    testaccount = _.keys(cfg.azureAccounts)[0];
   });
 
   test('azureAccounts', function() {
     return helper.apiClient.azureAccounts().then(function(result) {
-      assert.deepEqual(result.accounts, _.keys(helper.cfg.app.azureAccounts));
+      assert.deepEqual(result.accounts, _.keys(helper.cfg.azureAccounts));
     });
   });
 
@@ -43,6 +43,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       }
     } while (extra.continuationToken);
     assert(false, 'TestTable was not in account!');
+  });
+
+  test('azureTables with undefined account', async function() {
+    await assert.rejects(
+      helper.apiClient.azureTables('nosuchaccount'),
+      err => err.statusCode === 404);
   });
 
   test('azureTableSAS', function() {
@@ -216,6 +222,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       }
     } while (extra.continuationToken);
     assert(false, 'container was not in account!');
+  });
+
+  test('azureContainers with unknown account', async function() {
+    await assert.rejects(
+      () => helper.apiClient.azureContainers('nosuch'),
+      err => err.statusCode === 404);
   });
 
   test('azureContainerSAS (read-only)', async () => {

@@ -9,6 +9,9 @@ const tableLastCreated = {};
 // Similar for containers
 const containerLastCreated = {};
 
+const getAzureAccounts = context => context.cfg.azureAccounts || {};
+const getAzureAccount = (context, account) => getAzureAccounts(context)[account];
+
 builder.declare({
   method: 'get',
   route: '/azure/accounts',
@@ -23,7 +26,7 @@ builder.declare({
     'Retrieve a list of all Azure accounts managed by Taskcluster Auth.',
   ].join('\n'),
 }, function(req, res) {
-  return res.reply({ accounts: _.keys(this.azureAccounts) });
+  return res.reply({ accounts: _.keys(getAzureAccounts(this)) });
 });
 
 builder.declare({
@@ -46,9 +49,15 @@ builder.declare({
   let account = req.params.account;
   let continuationToken = req.query.continuationToken || null;
 
+  const accessKey = getAzureAccount(this, account);
+  if (!accessKey) {
+    return res.reportError('ResourceNotFound',
+      `Account '${account}' not found, can't delegate access`);
+  }
+
   let table = new azure.Table({
     accountId: account,
-    accessKey: this.azureAccounts[account],
+    accessKey,
   });
 
   let result = await table.queryTables({ nextTableName: continuationToken });
@@ -99,7 +108,8 @@ builder.declare({
   });
 
   // Check that the account exists
-  if (!this.azureAccounts[account]) {
+  const accessKey = getAzureAccount(this, account);
+  if (!accessKey) {
     return res.reportError('ResourceNotFound',
       `Account '${account}' not found, can't delegate access`);
   }
@@ -107,7 +117,7 @@ builder.declare({
   // Construct client
   let table = new azure.Table({
     accountId: account,
-    accessKey: this.azureAccounts[account],
+    accessKey,
   });
 
   // Create table, ignore error, if it already exists
@@ -168,9 +178,15 @@ builder.declare({
   let account = req.params.account;
   let continuationToken = req.query.continuationToken || null;
 
+  const accessKey = getAzureAccount(this, account);
+  if (!accessKey) {
+    return res.reportError('ResourceNotFound',
+      `Account '${account}' not found, can't delegate access.`);
+  }
+
   let blob = new azure.Blob({
     accountId: account,
-    accessKey: this.azureAccounts[account],
+    accessKey,
   });
 
   let result = await blob.listContainers({ marker: continuationToken });
@@ -216,15 +232,16 @@ builder.declare({
   await req.authorize({ level, account, container, levelIsReadOnly: level === 'read-only' });
 
   // Check that the account exists
-  if (!this.azureAccounts[account]) {
+  const accessKey = getAzureAccount(this, account);
+  if (!accessKey) {
     return res.reportError('ResourceNotFound',
-      `Account '${level}' not found, can't delegate access.`);
+      `Account '${account}' not found, can't delegate access.`);
   }
 
   // Construct client
   let blob = new azure.Blob({
     accountId: account,
-    accessKey: this.azureAccounts[account],
+    accessKey,
   });
 
   // Create container ignore error, if it already exists

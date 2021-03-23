@@ -8130,7 +8130,6 @@
           "required": [
             "procs",
             "static_clients",
-            "azure_accounts",
             "read_db_url",
             "write_db_url",
             "pulse_username",
