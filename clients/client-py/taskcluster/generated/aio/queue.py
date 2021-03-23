@@ -16,6 +16,46 @@ class Queue(AsyncBaseClient):
     The queue service is responsible for accepting tasks and tracking their state
     as they are executed by workers, in order to ensure they are eventually
     resolved.
+
+    ## Artifact Storage Types
+
+    * **S3 artifacts** are used for static files which will be
+    stored on S3. When creating an S3 artifact the queue will return a
+    pre-signed URL to which you can do a `PUT` request to upload your
+    artifact. Note that `PUT` request **must** specify the `content-length`
+    header and **must** give the `content-type` header the same value as in
+    the request to `createArtifact`.
+    * **Redirect artifacts**, will redirect the caller to URL when fetched
+    with a a 303 (See Other) response.  Clients will not apply any kind of
+    authentication to that URL.
+    * **Link artifacts**, will be treated as if the caller requested the linked
+    artifact on the same task.  Links may be chained, but cycles are forbidden.
+    The caller must have scopes for the linked artifact, or a 403 response will
+    be returned.
+    * **Error artifacts**, only consists of meta-data which the queue will
+    store for you. These artifacts are only meant to indicate that you the
+    worker or the task failed to generate a specific artifact, that you
+    would otherwise have uploaded. For example docker-worker will upload an
+    error artifact, if the file it was supposed to upload doesn't exists or
+    turns out to be a directory. Clients requesting an error artifact will
+    get a `424` (Failed Dependency) response. This is mainly designed to
+    ensure that dependent tasks can distinguish between artifacts that were
+    suppose to be generated and artifacts for which the name is misspelled.
+
+    ## Artifact immutability
+
+    Generally speaking you cannot overwrite an artifact when created.
+    But if you repeat the request with the same properties the request will
+    succeed as the operation is idempotent.
+    This is useful if you need to refresh a signed URL while uploading.
+    Do not abuse this to overwrite artifacts created by another entity!
+    Such as worker-host overwriting artifact created by worker-code.
+
+    The queue defines the following *immutability special cases*:
+
+    * A `reference` artifact can replace an existing `reference` artifact.
+    * A `link` artifact can replace an existing `reference` artifact.
+    * Any artifact's `expires` can be extended (made later, but not earlier).
     """
 
     classOptions = {

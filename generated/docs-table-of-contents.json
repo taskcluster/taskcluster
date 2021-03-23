@@ -2511,7 +2511,7 @@
                 "name": "task-schema",
                 "next": {
                   "path": "reference/platform/queue/artifacts",
-                  "title": "artifacts"
+                  "title": "Artifacts"
                 },
                 "path": "reference/platform/queue/task-schema",
                 "prev": {
@@ -2528,7 +2528,7 @@
                 ],
                 "data": {
                   "order": 1000,
-                  "title": "artifacts"
+                  "title": "Artifacts"
                 },
                 "name": "artifacts",
                 "next": {
@@ -3289,7 +3289,7 @@
         "path": "reference/core/README",
         "prev": {
           "path": "reference/platform/queue/artifacts",
-          "title": "artifacts"
+          "title": "Artifacts"
         },
         "up": {
           "path": "reference/README",
