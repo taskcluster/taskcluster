@@ -67,6 +67,7 @@
     },
     "worker_manager": {
       "tables": {
+        "queue_workers": "read",
         "worker_pool_errors": "write",
         "worker_pools": "write",
         "workers": "write"
@@ -6056,6 +6057,26 @@
         }
       },
       "version": 65
+    },
+    {
+      "description": "add get_non_stopped_workers_with_quarantine to include quarantine info from the queue",
+      "downgradeScript": "begin\n  revoke select on queue_workers from $db_user_prefix$_worker_manager;\nend\n",
+      "methods": {
+        "get_non_stopped_workers_2": {
+          "deprecated": true
+        },
+        "get_non_stopped_workers_quntil": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.secret,\n    workers.etag,\n    queue_workers.quarantine_until\n  from\n    workers\n    left join queue_workers on \n      workers.worker_pool_id = queue_workers.task_queue_id and\n      workers.worker_id = queue_workers.worker_id and\n      workers.worker_group = queue_workers.worker_group\n  where\n    (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and\n    (workers.worker_group = worker_group_in or worker_group_in is null) and\n    (workers.worker_id = worker_id_in or worker_id_in is null) and\n    (workers.state <> 'stopped')\n  order by worker_pool_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get non-stopped workers filtered by the optional arguments,\nordered by `worker_pool_id`, `worker_group`, and  `worker_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset `page_offset`.\nThe `quaratine_until` contains NULL or a date in the past if the\nworker is not quarantined, otherwise the date until which it is\nquaratined.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid, quarantine_until timestamptz)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "migrationScript": "begin\n  grant select on queue_workers to $db_user_prefix$_worker_manager;\nend\n",
+      "version": 66
     }
   ]
 }

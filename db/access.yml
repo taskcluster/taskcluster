@@ -54,3 +54,4 @@ worker_manager:
     workers: write
     worker_pools: write
     worker_pool_errors: write
+    queue_workers: read
