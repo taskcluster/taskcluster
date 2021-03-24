@@ -241,7 +241,7 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 // making sure that ` + "`${GOPATH}/bin` is in your `PATH`" + `:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // ` + apiDefs[i].URL + `
 `

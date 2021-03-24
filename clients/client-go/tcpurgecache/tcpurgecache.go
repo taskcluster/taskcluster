@@ -4,7 +4,7 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/purge-cache/v1/api.json
 // The purge-cache service is responsible for tracking cache-purge requests.

@@ -4,7 +4,7 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/worker-manager/v1/api.json
 // This service manages workers, including provisioning for dynamic worker pools.
