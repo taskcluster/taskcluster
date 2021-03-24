@@ -4,7 +4,7 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/object/v1/api.json
 // The object service provides HTTP-accessible storage for large blobs of data.

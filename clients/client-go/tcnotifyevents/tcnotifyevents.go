@@ -4,7 +4,7 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/notify/v1/exchanges.json
 // This pretty much only contains the simple free-form
