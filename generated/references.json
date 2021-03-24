@@ -4282,7 +4282,7 @@
           "properties": {
             "contentLength": {
               "description": "Length, in bytes, of the uploaded data.",
-              "type": "number"
+              "type": "integer"
             },
             "contentType": {
               "description": "Content-type of the data to be uploaded.",

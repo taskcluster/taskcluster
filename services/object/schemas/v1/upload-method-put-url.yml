@@ -12,7 +12,7 @@ definitions:
         type: string
         description: Content-type of the data to be uploaded.
       contentLength:
-        type: number
+        type: integer
         description: Length, in bytes, of the uploaded data.
     additionalProperties: false
     required: [contentType, contentLength]
