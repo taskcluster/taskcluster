@@ -1,0 +1,28 @@
+---
+title: Artifacts
+---
+
+# Artifacts
+
+## Artifact Storage Types
+
+Each artifact has a storageType, defining how it is stored and how it behaves.
+See the [Queue API documentation](./api) for details.
+
+## Getting Artifacts
+
+The queue service has a plethora of methods for accessing artifacts.
+They are grouped in pairs, with a version taking a `runId` and a version that uses the latest run.
+
+To get metadata about all of a task's artifacts, use `listArtifacts`/`listLatestArtifacts`.
+For a single artifact, use `getArtifactInfo`/`getLatestArtifactInfo`.
+None of these methods follow `link` artifacts.
+
+To get artifact content, use `artifact`/`latestArtfact`.
+These methods return a structure specific to the storage type.
+For storage types that contain data, this structure will include enough information to access that data (such as a URL).
+
+The alternative methods to get artifact content are `getArtifact`/`getLatestArtifact`.
+These methods are similar to the "simple" download method supported by the object service.
+They redirect to the backend data for artifacts containing data, or return an HTTP 424 error for `error` artifacts.
+Typically, these methods are used with utilities like `curl` or `requests`, which handle bulk data transfer directly.

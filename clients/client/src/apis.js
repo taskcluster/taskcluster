@@ -1788,7 +1788,7 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The queue service is responsible for accepting tasks and track their state\nas they are executed by workers. In order ensure they are eventually\nresolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
+      "description": "The queue service is responsible for accepting tasks and tracking their state\nas they are executed by workers, in order to ensure they are eventually\nresolved.\n\n## Artifact Storage Types\n\n* **S3 artifacts** are used for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n* **Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n* **Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n* **Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n## Artifact immutability\n\nGenerally speaking you cannot overwrite an artifact when created.\nBut if you repeat the request with the same properties the request will\nsucceed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nThe queue defines the following *immutability special cases*:\n\n* A `reference` artifact can replace an existing `reference` artifact.\n* A `link` artifact can replace an existing `reference` artifact.\n* Any artifact's `expires` can be extended (made later, but not earlier).",
       "entries": [
         {
           "args": [
@@ -2129,7 +2129,7 @@ module.exports = {
             "name"
           ],
           "category": "Artifacts",
-          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support \"S3 Artifacts\" for data storage.\n\n**S3 artifacts**, is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n\n**Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\n**Immutability Special Cases**:\n\n* A `reference` artifact can replace an existing `reference` artifact`.\n* A `link` artifact can replace an existing `reference` artifact`.\n* Any artifact's `expires` can be extended.",
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.",
           "input": "v1/post-artifact-request.json#",
           "method": "post",
           "name": "createArtifact",
@@ -2166,7 +2166,7 @@ module.exports = {
             ]
           },
           "stability": "stable",
-          "title": "Get Artifact from Run",
+          "title": "Get Artifact Data from Run",
           "type": "function"
         },
         {
@@ -2192,7 +2192,7 @@ module.exports = {
             ]
           },
           "stability": "stable",
-          "title": "Get Artifact from Latest Run",
+          "title": "Get Artifact Data from Latest Run",
           "type": "function"
         },
         {
@@ -2232,6 +2232,96 @@ module.exports = {
           "scopes": "queue:list-artifacts:<taskId>",
           "stability": "stable",
           "title": "Get Artifacts from Latest Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns associated metadata for a given artifact, in the given task run.\nThe metadata is the same as that returned from `listArtifacts`, and does\nnot grant access to the artifact data.\n\nNote that this method does *not* automatically follow link artifacts.",
+          "method": "get",
+          "name": "artifactInfo",
+          "output": "v1/artifact-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/runs/<runId>/artifact-info/<name>",
+          "scopes": "queue:list-artifacts:<taskId>:<runId>",
+          "stability": "stable",
+          "title": "Get Artifact Information From Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns associated metadata for a given artifact, in the latest run of the\ntask.  The metadata is the same as that returned from `listArtifacts`,\nand does not grant access to the artifact data.\n\nNote that this method does *not* automatically follow link artifacts.",
+          "method": "get",
+          "name": "latestArtifactInfo",
+          "output": "v1/artifact-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/artifact-info/<name>",
+          "scopes": "queue:list-artifacts:<taskId>",
+          "stability": "stable",
+          "title": "Get Artifact Information From Latest Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns information about the content of the artifact, in the given task run.\n\nDepending on the storage type, the endpoint returns the content of the artifact\nor enough information to access that content.\n\nThis method follows link artifacts, so it will not return content\nfor a link artifact.",
+          "method": "get",
+          "name": "artifact",
+          "output": "v1/artifact-content-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/runs/<runId>/artifact-content/<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
+          "stability": "stable",
+          "title": "Get Artifact Content From Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns information about the content of the artifact, in the latest task run.\n\nDepending on the storage type, the endpoint returns the content of the artifact\nor enough information to access that content.\n\nThis method follows link artifacts, so it will not return content\nfor a link artifact.",
+          "method": "get",
+          "name": "latestArtifact",
+          "output": "v1/artifact-content-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/artifact-content/<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
+          "stability": "stable",
+          "title": "Get Artifact Content From Latest Run",
           "type": "function"
         },
         {

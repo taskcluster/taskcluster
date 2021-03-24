@@ -9,15 +9,49 @@ use crate::util::urlencode;
 
 /// Queue Service
 ///
-/// The queue service is responsible for accepting tasks and track their state
-/// as they are executed by workers. In order ensure they are eventually
+/// The queue service is responsible for accepting tasks and tracking their state
+/// as they are executed by workers, in order to ensure they are eventually
 /// resolved.
 ///
-/// This document describes the API end-points offered by the queue. These 
-/// end-points targets the following audience:
-///  * Schedulers, who create tasks to be executed,
-///  * Workers, who execute tasks, and
-///  * Tools, that wants to inspect the state of a task.
+/// ## Artifact Storage Types
+///
+/// * **S3 artifacts** are used for static files which will be
+/// stored on S3. When creating an S3 artifact the queue will return a
+/// pre-signed URL to which you can do a `PUT` request to upload your
+/// artifact. Note that `PUT` request **must** specify the `content-length`
+/// header and **must** give the `content-type` header the same value as in
+/// the request to `createArtifact`.
+/// * **Redirect artifacts**, will redirect the caller to URL when fetched
+/// with a a 303 (See Other) response.  Clients will not apply any kind of
+/// authentication to that URL.
+/// * **Link artifacts**, will be treated as if the caller requested the linked
+/// artifact on the same task.  Links may be chained, but cycles are forbidden.
+/// The caller must have scopes for the linked artifact, or a 403 response will
+/// be returned.
+/// * **Error artifacts**, only consists of meta-data which the queue will
+/// store for you. These artifacts are only meant to indicate that you the
+/// worker or the task failed to generate a specific artifact, that you
+/// would otherwise have uploaded. For example docker-worker will upload an
+/// error artifact, if the file it was supposed to upload doesn't exists or
+/// turns out to be a directory. Clients requesting an error artifact will
+/// get a `424` (Failed Dependency) response. This is mainly designed to
+/// ensure that dependent tasks can distinguish between artifacts that were
+/// suppose to be generated and artifacts for which the name is misspelled.
+///
+/// ## Artifact immutability
+///
+/// Generally speaking you cannot overwrite an artifact when created.
+/// But if you repeat the request with the same properties the request will
+/// succeed as the operation is idempotent.
+/// This is useful if you need to refresh a signed URL while uploading.
+/// Do not abuse this to overwrite artifacts created by another entity!
+/// Such as worker-host overwriting artifact created by worker-code.
+///
+/// The queue defines the following *immutability special cases*:
+///
+/// * A `reference` artifact can replace an existing `reference` artifact.
+/// * A `link` artifact can replace an existing `reference` artifact.
+/// * Any artifact's `expires` can be extended (made later, but not earlier).
 pub struct Queue (Client);
 
 #[allow(non_snake_case)]
@@ -539,47 +573,6 @@ impl Queue {
     /// expiration point. This features makes it feasible to upload large
     /// intermediate artifacts from data processing applications, as the
     /// artifacts can be set to expire a few days later.
-    /// 
-    /// We currently support "S3 Artifacts" for data storage.
-    /// 
-    /// **S3 artifacts**, is useful for static files which will be
-    /// stored on S3. When creating an S3 artifact the queue will return a
-    /// pre-signed URL to which you can do a `PUT` request to upload your
-    /// artifact. Note that `PUT` request **must** specify the `content-length`
-    /// header and **must** give the `content-type` header the same value as in
-    /// the request to `createArtifact`.
-    /// 
-    /// **Redirect artifacts**, will redirect the caller to URL when fetched
-    /// with a a 303 (See Other) response.  Clients will not apply any kind of
-    /// authentication to that URL.
-    /// 
-    /// **Link artifacts**, will be treated as if the caller requested the linked
-    /// artifact on the same task.  Links may be chained, but cycles are forbidden.
-    /// The caller must have scopes for the linked artifact, or a 403 response will
-    /// be returned.
-    /// 
-    /// **Error artifacts**, only consists of meta-data which the queue will
-    /// store for you. These artifacts are only meant to indicate that you the
-    /// worker or the task failed to generate a specific artifact, that you
-    /// would otherwise have uploaded. For example docker-worker will upload an
-    /// error artifact, if the file it was supposed to upload doesn't exists or
-    /// turns out to be a directory. Clients requesting an error artifact will
-    /// get a `424` (Failed Dependency) response. This is mainly designed to
-    /// ensure that dependent tasks can distinguish between artifacts that were
-    /// suppose to be generated and artifacts for which the name is misspelled.
-    /// 
-    /// **Artifact immutability**, generally speaking you cannot overwrite an
-    /// artifact when created. But if you repeat the request with the same
-    /// properties the request will succeed as the operation is idempotent.
-    /// This is useful if you need to refresh a signed URL while uploading.
-    /// Do not abuse this to overwrite artifacts created by another entity!
-    /// Such as worker-host overwriting artifact created by worker-code.
-    /// 
-    /// **Immutability Special Cases**:
-    /// 
-    /// * A `reference` artifact can replace an existing `reference` artifact`.
-    /// * A `link` artifact can replace an existing `reference` artifact`.
-    /// * Any artifact's `expires` can be extended.
     pub async fn createArtifact(&self, taskId: &str, runId: &str, name: &str, payload: &Value) -> Result<Value, Error> {
         let method = "POST";
         let (path, query) = Self::createArtifact_details(taskId, runId, name);
@@ -596,7 +589,7 @@ impl Queue {
         (path, query)
     }
 
-    /// Get Artifact from Run
+    /// Get Artifact Data from Run
     /// 
     /// Get artifact by `<name>` from a specific run.
     /// 
@@ -674,7 +667,7 @@ impl Queue {
         (path, query)
     }
 
-    /// Get Artifact from Latest Run
+    /// Get Artifact Data from Latest Run
     /// 
     /// Get artifact by `<name>` from the last run of a task.
     /// 
@@ -808,6 +801,150 @@ impl Queue {
         if let Some(q) = limit {
             query.get_or_insert_with(Vec::new).push(("limit", q));
         }
+
+        (path, query)
+    }
+
+    /// Get Artifact Information From Run
+    /// 
+    /// Returns associated metadata for a given artifact, in the given task run.
+    /// The metadata is the same as that returned from `listArtifacts`, and does
+    /// not grant access to the artifact data.
+    /// 
+    /// Note that this method does *not* automatically follow link artifacts.
+    pub async fn artifactInfo(&self, taskId: &str, runId: &str, name: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::artifactInfo_details(taskId, runId, name);
+        let body = None;
+        let resp = self.0.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the artifactInfo endpoint
+    pub fn artifactInfo_url(&self, taskId: &str, runId: &str, name: &str) -> Result<String, Error> {
+        let (path, query) = Self::artifactInfo_details(taskId, runId, name);
+        self.0.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the artifactInfo endpoint
+    pub fn artifactInfo_signed_url(&self, taskId: &str, runId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::artifactInfo_details(taskId, runId, name);
+        self.0.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for artifactInfo
+    fn artifactInfo_details<'a>(taskId: &'a str, runId: &'a str, name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}/runs/{}/artifact-info/{}", urlencode(taskId), urlencode(runId), urlencode(name));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Get Artifact Information From Latest Run
+    /// 
+    /// Returns associated metadata for a given artifact, in the latest run of the
+    /// task.  The metadata is the same as that returned from `listArtifacts`,
+    /// and does not grant access to the artifact data.
+    /// 
+    /// Note that this method does *not* automatically follow link artifacts.
+    pub async fn latestArtifactInfo(&self, taskId: &str, name: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::latestArtifactInfo_details(taskId, name);
+        let body = None;
+        let resp = self.0.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the latestArtifactInfo endpoint
+    pub fn latestArtifactInfo_url(&self, taskId: &str, name: &str) -> Result<String, Error> {
+        let (path, query) = Self::latestArtifactInfo_details(taskId, name);
+        self.0.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the latestArtifactInfo endpoint
+    pub fn latestArtifactInfo_signed_url(&self, taskId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::latestArtifactInfo_details(taskId, name);
+        self.0.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for latestArtifactInfo
+    fn latestArtifactInfo_details<'a>(taskId: &'a str, name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}/artifact-info/{}", urlencode(taskId), urlencode(name));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Get Artifact Content From Run
+    /// 
+    /// Returns information about the content of the artifact, in the given task run.
+    /// 
+    /// Depending on the storage type, the endpoint returns the content of the artifact
+    /// or enough information to access that content.
+    /// 
+    /// This method follows link artifacts, so it will not return content
+    /// for a link artifact.
+    pub async fn artifact(&self, taskId: &str, runId: &str, name: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::artifact_details(taskId, runId, name);
+        let body = None;
+        let resp = self.0.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the artifact endpoint
+    pub fn artifact_url(&self, taskId: &str, runId: &str, name: &str) -> Result<String, Error> {
+        let (path, query) = Self::artifact_details(taskId, runId, name);
+        self.0.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the artifact endpoint
+    pub fn artifact_signed_url(&self, taskId: &str, runId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::artifact_details(taskId, runId, name);
+        self.0.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for artifact
+    fn artifact_details<'a>(taskId: &'a str, runId: &'a str, name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}/runs/{}/artifact-content/{}", urlencode(taskId), urlencode(runId), urlencode(name));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Get Artifact Content From Latest Run
+    /// 
+    /// Returns information about the content of the artifact, in the latest task run.
+    /// 
+    /// Depending on the storage type, the endpoint returns the content of the artifact
+    /// or enough information to access that content.
+    /// 
+    /// This method follows link artifacts, so it will not return content
+    /// for a link artifact.
+    pub async fn latestArtifact(&self, taskId: &str, name: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::latestArtifact_details(taskId, name);
+        let body = None;
+        let resp = self.0.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the latestArtifact endpoint
+    pub fn latestArtifact_url(&self, taskId: &str, name: &str) -> Result<String, Error> {
+        let (path, query) = Self::latestArtifact_details(taskId, name);
+        self.0.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the latestArtifact endpoint
+    pub fn latestArtifact_signed_url(&self, taskId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::latestArtifact_details(taskId, name);
+        self.0.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for latestArtifact
+    fn latestArtifact_details<'a>(taskId: &'a str, name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}/artifact-content/{}", urlencode(taskId), urlencode(name));
+        let query = None;
 
         (path, query)
     }

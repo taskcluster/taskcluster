@@ -7,15 +7,49 @@
 
 // This package was generated from the schema defined at
 // /references/queue/v1/api.json
-// The queue service is responsible for accepting tasks and track their state
-// as they are executed by workers. In order ensure they are eventually
+// The queue service is responsible for accepting tasks and tracking their state
+// as they are executed by workers, in order to ensure they are eventually
 // resolved.
 //
-// This document describes the API end-points offered by the queue. These
-// end-points targets the following audience:
-//  * Schedulers, who create tasks to be executed,
-//  * Workers, who execute tasks, and
-//  * Tools, that wants to inspect the state of a task.
+// ## Artifact Storage Types
+//
+// * **S3 artifacts** are used for static files which will be
+// stored on S3. When creating an S3 artifact the queue will return a
+// pre-signed URL to which you can do a `PUT` request to upload your
+// artifact. Note that `PUT` request **must** specify the `content-length`
+// header and **must** give the `content-type` header the same value as in
+// the request to `createArtifact`.
+// * **Redirect artifacts**, will redirect the caller to URL when fetched
+// with a a 303 (See Other) response.  Clients will not apply any kind of
+// authentication to that URL.
+// * **Link artifacts**, will be treated as if the caller requested the linked
+// artifact on the same task.  Links may be chained, but cycles are forbidden.
+// The caller must have scopes for the linked artifact, or a 403 response will
+// be returned.
+// * **Error artifacts**, only consists of meta-data which the queue will
+// store for you. These artifacts are only meant to indicate that you the
+// worker or the task failed to generate a specific artifact, that you
+// would otherwise have uploaded. For example docker-worker will upload an
+// error artifact, if the file it was supposed to upload doesn't exists or
+// turns out to be a directory. Clients requesting an error artifact will
+// get a `424` (Failed Dependency) response. This is mainly designed to
+// ensure that dependent tasks can distinguish between artifacts that were
+// suppose to be generated and artifacts for which the name is misspelled.
+//
+// ## Artifact immutability
+//
+// Generally speaking you cannot overwrite an artifact when created.
+// But if you repeat the request with the same properties the request will
+// succeed as the operation is idempotent.
+// This is useful if you need to refresh a signed URL while uploading.
+// Do not abuse this to overwrite artifacts created by another entity!
+// Such as worker-host overwriting artifact created by worker-code.
+//
+// The queue defines the following *immutability special cases*:
+//
+// * A `reference` artifact can replace an existing `reference` artifact.
+// * A `link` artifact can replace an existing `reference` artifact.
+// * Any artifact's `expires` can be extended (made later, but not earlier).
 //
 // See:
 //
@@ -523,47 +557,6 @@ func (queue *Queue) ReportException(taskId, runId string, payload *TaskException
 // intermediate artifacts from data processing applications, as the
 // artifacts can be set to expire a few days later.
 //
-// We currently support "S3 Artifacts" for data storage.
-//
-// **S3 artifacts**, is useful for static files which will be
-// stored on S3. When creating an S3 artifact the queue will return a
-// pre-signed URL to which you can do a `PUT` request to upload your
-// artifact. Note that `PUT` request **must** specify the `content-length`
-// header and **must** give the `content-type` header the same value as in
-// the request to `createArtifact`.
-//
-// **Redirect artifacts**, will redirect the caller to URL when fetched
-// with a a 303 (See Other) response.  Clients will not apply any kind of
-// authentication to that URL.
-//
-// **Link artifacts**, will be treated as if the caller requested the linked
-// artifact on the same task.  Links may be chained, but cycles are forbidden.
-// The caller must have scopes for the linked artifact, or a 403 response will
-// be returned.
-//
-// **Error artifacts**, only consists of meta-data which the queue will
-// store for you. These artifacts are only meant to indicate that you the
-// worker or the task failed to generate a specific artifact, that you
-// would otherwise have uploaded. For example docker-worker will upload an
-// error artifact, if the file it was supposed to upload doesn't exists or
-// turns out to be a directory. Clients requesting an error artifact will
-// get a `424` (Failed Dependency) response. This is mainly designed to
-// ensure that dependent tasks can distinguish between artifacts that were
-// suppose to be generated and artifacts for which the name is misspelled.
-//
-// **Artifact immutability**, generally speaking you cannot overwrite an
-// artifact when created. But if you repeat the request with the same
-// properties the request will succeed as the operation is idempotent.
-// This is useful if you need to refresh a signed URL while uploading.
-// Do not abuse this to overwrite artifacts created by another entity!
-// Such as worker-host overwriting artifact created by worker-code.
-//
-// **Immutability Special Cases**:
-//
-// * A `reference` artifact can replace an existing `reference` artifact`.
-// * A `link` artifact can replace an existing `reference` artifact`.
-// * Any artifact's `expires` can be extended.
-//
 // Required scopes:
 //   queue:create-artifact:<taskId>/<runId>
 //
@@ -772,6 +765,118 @@ func (queue *Queue) ListLatestArtifacts_SignedURL(taskId, continuationToken, lim
 	}
 	cd := tcclient.Client(*queue)
 	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts", v, duration)
+}
+
+// Returns associated metadata for a given artifact, in the given task run.
+// The metadata is the same as that returned from `listArtifacts`, and does
+// not grant access to the artifact data.
+//
+// Note that this method does *not* automatically follow link artifacts.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>:<runId>
+//
+// See #artifactInfo
+func (queue *Queue) ArtifactInfo(taskId, runId, name string) (*Artifact, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-info/"+url.QueryEscape(name), new(Artifact), nil)
+	return responseObject.(*Artifact), err
+}
+
+// Returns a signed URL for ArtifactInfo, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>:<runId>
+//
+// See ArtifactInfo for more details.
+func (queue *Queue) ArtifactInfo_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-info/"+url.QueryEscape(name), nil, duration)
+}
+
+// Returns associated metadata for a given artifact, in the latest run of the
+// task.  The metadata is the same as that returned from `listArtifacts`,
+// and does not grant access to the artifact data.
+//
+// Note that this method does *not* automatically follow link artifacts.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>
+//
+// See #latestArtifactInfo
+func (queue *Queue) LatestArtifactInfo(taskId, name string) (*Artifact, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifact-info/"+url.QueryEscape(name), new(Artifact), nil)
+	return responseObject.(*Artifact), err
+}
+
+// Returns a signed URL for LatestArtifactInfo, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>
+//
+// See LatestArtifactInfo for more details.
+func (queue *Queue) LatestArtifactInfo_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifact-info/"+url.QueryEscape(name), nil, duration)
+}
+
+// Returns information about the content of the artifact, in the given task run.
+//
+// Depending on the storage type, the endpoint returns the content of the artifact
+// or enough information to access that content.
+//
+// This method follows link artifacts, so it will not return content
+// for a link artifact.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See #artifact
+func (queue *Queue) Artifact(taskId, runId, name string) (*GetArtifactContentResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-content/"+url.QueryEscape(name), new(GetArtifactContentResponse), nil)
+	return responseObject.(*GetArtifactContentResponse), err
+}
+
+// Returns a signed URL for Artifact, valid for the specified duration.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See Artifact for more details.
+func (queue *Queue) Artifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-content/"+url.QueryEscape(name), nil, duration)
+}
+
+// Returns information about the content of the artifact, in the latest task run.
+//
+// Depending on the storage type, the endpoint returns the content of the artifact
+// or enough information to access that content.
+//
+// This method follows link artifacts, so it will not return content
+// for a link artifact.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See #latestArtifact
+func (queue *Queue) LatestArtifact(taskId, name string) (*GetArtifactContentResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifact-content/"+url.QueryEscape(name), new(GetArtifactContentResponse), nil)
+	return responseObject.(*GetArtifactContentResponse), err
+}
+
+// Returns a signed URL for LatestArtifact, valid for the specified duration.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See LatestArtifact for more details.
+func (queue *Queue) LatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifact-content/"+url.QueryEscape(name), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***

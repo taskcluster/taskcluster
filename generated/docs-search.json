@@ -204,6 +204,13 @@
   },
   {
     "element": "h2",
+    "id": "queue-s3-artifact-credentials",
+    "path": "/manual/deploying/cloud-credentials",
+    "subtitle": "Queue 's3' Artifact Credentials",
+    "title": "Cloud Credentials"
+  },
+  {
+    "element": "h2",
     "id": "sentry-credentials",
     "path": "/manual/deploying/cloud-credentials",
     "subtitle": "Sentry Credentials",
@@ -2807,20 +2814,6 @@
     "title": "Queue Service"
   },
   {
-    "element": "h3",
-    "id": "aws-access-policies-required",
-    "path": "/reference/platform/queue",
-    "subtitle": "AWS Access Policies Required",
-    "title": "Queue Service"
-  },
-  {
-    "element": "h2",
-    "id": "deployment",
-    "path": "/reference/platform/queue",
-    "subtitle": "Deployment",
-    "title": "Queue Service"
-  },
-  {
     "element": "h2",
     "id": "usage",
     "path": "/reference/platform/queue",
@@ -2861,6 +2854,27 @@
     "path": "/reference/platform/queue/actions",
     "subtitle": "Triggering Actions in Automation",
     "title": "Actions"
+  },
+  {
+    "element": "h1",
+    "id": "artifacts",
+    "path": "/reference/platform/queue/artifacts",
+    "subtitle": null,
+    "title": "Artifacts"
+  },
+  {
+    "element": "h2",
+    "id": "artifact-storage-types",
+    "path": "/reference/platform/queue/artifacts",
+    "subtitle": "Artifact Storage Types",
+    "title": "Artifacts"
+  },
+  {
+    "element": "h2",
+    "id": "getting-artifacts",
+    "path": "/reference/platform/queue/artifacts",
+    "subtitle": "Getting Artifacts",
+    "title": "Artifacts"
   },
   {
     "element": "h1",
