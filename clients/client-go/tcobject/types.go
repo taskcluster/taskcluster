@@ -136,7 +136,7 @@ type (
 	PutURLUploadRequest struct {
 
 		// Length, in bytes, of the uploaded data.
-		ContentLength float64 `json:"contentLength"`
+		ContentLength int64 `json:"contentLength"`
 
 		// Content-type of the data to be uploaded.
 		ContentType string `json:"contentType"`
