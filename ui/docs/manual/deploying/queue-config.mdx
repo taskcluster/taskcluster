@@ -12,8 +12,8 @@ Until everything uses the Object Service, the queue service must be configured t
 That involves the following Helm values:
 
 * `queue.artifact_region`
-* `queue.public_artifact_bucket`
-* `queue.private_artifact_bucket`
+* `queue.public_artifact_bucket` (bucket name, e.g., `my-public-artifacts`)
+* `queue.private_artifact_bucket` (same)
 * `queue.sign_public_artifact_urls` (optional, default false)
 * `queue.public_artifact_bucket_cdn` (optional)
 * `queue.aws_access_key_id`
