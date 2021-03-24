@@ -16,7 +16,8 @@ import SignInDialog from '../SignInDialog';
     },
   },
   headline: {
-    fontFamily: 'Roboto500',
+    fontFamily: 'Roboto',
+    fontWeight: 500,
     [theme.breakpoints.down('sm')]: {
       marginBottom: theme.spacing(2),
       fontSize: 40,

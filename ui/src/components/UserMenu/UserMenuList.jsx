@@ -24,7 +24,8 @@ import getPictureFromUser from '../../utils/getPictureFromUser';
   },
   text: {
     color: theme.palette.text.primary,
-    fontFamily: 'Roboto500',
+    fontFamily: 'Roboto',
+    fontWeight: 500,
   },
   icon: {
     fill: theme.palette.text.primary,

@@ -1635,7 +1635,7 @@ module.exports = {
             "name"
           ],
           "category": "Upload",
-          "description": "Create a new object by initiating upload of its data.\n\nThis endpoint implements negotiation of upload methods.  It can be called\nmultiple times if necessary, either to propose new upload methods or to\nrenew credentials for an already-agreed upload.\n\nThe `uploadId` must be supplied by the caller, and any attempts to upload\nan object with the same name but a different `uploadId` will fail.\nThus the first call to this method establishes the `uploadId` for the\nobject, and as long as that value is kept secret, no other caller can\nupload an object of that name, regardless of scopes.  Object expiration\ncannot be changed after the initial call, either.  It is possible to call\nthis method with no proposed upload methods, which has the effect of \"locking\nin\" the `expiration` and `uploadId` properties.\n\nUnfinished uploads expire after 1 day.",
+          "description": "Create a new object by initiating upload of its data.\n\nThis endpoint implements negotiation of upload methods.  It can be called\nmultiple times if necessary, either to propose new upload methods or to\nrenew credentials for an already-agreed upload.\n\nThe `name` parameter can contain any printable ASCII character (0x20 - 0x7e).\nThe `uploadId` must be supplied by the caller, and any attempts to upload\nan object with the same name but a different `uploadId` will fail.\nThus the first call to this method establishes the `uploadId` for the\nobject, and as long as that value is kept secret, no other caller can\nupload an object of that name, regardless of scopes.  Object expiration\ncannot be changed after the initial call, either.  It is possible to call\nthis method with no proposed upload methods, which has the effect of \"locking\nin\" the `expiration` and `uploadId` properties.\n\nUnfinished uploads expire after 1 day.",
           "input": "v1/create-upload-request.json#",
           "method": "put",
           "name": "createUpload",
@@ -2040,20 +2040,9 @@ module.exports = {
           ],
           "route": "/task/<taskId>/runs/<runId>/claim",
           "scopes": {
-            "AnyOf": [
-              {
-                "AllOf": [
-                  "queue:claim-task:<provisionerId>/<workerType>",
-                  "queue:worker-id:<workerGroup>/<workerId>"
-                ]
-              },
-              {
-                "AllOf": [
-                  "queue:claim-task",
-                  "assume:worker-type:<provisionerId>/<workerType>",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
+            "AllOf": [
+              "queue:claim-task:<provisionerId>/<workerType>",
+              "queue:worker-id:<workerGroup>/<workerId>"
             ]
           },
           "stability": "deprecated",
@@ -2073,17 +2062,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/reclaim",
-          "scopes": {
-            "AnyOf": [
-              "queue:reclaim-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:claim-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:reclaim-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Reclaim task",
           "type": "function"
@@ -2101,17 +2080,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/completed",
-          "scopes": {
-            "AnyOf": [
-              "queue:resolve-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:resolve-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:resolve-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Report Run Completed",
           "type": "function"
@@ -2129,17 +2098,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/failed",
-          "scopes": {
-            "AnyOf": [
-              "queue:resolve-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:resolve-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:resolve-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Report Run Failed",
           "type": "function"
@@ -2158,17 +2117,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/exception",
-          "scopes": {
-            "AnyOf": [
-              "queue:resolve-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:resolve-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:resolve-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Report Task Exception",
           "type": "function"
@@ -2188,17 +2137,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "scopes": {
-            "AnyOf": [
-              "queue:create-artifact:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:create-artifact:<name>",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:create-artifact:<taskId>/<runId>",
           "stability": "stable",
           "title": "Create Artifact",
           "type": "function"

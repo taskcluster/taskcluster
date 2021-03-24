@@ -8,9 +8,9 @@ import green from '@material-ui/core/colors/green';
 import purple from '@material-ui/core/colors/purple';
 import { THEME } from './utils/constants';
 
-const Roboto300 = { fontFamily: 'Roboto300, sans-serif' };
-const Roboto400 = { fontFamily: 'Roboto400, sans-serif' };
-const Roboto500 = { fontFamily: 'Roboto500, sans-serif' };
+const Roboto300 = { fontFamily: 'Roboto, sans-serif', fontWeight: 300 };
+const Roboto400 = { fontFamily: 'Roboto, sans-serif', fontWeight: 400 };
+const Roboto500 = { fontFamily: 'Roboto, sans-serif', fontWeight: 500 };
 const success = {
   main: green[500],
   dark: green[700],
@@ -473,33 +473,4 @@ const theme = createMuiTheme(createTheme(true));
 export default {
   lightTheme: createMuiTheme(createTheme(false)),
   darkTheme: theme,
-  styleguide: {
-    StyleGuide: {
-      root: {
-        overflowY: 'scroll',
-        minHeight: '100vh',
-        backgroundColor: THEME.DARK_THEME_BACKGROUND,
-        color: theme.palette.text.primary,
-      },
-    },
-    fontFamily: {
-      base: theme.typography.fontFamily,
-    },
-    fontSize: {
-      base: theme.typography.fontSize - 1,
-      text: theme.typography.fontSize,
-      small: theme.typography.fontSize - 2,
-    },
-    color: {
-      base: theme.palette.text.primary,
-      link: theme.palette.text.primary,
-      linkHover: theme.palette.text.primary,
-      border: THEME.DIVIDER,
-      baseBackground: THEME.DARK_THEME_BACKGROUND,
-      sidebarBackground: theme.palette.primary.main,
-      codeBackground: theme.palette.primary.main,
-    },
-    sidebarWidth: THEME.DRAWER_WIDTH,
-    maxWidth: '100vw',
-  },
 };

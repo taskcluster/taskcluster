@@ -4,7 +4,7 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/hooks/v1/api.json
 // The hooks service provides a mechanism for creating tasks in response to events.

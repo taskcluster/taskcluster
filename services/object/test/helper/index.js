@@ -45,12 +45,26 @@ const testclients = {
 /**
  * Set up the backend and middleware configuration, and
  * add the test types for both.
+ *
+ * Also adds:
+ *  helper.setBackendConfig({ backends, backendMap }) - set and activate the backends config,
+ *    or if no args then reset it to the default.
  */
 exports.withBackends = (mock, skipping) => {
+  let _backends;
+  const defaultBackends = {
+    testBackend: { backendType: 'test' },
+  };
+  const defaultBackendMap = [
+    { backendId: 'testBackend', when: 'all' },
+  ];
+
   suiteSetup('withBackends', async function() {
     if (skipping()) {
       return;
     }
+
+    exports.load.save();
 
     // add the 'test' backend type only for testing
     BACKEND_TYPES['test'] = TestBackend;
@@ -59,17 +73,36 @@ exports.withBackends = (mock, skipping) => {
     exports.load.cfg('middleware', [
       { middlewareType: 'test' },
     ]);
-    exports.load.cfg('backends', {
-      testBackend: { backendType: 'test' },
-    });
-    exports.load.cfg('backendMap', [
-      // not anchored, so can appear anywhere in the name
-      { backendId: 'testBackend', when: 'all' },
-    ]);
+    exports.load.cfg('backends', defaultBackends);
+    exports.load.cfg('backendMap', defaultBackendMap);
+
+    // load the backends so that we can use its sticky value later
+    _backends = await exports.load('backends');
+
+    exports.setBackendConfig = async ({ backends, backendMap } = {}) => {
+      const cfg = {
+        ...(await exports.load('cfg')),
+        backends: backends || defaultBackends,
+        backendMap: backendMap || defaultBackendMap,
+      };
+      await _backends._reconfig({ cfg });
+    };
+  });
+
+  setup('withBackends', async function() {
+    // reset to default
+    await exports.setBackendConfig();
   });
 
   suiteTeardown('withBackends', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    exports.load.restore();
     delete BACKEND_TYPES['test'];
+    delete exports.setBackendConfig;
+    _backends = null;
   });
 };
 
@@ -164,3 +197,13 @@ exports.assertSatisfiesSchema = async (data, id) => {
     assert(false, "validation error:\n" + validator_error);
   }
 };
+
+/**
+ * Generate a test object name
+ */
+let objectCounter = 0;
+exports.testObjectName = prefix =>
+  // Use `objectCounter` to ensure every test uses a different name, and
+  // use all of the printable, problematic characters from
+  // https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html
+  `${prefix}${objectCounter++}/test/&/$/@/=/;/:/+/,/?/\\/{}/^/%/[]/<>/#/~/|/\`/`;

@@ -1,0 +1,93 @@
+---
+title: Queue Configuration
+---
+
+# Queue Configuration
+
+This section describes configuration values specific to the Queue service.
+
+## Artifact Storage
+
+Until everything uses the Object Service, the queue service must be configured to support S3 artifacts.
+That involves the following Helm values:
+
+* `queue.artifact_region`
+* `queue.public_artifact_bucket` (bucket name, e.g., `my-public-artifacts`)
+* `queue.private_artifact_bucket` (same)
+* `queue.sign_public_artifact_urls` (optional, default false)
+* `queue.public_artifact_bucket_cdn` (optional)
+* `queue.aws_access_key_id`
+* `queue.aws_secret_access_key`
+
+The service uses the public bucket for artifacts having prefix `public/`, and the private bucket for all others.
+Both buckets must be in the given `artifact_region`.
+
+
+In a public deployment of Taskcluster, it may make sense to allow public read access to the public bucket, in which case setting `sign_public_artifact_urls` to false will allow simpler (unsigned) URLs for public artifacts.
+A further optional step is to configure a CDN such as CloudFront to serve artifacts from this bucket, with a URL prefix given in `public_artifact_bucket_cdn`.
+Paths on the CDN should match those on the bucket, and the configured URL must use `https` and must not end in a `/` character.
+
+If the public bucket is not readable, then `sign_public_artifact_urls` must be true and `public_artifact_bucket_cdn` is not used.
+
+The given AWS credentials should have the following policy:
+
+```json
+{
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:GetObjectTagging",
+                "s3:PutObject",
+                "s3:PutObjectTagging",
+                "s3:AbortMultipartUpload",
+                "s3:ListMultipartUploadParts",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::PUBLIC_BUCKET/*",
+                "arn:aws:s3:::PRIVATE_BUCKET/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetBucketTagging",
+                "s3:ListBucket",
+                "s3:PutBucketCORS",
+                "s3:GetBucketCORS"
+            ],
+            "Resource": [
+                "arn:aws:s3:::PUBLIC_BUCKET",
+                "arn:aws:s3:::PRIVATE_BUCKET"
+            ]
+        }
+    ]
+}
+```
+
+## Task Claim Timeout
+
+The `queue.task_claim_timeout` gives the time, in seconds, that a claim returned from the `queue.claimWork` endpoint will last.
+The default value is 20 minutes (1200).
+
+A worker executing a task must "reclaim" before this time has expired, or lose its claim on the task.
+This functionality is used to recover tasks from crashed workers.
+Workers also discover that their claimed task has been cancelled at reclaim time; there is no immediate queue-to-worker communication path.
+Workers attempt to claim well before the deadline, but must not constantly re-claim.
+
+When changing this configuration value, balance the following concerns:
+* A shorter time will increase load on the queue service, proportional to the number of concurrently executing tasks.
+* A shorter time will decrease the time a worker "wastes" continuing to execute a cancelled task.
+* A shorter time will increase the likelihood of a functional worker losing its claim due to delays in reclaiming caused by high load.
+* A shorter time will increase the accuracy of the queue's notion of whether a worker is "alive".
+
+In practice, a value less than 5 minutes (300) is not recommended.
+
+## Task Cache
+
+Because a task (but not its status) is immutable after it is created, the queue can aggressively cache task definitions.
+The `queue.task_cache_max_size` Helm value, defaulting to 10, controls the size of this in-memory, per-process LRU cache.
+If queries to the `tasks` table from `taskcluster-queue-web` are causing issues with the backend database, increase this value to 1000 or more.

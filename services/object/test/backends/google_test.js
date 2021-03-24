@@ -30,30 +30,34 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     };
     const endpoint = new aws.Endpoint('https://storage.googleapis.com');
     s3 = new aws.S3({ endpoint, ...credentials });
+  });
 
+  setup(async function() {
     // set up a backend with a public bucket, and separately with a private
     // bucket; these are in fact the same bucket, and we'll just check that the
     // URLs have a signature for the non-public version.  S3 verifies
     // signatures if they are present, even if the signature is not required.
-    helper.load.cfg('backends', {
-      googlePrivate: {
-        backendType: 'aws',
-        accessKeyId: secret.accessKeyId,
-        secretAccessKey: secret.secretAccessKey,
-        bucket: secret.testBucket,
-        signGetUrls: true,
-        endpoint: 'https://storage.googleapis.com',
+    await helper.setBackendConfig({
+      backends: {
+        googlePrivate: {
+          backendType: 'aws',
+          accessKeyId: secret.accessKeyId,
+          secretAccessKey: secret.secretAccessKey,
+          bucket: secret.testBucket,
+          signGetUrls: true,
+          endpoint: 'https://storage.googleapis.com',
+        },
+        googlePublic: {
+          backendType: 'aws',
+          accessKeyId: secret.accessKeyId,
+          secretAccessKey: secret.secretAccessKey,
+          bucket: secret.testBucket,
+          signGetUrls: false,
+          endpoint: 'https://storage.googleapis.com',
+        },
       },
-      googlePublic: {
-        backendType: 'aws',
-        accessKeyId: secret.accessKeyId,
-        secretAccessKey: secret.secretAccessKey,
-        bucket: secret.testBucket,
-        signGetUrls: false,
-        endpoint: 'https://storage.googleapis.com',
-      },
+      backendMap: [],
     });
-    helper.load.cfg('backendMap', []);
   });
 
   const makeObject = async ({ name, data }) => {

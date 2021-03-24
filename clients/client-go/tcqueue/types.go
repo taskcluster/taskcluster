@@ -789,6 +789,8 @@ type (
 
 		// Time at which the run expires and is resolved as `exception`,
 		// with reason `claim-expired` if the run haven't been reclaimed.
+		// This will be some time in the future, with that time controlled
+		// by the `queue.task_claim_timeout` configuration.
 		TakenUntil tcclient.Time `json:"takenUntil"`
 
 		// Definition of a task that can be scheduled

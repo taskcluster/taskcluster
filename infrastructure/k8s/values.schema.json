@@ -168,7 +168,6 @@
       "required": [
         "procs",
         "static_clients",
-        "azure_accounts",
         "read_db_url",
         "write_db_url",
         "pulse_username",
@@ -1249,6 +1248,9 @@
           "type": "boolean"
         },
         "task_cache_max_size": {
+          "type": "number"
+        },
+        "task_claim_timeout": {
           "type": "number"
         },
         "taskcluster_access_token": {

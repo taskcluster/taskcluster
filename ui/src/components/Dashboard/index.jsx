@@ -62,7 +62,8 @@ import SkipNavigation from '../SkipNavigation';
     },
     appBarTitle: {
       marginLeft: theme.spacing(1),
-      fontFamily: 'Roboto300',
+      fontFamily: 'Roboto',
+      fontWeight: 300,
       flex: 1,
       color: THEME.PRIMARY_TEXT_DARK,
     },

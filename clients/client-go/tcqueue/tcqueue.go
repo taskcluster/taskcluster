@@ -4,7 +4,7 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/queue/v1/api.json
 // The queue service is responsible for accepting tasks and tracking their state
@@ -450,14 +450,9 @@ func (queue *Queue) ClaimWork(taskQueueId string, payload *ClaimWorkRequest) (*C
 // claim a task - never documented
 //
 // Required scopes:
-//   Any of:
-//   - All of:
-//     * queue:claim-task:<provisionerId>/<workerType>
-//     * queue:worker-id:<workerGroup>/<workerId>
-//   - All of:
-//     * queue:claim-task
-//     * assume:worker-type:<provisionerId>/<workerType>
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   All of:
+//   * queue:claim-task:<provisionerId>/<workerType>
+//   * queue:worker-id:<workerGroup>/<workerId>
 //
 // See #claimTask
 func (queue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, error) {
@@ -489,11 +484,7 @@ func (queue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (
 // need to resolve the run or upload artifacts.
 //
 // Required scopes:
-//   Any of:
-//   - queue:reclaim-task:<taskId>/<runId>
-//   - All of:
-//     * queue:claim-task
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   queue:reclaim-task:<taskId>/<runId>
 //
 // See #reclaimTask
 func (queue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, error) {
@@ -505,11 +496,7 @@ func (queue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, err
 // Report a task completed, resolving the run as `completed`.
 //
 // Required scopes:
-//   Any of:
-//   - queue:resolve-task:<taskId>/<runId>
-//   - All of:
-//     * queue:resolve-task
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   queue:resolve-task:<taskId>/<runId>
 //
 // See #reportCompleted
 func (queue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse, error) {
@@ -527,11 +514,7 @@ func (queue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse, 
 // exception, which should be reported with `reportException`.
 //
 // Required scopes:
-//   Any of:
-//   - queue:resolve-task:<taskId>/<runId>
-//   - All of:
-//     * queue:resolve-task
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   queue:resolve-task:<taskId>/<runId>
 //
 // See #reportFailed
 func (queue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, error) {
@@ -555,11 +538,7 @@ func (queue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, err
 // is temporarily unavailable worker should report task _failed_.
 //
 // Required scopes:
-//   Any of:
-//   - queue:resolve-task:<taskId>/<runId>
-//   - All of:
-//     * queue:resolve-task
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   queue:resolve-task:<taskId>/<runId>
 //
 // See #reportException
 func (queue *Queue) ReportException(taskId, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, error) {
@@ -579,11 +558,7 @@ func (queue *Queue) ReportException(taskId, runId string, payload *TaskException
 // artifacts can be set to expire a few days later.
 //
 // Required scopes:
-//   Any of:
-//   - queue:create-artifact:<taskId>/<runId>
-//   - All of:
-//     * queue:create-artifact:<name>
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   queue:create-artifact:<taskId>/<runId>
 //
 // See #createArtifact
 func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArtifactRequest) (*PostArtifactResponse, error) {

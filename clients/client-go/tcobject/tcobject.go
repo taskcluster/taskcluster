@@ -4,7 +4,7 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/object/v1/api.json
 // The object service provides HTTP-accessible storage for large blobs of data.
@@ -108,6 +108,7 @@ func (object *Object) Ping() error {
 // multiple times if necessary, either to propose new upload methods or to
 // renew credentials for an already-agreed upload.
 //
+// The `name` parameter can contain any printable ASCII character (0x20 - 0x7e).
 // The `uploadId` must be supplied by the caller, and any attempts to upload
 // an object with the same name but a different `uploadId` will fail.
 // Thus the first call to this method establishes the `uploadId` for the

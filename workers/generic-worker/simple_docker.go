@@ -97,9 +97,8 @@ func RenameCrossDevice(oldpath, newpath string) (err error) {
 }
 
 func defaultTasksDir() string {
-	// assume all user home directories are all in same folder, i.e. the parent
-	// folder of the current user's home folder
-	return filepath.Dir(os.Getenv("HOME"))
+	// Issue 3779; default tasks directory is `tasks` relative to working directory
+	return "tasks"
 }
 
 func rebootBetweenTasks() bool {

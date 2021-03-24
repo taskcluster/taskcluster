@@ -30,6 +30,7 @@ export default class Object extends Client {
   // This endpoint implements negotiation of upload methods.  It can be called
   // multiple times if necessary, either to propose new upload methods or to
   // renew credentials for an already-agreed upload.
+  // The `name` parameter can contain any printable ASCII character (0x20 - 0x7e).
   // The `uploadId` must be supplied by the caller, and any attempts to upload
   // an object with the same name but a different `uploadId` will fail.
   // Thus the first call to this method establishes the `uploadId` for the

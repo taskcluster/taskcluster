@@ -1739,13 +1739,35 @@
             },
             "name": "pulse",
             "next": {
-              "path": "manual/deploying/schema",
-              "title": "Helm Configuration Schema"
+              "path": "manual/deploying/queue-config",
+              "title": "Queue Configuration"
             },
             "path": "manual/deploying/pulse",
             "prev": {
               "path": "manual/deploying/monitoring",
               "title": "Monitoring Services"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Queue Configuration"
+            },
+            "name": "queue-config",
+            "next": {
+              "path": "manual/deploying/schema",
+              "title": "Helm Configuration Schema"
+            },
+            "path": "manual/deploying/queue-config",
+            "prev": {
+              "path": "manual/deploying/pulse",
+              "title": "Pulse"
             },
             "up": {
               "path": "manual/deploying",
@@ -1766,8 +1788,8 @@
             },
             "path": "manual/deploying/schema",
             "prev": {
-              "path": "manual/deploying/pulse",
-              "title": "Pulse"
+              "path": "manual/deploying/queue-config",
+              "title": "Queue Configuration"
             },
             "up": {
               "path": "manual/deploying",

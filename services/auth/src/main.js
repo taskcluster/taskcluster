@@ -133,7 +133,6 @@ const load = Loader({
           publisher,
           resolver,
           cfg,
-          azureAccounts: cfg.app.azureAccounts,
           signatureValidator,
           sentryManager,
           websocktunnel: cfg.app.websocktunnel,

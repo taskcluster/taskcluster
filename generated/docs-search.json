@@ -463,6 +463,34 @@
   },
   {
     "element": "h1",
+    "id": "queue-configuration",
+    "path": "/manual/deploying/queue-config",
+    "subtitle": null,
+    "title": "Queue Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "artifact-storage",
+    "path": "/manual/deploying/queue-config",
+    "subtitle": "Artifact Storage",
+    "title": "Queue Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "task-cache",
+    "path": "/manual/deploying/queue-config",
+    "subtitle": "Task Cache",
+    "title": "Queue Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "task-claim-timeout",
+    "path": "/manual/deploying/queue-config",
+    "subtitle": "Task Claim Timeout",
+    "title": "Queue Configuration"
+  },
+  {
+    "element": "h1",
     "id": "slack-integration",
     "path": "/manual/deploying/slack",
     "subtitle": null,

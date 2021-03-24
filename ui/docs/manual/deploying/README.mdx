@@ -31,6 +31,7 @@ In addition to the sections below, see:
  * [Static Clients](/docs/manual/deploying/static-clients)
  * [Helm Configuration Schema](/docs/manual/deploying/schema)
  * [Anonymous Role](/docs/manual/anonymous-role)
+ * [Queue Configuration](/docs/manual/queue-config)
 
 ## Database
 
@@ -42,8 +43,7 @@ See [Database Configuration](/docs/manual/deploying/database) for details.
 Taskcluster is a multi-cloud system, and as such expects credentials for several cloud providers.
 
 The services' Kubernetes deployment can run anywhere; at Mozilla it is deployed in GKE, Google Cloud's Kubernetes offering.
-Task artifacts are stored in Amazon S3, so AWS credentials will be required.
-Services' data is stored in Azure Table Storage, so Azure credentials will be required.
+Task artifacts are stored in Amazon S3, so AWS credentials will be required, although the object service will soon remove this requiremnet.
 
 Taskcluster can dynamically provision workers in a variety of clouds; see the [workers](/docs/manual/deploying/workers) page for for details.
 Similarly, Taskcluster can store data in a variety of clouds; see the [object service](/docs/manual/deploying/object-service) page for details.
