@@ -19,6 +19,10 @@ let builder = new APIBuilder({
   title: 'Object Service',
   description: [
     'The object service provides HTTP-accessible storage for large blobs of data.',
+    '',
+    'Objects can be uploaded and downloaded, with the object data flowing directly',
+    'from the storage "backend" to the caller, and not directly via this service.',
+    'Once uploaded, objects are immutable until their expiration time.',
   ].join('\n'),
   serviceName: 'object',
   apiVersion: 'v1',
@@ -131,6 +135,8 @@ builder.declare({
     'transmitted to the backend.  After this call, no further calls to `uploadObject` are',
     'allowed, and downloads of the object may begin.  This method is idempotent, but will',
     'fail if given an incorrect uploadId for an unfinished upload.',
+    '',
+    'Note that, once `finishUpload` is complete, the object is considered immutable.',
   ].join('\n'),
 }, async function(req, res) {
   let { projectId, uploadId } = req.body;

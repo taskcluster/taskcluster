@@ -917,7 +917,7 @@ var services = map[string]definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "object",
 		Title:       "Object Service",
-		Description: "The object service provides HTTP-accessible storage for large blobs of data.",
+		Description: "The object service provides HTTP-accessible storage for large blobs of data.\n\nObjects can be uploaded and downloaded, with the object data flowing directly\nfrom the storage \"backend\" to the caller, and not directly via this service.\nOnce uploaded, objects are immutable until their expiration time.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
 				Name:        "ping",
@@ -946,7 +946,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "finishUpload",
 				Title:       "Mark an upload as complete.",
-				Description: "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.",
+				Description: "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/finish-upload/<name>",

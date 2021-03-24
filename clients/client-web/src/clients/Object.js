@@ -51,6 +51,7 @@ export default class Object extends Client {
   // transmitted to the backend.  After this call, no further calls to `uploadObject` are
   // allowed, and downloads of the object may begin.  This method is idempotent, but will
   // fail if given an incorrect uploadId for an unfinished upload.
+  // Note that, once `finishUpload` is complete, the object is considered immutable.
   /* eslint-enable max-len */
   finishUpload(...args) {
     this.validate(this.finishUpload.entry, args);

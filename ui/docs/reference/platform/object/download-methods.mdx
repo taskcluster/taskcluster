@@ -17,6 +17,8 @@ client.
 
 See ["Simple Downloads"](/simple-downloads) for details of the simple process.
 
+Note that objects are immutable, so downloads may be split into many requests without concern about the content changing between requests.
+
 ## Full Downloads
 
 The full download process involves making a request to the object service, via the `object.startDownload` endpoint.
