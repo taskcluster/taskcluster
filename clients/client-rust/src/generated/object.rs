@@ -10,6 +10,10 @@ use crate::util::urlencode;
 /// Object Service
 ///
 /// The object service provides HTTP-accessible storage for large blobs of data.
+///
+/// Objects can be uploaded and downloaded, with the object data flowing directly
+/// from the storage "backend" to the caller, and not directly via this service.
+/// Once uploaded, objects are immutable until their expiration time.
 pub struct Object (Client);
 
 #[allow(non_snake_case)]
@@ -96,6 +100,8 @@ impl Object {
     /// transmitted to the backend.  After this call, no further calls to `uploadObject` are
     /// allowed, and downloads of the object may begin.  This method is idempotent, but will
     /// fail if given an incorrect uploadId for an unfinished upload.
+    /// 
+    /// Note that, once `finishUpload` is complete, the object is considered immutable.
     pub async fn finishUpload(&self, name: &str, payload: &Value) -> Result<(), Error> {
         let method = "POST";
         let (path, query) = Self::finishUpload_details(name);

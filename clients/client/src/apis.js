@@ -1614,7 +1614,7 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The object service provides HTTP-accessible storage for large blobs of data.",
+      "description": "The object service provides HTTP-accessible storage for large blobs of data.\n\nObjects can be uploaded and downloaded, with the object data flowing directly\nfrom the storage \"backend\" to the caller, and not directly via this service.\nOnce uploaded, objects are immutable until their expiration time.",
       "entries": [
         {
           "args": [
@@ -1653,7 +1653,7 @@ module.exports = {
             "name"
           ],
           "category": "Upload",
-          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.",
+          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
           "input": "v1/finish-upload-request.json#",
           "method": "post",
           "name": "finishUpload",
