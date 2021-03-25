@@ -81,6 +81,7 @@ class AwsBackend extends Backend {
         headers: {
           'Content-Type': contentType,
           'Content-Length': contentLength.toString(),
+          'Content-Encoding': 'identity',
         },
       },
     };

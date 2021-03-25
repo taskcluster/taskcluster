@@ -42,7 +42,7 @@ The caller is expected to make a `PUT` request to the given URL, with the given 
 This request must begin before the expiration time given in the response.
 If retries extend beyond this time, then the client should make a new `createUpload` call to get a fresh URL.
 
-For this upload method, the content encoding _must_ be `identity` (the default value for the `Content-Encoding` header).
+For this method, the content encoding _must_ be `identity`, and this is reflected in the `headers` property in the response body.
 
 ### `s3Multipart` Upload Method
 
