@@ -640,7 +640,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
 
-      assert(github.inst(5828).repos.createCommitComment.callCount === 1);
+      assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
     });
   });
 
