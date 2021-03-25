@@ -1651,13 +1651,35 @@
             },
             "name": "database",
             "next": {
-              "path": "manual/deploying/github",
-              "title": "GitHub Integration"
+              "path": "manual/deploying/error-config",
+              "title": "Error Configuration"
             },
             "path": "manual/deploying/database",
             "prev": {
               "path": "manual/deploying/cloud-credentials",
               "title": "Cloud Credentials"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Error Configuration"
+            },
+            "name": "error-config",
+            "next": {
+              "path": "manual/deploying/github",
+              "title": "GitHub Integration"
+            },
+            "path": "manual/deploying/error-config",
+            "prev": {
+              "path": "manual/deploying/database",
+              "title": "Database Configuration"
             },
             "up": {
               "path": "manual/deploying",
@@ -1678,8 +1700,8 @@
             },
             "path": "manual/deploying/github",
             "prev": {
-              "path": "manual/deploying/database",
-              "title": "Database Configuration"
+              "path": "manual/deploying/error-config",
+              "title": "Error Configuration"
             },
             "up": {
               "path": "manual/deploying",
