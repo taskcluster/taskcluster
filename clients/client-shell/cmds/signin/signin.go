@@ -5,11 +5,9 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -70,12 +68,6 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	// Routes
 	router := mux.NewRouter()
 
-	// Setup server that we can shutdown gracefully
-	/*s := graceful.Server{
-		Timeout: 5 * time.Second,
-		Server:  &http.Server{},
-	}*/
-
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		qs := r.URL.Query()
 		csh, _ := cmd.Flags().GetBool("csh")
@@ -105,49 +97,8 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		`))
 	})
 
-	// Handle callback
-	/*s.Server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		qs := r.URL.Query()
-		csh, _ := cmd.Flags().GetBool("csh")
-		rootURL := config.RootURL()
-		if csh {
-			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_CLIENT_ID '"+qs.Get("clientId")+"'")
-			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ACCESS_TOKEN '"+qs.Get("accessToken")+"'")
-			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ROOT_URL '"+rootURL+"'")
-		} else {
-			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_CLIENT_ID='"+qs.Get("clientId")+"'")
-			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ACCESS_TOKEN='"+qs.Get("accessToken")+"'")
-			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ROOT_URL='"+rootURL+"'")
-		}
-		log.Infoln("Credentials output as environment variables")
-
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`
-			<!doctype html>
-			<html>
-				<head>
-					<title>Sign-In Successful</title>
-				</head>
-				<body>
-					<h1>You have successfully signed in</h1>
-					<p>You may now close this window.</p>
-				</body>
-			</html>
-		`))
-		s.Stop(50 * time.Millisecond)
-	})*/
-
-	// Start listening on localhost
-	listener, err := net.ListenTCP("tcp", &net.TCPAddr{
-		IP:   []byte{127, 0, 0, 1},
-		Port: port,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to listen on localhost, error: %s", err)
-	}
-
 	// Construct URL for login service and open it
-	callbackURL := "http://" + strings.Replace(listener.Addr().String(), "127.0.0.1", "localhost", 1)
+	callbackURL := "http://localhost"
 	description := url.QueryEscape("Temporary client for use on the command line")
 	name, _ := cmd.Flags().GetString("name")
 	scopes, _ := cmd.Flags().GetStringArray("scope")
@@ -183,16 +134,10 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	browser.Stdout = ioutil.Discard
 
 	// Open browser
-	err = browser.OpenURL(loginURL)
+	err := browser.OpenURL(loginURL)
 	if err != nil {
 		return fmt.Errorf("failed to open browser, error: %s", err)
 	}
-
-	// Start serving
-	/*err = s.Serve(listener)
-	if err != nil {
-		return fmt.Errorf("failed to start localhost server, error: %s", err)
-	}*/
 
 	srv := &http.Server{
 		Handler:      router,
@@ -206,6 +151,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to start localhost server, error: %s", err)
 	}
 
+	// Stop server
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 
 	defer cancel()
