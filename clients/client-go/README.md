@@ -1,6 +1,6 @@
 # Taskcluster Client for Go
 
-[![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go)
+[![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go?status.svg)](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
 **A Taskcluster client library for Go.**
@@ -58,7 +58,7 @@ This library provides the following packages to interface with Taskcluster:
 ### Setup
 
 Before invoking API methods, create a client object corresponding to the service you wish to communicate with.
-See the [client subdirectories](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go#pkg-subdirectories) for the list of available packages, each beginning with `tc`.
+See the [client subdirectories](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go#pkg-subdirectories) for the list of available packages, each beginning with `tc`.
 
 The most common case is to use `NewFromEnv`, reading environment variables for credentials:
 
@@ -104,13 +104,13 @@ taskId: = slugid.Nice()
 status := queue.CreateTask(taskId, &task)
 ```
 
-Complete Godoc documentation of the available methods and types is [here](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go); see the "Directories" section to find the interfaces defined for specific services.
+Complete Godoc documentation of the available methods and types is [here](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go); see the "Directories" section to find the interfaces defined for specific services.
 
 ### Generating Signed URLs
 
 API methods which take credentials and have method GET can be invoked with a signed URL.
 To generate such a URL, use the method with suffix `_SignedURL`, and pass as its final argument the duration for which the URL should be valid.
-For example, to generate a URL for [Queue.GetArtifact](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueue#Queue.GetArtifact_SignedURL):
+For example, to generate a URL for [Queue.GetArtifact](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueue#Queue.GetArtifact_SignedURL):
 
 ```go
 url := queue.GetArtifact_SignedURL(taskId, runId, "my/secret/artifact.txt", 5 * time.Minutes)
@@ -124,9 +124,9 @@ party. See [the manual](https://docs.taskcluster.net/docs/manual/design/env-vars
 more information.
 
 Create named credentials with
-[`Credentials.CreateNamedTemporaryCredentials`](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go#Credentials.CreateNamedTemporaryCredentials),
+[`Credentials.CreateNamedTemporaryCredentials`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go#Credentials.CreateNamedTemporaryCredentials),
 or unnamed credentials with
-[`Credentials.CreateTemporaryCredentials`](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go#Credentials.CreateTemporaryCredentials).
+[`Credentials.CreateTemporaryCredentials`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go#Credentials.CreateTemporaryCredentials).
 Named credentials are preferred if you are not sure which type to use.
 
 #### Example
@@ -197,7 +197,7 @@ func main() {
 ### Handling Timestamps
 
 Taskcluster uses RFC3339 timestamps, specifically with millisecond precision and a `Z` timestamp.
-To support serializing and deserializing this format exactly, use the [`tcclient.Time`](https://godoc.org/github.com/taskcluster/taskcluster/clients/client-go#Time) type instead of with the built-in `time.Time` type.
+To support serializing and deserializing this format exactly, use the [`tcclient.Time`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go#Time) type instead of with the built-in `time.Time` type.
 
 All timestamp arithmetic should be performed with the built-in `time` package.
 
@@ -218,9 +218,9 @@ Any incompatibilities are noted in the [Changelog](https://github.com/taskcluste
 
 To get you started quickly, some example programs are included that use both the HTTP APIs and the AMQP APIs:
 
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth) package to query the expiry and expanded scopes of a given clientId.
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcauth) package to update an existing clientId with a new description and expiry.
-* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/tcqueueevents) package to listen in on Taskcluster tasks being defined and executed.
+* This [HTTP example program](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go/tcauth) package to query the expiry and expanded scopes of a given clientId.
+* This [HTTP example program](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go/tcauth) package to update an existing clientId with a new description and expiry.
+* The [AMQP example program](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueueevents) package to listen in on Taskcluster tasks being defined and executed.
 
 ### Creating a Task
 
@@ -252,7 +252,7 @@ type (
 		// defined in the Windows registry. Note, setting `contentType` on a directory artifact will
 		// apply the same contentType to all files contained in the directory.
 		//
-		// See [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).
+		// See [mime.TypeByExtension](https://pkg.go.dev/mime#TypeByExtension).
 		//
 		// Since: generic-worker 10.4.0
 		ContentType string `json:"contentType,omitempty"`
