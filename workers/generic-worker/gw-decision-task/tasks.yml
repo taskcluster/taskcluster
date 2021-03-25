@@ -47,9 +47,10 @@ Tasks:
     - WorkerPool: 'proj-taskcluster/gw-ci-macos'
       Env:
         ENGINE: 'multiuser'
-    - WorkerPool: 'proj-taskcluster/gw-ci-macos'
-      Env:
-        ENGINE: 'simple'
+# disabled due to lack of mac capacity
+#    - WorkerPool: 'proj-taskcluster/gw-ci-macos'
+#      Env:
+#        ENGINE: 'simple'
     - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-18-04'
       Env:
         ENGINE: 'multiuser'
