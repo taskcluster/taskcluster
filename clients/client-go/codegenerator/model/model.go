@@ -256,10 +256,10 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 
 	for i := range apiDefs {
 		if strings.Contains(apiDefs[i].PackageName, "events") {
-			amqpApiLinks += "\n" + "* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			amqpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go/" + apiDefs[i].PackageName + "\n"
 
 		} else {
-			httpApiLinks += "\n" + "* http://godoc.org/github.com/taskcluster/taskcluster/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			httpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go/" + apiDefs[i].PackageName + "\n"
 
 		}
 	}
