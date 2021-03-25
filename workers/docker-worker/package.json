@@ -52,7 +52,7 @@
     "object-factory": "^0.1.2",
     "promise-retry": "^2.0.0",
     "promisepipe": "^3.0.0",
-    "query-string": "^6.1.0",
+    "query-string": "^7.0.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "rimraf": "^3.0.0",

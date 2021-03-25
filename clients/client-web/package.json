@@ -27,14 +27,14 @@
     "karma-mocha-reporter": "^2.2.5",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^4.0.2",
-    "query-string": "^6.1.0",
+    "query-string": "^7.0.0",
     "webpack": "^4.29.6",
     "webpack-cli": "^4.0.0"
   },
   "dependencies": {
     "crypto-js": "^4.0.0",
     "hawk": "^9.0.0",
-    "query-string": "^6.1.0",
+    "query-string": "^7.0.0",
     "taskcluster-lib-urls": "^13.0.0"
   }
 }
