@@ -2,6 +2,7 @@
 package signin
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/slugid-go/slugid"
@@ -19,7 +21,6 @@ import (
 	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcauth"
 	"github.com/taskcluster/taskcluster/v42/clients/client-shell/cmds/root"
 	"github.com/taskcluster/taskcluster/v42/clients/client-shell/config"
-	graceful "gopkg.in/tylerb/graceful.v1"
 )
 
 var log = root.Logger
@@ -66,14 +67,46 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	// Find port, choose 0 meaning random port, if none
 	port, _ := cmd.Flags().GetInt("port")
 
+	// Routes
+	router := mux.NewRouter()
+
 	// Setup server that we can shutdown gracefully
-	s := graceful.Server{
+	/*s := graceful.Server{
 		Timeout: 5 * time.Second,
 		Server:  &http.Server{},
-	}
+	}*/
+
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		qs := r.URL.Query()
+		csh, _ := cmd.Flags().GetBool("csh")
+		rootURL := config.RootURL()
+		if csh {
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_CLIENT_ID '"+qs.Get("clientId")+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ACCESS_TOKEN '"+qs.Get("accessToken")+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ROOT_URL '"+rootURL+"'")
+		} else {
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_CLIENT_ID='"+qs.Get("clientId")+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ACCESS_TOKEN='"+qs.Get("accessToken")+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ROOT_URL='"+rootURL+"'")
+		}
+		log.Infoln("Credentials output as environment variables")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`
+			<!doctype html>
+			<html>
+				<head>
+					<title>Sign-In Successful</title>
+				</head>
+				<body>
+					<h1>You have successfully signed in</h1>
+					<p>You may now close this window.</p>
+				</body>
+			</html>
+		`))
+	})
 
 	// Handle callback
-	s.Server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	/*s.Server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		qs := r.URL.Query()
 		csh, _ := cmd.Flags().GetBool("csh")
 		rootURL := config.RootURL()
@@ -102,7 +135,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 			</html>
 		`))
 		s.Stop(50 * time.Millisecond)
-	})
+	})*/
 
 	// Start listening on localhost
 	listener, err := net.ListenTCP("tcp", &net.TCPAddr{
@@ -156,9 +189,29 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Start serving
-	err = s.Serve(listener)
+	/*err = s.Serve(listener)
 	if err != nil {
 		return fmt.Errorf("failed to start localhost server, error: %s", err)
+	}*/
+
+	srv := &http.Server{
+		Handler:      router,
+		Addr:         fmt.Sprintf("%s:%d", callbackURL, port),
+		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  5 * time.Second,
+	}
+
+	err = srv.ListenAndServe()
+	if err != nil {
+		return fmt.Errorf("failed to start localhost server, error: %s", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		return fmt.Errorf("failed to shutdown localhost server, error: %s", err)
 	}
 
 	return nil
