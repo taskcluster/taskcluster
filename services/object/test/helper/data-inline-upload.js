@@ -38,27 +38,29 @@ exports.testDataInlineUpload = ({
       backend = backends.get(backendId);
     });
 
-    test('upload an object', async function() {
-      const data = crypto.randomBytes(256);
-      const name = helper.testObjectName(prefix);
-      const expires = taskcluster.fromNow('1 hour');
-      const uploadId = taskcluster.slugid();
+    for (const length of [0, 1024]) {
+      test(`upload an object (length=${length})`, async function() {
+        const data = crypto.randomBytes(length);
+        const name = helper.testObjectName(prefix);
+        const expires = taskcluster.fromNow('1 hour');
+        const uploadId = taskcluster.slugid();
 
-      await helper.db.fns.create_object_for_upload(name, 'test-proj', backendId, uploadId, expires, {}, expires);
-      const [object] = await helper.db.fns.get_object_with_upload(name);
+        await helper.db.fns.create_object_for_upload(name, 'test-proj', backendId, uploadId, expires, {}, expires);
+        const [object] = await helper.db.fns.get_object_with_upload(name);
 
-      const res = await backend.createUpload(object, {
-        dataInline: { contentType: 'application/random-bytes', objectData: data.toString('base64') },
+        const res = await backend.createUpload(object, {
+          dataInline: { contentType: 'application/random-bytes', objectData: data.toString('base64') },
+        });
+
+        await helper.assertSatisfiesSchema(res, responseSchema);
+        assert.deepEqual(res, { dataInline: true });
+
+        await helper.db.fns.object_upload_complete(name, uploadId);
+
+        const stored = await getObjectContent({ name });
+        assert.equal(stored.contentType, 'application/random-bytes');
+        assert.deepEqual(stored.data, data);
       });
-
-      await helper.assertSatisfiesSchema(res, responseSchema);
-      assert.deepEqual(res, { dataInline: true });
-
-      await helper.db.fns.object_upload_complete(name, uploadId);
-
-      const stored = await getObjectContent({ name });
-      assert.equal(stored.contentType, 'application/random-bytes');
-      assert.deepEqual(stored.data, data);
-    });
+    }
   });
 };
