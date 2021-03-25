@@ -114,7 +114,7 @@ func (api *API) generateAPICode(apiName string) string {
 
 	// note: we remove unused imports later, so e.g. if net/url is not used, it
 	// will get removed later using:
-	// https://godoc.org/golang.org/x/tools/imports
+	// https://pkg.go.dev/golang.org/x/tools/imports
 
 	content += `
 import (

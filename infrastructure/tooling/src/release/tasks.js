@@ -187,8 +187,9 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         'go.mod',
         'clients/client-go/**',
         'clients/client-shell/**',
-        'tools/**',
         'internal/**',
+        'tools/**',
+        'ui/docs/reference/workers/websocktunnel.mdx',
         // Provide explicit list of allowed file extensions so that
         // workers/generic-worker/testdata/*.zip files are not modified.
         'workers/generic-worker/**.go',

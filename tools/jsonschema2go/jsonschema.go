@@ -1030,7 +1030,7 @@ package ` + job.Package + `
 	}
 	return job.result, err
 	// imports should be good, so no need to run
-	// https://godoc.org/golang.org/x/tools/imports#Process
+	// https://pkg.go.dev/golang.org/x/tools/imports#Process
 }
 
 func jsonRawMessageImplementors(rawMessageTypes StringSet) string {
