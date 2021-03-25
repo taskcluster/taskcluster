@@ -1,5 +1,6 @@
 # Taskcluster Client for Go
 
+
 [![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go?status.svg)](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
@@ -64,8 +65,9 @@ The most common case is to use `NewFromEnv`, reading environment variables for c
 
 ```go
 import (
-	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueue"
+
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 )
 queue := tcqueue.NewFromEnv()
 ```
@@ -95,7 +97,6 @@ For example, the `CreateTask` method is called like this:
 
 ```go
 import (
-	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueue"
     "github.com/taskcluster/slugid-go"
 )
@@ -105,6 +106,36 @@ status := queue.CreateTask(taskId, &task)
 ```
 
 Complete Godoc documentation of the available methods and types is [here](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/clients/client-go); see the "Directories" section to find the interfaces defined for specific services.
+
+### Specifying exponential backoff settings for HTTP request retries
+
+By default, the API methods will retry HTTP requests using an exponential
+backoff algorithm, for failures that are considered potentially intermittent
+(such as 5xx HTTP status codes).
+
+In order to adjust the default retry exponential backoff settings, you can do
+something like this:
+
+```go
+import (
+	"github.com/cenkalti/backoff/v3"
+	"github.com/taskcluster/httpbackoff/v3"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueue"
+)
+queue := tcqueue.NewFromEnv()
+settings := &backoff.ExponentialBackOff{
+	InitialInterval:     5 * time.Millisecond,
+	RandomizationFactor: 0,
+	Multiplier:          100,
+	MaxInterval:         60 * time.Second,
+	MaxElapsedTime:      100 * time.Millisecond,
+	Clock:               backoff.SystemClock,
+}
+settings.Reset()
+queue.HTTPBackoffClient = &httpbackoff.Client{
+    BackOffSettings: settings,
+}
+
 
 ### Generating Signed URLs
 
@@ -204,6 +235,66 @@ All timestamp arithmetic should be performed with the built-in `time` package.
 ### Generating SlugIDs
 
 To generate SlugIDs, such as for TaskIDs, use [github.com/taskcluster/slugid-go](https://github.com/taskcluster/slugid-go).
+
+### Uploading and Downloading Objects
+
+The Object Service provides APIs for reliable uploads and downloads of large
+objects (files). As with all taskcluster services, the tcobject package
+provides direct access to the underlying APIs, but in addition, also provides
+higher-level convenience methods that can be used to negotiate data transfers
+without the caller needing to be concerned with the underlying mechanics of the
+client/server communication.
+
+Whether you choose to use the convenience methods, or call the underlying APIs
+directly, you will need a `tcobject.Object` with appropriate credentials for
+the operation.
+
+To use the convenience upload methods:
+
+```go
+object := tcobject.New()
+buf := []byte{"Hello I am data to upload"}
+err := object.UploadFromBuf(projectID, name, contentType, expires, buf)
+```
+
+or:
+
+```go
+object := tcobject.New()
+err := object.UploadFromFile(projectID, name, contentType, expires, filepath)
+```
+
+or:
+
+```go
+object := tcobject.New()
+err := object.UploadFromReadSeeker(projectID, name, contentType, contentLength, expires, readSeeker)
+```
+
+To use the convenience download methods:
+
+```go
+object := tcobject.New()
+data, contentType, contentLength, err := object.DownloadToBuf(name)
+```
+
+or:
+
+```go
+object := tcobject.New()
+contentType, contentLength, err := object.DownloadToFile(name, filepath)
+```
+
+or:
+
+```go
+object := tcobject.New()
+contentType, contentLength, err := object.DownloadToWriteSeeker(name, writeSeeker)
+```
+
+Note: the exponential backoff settings of the Object Service client
+(`object.HTTPBackoffClient`) are also used when uploading/downloading data to
+external URLs by these convenience methods.
 
 ## Compatibility
 

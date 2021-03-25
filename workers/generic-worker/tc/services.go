@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcobject"
 	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcsecrets"
@@ -50,4 +51,10 @@ type Queue interface {
 	ReportFailed(taskId, runId string) (*tcqueue.TaskStatusResponse, error)
 	Status(taskId string) (*tcqueue.TaskStatusResponse, error)
 	Task(taskId string) (*tcqueue.TaskDefinitionResponse, error)
+}
+
+type Object interface {
+	CreateUpload(name string, payload *tcobject.CreateUploadRequest) (*tcobject.CreateUploadResponse, error)
+	FinishUpload(name string, payload *tcobject.FinishUploadRequest) error
+	StartDownload(name string, payload *tcobject.DownloadObjectRequest) (*tcobject.DownloadObjectResponse, error)
 }
