@@ -39,7 +39,7 @@ exports.testDataInlineUpload = ({
     });
 
     for (const length of [0, 1024]) {
-      test('upload an object', async function() {
+      test(`upload an object (length=${length})`, async function() {
         const data = crypto.randomBytes(length);
         const name = helper.testObjectName(prefix);
         const expires = taskcluster.fromNow('1 hour');
