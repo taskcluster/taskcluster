@@ -328,6 +328,52 @@ and if there are no existing handlers, add a `logging.StreamHandler()`
 instance.  This is meant to assist those who do not wish to bother figuring out
 how to configure the python logging module but do want debug messages
 
+## Uploading and Downloading Objects
+
+The Object service provides an API for reliable uploads and downloads of large objects.
+This library provides convenience methods to implement the client portion of those APIs, providing well-tested, resilient upload and download functionality.
+These methods will negotiate the appropriate method with the object service and perform the required steps to transfer the data.
+
+All methods are available in both sync and async versions, with identical APIs except for the `async`/`await` keywords.
+These methods are not available for Python-2.7.
+
+In either case, you will need to provide a configured `Object` instance with appropriate credentials for the operation.
+
+NOTE: There is an helper function to upload `s3` artifacts, `taskcluster.helper.upload_artifact`, but it is deprecated as it only supports the `s3` artifact type.
+
+### Uploads
+
+To upload, use any of the following:
+
+* `await taskcluster.aio.upload.uploadFromBuf(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., data=..)` - asynchronously upload data from a buffer full of bytes.
+* `await taskcluster.aio.upload.uploadFromFile(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., file=..)` - asynchronously upload data from a standard Python file.
+  Note that this is [probably what you want](https://github.com/python/asyncio/wiki/ThirdParty#filesystem), even in an async context.
+* `await taskcluster.aio.upload(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., readerFactory=..)` - asynchronously upload data from an async reader factory.
+* `taskcluster.upload.uploadFromBuf(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., data=..)` - upload data from a buffer full of bytes.
+* `taskcluster.upload.uploadFromFile(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., file=..)` - upload data from a standard Python file.
+* `taskcluster.upload(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., readerFactory=..)` - upload data from a sync reader factory.
+
+A "reader" is an object with a `read(max_size=-1)` method which reads and returns a chunk of 1 .. `max_size` bytes, or returns an empty string at EOF, async for the async functions and sync for the remainder.
+A "reader factory" is an async callable which returns a fresh reader, ready to read the first byte of the object.
+When uploads are retried, the reader factory may be called more than once.
+
+### Downloads
+
+To download, use any of the following:
+
+* `await taskcluster.aio.download.downloadToBuf(name=.., maxRetries=.., objectService=..)` - asynchronously download an object to an in-memory buffer, returning a tuple (buffer, content-type).
+  If the file is larger than available memory, this will crash.
+* `await taskcluster.aio.download.downloadToBuf(name=.., maxRetries=.., objectService=.., file=..)` - asynchronously download an object to a standard Python file, returning the content type.
+* `await taskcluster.aio.download.download(name=.., maxRetries=.., objectService=.., writerFactory=..)` - asynchronously download an object to an async writer factory, returning the content type.
+* `taskcluster.download.downloadToBuf(name=.., maxRetries=.., objectService=..)` - download an object to an in-memory buffer, returning a tuple (buffer, content-type).
+  If the file is larger than available memory, this will crash.
+* `taskcluster.download.downloadToBuf(name=.., maxRetries=.., objectService=.., file=..)` - download an object to a standard Python file, returning the content type.
+* `taskcluster.download.download(name=.., maxRetries=.., objectService=.., writerFactory=..)` - download an object to a sync writer factory, returning the content type.
+
+A "writer" is an object with a `write(data)` method which writes the given data, async for the async functions and sync for the remainder.
+A "writer factory" is a callable (again either async or sync) which returns a fresh writer, ready to write the first byte of the object.
+When uploads are retried, the writer factory may be called more than once.
+
 ## Integration Helpers
 
 The Python Taskcluster client has a module `taskcluster.helper` with utilities which allows you to easily share authentication options across multiple services in your project.
@@ -474,60 +520,6 @@ prod_config = load_secrets(
 
   # We support an optional local file to provide some configuration without reaching Taskcluster
   local_secrets=yaml.safe_load(open(local_path)) if os.path.exists(local_path) else None,
-)
-```
-
-### Uploading artifacts during the task execution
-
-Most artifacts are automatically uploaded at the end of a task execution, but if you need to upload them during the task execution, here is an helper function to do that: `taskcluster.helper.upload_artifact`.
-
-It will directly do the two steps upload through Taskcluster proxy (this cannot work from your computer):
-
-1. use `createArtifact` on a pre-configured queue service, setting artifact path, content type & expiration date
-2. upload the file on Amazon S3 through the short lived url provided by Taskcluster
-
-Here is an example of direct usage of that function:
-
-
-```python
-from taskcluster import Queue
-from taskcluster.helper import upload_artifact
-from datetime import timedelta
-
-artifact_url = upload_artifact(
-  Queue({...}),
-
-	# The artifact path exposed to users
-  'myproject/file.txt',
-
-  # The artifact content as a string
-  'My super payload !',
-
-  # Content type of the artifact
-  'text/plain',
-
-  # Artifact Time to live using a timedelta
-	timedelta(days=10),
-)  # -> artifact_url = '/api/queue/v1/task/<taskid>/runs/<runid>/artifacts/myproject/file.txt'
-```
-
-This method is also exposed in `TaskclusterConfig` and will use the current authentification:
-
-```python
-from project import tc
-
-artifact_url = tc.load_secrets(
-	# The artifact path exposed to users
-  'myproject/file.txt',
-
-  # The artifact content as a string
-  'My super payload !',
-
-  # Content type of the artifact
-  'text/plain',
-
-  # Artifact Time to live using a timedelta
-	timedelta(days=10),
 )
 ```
 

@@ -10,6 +10,7 @@ tests_require = [
     'pytest',
     'pytest-cov',   
     'pytest-mock',
+    'pytest-asyncio; python_version>="3.6"',
     'httmock',
     'mock',
     'setuptools-lint',
@@ -20,6 +21,8 @@ tests_require = [
     'coverage',
     'python-dateutil',
     'subprocess32; python_version=="2.7"',
+    'aiofiles; python_version>="3.6"',
+    'httptest; python_version>="3.6"',
 ]
 
 # requests has a policy of not breaking apis between major versions

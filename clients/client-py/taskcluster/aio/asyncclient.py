@@ -9,12 +9,11 @@ from six.moves import urllib
 import mohawk
 import mohawk.bewit
 import aiohttp
-import asyncio
 
 from .. import exceptions
 from .. import utils
 from ..client import BaseClient, createTemporaryCredentials
-from . import asyncutils
+from . import asyncutils, retry
 
 log = logging.getLogger(__name__)
 
@@ -117,16 +116,7 @@ class AsyncBaseClient(BaseClient):
         if payload is not None:
             payload = utils.dumpJson(payload)
 
-        # Do a loop of retries
-        retry = -1  # we plus first in the loop, and attempt 1 is retry 0
-        retries = self.options['maxRetries']
-        while retry < retries:
-            retry += 1
-            # if this isn't the first retry then we sleep
-            if retry > 0:
-                snooze = float(retry * retry) / 10.0
-                log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
-                await asyncio.sleep(utils.calculateSleepTime(retry))
+        async def tryRequest(retryFor):
             # Construct header
             if self._hasCredentials():
                 sender = mohawk.Sender(
@@ -157,14 +147,10 @@ class AsyncBaseClient(BaseClient):
                     method, url, payload, headers, session=self.session
                 )
             except aiohttp.ClientError as rerr:
-                if retry < retries:
-                    log.warn('Retrying because of: %s' % rerr)
-                    continue
-                # raise a connection exception
-                raise exceptions.TaskclusterConnectionError(
+                return retryFor(exceptions.TaskclusterConnectionError(
                     "Failed to establish connection",
                     superExc=rerr
-                )
+                ))
 
             status = response.status
             if status == 204:
@@ -172,9 +158,11 @@ class AsyncBaseClient(BaseClient):
 
             # Catch retryable errors and go to the beginning of the loop
             # to do the retry
-            if 500 <= status and status < 600 and retry < retries:
-                log.warn('Retrying because of a %s status code' % status)
-                continue
+            if 500 <= status and status < 600:
+                try:
+                    response.raise_for_status()
+                except Exception as exc:
+                    return retryFor(exc)
 
             # Throw errors for non-retryable errors
             if status < 200 or status >= 300:
@@ -218,8 +206,7 @@ class AsyncBaseClient(BaseClient):
             except (ValueError, aiohttp.client_exceptions.ContentTypeError):
                 return {"response": response}
 
-        # This code-path should be unreachable
-        assert False, "Error from last retry should have been raised!"
+        return await retry.retry(self.options['maxRetries'], tryRequest)
 
     async def __aenter__(self):
         if self._implicitSession and not self.session:

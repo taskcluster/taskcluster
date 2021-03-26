@@ -36,15 +36,6 @@ for file in $all_py ; do
   fi
 done
 
-case "$($python -c 'import sys ; print(sys.version_info.major)')" in
-  2)
-    ignore_async="--exclude=*/aio/*,*_async.py"
-    ;;
-  *)
-    ignore_async=""
-    ;;
-esac
-
 echo Python: $python
 echo Flake8: $flake8
 
