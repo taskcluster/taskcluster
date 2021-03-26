@@ -382,7 +382,7 @@ exports.createClient = function(reference, name) {
             `Faked ${this._options.serviceName} object does not have an implementation of ${entry.name}`,
           ));
         }
-        return this._options.fake[entry.name].apply(null, args);
+        return this._options.fake[entry.name].apply(this, args);
       }
 
       return retry(this._options, (retriableError, attempt) => {

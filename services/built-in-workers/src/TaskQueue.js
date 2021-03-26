@@ -24,20 +24,24 @@ class TaskQueue {
       this.monitor.debug('no tasks');
       return ;
     }
-    const task = result.tasks[0];
-    this.monitor.debug(`claimed task: ${task.status.taskId}`);
-    if (Object.keys(task.task.payload).length === 0) {
-      if (task.task.taskQueueId === 'built-in/succeed') {
-        return await this.queue.reportCompleted(task.status.taskId, task.runId);
-      } else if (task.task.taskQueueId === 'built-in/fail') {
-        return await this.queue.reportFailed(task.status.taskId, task.runId);
+    const { credentials, task, status, runId } = result.tasks[0];
+    this.monitor.debug(`claimed task: ${status.taskId}`);
+
+    // use the per-task credentials to make API calls regarding the task
+    const queue = this.queue.use({ credentials });
+
+    if (Object.keys(task.payload).length === 0) {
+      if (task.taskQueueId === 'built-in/succeed') {
+        return await queue.reportCompleted(status.taskId, runId);
+      } else if (task.taskQueueId === 'built-in/fail') {
+        return await queue.reportFailed(status.taskId, runId);
       }
     } else {
-      this.monitor.debug(`task ${task.status.taskId} has non-empty payload`);
+      this.monitor.debug(`task ${status.taskId} has non-empty payload`);
       let payload = {
         reason: 'malformed-payload',
       };
-      return await this.queue.reportException(task.status.taskId, task.runId, payload);
+      return await queue.reportException(status.taskId, runId, payload);
     }
   }
 }
