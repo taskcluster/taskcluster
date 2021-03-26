@@ -42,6 +42,26 @@ Set up an IP for your deployment:
 #### Troubleshooting:
 * Certbot error `[Errno 13] Permission denied: '/var/log/letsencrypt' Either run as root, or set --config-dir, --work-dir, and --logs-dir to writeable paths.` - do not run as root, but set the directories instead.
 
+## Minikube
+
+If you want to run taskcluster on a kubernetes cluster on a server or virtual machine, minikube can be used.
+Follow the regular installation for minikube, however:
+1. Make sure to deploy a kubernetes cluster with at least 2 CPUs and 4GB of memory.
+
+2. Enable the nginx ingress on minikube the cluster.
+
+### SSL through a reverse proxy
+
+In order to not have to fiddle with secrets for the nginx ingress, you can alternatively put apache2 or nginx on the host, and then having this act as a reverse proxy. Point it at port 80 (HTTP) of the ingress that is created once you deployed taskcluster.
+
+#### SSL certificate from LetsEncrypt
+
+LetsEncrypt  provides free SSL certificates for publically accessable websites. [Certbot](https://certbot.eff.org/) is a popular option to request, and depending on the webserver automatically deploy and renew SSL certificates.
+
+#### Secure SSL configuration
+
+For a secure SSL configuration for your webserver, [Mozilla's SSL Configuration](https://ssl-config.mozilla.org/) tool provides with multiple secure configurations for multiple webservers.
+
 ### Google Cloud SQL
 
 To set up a Google Cloud SQL server:
