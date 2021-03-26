@@ -139,9 +139,13 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to open browser, error: %s", err)
 	}
 
+	if port > 0 {
+		callbackURL = fmt.Sprintf("%s:%d", callbackURL, port)
+	}
+
 	srv := &http.Server{
 		Handler:      router,
-		Addr:         fmt.Sprintf("%s:%d", callbackURL, port),
+		Addr:         callbackURL,
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 	}
