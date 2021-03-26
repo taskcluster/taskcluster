@@ -174,7 +174,12 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 
 	// Make HTTP API calls using an exponential backoff algorithm...
 	var err error
-	callSummary.HTTPResponse, callSummary.Attempts, err = defaultBackoff.Retry(httpCall)
+
+	backoffClient := client.HTTPBackoffClient
+	if backoffClient == nil {
+		backoffClient = &defaultBackoff
+	}
+	callSummary.HTTPResponse, callSummary.Attempts, err = backoffClient.Retry(httpCall)
 
 	// read response into memory, so that we can return the body
 	if callSummary.HTTPResponse != nil {
