@@ -288,6 +288,13 @@
   },
   {
     "element": "h1",
+    "id": "error-configuration",
+    "path": "/manual/deploying/error-config",
+    "subtitle": null,
+    "title": "Error Configuration"
+  },
+  {
+    "element": "h1",
     "id": "github-integration",
     "path": "/manual/deploying/github",
     "subtitle": null,
