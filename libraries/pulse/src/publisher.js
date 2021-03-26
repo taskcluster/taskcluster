@@ -195,7 +195,19 @@ class PulsePublisher {
     this._setChannel(null);
     this.stopHandlingConnections = this.client.onConnected(this._handleConnection);
 
-    await this._assertExchanges();
+    // these tasks can stall waiting for a rabbitmq connection, so we log when
+    // they begin and end, and if they take too long
+
+    this.client.monitor.info('Asserting pulse exchanges exist');
+    const msg = 'Still attempting to assert pulse exchanges; is RabbitMQ configuration correct?';
+    const interval = setInterval(() => this.client.monitor.warning(msg), 30000);
+    try {
+      await this._assertExchanges();
+    } finally {
+      clearTimeout(interval);
+    }
+    this.client.monitor.info('Pulse exchanges asserted');
+
     await this._declareMethods();
   }
 
