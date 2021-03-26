@@ -32,7 +32,8 @@ const actFn = fn => (...args) => {
 program.version(version);
 program.name('yarn'); // these commands are invoked via yarn
 program.command('build')
-  .option('-p, --push', 'Push images to docker hub')
+  .option('-p, --push', 'Push images to a Docker registry')
+  .option('--docker-repo <monoimage-docker-repo>', 'docker repository to which monoimage should be pushed')
   .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
   .option('--no-cache', 'Do not use any cached state, instead building everything from scratch')
   .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
