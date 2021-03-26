@@ -5,14 +5,14 @@ const { makePgUrl } = require('./util');
 
 const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
   prompts.push({
-    when: () => !userConfig.meta.dbPublicIp,
+    when: () => !userConfig.meta?.dbPublicIp,
     type: 'input',
     name: 'meta.dbPublicIp',
     message: 'What is the public IP of your Postgres server? (used for this script and for running db:upgrade)',
   });
 
   prompts.push({
-    when: () => !userConfig.meta.dbPrivateIp,
+    when: () => !userConfig.meta?.dbPrivateIp,
     type: 'input',
     name: 'meta.dbPrivateIp',
     default: previous => (previous.meta || {}).dbPublicIp || (userConfig.meta || {}).dbPublicIp,
@@ -20,7 +20,7 @@ const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
   });
 
   prompts.push({
-    when: () => !userConfig.meta.dbName,
+    when: () => !userConfig.meta?.dbName,
     type: 'input',
     name: 'meta.dbName',
     default: previous => (previous.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix,
@@ -34,7 +34,7 @@ const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
   });
 
   prompts.push({
-    when: () => !userConfig.meta.dbAdminUsername,
+    when: () => !userConfig.meta?.dbAdminUsername,
     type: 'input',
     name: 'meta.dbAdminUsername',
     default: previous => (previous.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix,
@@ -48,7 +48,7 @@ const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
   });
 
   prompts.push({
-    when: () => !userConfig.meta.dbAdminPassword,
+    when: () => !userConfig.meta?.dbAdminPassword,
     type: 'password',
     name: 'meta.dbAdminPassword',
     message: 'What is the password of the admin Postgres user (note: this will be stored in your dev config)?',
