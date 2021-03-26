@@ -233,6 +233,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://tigeroakes.com"><img src="https://avatars3.githubusercontent.com/u/1782266?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tiger Oakes</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=NotWoods" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/ricky26"><img src="https://avatars2.githubusercontent.com/u/262786?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ricky Taylor</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=ricky26" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/alopezz"><img src="https://avatars2.githubusercontent.com/u/39034209?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Alex Lopez</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=alopezz" title="Code">💻</a></td>
+    <td align="center"><a href="https://www.masterwayz.nl/"><img src="https://avatars.githubusercontent.com/u/11596690?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Michelle</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/issues?q=author%3AMasterWayZ" title="Bug reports">🐛</a> <a href="#infra-MasterWayZ" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
   </tr>
 </table>
 

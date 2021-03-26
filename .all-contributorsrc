@@ -845,8 +845,19 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "MasterWayZ",
+      "name": "Michelle",
+      "avatar_url": "https://avatars.githubusercontent.com/u/11596690?v=4",
+      "profile": "https://www.masterwayz.nl/",
+      "contributions": [
+        "bug",
+        "infra"
+      ]
     }
   ],
   "contributorsPerLine": 7,
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "none"
 }
