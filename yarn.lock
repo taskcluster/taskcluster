@@ -184,9 +184,9 @@
     strip-json-comments "^3.1.1"
 
 "@grpc/grpc-js@^1.2.7":
-  version "1.2.10"
-  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.2.10.tgz#f316d29a45fcc324e923d593cb849d292b1ed598"
-  integrity sha512-wj6GkNiorWYaPiIZ767xImmw7avMMVUweTvPFg4mJWOxz2180DKwfuxhJJZ7rpc1+7D3mX/v8vJdxTuIo71Ieg==
+  version "1.2.12"
+  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.2.12.tgz#0153f27512acf69184bb52c0a1035ca91d6c14b0"
+  integrity sha512-+gPCklP1eqIgrNPyzddYQdt9+GvZqPlLpIjIo+TveE+gbtp74VV1A2ju8ExeO8ma8f7MbpaGZx/KJPYVWL9eDw==
   dependencies:
     "@types/node" ">=12.12.47"
     google-auth-library "^6.1.1"
@@ -875,10 +875,15 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.36.tgz#5637905dbb15c30a33a3c65b9ef7c20e3c85ebad"
   integrity sha512-kjivUwDJfIjngzbhooRnOLhGYz6oRFi+L+EpMjxroDYXwDw9lHrJJ43E+dJ6KAd3V3WxWAJ/qZE9XKYHhjPOFQ==
 
-"@types/node@>=12.0.0", "@types/node@>=12.12.47", "@types/node@>=6", "@types/node@>=8.9.0":
+"@types/node@>=12.0.0", "@types/node@>=6", "@types/node@>=8.9.0":
   version "14.14.35"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.35.tgz#42c953a4e2b18ab931f72477e7012172f4ffa313"
   integrity sha512-Lt+wj8NVPx0zUmUwumiVXapmaLUcAk3yPuHCFVXras9k5VT9TdhJqKqGVUQCD60OTMCl0qxJ57OiTL0Mic3Iag==
+
+"@types/node@>=12.12.47":
+  version "14.14.37"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.37.tgz#a3dd8da4eb84a996c36e331df98d82abd76b516e"
+  integrity sha512-XYmBiy+ohOR4Lh5jE379fV2IU+6Jn4g5qASinhitfyO71b/sCo6MKsMLF5tc7Zf2CE8hViVQyYSobJNke8OvUw==
 
 "@types/node@^10.1.0":
   version "10.17.55"
@@ -886,9 +891,9 @@
   integrity sha512-koZJ89uLZufDvToeWO5BrC4CR4OUfHnUz2qoPs/daQH6qq3IN62QFxCTZ+bKaCE0xaoCAJYE4AXre8AbghCrhg==
 
 "@types/node@^13.7.0":
-  version "13.13.46"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.13.46.tgz#5471e176f3fa15e018dea7992072bf8ca208a3a6"
-  integrity sha512-dqpbzK/KDsOlEt+oyB3rv+u1IxlLFziZu/Z0adfRKoelkr+sTd6QcgiQC+HWq/vkYkHwG5ot2LxgV05aAjnhcg==
+  version "13.13.48"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.13.48.tgz#46a3df718aed5217277f2395a682e055a487e341"
+  integrity sha512-z8wvSsgWQzkr4sVuMEEOvwMdOQjiRY2Y/ZW4fDfjfe3+TfQrZqFKOthBgk2RnVEmtOKrkwdZ7uTvsxTBLjKGDQ==
 
 "@types/node@^8.0.47":
   version "8.10.66"
@@ -4789,9 +4794,9 @@ netmask@^2.0.0:
   integrity sha512-jwI5BiAalI743VK1tWnNGxFc/5JqFtez/jn7ILwgK1xTCevXDAOQw9ith0J0zS2I7g2jY0a3yk5RdstHUawJFg==
 
 newrelic@^7.0.0:
-  version "7.1.3"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-7.1.3.tgz#9ba32f73bb52edfc3ebeb2ba1723144fddf55e27"
-  integrity sha512-l5FPCIv+SKY8pE5YKmJnKo8DIsvD0Oe/qgCcCEUb/pnn0Oy/vkeQQMiAvbh90CQhaNDf+XoViL1NRNWFhb167A==
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-7.2.0.tgz#67d29b3bf804a13381060850c43283877ef62024"
+  integrity sha512-ABTHF9hV3rGVtlbC6xRxLszjsv91p+8i4EtjiuCOTMYImVYwxlMXcixdb+sLeyz58QrzefBaWMpYpqtJ9baa9w==
   dependencies:
     "@grpc/grpc-js" "^1.2.7"
     "@grpc/proto-loader" "^0.5.5"
