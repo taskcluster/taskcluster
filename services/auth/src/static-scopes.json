@@ -2,9 +2,7 @@
   {
     "clientId": "static/taskcluster/built-in-workers",
     "scopes": [
-      "assume:worker-id:built-in/*",
       "queue:claim-work:built-in/*",
-      "queue:resolve-task",
       "queue:worker-id:built-in/*"
     ]
   },

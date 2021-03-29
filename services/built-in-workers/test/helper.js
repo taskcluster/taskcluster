@@ -43,30 +43,38 @@ const stubbedQueue = () => {
   const queue = new taskcluster.Queue({
     rootUrl: helper.rootUrl,
     credentials: {
-      clientId: 'index-server',
+      clientId: 'built-in-workers',
       accessToken: 'none',
     },
     fake: {
-      task: async (taskId) => {
+      task: async function (taskId) {
         const task = tasks[taskId];
         assert(task, `fake queue has no task ${taskId}`);
         return task;
       },
-      claimWork: async (taskQueueId, payload) => {
+      claimWork: async function (taskQueueId, payload) {
+        assert.equal(this._options.credentials.clientId, 'built-in-workers');
         const work = exports.claimableWork.pop();
+        work.tasks.map(task => task.credentials = {
+          clientId: 'task-creds',
+          accessToken: 'none',
+        });
         work.workerGroup = payload.workerGroup;
         work.workerId = payload.workerId;
         return work;
       },
-      reportCompleted: async (taskId, runId) => {
+      reportCompleted: async function (taskId, runId) {
+        assert.equal(this._options.credentials.clientId, 'task-creds');
         exports.taskResolutions[taskId] = { completed: true };
         return {};
       },
-      reportFailed: async (taskId, runId) => {
+      reportFailed: async function (taskId, runId) {
+        assert.equal(this._options.credentials.clientId, 'task-creds');
         exports.taskResolutions[taskId] = { failed: true };
         return {};
       },
-      reportException: async (taskId, runId, payload) => {
+      reportException: async function (taskId, runId, payload) {
+        assert.equal(this._options.credentials.clientId, 'task-creds');
         exports.taskResolutions[taskId] = { exception: payload };
         return {};
       },
