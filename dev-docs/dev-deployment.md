@@ -47,10 +47,7 @@ Follow the regular installation for minikube, however:
 1. Make sure to deploy a kubernetes cluster with at least 2 CPUs and 4GB of memory.
 2. Enable the nginx ingress on the minikube cluster.
 
-#### Troubleshooting:
-* Certbot error `[Errno 13] Permission denied: '/var/log/letsencrypt' Either run as root, or set --config-dir, --work-dir, and --logs-dir to writeable paths.` - do not run as root, but set the directories instead.
-
-### SSL through a reverse proxy
+#### SSL through a reverse proxy
 
 In order to not have to fiddle with secrets for the nginx ingress, you can alternatively put apache2 or nginx on the host, and then having this act as a reverse proxy. Point it at port 80 (HTTP) of the ingress that is created once you deployed taskcluster.
 
@@ -78,6 +75,9 @@ Example configuration with SSL on the reverse proxy:
    SSLProxyCheckPeerCN off # Required when not using a trusted SSL cert (when not changing the ingress SSL cert)
 </VirtualHost>
 ```
+
+#### Troubleshooting:
+* Certbot error `[Errno 13] Permission denied: '/var/log/letsencrypt' Either run as root, or set --config-dir, --work-dir, and --logs-dir to writeable paths.` - do not run as root, but set the directories instead.
 
 __NOTE:__ be sure to point the reverse proxy at the ingress IP using HTTPS and preserving the host, ignore SSL validation if needed (of the ingress)
 
