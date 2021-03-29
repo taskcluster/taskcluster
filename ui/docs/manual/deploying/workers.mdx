@@ -2,6 +2,7 @@
 title: Workers
 order: 20
 ---
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 # Workers
 
@@ -89,8 +90,14 @@ it starts. Give this service account whatever google permissions you wish your
 workers to have. This could be something like writing to stackdriver for example.
 You provide the numeric `uniqueId` of this service account in the `workerServiceAccountId` field.
 
-*NOTE*: in its infinite wisdom, Google has made the `uniqueId` field of service accounts un-selectable in the UI, and thus impossible to copy.
+<Warning>
+It is important to know that tasks will also have access to this service-account if they try hard enough so make sure you keep that in mind while giving permissions to the `taskcluster-workers` service account.
+</Warning>
+
+<Warning>
+In its infinite wisdom, Google has made the `uniqueId` field of service accounts un-selectable in the UI, and thus impossible to copy.
 Rather than typing this number yourself, or firing up an OCR tool, right-click to "inspect" the element, remove the "disabled" property, and then copy from the element.
+</Warning>
 
 The second service account, typically named `taskcluster-worker-manager`, is for worker-manager itself and is used to create workers.
 It should have the following roles:
