@@ -39,8 +39,55 @@ Set up an IP for your deployment:
    Note that certbot is installed with `brew install letsencrypt` on macOS.
 1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <path-to-fullchain.pem> --private-key <path-to-key>`. When the time comes to renew the certificate, simply increment the name (e.g., <yourname>-ingress-1). 
 
+### Minikube
+
+If you want to run taskcluster on a kubernetes cluster on a server or virtual machine, minikube can be used.
+Follow the regular installation for minikube, however:
+
+1. Make sure to deploy a kubernetes cluster with at least 2 CPUs and 4GB of memory.
+2. Enable the nginx ingress on the minikube cluster.
+
+#### SSL through a reverse proxy
+
+In order to not have to fiddle with secrets for the nginx ingress, you can alternatively put apache2 or nginx on the host, and then having this act as a reverse proxy. Point it at port 80 (HTTP) of the ingress that is created once you deployed taskcluster.
+
+Example configuration with SSL on the reverse proxy:
+
+```
+<VirtualHost *:80>
+    RewriteEngine On
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=301,L]
+</VirtualHost>
+
+<VirtualHost *:443>
+   ServerName <subdomain>.<domain>.<tld> # example: taskcluster.example.com
+   SSLEngine on
+   SSLProxyEngine on
+   SSLProtocol             all -SSLv3 -TLSv1 -TLSv1.1
+   SSLCertificateFile      /etc/letsencrypt/live/<domain>/fullchain.pem # Or when not using letsencrypt, the path to your cert + CA chain.
+   SSLCertificateKeyFile   /etc/letsencrypt/live/<domain>/privkey.pem # Or when not using letsencrypt, the path to your certificate's private key.
+
+   # HTTP Strict Transport Security (mod_headers is required) (63072000 seconds)
+   Header always set Strict-Transport-Security "max-age=63072000"
+   ProxyPass / https://x.x.x.x/ # Replace with the ingress IP of your taskcluster deployment. kubectl get ingress
+   ProxyPassReverse / https://x.x.x.x/ # Replace with the ingress IP of your taskcluster deployment. kubectl get ingress
+   ProxyPreserveHost on
+   SSLProxyCheckPeerCN off # Required when not using a trusted SSL cert (when not changing the ingress SSL cert)
+</VirtualHost>
+```
+
 #### Troubleshooting:
 * Certbot error `[Errno 13] Permission denied: '/var/log/letsencrypt' Either run as root, or set --config-dir, --work-dir, and --logs-dir to writeable paths.` - do not run as root, but set the directories instead.
+
+__NOTE:__ be sure to point the reverse proxy at the ingress IP using HTTPS and preserving the host, ignore SSL validation if needed (of the ingress)
+
+#### SSL certificate from LetsEncrypt
+
+LetsEncrypt  provides free SSL certificates for publically accessable websites. [Certbot](https://certbot.eff.org/) is a popular option to request, and depending on the webserver automatically deploy and renew SSL certificates.
+
+#### Secure SSL configuration for apache/gninx
+
+For a secure SSL configuration for your webserver, [Mozilla's SSL Configuration](https://ssl-config.mozilla.org/) tool provides with multiple secure configurations for multiple webservers.
 
 ### Google Cloud SQL
 
