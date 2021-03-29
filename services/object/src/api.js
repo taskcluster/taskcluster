@@ -62,12 +62,13 @@ builder.declare({
     'upload an object of that name, regardless of scopes.  Object expiration',
     'cannot be changed after the initial call, either.  It is possible to call',
     'this method with no proposed upload methods, which has the effect of "locking',
-    'in" the `expiration` and `uploadId` properties.',
+    'in" the `expiration`, `projectId`, and `uploadId` properties and any',
+    'supplied hashes.',
     '',
     'Unfinished uploads expire after 1 day.',
   ].join('\n'),
 }, async function(req, res) {
-  let { projectId, uploadId, expires, proposedUploadMethods } = req.body;
+  let { projectId, uploadId, expires, hashes, proposedUploadMethods } = req.body;
   let { name } = req.params;
   const uploadExpires = taskcluster.fromNow('1 day');
 
@@ -110,7 +111,20 @@ builder.declare({
     throw new Error("newly created object row not found");
   }
 
-  // default uploadMethod to an empty object, meaning no matching methods
+  try {
+    if (hashes) {
+      await this.db.fns.add_object_hashes(name, hashes);
+    }
+  } catch (err) {
+    if (err.code === UNIQUE_VIOLATION) {
+      return res.reportError(
+        'RequestConflict',
+        'Content hash already exists with a different value',
+        { name });
+    }
+    throw err;
+  }
+
   let uploadMethod = await backend.createUpload(object, proposedUploadMethods);
 
   return res.reply({
@@ -139,7 +153,7 @@ builder.declare({
     'Note that, once `finishUpload` is complete, the object is considered immutable.',
   ].join('\n'),
 }, async function(req, res) {
-  let { projectId, uploadId } = req.body;
+  let { projectId, uploadId, hashes } = req.body;
   let { name } = req.params;
 
   await req.authorize({ projectId, name });
@@ -156,11 +170,59 @@ builder.declare({
       { name, projectId });
   }
 
-  if (object.upload_id !== null && object.upload_id !== uploadId) {
+  // if the object has already been finished, then verify idempotency
+  if (object.upload_id === null) {
+    // check that the hashes don't conflict, and that this call isn't
+    // introducing any new hashes.  Note that it's OK if the API call has
+    // *fewer* hashes than are present on the object.
+    const hashRes = await this.db.fns.get_object_hashes(name);
+    const existing = Object.fromEntries(hashRes.map(row => ([row.algorithm, row.hash])));
+    for (const [algo, hash] of Object.entries(hashes || {})) {
+      if (!existing[algo]) {
+        return res.reportError(
+          'RequestConflict',
+          'Object "{{name}}" is already finished, but without hash algorithm {{algo}}',
+          { name, algo });
+      }
+      if (existing[algo] !== hash) {
+        return res.reportError(
+          'RequestConflict',
+          'Object "{{name}}" is already finished, but with a different hash for algorithm {{algo}}',
+          { name, algo });
+      }
+    }
+
+    // check that projectId matches
+    if (object.project_id !== projectId) {
+      return res.reportError(
+        'RequestConflict',
+        'Object "{{name}}" is already finished, but with a different projectId',
+        { name });
+    }
+
+    // everything matches what's already in place, so return success
+    return res.reply({});
+  }
+
+  if (object.upload_id !== uploadId) {
     return res.reportError(
       'RequestConflict',
       'Object "{{name}}" does not have uploadId {{uploadId}}',
       { name, uploadId });
+  }
+
+  try {
+    if (hashes) {
+      await this.db.fns.add_object_hashes(name, hashes);
+    }
+  } catch (err) {
+    if (err.code === UNIQUE_VIOLATION) {
+      return res.reportError(
+        'RequestConflict',
+        'Content hash already exists with a different value',
+        { name });
+    }
+    throw err;
   }
 
   // mark its completion

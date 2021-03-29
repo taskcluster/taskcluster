@@ -28,6 +28,30 @@ properties:
       be changed in subsequent calls to the same method.
     type:           string
     format:         date-time
+  hashes:
+    title: "Object Content Hashes"
+    description: |
+      Hashes of the content of this object.  These values will be verified by
+      well-behaved downloaders.  The format is `{alogrithm: value}`.  Multiple
+      calls to `createUpload` for the same object can specify additional hashes,
+      but existing hashes cannot be changed; this allows "amending" an upload
+      with hashes after the data has been transferred, for example.  Omitting
+      this property is the same as specifying `hashes: {}`.
+    type: object
+    properties:
+      # NOTE: adding new hash algorithms here is fine, but it is important that this list
+      # be finite, to avoid adding a huge number of "hashes "to an object.  Do not remove
+      # algorithms from the list, even if they are known to be insecure, as existing
+      # clients may still produce objects with such hashes.
+      sha256:
+        type: string
+        pattern: '^[a-z0-9]{64}$'
+      sha512:
+        type: string
+        pattern: '^[a-z0-9]{128}$'
+    required: []
+    additionalProperties: false
+
   proposedUploadMethods:
     type: object
     title: "Proposed Upload Methods"

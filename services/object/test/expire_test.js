@@ -5,11 +5,11 @@ const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
+  helper.resetTables(mock, skipping);
   helper.withBackends(mock, skipping);
 
   setup(async function() {
     helper.load.save();
-    await testing.resetTables({ tableNames: ['objects'] });
   });
 
   teardown(async function() {

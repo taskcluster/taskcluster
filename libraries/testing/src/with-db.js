@@ -44,9 +44,7 @@ const resetTables = async ({ tableNames }) => {
   const client = new Client({ connectionString: testDbUrl });
   await client.connect();
   try {
-    for (let tableName of tableNames) {
-      await ignorePgErrors(client.query(`truncate ${tableName}`), UNDEFINED_TABLE);
-    }
+    await ignorePgErrors(client.query(`truncate ${tableNames.join(', ')}`), UNDEFINED_TABLE);
   } finally {
     await client.end();
   }
