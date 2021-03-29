@@ -13,6 +13,7 @@ suite(testing.suiteName(), function() {
       await client.query('delete from worker_pools');
       await client.query('delete from worker_pool_errors');
       await client.query('delete from workers');
+      await client.query('delete from queue_workers');
     });
   });
 
@@ -480,7 +481,7 @@ suite(testing.suiteName(), function() {
         i++;
       }
 
-      const rows = await db.fns.get_non_stopped_workers_2(null, null, null, null, null);
+      const rows = await db.deprecatedFns.get_non_stopped_workers_2(null, null, null, null, null);
 
       assert.equal(rows.length, 6);
 
@@ -500,6 +501,68 @@ suite(testing.suiteName(), function() {
         assert.deepEqual(row.provider_data, { providerdata: true });
         assert(row.secret !== undefined);
         assert(row.etag !== undefined);
+        i++;
+      }
+    });
+
+    helper.dbTest('get non-stopped workers with quarantine_until', async function(db) {
+      const now = new Date();
+
+      let i = 0;
+      // we are randomly ordering the ids to make sure rows are actually coming back ordered accordingly
+      const randomOrderIds = [4, 6, 5, 3, 2, 7, 0, 1];
+      for (let state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
+        await create_worker(db, {
+          worker_pool_id: `wp/${randomOrderIds[i]}`,
+          worker_group: `group${randomOrderIds[i]}`,
+          worker_id: `id${randomOrderIds[i]}`,
+          created: now,
+          last_modified: now,
+          last_checked: now,
+          expires: now,
+          state,
+        });
+        i++;
+      }
+
+      const quarantineUntil = fromNow('1 hour');
+      await helper.withDbClient(async client => {
+        // worker 4 is quarantined, and worker 6 has the same workerGroup/workerId as a quarantined worker
+        // in another pool, and thus should not appear as quarantined here
+        for (const [workerPoolId, workerGroup, workerId] of [
+          ['wp/4', 'group4', 'id4'],
+          ['wp/1', 'group6', 'id6'],
+        ]) {
+          await client.query(`
+            insert
+            into queue_workers
+            (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim) values
+            ($1, $2, $3, jsonb_build_array(), $4, now() + interval '1 hour', now() - interval '1 hour')
+          `, [workerPoolId, workerGroup, workerId, quarantineUntil]);
+        }
+      });
+
+      const rows = await db.fns.get_non_stopped_workers_quntil(null, null, null, null, null);
+
+      assert.equal(rows.length, 6);
+
+      i = 0;
+      const nonStoppedIds = [0, 2, 4, 5, 6, 7];
+      for (let row of rows) {
+        assert.equal(row.worker_pool_id, `wp/${nonStoppedIds[i]}`);
+        assert.equal(row.worker_group, `group${nonStoppedIds[i]}`);
+        assert.equal(row.worker_id, `id${nonStoppedIds[i]}`);
+        assert.equal(row.provider_id, 'provider');
+        assert(row.state !== 'stopped');
+        assert.equal(row.created.toJSON(), now.toJSON());
+        assert.equal(row.expires.toJSON(), now.toJSON());
+        assert.equal(row.last_modified.toJSON(), now.toJSON());
+        assert.equal(row.last_checked.toJSON(), now.toJSON());
+        assert.equal(row.capacity, 1);
+        assert.deepEqual(row.provider_data, { providerdata: true });
+        assert(row.secret !== undefined);
+        assert(row.etag !== undefined);
+        assert.deepEqual(row.quarantine_until, nonStoppedIds[i] === 4 ? quarantineUntil : null);
         i++;
       }
     });

@@ -80,25 +80,34 @@ class Provisioner {
         if (worker.state === Worker.states.STOPPING) {
           return;
         }
-        const v = providersByPool.get(worker.workerPoolId);
-        const isRequested = worker.state === Worker.states.REQUESTED;
+
         // compute the number of instances that have not yet called "registerWorker"
+        const isRequested = worker.state === Worker.states.REQUESTED;
         const requestedCapacity = isRequested ? worker.capacity : 0;
-        if (v) {
-          v.providers.add(worker.providerId);
-          v.existingCapacity += worker.capacity;
-          v.requestedCapacity += requestedCapacity;
-        } else {
-          providersByPool.set(worker.workerPoolId, {
-            providers: new Set([worker.providerId]),
-            existingCapacity: worker.capacity,
-            requestedCapacity,
-          });
+
+        // check for quarantined workers and do not consider them in the existing
+        // capacity
+        const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
+        const existingCapacity = isQuarantined ? 0 : worker.capacity;
+
+        let v = providersByPool.get(worker.workerPoolId);
+        if (!v) {
+          v = {
+            providers: new Set([]),
+            existingCapacity: 0,
+            requestedCapacity: 0,
+          };
+          providersByPool.set(worker.workerPoolId, v);
         }
+
+        v.providers.add(worker.providerId);
+        v.existingCapacity += existingCapacity;
+        v.requestedCapacity += requestedCapacity;
       };
 
       // Check the state of workers (state is updated by worker-scanner)
-      const fetch = async (size, offset) => await this.db.fns.get_non_stopped_workers_2(null, null, null, size, offset);
+      const fetch =
+        async (size, offset) => await this.db.fns.get_non_stopped_workers_quntil(null, null, null, size, offset);
       for await (let row of paginatedIterator({ fetch })) {
         const worker = Worker.fromDb(row);
         seen(worker);
