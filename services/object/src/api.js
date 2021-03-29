@@ -166,7 +166,7 @@ builder.declare({
   if (object.project_id !== projectId) {
     return res.reportError(
       'InputError',
-      'Object "{{name}}" does not have projectId {{projecId}}',
+      'Object "{{name}}" does not have projectId {{projectId}}',
       { name, projectId });
   }
 
@@ -192,13 +192,7 @@ builder.declare({
       }
     }
 
-    // check that projectId matches
-    if (object.project_id !== projectId) {
-      return res.reportError(
-        'RequestConflict',
-        'Object "{{name}}" is already finished, but with a different projectId',
-        { name });
-    }
+    // (already checked that projectId matches)
 
     // everything matches what's already in place, so return success
     return res.reply({});
@@ -291,6 +285,37 @@ builder.declare({
   const result = await backend.startDownload(object, method, params);
 
   return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/metadata/:name(*)',
+  name: 'object',
+  stability: 'experimental',
+  category: 'Objects',
+  output: 'get-object-response.yml',
+  scopes: 'object:download:<name>',
+  title: 'Get an object\'s metadata',
+  description: [
+    'Get the metadata for the named object.  This metadata is not sufficient to',
+    'get the object\'s content; for that use `startDownload`.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { name } = req.params;
+  const [object] = await this.db.fns.get_object_with_upload(name);
+
+  if (!object || object.upload_id !== null) {
+    return res.reportError('ResourceNotFound', 'Object "{{name}}" not found', { name });
+  }
+
+  const hashRes = await this.db.fns.get_object_hashes(name);
+  const hashes = Object.fromEntries(hashRes.map(row => ([row.algorithm, row.hash])));
+
+  return res.reply({
+    projectId: object.project_id,
+    expires: object.expires.toJSON(),
+    hashes,
+  });
 });
 
 builder.declare({

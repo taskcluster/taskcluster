@@ -144,6 +144,38 @@ impl Object {
         (path, query)
     }
 
+    /// Get an object's metadata
+    /// 
+    /// Get the metadata for the named object.  This metadata is not sufficient to
+    /// get the object's content; for that use `startDownload`.
+    pub async fn object(&self, name: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::object_details(name);
+        let body = None;
+        let resp = self.0.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the object endpoint
+    pub fn object_url(&self, name: &str) -> Result<String, Error> {
+        let (path, query) = Self::object_details(name);
+        self.0.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the object endpoint
+    pub fn object_signed_url(&self, name: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::object_details(name);
+        self.0.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for object
+    fn object_details<'a>(name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("metadata/{}", urlencode(name));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Get an object's data
     /// 
     /// Get the data in an object directly.  This method does not return a JSON body, but

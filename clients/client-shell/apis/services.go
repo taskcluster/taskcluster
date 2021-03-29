@@ -970,6 +970,19 @@ var services = map[string]definitions.Service{
 				Input: "v1/download-object-request.json#",
 			},
 			definitions.Entry{
+				Name:        "object",
+				Title:       "Get an object's metadata",
+				Description: "Get the metadata for the named object.  This metadata is not sufficient to\nget the object's content; for that use `startDownload`.",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/metadata/<name>",
+				Args: []string{
+					"name",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "download",
 				Title:       "Get an object's data",
 				Description: "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`startDownload` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",

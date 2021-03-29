@@ -175,6 +175,32 @@ func (object *Object) StartDownload(name string, payload *DownloadObjectRequest)
 
 // Stability: *** EXPERIMENTAL ***
 //
+// Get the metadata for the named object.  This metadata is not sufficient to
+// get the object's content; for that use `startDownload`.
+//
+// Required scopes:
+//   object:download:<name>
+//
+// See #object
+func (object *Object) Object(name string) (*ObjectMetadata, error) {
+	cd := tcclient.Client(*object)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/metadata/"+url.QueryEscape(name), new(ObjectMetadata), nil)
+	return responseObject.(*ObjectMetadata), err
+}
+
+// Returns a signed URL for Object, valid for the specified duration.
+//
+// Required scopes:
+//   object:download:<name>
+//
+// See Object for more details.
+func (object *Object) Object_SignedURL(name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*object)
+	return (&cd).SignedURL("/metadata/"+url.QueryEscape(name), nil, duration)
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
 // Get the data in an object directly.  This method does not return a JSON body, but
 // redirects to a location that will serve the object content directly.
 //

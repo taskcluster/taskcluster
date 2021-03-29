@@ -4370,6 +4370,46 @@
   },
   {
     "content": {
+      "$id": "/schemas/object/v1/get-object-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Metadata about an object.\n",
+      "properties": {
+        "expires": {
+          "format": "date-time",
+          "title": "Expiration",
+          "type": "string"
+        },
+        "hashes": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Hashes of the content of this object, in the format `{alogrithm: value}`.  See\nthe `createUpload` request for the list of supported hash algorithms.\n",
+          "required": [
+          ],
+          "title": "Object Content Hashes",
+          "type": "object"
+        },
+        "projectId": {
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9._/-]*)$",
+          "title": "Project Identifier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "expires",
+        "hashes"
+      ],
+      "title": "Object Metadata",
+      "type": "object"
+    },
+    "filename": "schemas/object/v1/get-object-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/object/v1/finish-upload-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -15543,6 +15583,23 @@
           "scopes": "object:download:<name>",
           "stability": "experimental",
           "title": "Download object data",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "category": "Objects",
+          "description": "Get the metadata for the named object.  This metadata is not sufficient to\nget the object's content; for that use `startDownload`.",
+          "method": "get",
+          "name": "object",
+          "output": "v1/get-object-response.json#",
+          "query": [
+          ],
+          "route": "/metadata/<name>",
+          "scopes": "object:download:<name>",
+          "stability": "experimental",
+          "title": "Get an object's metadata",
           "type": "function"
         },
         {

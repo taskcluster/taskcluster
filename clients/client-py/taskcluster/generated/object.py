@@ -97,6 +97,18 @@ class Object(BaseClient):
 
         return self._makeApiCall(self.funcinfo["startDownload"], *args, **kwargs)
 
+    def object(self, *args, **kwargs):
+        """
+        Get an object's metadata
+
+        Get the metadata for the named object.  This metadata is not sufficient to
+        get the object's content; for that use `startDownload`.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["object"], *args, **kwargs)
+
     def download(self, *args, **kwargs):
         """
         Get an object's data
@@ -143,6 +155,14 @@ class Object(BaseClient):
             'method': 'post',
             'name': 'finishUpload',
             'route': '/finish-upload/<name>',
+            'stability': 'experimental',
+        },
+        "object": {
+            'args': ['name'],
+            'method': 'get',
+            'name': 'object',
+            'output': 'v1/get-object-response.json#',
+            'route': '/metadata/<name>',
             'stability': 'experimental',
         },
         "ping": {

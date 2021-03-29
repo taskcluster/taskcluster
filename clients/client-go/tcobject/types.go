@@ -146,6 +146,22 @@ type (
 		Sha512 string `json:"sha512,omitempty"`
 	}
 
+	// Metadata about an object.
+	ObjectMetadata struct {
+		Expires tcclient.Time `json:"expires"`
+
+		// Hashes of the content of this object, in the format `{alogrithm: value}`.  See
+		// the `createUpload` request for the list of supported hash algorithms.
+		//
+		// Map entries:
+		Hashes map[string]string `json:"hashes"`
+
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId"`
+	}
+
 	// Upload methods, with details, that the caller is prepared to execute.  If
 	// this object is empty, then the server will reject the request but still
 	// create the upload with the given `uploadId`, `projectId`, and `expires`,

@@ -1687,6 +1687,23 @@ module.exports = {
           "args": [
             "name"
           ],
+          "category": "Objects",
+          "description": "Get the metadata for the named object.  This metadata is not sufficient to\nget the object's content; for that use `startDownload`.",
+          "method": "get",
+          "name": "object",
+          "output": "v1/get-object-response.json#",
+          "query": [
+          ],
+          "route": "/metadata/<name>",
+          "scopes": "object:download:<name>",
+          "stability": "experimental",
+          "title": "Get an object's metadata",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
           "category": "Download",
           "description": "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`startDownload` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
           "method": "get",
