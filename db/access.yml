@@ -28,6 +28,7 @@ notify:
 object:
   tables:
     objects: write
+    object_hashes: write
 purge_cache:
   tables:
     cache_purges: write

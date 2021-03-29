@@ -17,6 +17,7 @@
  * [`hooks_queues`](#hooks_queues)
  * [`index_namespaces`](#index_namespaces)
  * [`indexed_tasks`](#indexed_tasks)
+ * [`object_hashes`](#object_hashes)
  * [`objects`](#objects)
  * [`queue_artifacts`](#queue_artifacts)
  * [`queue_workers`](#queue_workers)
@@ -260,6 +261,18 @@ CREATE TABLE indexed_tasks (
 );
 ALTER TABLE indexed_tasks
     ADD CONSTRAINT indexed_tasks_pkey PRIMARY KEY (namespace, name);
+```
+
+## object_hashes
+
+```sql
+CREATE TABLE object_hashes (
+    name text NOT NULL,
+    algorithm text NOT NULL,
+    hash text NOT NULL
+);
+ALTER TABLE object_hashes
+    ADD CONSTRAINT object_hashes_pkey PRIMARY KEY (name, algorithm);
 ```
 
 ## objects

@@ -55,9 +55,11 @@
    * [`delete_denylist_address`](#delete_denylist_address)
    * [`exists_denylist_address`](#exists_denylist_address)
  * [object functions](#object)
+   * [`add_object_hashes`](#add_object_hashes)
    * [`create_object_for_upload`](#create_object_for_upload)
    * [`delete_object`](#delete_object)
    * [`get_expired_objects`](#get_expired_objects)
+   * [`get_object_hashes`](#get_object_hashes)
    * [`get_object_with_upload`](#get_object_with_upload)
    * [`object_upload_complete`](#object_upload_complete)
  * [purge_cache functions](#purge_cache)
@@ -967,11 +969,28 @@ Returns a boolean indicating whether the denylist type/address exists.
 
 ## object
 
+* [`add_object_hashes`](#add_object_hashes)
 * [`create_object_for_upload`](#create_object_for_upload)
 * [`delete_object`](#delete_object)
 * [`get_expired_objects`](#get_expired_objects)
+* [`get_object_hashes`](#get_object_hashes)
 * [`get_object_with_upload`](#get_object_with_upload)
 * [`object_upload_complete`](#object_upload_complete)
+
+### add_object_hashes
+
+* *Mode*: write
+* *Arguments*:
+  * `name_in text`
+  * `hashes_in jsonb`
+* *Returns*: `void`
+
+Add the given hashes, of the form `{algorithm: hash}`, to the named
+object.  The named object must already exist.  If any of the given
+algorithms already exist in the table, then the hash must match exactly.
+This function raises a CHECK_VIOLATION if the object's upload has been
+finished (upload_id is null) or FOREIGN_KEY_VIOLATION if the object does
+not exist.
 
 ### create_object_for_upload
 
@@ -1020,6 +1039,18 @@ objects with a name greater than `start_at_in` are returned.  The
 `limit_in` argument limits the number of results returned.  This returns
 both expired objects (expires < now) and expired uploads (upload_expires
 < now).
+
+### get_object_hashes
+
+* *Mode*: read
+* *Arguments*:
+  * `name_in text`
+* *Returns*: `table`
+  * ` algorithm text`
+  * `hash text `
+
+Get all hashes for the named object.  If the given object has no hashes,
+or doesn't exist, this function returns an empty result.
 
 ### get_object_with_upload
 
