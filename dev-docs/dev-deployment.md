@@ -66,6 +66,7 @@ Example configuration with SSL on the reverse proxy:
    ServerName <subdomain>.<domain>.<tld> # example: taskcluster.example.com
    SSLEngine on
    SSLProxyEngine on
+   SSLProtocol             all -SSLv3 -TLSv1 -TLSv1.1
    SSLCertificateFile      /etc/letsencrypt/live/<domain>/fullchain.pem # Or when not using letsencrypt, the path to your cert + CA chain.
    SSLCertificateKeyFile   /etc/letsencrypt/live/<domain>/privkey.pem # Or when not using letsencrypt, the path to your certificate's private key.
 
