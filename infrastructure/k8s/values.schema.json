@@ -1,7 +1,7 @@
 {
   "$id": "/schemas/common/values.schema.json#",
   "$schema": "http://json-schema.org/draft-06/schema#",
-  "aditionalProperties": false,
+  "additionalProperties": false,
   "properties": {
     "applicationName": {
       "description": "The name of this deployment of Taskcluster.",

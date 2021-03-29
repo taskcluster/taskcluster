@@ -3,7 +3,8 @@ const builder = require('./api');
 const exchanges = require('./exchanges');
 const Handlers = require('./handlers');
 const Intree = require('./intree');
-const Ajv = require('ajv');
+const Ajv = require('ajv').default;
+const addFormats = require('ajv-formats').default;
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const loader = require('taskcluster-lib-loader');
@@ -49,7 +50,11 @@ const load = loader({
 
   ajv: {
     requires: [],
-    setup: () => new Ajv(),
+    setup: () => {
+      const ajv = new Ajv();
+      addFormats(ajv);
+      return ajv;
+    },
   },
 
   generateReferences: {

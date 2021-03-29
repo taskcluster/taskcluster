@@ -103,8 +103,6 @@ type (
 		// more than one pattern is considered only to be counted once, in other words
 		// it is allowed for the cron patterns to overlap; duplicates are redundant.
 		//
-		// Default:    []
-		//
 		// Array items:
 		// Cron-like specification for when tasks should be created.  The pattern is
 		// parsed in a UTC context.

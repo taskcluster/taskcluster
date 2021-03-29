@@ -2,7 +2,8 @@ const builtServices = require('./built-services');
 const { makeSerializable, fromSerializable } = require('./serializable');
 const { writeUriStructured, readUriStructured } = require('./uri-structured');
 const { getCommonSchemas } = require('./common-schemas');
-const Ajv = require('ajv');
+const Ajv = require('ajv').default;
+const addFormats = require('ajv-formats').default;
 const regexEscape = require('regex-escape');
 const { validate } = require('./validate');
 
@@ -166,13 +167,18 @@ class References {
     // validation requires an Ajv instance, so set that up without validating
     if (!this._ajv) {
       const ajv = new Ajv({
-        format: 'full',
+        validateFormats: true,
         verbose: true,
         allErrors: true,
         validateSchema: false,
+        strict: true,
       });
 
+      addFormats(ajv);
       ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
+
+      // allow the `metadata` keyword in schemas
+      ajv.addKeyword('metadata');
 
       // identify metaschemas, so we can all addMetaSchema for them
       const metaSchemas = new Set(this.schemas.map(({ content }) => content.$schema));

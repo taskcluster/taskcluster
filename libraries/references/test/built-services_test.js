@@ -2,9 +2,16 @@ const assert = require('assert');
 const { load } = require('../src/built-services');
 const mockFs = require('mock-fs');
 const References = require('..');
+const { getCommonSchemas } = require('../src/common-schemas.js');
 const testing = require('taskcluster-lib-testing');
 
 suite(testing.suiteName(), function() {
+  suiteSetup(function() {
+    // getCommonSchemas is memoized, but references files that are not present in the
+    // mockFs, so fetch it once before setting up the mockFs.
+    getCommonSchemas();
+  });
+
   teardown(function() {
     mockFs.restore();
   });

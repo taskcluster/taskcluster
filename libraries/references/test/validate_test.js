@@ -174,7 +174,55 @@ suite(testing.suiteName(), function() {
       })
       .end();
     assertProblems(references, [
-      'test-schema.yml: schema.properties[\'abc\'] should be object,boolean',
+      'test-schema.yml: schema/properties/abc should be object,boolean',
+    ]);
+  });
+
+  test('schema with "entries" but no "type" fails', function() {
+    const references = new RefBuilder()
+      .schema({
+        entries: { type: 'string' },
+        uniqueItems: true,
+      })
+      .end();
+    assertProblems(references, [
+      'test-schema.yml: schema has a \'entries\' property but no \'type\'',
+    ]);
+  });
+
+  test('schema with "entries" but no "uniqueItems" fails', function() {
+    const references = new RefBuilder()
+      .schema({
+        type: 'array',
+        entries: { type: 'string' },
+      })
+      .end();
+    assertProblems(references, [
+      'test-schema.yml: schema has a \'entries\' property but no \'uniqueItems\'',
+    ]);
+  });
+
+  test('schema with "properties" but no "type" fails', function() {
+    const references = new RefBuilder()
+      .schema({
+        properties: {},
+        additionalProperties: false,
+      })
+      .end();
+    assertProblems(references, [
+      'test-schema.yml: schema has a \'properties\' property but no \'type\'',
+    ]);
+  });
+
+  test('schema with "properties" but no "additionalProperties" fails', function() {
+    const references = new RefBuilder()
+      .schema({
+        type: 'object',
+        properties: {},
+      })
+      .end();
+    assertProblems(references, [
+      'test-schema.yml: schema has a \'properties\' property but no \'additionalProperties\'',
     ]);
   });
 
@@ -186,7 +234,7 @@ suite(testing.suiteName(), function() {
       })
       .end();
     assertProblems(references, [
-      'test-schema.yml: schema.metadata should have required property \'name\'',
+      'test-schema.yml: schema/metadata should have required property \'name\'',
     ]);
   });
 
@@ -218,7 +266,7 @@ suite(testing.suiteName(), function() {
       .apiref({ serviceName: true })
       .end();
     assertProblems(references, [
-      'test-api-ref.yml: reference.serviceName should be string',
+      'test-api-ref.yml: reference/serviceName should be string',
     ]);
   });
 
@@ -228,7 +276,7 @@ suite(testing.suiteName(), function() {
       .exchangesref({ title: false })
       .end();
     assertProblems(references, [
-      'test-exch-ref.yml: reference.title should be string',
+      'test-exch-ref.yml: reference/title should be string',
     ]);
   });
 

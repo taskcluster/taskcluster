@@ -74,7 +74,8 @@ properties:
   billingProfile:
     type: object
     properties:
-      maxPrice: number
+      maxPrice:
+        type: number
     additionalProperties: false
     required: []
 additionalProperties: false

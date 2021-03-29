@@ -5,7 +5,8 @@ const path = require('path');
 const walk = require('walk');
 const yaml = require('js-yaml');
 const assert = require('assert');
-const Ajv = require('ajv');
+const Ajv = require('ajv').default;
+const addFormats = require('ajv-formats').default;
 const libUrls = require('taskcluster-lib-urls');
 const { renderConstants, checkRefs } = require('./util/validate_util');
 const rootdir = require('app-root-dir');
@@ -97,14 +98,16 @@ class SchemaSet {
   }
 
   async validator(rootUrl) {
-    const ajv = Ajv({
+    const ajv = new Ajv({
       useDefaults: true,
-      format: 'full',
+      validateFormats: true,
       verbose: true,
       // schema validation occurs in the tests and need not be done here
       validateSchema: false,
       allErrors: true,
     });
+
+    addFormats(ajv);
     ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
     _.forEach(this.absoluteSchemas(rootUrl), schema => {
       ajv.addSchema(schema);
