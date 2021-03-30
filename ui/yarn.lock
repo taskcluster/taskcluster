@@ -1722,9 +1722,9 @@
   integrity sha512-g+f/qj/cNcqKkc3tFqlXOYjrmZA+jNBiDzbP3kH+B+otKFqAdPgVTGP1IeKRdMml/aE69as5S4FqtxAbl+LaMw==
 
 "@types/node@>=10.0.0":
-  version "14.14.36"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.36.tgz#5637905dbb15c30a33a3c65b9ef7c20e3c85ebad"
-  integrity sha512-kjivUwDJfIjngzbhooRnOLhGYz6oRFi+L+EpMjxroDYXwDw9lHrJJ43E+dJ6KAd3V3WxWAJ/qZE9XKYHhjPOFQ==
+  version "14.14.37"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.37.tgz#a3dd8da4eb84a996c36e331df98d82abd76b516e"
+  integrity sha512-XYmBiy+ohOR4Lh5jE379fV2IU+6Jn4g5qASinhitfyO71b/sCo6MKsMLF5tc7Zf2CE8hViVQyYSobJNke8OvUw==
 
 "@types/node@>=6":
   version "13.13.5"
@@ -6411,9 +6411,9 @@ karma-webpack@^4.0.2:
     webpack-dev-middleware "^3.7.0"
 
 karma@^6.1.0:
-  version "6.3.1"
-  resolved "https://registry.yarnpkg.com/karma/-/karma-6.3.1.tgz#88f41e0c8b1784fa0bfaf7b1921ea69a4c6aeb4b"
-  integrity sha512-Is71g0f1dIpbLTXA+ULpev1i1soczQ1Dr8oum3zSmBFsDl3IWUlTLytsCb9os4v9xvUVWGDz0sCmLO4veANnSw==
+  version "6.3.2"
+  resolved "https://registry.yarnpkg.com/karma/-/karma-6.3.2.tgz#24b62fbae3e8b5218cc32a0dac49ad08a541e76d"
+  integrity sha512-fo4Wt0S99/8vylZMxNj4cBFyOBBnC1bewZ0QOlePij/2SZVWxqbyLeIddY13q6URa2EpLRW8ixvFRUMjkmo1bw==
   dependencies:
     body-parser "^1.19.0"
     braces "^3.0.2"
@@ -10138,9 +10138,9 @@ ua-parser-js@^0.7.18:
   integrity sha512-yo+miGzQx5gakzVK3QFfN0/L9uVhosXBBO7qmnk7c2iw1IhL212wfA3zbnI54B0obGwC/5NWub/iT9sReMx+Fw==
 
 ua-parser-js@^0.7.23:
-  version "0.7.25"
-  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.25.tgz#67689fa263a87a52dabbc251ede89891f59156ce"
-  integrity sha512-8NFExdfI24Ny8R3Vc6+uUytP/I7dpqk3JERlvxPWlrtx5YboqCgxAXYKPAifbPLV2zKbgmmPL53ufW7mUC/VOQ==
+  version "0.7.26"
+  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.26.tgz#b3731860e241419abd5b542b1a0881070d92e0ce"
+  integrity sha512-VwIvGlFNmpKbjzRt51jpbbFTrKIEgGHxIwA8Y69K1Bqc6bTIV7TaGGABOkghSFQWsLmcRB4drGvpfv9z2szqoQ==
 
 uc.micro@^1.0.1, uc.micro@^1.0.5:
   version "1.0.6"
