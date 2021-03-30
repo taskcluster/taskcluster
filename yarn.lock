@@ -198,7 +198,7 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@grpc/grpc-js@^1.2.7":
+"@grpc/grpc-js@^1.2.11":
   version "1.2.12"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.2.12.tgz#0153f27512acf69184bb52c0a1035ca91d6c14b0"
   integrity sha512-+gPCklP1eqIgrNPyzddYQdt9+GvZqPlLpIjIo+TveE+gbtp74VV1A2ju8ExeO8ma8f7MbpaGZx/KJPYVWL9eDw==
@@ -207,7 +207,7 @@
     google-auth-library "^6.1.1"
     semver "^6.2.0"
 
-"@grpc/proto-loader@^0.5.5":
+"@grpc/proto-loader@^0.5.6":
   version "0.5.6"
   resolved "https://registry.yarnpkg.com/@grpc/proto-loader/-/proto-loader-0.5.6.tgz#1dea4b8a6412b05e2d58514d507137b63a52a98d"
   integrity sha512-DT14xgw3PSzPxwS13auTEwxhMMOoz33DPUKNtmYK/QYbBSpLXJy78FGGs5yVoxVobEqPm4iW9MOIoz0A3bLTRQ==
@@ -4819,12 +4819,12 @@ netmask@^2.0.0:
   integrity sha512-gB8eG6ubxz67c7O2gaGiyWdRUIbH61q7anjgueDqCC9kvIs/b4CTtCMaQKeJbv1/Y7FT19I4zKwYmjnjInRQsg==
 
 newrelic@^7.0.0:
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-7.2.0.tgz#67d29b3bf804a13381060850c43283877ef62024"
-  integrity sha512-ABTHF9hV3rGVtlbC6xRxLszjsv91p+8i4EtjiuCOTMYImVYwxlMXcixdb+sLeyz58QrzefBaWMpYpqtJ9baa9w==
+  version "7.2.1"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-7.2.1.tgz#5f0aca3c0408daafc5d6588b654b7bd4c7d6f7f6"
+  integrity sha512-m4Uhnf7sKKQ/JcQvHZ+ieMc4teFzHCQnKXsd/AmwFQIIdVkXPdFWIKDzbh2RzH5SY5/SV+7M9p0eDTCdTvHECA==
   dependencies:
-    "@grpc/grpc-js" "^1.2.7"
-    "@grpc/proto-loader" "^0.5.5"
+    "@grpc/grpc-js" "^1.2.11"
+    "@grpc/proto-loader" "^0.5.6"
     "@newrelic/aws-sdk" "^3.1.0"
     "@newrelic/koa" "^5.0.0"
     "@newrelic/superagent" "^4.0.0"
