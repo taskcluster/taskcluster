@@ -2174,9 +2174,9 @@ cron-parser@3.3.0:
     luxon "^1.25.0"
 
 cronstrue@^1.101.0:
-  version "1.110.0"
-  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-1.110.0.tgz#cffbef09855141e518341ed5a4b575a5a4811638"
-  integrity sha512-+ABuGZl/nqf/0TemAsPlMSGaB9xEobWhctfRGEqEvH3g6pB/2FGbsUHQPSL8Wt1W3nmOHe1w8GWjacN5k8d3hg==
+  version "1.111.0"
+  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-1.111.0.tgz#689b358c9ac6ae6b6352043339c3207122b2e602"
+  integrity sha512-XuZj3jHp3p3r6OXo8yuhjO0n6UEj9qEtpSzVg9ruKhpV5pBJZCqZwpaApqRV0nW+AJLiAB+3OSPEWcFlzIM25g==
 
 cross-env@^7.0.2:
   version "7.0.3"
