@@ -4600,7 +4600,7 @@
         },
         "proposedUploadMethods": {
           "additionalProperties": false,
-          "description": "Upload methods, with details, that the caller is prepared to execute.  If this\nobject is empty, then the server will reject the request but still create the\nupload with the given `uploadId` and `expires`, so any subsequent calls must\nshare those values.  The server may choose any of the proposed methods at its\ndiscretion.\n",
+          "description": "Upload methods, with details, that the caller is prepared to execute.  If\nthis object is empty, then the server will reject the request but still\ncreate the upload with the given `uploadId`, `projectId`, and `expires`,\nso any subsequent calls must share those values.  The server may choose\nany of the proposed methods at its discretion.\n",
           "properties": {
             "dataInline": {
               "$ref": "upload-method-data-inline.json#/definitions/request"
