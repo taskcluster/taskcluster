@@ -2,7 +2,6 @@
 package signin
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -98,7 +97,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	})
 
 	// Construct URL for login service and open it
-	callbackURL := "http://localhost"
+	callbackURL := "localhost"
 	description := url.QueryEscape("Temporary client for use on the command line")
 	name, _ := cmd.Flags().GetString("name")
 	scopes, _ := cmd.Flags().GetStringArray("scope")
@@ -139,9 +138,11 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to open browser, error: %s", err)
 	}
 
-	if port > 0 {
-		callbackURL = fmt.Sprintf("%s:%d", callbackURL, port)
+	if port == 0 {
+		port = 80
 	}
+
+	callbackURL = fmt.Sprintf("%s:%d", callbackURL, port)
 
 	srv := &http.Server{
 		Handler:      router,
@@ -150,19 +151,12 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		ReadTimeout:  5 * time.Second,
 	}
 
-	err = srv.ListenAndServe()
-	if err != nil {
-		return fmt.Errorf("failed to start localhost server, error: %s", err)
-	}
+	go func() {
+		srv.ListenAndServe()
+		time.Sleep(5 * time.Second)
+	}()
 
-	// Stop server
-	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
-
-	defer cancel()
-
-	if err := srv.Shutdown(ctx); err != nil {
-		return fmt.Errorf("failed to shutdown localhost server, error: %s", err)
-	}
+	log.Infoln("Stop")
 
 	return nil
 }
