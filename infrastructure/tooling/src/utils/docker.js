@@ -235,7 +235,7 @@ exports.dockerRegistryCheck = async ({ tag }) => {
       return true;
     }
   } catch (err) {
-    if (err.statusCode !== 404) {
+    if (err.response.statusCode !== 404) {
       throw err;
     }
   }

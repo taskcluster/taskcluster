@@ -43,7 +43,15 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
     ],
     locks: ['git'],
     run: async (requirements, utils) => {
-      const tag = `taskcluster/taskcluster:v${requirements['release-version']}`;
+      let dockerRepo = cmdOptions.dockerRepo;
+      if (!dockerRepo) {
+        if (cmdOptions.push) {
+          throw new Error('--docker-repo must be given with --push');
+        }
+        // if not pushing, just name the image `taskcluster:vX.Y.Z`.
+        dockerRepo = 'taskcluster';
+      }
+      const tag = `${dockerRepo}:v${requirements['release-version']}`;
 
       utils.step({ title: 'Check for Existing Images' });
 
@@ -70,7 +78,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
         return utils.skip({ provides });
       }
 
-      utils.step({ title: 'Building Docker Image' });
+      utils.step({ title: `Building Docker Image ${tag}` });
 
       let versionJson = requirements['docker-flow-version'];
       let command = ['docker', 'build'];
@@ -106,8 +114,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
     ],
     locks: ['git'],
     run: async (requirements, utils) => {
-      const tag = requirements['monoimage-docker-image']
-        .replace(/taskcluster:/, 'taskcluster-devel:');
+      const tag = requirements['monoimage-docker-image'] + '-devel';
 
       utils.step({ title: 'Check for Existing Images' });
 
@@ -134,7 +141,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
         return utils.skip({ provides });
       }
 
-      utils.step({ title: 'Building Docker Image' });
+      utils.step({ title: `Building Docker Image ${tag}` });
 
       const dockerDir = path.join(tempDir, 'devel-image');
       await rimraf(dockerDir);
