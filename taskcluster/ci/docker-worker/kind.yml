@@ -16,7 +16,8 @@ job-defaults:
   run:
     using: bare
     clone: false
-    install: '"( cd ../..; yarn install --frozen-lockfile ) && yarn install --frozen-lockfile && ./build.sh"'
+    # XXX temporarily hard-code the IP of the community artifacts CDN - https://github.com/taskcluster/taskcluster/issues/4673
+    install: '"( cd ../..; yarn install --frozen-lockfile ) && yarn install --frozen-lockfile && echo 13.226.201.35 community.taskcluster-artifacts.net >> /etc/hosts && ./build.sh"'
   worker:
     taskcluster-proxy: true
     privileged: true
