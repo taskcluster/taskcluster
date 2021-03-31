@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueue"
 )
 
 func checkSHA256(t *testing.T, sha256Hex string, file string) {
@@ -94,8 +94,11 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 
 	for artifact, expected := range expectedArtifacts {
 		if actual, ok := actualArtifacts[artifact]; ok {
-			if actual.ContentType != expected.ContentType {
-				t.Errorf("Artifact %s should have mime type '%v' but has '%s'", artifact, expected.ContentType, actual.ContentType)
+			// link artifacts do not have content types
+			if actual.StorageType != "link" {
+				if actual.ContentType != expected.ContentType {
+					t.Errorf("Artifact %s should have mime type '%v' but has '%s'", artifact, expected.ContentType, actual.ContentType)
+				}
 			}
 			if !time.Time(expected.Expires).IsZero() {
 				if actual.Expires.String() != expected.Expires.String() {

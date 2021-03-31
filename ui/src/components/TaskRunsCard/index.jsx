@@ -33,6 +33,7 @@ import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import { runs } from '../../utils/prop-types';
 import { withAuth } from '../../utils/Auth';
 import { getArtifactUrl } from '../../utils/getArtifactUrl';
+import splitTaskQueueId from '../../utils/splitTaskQueueId';
 import Link from '../../utils/Link';
 
 const DOTS_VARIANT_LIMIT = 5;
@@ -133,13 +134,9 @@ export default class TaskRunsCard extends Component {
      */
     runs: runs.isRequired,
     /**
-     * The worker type associated with the runs' task.
+     * The taskQueueId for the tas
      */
-    workerType: string.isRequired,
-    /**
-     * The provisioner ID associated with the runs' task.
-     */
-    provisionerId: string.isRequired,
+    taskQueueId: string.isRequired,
     /**
      * The current selected run index to display in the card. Paging through
      * runs will trigger a history change, for which the `selectedRunId` can be
@@ -326,14 +323,7 @@ export default class TaskRunsCard extends Component {
   };
 
   render() {
-    const {
-      classes,
-      runs,
-      selectedRunId,
-      provisionerId,
-      workerType,
-      theme,
-    } = this.props;
+    const { classes, runs, selectedRunId, taskQueueId, theme } = this.props;
     const { showMore } = this.state;
     const run = this.getCurrentRun();
     const liveLogArtifact = this.getLiveLogArtifactFromRun(run);
@@ -341,6 +331,7 @@ export default class TaskRunsCard extends Component {
     const liveLogInfo = liveLogArtifact
       ? this.getArtifactInfo(liveLogArtifact)
       : {};
+    const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
     return (
       <Card raised>

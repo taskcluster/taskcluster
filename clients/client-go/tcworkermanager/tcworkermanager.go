@@ -4,7 +4,7 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/worker-manager/v1/api.json
 // This service manages workers, including provisioning for dynamic worker pools.
@@ -41,7 +41,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 )
 
 type WorkerManager tcclient.Client

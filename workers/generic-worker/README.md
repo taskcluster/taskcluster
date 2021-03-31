@@ -271,7 +271,7 @@ where `<config file>` is the generic worker config file you created above.
 
 ## Documentation
 
-See the [![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster/workers/generic-worker?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster/workers/generic-worker).
+See the [![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/workers/generic-worker?status.svg)](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/workers/generic-worker).
 
 ## Build from source
 

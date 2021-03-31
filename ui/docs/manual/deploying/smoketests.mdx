@@ -31,12 +31,12 @@ $ node infrastructure/tooling/src/main.js smoketest
 ...
 ```
 
-Alternately, the `taskcluster/taskcluster-devel` docker image can be used:
+Alternately, the devel docker image can be used:
 
 ```
 $ docker run -ti --rm \
   -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_ACCESS_TOKEN -e TASKCLUSTER_CLIENT_ID \
-  taskcluster/taskcluster-devel:v1.2.3 script/smoketest
+  taskcluster/taskcluster:v1.2.3-devel script/smoketest
 yarn run v1.19.1
 $ node infrastructure/tooling/src/main.js smoketest
 ✔ Ping health endpoint for web-server

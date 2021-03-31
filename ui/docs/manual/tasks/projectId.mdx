@@ -1,0 +1,15 @@
+---
+title: The projectId property
+order: 46
+---
+
+Each task has a `projectId`.
+The intent of this identifier is to associate the task with a particular usage of the deployment.
+For example, in an organization building and testing several apps, the `projectId` might correspond to the app name.
+The `projectId` can be a `/`-separated, scoped identifier, for example `<department>/<app>`.
+
+Permissions to [manipulate](manipulating) a task are controlled by `projectId`.
+In a simple case, this means that developers of an app can be given scopes containing that app's `projectId`, allowing them to manipulate their own tasks but not those of other teams.
+
+Project IDs can also be used to track resource usage.
+Tasks using the object service for artifact storage require that the `projectId` of the artifact objects match that of the parent task.

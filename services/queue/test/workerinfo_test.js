@@ -5,7 +5,7 @@ const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 
 const { Worker, TaskQueue } = require('../src/data');
-const { joinTaskQueueId, splitTaskQueueId } = require('../src/utils');
+const { splitTaskQueueId } = require('../src/utils');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -17,32 +17,46 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.resetTables(mock, skipping);
 
   const makeTaskQueue = async (opts) => {
-    const tQueue = TaskQueue.fromApi('prov1-extended-extended-extended/gecko-b-2-linux-extended-extended', Object.assign({
-      taskQueueId: 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended',
-      expires: new Date('3017-07-29'),
-      lastDateActive: new Date(),
-      description: 'test-worker-type',
-      stability: 'experimental',
-    }, opts));
-
+    const taskQueueId = opts.taskQueueId || 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended';
     const db = await helper.load('db');
-    await tQueue.create(db);
-    return tQueue;
+    await db.fns.task_queue_seen({
+      task_queue_id_in: taskQueueId,
+      expires_in: opts.expires || new Date('3017-07-29'),
+      description_in: opts.description || 'test-worker-type',
+      stability_in: opts.stability || 'experimental',
+    });
+    return await TaskQueue.get(db, taskQueueId, new Date());
   };
 
   const makeWorker = async (opts) => {
-    const worker = Worker.fromApi('prov1-extended-extended-extended/my-worker-extended-extended', Object.assign({
-      taskQueueId: 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended',
-      workerGroup: 'my-worker-group-extended-extended',
-      workerId: 'my-worker-extended-extended',
-      recentTasks: [],
-      expires: new Date('3017-07-29'),
-      quarantineUntil: new Date(),
-      firstClaim: new Date(),
-    }, opts));
+    const task_queue_id_in = opts.taskQueueId || 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended';
+    const worker_group_in = opts.workerGroup || 'my-worker-group-extended-extended';
+    const worker_id_in = opts.workerId || 'my-worker-extended-extended';
+    const expires_in = opts.expires || new Date('3017-07-29');
+
+    // emulate "creation" by seeing the worker, quarantining if necessary, and seeing tasks
     const db = await helper.load('db');
-    await worker.create(db);
-    return worker;
+    await db.fns.queue_worker_seen({ task_queue_id_in, worker_group_in, worker_id_in, expires_in });
+
+    if (opts.quarantineUntil) {
+      // quarantine_queue_worker would bump the expires column, so we set it manually
+      await helper.withDbClient(async client => {
+        await client.query(`
+          update queue_workers
+          set quarantine_until = $1
+          where task_queue_id = $2 and worker_group = $3 and worker_id = $4`,
+        [opts.quarantineUntil, task_queue_id_in, worker_group_in, worker_id_in]);
+      });
+    }
+
+    for (let task of opts.recentTasks || []) {
+      await db.fns.queue_worker_task_seen({
+        task_queue_id_in, worker_group_in, worker_id_in,
+        task_run_in: task,
+      });
+    }
+
+    return await Worker.get(db, task_queue_id_in, worker_group_in, worker_id_in, new Date(0));
   };
 
   let workerInfo;
@@ -258,7 +272,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const [provisionerId, workerType] = workers[0].taskQueueId.split('/');
     const result = await helper.queue.listWorkers(provisionerId, workerType);
 
-    assert.equal(result.workers.length, 3, 'expected three workers');
+    assert.equal(result.workers.length, 3, `expected three workers, got ${result.workers.map(w => w.workerId).join(', ')}`);
     assert(result.workers.some(w => w.workerId === 'q'));
     assert(result.workers.some(w => w.workerId === 'new'));
     assert(result.workers.some(w => w.workerId === 'newq'));
@@ -539,7 +553,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     const tQueue = {
       taskQueueId: 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended',
-      lastDateActive: new Date(),
     };
     await makeTaskQueue(tQueue);
 
@@ -548,21 +561,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let [provisionerId, workerType] = tQueue.taskQueueId.split('/');
     result = await helper.queue.getWorkerType(provisionerId, workerType);
 
-    assert(
-      new Date(result.lastDateActive).getTime() === tQueue.lastDateActive.getTime(), `expected ${tQueue.lastDateActive}`,
-    );
-
-    tQueue.taskQueueId = 'prov1-extended-extended-extended/gecko-b-2-android';
-    tQueue.lastDateActive = taskcluster.fromNow('- 7h');
-    await makeTaskQueue(tQueue);
-
-    await workerInfo.seen(tQueue.taskQueueId);
-
-    [provisionerId, workerType] = tQueue.taskQueueId.split('/');
-    result = await helper.queue.getWorkerType(provisionerId, workerType);
-    assert(
-      new Date(result.lastDateActive).getTime() !== tQueue.lastDateActive.getTime(), 'expected different lastDateActive',
-    );
+    assert(Math.abs(new Date(result.lastDateActive) - new Date()) < 3600);
   });
 
   test('provisioner lastDateActive updates', async () => {
@@ -576,17 +575,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let { provisionerId } = splitTaskQueueId(tQueue.taskQueueId);
     result = await helper.queue.getProvisioner(provisionerId);
 
-    assert(new Date(result.lastDateActive).getTime() === tQueue.lastDateActive.getTime(), `expected ${tQueue.lastDateActive}`);
-
-    tQueue.lastDateActive = taskcluster.fromNow('- 7h');
-    tQueue.taskQueueId = 'prov2/not-important';
-    provisionerId = 'prov2';
-
-    await workerInfo.seen(tQueue.taskQueueId);
-
-    result = await helper.queue.getProvisioner(provisionerId);
-
-    assert(new Date(result.lastDateActive).getTime() !== tQueue.lastDateActive.getTime(), 'expected different lastDateActive');
+    assert(Math.abs(new Date(result.lastDateActive) - new Date()) < 3600);
   });
 
   test('queue.getWorker returns a worker', async () => {
@@ -706,6 +695,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const taskId = slugid.v4();
     const worker = await makeWorker({
       recentTasks: [{ taskId, runId: 0 }],
+      expires: new Date('2200-01-01'),
     });
 
     const updateProps = {
@@ -727,7 +717,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(result.workerId === worker.workerId, `expected ${worker.workerId}`);
     assert(result.recentTasks[0].taskId === taskId, `expected ${taskId}`);
     assert(result.recentTasks[0].runId === 0, 'expected 0');
-    assert(new Date(result.expires).getTime() === updateProps.expires.getTime(), `expected ${updateProps.expires}`);
+    assert.deepEqual(new Date(result.expires), updateProps.expires, `expected ${updateProps.expires}`);
   });
 
   test('queue.declareWorker creates a worker, workerType, and Provisioner', async () => {
@@ -785,15 +775,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('queue.claimWork adds a task to a worker', async () => {
-    const provisionerId = 'prov1-extended-extended-extended';
-    const workerType = 'gecko-b-2-linux-extended-extended';
+    const taskQueueId = 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended';
     const workerGroup = 'my-worker-group-extended-extended';
     const workerId = 'my-worker-extended-extended';
     const taskId = slugid.v4();
 
     await helper.queue.createTask(taskId, {
-      provisionerId,
-      workerType,
+      taskQueueId,
       priority: 'normal',
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('30 min'),
@@ -807,25 +795,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     //await makeClaimable(taskStatus);
-    await helper.queue.claimWork(provisionerId, workerType, {
+    await helper.queue.claimWork(taskQueueId, {
       workerGroup,
       workerId,
       tasks: 1,
     });
 
     const db = await helper.load('db');
-    const result = await Worker.get(db, `${provisionerId}/${workerType}`, workerGroup, workerId, new Date());
+    const result = await Worker.get(db, taskQueueId, workerGroup, workerId, new Date());
 
     assert(result.recentTasks[0].taskId === taskId, `expected taskId ${taskId}`);
     assert(result.recentTasks[0].runId === 0, 'expected runId 0');
   });
 
   test('queue.getWorker returns 20 most recent taskIds', async () => {
-    const provisionerId = 'no-provisioner';
-    const workerType = 'gecko-b-1-android';
+    const taskQueueId = 'no-provisioner/gecko-b-1-android';
     const workerGroup = 'my-worker-group-extended-extended';
     const workerId = 'my-worker-extended-extended';
-    await makeTaskQueue({ taskQueueId: joinTaskQueueId(provisionerId, workerType) });
+    await makeTaskQueue({ taskQueueId });
 
     let taskIds = [];
 
@@ -834,8 +821,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       taskIds.push(taskId);
 
       await helper.queue.createTask(taskIds[i], {
-        provisionerId,
-        workerType,
+        taskQueueId,
         priority: 'normal',
         created: taskcluster.fromNowJSON(),
         deadline: taskcluster.fromNowJSON('30 min'),
@@ -855,7 +841,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       if (!retries--) {
         throw new Error('Could not claim all 30 tasks after multiple attempts');
       }
-      const res = await helper.queue.claimWork(provisionerId, workerType, {
+      const res = await helper.queue.claimWork(taskQueueId, {
         workerGroup,
         workerId,
         tasks: 30,
@@ -863,6 +849,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       claimed += res.tasks.length;
     }
 
+    const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
     const result = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
     const recentTasks = result.recentTasks;
 

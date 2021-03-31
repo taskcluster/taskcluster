@@ -4,6 +4,7 @@ const session = require('express-session');
 const { promisify } = require('util');
 const helper = require('./helper');
 const PostgresSessionStore = require('../src/login/PostgresSessionStore');
+const hash = require('../src/utils/hash');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -66,6 +67,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const val = await store.get('foo');
 
       assert.ok(val, 'entry exists');
+    });
+    test('it shouldn\'t get the specified session when only the hash matches', async function () {
+      const store = getStore();
+
+      const currentSession = 'sessionid1';
+      const currentHash = hash(currentSession);
+
+      const newSession = 'sessionid2';
+      const newHash = hash(newSession);
+
+      //creates a new session
+      await store.set(currentSession, { cookie: {} });
+
+      // updates the hash of that session
+      await helper.withDbClient(async client => {
+        await client.query('update sessions set hashed_session_id = $1 where hashed_session_id = $2', [newHash, currentHash]);
+      });
+
+      // tries to get the new session
+      const val = await store.get(newSession);
+
+      assert.equal(val, undefined);
     });
     test('it should get the specified session and call back', function (done) {
       const store = getStore(false /* shouldPromisify */);

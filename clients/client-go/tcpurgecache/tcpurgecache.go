@@ -4,7 +4,7 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/purge-cache/v1/api.json
 // The purge-cache service is responsible for tracking cache-purge requests.
@@ -41,7 +41,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 )
 
 type PurgeCache tcclient.Client
@@ -105,18 +105,18 @@ func (purgeCache *PurgeCache) Ping() error {
 }
 
 // Publish a request to purge caches named `cacheName` with
-// on `provisionerId`/`workerType` workers.
+// on `workerPoolId` workers.
 //
 // If such a request already exists, its `before` timestamp is updated to
 // the current time.
 //
 // Required scopes:
-//   purge-cache:<provisionerId>/<workerType>:<cacheName>
+//   purge-cache:<workerPoolId>:<cacheName>
 //
 // See #purgeCache
-func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, payload *PurgeCacheRequest) error {
+func (purgeCache *PurgeCache) PurgeCache(workerPoolId string, payload *PurgeCacheRequest) error {
 	cd := tcclient.Client(*purgeCache)
-	_, _, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, nil)
+	_, _, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(workerPoolId), nil, nil)
 	return err
 }
 
@@ -163,36 +163,36 @@ func (purgeCache *PurgeCache) AllPurgeRequests_SignedURL(continuationToken, limi
 	return (&cd).SignedURL("/purge-cache/list", v, duration)
 }
 
-// List the caches for this `provisionerId`/`workerType` that should to be
+// List the caches for this `workerPoolId` that should to be
 // purged if they are from before the time given in the response.
 //
 // This is intended to be used by workers to determine which caches to purge.
 //
 // Required scopes:
-//   purge-cache:purge-requests:<provisionerId>/<workerType>
+//   purge-cache:purge-requests::<workerPoolId>
 //
 // See #purgeRequests
-func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since string) (*OpenPurgeRequestList, error) {
+func (purgeCache *PurgeCache) PurgeRequests(workerPoolId, since string) (*OpenPurgeRequestList, error) {
 	v := url.Values{}
 	if since != "" {
 		v.Add("since", since)
 	}
 	cd := tcclient.Client(*purgeCache)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(OpenPurgeRequestList), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/"+url.QueryEscape(workerPoolId), new(OpenPurgeRequestList), v)
 	return responseObject.(*OpenPurgeRequestList), err
 }
 
 // Returns a signed URL for PurgeRequests, valid for the specified duration.
 //
 // Required scopes:
-//   purge-cache:purge-requests:<provisionerId>/<workerType>
+//   purge-cache:purge-requests::<workerPoolId>
 //
 // See PurgeRequests for more details.
-func (purgeCache *PurgeCache) PurgeRequests_SignedURL(provisionerId, workerType, since string, duration time.Duration) (*url.URL, error) {
+func (purgeCache *PurgeCache) PurgeRequests_SignedURL(workerPoolId, since string, duration time.Duration) (*url.URL, error) {
 	v := url.Values{}
 	if since != "" {
 		v.Add("since", since)
 	}
 	cd := tcclient.Client(*purgeCache)
-	return (&cd).SignedURL("/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), v, duration)
+	return (&cd).SignedURL("/purge-cache/"+url.QueryEscape(workerPoolId), v, duration)
 }

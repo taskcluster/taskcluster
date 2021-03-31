@@ -153,6 +153,8 @@ class Publish extends Base {
       cache: false,
       // to be safe, set push=false for staging runs
       push: cmdOptions.staging ? false : true,
+      // always push to the "official" Taskcluster repo on publish
+      dockerRepo: 'taskcluster/taskcluster',
     });
   }
 

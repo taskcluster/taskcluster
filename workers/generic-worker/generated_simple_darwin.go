@@ -7,7 +7,7 @@ package main
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 )
 
 type (
@@ -55,7 +55,7 @@ type (
 		// on a directory artifact will apply the same contentType to all files contained in the
 		// directory.
 		//
-		// See [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).
+		// See [mime.TypeByExtension](https://pkg.go.dev/mime#TypeByExtension).
 		//
 		// Since: generic-worker 10.4.0
 		ContentType string `json:"contentType,omitempty"`
@@ -591,7 +591,7 @@ func taskPayloadSchema() string {
             "type": "string"
           },
           "contentType": {
-            "description": "Explicitly set the value of the HTTP ` + "`" + `Content-Type` + "`" + ` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple ` + "`" + `mime.types` + "`" + ` files located under ` + "`" + `/etc` + "`" + `. Note, setting ` + "`" + `contentType` + "`" + `\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
+            "description": "Explicitly set the value of the HTTP ` + "`" + `Content-Type` + "`" + ` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple ` + "`" + `mime.types` + "`" + ` files located under ` + "`" + `/etc` + "`" + `. Note, setting ` + "`" + `contentType` + "`" + `\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://pkg.go.dev/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
             "title": "Content-Type header when serving artifact over HTTP",
             "type": "string"
           },

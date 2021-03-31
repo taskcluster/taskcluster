@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 )
 
 type (
@@ -87,7 +87,7 @@ type (
 		URL string `json:"url"`
 	}
 
-	// Information about an artifact for the given `taskId` and `runId`.
+	// Information about an artifact
 	Artifact struct {
 
 		// Expected content-type of the artifact.  This is informational only:
@@ -228,6 +228,52 @@ type (
 		StorageType string `json:"storageType"`
 	}
 
+	// Response to the `artifact` and `latestArtifact` methods.  It is one of the
+	// following types, as identified by the `storageType` property.
+	//
+	// One of:
+	//   * GetArtifactContentResponse1
+	//   * GetArtifactContentResponse2
+	//   * GetArtifactContentResponse3
+	GetArtifactContentResponse json.RawMessage
+
+	// Response to the `artifact` and `latestArtifact` methods.  It is one of the
+	// following types, as identified by the `storageType` property.
+	GetArtifactContentResponse1 struct {
+
+		// Constant value: "s3"
+		StorageType string `json:"storageType"`
+
+		// URL from which to download the artifact.  This may be a URL for a bucket or
+		// a CDN, and may or may not be signed, depending on server configuration.
+		URL string `json:"url"`
+	}
+
+	// Response to the `artifact` and `latestArtifact` methods.  It is one of the
+	// following types, as identified by the `storageType` property.
+	GetArtifactContentResponse2 struct {
+
+		// Constant value: "reference"
+		StorageType string `json:"storageType"`
+
+		// Referenced URL
+		URL string `json:"url"`
+	}
+
+	// Response to the `artifact` and `latestArtifact` methods.  It is one of the
+	// following types, as identified by the `storageType` property.
+	GetArtifactContentResponse3 struct {
+
+		// Error message
+		Message string `json:"message"`
+
+		// Error reason
+		Reason string `json:"reason"`
+
+		// Constant value: "error"
+		StorageType string `json:"storageType"`
+	}
+
 	// Response to the `getArtifact` method.  This method returns a simple URL from
 	// which the artifact data can be read.  Not that this response is provided as
 	// the body of an HTTP 303 response, so clients which automatically follow
@@ -252,6 +298,15 @@ type (
 
 		// Name of the artifact to which to link.
 		Artifact string `json:"artifact"`
+
+		// Expected content-type of the artifact.  This is informational only:
+		// it is suitable for use to choose an icon for the artifact, for example.
+		// The accurate content-type of the artifact can only be determined by
+		// downloading it.  If this value is not provided, it will default to
+		// `application/binary`.
+		//
+		// Max length: 255
+		ContentType string `json:"contentType,omitempty"`
 
 		// Date-time after which the queue should no longer maintain this link.
 		Expires tcclient.Time `json:"expires"`
@@ -734,6 +789,8 @@ type (
 
 		// Time at which the run expires and is resolved as `exception`,
 		// with reason `claim-expired` if the run haven't been reclaimed.
+		// This will be some time in the future, with that time controlled
+		// by the `queue.task_claim_timeout` configuration.
 		TakenUntil tcclient.Time `json:"takenUntil"`
 
 		// Definition of a task that can be scheduled
@@ -1914,6 +1971,22 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// GetArtifactContentResponse is of type json.RawMessage...
+func (this *GetArtifactContentResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *GetArtifactContentResponse) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("GetArtifactContentResponse: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // PostArtifactRequest is of type json.RawMessage...

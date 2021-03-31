@@ -4,7 +4,7 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/worker-manager/v1/exchanges.json
 // These exchanges provide notifications when a worker pool is created or updated.This is so that the provisioner running in a differentprocess at the other end can synchronize to the changes. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.
@@ -13,7 +13,7 @@
 //
 // How to use this package
 //
-// This package is designed to sit on top of http://godoc.org/github.com/taskcluster/pulse-go/pulse. Please read
+// This package is designed to sit on top of https://pkg.go.dev/github.com/taskcluster/pulse-go/pulse. Please read
 // the pulse package overview to get an understanding of how the pulse client is implemented in go.
 //
 // This package provides two things in addition to the basic pulse package: structured types for unmarshaling

@@ -13,8 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v40/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v42/tools/jsonschema2go/text"
 )
 
 // Credentials represents the set of credentials required to access protected
@@ -65,6 +66,8 @@ type Client struct {
 	HTTPClient ReducedHTTPClient
 	// Context that aborts all requests with this client
 	Context context.Context
+	// HTTPBackoffClient holds the HTTP backoff settings for retries
+	HTTPBackoffClient *httpbackoff.Client
 }
 
 // Certificate represents the certificate used in Temporary Credentials. See

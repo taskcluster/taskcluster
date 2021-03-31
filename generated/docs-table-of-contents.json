@@ -26,7 +26,7 @@
             "name": "times",
             "next": {
               "path": "manual/tasks/workertypes",
-              "title": "Worker Types"
+              "title": "Worker Pools"
             },
             "path": "manual/tasks/times",
             "prev": {
@@ -44,7 +44,7 @@
             "data": {
               "filename": "tasks/workertypes.mdx",
               "order": 20,
-              "title": "Worker Types"
+              "title": "Worker Pools"
             },
             "name": "workertypes",
             "next": {
@@ -77,7 +77,7 @@
             "path": "manual/tasks/priority",
             "prev": {
               "path": "manual/tasks/workertypes",
-              "title": "Worker Types"
+              "title": "Worker Pools"
             },
             "up": {
               "path": "manual/tasks",
@@ -163,13 +163,35 @@
             },
             "name": "taskgroupid-schedulerid",
             "next": {
-              "path": "manual/tasks/manipulating",
-              "title": "Manipulating Tasks"
+              "path": "manual/tasks/projectId",
+              "title": "The projectId property"
             },
             "path": "manual/tasks/taskgroupid-schedulerid",
             "prev": {
               "path": "manual/tasks/dependencies",
               "title": "Dependencies and Task Graphs"
+            },
+            "up": {
+              "path": "manual/tasks",
+              "title": "Tasks"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 46,
+              "title": "The projectId property"
+            },
+            "name": "projectId",
+            "next": {
+              "path": "manual/tasks/manipulating",
+              "title": "Manipulating Tasks"
+            },
+            "path": "manual/tasks/projectId",
+            "prev": {
+              "path": "manual/tasks/taskgroupid-schedulerid",
+              "title": "The taskGroupId and schedulerId properties"
             },
             "up": {
               "path": "manual/tasks",
@@ -191,8 +213,8 @@
             },
             "path": "manual/tasks/manipulating",
             "prev": {
-              "path": "manual/tasks/taskgroupid-schedulerid",
-              "title": "The taskGroupId and schedulerId properties"
+              "path": "manual/tasks/projectId",
+              "title": "The projectId property"
             },
             "up": {
               "path": "manual/tasks",
@@ -1629,13 +1651,35 @@
             },
             "name": "database",
             "next": {
-              "path": "manual/deploying/github",
-              "title": "GitHub Integration"
+              "path": "manual/deploying/error-config",
+              "title": "Error Configuration"
             },
             "path": "manual/deploying/database",
             "prev": {
               "path": "manual/deploying/cloud-credentials",
               "title": "Cloud Credentials"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Error Configuration"
+            },
+            "name": "error-config",
+            "next": {
+              "path": "manual/deploying/github",
+              "title": "GitHub Integration"
+            },
+            "path": "manual/deploying/error-config",
+            "prev": {
+              "path": "manual/deploying/database",
+              "title": "Database Configuration"
             },
             "up": {
               "path": "manual/deploying",
@@ -1656,8 +1700,8 @@
             },
             "path": "manual/deploying/github",
             "prev": {
-              "path": "manual/deploying/database",
-              "title": "Database Configuration"
+              "path": "manual/deploying/error-config",
+              "title": "Error Configuration"
             },
             "up": {
               "path": "manual/deploying",
@@ -1717,13 +1761,35 @@
             },
             "name": "pulse",
             "next": {
-              "path": "manual/deploying/schema",
-              "title": "Helm Configuration Schema"
+              "path": "manual/deploying/queue-config",
+              "title": "Queue Configuration"
             },
             "path": "manual/deploying/pulse",
             "prev": {
               "path": "manual/deploying/monitoring",
               "title": "Monitoring Services"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Queue Configuration"
+            },
+            "name": "queue-config",
+            "next": {
+              "path": "manual/deploying/schema",
+              "title": "Helm Configuration Schema"
+            },
+            "path": "manual/deploying/queue-config",
+            "prev": {
+              "path": "manual/deploying/pulse",
+              "title": "Pulse"
             },
             "up": {
               "path": "manual/deploying",
@@ -1744,8 +1810,8 @@
             },
             "path": "manual/deploying/schema",
             "prev": {
-              "path": "manual/deploying/pulse",
-              "title": "Pulse"
+              "path": "manual/deploying/queue-config",
+              "title": "Queue Configuration"
             },
             "up": {
               "path": "manual/deploying",
@@ -2234,13 +2300,35 @@
                 },
                 "name": "simple-downloads",
                 "next": {
-                  "path": "reference/platform/object/aws-backend",
-                  "title": "AWS Backend Type"
+                  "path": "reference/platform/object/upload-methods",
+                  "title": "Upload Methods"
                 },
                 "path": "reference/platform/object/simple-downloads",
                 "prev": {
                   "path": "reference/platform/object/download-methods",
                   "title": "Download Methods"
+                },
+                "up": {
+                  "path": "reference/platform/object/README",
+                  "title": "object"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 21,
+                  "title": "Upload Methods"
+                },
+                "name": "upload-methods",
+                "next": {
+                  "path": "reference/platform/object/aws-backend",
+                  "title": "AWS Backend Type"
+                },
+                "path": "reference/platform/object/upload-methods",
+                "prev": {
+                  "path": "reference/platform/object/simple-downloads",
+                  "title": "Simple Downloads"
                 },
                 "up": {
                   "path": "reference/platform/object/README",
@@ -2261,8 +2349,8 @@
                 },
                 "path": "reference/platform/object/aws-backend",
                 "prev": {
-                  "path": "reference/platform/object/simple-downloads",
-                  "title": "Simple Downloads"
+                  "path": "reference/platform/object/upload-methods",
+                  "title": "Upload Methods"
                 },
                 "up": {
                   "path": "reference/platform/object/README",
@@ -2466,13 +2554,35 @@
                 },
                 "name": "task-schema",
                 "next": {
-                  "path": "reference/core/README",
-                  "title": "Core Services"
+                  "path": "reference/platform/queue/artifacts",
+                  "title": "Artifacts"
                 },
                 "path": "reference/platform/queue/task-schema",
                 "prev": {
                   "path": "reference/platform/queue/worker-interaction",
                   "title": "Queue-Worker Interaction"
+                },
+                "up": {
+                  "path": "reference/platform/queue/README",
+                  "title": "queue"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Artifacts"
+                },
+                "name": "artifacts",
+                "next": {
+                  "path": "reference/core/README",
+                  "title": "Core Services"
+                },
+                "path": "reference/platform/queue/artifacts",
+                "prev": {
+                  "path": "reference/platform/queue/task-schema",
+                  "title": "Task Schema"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -3222,8 +3332,8 @@
         },
         "path": "reference/core/README",
         "prev": {
-          "path": "reference/platform/queue/task-schema",
-          "title": "Task Schema"
+          "path": "reference/platform/queue/artifacts",
+          "title": "Artifacts"
         },
         "up": {
           "path": "reference/README",

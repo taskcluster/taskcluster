@@ -1,0 +1,10 @@
+version: 1
+tasks:
+  - taskId: {$eval: as_slugid('banana')}
+    provisionerId: aprovisioner
+    workerType: worker
+    created: {$eval: 'now'}
+    deadline: {$fromNow: '1 hour'}
+    dependencies: ['NmOU83KwRJGjk-btMbOOPA'] # taskId not in this set
+    payload: {}
+    metadata: {}

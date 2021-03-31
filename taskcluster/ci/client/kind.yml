@@ -13,6 +13,9 @@ job-defaults:
     using: bare
   worker:
     max-run-time: 600
+    taskcluster-proxy: true
+  scopes:
+    - secrets:get:project/taskcluster/testing/client-libraries
 
 jobs:
   nodejs:
@@ -22,6 +25,7 @@ jobs:
     run:
       install: >-
         {{ yarn --frozen-lockfile || exit 99; }} &&
+        eval $(python test/client-library-secrets.py) &&
         cd clients/client &&
         {{ yarn --frozen-lockfile || exit 99; }}
       command: >-
@@ -32,14 +36,18 @@ jobs:
     worker:
       docker-image: {taskcluster: ci-image}
     run:
-      install: cd clients/client-go
+      install: >-
+        eval $(python test/client-library-secrets.py) &&
+        cd clients/client-go
       command: go test -v -race ./...
   shell:
     description: cli tests
     worker:
       docker-image: {taskcluster: ci-image}
     run:
-      install: cd clients/client-shell
+      install: >-
+        eval $(python test/client-library-secrets.py) &&
+        cd clients/client-shell
       command: go test -v -race ./...
   web:
     description: web js tests
@@ -60,6 +68,7 @@ jobs:
       docker-image: python:2.7
     run:
       install: >-
+          eval $(python test/client-library-secrets.py) &&
           cd clients/client-py &&
           virtualenv /sandbox &&
           /sandbox/bin/pip install tox
@@ -71,6 +80,7 @@ jobs:
       docker-image: python:3.6
     run:
       install: >-
+          eval $(python test/client-library-secrets.py) &&
           cd clients/client-py &&
           python3 -mvenv /sandbox &&
           /sandbox/bin/pip install tox
@@ -82,6 +92,7 @@ jobs:
       docker-image: python:3.7
     run:
       install: >-
+          eval $(python test/client-library-secrets.py) &&
           cd clients/client-py &&
           python3 -mvenv /sandbox &&
           /sandbox/bin/pip install tox
@@ -93,6 +104,7 @@ jobs:
       docker-image: python:3.8
     run:
       install: >-
+          eval $(python test/client-library-secrets.py) &&
           cd clients/client-py &&
           python3 -mvenv /sandbox &&
           /sandbox/bin/pip install tox
@@ -104,6 +116,7 @@ jobs:
       docker-image: python:3.9
     run:
       install: >-
+          eval $(python test/client-library-secrets.py) &&
           cd clients/client-py &&
           python3 -mvenv /sandbox &&
           /sandbox/bin/pip install tox
@@ -114,7 +127,9 @@ jobs:
     worker:
       docker-image: rust:1.49.0
     run:
-      install: cd clients/client-rust
+      install: >-
+        eval $(python test/client-library-secrets.py) &&
+        cd clients/client-rust
       command: >-
         cargo test &&
         cargo build --release &&

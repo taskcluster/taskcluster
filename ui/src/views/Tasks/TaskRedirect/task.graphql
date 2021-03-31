@@ -1,7 +1,6 @@
 query Task($taskId: ID!) {
   task(taskId: $taskId) {
-    provisionerId
-    workerType
+    taskQueueId
     schedulerId
     decisionTask
     dependencies

@@ -31,28 +31,32 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     };
     const region = await getBucketRegion({ bucket: secret.testBucket, credentials });
     s3 = new aws.S3({ region, ...credentials });
+  });
 
+  setup(async function() {
     // set up a backend with a public bucket, and separately with a private
     // bucket; these are in fact the same bucket, and we'll just check that the
     // URLs have a signature for the non-public version.  S3 verifies
     // signatures if they are present, even if the signature is not required.
-    helper.load.cfg('backends', {
-      awsPrivate: {
-        backendType: 'aws',
-        accessKeyId: secret.accessKeyId,
-        secretAccessKey: secret.secretAccessKey,
-        bucket: secret.testBucket,
-        signGetUrls: true,
+    await helper.setBackendConfig({
+      backends: {
+        awsPrivate: {
+          backendType: 'aws',
+          accessKeyId: secret.accessKeyId,
+          secretAccessKey: secret.secretAccessKey,
+          bucket: secret.testBucket,
+          signGetUrls: true,
+        },
+        awsPublic: {
+          backendType: 'aws',
+          accessKeyId: secret.accessKeyId,
+          secretAccessKey: secret.secretAccessKey,
+          bucket: secret.testBucket,
+          signGetUrls: false,
+        },
       },
-      awsPublic: {
-        backendType: 'aws',
-        accessKeyId: secret.accessKeyId,
-        secretAccessKey: secret.secretAccessKey,
-        bucket: secret.testBucket,
-        signGetUrls: false,
-      },
+      backendMap: [],
     });
-    helper.load.cfg('backendMap', []);
   });
 
   const makeObject = async ({ name, data }) => {
@@ -122,7 +126,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     teardown(cleanup);
   });
 
-  helper.testTemporaryUpload({
+  helper.testDataInlineUpload({
     mock, skipping, prefix,
     backendId: 'awsPrivate',
     async getObjectContent({ name }) {
@@ -130,7 +134,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         Bucket: secret.testBucket,
         Key: name,
       }).promise();
-      return res.Body;
+      return { data: res.Body, contentType: res.ContentType };
+    },
+  }, async function() {
+    teardown(cleanup);
+  });
+
+  helper.testPutUrlUpload({
+    mock, skipping, prefix,
+    backendId: 'awsPrivate',
+    async getObjectContent({ name }) {
+      const res = await s3.getObject({
+        Bucket: secret.testBucket,
+        Key: name,
+      }).promise();
+      return { data: res.Body, contentType: res.ContentType };
     },
   }, async function() {
     teardown(cleanup);

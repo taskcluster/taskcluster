@@ -103,6 +103,20 @@ class Index(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["insertTask"], *args, **kwargs)
 
+    async def deleteTask(self, *args, **kwargs):
+        """
+        Remove Task from Index
+
+        Remove a task from the index.  This is intended for administrative use,
+        where an index entry is no longer appropriate.  The parent namespace is
+        not automatically deleted.  Index entries with lower rank that were
+        previously inserted will not re-appear, as they were never stored.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["deleteTask"], *args, **kwargs)
+
     async def findArtifactFromTask(self, *args, **kwargs):
         """
         Get Artifact From Indexed Task
@@ -128,6 +142,13 @@ class Index(AsyncBaseClient):
         return await self._makeApiCall(self.funcinfo["findArtifactFromTask"], *args, **kwargs)
 
     funcinfo = {
+        "deleteTask": {
+            'args': ['namespace'],
+            'method': 'delete',
+            'name': 'deleteTask',
+            'route': '/task/<namespace>',
+            'stability': 'stable',
+        },
         "findArtifactFromTask": {
             'args': ['indexPath', 'name'],
             'method': 'get',

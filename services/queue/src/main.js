@@ -23,6 +23,9 @@ let pulse = require('taskcluster-lib-pulse');
 const QuickLRU = require('quick-lru');
 const { artifactUtils } = require('./utils');
 
+// default claim timeout to 20 minutes (in seconds)
+const DEFAULT_CLAIM_TIMEOUT = 1200;
+
 require('./monitor');
 
 // Create component loader
@@ -132,7 +135,7 @@ let load = loader({
       db,
       queueService,
       monitor: monitor.childMonitor('work-claimer'),
-      claimTimeout: cfg.app.claimTimeout,
+      claimTimeout: cfg.app.claimTimeout || DEFAULT_CLAIM_TIMEOUT,
       credentials: cfg.taskcluster.credentials,
     }),
   },
@@ -185,7 +188,7 @@ let load = loader({
         taskGroupExpiresExtension: ctx.cfg.app.taskGroupExpiresExtension,
         dependencyTracker: ctx.dependencyTracker,
         publisher: ctx.publisher,
-        claimTimeout: ctx.cfg.app.claimTimeout,
+        claimTimeout: ctx.cfg.app.claimTimeout || DEFAULT_CLAIM_TIMEOUT,
         queueService: ctx.queueService,
         signPublicArtifactUrls: !!ctx.cfg.app.signPublicArtifactUrls,
         publicBucket: ctx.publicArtifactBucket,

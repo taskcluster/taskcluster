@@ -1,6 +1,10 @@
 const { Backend } = require('./base');
 const assert = require('assert');
 const aws = require('aws-sdk');
+const { reportError } = require('taskcluster-lib-api');
+const taskcluster = require('taskcluster-client');
+
+const PUT_URL_EXPIRES_SECONDS = 45 * 60;
 
 class AwsBackend extends Backend {
   constructor(options) {
@@ -29,19 +33,65 @@ class AwsBackend extends Backend {
     this.s3 = new aws.S3(options);
   }
 
-  async temporaryUpload(object, data) {
+  async createUpload(object, proposedUploadMethods) {
+    // select upload methods in order of our preference
+    if ('dataInline' in proposedUploadMethods) {
+      return await this.createDataInlineUpload(object, proposedUploadMethods.dataInline);
+    }
+
+    if ('putUrl' in proposedUploadMethods) {
+      return await this.createPutUrlUpload(object, proposedUploadMethods.putUrl);
+    }
+
+    return {};
+  }
+
+  async createDataInlineUpload(object, { contentType, objectData }) {
+    let bytes;
+    try {
+      bytes = Buffer.from(objectData, 'base64');
+    } catch (err) {
+      return reportError('InputError', 'Invalid base64 objectData', {});
+    }
+
     await this.s3.putObject({
       Bucket: this.config.bucket,
       Key: object.name,
-      Body: data,
+      ContentType: contentType,
+      Body: bytes,
     }).promise();
+
+    return { dataInline: true };
+  }
+
+  async createPutUrlUpload(object, { contentType, contentLength }) {
+    const expires = taskcluster.fromNow(`${PUT_URL_EXPIRES_SECONDS} s`);
+    const url = await this.s3.getSignedUrlPromise('putObject', {
+      Bucket: this.config.bucket,
+      Key: object.name,
+      ContentType: contentType,
+      // NOTE: AWS does not allow us to enforce Content-Length, so that is ignored here
+      Expires: PUT_URL_EXPIRES_SECONDS + 10, // 10s for clock skew
+    });
+
+    return {
+      putUrl: {
+        url,
+        expires: expires.toJSON(),
+        headers: {
+          'Content-Type': contentType,
+          'Content-Length': contentLength.toString(),
+          'Content-Encoding': 'identity',
+        },
+      },
+    };
   }
 
   async availableDownloadMethods(object) {
     return ['simple'];
   }
 
-  async fetchObjectMetadata(object, method, params) {
+  async startDownload(object, method, params) {
     switch (method){
       case 'simple': {
         let url;
@@ -56,7 +106,7 @@ class AwsBackend extends Backend {
             Expires: 30 * 60,
           });
         } else {
-          url = `${this.s3.endpoint.href}${this.config.bucket}/${encodeURI(object.name)}`;
+          url = `${this.s3.endpoint.href}${this.config.bucket}/${encodeURIComponent(object.name)}`;
         }
         return { method, url };
       }

@@ -14,4 +14,3 @@ items:
       parsed in a UTC context.
       See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
 uniqueItems: true
-default: []

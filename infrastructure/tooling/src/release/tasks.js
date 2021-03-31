@@ -152,11 +152,13 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         contents.replace(/VERSION = .*/, `VERSION = '${requirements['release-version']}'`));
       changed.push(pyclient);
 
-      const rsclient = 'clients/client-rust/Cargo.toml';
-      utils.status({ message: `Update ${rsclient}` });
-      await modifyRepoFile(rsclient, contents =>
-        contents.replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`));
-      changed.push(rsclient);
+      for (const dir of ['client', 'upload', 'download']) {
+        const rsclient = `clients/client-rust/${dir}/Cargo.toml`;
+        utils.status({ message: `Update ${rsclient}` });
+        await modifyRepoFile(rsclient, contents =>
+          contents.replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`));
+        changed.push(rsclient);
+      }
 
       const shellclient = 'clients/client-shell/cmds/version/version.go';
       utils.status({ message: `Update ${shellclient}` });
@@ -187,8 +189,9 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         'go.mod',
         'clients/client-go/**',
         'clients/client-shell/**',
-        'tools/**',
         'internal/**',
+        'tools/**',
+        'ui/docs/reference/workers/websocktunnel.mdx',
         // Provide explicit list of allowed file extensions so that
         // workers/generic-worker/testdata/*.zip files are not modified.
         'workers/generic-worker/**.go',

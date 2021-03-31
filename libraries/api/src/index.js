@@ -5,6 +5,10 @@ const errors = require('./middleware/errors');
 const ScopeExpressionTemplate = require('./expressions');
 const API = require('./api');
 const { paginateResults } = require('./pagination');
+const { reportError } = require('./error-reply');
+
+exports.paginateResults = paginateResults;
+exports.reportError = reportError;
 
 /**
  * A ping method, added automatically to every service
@@ -257,5 +261,3 @@ exports.APIBuilder = APIBuilder;
 
 // Re-export middleware
 APIBuilder.middleware = require('./middleware');
-
-exports.paginateResults = paginateResults;

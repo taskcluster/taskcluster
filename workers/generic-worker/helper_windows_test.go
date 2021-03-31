@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/win32"
 )
 
 func helloGoodbye() []string {

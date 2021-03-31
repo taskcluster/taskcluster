@@ -20,10 +20,14 @@ class Backend {
   }
 
   /**
-   * Temporary upload method that includes the uploded data in the request body
+   * Negotiate the upload method based on the given proposed upload methods,
+   * returning the `uploadMethod` property of the response payload.  This will
+   * not be called for an empty `proposedUploadMethods`.
+   *
+   * Implementations may use taskcluster-lib-api's `reportError` method.
    */
-  async temporaryUpload(object, data) {
-    throw new Error('temporaryUpload is not implemented for this backend');
+  async createUpload(object, proposedUploadMethods) {
+    return {};
   }
 
   /**
@@ -38,7 +42,7 @@ class Backend {
 
   /**
    * Return the backend-specific details required for a client to retrieve the
-   * object.  The result is returned directly from the `fetchObjectMetadata` API
+   * object.  The result is returned directly from the `startDownload` API
    * endpoint.
    *
    * The `method` argument is the selected method, and `params` is the value
@@ -46,8 +50,8 @@ class Backend {
    *
    * Subclasses should override this.
    */
-  async fetchObjectMetadata(object, method, params) {
-    throw new Error('fetchObjectMetadata is not implemented for this backend');
+  async startDownload(object, method, params) {
+    throw new Error('startDownload is not implemented for this backend');
   }
 
   /**

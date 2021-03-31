@@ -4,18 +4,52 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/queue/v1/api.json
-// The queue service is responsible for accepting tasks and track their state
-// as they are executed by workers. In order ensure they are eventually
+// The queue service is responsible for accepting tasks and tracking their state
+// as they are executed by workers, in order to ensure they are eventually
 // resolved.
 //
-// This document describes the API end-points offered by the queue. These
-// end-points targets the following audience:
-//  * Schedulers, who create tasks to be executed,
-//  * Workers, who execute tasks, and
-//  * Tools, that wants to inspect the state of a task.
+// ## Artifact Storage Types
+//
+// * **S3 artifacts** are used for static files which will be
+// stored on S3. When creating an S3 artifact the queue will return a
+// pre-signed URL to which you can do a `PUT` request to upload your
+// artifact. Note that `PUT` request **must** specify the `content-length`
+// header and **must** give the `content-type` header the same value as in
+// the request to `createArtifact`.
+// * **Redirect artifacts**, will redirect the caller to URL when fetched
+// with a a 303 (See Other) response.  Clients will not apply any kind of
+// authentication to that URL.
+// * **Link artifacts**, will be treated as if the caller requested the linked
+// artifact on the same task.  Links may be chained, but cycles are forbidden.
+// The caller must have scopes for the linked artifact, or a 403 response will
+// be returned.
+// * **Error artifacts**, only consists of meta-data which the queue will
+// store for you. These artifacts are only meant to indicate that you the
+// worker or the task failed to generate a specific artifact, that you
+// would otherwise have uploaded. For example docker-worker will upload an
+// error artifact, if the file it was supposed to upload doesn't exists or
+// turns out to be a directory. Clients requesting an error artifact will
+// get a `424` (Failed Dependency) response. This is mainly designed to
+// ensure that dependent tasks can distinguish between artifacts that were
+// suppose to be generated and artifacts for which the name is misspelled.
+//
+// ## Artifact immutability
+//
+// Generally speaking you cannot overwrite an artifact when created.
+// But if you repeat the request with the same properties the request will
+// succeed as the operation is idempotent.
+// This is useful if you need to refresh a signed URL while uploading.
+// Do not abuse this to overwrite artifacts created by another entity!
+// Such as worker-host overwriting artifact created by worker-code.
+//
+// The queue defines the following *immutability special cases*:
+//
+// * A `reference` artifact can replace an existing `reference` artifact.
+// * A `link` artifact can replace an existing `reference` artifact.
+// * Any artifact's `expires` can be extended (made later, but not earlier).
 //
 // See:
 //
@@ -45,7 +79,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 )
 
 type Queue tcclient.Client
@@ -334,7 +368,8 @@ func (queue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 // This method _reruns_ a previously resolved task, even if it was
 // _completed_. This is useful if your task completes unsuccessfully, and
 // you just want to run it from scratch again. This will also reset the
-// number of `retries` allowed.
+// number of `retries` allowed. It will schedule a task that is _unscheduled_
+// regardless of the state of its dependencies.
 //
 // This method is deprecated in favour of creating a new task with the same
 // task definition (but with a new taskId).
@@ -343,9 +378,8 @@ func (queue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 // the queue have started because the worker stopped responding, for example
 // because a spot node died.
 //
-// **Remark** this operation is idempotent, if you try to rerun a task that
-// is not either `failed` or `completed`, this operation will just return
-// the current task status.
+// **Remark** this operation is idempotent: if it is invoked for a task that
+// is `pending` or `running`, it will just return the current task status.
 //
 // Required scopes:
 //   Any of:
@@ -390,7 +424,7 @@ func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 	return responseObject.(*TaskStatusResponse), err
 }
 
-// Claim pending task(s) for the given `provisionerId`/`workerType` queue.
+// Claim pending task(s) for the given task queue.
 //
 // If any work is available (even if fewer than the requested number of
 // tasks, this will return immediately. Otherwise, it will block for tens of
@@ -401,13 +435,13 @@ func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 //
 // Required scopes:
 //   All of:
-//   * queue:claim-work:<provisionerId>/<workerType>
+//   * queue:claim-work:<taskQueueId>
 //   * queue:worker-id:<workerGroup>/<workerId>
 //
 // See #claimWork
-func (queue *Queue) ClaimWork(provisionerId, workerType string, payload *ClaimWorkRequest) (*ClaimWorkResponse, error) {
+func (queue *Queue) ClaimWork(taskQueueId string, payload *ClaimWorkRequest) (*ClaimWorkResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/claim-work/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(ClaimWorkResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/claim-work/"+url.QueryEscape(taskQueueId), new(ClaimWorkResponse), nil)
 	return responseObject.(*ClaimWorkResponse), err
 }
 
@@ -416,14 +450,9 @@ func (queue *Queue) ClaimWork(provisionerId, workerType string, payload *ClaimWo
 // claim a task - never documented
 //
 // Required scopes:
-//   Any of:
-//   - All of:
-//     * queue:claim-task:<provisionerId>/<workerType>
-//     * queue:worker-id:<workerGroup>/<workerId>
-//   - All of:
-//     * queue:claim-task
-//     * assume:worker-type:<provisionerId>/<workerType>
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   All of:
+//   * queue:claim-task:<provisionerId>/<workerType>
+//   * queue:worker-id:<workerGroup>/<workerId>
 //
 // See #claimTask
 func (queue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, error) {
@@ -455,11 +484,7 @@ func (queue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (
 // need to resolve the run or upload artifacts.
 //
 // Required scopes:
-//   Any of:
-//   - queue:reclaim-task:<taskId>/<runId>
-//   - All of:
-//     * queue:claim-task
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   queue:reclaim-task:<taskId>/<runId>
 //
 // See #reclaimTask
 func (queue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, error) {
@@ -471,11 +496,7 @@ func (queue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, err
 // Report a task completed, resolving the run as `completed`.
 //
 // Required scopes:
-//   Any of:
-//   - queue:resolve-task:<taskId>/<runId>
-//   - All of:
-//     * queue:resolve-task
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   queue:resolve-task:<taskId>/<runId>
 //
 // See #reportCompleted
 func (queue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse, error) {
@@ -493,11 +514,7 @@ func (queue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse, 
 // exception, which should be reported with `reportException`.
 //
 // Required scopes:
-//   Any of:
-//   - queue:resolve-task:<taskId>/<runId>
-//   - All of:
-//     * queue:resolve-task
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   queue:resolve-task:<taskId>/<runId>
 //
 // See #reportFailed
 func (queue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, error) {
@@ -521,11 +538,7 @@ func (queue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, err
 // is temporarily unavailable worker should report task _failed_.
 //
 // Required scopes:
-//   Any of:
-//   - queue:resolve-task:<taskId>/<runId>
-//   - All of:
-//     * queue:resolve-task
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   queue:resolve-task:<taskId>/<runId>
 //
 // See #reportException
 func (queue *Queue) ReportException(taskId, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, error) {
@@ -544,53 +557,8 @@ func (queue *Queue) ReportException(taskId, runId string, payload *TaskException
 // intermediate artifacts from data processing applications, as the
 // artifacts can be set to expire a few days later.
 //
-// We currently support "S3 Artifacts" for data storage.
-//
-// **S3 artifacts**, is useful for static files which will be
-// stored on S3. When creating an S3 artifact the queue will return a
-// pre-signed URL to which you can do a `PUT` request to upload your
-// artifact. Note that `PUT` request **must** specify the `content-length`
-// header and **must** give the `content-type` header the same value as in
-// the request to `createArtifact`.
-//
-// **Redirect artifacts**, will redirect the caller to URL when fetched
-// with a a 303 (See Other) response.  Clients will not apply any kind of
-// authentication to that URL.
-//
-// **Link artifacts**, will be treated as if the caller requested the linked
-// artifact on the same task.  Links may be chained, but cycles are forbidden.
-// The caller must have scopes for the linked artifact, or a 403 response will
-// be returned.
-//
-// **Error artifacts**, only consists of meta-data which the queue will
-// store for you. These artifacts are only meant to indicate that you the
-// worker or the task failed to generate a specific artifact, that you
-// would otherwise have uploaded. For example docker-worker will upload an
-// error artifact, if the file it was supposed to upload doesn't exists or
-// turns out to be a directory. Clients requesting an error artifact will
-// get a `424` (Failed Dependency) response. This is mainly designed to
-// ensure that dependent tasks can distinguish between artifacts that were
-// suppose to be generated and artifacts for which the name is misspelled.
-//
-// **Artifact immutability**, generally speaking you cannot overwrite an
-// artifact when created. But if you repeat the request with the same
-// properties the request will succeed as the operation is idempotent.
-// This is useful if you need to refresh a signed URL while uploading.
-// Do not abuse this to overwrite artifacts created by another entity!
-// Such as worker-host overwriting artifact created by worker-code.
-//
-// **Immutability Special Cases**:
-//
-// * A `reference` artifact can replace an existing `reference` artifact`.
-// * A `link` artifact can replace an existing `reference` artifact`.
-// * Any artifact's `expires` can be extended.
-//
 // Required scopes:
-//   Any of:
-//   - queue:create-artifact:<taskId>/<runId>
-//   - All of:
-//     * queue:create-artifact:<name>
-//     * assume:worker-id:<workerGroup>/<workerId>
+//   queue:create-artifact:<taskId>/<runId>
 //
 // See #createArtifact
 func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArtifactRequest) (*PostArtifactResponse, error) {
@@ -799,6 +767,118 @@ func (queue *Queue) ListLatestArtifacts_SignedURL(taskId, continuationToken, lim
 	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts", v, duration)
 }
 
+// Returns associated metadata for a given artifact, in the given task run.
+// The metadata is the same as that returned from `listArtifacts`, and does
+// not grant access to the artifact data.
+//
+// Note that this method does *not* automatically follow link artifacts.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>:<runId>
+//
+// See #artifactInfo
+func (queue *Queue) ArtifactInfo(taskId, runId, name string) (*Artifact, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-info/"+url.QueryEscape(name), new(Artifact), nil)
+	return responseObject.(*Artifact), err
+}
+
+// Returns a signed URL for ArtifactInfo, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>:<runId>
+//
+// See ArtifactInfo for more details.
+func (queue *Queue) ArtifactInfo_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-info/"+url.QueryEscape(name), nil, duration)
+}
+
+// Returns associated metadata for a given artifact, in the latest run of the
+// task.  The metadata is the same as that returned from `listArtifacts`,
+// and does not grant access to the artifact data.
+//
+// Note that this method does *not* automatically follow link artifacts.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>
+//
+// See #latestArtifactInfo
+func (queue *Queue) LatestArtifactInfo(taskId, name string) (*Artifact, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifact-info/"+url.QueryEscape(name), new(Artifact), nil)
+	return responseObject.(*Artifact), err
+}
+
+// Returns a signed URL for LatestArtifactInfo, valid for the specified duration.
+//
+// Required scopes:
+//   queue:list-artifacts:<taskId>
+//
+// See LatestArtifactInfo for more details.
+func (queue *Queue) LatestArtifactInfo_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifact-info/"+url.QueryEscape(name), nil, duration)
+}
+
+// Returns information about the content of the artifact, in the given task run.
+//
+// Depending on the storage type, the endpoint returns the content of the artifact
+// or enough information to access that content.
+//
+// This method follows link artifacts, so it will not return content
+// for a link artifact.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See #artifact
+func (queue *Queue) Artifact(taskId, runId, name string) (*GetArtifactContentResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-content/"+url.QueryEscape(name), new(GetArtifactContentResponse), nil)
+	return responseObject.(*GetArtifactContentResponse), err
+}
+
+// Returns a signed URL for Artifact, valid for the specified duration.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See Artifact for more details.
+func (queue *Queue) Artifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-content/"+url.QueryEscape(name), nil, duration)
+}
+
+// Returns information about the content of the artifact, in the latest task run.
+//
+// Depending on the storage type, the endpoint returns the content of the artifact
+// or enough information to access that content.
+//
+// This method follows link artifacts, so it will not return content
+// for a link artifact.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See #latestArtifact
+func (queue *Queue) LatestArtifact(taskId, name string) (*GetArtifactContentResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifact-content/"+url.QueryEscape(name), new(GetArtifactContentResponse), nil)
+	return responseObject.(*GetArtifactContentResponse), err
+}
+
+// Returns a signed URL for LatestArtifact, valid for the specified duration.
+//
+// Required scopes:
+//   For name in names each queue:get-artifact:<name>
+//
+// See LatestArtifact for more details.
+func (queue *Queue) LatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifact-content/"+url.QueryEscape(name), nil, duration)
+}
+
 // Stability: *** DEPRECATED ***
 //
 // Get all active provisioners.
@@ -899,8 +979,7 @@ func (queue *Queue) DeclareProvisioner(provisionerId string, payload *Provisione
 	return responseObject.(*ProvisionerResponse), err
 }
 
-// Get an approximate number of pending tasks for the given `provisionerId`
-// and `workerType`.
+// Get an approximate number of pending tasks for the given `taskQueueId`.
 //
 // The underlying Azure Storage Queues only promises to give us an estimate.
 // Furthermore, we cache the result in memory for 20 seconds. So consumers
@@ -908,24 +987,24 @@ func (queue *Queue) DeclareProvisioner(provisionerId string, payload *Provisione
 // It is, however, a solid estimate of the number of pending tasks.
 //
 // Required scopes:
-//   queue:pending-count:<provisionerId>/<workerType>
+//   queue:pending-count:<taskQueueId>
 //
 // See #pendingTasks
-func (queue *Queue) PendingTasks(provisionerId, workerType string) (*CountPendingTasksResponse, error) {
+func (queue *Queue) PendingTasks(taskQueueId string) (*CountPendingTasksResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(taskQueueId), new(CountPendingTasksResponse), nil)
 	return responseObject.(*CountPendingTasksResponse), err
 }
 
 // Returns a signed URL for PendingTasks, valid for the specified duration.
 //
 // Required scopes:
-//   queue:pending-count:<provisionerId>/<workerType>
+//   queue:pending-count:<taskQueueId>
 //
 // See PendingTasks for more details.
-func (queue *Queue) PendingTasks_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
+func (queue *Queue) PendingTasks_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
+	return (&cd).SignedURL("/pending/"+url.QueryEscape(taskQueueId), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***

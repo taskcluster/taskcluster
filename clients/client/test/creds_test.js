@@ -3,8 +3,11 @@ const assert = require('assert');
 const request = require('superagent');
 const _ = require('lodash');
 const testing = require('taskcluster-lib-testing');
+const helper = require('./helper');
 
 suite(testing.suiteName(), function() {
+  helper.withRestoredEnvVars();
+
   // This suite exercises the credential-handling functionality of the client
   // against a the auth service's testAuthenticate endpoint.
 
@@ -342,23 +345,10 @@ suite(testing.suiteName(), function() {
   });
 
   suite('Get with credentials from environment variables', async () => {
-    let ROOT_URL = process.env.TASKCLUSTER_ROOT_URL;
-    let CLIENT_ID = process.env.TASKCLUSTER_CLIENT_ID;
-    let ACCESS_TOKEN = process.env.TASKCLUSTER_ACCESS_TOKEN;
-
-    // Ensure the client is removed from the require cache so it can be
-    // reloaded from scratch.
     setup(() => {
-      process.env.TASKCLUSTER_ROOT_URL = ROOT_URL || 'https://community-tc.services.mozilla.com/';
+      process.env.TASKCLUSTER_ROOT_URL = process.env.TASKCLUSTER_ROOT_URL || 'https://community-tc.services.mozilla.com/';
       process.env.TASKCLUSTER_CLIENT_ID = 'tester';
       process.env.TASKCLUSTER_ACCESS_TOKEN = 'no-secret';
-    });
-
-    // Be a good citizen and cleanup after this test so we don't leak state.
-    teardown(() => {
-      process.env.TASKCLUSTER_ROOT_URL = ROOT_URL;
-      process.env.TASKCLUSTER_CLIENT_ID = CLIENT_ID;
-      process.env.TASKCLUSTER_ACCESS_TOKEN = ACCESS_TOKEN;
     });
 
     test('fromEnvVars with only rootUrl', async () => {

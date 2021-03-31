@@ -130,9 +130,6 @@ const builder = new APIBuilder({
     // ScopeResolver instance
     'resolver',
 
-    // Mapping from azure account to accessKey
-    'azureAccounts',
-
     // Signature validator
     'signatureValidator',
 

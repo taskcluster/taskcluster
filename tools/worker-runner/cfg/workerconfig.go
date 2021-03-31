@@ -102,6 +102,10 @@ func merge(v1, v2 interface{}) interface{} {
 	arr1, arr1ok := v1.([]interface{})
 	arr2, arr2ok := v2.([]interface{})
 	if arr1ok && arr2ok {
+		// check for overflow
+		if len(arr1) > 2*1024*1024*1024 || len(arr2) > 2*1024*1024*1024 {
+			panic("arrays too large (>2**30 items)")
+		}
 		res := make([]interface{}, 0, len(arr1)+len(arr2))
 		res = append(res, arr1...)
 		res = append(res, arr2...)

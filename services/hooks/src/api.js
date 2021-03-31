@@ -4,7 +4,8 @@ const { APIBuilder } = require('taskcluster-lib-api');
 const { UNIQUE_VIOLATION, paginatedIterator } = require('taskcluster-lib-postgres');
 const nextDate = require('../src/nextdate');
 const _ = require('lodash');
-const Ajv = require('ajv');
+const Ajv = require('ajv').default;
+const addFormats = require('ajv-formats').default;
 const { hookUtils } = require('./utils');
 
 const builder = new APIBuilder({
@@ -201,7 +202,9 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
   const hookDef = req.body;
-  const ajv = new Ajv({ format: 'full', verbose: true, allErrors: true });
+
+  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  addFormats(ajv);
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -313,7 +316,9 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
   const hookDef = req.body;
-  const ajv = new Ajv({ format: 'full', verbose: true, allErrors: true });
+
+  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  addFormats(ajv);
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -573,7 +578,9 @@ builder.declare({
  * Common implementation of triggerHook and triggerHookWithToken
  */
 const triggerHookCommon = async function({ req, res, hook, payload, clientId, firedBy }) {
-  const ajv = new Ajv({ format: 'full', verbose: true, allErrors: true });
+  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  addFormats(ajv);
+
   const context = { firedBy, payload };
   if (clientId) {
     context.clientId = clientId;
@@ -602,7 +609,12 @@ const triggerHookCommon = async function({ req, res, hook, payload, clientId, fi
   }
 
   if (resp) {
-    return res.reply(resp);
+    const taskId = resp.status.taskId;
+    return res.reply({
+      taskId,
+      // for compatibility, provide the taskId at the path it was at before #4437.
+      status: { taskId },
+    });
   } else if (error.body && error.body.requestInfo) {
     // handle errors from createTask specially (since they are usually about scopes)
     if (error.body.requestInfo.method === 'createTask' && error.body.code === 'InsufficientScopes') {

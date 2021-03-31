@@ -1,0 +1,22 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Finish Upload Request"
+type:               object
+properties:
+  projectId:
+    title:          "Project Identifier"
+    description: |
+      Project identifier.
+    type:           string
+    minLength:      {$const: projectId-min-length}
+    maxLength:      {$const: projectId-max-length}
+    pattern:        {$const: projectId-pattern}
+  uploadId:
+    title: "Upload ID"
+    description: |-
+      Unique identifier for this upload.
+    type:             string
+    pattern:          {$const: slugid-pattern}
+additionalProperties: false
+required:
+  - uploadId
+  - projectId

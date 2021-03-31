@@ -3,7 +3,7 @@ package mocktc
 import (
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcpurgecache"
 )
 
 type PurgeCache struct {
@@ -11,7 +11,7 @@ type PurgeCache struct {
 
 /////////////////////////////////////////////////
 
-func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since string) (*tcpurgecache.OpenPurgeRequestList, error) {
+func (purgeCache *PurgeCache) PurgeRequests(workerPoolId, since string) (*tcpurgecache.OpenPurgeRequestList, error) {
 	return &tcpurgecache.OpenPurgeRequestList{}, nil
 }
 

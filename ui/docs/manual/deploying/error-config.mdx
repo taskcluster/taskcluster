@@ -1,0 +1,16 @@
+---
+title: Error Configuration
+---
+
+# Error Configuration
+
+Taskcluster can optionally report exceptions in the sevices to a central service for analysis.
+This currently only supports Sentry, but other options may be added without much difficulty.
+
+To set up Sentry, given a Sentry DSN, set the following Helm configuration:
+
+```
+errorConfig:
+  reporter: SentryReporter
+  dsn: ...
+```

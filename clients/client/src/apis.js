@@ -1397,6 +1397,22 @@ module.exports = {
         },
         {
           "args": [
+            "namespace"
+          ],
+          "category": "Index Service",
+          "description": "Remove a task from the index.  This is intended for administrative use,\nwhere an index entry is no longer appropriate.  The parent namespace is\nnot automatically deleted.  Index entries with lower rank that were\npreviously inserted will not re-appear, as they were never stored.",
+          "method": "delete",
+          "name": "deleteTask",
+          "query": [
+          ],
+          "route": "/task/<namespace>",
+          "scopes": "index:delete-task:<namespace>",
+          "stability": "stable",
+          "title": "Remove Task from Index",
+          "type": "function"
+        },
+        {
+          "args": [
             "indexPath",
             "name"
           ],
@@ -1598,7 +1614,7 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The object service provides HTTP-accessible storage for large blobs of data.",
+      "description": "The object service provides HTTP-accessible storage for large blobs of data.\n\nObjects can be uploaded and downloaded, with the object data flowing directly\nfrom the storage \"backend\" to the caller, and not directly via this service.\nOnce uploaded, objects are immutable until their expiration time.",
       "entries": [
         {
           "args": [
@@ -1619,16 +1635,34 @@ module.exports = {
             "name"
           ],
           "category": "Upload",
-          "description": "Upload backend data.",
-          "input": "v1/upload-object-request.json#",
+          "description": "Create a new object by initiating upload of its data.\n\nThis endpoint implements negotiation of upload methods.  It can be called\nmultiple times if necessary, either to propose new upload methods or to\nrenew credentials for an already-agreed upload.\n\nThe `name` parameter can contain any printable ASCII character (0x20 - 0x7e).\nThe `uploadId` must be supplied by the caller, and any attempts to upload\nan object with the same name but a different `uploadId` will fail.\nThus the first call to this method establishes the `uploadId` for the\nobject, and as long as that value is kept secret, no other caller can\nupload an object of that name, regardless of scopes.  Object expiration\ncannot be changed after the initial call, either.  It is possible to call\nthis method with no proposed upload methods, which has the effect of \"locking\nin\" the `expiration` and `uploadId` properties.\n\nUnfinished uploads expire after 1 day.",
+          "input": "v1/create-upload-request.json#",
           "method": "put",
-          "name": "uploadObject",
+          "name": "createUpload",
+          "output": "v1/create-upload-response.json#",
           "query": [
           ],
           "route": "/upload/<name>",
           "scopes": "object:upload:<projectId>:<name>",
           "stability": "experimental",
-          "title": "Upload backend data (temporary)",
+          "title": "Begin upload of a new object",
+          "type": "function"
+        },
+        {
+          "args": [
+            "name"
+          ],
+          "category": "Upload",
+          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
+          "input": "v1/finish-upload-request.json#",
+          "method": "post",
+          "name": "finishUpload",
+          "query": [
+          ],
+          "route": "/finish-upload/<name>",
+          "scopes": "object:upload:<projectId>:<name>",
+          "stability": "experimental",
+          "title": "Mark an upload as complete.",
           "type": "function"
         },
         {
@@ -1636,14 +1670,14 @@ module.exports = {
             "name"
           ],
           "category": "Download",
-          "description": "Get information on how to download an object.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
+          "description": "Start the process of downloading an object's data.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\n\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
           "input": "v1/download-object-request.json#",
           "method": "put",
-          "name": "fetchObjectMetadata",
+          "name": "startDownload",
           "output": "v1/download-object-response.json#",
           "query": [
           ],
-          "route": "/download-object/<name>",
+          "route": "/start-download/<name>",
           "scopes": "object:download:<name>",
           "stability": "experimental",
           "title": "Download object data",
@@ -1654,7 +1688,7 @@ module.exports = {
             "name"
           ],
           "category": "Download",
-          "description": "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`fetchObjectMetadata` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
+          "description": "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`startDownload` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
           "method": "get",
           "name": "download",
           "query": [
@@ -1693,18 +1727,17 @@ module.exports = {
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "workerPoolId"
           ],
           "category": "Purge-Cache Service",
-          "description": "Publish a request to purge caches named `cacheName` with\non `provisionerId`/`workerType` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
+          "description": "Publish a request to purge caches named `cacheName` with\non `workerPoolId` workers.\n\nIf such a request already exists, its `before` timestamp is updated to\nthe current time.",
           "input": "v1/purge-cache-request.json#",
           "method": "post",
           "name": "purgeCache",
           "query": [
           ],
-          "route": "/purge-cache/<provisionerId>/<workerType>",
-          "scopes": "purge-cache:<provisionerId>/<workerType>:<cacheName>",
+          "route": "/purge-cache/<workerPoolId>",
+          "scopes": "purge-cache:<workerPoolId>:<cacheName>",
           "stability": "stable",
           "title": "Purge Worker Cache",
           "type": "function"
@@ -1729,21 +1762,20 @@ module.exports = {
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "workerPoolId"
           ],
           "category": "Purge-Cache Service",
-          "description": "List the caches for this `provisionerId`/`workerType` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
+          "description": "List the caches for this `workerPoolId` that should to be\npurged if they are from before the time given in the response.\n\nThis is intended to be used by workers to determine which caches to purge.",
           "method": "get",
           "name": "purgeRequests",
           "output": "v1/purge-cache-request-list.json#",
           "query": [
             "since"
           ],
-          "route": "/purge-cache/<provisionerId>/<workerType>",
-          "scopes": "purge-cache:purge-requests:<provisionerId>/<workerType>",
+          "route": "/purge-cache/<workerPoolId>",
+          "scopes": "purge-cache:purge-requests::<workerPoolId>",
           "stability": "stable",
-          "title": "Open Purge Requests for a provisionerId/workerType pair",
+          "title": "Open Purge Requests for a worker pool",
           "type": "function"
         }
       ],
@@ -1756,7 +1788,7 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The queue service is responsible for accepting tasks and track their state\nas they are executed by workers. In order ensure they are eventually\nresolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
+      "description": "The queue service is responsible for accepting tasks and tracking their state\nas they are executed by workers, in order to ensure they are eventually\nresolved.\n\n## Artifact Storage Types\n\n* **S3 artifacts** are used for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n* **Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n* **Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n* **Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n## Artifact immutability\n\nGenerally speaking you cannot overwrite an artifact when created.\nBut if you repeat the request with the same properties the request will\nsucceed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nThe queue defines the following *immutability special cases*:\n\n* A `reference` artifact can replace an existing `reference` artifact.\n* A `link` artifact can replace an existing `reference` artifact.\n* Any artifact's `expires` can be extended (made later, but not earlier).",
       "entries": [
         {
           "args": [
@@ -1919,7 +1951,7 @@ module.exports = {
             "taskId"
           ],
           "category": "Tasks",
-          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nThis method is deprecated in favour of creating a new task with the same\ntask definition (but with a new taskId).\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nis not either `failed` or `completed`, this operation will just return\nthe current task status.",
+          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed. It will schedule a task that is _unscheduled_\nregardless of the state of its dependencies.\n\nThis method is deprecated in favour of creating a new task with the same\ntask definition (but with a new taskId).\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent: if it is invoked for a task that\nis `pending` or `running`, it will just return the current task status.",
           "method": "post",
           "name": "rerunTask",
           "output": "v1/task-status-response.json#",
@@ -1972,21 +2004,20 @@ module.exports = {
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "taskQueueId"
           ],
           "category": "Worker Interface",
-          "description": "Claim pending task(s) for the given `provisionerId`/`workerType` queue.\n\nIf any work is available (even if fewer than the requested number of\ntasks, this will return immediately. Otherwise, it will block for tens of\nseconds waiting for work.  If no work appears, it will return an emtpy\nlist of tasks.  Callers should sleep a short while (to avoid denial of\nservice in an error condition) and call the endpoint again.  This is a\nsimple implementation of \"long polling\".",
+          "description": "Claim pending task(s) for the given task queue.\n\nIf any work is available (even if fewer than the requested number of\ntasks, this will return immediately. Otherwise, it will block for tens of\nseconds waiting for work.  If no work appears, it will return an emtpy\nlist of tasks.  Callers should sleep a short while (to avoid denial of\nservice in an error condition) and call the endpoint again.  This is a\nsimple implementation of \"long polling\".",
           "input": "v1/claim-work-request.json#",
           "method": "post",
           "name": "claimWork",
           "output": "v1/claim-work-response.json#",
           "query": [
           ],
-          "route": "/claim-work/<provisionerId>/<workerType>",
+          "route": "/claim-work/<taskQueueId>",
           "scopes": {
             "AllOf": [
-              "queue:claim-work:<provisionerId>/<workerType>",
+              "queue:claim-work:<taskQueueId>",
               "queue:worker-id:<workerGroup>/<workerId>"
             ]
           },
@@ -2009,20 +2040,9 @@ module.exports = {
           ],
           "route": "/task/<taskId>/runs/<runId>/claim",
           "scopes": {
-            "AnyOf": [
-              {
-                "AllOf": [
-                  "queue:claim-task:<provisionerId>/<workerType>",
-                  "queue:worker-id:<workerGroup>/<workerId>"
-                ]
-              },
-              {
-                "AllOf": [
-                  "queue:claim-task",
-                  "assume:worker-type:<provisionerId>/<workerType>",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
+            "AllOf": [
+              "queue:claim-task:<provisionerId>/<workerType>",
+              "queue:worker-id:<workerGroup>/<workerId>"
             ]
           },
           "stability": "deprecated",
@@ -2042,17 +2062,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/reclaim",
-          "scopes": {
-            "AnyOf": [
-              "queue:reclaim-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:claim-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:reclaim-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Reclaim task",
           "type": "function"
@@ -2070,17 +2080,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/completed",
-          "scopes": {
-            "AnyOf": [
-              "queue:resolve-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:resolve-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:resolve-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Report Run Completed",
           "type": "function"
@@ -2098,17 +2098,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/failed",
-          "scopes": {
-            "AnyOf": [
-              "queue:resolve-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:resolve-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:resolve-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Report Run Failed",
           "type": "function"
@@ -2127,17 +2117,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/exception",
-          "scopes": {
-            "AnyOf": [
-              "queue:resolve-task:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:resolve-task",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:resolve-task:<taskId>/<runId>",
           "stability": "stable",
           "title": "Report Task Exception",
           "type": "function"
@@ -2149,7 +2129,7 @@ module.exports = {
             "name"
           ],
           "category": "Artifacts",
-          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support \"S3 Artifacts\" for data storage.\n\n**S3 artifacts**, is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n\n**Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\n**Immutability Special Cases**:\n\n* A `reference` artifact can replace an existing `reference` artifact`.\n* A `link` artifact can replace an existing `reference` artifact`.\n* Any artifact's `expires` can be extended.",
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.",
           "input": "v1/post-artifact-request.json#",
           "method": "post",
           "name": "createArtifact",
@@ -2157,17 +2137,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
-          "scopes": {
-            "AnyOf": [
-              "queue:create-artifact:<taskId>/<runId>",
-              {
-                "AllOf": [
-                  "queue:create-artifact:<name>",
-                  "assume:worker-id:<workerGroup>/<workerId>"
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:create-artifact:<taskId>/<runId>",
           "stability": "stable",
           "title": "Create Artifact",
           "type": "function"
@@ -2196,7 +2166,7 @@ module.exports = {
             ]
           },
           "stability": "stable",
-          "title": "Get Artifact from Run",
+          "title": "Get Artifact Data from Run",
           "type": "function"
         },
         {
@@ -2222,7 +2192,7 @@ module.exports = {
             ]
           },
           "stability": "stable",
-          "title": "Get Artifact from Latest Run",
+          "title": "Get Artifact Data from Latest Run",
           "type": "function"
         },
         {
@@ -2262,6 +2232,96 @@ module.exports = {
           "scopes": "queue:list-artifacts:<taskId>",
           "stability": "stable",
           "title": "Get Artifacts from Latest Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns associated metadata for a given artifact, in the given task run.\nThe metadata is the same as that returned from `listArtifacts`, and does\nnot grant access to the artifact data.\n\nNote that this method does *not* automatically follow link artifacts.",
+          "method": "get",
+          "name": "artifactInfo",
+          "output": "v1/artifact-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/runs/<runId>/artifact-info/<name>",
+          "scopes": "queue:list-artifacts:<taskId>:<runId>",
+          "stability": "stable",
+          "title": "Get Artifact Information From Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns associated metadata for a given artifact, in the latest run of the\ntask.  The metadata is the same as that returned from `listArtifacts`,\nand does not grant access to the artifact data.\n\nNote that this method does *not* automatically follow link artifacts.",
+          "method": "get",
+          "name": "latestArtifactInfo",
+          "output": "v1/artifact-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/artifact-info/<name>",
+          "scopes": "queue:list-artifacts:<taskId>",
+          "stability": "stable",
+          "title": "Get Artifact Information From Latest Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns information about the content of the artifact, in the given task run.\n\nDepending on the storage type, the endpoint returns the content of the artifact\nor enough information to access that content.\n\nThis method follows link artifacts, so it will not return content\nfor a link artifact.",
+          "method": "get",
+          "name": "artifact",
+          "output": "v1/artifact-content-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/runs/<runId>/artifact-content/<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
+          "stability": "stable",
+          "title": "Get Artifact Content From Run",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "name"
+          ],
+          "category": "Artifacts",
+          "description": "Returns information about the content of the artifact, in the latest task run.\n\nDepending on the storage type, the endpoint returns the content of the artifact\nor enough information to access that content.\n\nThis method follows link artifacts, so it will not return content\nfor a link artifact.",
+          "method": "get",
+          "name": "latestArtifact",
+          "output": "v1/artifact-content-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/artifact-content/<name>",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-artifact:<name>",
+                "for": "name",
+                "in": "names"
+              }
+            ]
+          },
+          "stability": "stable",
+          "title": "Get Artifact Content From Latest Run",
           "type": "function"
         },
         {
@@ -2327,18 +2387,17 @@ module.exports = {
         },
         {
           "args": [
-            "provisionerId",
-            "workerType"
+            "taskQueueId"
           ],
           "category": "Worker Metadata",
-          "description": "Get an approximate number of pending tasks for the given `provisionerId`\nand `workerType`.\n\nThe underlying Azure Storage Queues only promises to give us an estimate.\nFurthermore, we cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.\nIt is, however, a solid estimate of the number of pending tasks.",
+          "description": "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nThe underlying Azure Storage Queues only promises to give us an estimate.\nFurthermore, we cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.\nIt is, however, a solid estimate of the number of pending tasks.",
           "method": "get",
           "name": "pendingTasks",
           "output": "v1/pending-tasks-response.json#",
           "query": [
           ],
-          "route": "/pending/<provisionerId>/<workerType>",
-          "scopes": "queue:pending-count:<provisionerId>/<workerType>",
+          "route": "/pending/<taskQueueId>",
+          "scopes": "queue:pending-count:<taskQueueId>",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
           "type": "function"

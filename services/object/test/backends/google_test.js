@@ -30,30 +30,34 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     };
     const endpoint = new aws.Endpoint('https://storage.googleapis.com');
     s3 = new aws.S3({ endpoint, ...credentials });
+  });
 
+  setup(async function() {
     // set up a backend with a public bucket, and separately with a private
     // bucket; these are in fact the same bucket, and we'll just check that the
     // URLs have a signature for the non-public version.  S3 verifies
     // signatures if they are present, even if the signature is not required.
-    helper.load.cfg('backends', {
-      googlePrivate: {
-        backendType: 'aws',
-        accessKeyId: secret.accessKeyId,
-        secretAccessKey: secret.secretAccessKey,
-        bucket: secret.testBucket,
-        signGetUrls: true,
-        endpoint: 'https://storage.googleapis.com',
+    await helper.setBackendConfig({
+      backends: {
+        googlePrivate: {
+          backendType: 'aws',
+          accessKeyId: secret.accessKeyId,
+          secretAccessKey: secret.secretAccessKey,
+          bucket: secret.testBucket,
+          signGetUrls: true,
+          endpoint: 'https://storage.googleapis.com',
+        },
+        googlePublic: {
+          backendType: 'aws',
+          accessKeyId: secret.accessKeyId,
+          secretAccessKey: secret.secretAccessKey,
+          bucket: secret.testBucket,
+          signGetUrls: false,
+          endpoint: 'https://storage.googleapis.com',
+        },
       },
-      googlePublic: {
-        backendType: 'aws',
-        accessKeyId: secret.accessKeyId,
-        secretAccessKey: secret.secretAccessKey,
-        bucket: secret.testBucket,
-        signGetUrls: false,
-        endpoint: 'https://storage.googleapis.com',
-      },
+      backendMap: [],
     });
-    helper.load.cfg('backendMap', []);
   });
 
   const makeObject = async ({ name, data }) => {
@@ -121,7 +125,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     teardown(cleanup);
   });
 
-  helper.testTemporaryUpload({
+  helper.testDataInlineUpload({
     mock, skipping, prefix,
     backendId: 'googlePrivate',
     async getObjectContent({ name }) {
@@ -129,7 +133,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
         Bucket: secret.testBucket,
         Key: name,
       }).promise();
-      return res.Body;
+      return { data: res.Body, contentType: res.ContentType };
+    },
+  }, async function() {
+    teardown(cleanup);
+  });
+
+  helper.testPutUrlUpload({
+    mock, skipping, prefix,
+    backendId: 'googlePrivate',
+    async getObjectContent({ name }) {
+      const res = await s3.getObject({
+        Bucket: secret.testBucket,
+        Key: name,
+      }).promise();
+      return { data: res.Body, contentType: res.ContentType };
     },
   }, async function() {
     teardown(cleanup);

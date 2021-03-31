@@ -4,12 +4,13 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
 
-VERSION = '40.0.3'
+VERSION = '42.1.1'
 
 tests_require = [
     'pytest',
     'pytest-cov',   
     'pytest-mock',
+    'pytest-asyncio; python_version>="3.6"',
     'httmock',
     'mock',
     'setuptools-lint',
@@ -20,6 +21,8 @@ tests_require = [
     'coverage',
     'python-dateutil',
     'subprocess32; python_version=="2.7"',
+    'aiofiles; python_version>="3.6"',
+    'httptest; python_version>="3.6"',
 ]
 
 # requests has a policy of not breaking apis between major versions
@@ -32,7 +35,7 @@ install_requires = [
     'six>=1.10.0',
 
     # python-3 only
-    'aiohttp>=2.0.0,!=3.7.0; python_version>="3.6"',
+    'aiohttp>=3.7.4; python_version>="3.6"',
     'async_timeout>=2.0.0; python_version>="3.6"',
 ]
 

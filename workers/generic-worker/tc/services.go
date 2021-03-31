@@ -6,11 +6,12 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcworkermanager"
 )
 
 type Auth interface {
@@ -26,7 +27,7 @@ type WorkerManager interface {
 }
 
 type PurgeCache interface {
-	PurgeRequests(provisionerId, workerType, since string) (*tcpurgecache.OpenPurgeRequestList, error)
+	PurgeRequests(workerPoolId, since string) (*tcpurgecache.OpenPurgeRequestList, error)
 }
 
 type Secrets interface {
@@ -39,7 +40,7 @@ type Secrets interface {
 
 type Queue interface {
 	CancelTask(taskId string) (*tcqueue.TaskStatusResponse, error)
-	ClaimWork(provisionerId, workerType string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error)
+	ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error)
 	CreateArtifact(taskId, runId, name string, payload *tcqueue.PostArtifactRequest) (*tcqueue.PostArtifactResponse, error)
 	CreateTask(taskId string, payload *tcqueue.TaskDefinitionRequest) (*tcqueue.TaskStatusResponse, error)
 	GetLatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error)
@@ -50,4 +51,10 @@ type Queue interface {
 	ReportFailed(taskId, runId string) (*tcqueue.TaskStatusResponse, error)
 	Status(taskId string) (*tcqueue.TaskStatusResponse, error)
 	Task(taskId string) (*tcqueue.TaskDefinitionResponse, error)
+}
+
+type Object interface {
+	CreateUpload(name string, payload *tcobject.CreateUploadRequest) (*tcobject.CreateUploadResponse, error)
+	FinishUpload(name string, payload *tcobject.FinishUploadRequest) error
+	StartDownload(name string, payload *tcobject.DownloadObjectRequest) (*tcobject.DownloadObjectResponse, error)
 }

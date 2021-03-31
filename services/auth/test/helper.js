@@ -73,12 +73,12 @@ exports.withCfg = (mock, skipping) => {
       description: 'testing',
     })));
 
-    // override cfg.app.azureAccounts based on the azure secret, or mock it
+    // override cfg.azureAccounts based on the azure secret, or mock it
     if (mock) {
-      exports.load.cfg('app.azureAccounts', {});
+      exports.load.cfg('azureAccounts', undefined);
     } else {
       const sec = exports.secrets.get('azure');
-      exports.load.cfg('app.azureAccounts', { [sec.accountId]: sec.accessKey });
+      exports.load.cfg('azureAccounts', { [sec.accountId]: sec.accessKey });
     }
   });
 

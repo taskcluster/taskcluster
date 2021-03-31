@@ -392,7 +392,7 @@ exports.tasks.push({
         },
       },
       required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'forceSSL', 'trustProxy', 'nodeEnv', 'useKubernetesDnsServiceDiscovery'],
-      aditionalProperties: false,
+      additionalProperties: false,
     };
 
     // Something to copy-paste for users

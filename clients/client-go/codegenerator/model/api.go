@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v40/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v42/tools/jsonschema2go/text"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ func (api *API) generateAPICode(apiName string) string {
 
 	// note: we remove unused imports later, so e.g. if net/url is not used, it
 	// will get removed later using:
-	// https://godoc.org/golang.org/x/tools/imports
+	// https://pkg.go.dev/golang.org/x/tools/imports
 
 	content += `
 import (
@@ -122,7 +122,7 @@ import (
 	"errors"
 	"net/url"
 	"time"
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 )
 
 type ` + api.Name() + ` tcclient.Client

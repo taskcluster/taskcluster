@@ -16,13 +16,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  // Generate random workerType id to use for this test
-  const workerType = helper.makeWorkerType();
+  // Generate random task queue id to use for this test
+  const taskQueueId = helper.makeTaskQueueId('no-provisioner-extended-extended');
 
-  const makeTask = (priority, workerType) => {
+  const makeTask = (priority, taskQueueId) => {
     return {
-      provisionerId: 'no-provisioner-extended-extended',
-      workerType: workerType,
+      taskQueueId,
       priority: priority,
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('30 min'),
@@ -43,12 +42,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   test('claimWork from empty queue', async function() {
     helper.scopes(
-      'queue:claim-work:no-provisioner-extended-extended/' + workerType,
+      'queue:claim-work:' + taskQueueId,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
 
     let started = new Date();
-    let result = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+    let result = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
       tasks: 2,
@@ -58,12 +57,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('claimWork requires scopes', async () => {
-    // wrong provisionerId scope
+    // wrong taskQueueId scope
     helper.scopes(
-      'queue:claim-work:wrong-provisioner/' + workerType,
+      'queue:claim-work:' + helper.makeTaskQueueId('wrong-provisioner'),
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
-    await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+    await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     }).then(
@@ -73,10 +72,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // wrong workerId scope
     helper.scopes(
-      'queue:claim-work:no-provisioner-extended-extended/' + workerType,
+      'queue:claim-work:' + taskQueueId,
       'queue:worker-id:my-worker-group/other-worker',
     );
-    await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+    await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     }).then(
@@ -93,20 +92,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let taskId = slugid.v4();
 
     debug('### Creating task');
-    await helper.queue.createTask(taskId, makeTask('normal', workerType));
+    await helper.queue.createTask(taskId, makeTask('normal', taskQueueId));
     helper.assertPulseMessage('task-defined');
     helper.assertPulseMessage('task-pending');
 
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
     helper.scopes(
-      'queue:claim-work:no-provisioner-extended-extended/' + workerType,
+      'queue:claim-work:' + taskQueueId,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
       'queue:get-task:' + taskId,
       'queue:status:' + taskId,
     );
     let before = new Date();
-    let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+    let r1 = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
@@ -124,7 +123,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       Type: 'task-claimed',
       Logger: 'taskcluster.test.api',
       Fields: {
-        taskQueueId: `no-provisioner-extended-extended/${workerType}`,
+        taskQueueId,
         v: 1,
         workerGroup: "my-worker-group-extended-extended",
         workerId: "my-worker-extended-extended",
@@ -155,20 +154,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let taskId = slugid.v4();
 
     debug('### Creating task');
-    await helper.queue.createTask(taskId, makeTask('normal', workerType));
+    await helper.queue.createTask(taskId, makeTask('normal', taskQueueId));
     helper.assertPulseMessage('task-defined');
     helper.assertPulseMessage('task-pending');
 
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
     helper.scopes(
-      'queue:claim-work:no-provisioner-extended-extended/' + workerType,
+      'queue:claim-work:' + taskQueueId,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
       'queue:get-task:' + taskId,
       'queue:status:' + taskId,
     );
     let before = new Date();
-    let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+    let r1 = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
@@ -224,18 +223,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let taskIdB = slugid.v4();
 
     debug('### Creating task');
-    await helper.queue.createTask(taskIdB, makeTask('normal', workerType));
+    await helper.queue.createTask(taskIdB, makeTask('normal', taskQueueId));
     helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
     helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
     helper.clearPulseMessages();
 
-    await helper.queue.createTask(taskIdA, makeTask('high', workerType));
+    await helper.queue.createTask(taskIdA, makeTask('high', taskQueueId));
     helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdA);
     helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
     helper.clearPulseMessages();
 
     debug('### ClaimWork');
-    let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+    let r1 = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
       tasks: 1,
@@ -247,7 +246,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### ClaimWork');
-    let r2 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+    let r2 = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
       tasks: 1,
@@ -270,9 +269,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('createTask twice, claimWork, reportCompleted', async () => {
-    let workerType = helper.makeWorkerType();
+    let taskQueueId = helper.makeTaskQueueId('no-provisioner-extended-extended');
     let taskId = slugid.v4();
-    let task = makeTask('normal', workerType);
+    let task = makeTask('normal', taskQueueId);
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, task);
@@ -287,7 +286,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Claim task');
-    let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+    let r1 = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
       tasks: 2,

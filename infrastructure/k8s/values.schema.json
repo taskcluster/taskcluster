@@ -1,7 +1,7 @@
 {
   "$id": "/schemas/common/values.schema.json#",
   "$schema": "http://json-schema.org/draft-06/schema#",
-  "aditionalProperties": false,
+  "additionalProperties": false,
   "properties": {
     "applicationName": {
       "description": "The name of this deployment of Taskcluster.",
@@ -168,7 +168,6 @@
       "required": [
         "procs",
         "static_clients",
-        "azure_accounts",
         "read_db_url",
         "write_db_url",
         "pulse_username",
@@ -1249,6 +1248,9 @@
           "type": "boolean"
         },
         "task_cache_max_size": {
+          "type": "number"
+        },
+        "task_claim_timeout": {
           "type": "number"
         },
         "taskcluster_access_token": {

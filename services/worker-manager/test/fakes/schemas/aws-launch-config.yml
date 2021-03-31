@@ -19,12 +19,16 @@ properties:
           type: string
         Tags:
           type: array
-          items: string
-        additionalItems: false
-        uniqueItems: false
+          items:
+            type: object
+            properties:
+              Key: { type: string }
+              Value: { type: string }
+            additionalProperties: false
+            required: [Key, Value]
+          uniqueItems: false
       additionalProperties: false
       required: [ResourceType, Tags]
-    additionalItems: false
     uniqueItems: false
 additionalProperties: false
 required: [UserData, MinCount, MaxCount, ImageId]

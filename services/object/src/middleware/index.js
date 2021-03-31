@@ -33,15 +33,15 @@ class Middleware {
   }
 
   /**
-   * Intercept the fetchObjectMetadata API method.  This calls the function
+   * Intercept the startDownload API method.  This calls the function
    * of the same name on all middleware objects, in order, until one
    * returns false.
    *
    * See the middleware base class for more details.
    */
-  async fetchObjectMetadataRequest(req, res, object, method, params) {
+  async startDownloadRequest(req, res, object, method, params) {
     for (let mw of this.instances) {
-      if (!await mw.fetchObjectMetadataRequest(req, res, object, method, params)) {
+      if (!await mw.startDownloadRequest(req, res, object, method, params)) {
         return false;
       }
     }
@@ -50,7 +50,7 @@ class Middleware {
   }
 
   /**
-   * Similar to fetchObjectMetadataRequest, but for the simple-download API.
+   * Similar to startDownloadRequest, but for the simple-download API.
    */
   async downloadRequest(req, res, object) {
     for (let mw of this.instances) {

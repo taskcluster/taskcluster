@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-lib-postgres",
   "private": true,
-  "version": "40.0.3",
+  "version": "42.1.1",
   "license": "MPL-2.0",
   "scripts": {
     "coverage": "c8 yarn test",

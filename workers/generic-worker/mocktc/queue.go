@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueue"
 )
 
 type Queue struct {
@@ -51,14 +52,15 @@ func (queue *Queue) CancelTask(taskId string) (*tcqueue.TaskStatusResponse, erro
 	return queue.Status(taskId)
 }
 
-func (queue *Queue) ClaimWork(provisionerId, workerType string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error) {
+func (queue *Queue) ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error) {
 	queue.mu.Lock()
 	defer queue.mu.Unlock()
 	maxTasks := payload.Tasks
 	tasks := []tcqueue.TaskClaim{}
 	for _, taskId := range queue.orderedTasks {
 		j := queue.tasks[taskId]
-		if j.Task.WorkerType == workerType && j.Task.ProvisionerID == provisionerId && j.Status.State == "pending" {
+
+		if j.Task.TaskQueueID == taskQueueId && j.Status.State == "pending" {
 			j.Status.State = "running"
 			j.Status.Runs = []tcqueue.RunInformation{
 				{
@@ -128,6 +130,14 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *tcqueue.
 		}
 		req = &redirectRequest
 		resp, err = queue.createRedirectArtifact(taskId, runId, name, &redirectRequest)
+	case "link":
+		var linkRequest tcqueue.LinkArtifactRequest
+		err = json.Unmarshal([]byte(*payload), &linkRequest)
+		if err != nil {
+			queue.t.Fatalf("Error unmarshalling Link Artifact Request from json: %v", err)
+		}
+		req = &linkRequest
+		resp, err = queue.createLinkArtifact(taskId, runId, name, &linkRequest)
 	default:
 		queue.t.Fatalf("Unrecognised storage type: %v", request.StorageType)
 	}
@@ -207,6 +217,31 @@ func (queue *Queue) createRedirectArtifact(taskId, runId, name string, redirectR
 	}
 }
 
+func (queue *Queue) createLinkArtifact(taskId, runId, name string, linkRequest *tcqueue.LinkArtifactRequest) (*tcqueue.LinkArtifactResponse, error) {
+	previousVersion, existed := queue.artifacts[taskId+":"+runId][name]
+	if !existed {
+		return &tcqueue.LinkArtifactResponse{
+			StorageType: linkRequest.StorageType,
+		}, nil
+	}
+	// check that this is only replacing a redirect artifact (queue permits other changes, but
+	// this is the critical change for generic-worker)
+	if _, wasRedir := previousVersion.(*tcqueue.RedirectArtifactRequest); wasRedir {
+		// new link artifact is allowed to replace a reference/redirect artifact
+		return &tcqueue.LinkArtifactResponse{
+			StorageType: linkRequest.StorageType,
+		}, nil
+	}
+	return nil, &tcclient.APICallException{
+		CallSummary: &tcclient.CallSummary{
+			HTTPResponseBody: fmt.Sprintf("Request conflict: link artifact %v in taskId %v and runId %v cannot replace a non-redirect artifact: disallowing update %v -> %v", name, taskId, runId, previousVersion, linkRequest),
+		},
+		RootCause: httpbackoff.BadHttpResponseCode{
+			HttpResponseCode: 409,
+		},
+	}
+}
+
 func (queue *Queue) CreateTask(taskId string, payload *tcqueue.TaskDefinitionRequest) (*tcqueue.TaskStatusResponse, error) {
 	queue.mu.Lock()
 	defer queue.mu.Unlock()
@@ -224,6 +259,29 @@ func (queue *Queue) CreateTask(taskId string, payload *tcqueue.TaskDefinitionReq
 		payload.Scopes = []string{}
 	}
 
+	// Handle different possible cases with taskQueueId and provisionerId/workerType
+	var provisionerId, workerType, taskQueueId string
+	if payload.ProvisionerID != "" && payload.WorkerType != "" && payload.TaskQueueID != "" {
+		if fmt.Sprintf("%s/%s", payload.ProvisionerID, payload.WorkerType) != payload.TaskQueueID {
+			panic("taskQueueId must match \"provisionerId/workerType\"")
+		} else {
+			provisionerId = payload.ProvisionerID
+			workerType = payload.WorkerType
+			taskQueueId = payload.TaskQueueID
+		}
+	} else if payload.ProvisionerID != "" && payload.WorkerType != "" {
+		provisionerId = payload.ProvisionerID
+		workerType = payload.WorkerType
+		taskQueueId = fmt.Sprintf("%s/%s", payload.ProvisionerID, payload.WorkerType)
+	} else if payload.TaskQueueID != "" {
+		splitId := strings.Split(payload.TaskQueueID, "/")
+		provisionerId = splitId[0]
+		workerType = splitId[1]
+		taskQueueId = payload.TaskQueueID
+	} else {
+		panic("at least a provisionerId and a workerType or a taskQueueId must be provided")
+	}
+
 	queue.tasks[taskId] = &tcqueue.TaskDefinitionAndStatus{
 		Status: tcqueue.TaskStatusStructure{
 			TaskID: taskId,
@@ -238,7 +296,7 @@ func (queue *Queue) CreateTask(taskId string, payload *tcqueue.TaskDefinitionReq
 			Metadata:      payload.Metadata,
 			Payload:       payload.Payload,
 			Priority:      payload.Priority,
-			ProvisionerID: payload.ProvisionerID,
+			ProvisionerID: provisionerId,
 			Requires:      payload.Requires,
 			Retries:       payload.Retries,
 			Routes:        payload.Routes,
@@ -246,21 +304,23 @@ func (queue *Queue) CreateTask(taskId string, payload *tcqueue.TaskDefinitionReq
 			Scopes:        payload.Scopes,
 			Tags:          payload.Tags,
 			TaskGroupID:   payload.TaskGroupID,
-			WorkerType:    payload.WorkerType,
+			TaskQueueID:   taskQueueId,
+			WorkerType:    workerType,
 		},
 	}
 	tsr := &tcqueue.TaskStatusResponse{
 		Status: tcqueue.TaskStatusStructure{
 			Deadline:      payload.Deadline,
 			Expires:       payload.Expires,
-			ProvisionerID: payload.ProvisionerID,
+			ProvisionerID: provisionerId,
 			RetriesLeft:   payload.Retries,
 			Runs:          []tcqueue.RunInformation{},
 			SchedulerID:   payload.SchedulerID,
 			State:         "pending",
 			TaskGroupID:   payload.TaskGroupID,
 			TaskID:        taskId,
-			WorkerType:    payload.WorkerType,
+			TaskQueueID:   taskQueueId,
+			WorkerType:    workerType,
 		},
 	}
 	queue.orderedTasks = append(queue.orderedTasks, taskId)
@@ -299,6 +359,9 @@ func (queue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration ti
 		return nil, nil
 	case *tcqueue.RedirectArtifactRequest:
 		return url.Parse(a.URL)
+	case *tcqueue.LinkArtifactRequest:
+		// defer to the linked artifact
+		return queue.GetLatestArtifact_SignedURL(taskId, a.Artifact, duration)
 	}
 	queue.t.Fatalf("Unknown artifact type %T", artifact)
 	return nil, fmt.Errorf("Unknown artifact type %T", artifact)
@@ -313,7 +376,7 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 		switch A := artifact.(type) {
 		case *tcqueue.ErrorArtifactRequest:
 			a = tcqueue.Artifact{
-				ContentType: "application/json", // TODO - check this
+				ContentType: "application/json", // unused
 				Expires:     A.Expires,
 				Name:        name,
 				StorageType: A.StorageType,
@@ -321,6 +384,13 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 		case *tcqueue.RedirectArtifactRequest:
 			a = tcqueue.Artifact{
 				ContentType: A.ContentType,
+				Expires:     A.Expires,
+				Name:        name,
+				StorageType: A.StorageType,
+			}
+		case *tcqueue.LinkArtifactRequest:
+			a = tcqueue.Artifact{
+				ContentType: "text/plain",
 				Expires:     A.Expires,
 				Name:        name,
 				StorageType: A.StorageType,

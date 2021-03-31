@@ -478,7 +478,7 @@ const stubbedClients = () => {
           });
           return Promise.resolve({ artifacts });
         },
-        pendingTasks: async (provisionerId, workerType) => 0,
+        pendingTasks: async (taskQueueId) => 0,
       },
     }),
   });

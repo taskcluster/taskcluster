@@ -766,7 +766,10 @@ async function jobHandler(message) {
 
     if (!defaultBranchYml) {
       debug(`${organization}/${repository} has no '.taskcluster.yml' at ${defaultBranch}.`);
-      return;
+
+      // If the repository does not contain a '.taskcluster.yml' file, collaborators should be able to test before
+      // initializing.
+      defaultBranchYml = { version: 1, policy: { pullRequests: 'collaborators_quiet' } };
     }
 
     if (this.getRepoPolicy(defaultBranchYml).startsWith('collaborators')) {
@@ -830,8 +833,13 @@ async function jobHandler(message) {
     }
   }
 
-  taskGroupId = graphConfig.tasks[0].task.taskGroupId;
-  let { routes } = graphConfig.tasks[0].task;
+  let routes;
+  try {
+    taskGroupId = graphConfig.tasks[0].task.taskGroupId;
+    routes = graphConfig.tasks[0].task.routes;
+  } catch (e) {
+    return await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e });
+  }
 
   try {
     debug(`Trying to create a record for ${organization}/${repository}@${sha} (${groupState}) in github_builds table`);

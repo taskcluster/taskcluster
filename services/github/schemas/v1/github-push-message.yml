@@ -23,8 +23,6 @@ properties:
     description: |
        The installation which had an event.
     type:          integer
-    minLength:    {$const: github-installation-minimum}
-    maxLength:    {$const: github-installation-maximum}
   eventId:
     type: string
     description: |

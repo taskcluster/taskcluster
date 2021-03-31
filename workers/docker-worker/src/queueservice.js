@@ -53,7 +53,8 @@ class TaskQueue {
     debug(`polling for ${capacity} tasks`);
 
     const queue = this.queueClient();
-    let result = await queue.claimWork(this.provisionerId, this.workerType, {
+    const taskQueueId = `${this.provisionerId}/${this.workerType}`;
+    let result = await queue.claimWork(taskQueueId, {
       tasks: capacity,
       workerGroup: this.workerGroup,
       workerId: this.workerId,

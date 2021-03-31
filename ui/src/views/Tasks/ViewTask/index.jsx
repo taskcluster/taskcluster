@@ -35,6 +35,8 @@ import SpeedDialAction from '../../../components/SpeedDialAction';
 import DialogAction from '../../../components/DialogAction';
 import TaskActionForm from '../../../components/TaskActionForm';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import splitTaskQueueId from '../../../utils/splitTaskQueueId';
+import { gqlTaskToApi } from '../../../utils/gqlToApi';
 import {
   ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,
@@ -50,7 +52,6 @@ import formatError from '../../../utils/formatError';
 import removeKeys from '../../../utils/removeKeys';
 import parameterizeTask from '../../../utils/parameterizeTask';
 import { nice } from '../../../utils/slugid';
-import formatTaskMutation from '../../../utils/formatTaskMutation';
 import Link from '../../../utils/Link';
 import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
@@ -416,9 +417,7 @@ export default class ViewTask extends Component {
 
   handleCreateLoaner = async () => {
     const taskId = nice();
-    const task = parameterizeTask(
-      removeKeys(cloneDeep(this.props.data.task), ['__typename'])
-    );
+    const task = parameterizeTask(gqlTaskToApi(this.props.data.task));
 
     this.preRunningAction();
 
@@ -427,7 +426,7 @@ export default class ViewTask extends Component {
         mutation: createTaskQuery,
         variables: {
           taskId,
-          task: formatTaskMutation(task),
+          task,
         },
       });
 
@@ -634,7 +633,9 @@ export default class ViewTask extends Component {
   };
 
   purgeWorkerCache = async () => {
-    const { provisionerId, workerType } = this.props.data.task;
+    const { provisionerId, workerType } = splitTaskQueueId(
+      this.props.data.task.taskQueueId
+    );
     const { selectedCaches } = this.state;
 
     this.preRunningAction();
@@ -716,10 +717,7 @@ export default class ViewTask extends Component {
 
   retriggerTask = async () => {
     const taskId = nice();
-    const task = omit(
-      [...TASK_ADDED_FIELDS, 'dependencies'],
-      removeKeys(cloneDeep(this.props.data.task), ['__typename'])
-    );
+    const task = omit('dependencies', gqlTaskToApi(this.props.data.task));
     const now = Date.now();
     const created = Date.parse(task.created);
 
@@ -912,8 +910,7 @@ export default class ViewTask extends Component {
                       : Math.max(task.status.runs.length - 1, 0)
                   }
                   runs={task.status.runs}
-                  workerType={task.workerType}
-                  provisionerId={task.provisionerId}
+                  taskQueueId={task.taskQueueId}
                   onArtifactsPageChange={this.handleArtifactsPageChange}
                 />
               </Grid>

@@ -22,8 +22,7 @@ query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter
   }
 
   task(taskId: $taskGroupId) {
-    provisionerId
-    workerType
+    taskQueueId
     schedulerId
     taskId
     taskGroupId

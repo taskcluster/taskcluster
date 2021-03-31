@@ -62,7 +62,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
 
     assert.equal(result.run.state, 'exception', 'invalid schema should fail');
     assert.equal(result.run.reasonResolved, 'malformed-payload', 'invalid schema should fail');
-    assert(result.log.includes('data.onExitStatus.retry[0] should be number', 'message missing about onExitStatus'));
+    assert(result.log.includes('data/onExitStatus/retry/0 should be number', 'message missing about onExitStatus'));
   });
 
   test('invalid schema with multiple errors', async () => {

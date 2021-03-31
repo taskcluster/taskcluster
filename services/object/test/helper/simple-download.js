@@ -37,14 +37,14 @@ exports.testSimpleDownloadMethod = ({
     (suiteDefinition || (() => {})).call(this);
 
     let backend;
-    suiteSetup(async function() {
+    setup(async function() {
       const backends = await helper.load('backends');
       backend = backends.get(backendId);
     });
 
     test('supports simple downloads', async function() {
       const data = crypto.randomBytes(256);
-      const name = `${prefix}test!obj%ect/slash`;
+      const name = helper.testObjectName(prefix);
       const object = await makeObject({ name, data });
 
       // check it's supported..
@@ -52,7 +52,7 @@ exports.testSimpleDownloadMethod = ({
       assert(methods.includes('simple'));
 
       // call the backend
-      const { method, url } = await backend.fetchObjectMetadata(object, 'simple', true);
+      const { method, url } = await backend.startDownload(object, 'simple', true);
       assert.equal(method, 'simple');
       checkUrl({ name, url });
 

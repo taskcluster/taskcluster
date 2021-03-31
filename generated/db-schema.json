@@ -67,6 +67,7 @@
     },
     "worker_manager": {
       "tables": {
+        "queue_workers": "read",
         "worker_pool_errors": "write",
         "worker_pools": "write",
         "workers": "write"
@@ -5987,6 +5988,95 @@
       },
       "migrationScript": "begin\n  alter table tasks add column project_id text;\nend",
       "version": 63
+    },
+    {
+      "description": "Add `queue_worker_seen` and `queue_task_queue_seen` functions",
+      "methods": {
+        "create_queue_worker_tqid": {
+          "deprecated": true
+        },
+        "create_task_queue": {
+          "deprecated": true
+        },
+        "quarantine_queue_worker": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz",
+          "body": "begin\n  return query update queue_workers\n  set\n    quarantine_until = quarantine_until_in,\n    expires = greatest(queue_workers.expires, now() + interval '1 day')\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in\n  returning\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks;\nend",
+          "deprecated": false,
+          "description": "Update the quarantine_until date for a worker.  The Queue service interprets a date in the past\nas \"not quarantined\".  This function also \"bumps\" the expiration of the worker so that un-quarantined\nworkers do not immediately expire.  Returns the worker row just as get_queue_worker would, or no rows if\nno such worker exists.",
+          "mode": "write",
+          "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb)",
+          "serviceName": "queue"
+        },
+        "queue_worker_seen": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
+          "body": "begin\n  insert\n    into queue_workers (task_queue_id, worker_group, worker_id, quarantine_until, expires, first_claim, recent_tasks)\n    values (\n      task_queue_id_in,\n      worker_group_in,\n      worker_id_in,\n      now() - interval '10 years',\n      expires_in,\n      now(),\n      jsonb_build_array()\n    )\n    on conflict (task_queue_id, worker_group, worker_id) do update\n    set\n      expires = greatest(coalesce(expires_in, queue_workers.expires), queue_workers.expires)\n    where\n      queue_workers.task_queue_id = task_queue_id_in and\n      queue_workers.worker_group = worker_group_in and\n      queue_workers.worker_id = worker_id_in;\nend",
+          "deprecated": false,
+          "description": "Recognize that a worker has been seen by the queue, creating it if necessary.  This is called\nwhen workers claim or re-claim work.  The expiration time is not allowed to move backward.\n\nThis function always writes to the DB, so calls should be suitably rate-limited at the\nclient side.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "queue_worker_task_seen": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, task_run_in jsonb",
+          "body": "begin\n  update queue_workers\n  set\n    -- append without increasing size over 20\n    recent_tasks = case\n      when jsonb_array_length(recent_tasks) > 19 then (recent_tasks - 0)\n      else recent_tasks\n    end || jsonb_build_array(task_run_in)\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in;\nend",
+          "deprecated": false,
+          "description": "Update the worker record to indicate that this task run was seen there.  The\ntask run should be a JSON object with keys `taskId` and `runId`.  This will\nadd the task to `recent_tasks`, keeping the most recent 20 tasks. This\nwill do nothing, but not fail, if the worker does not exist, as it is\nunusual for a nonexistent worker to claim work.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "task_queue_seen": {
+          "args": "task_queue_id_in text, expires_in timestamptz, description_in text, stability_in text",
+          "body": "begin\n  insert\n    into task_queues (task_queue_id, expires, last_date_active, description, stability)\n    values (\n      task_queue_id_in,\n      expires_in,\n      now(),\n      coalesce(description_in, ''),\n      coalesce(stability_in, 'experimental')\n    )\n    on conflict (task_queue_id) do update\n    set\n      expires = greatest(coalesce(expires_in, task_queues.expires), task_queues.expires),\n      last_date_active = now(),\n      description = coalesce(description_in, task_queues.description),\n      stability = coalesce(stability_in, task_queues.stability)\n    where task_queues.task_queue_id = task_queue_id_in;\nend",
+          "deprecated": false,
+          "description": "Recognize that a task queue has been seen, creating it if necessary, updating\nits properties if not null, and in any case bumping its last seen time time. \nThe expiration time is not allowed to move backward.\n\nThis function always writes to the DB, so calls should be suitably rate-limited at the\nclient side.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "update_queue_worker_tqid": {
+          "deprecated": true
+        },
+        "update_task_queue": {
+          "deprecated": true
+        }
+      },
+      "version": 64
+    },
+    {
+      "description": "add `delete_indexed_task`",
+      "methods": {
+        "delete_indexed_task": {
+          "args": "namespace_in text, name_in text",
+          "body": "begin\n  delete\n  from indexed_tasks\n  where\n    indexed_tasks.namespace = namespace_in and\n    indexed_tasks.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Delete the named task from the index.  Returns succesfully even if the named\ntask does not exist.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "index"
+        }
+      },
+      "version": 65
+    },
+    {
+      "description": "add get_non_stopped_workers_with_quarantine to include quarantine info from the queue",
+      "downgradeScript": "begin\n  revoke select on queue_workers from $db_user_prefix$_worker_manager;\nend\n",
+      "methods": {
+        "get_non_stopped_workers_2": {
+          "deprecated": true
+        },
+        "get_non_stopped_workers_quntil": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.secret,\n    workers.etag,\n    queue_workers.quarantine_until\n  from\n    workers\n    left join queue_workers on \n      workers.worker_pool_id = queue_workers.task_queue_id and\n      workers.worker_id = queue_workers.worker_id and\n      workers.worker_group = queue_workers.worker_group\n  where\n    (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and\n    (workers.worker_group = worker_group_in or worker_group_in is null) and\n    (workers.worker_id = worker_id_in or worker_id_in is null) and\n    (workers.state <> 'stopped')\n  order by worker_pool_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get non-stopped workers filtered by the optional arguments,\nordered by `worker_pool_id`, `worker_group`, and  `worker_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset `page_offset`.\nThe `quaratine_until` contains NULL or a date in the past if the\nworker is not quarantined, otherwise the date until which it is\nquaratined.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid, quarantine_until timestamptz)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "migrationScript": "begin\n  grant select on queue_workers to $db_user_prefix$_worker_manager;\nend\n",
+      "version": 66
     }
   ]
 }

@@ -17,12 +17,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const makeObject = async name => {
     const data = crypto.randomBytes(128);
     const uploadId = taskcluster.slugid();
-    await helper.apiClient.uploadObject(name, {
+    const proposedUploadMethods = {
+      dataInline: {
+        contentType: 'application/binary',
+        objectData: data.toString('base64'),
+      },
+    };
+
+    await helper.apiClient.createUpload(name, {
       projectId: 'x',
-      data: data.toString('base64'),
       expires: taskcluster.fromNow('1 year'),
       uploadId,
+      proposedUploadMethods,
     });
+    await helper.apiClient.finishUpload(name, { projectId: 'x', uploadId });
   };
 
   test('intercepts matching simple downloads', async function() {

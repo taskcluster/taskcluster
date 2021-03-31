@@ -204,6 +204,13 @@
   },
   {
     "element": "h2",
+    "id": "queue-s3-artifact-credentials",
+    "path": "/manual/deploying/cloud-credentials",
+    "subtitle": "Queue 's3' Artifact Credentials",
+    "title": "Cloud Credentials"
+  },
+  {
+    "element": "h2",
     "id": "sentry-credentials",
     "path": "/manual/deploying/cloud-credentials",
     "subtitle": "Sentry Credentials",
@@ -278,6 +285,13 @@
     "path": "/manual/deploying/database",
     "subtitle": "Upgrades",
     "title": "Database Configuration"
+  },
+  {
+    "element": "h1",
+    "id": "error-configuration",
+    "path": "/manual/deploying/error-config",
+    "subtitle": null,
+    "title": "Error Configuration"
   },
   {
     "element": "h1",
@@ -453,6 +467,34 @@
     "path": "/manual/deploying/pulse",
     "subtitle": "Server Configuration Details",
     "title": null
+  },
+  {
+    "element": "h1",
+    "id": "queue-configuration",
+    "path": "/manual/deploying/queue-config",
+    "subtitle": null,
+    "title": "Queue Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "artifact-storage",
+    "path": "/manual/deploying/queue-config",
+    "subtitle": "Artifact Storage",
+    "title": "Queue Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "task-cache",
+    "path": "/manual/deploying/queue-config",
+    "subtitle": "Task Cache",
+    "title": "Queue Configuration"
+  },
+  {
+    "element": "h2",
+    "id": "task-claim-timeout",
+    "path": "/manual/deploying/queue-config",
+    "subtitle": "Task Claim Timeout",
+    "title": "Queue Configuration"
   },
   {
     "element": "h1",
@@ -1268,10 +1310,10 @@
   },
   {
     "element": "h2",
-    "id": "choosing-a-kind",
-    "path": "/manual/using/actions",
-    "subtitle": "Choosing a Kind",
-    "title": null
+    "id": "rerunning",
+    "path": "/manual/tasks/manipulating",
+    "subtitle": "Rerunning",
+    "title": "Manipulating Tasks"
   },
   {
     "element": "h1",
@@ -2724,23 +2766,58 @@
   },
   {
     "element": "h1",
-    "id": "queue-service",
-    "path": "/reference/platform/queue",
+    "id": "upload-methods",
+    "path": "/reference/platform/object/upload-methods",
     "subtitle": null,
-    "title": "Queue Service"
+    "title": "Upload Methods"
   },
   {
     "element": "h3",
-    "id": "aws-access-policies-required",
-    "path": "/reference/platform/queue",
-    "subtitle": "AWS Access Policies Required",
-    "title": "Queue Service"
+    "id": "datainline-upload-method",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "`dataInline` Upload Method",
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h3",
+    "id": "gcsresumable-upload-method",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "`gcsResumable` Upload Method",
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h3",
+    "id": "puturl-upload-method",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "`putUrl` Upload Method",
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h3",
+    "id": "s3multipart-upload-method",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "`s3Multipart` Upload Method",
+    "title": "Upload Methods"
   },
   {
     "element": "h2",
-    "id": "deployment",
+    "id": "introduction",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "Introduction",
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h2",
+    "id": "upload-methods-1",
+    "path": "/reference/platform/object/upload-methods",
+    "subtitle": "Upload Methods",
+    "title": "Upload Methods"
+  },
+  {
+    "element": "h1",
+    "id": "queue-service",
     "path": "/reference/platform/queue",
-    "subtitle": "Deployment",
+    "subtitle": null,
     "title": "Queue Service"
   },
   {
@@ -2784,6 +2861,27 @@
     "path": "/reference/platform/queue/actions",
     "subtitle": "Triggering Actions in Automation",
     "title": "Actions"
+  },
+  {
+    "element": "h1",
+    "id": "artifacts",
+    "path": "/reference/platform/queue/artifacts",
+    "subtitle": null,
+    "title": "Artifacts"
+  },
+  {
+    "element": "h2",
+    "id": "artifact-storage-types",
+    "path": "/reference/platform/queue/artifacts",
+    "subtitle": "Artifact Storage Types",
+    "title": "Artifacts"
+  },
+  {
+    "element": "h2",
+    "id": "getting-artifacts",
+    "path": "/reference/platform/queue/artifacts",
+    "subtitle": "Getting Artifacts",
+    "title": "Artifacts"
   },
   {
     "element": "h1",
@@ -2850,16 +2948,9 @@
   },
   {
     "element": "h2",
-    "id": "provisioners",
+    "id": "worker-pools-and-task-queues",
     "path": "/reference/platform/queue/worker-hierarchy",
-    "subtitle": "Provisioners",
-    "title": "Worker Hierarchy"
-  },
-  {
-    "element": "h2",
-    "id": "worker-types",
-    "path": "/reference/platform/queue/worker-hierarchy",
-    "subtitle": "Worker Types",
+    "subtitle": "Worker Pools and Task Queues",
     "title": "Worker Hierarchy"
   },
   {

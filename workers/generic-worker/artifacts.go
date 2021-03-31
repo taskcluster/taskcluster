@@ -20,8 +20,8 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueue"
 )
 
 var (
@@ -92,6 +92,12 @@ type (
 		ContentType string
 	}
 
+	LinkArtifact struct {
+		*BaseArtifact
+		Artifact    string
+		ContentType string
+	}
+
 	ErrorArtifact struct {
 		*BaseArtifact
 		Path    string
@@ -121,6 +127,25 @@ func (redirectArtifact *RedirectArtifact) RequestObject() interface{} {
 
 func (redirectArtifact *RedirectArtifact) ResponseObject() interface{} {
 	return new(tcqueue.RedirectArtifactResponse)
+}
+
+func (linkArtifact *LinkArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
+	task.Infof("Uploading link artifact %v to artifact %v with expiry %v", linkArtifact.Name, linkArtifact.Artifact, linkArtifact.Expires)
+	// nothing to do
+	return nil
+}
+
+func (linkArtifact *LinkArtifact) RequestObject() interface{} {
+	return &tcqueue.LinkArtifactRequest{
+		Expires:     linkArtifact.Expires,
+		StorageType: "link",
+		ContentType: linkArtifact.ContentType,
+		Artifact:    linkArtifact.Artifact,
+	}
+}
+
+func (linkArtifact *LinkArtifact) ResponseObject() interface{} {
+	return new(tcqueue.LinkArtifactResponse)
 }
 
 func (errArtifact *ErrorArtifact) ProcessResponse(response interface{}, task *TaskRun) error {

@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v40/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v42/tools/jsonschema2go/text"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ func (exchange *Exchange) generateAPICode(exchangeName string) string {
 	comment += "//\n"
 	comment += "// How to use this package\n"
 	comment += "//\n"
-	comment += "// This package is designed to sit on top of http://godoc.org/github.com/taskcluster/pulse-go/pulse. Please read\n"
+	comment += "// This package is designed to sit on top of https://pkg.go.dev/github.com/taskcluster/pulse-go/pulse. Please read\n"
 	comment += "// the pulse package overview to get an understanding of how the pulse client is implemented in go.\n"
 	comment += "//\n"
 	comment += "// This package provides two things in addition to the basic pulse package: structured types for unmarshaling\n"
@@ -157,7 +157,7 @@ func (exchange *Exchange) generateAPICode(exchangeName string) string {
 import (
 	"reflect"
 	"strings"
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 )
 
 `

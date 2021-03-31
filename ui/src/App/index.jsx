@@ -20,7 +20,6 @@ import ReactGA from 'react-ga';
 import { init as initSentry } from '@sentry/browser';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import FontStager from '../components/FontStager';
 import Main from './Main';
 import { ToggleThemeContext } from '../utils/ToggleTheme';
 import { AuthContext } from '../utils/Auth';
@@ -31,6 +30,7 @@ import theme from '../theme';
 import introspectionQueryResultData from '../fragments/fragmentTypes.json';
 import { route } from '../utils/prop-types';
 import AuthController from '../auth/AuthController';
+import './index.css';
 
 const absoluteUrl = (url, overrides = {}) =>
   Object.assign(new URL(url, window.location), overrides).toString();
@@ -228,7 +228,6 @@ export default class App extends Component {
           <AuthContext.Provider value={auth}>
             <ToggleThemeContext.Provider value={this.toggleTheme}>
               <MuiThemeProvider theme={theme}>
-                <FontStager />
                 <CssBaseline />
                 <ErrorBoundary
                   FallbackComponent={ErrorPanel}

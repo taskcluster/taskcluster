@@ -3,12 +3,13 @@ package mocktc
 import (
 	"testing"
 
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v40/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/tc"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v42/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/tc"
 )
 
 type ServiceFactory struct {
@@ -17,6 +18,7 @@ type ServiceFactory struct {
 	secrets       tc.Secrets
 	purgeCache    tc.PurgeCache
 	workerManager tc.WorkerManager
+	object        tc.Object
 }
 
 func NewServiceFactory(t *testing.T) *ServiceFactory {
@@ -32,6 +34,7 @@ func NewServiceFactory(t *testing.T) *ServiceFactory {
 		secrets:       tcsecrets.New(creds, rootURL),
 		purgeCache:    NewPurgeCache(t),
 		workerManager: tcworkermanager.New(creds, rootURL),
+		object:        tcobject.New(creds, rootURL),
 	}
 }
 
@@ -53,4 +56,8 @@ func (sf *ServiceFactory) PurgeCache(creds *tcclient.Credentials, rootURL string
 
 func (sf *ServiceFactory) WorkerManager(creds *tcclient.Credentials, rootURL string) tc.WorkerManager {
 	return sf.workerManager
+}
+
+func (sf *ServiceFactory) Object(creds *tcclient.Credentials, rootURL string) tc.Object {
+	return sf.object
 }

@@ -13,9 +13,6 @@ defaults:
     #    static/<project>/<name>
     staticClients: !env:json STATIC_CLIENTS
 
-    # Accounts that auth can delegate access to, as JSON
-    azureAccounts:            !env:json AZURE_ACCOUNTS
-
     # Maximum before updating lastUsed, MUST be negative
     # A sane value is something like 6 hours as all nodes will race to update
     # this value, and it's really only a best effort service.
@@ -82,6 +79,9 @@ defaults:
     password:                 !env PULSE_PASSWORD
     hostname:                 !env PULSE_HOSTNAME
     vhost:                    !env PULSE_VHOST
+
+  # Accounts that auth can delegate access to, as JSON
+  azureAccounts:            !env:json:optional AZURE_ACCOUNTS
 
   awsCredentials:
     # Configuration for the AWS credentials used for the awsS3Credentials.  The

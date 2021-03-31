@@ -36,7 +36,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // Now loop over the existing workers as we do in scanworker
     // we do an initial comparison to ensure they make sense up to this point
-    const fetched = Worker.fromDbRows(await helper.db.fns.get_non_stopped_workers_2(null, null, null, 10, 0));
+    const fetched = Worker.fromDbRows(await helper.db.fns.get_non_stopped_workers_quntil(null, null, null, 10, 0));
     assert.deepEqual(fetched, w);
 
     // now we update the worker as if registerWorker happened

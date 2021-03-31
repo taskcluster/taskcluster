@@ -10,15 +10,19 @@ properties:
     enum:           [1]
     type:           integer
   policy:
-    pullRequests:
-      description: |
-          Policy for creating tasks for pull requests.  The effective policy is found in this property
-          in the `.taskcluster.yml` file in the repository's default branch.  See the documentation for
-          detailed definition of the options.
-      type: string
-      enum:
-        - public
-        - collaborators
+    type: object
+    properties:
+      pullRequests:
+        description: |
+            Policy for creating tasks for pull requests.  The effective policy is found in this property
+            in the `.taskcluster.yml` file in the repository's default branch.  See the documentation for
+            detailed definition of the options.
+        type: string
+        enum:
+          - public
+          - collaborators
+    additionalProperties: false
+    required: [pullRequests]
   reporting:
     description: Policy for reporting status of PR or a commit. If absent, Github Statuses API is used
     type: string

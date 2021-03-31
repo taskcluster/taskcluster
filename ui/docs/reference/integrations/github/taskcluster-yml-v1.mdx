@@ -84,8 +84,7 @@ The result looks like this:
     "tasks": [
         {
             "taskId": "fOF8Cqj0QPKbvczC2dnXiQ", // probably generated with as_slugid(..)
-            "provisionerId": "..",
-            "workerType": "..",
+            "taskQueueId": "..",
             "payload": {
                 // ..
             },
@@ -234,8 +233,7 @@ tasks:
   $match:
     'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]':
       taskId: {$eval: as_slugid("pr_task")}
-      provisionerId: proj-taskcluster
-      workerType: ci
+      taskQueueId: proj-taskcluster/ci
       scopes:
         - secrets:get:project/taskcluster/testing/taskcluster-github
       payload:
@@ -256,8 +254,7 @@ tasks:
         source: ${event.repository.url}
     'tasks_for == "github-push"':
       taskId: {$eval: as_slugid("push_task")}
-      provisionerId: proj-taskcluster
-      workerType: ci
+      taskQueueId: proj-taskcluster/ci
       scopes:
         - secrets:get:project/taskcluster/testing/taskcluster-github
       payload:

@@ -350,5 +350,17 @@ suite(testing.suiteName(), function() {
         /no such row/,
       );
     });
+
+    helper.dbTest('delete_indexed_task', async function(db, isFake) {
+      const taskId = slug.nice();
+      await create_indexed_task(db, { taskId });
+
+      let rows = await db.fns.get_indexed_task('name/space', 'name');
+      assert.equal(rows.length, 1);
+      await db.fns.delete_indexed_task('name/space', 'name');
+      rows = await db.fns.get_indexed_task('name/space', 'name');
+      assert.equal(rows.length, 0);
+    });
+
   });
 });

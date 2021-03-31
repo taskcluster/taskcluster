@@ -448,6 +448,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(build.state, 'pending');
     });
 
+    test('invalid task list results in a comment', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        content: require('./data/yml/invalid-task.json'),
+      });
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+      assert(github.inst(5828).repos.createCommitStatus.callCount === 0, 'Status was unexpectedly updated!');
+      assert(github.inst(5828).repos.createCommitComment.calledOnce);
+      let args = github.inst(5828).repos.createCommitComment.args;
+      assert.equal(args[0][0].owner, 'TaskclusterRobot');
+      assert.equal(args[0][0].repo, 'hooks-testing');
+      assert.equal(args[0][0].commit_sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert(args[0][0].body.indexOf('data/tasks should be array') !== -1);
+    });
+
     test('invalid YAML results in a comment', async function() {
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
@@ -600,6 +618,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await simulateJobMessage({ user: 'imbstack', eventType: 'release' });
 
       assert(github.inst(5828).repos.createCommitComment.callCount === 0);
+    });
+
+    test('no .taskcluster.yml, using collaborators policy', async function() {
+      github.inst(5828).setRepoCollaborator({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        username: 'goodBuddy',
+      });
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        content: require('./data/yml/valid-yaml.json'),
+      });
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development', // default branch
+        content: null,
+      });
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
+
+      assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
     });
   });
 

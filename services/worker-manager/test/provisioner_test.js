@@ -22,9 +22,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('provisioning loop', function() {
     const testCase = async ({ workers = [], workerPools = [], assertion, expectErrors = false }) => {
-      await Promise.all(workers.map(w => {
+      await Promise.all(workers.map(async w => {
         const worker = Worker.fromApi(w);
-        return worker.create(helper.db);
+        await worker.create(helper.db);
+        if (w.quarantineUntil) {
+          await helper.withAdminDbClient(async client => {
+            await client.query(`insert
+              into queue_workers
+              (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim) values
+              ($1, $2, $3, jsonb_build_array(), $4, now() + interval '1 hour', now() - interval '1 hour')`,
+            [w.workerPoolId, w.workerGroup, w.workerId, w.quarantineUntil]);
+          });
+        }
       }));
       await Promise.all(workerPools.map(async wp => {
         if (wp.input) {
@@ -42,25 +51,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             throw new Error(JSON.stringify(error, null, 2));
           }
         }
-        await Promise.all(workerPools.map(async wt => {
-          const pId = wt.providerId || wt.input.providerId;
+        await Promise.all(workerPools.map(async wp => {
+          const pId = wp.providerId || wp.input.providerId;
           assert.deepEqual(
             monitor.manager.messages.find(
-              msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === wt.workerPoolId), {
+              msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === wp.workerPoolId), {
               Logger: 'taskcluster.test.provisioner',
               Type: 'worker-pool-provisioned',
-              Fields: { workerPoolId: wt.workerPoolId, providerId: pId, v: 1 },
+              Fields: { workerPoolId: wp.workerPoolId, providerId: pId, v: 1 },
               Severity: LEVELS.info,
             });
           const msg = monitor.manager.messages.find(
-            msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === wt.workerPoolId);
+            msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === wp.workerPoolId);
           assert.deepEqual(msg, {
             Logger: `taskcluster.test.provider.${pId}`,
             Type: 'test-provision',
             Fields: {
-              workerPoolId: wt.workerPoolId,
+              workerPoolId: wp.workerPoolId,
               workerInfo: {
-                existingCapacity: wt.existingCapacity,
+                existingCapacity: wp.existingCapacity,
                 requestedCapacity: msg.Fields.workerInfo.requestedCapacity,
               },
             },
@@ -113,6 +122,38 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         {
           workerPoolId: 'ff/ee',
           existingCapacity: 1,
+          input: {
+            providerId: 'testing1',
+            description: 'bar',
+            config: {},
+            owner: 'example@example.com',
+            emailOnError: false,
+          },
+        },
+      ],
+    }));
+
+    test('single worker pool (with quarantined worker)', () => testCase({
+      workers: [
+        {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-OLD',
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+          state: Worker.states.RUNNING,
+          providerData: {},
+          quarantineUntil: taskcluster.fromNow('1 hour'),
+        },
+      ],
+      workerPools: [
+        {
+          workerPoolId: 'ff/ee',
+          existingCapacity: 0, // quarantined worker is not considered "existing"
           input: {
             providerId: 'testing1',
             description: 'bar',

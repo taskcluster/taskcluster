@@ -19,21 +19,25 @@ export default class Queue extends Client {
     this.scheduleTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"scheduleTask","output":true,"query":[],"route":"/task/<taskId>/schedule","scopes":{"AnyOf":["queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>","queue:schedule-task-in-project:<projectId>",{"AllOf":["queue:schedule-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.rerunTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"rerunTask","output":true,"query":[],"route":"/task/<taskId>/rerun","scopes":{"AnyOf":["queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>","queue:rerun-task-in-project:<projectId>",{"AllOf":["queue:rerun-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.cancelTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"cancelTask","output":true,"query":[],"route":"/task/<taskId>/cancel","scopes":{"AnyOf":["queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>","queue:cancel-task-in-project:<projectId>",{"AllOf":["queue:cancel-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.claimWork.entry = {"args":["provisionerId","workerType"],"category":"Worker Interface","input":true,"method":"post","name":"claimWork","output":true,"query":[],"route":"/claim-work/<provisionerId>/<workerType>","scopes":{"AllOf":["queue:claim-work:<provisionerId>/<workerType>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.claimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"claimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/claim","scopes":{"AnyOf":[{"AllOf":["queue:claim-task:<provisionerId>/<workerType>","queue:worker-id:<workerGroup>/<workerId>"]},{"AllOf":["queue:claim-task","assume:worker-type:<provisionerId>/<workerType>","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.reclaimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reclaimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/reclaim","scopes":{"AnyOf":["queue:reclaim-task:<taskId>/<runId>",{"AllOf":["queue:claim-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.reportCompleted.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportCompleted","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/completed","scopes":{"AnyOf":["queue:resolve-task:<taskId>/<runId>",{"AllOf":["queue:resolve-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.reportFailed.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportFailed","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/failed","scopes":{"AnyOf":["queue:resolve-task:<taskId>/<runId>",{"AllOf":["queue:resolve-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.reportException.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"reportException","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/exception","scopes":{"AnyOf":["queue:resolve-task:<taskId>/<runId>",{"AllOf":["queue:resolve-task","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.createArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","input":true,"method":"post","name":"createArtifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"AnyOf":["queue:create-artifact:<taskId>/<runId>",{"AllOf":["queue:create-artifact:<name>","assume:worker-id:<workerGroup>/<workerId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.claimWork.entry = {"args":["taskQueueId"],"category":"Worker Interface","input":true,"method":"post","name":"claimWork","output":true,"query":[],"route":"/claim-work/<taskQueueId>","scopes":{"AllOf":["queue:claim-work:<taskQueueId>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.claimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"claimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/claim","scopes":{"AllOf":["queue:claim-task:<provisionerId>/<workerType>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"deprecated","type":"function"}; // eslint-disable-line
+    this.reclaimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reclaimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/reclaim","scopes":"queue:reclaim-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.reportCompleted.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportCompleted","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/completed","scopes":"queue:resolve-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.reportFailed.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportFailed","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/failed","scopes":"queue:resolve-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.reportException.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"reportException","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/exception","scopes":"queue:resolve-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.createArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","input":true,"method":"post","name":"createArtifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":"queue:create-artifact:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.getArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"getArtifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.getLatestArtifact.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"getLatestArtifact","output":true,"query":[],"route":"/task/<taskId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.listArtifacts.entry = {"args":["taskId","runId"],"category":"Artifacts","method":"get","name":"listArtifacts","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/runs/<runId>/artifacts","scopes":"queue:list-artifacts:<taskId>:<runId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listLatestArtifacts.entry = {"args":["taskId"],"category":"Artifacts","method":"get","name":"listLatestArtifacts","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/artifacts","scopes":"queue:list-artifacts:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.artifactInfo.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"artifactInfo","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifact-info/<name>","scopes":"queue:list-artifacts:<taskId>:<runId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.latestArtifactInfo.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"latestArtifactInfo","output":true,"query":[],"route":"/task/<taskId>/artifact-info/<name>","scopes":"queue:list-artifacts:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.artifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"artifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifact-content/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.latestArtifact.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"latestArtifact","output":true,"query":[],"route":"/task/<taskId>/artifact-content/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.getProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"getProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":"queue:get-provisioner:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.declareProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","input":true,"method":"put","name":"declareProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":{"AllOf":[{"each":"queue:declare-provisioner:<provisionerId>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.pendingTasks.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<provisionerId>/<workerType>","scopes":"queue:pending-count:<provisionerId>/<workerType>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.pendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<taskQueueId>","scopes":"queue:pending-count:<taskQueueId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkerTypes.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/provisioners/<provisionerId>/worker-types","scopes":"queue:list-worker-types:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.getWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"getWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":"queue:get-worker-type:<provisionerId>/<workerType>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.declareWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","input":true,"method":"put","name":"declareWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":{"AllOf":[{"each":"queue:declare-worker-type:<provisionerId>/<workerType>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
@@ -160,15 +164,15 @@ export default class Queue extends Client {
   // This method _reruns_ a previously resolved task, even if it was
   // _completed_. This is useful if your task completes unsuccessfully, and
   // you just want to run it from scratch again. This will also reset the
-  // number of `retries` allowed.
+  // number of `retries` allowed. It will schedule a task that is _unscheduled_
+  // regardless of the state of its dependencies.
   // This method is deprecated in favour of creating a new task with the same
   // task definition (but with a new taskId).
   // Remember that `retries` in the task status counts the number of runs that
   // the queue have started because the worker stopped responding, for example
   // because a spot node died.
-  // **Remark** this operation is idempotent, if you try to rerun a task that
-  // is not either `failed` or `completed`, this operation will just return
-  // the current task status.
+  // **Remark** this operation is idempotent: if it is invoked for a task that
+  // is `pending` or `running`, it will just return the current task status.
   /* eslint-enable max-len */
   rerunTask(...args) {
     this.validate(this.rerunTask.entry, args);
@@ -194,7 +198,7 @@ export default class Queue extends Client {
     return this.request(this.cancelTask.entry, args);
   }
   /* eslint-disable max-len */
-  // Claim pending task(s) for the given `provisionerId`/`workerType` queue.
+  // Claim pending task(s) for the given task queue.
   // If any work is available (even if fewer than the requested number of
   // tasks, this will return immediately. Otherwise, it will block for tens of
   // seconds waiting for work.  If no work appears, it will return an emtpy
@@ -288,39 +292,6 @@ export default class Queue extends Client {
   // expiration point. This features makes it feasible to upload large
   // intermediate artifacts from data processing applications, as the
   // artifacts can be set to expire a few days later.
-  // We currently support "S3 Artifacts" for data storage.
-  // **S3 artifacts**, is useful for static files which will be
-  // stored on S3. When creating an S3 artifact the queue will return a
-  // pre-signed URL to which you can do a `PUT` request to upload your
-  // artifact. Note that `PUT` request **must** specify the `content-length`
-  // header and **must** give the `content-type` header the same value as in
-  // the request to `createArtifact`.
-  // **Redirect artifacts**, will redirect the caller to URL when fetched
-  // with a a 303 (See Other) response.  Clients will not apply any kind of
-  // authentication to that URL.
-  // **Link artifacts**, will be treated as if the caller requested the linked
-  // artifact on the same task.  Links may be chained, but cycles are forbidden.
-  // The caller must have scopes for the linked artifact, or a 403 response will
-  // be returned.
-  // **Error artifacts**, only consists of meta-data which the queue will
-  // store for you. These artifacts are only meant to indicate that you the
-  // worker or the task failed to generate a specific artifact, that you
-  // would otherwise have uploaded. For example docker-worker will upload an
-  // error artifact, if the file it was supposed to upload doesn't exists or
-  // turns out to be a directory. Clients requesting an error artifact will
-  // get a `424` (Failed Dependency) response. This is mainly designed to
-  // ensure that dependent tasks can distinguish between artifacts that were
-  // suppose to be generated and artifacts for which the name is misspelled.
-  // **Artifact immutability**, generally speaking you cannot overwrite an
-  // artifact when created. But if you repeat the request with the same
-  // properties the request will succeed as the operation is idempotent.
-  // This is useful if you need to refresh a signed URL while uploading.
-  // Do not abuse this to overwrite artifacts created by another entity!
-  // Such as worker-host overwriting artifact created by worker-code.
-  // **Immutability Special Cases**:
-  // * A `reference` artifact can replace an existing `reference` artifact`.
-  // * A `link` artifact can replace an existing `reference` artifact`.
-  // * Any artifact's `expires` can be extended.
   /* eslint-enable max-len */
   createArtifact(...args) {
     this.validate(this.createArtifact.entry, args);
@@ -427,6 +398,52 @@ export default class Queue extends Client {
     return this.request(this.listLatestArtifacts.entry, args);
   }
   /* eslint-disable max-len */
+  // Returns associated metadata for a given artifact, in the given task run.
+  // The metadata is the same as that returned from `listArtifacts`, and does
+  // not grant access to the artifact data.
+  // Note that this method does *not* automatically follow link artifacts.
+  /* eslint-enable max-len */
+  artifactInfo(...args) {
+    this.validate(this.artifactInfo.entry, args);
+
+    return this.request(this.artifactInfo.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Returns associated metadata for a given artifact, in the latest run of the
+  // task.  The metadata is the same as that returned from `listArtifacts`,
+  // and does not grant access to the artifact data.
+  // Note that this method does *not* automatically follow link artifacts.
+  /* eslint-enable max-len */
+  latestArtifactInfo(...args) {
+    this.validate(this.latestArtifactInfo.entry, args);
+
+    return this.request(this.latestArtifactInfo.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Returns information about the content of the artifact, in the given task run.
+  // Depending on the storage type, the endpoint returns the content of the artifact
+  // or enough information to access that content.
+  // This method follows link artifacts, so it will not return content
+  // for a link artifact.
+  /* eslint-enable max-len */
+  artifact(...args) {
+    this.validate(this.artifact.entry, args);
+
+    return this.request(this.artifact.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Returns information about the content of the artifact, in the latest task run.
+  // Depending on the storage type, the endpoint returns the content of the artifact
+  // or enough information to access that content.
+  // This method follows link artifacts, so it will not return content
+  // for a link artifact.
+  /* eslint-enable max-len */
+  latestArtifact(...args) {
+    this.validate(this.latestArtifact.entry, args);
+
+    return this.request(this.latestArtifact.entry, args);
+  }
+  /* eslint-disable max-len */
   // Get all active provisioners.
   // The term "provisioner" is taken broadly to mean anything with a provisionerId.
   // This does not necessarily mean there is an associated service performing any
@@ -468,8 +485,7 @@ export default class Queue extends Client {
     return this.request(this.declareProvisioner.entry, args);
   }
   /* eslint-disable max-len */
-  // Get an approximate number of pending tasks for the given `provisionerId`
-  // and `workerType`.
+  // Get an approximate number of pending tasks for the given `taskQueueId`.
   // The underlying Azure Storage Queues only promises to give us an estimate.
   // Furthermore, we cache the result in memory for 20 seconds. So consumers
   // should be no means expect this to be an accurate number.

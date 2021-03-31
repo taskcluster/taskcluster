@@ -1,19 +1,17 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net/url"
 	"os"
 	"time"
 
-	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
-	"github.com/taskcluster/taskcluster/v40/internal/scopes"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/livelog"
-	"github.com/taskcluster/taskcluster/v40/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
+	"github.com/taskcluster/taskcluster/v42/internal/scopes"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/livelog"
+	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/process"
 )
 
 var (
@@ -134,17 +132,16 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 		// no need to raise an exception
 		log.Printf("WARNING: could not terminate livelog writer: %s", errTerminate)
 	}
-	log.Printf("Redirecting %v to %v", livelogName, logName)
-	logURL := tcurls.API(config.RootURL, "queue", "v1", fmt.Sprintf("task/%v/runs/%v/artifacts/%v", l.task.TaskID, l.task.RunID, url.PathEscape(logName)))
+	log.Printf("Linking %v to %v", livelogName, logName)
 	err.add(l.task.uploadArtifact(
-		&RedirectArtifact{
+		&LinkArtifact{
 			BaseArtifact: &BaseArtifact{
 				Name: livelogName,
 				// same expiry as underlying log it points to
 				Expires: l.task.Definition.Expires,
 			},
 			ContentType: "text/plain; charset=utf-8",
-			URL:         logURL,
+			Artifact:    logName,
 		},
 	))
 

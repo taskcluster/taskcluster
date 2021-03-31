@@ -143,7 +143,7 @@ properties:
             on a directory artifact will apply the same contentType to all files contained in the
             directory.
 
-            See [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).
+            See [mime.TypeByExtension](https://pkg.go.dev/mime#TypeByExtension).
 
             Since: generic-worker 10.4.0
         contentEncoding:

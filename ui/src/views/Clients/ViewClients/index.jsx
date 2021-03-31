@@ -1,9 +1,10 @@
 import React, { PureComponent, Fragment } from 'react';
 import { hot } from 'react-hot-loader';
-import { graphql } from 'react-apollo';
+import { graphql, withApollo } from 'react-apollo';
 import { parse, stringify } from 'qs';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import PlusIcon from 'mdi-react/PlusIcon';
 import dotProp from 'dot-prop-immutable';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -12,11 +13,14 @@ import Search from '../../../components/Search';
 import HelpView from '../../../components/HelpView';
 import Button from '../../../components/Button';
 import ClientsTable from '../../../components/ClientsTable';
+import DialogAction from '../../../components/DialogAction';
 import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
 import clientsQuery from './clients.graphql';
+import deleteClientQuery from './deleteClient.graphql';
 import ErrorPanel from '../../../components/ErrorPanel';
 
 @hot(module)
+@withApollo
 @graphql(clientsQuery, {
   options: props => ({
     fetchPolicy: 'network-only',
@@ -44,6 +48,12 @@ import ErrorPanel from '../../../components/ErrorPanel';
   },
 }))
 export default class ViewClients extends PureComponent {
+  state = {
+    dialogOpen: false,
+    dialogError: null,
+    deleteClientId: null,
+  };
+
   handleClientSearchSubmit = async search => {
     const {
       data: { refetch },
@@ -71,6 +81,39 @@ export default class ViewClients extends PureComponent {
 
   handleCreate = () => {
     this.props.history.push('/auth/clients/create');
+  };
+
+  handleDeleteClient = async () => {
+    this.setState({ dialogError: null });
+
+    const clientId = this.state.deleteClientId;
+
+    return this.props.client.mutate({
+      mutation: deleteClientQuery,
+      variables: { clientId },
+    });
+  };
+
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error });
+  };
+
+  handleDialogActionComplete = () => {
+    this.setState({ dialogOpen: false, deleteClientId: null });
+
+    this.props.data.refetch();
+  };
+
+  handleDialogActionClose = () => {
+    this.setState({
+      dialogOpen: false,
+      dialogError: null,
+      deleteClientId: null,
+    });
+  };
+
+  handleDialogActionOpen = clientId => {
+    this.setState({ dialogOpen: true, deleteClientId: clientId });
   };
 
   handlePageChange = ({ cursor, previousCursor }) => {
@@ -116,6 +159,7 @@ export default class ViewClients extends PureComponent {
   };
 
   render() {
+    const { dialogOpen, dialogError, deleteClientId } = this.state;
     const {
       classes,
       description,
@@ -145,6 +189,7 @@ export default class ViewClients extends PureComponent {
               searchTerm={searchTerm}
               onPageChange={this.handlePageChange}
               clientsConnection={clients}
+              onDialogActionOpen={this.handleDialogActionOpen}
             />
           )}
           <Button
@@ -154,6 +199,23 @@ export default class ViewClients extends PureComponent {
             className={classes.plusIcon}>
             <PlusIcon />
           </Button>
+          {dialogOpen && (
+            <DialogAction
+              open={dialogOpen}
+              onSubmit={this.handleDeleteClient}
+              onComplete={this.handleDialogActionComplete}
+              onClose={this.handleDialogActionClose}
+              onError={this.handleDialogActionError}
+              error={dialogError}
+              title="Delete Client?"
+              body={
+                <Typography variant="body2">
+                  This will delete the {deleteClientId} client.
+                </Typography>
+              }
+              confirmText="Delete Client"
+            />
+          )}
         </Fragment>
       </Dashboard>
     );

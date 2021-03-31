@@ -20,19 +20,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v40/internal/jsontest"
+	"github.com/taskcluster/taskcluster/v42/internal/jsontest"
 )
 
-func quickBackoff() func() {
-	oldBackoff := defaultBackoff
-
+func (c *Client) quickBackoff() {
 	settings := backoff.NewExponentialBackOff()
 	settings.MaxElapsedTime = 100 * time.Millisecond
-	defaultBackoff = httpbackoff.Client{
+	c.HTTPBackoffClient = &httpbackoff.Client{
 		BackOffSettings: settings,
-	}
-	return func() {
-		defaultBackoff = oldBackoff
 	}
 }
 
@@ -507,8 +502,6 @@ func TestSignedURL_PartialURL(t *testing.T) {
 }
 
 func TestRetryFailure(t *testing.T) {
-	defer quickBackoff()()
-
 	// This mock service just returns 500's
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
@@ -519,6 +512,7 @@ func TestRetryFailure(t *testing.T) {
 		RootURL:      s.URL,
 		Authenticate: false,
 	}
+	client.quickBackoff()
 
 	// Three following calls should have no Content-Header set since request body is empty
 	// 1) calling APICall with a nil payload

@@ -4,7 +4,7 @@
 // making sure that `${GOPATH}/bin` is in your `PATH`:
 //
 // go install && go generate
-//
+
 // This package was generated from the schema defined at
 // /references/index/v1/api.json
 // The index service is responsible for indexing tasks. The service ensures that
@@ -43,7 +43,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v40/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
 )
 
 type Index tcclient.Client
@@ -233,6 +233,21 @@ func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*I
 	cd := tcclient.Client(*index)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), err
+}
+
+// Remove a task from the index.  This is intended for administrative use,
+// where an index entry is no longer appropriate.  The parent namespace is
+// not automatically deleted.  Index entries with lower rank that were
+// previously inserted will not re-appear, as they were never stored.
+//
+// Required scopes:
+//   index:delete-task:<namespace>
+//
+// See #deleteTask
+func (index *Index) DeleteTask(namespace string) error {
+	cd := tcclient.Client(*index)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/task/"+url.QueryEscape(namespace), nil, nil)
+	return err
 }
 
 // Find a task by index path and redirect to the artifact on the most recent

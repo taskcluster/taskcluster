@@ -15,61 +15,16 @@ configuration can be overridden in `user-config.yml`.
 
 ## Running Taskcluster-Web-Server locally
 
-To run this service locally, install dependencies using `yarn`.
+See `dev-docs/development-process.md` in this repository for guidance on developing Taskcluster.
 
-The `taskcluster.rootUrl` configuration setting is required. Either set
-`TASKCLUSTER_ROOT_URL` in your environment, or copy `user-config-template.yml`
-to `user-config.yml` and edit it to include the `rootUrl` for the Taskcluster
-instance you are accessing; for example `https://community-tc.services.mozilla.com`.
+## Passing Credentials in the Playground
 
-The Taskcluster team has a series of [best practices](../../dev-docs/best-practices/microservices.md#taskcluster-web-server)
-for this service which may help guide you in modifying the source code and making a pull request.
-That is enough to run the service, so if that's all you need, skip down to "Starting".
+_NOTE:_ in most cases, this is not necessary.
 
-### Taskcluster Credentials
+To pass credentials to the server from the GraphQL Playground, first sign in to the site locally, using static credentials.
+Then load another page, and use the Firefox DevTools to find the "Authorization" header in the resulting `graphql` request.
 
-This service requires Taskcluster credentials to support user login and
-receiving pulse messages, but this is not required for development of most
-features.
-
-To set up Taskcluster credentials, use
-the [`taskcluster` tool](../../clients/client-shell) to set
-`TASKCLUSTER_ROOT_URL`, `TASKCLUSTER_CLIENT_ID`, and `TASKCLUSTER_ACCESS_TOKEN`
-in your shell:
-
-```shell
-$ eval $(./taskcluster signin --name taskcluster-web-server)
-```
-
-### Pulse
-
-Pulse messages are entirely optional, and most server components do not require
-them. If you do not configure pulse, the server will act as if no pulse
-messages are received, which is sufficient for most development work.
-
-To receive pulse messages, you will also need a Pulse user.  For Mozilla's
-Pulse, you can get such credentials at https://pulseguardian.mozilla.org.  Use
-hostname `pulse.mozilla.org` and vhost `/`. In this situation, set the
-namespace to match the username.
-
-### Starting
-
-In any case, use the command `yarn start` to start the service.
-
-You should see the following message in the console, for example, using port 3050:
-
-```bash
-Web server running on port 3050.
-
-Open the interactive GraphQL Playground, schema explorer and docs in your browser at:
-    http://localhost:3050
-```
-
-The `taskcluster-ui` service expects this service to run on port 3050.
-
-### Passing Credentials in the Playground
-
-To pass credentials to the server from the GraphQL Playground, click the "HTTP Headers"
+In the playground, click the "HTTP Headers"
 section, and paste a JSON object with a key of "Authorization" with a value of
 "Bearer YOUR_TC_TOKEN", such as:
 
@@ -80,8 +35,6 @@ section, and paste a JSON object with a key of "Authorization" with a value of
 ```
 
 <img src="https://cldup.com/XDpBc-qY5Q.png" alt="authorization header" height="75%" width="75%" />
-
-You can find your TC token in localStorage after signing into the UI.
 
 ## Login Strategies
 

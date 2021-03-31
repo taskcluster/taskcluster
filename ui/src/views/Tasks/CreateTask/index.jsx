@@ -34,7 +34,6 @@ import HelpView from '../../../components/HelpView';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { nice } from '../../../utils/slugid';
-import formatTaskMutation from '../../../utils/formatTaskMutation';
 import {
   TASKS_CREATE_STORAGE_KEY,
   UI_SCHEDULER_ID,
@@ -49,8 +48,7 @@ const tutorialWorkerPoolId =
   window.env.SITE_SPECIFIC.tutorial_worker_pool_id ||
   'proj-getting-started/tutorial';
 const defaultTask = {
-  provisionerId: tutorialWorkerPoolId.split('/')[0],
-  workerType: tutorialWorkerPoolId.split('/')[1],
+  taskQueueId: tutorialWorkerPoolId,
   schedulerId: UI_SCHEDULER_ID,
   created: new Date().toISOString(),
   deadline: toDate(addHours(new Date(), 3)).toISOString(),
@@ -202,7 +200,7 @@ export default class CreateTask extends Component {
           mutation: createTaskQuery,
           variables: {
             taskId,
-            task: formatTaskMutation(payload),
+            task: payload,
           },
         });
 
@@ -331,7 +329,7 @@ export default class CreateTask extends Component {
               variations.
               <SiteSpecific>
                 If you are just getting started, `%tutorial_worker_pool_id%` is
-                a good choice for `provisionerId` / `workerType`.
+                a good choice for `taskQueueId`.
               </SiteSpecific>
             </Typography>
           </HelpView>

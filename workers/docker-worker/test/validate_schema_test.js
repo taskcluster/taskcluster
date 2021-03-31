@@ -30,7 +30,7 @@ suite('validate_schema_test.js', function() {
       image: 'abc/def',
       maxRunTime: false,
     }, { expires: new Date() }, schema);
-    assert(payloadErrors.some(e => e.match(/data\.maxRunTime should be number/)));
+    assert(payloadErrors.some(e => e.match(/data\/maxRunTime should be number/)));
   });
 
   test('validatePayload with artifact expiring after task', function() {
