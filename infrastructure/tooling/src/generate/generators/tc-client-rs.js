@@ -243,7 +243,7 @@ exports.tasks = [{
   provides: ['target-taskcluster-client-rust'],
   run: async (requirements, utils) => {
     const apis = requirements['apis'];
-    const moduleDir = path.join(REPO_ROOT, 'clients', 'client-rust', 'src', 'generated');
+    const moduleDir = path.join(REPO_ROOT, 'clients', 'client-rust', 'client', 'src', 'generated');
 
     // clean up the clients directory to eliminate any "leftovers"
     utils.status({ message: 'cleanup' });

@@ -1,25 +1,8 @@
-[package]
-name = "taskcluster"
-version = "42.1.1"
-authors = ["Wander Lairson Costa <wander.lairson@gmail.com>"]
-edition = "2018"
-license = "MPL-2.0"
-description = "API client for Taskcluster"
+[workspace]
 
-[dependencies]
-anyhow = "1.0"
-reqwest = { version = "0.11", features = ["json"] }
-serde = { version = "1.0.104", features = ["derive"] }
-serde_json = "1.0.48"
-rust-crypto = "0.2.36"
-base64 = "0.12.0"
-hawk = "3.1.0"
-backoff = "0.1.6"
-slugid = "1.0.0"
-percent-encoding = "2.1.0"
-tokio = { version = "1.2", features = ["macros", "time"] }
-chrono = { version = "0.4.11", features = ["serde"] }
-
-[dev-dependencies]
-httptest = "^0.15.1"
-lazy_static = "1.4.0"
+members = [
+    "client",
+    "upload",
+    "download",
+    "integration_tests",
+]

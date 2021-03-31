@@ -213,6 +213,12 @@ assert!(resp.status().is_success());
 # }
 ```
 
+## Uploading and Downloading Objects
+
+The [`taskcluster-upload`](https://crates.io/crates/taskcluster-upload) and [`taskcluster-download`](https://crates.io/crates/taskcluster-download) crates contain dedicated support for resilient uploads and downloads to/from the Taskcluster object service.
+This comes in the form of functions that will both interface with the object service API and perform the negotiated upload/download method.
+In all cases, you must supply a pre-configured [`Object`] client, as well as required parameters to the object service API methods.
+
 ## Generating URLs
 
 To generate a unsigned URL for an API method, use `<method>_url`:
@@ -281,13 +287,16 @@ Use the [slugid](https://crates.io/crates/slugid) crate to create slugIds (such 
 mod client;
 mod credentials;
 mod generated;
+pub mod retry;
 mod util;
 
 // re-export
 pub use chrono;
 
-pub use client::{Client, ClientBuilder, Retry};
+// internal re-exports
+pub use client::{Client, ClientBuilder};
 pub use credentials::Credentials;
 pub use generated::*;
 pub use reqwest::StatusCode;
+pub use retry::Retry;
 pub use util::err_status_code;

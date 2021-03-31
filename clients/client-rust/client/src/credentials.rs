@@ -79,7 +79,7 @@ impl Credentials {
     /// Examples:
     ///
     /// ```
-    /// use taskcluster::Credentials;
+    /// # use taskcluster::Credentials;
     /// let _ = Credentials::new("my_client_id", "my_access_token");
     /// ```
     pub fn new<S1: Into<String>, S2: Into<String>>(client_id: S1, access_token: S2) -> Credentials {
@@ -95,7 +95,7 @@ impl Credentials {
     /// Examples:
     ///
     /// ```
-    /// use taskcluster::Credentials;
+    /// # use taskcluster::Credentials;
     /// let _ = Credentials::new_with_certificate("my_client_id", "my_access_token", "{}");
     /// ```
     pub fn new_with_certificate<S1, S2, S3>(

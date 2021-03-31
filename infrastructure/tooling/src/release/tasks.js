@@ -152,11 +152,13 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         contents.replace(/VERSION = .*/, `VERSION = '${requirements['release-version']}'`));
       changed.push(pyclient);
 
-      const rsclient = 'clients/client-rust/Cargo.toml';
-      utils.status({ message: `Update ${rsclient}` });
-      await modifyRepoFile(rsclient, contents =>
-        contents.replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`));
-      changed.push(rsclient);
+      for (const dir of ['client', 'upload', 'download']) {
+        const rsclient = `clients/client-rust/${dir}/Cargo.toml`;
+        utils.status({ message: `Update ${rsclient}` });
+        await modifyRepoFile(rsclient, contents =>
+          contents.replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`));
+        changed.push(rsclient);
+      }
 
       const shellclient = 'clients/client-shell/cmds/version/version.go';
       utils.status({ message: `Update ${shellclient}` });

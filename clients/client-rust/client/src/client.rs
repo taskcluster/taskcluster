@@ -1,38 +1,13 @@
+use crate::retry::Backoff;
 use crate::util::collect_scopes;
-use crate::Credentials;
+use crate::{Credentials, Retry};
 use anyhow::{anyhow, bail, Context, Error, Result};
-use backoff::backoff::Backoff;
-use backoff::ExponentialBackoff;
 use reqwest::header::HeaderValue;
 use serde_json::json;
 use serde_json::Value;
 use std::iter::IntoIterator;
 use std::str::FromStr;
 use std::time::Duration;
-
-/// Configuration for a client's automatic retrying
-#[derive(Debug, Clone)]
-pub struct Retry {
-    /// Number of retries (not counting the first try) for transient errors. Zero
-    /// to disable retries entirely.
-    pub retries: u32,
-
-    /// Maximum interval between retries (used in tests to make retries quick)
-    pub max_interval: Duration,
-
-    /// Timeout for each HTTP request
-    pub timeout: Duration,
-}
-
-impl Default for Retry {
-    fn default() -> Self {
-        Self {
-            retries: 5,
-            max_interval: Duration::from_millis(backoff::default::MAX_INTERVAL_MILLIS),
-            timeout: Duration::from_secs(30),
-        }
-    }
-}
 
 /// ClientBuilder implements the builder pattern for building a Client, allowing
 /// optional configuration of features such as authorized scopes and retry.
@@ -43,6 +18,7 @@ pub struct ClientBuilder {
     credentials: Option<Credentials>,
     path_prefix: Option<String>,
     authorized_scopes: Option<Vec<String>>,
+    timeout: Duration,
 }
 
 impl ClientBuilder {
@@ -51,6 +27,7 @@ impl ClientBuilder {
     pub fn new<S: Into<String>>(root_url: S) -> Self {
         Self {
             root_url: root_url.into(),
+            timeout: Duration::from_secs(30),
             ..Self::default()
         }
     }
@@ -64,6 +41,13 @@ impl ClientBuilder {
     /// Set the retry configuration for the client
     pub fn retry(mut self, retry: Retry) -> Self {
         self.retry = retry;
+        self
+    }
+
+    /// Set the timeout for each HTTP request made by the client.  The default is
+    /// 30 seconds.
+    pub fn timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
         self
     }
 
@@ -166,12 +150,13 @@ impl Client {
         }
 
         let retry = b.retry;
+        let timeout = b.timeout;
 
         // build a reqwest client with the timeout configuration; this will also handle
         // connection re-use.
         let client = reqwest::Client::builder()
             .redirect(reqwest::redirect::Policy::none())
-            .timeout(retry.timeout)
+            .timeout(timeout)
             .build()?;
 
         // figure out the `certificate` and `authorizedScopes` parts of the ext property
@@ -241,12 +226,7 @@ impl Client {
         query: Option<Vec<(&str, &str)>>,
         body: Option<&Value>,
     ) -> Result<reqwest::Response, Error> {
-        let mut backoff = ExponentialBackoff {
-            max_elapsed_time: None, // we count retries instead
-            max_interval: self.retry.max_interval,
-            ..Default::default()
-        };
-        backoff.reset();
+        let mut backoff = Backoff::new(&self.retry);
 
         let req = self.build_request(method, path, query, body)?;
         let url = req.url().as_str();
@@ -567,9 +547,9 @@ mod tests {
 
         let client = ClientBuilder::new(&root_url)
             .path_prefix("api/queue/v1/")
+            .timeout(Duration::from_millis(5))
             .retry(Retry {
                 retries: 0,
-                timeout: Duration::from_millis(5),
                 ..Default::default()
             })
             .build()?;
@@ -718,11 +698,13 @@ mod tests {
         Ok(())
     }
 
-    const RETRY_FAST: Retry = Retry {
-        retries: 6,
-        max_interval: Duration::from_millis(1),
-        timeout: Duration::from_secs(1),
-    };
+    fn retry_fast() -> Retry {
+        Retry {
+            retries: 6,
+            max_delay: Duration::from_millis(1),
+            ..Default::default()
+        }
+    }
 
     #[tokio::test]
     async fn test_500_retry() -> Result<(), Error> {
@@ -735,7 +717,7 @@ mod tests {
         let root_url = format!("http://{}", server.addr());
         let client = ClientBuilder::new(root_url)
             .path_prefix("api/queue/v1/")
-            .retry(RETRY_FAST.clone())
+            .retry(retry_fast())
             .build()?;
 
         let result = client.request("GET", "test", None, None).await;
@@ -756,7 +738,7 @@ mod tests {
         let root_url = format!("http://{}", server.addr());
         let client = ClientBuilder::new(root_url)
             .path_prefix("api/queue/v1/")
-            .retry(RETRY_FAST.clone())
+            .retry(retry_fast())
             .build()?;
 
         let result = client.request("GET", "test", None, None).await;
@@ -785,7 +767,7 @@ mod tests {
         let root_url = format!("http://{}", server.addr());
         let client = ClientBuilder::new(root_url)
             .path_prefix("api/queue/v1/")
-            .retry(RETRY_FAST.clone())
+            .retry(retry_fast())
             .build()?;
 
         let resp = client.request("GET", "test", None, None).await?;
