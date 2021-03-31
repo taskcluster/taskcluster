@@ -4541,9 +4541,9 @@ math-interval-parser@^2.0.1:
   integrity sha512-VmlAmb0UJwlvMyx8iPhXUDnVW1F9IrGEd9CIOmv+XL8AErCUUuozoDMrgImvnYt2A+53qVX/tPW6YJurMKYsvA==
 
 matrix-js-sdk@^9.0.0:
-  version "9.9.0"
-  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-9.9.0.tgz#30c46419c026fcad0ff25aea9417b77921f64c6d"
-  integrity sha512-rgy9b8D+GzjK3wfdmxDr42fxNV13fK12cvQD1qnsFzqPyJGeg++cazH/+7HxL/uuW/WQR6HAmfc7wo9VQegWtg==
+  version "9.10.0"
+  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-9.10.0.tgz#ba32981391168778b301c01362a503a8469d3844"
+  integrity sha512-xvpgvTmCbS8dRTVvVULKbSwyES0y2F17TPukLIIXZMTqqeEBhfycVIjCV6LuACc0WBoRsZbi1/BIlgeWY7J03A==
   dependencies:
     "@babel/runtime" "^7.12.5"
     another-json "^0.2.0"
@@ -5582,12 +5582,12 @@ qs@6.7.0:
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.7.0.tgz#41dc1a015e3d581f1621776be31afb2876a9b1bc"
   integrity sha512-VCdBRNFTX1fyE7Nb6FYoURo/SPe62QCaAyzJvUjwRaIsc+NePBEniHlvxFmmX56+HZphIGtV0XeCirBtpDrTyQ==
 
-qs@^6.7.0, qs@^6.9.6:
+qs@^6.7.0:
   version "6.9.6"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.6.tgz#26ed3c8243a431b2924aca84cc90471f35d5a0ee"
   integrity sha512-TIRk4aqYLNoJUbd+g2lEdz5kLWIuTMRagAXxl78Q0RiVjAOugHmeKNGdd3cwo/ktpf9aL9epCfFqWDEKysUlLQ==
 
-qs@^6.9.4:
+qs@^6.9.4, qs@^6.9.6:
   version "6.10.1"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.10.1.tgz#4931482fa8d647a5aab799c5271d2133b981fb6a"
   integrity sha512-M528Hph6wsSVOBiYUnGf+K/7w0hNshs/duGsNXPUCLH5XAqjEtiPGwNONLV0tBH8NoGb0mvD5JubnUTrujKDTg==
