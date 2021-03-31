@@ -25,6 +25,7 @@ import base64
 import aiohttp
 
 import taskcluster
+from taskcluster.upload import HashingReader as SyncHashingReader
 from .reader_writer import streamingCopy, BufferReader, BufferWriter, FileReader
 from .retry import retry
 
@@ -64,12 +65,20 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
     The `objectService` parameter is an instance of the Object class,
     configured with credentials for the upload.
     """
+    # wrap the readerFactory with one that will also hash the data
+    hashingReader = None
+
+    async def hashingReaderFactory():
+        nonlocal hashingReader
+        hashingReader = HashingReader(await readerFactory())
+        return hashingReader
+
     async with aiohttp.ClientSession() as session:
         uploadId = taskcluster.slugid.nice()
         proposedUploadMethods = {}
 
         if contentLength < DATA_INLINE_MAX_SIZE:
-            reader = await readerFactory()
+            reader = await hashingReaderFactory()
             writer = BufferWriter()
             await streamingCopy(reader, writer)
             encoded = base64.b64encode(writer.getbuffer())
@@ -97,7 +106,7 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
                     # data is already uploaded -- nothing to do
                     pass
                 elif 'putUrl' in uploadMethod:
-                    reader = await readerFactory()
+                    reader = await hashingReaderFactory()
                     await _putUrlUpload(uploadMethod['putUrl'], reader, session)
                 else:
                     raise RuntimeError("Could not negotiate an upload method")
@@ -112,6 +121,10 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
             # .. anything else is considered fatal
 
         await retry(maxRetries, tryUpload)
+
+        # TODO: pass this value to finishUpload when the deployed instance supports it
+        # https://github.com/taskcluster/taskcluster/issues/4714
+        hashingReader.hashes(contentLength)
 
         await objectService.finishUpload(name, {
             "projectId": projectId,
@@ -131,3 +144,12 @@ async def _putUrlUpload(method, reader, session):
 
     resp = await session.put(method['url'], headers=method['headers'], data=reader_gen())
     resp.raise_for_status()
+
+
+class HashingReader(SyncHashingReader):
+    """An async version of the sync HashingReader"""
+
+    async def read(self, max_size):
+        chunk = await self.inner.read(max_size)
+        self.update(chunk)
+        return chunk

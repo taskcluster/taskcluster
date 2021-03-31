@@ -51,12 +51,14 @@ func (object *Object) UploadFromFile(projectID string, name string, contentType 
 // content read from readSeeker. The value of contentLength is not validated
 // prior to upload.
 func (object *Object) UploadFromReadSeeker(projectID string, name string, contentType string, contentLength int64, expires time.Time, readSeeker io.ReadSeeker) (err error) {
+	// wrap the readSeeker so that it will capture hashes
+	hashingReadSeeker := newHashingReadSeeker(readSeeker)
 
 	uploadID := slugid.Nice()
 	proposedUploadMethods := ProposedUploadMethods{}
 
 	if contentLength < DataInlineMaxSize {
-		content, err := ioutil.ReadAll(readSeeker)
+		content, err := ioutil.ReadAll(hashingReadSeeker)
 		if err != nil {
 			return err
 		}
@@ -87,15 +89,24 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 	}
 
 	defer func() {
-		if err == nil {
-			err = object.FinishUpload(
-				name,
-				&FinishUploadRequest{
-					ProjectID: projectID,
-					UploadID:  uploadID,
-				},
-			)
+		if err != nil {
+			return
 		}
+
+		// TODO: pass this value to finishUpload when the deployed instance supports it
+		// https://github.com/taskcluster/taskcluster/issues/4714
+		_, err = hashingReadSeeker.hashes(contentLength)
+		if err != nil {
+			return
+		}
+
+		err = object.FinishUpload(
+			name,
+			&FinishUploadRequest{
+				ProjectID: projectID,
+				UploadID:  uploadID,
+			},
+		)
 	}()
 
 	switch {
@@ -103,7 +114,7 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 		// data is already uploaded -- nothing to do
 		return nil
 	case uploadResp.UploadMethod.PutURL.URL != "":
-		return putURLUpload(object.HTTPBackoffClient, uploadResp.UploadMethod, readSeeker)
+		return putURLUpload(object.HTTPBackoffClient, uploadResp.UploadMethod, hashingReadSeeker)
 	}
 	return errors.New("Could not negotiate an upload method")
 }
