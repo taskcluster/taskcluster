@@ -11,5 +11,4 @@ Generic-worker runs on several platforms, with several engines, and is written i
 <!-- TOC BEGIN -->
 * [Docker Worker](docker-worker#readme)
 * [Generic Worker](generic-worker#readme)
-    * [Mock Services Design](generic-worker/mocktc#readme)
 <!-- TOC END -->

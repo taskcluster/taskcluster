@@ -24,9 +24,9 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v43/clients/client-go"
 	"github.com/taskcluster/taskcluster/v43/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v43/internal/mocktc"
 	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/mocktc"
 )
 
 var (
