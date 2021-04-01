@@ -136,6 +136,9 @@ and reports back results to the queue.
           livelogExecutable                 Filepath of LiveLog executable to use; see
                                             https://github.com/taskcluster/livelog
                                             [default: "livelog"]
+          livelogPortBase                   Set the base port number for livelog. Livelog requires two
+                                            ports: livelogPortBase & livelogPortBase + 1 are used.
+                                            [default: 60098]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
