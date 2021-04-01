@@ -132,9 +132,9 @@ export default class ViewSecrets extends Component {
   };
 
   handleDialogActionComplete = () => {
-    this.setState({ deleteSecretName: null });
+    this.setState({ dialogOpen: false, deleteSecretName: null });
 
-    this.props.history.push(`/secrets`);
+    this.props.data.refetch();
   };
 
   handleDialogActionClose = () => {

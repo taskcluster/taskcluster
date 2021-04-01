@@ -157,7 +157,7 @@ export default class SecretsTable extends Component {
                   </Box>
                   <Button
                     requiresAuth
-                    tooltipProps={{ title: 'Delete Role' }}
+                    tooltipProps={{ title: 'Delete Secret' }}
                     size="small"
                     onClick={() => onDialogActionOpen(name)}>
                     <DeleteIcon size={iconSize} />
