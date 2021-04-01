@@ -16,12 +16,6 @@ import (
 
 var (
 	livelogName = "public/logs/live.log"
-
-	// The ports on which the livelog process listens locally.  These ports are not exposed
-	// outside of the host.  However, in CI they must differ from those of the generic-worker
-	// instance running the test suite.
-	internalPUTPort uint16 = 60098
-	internalGETPort uint16 = 60099
 )
 
 type LiveLogFeature struct {
@@ -69,7 +63,7 @@ func (l *LiveLogTask) RequiredScopes() scopes.Required {
 }
 
 func (l *LiveLogTask) Start() *CommandExecutionError {
-	liveLog, err := livelog.New(config.LiveLogExecutable, internalPUTPort, internalGETPort)
+	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogPortBase, config.LiveLogPortBase + 1)
 	if err != nil {
 		log.Printf("WARNING: could not create livelog: %s", err)
 		// then run without livelog, is only a "best effort" service
@@ -164,7 +158,7 @@ func (l *LiveLogTask) reinstateBackingLog() {
 
 func (l *LiveLogTask) uploadLiveLogArtifact() error {
 	var err error
-	l.exposure, err = exposer.ExposeHTTP(internalGETPort)
+	l.exposure, err = exposer.ExposeHTTP(config.LiveLogPortBase + 1)
 	if err != nil {
 		return err
 	}

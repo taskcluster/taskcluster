@@ -207,6 +207,10 @@ func loadConfig(configFile *gwconfig.File) error {
 			DownloadsDir:                   "downloads",
 			IdleTimeoutSecs:                0,
 			LiveLogExecutable:              "livelog",
+			// The ports on which the livelog process listens locally.  These ports are not exposed
+			// outside of the host.  However, in CI they must differ from those of the generic-worker
+			// instance running the test suite.
+			LiveLogPortBase:                60098,
 			NumberOfTasksToRun:             0,
 			ProvisionerID:                  "test-provisioner",
 			RequiredDiskSpaceMegabytes:     10240,

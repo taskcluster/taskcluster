@@ -40,6 +40,7 @@ type (
 		InstanceID                     string                 `json:"instanceId"`
 		InstanceType                   string                 `json:"instanceType"`
 		LiveLogExecutable              string                 `json:"livelogExecutable"`
+		LiveLogPortBase                uint16                 `json:"livelogPortBase"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
 		PrivateIP                      net.IP                 `json:"privateIP"`
 		ProvisionerID                  string                 `json:"provisionerId"`
