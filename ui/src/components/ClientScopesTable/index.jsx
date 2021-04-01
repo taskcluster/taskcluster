@@ -61,13 +61,7 @@ export default class ClientScopesTable extends Component {
         filter(
           pipe(
             path(['node', 'expandedScopes']),
-            filter(
-              pipe(
-                toLower,
-                includes(selectedScope),
-                length
-              )
-            )
+            filter(pipe(toLower, includes(selectedScope), length))
           )
         ),
         map(pipe(path(['node', 'clientId']))),

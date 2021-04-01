@@ -50,9 +50,7 @@ export default class WMViewErrors extends Component {
       },
       updateQuery(
         previousResult,
-        {
-          fetchMoreResult: { WorkerManagerErrors },
-        }
+        { fetchMoreResult: { WorkerManagerErrors } }
       ) {
         // use dotProp.set to avoid lint warning about assigning to properties
         return dotProp.set(

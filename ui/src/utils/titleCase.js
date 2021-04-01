@@ -9,9 +9,4 @@ const upperAcronym = word =>
     ? upperCase(word)
     : word;
 
-export default pipe(
-  titleCase,
-  split(' '),
-  map(upperAcronym),
-  join(' ')
-);
+export default pipe(titleCase, split(' '), map(upperAcronym), join(' '));

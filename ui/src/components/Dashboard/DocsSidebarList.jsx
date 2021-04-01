@@ -288,9 +288,9 @@ export default class DocsSidebarList extends Component {
               in={item.hasChildren && menuOpen && currentMenu === item.label}>
               <div className={classes.collapse}>
                 {docsTableOfContents[lowerCase(item.label)] &&
-                  docsTableOfContents[lowerCase(item.label)].children.map(
-                    child => this.renderNode(child, true)
-                  )}
+                  docsTableOfContents[
+                    lowerCase(item.label)
+                  ].children.map(child => this.renderNode(child, true))}
               </div>
             </Collapse>
           </Fragment>

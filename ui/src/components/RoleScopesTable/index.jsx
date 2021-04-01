@@ -75,13 +75,7 @@ export default class RoleScopesTable extends Component {
         filter(
           pipe(
             prop('expandedScopes'),
-            filter(
-              pipe(
-                toLower,
-                includes(selectedScope),
-                length
-              )
-            )
+            filter(pipe(toLower, includes(selectedScope), length))
           )
         ),
         pluck('roleId'),
