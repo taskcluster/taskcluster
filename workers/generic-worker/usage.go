@@ -150,7 +150,7 @@ and reports back results to the queue.
                                             https://github.com/taskcluster/livelog
                                             [default: "livelog"]
           livelogPortBase                   Set the base port number for livelog. Livelog requires two
-                                            ports.
+                                            ports: livelogPortBase & livelogPortBase + 1 are used.
                                             [default: 60098]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
