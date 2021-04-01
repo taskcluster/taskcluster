@@ -308,8 +308,6 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 type Test struct {
 	t                  *testing.T
 	Config             *gwconfig.Config
-	OldInternalPUTPort uint16
-	OldInternalGETPort uint16
 	OldConfigureForGCP bool
 	srv                *http.Server
 	router             *mux.Router
@@ -339,11 +337,15 @@ func GWTest(t *testing.T) *Test {
 			InstanceID:                "test-instance-id",
 			InstanceType:              "p3.enormous",
 			LiveLogExecutable:         "livelog",
-			NumberOfTasksToRun:        1,
-			PrivateIP:                 net.ParseIP("87.65.43.21"),
-			ProvisionerID:             "test-provisioner",
-			PublicIP:                  net.ParseIP("12.34.56.78"),
-			Region:                    "test-worker-group",
+			// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
+			// These ports are not exposed outside of the host. However, in CI they must differ from those of the
+			// generic-worker instance running the test suite.
+			LiveLogPortBase:    30583,
+			NumberOfTasksToRun: 1,
+			PrivateIP:          net.ParseIP("87.65.43.21"),
+			ProvisionerID:      "test-provisioner",
+			PublicIP:           net.ParseIP("12.34.56.78"),
+			Region:             "test-worker-group",
 			// should be enough for tests, and travis-ci.org CI environments don't
 			// have a lot of free disk
 			RequiredDiskSpaceMegabytes:     16,
@@ -440,19 +442,11 @@ func GWTest(t *testing.T) *Test {
 
 	serviceFactory = mocktc.NewServiceFactory(t)
 
-	// we need to use a non-default port for the livelog internalGETPort, so
-	// that we don't conflict with a generic-worker in which the tests are
-	// running
-	internalPUTPort = 30584
-	internalGETPort = 30583
-
 	return &Test{
-		t:                  t,
-		Config:             testConfig,
-		OldInternalPUTPort: internalPUTPort,
-		OldInternalGETPort: internalGETPort,
-		srv:                srv,
-		router:             r,
+		t:      t,
+		Config: testConfig,
+		srv:    srv,
+		router: r,
 	}
 }
 
@@ -470,8 +464,6 @@ func (gwtest *Test) Setup() error {
 }
 
 func (gwtest *Test) Teardown() {
-	internalPUTPort = gwtest.OldInternalPUTPort
-	internalGETPort = gwtest.OldInternalGETPort
 	gwtest.t.Logf("Removing test directory %v...", filepath.Join(testdataDir, gwtest.t.Name()))
 	err := os.RemoveAll(filepath.Join(testdataDir, gwtest.t.Name()))
 	if err != nil {
