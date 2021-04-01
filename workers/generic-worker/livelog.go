@@ -63,7 +63,7 @@ func (l *LiveLogTask) RequiredScopes() scopes.Required {
 }
 
 func (l *LiveLogTask) Start() *CommandExecutionError {
-	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogPortBase, config.LiveLogPortBase + 1)
+	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogPortBase, config.LiveLogPortBase+1)
 	if err != nil {
 		log.Printf("WARNING: could not create livelog: %s", err)
 		// then run without livelog, is only a "best effort" service

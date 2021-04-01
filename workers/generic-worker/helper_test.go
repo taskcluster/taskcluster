@@ -340,12 +340,12 @@ func GWTest(t *testing.T) *Test {
 			// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
 			// These ports are not exposed outside of the host. However, in CI they must differ from those of the
 			// generic-worker instance running the test suite.
-			LiveLogPortBase:           30583,
-			NumberOfTasksToRun:        1,
-			PrivateIP:                 net.ParseIP("87.65.43.21"),
-			ProvisionerID:             "test-provisioner",
-			PublicIP:                  net.ParseIP("12.34.56.78"),
-			Region:                    "test-worker-group",
+			LiveLogPortBase:    30583,
+			NumberOfTasksToRun: 1,
+			PrivateIP:          net.ParseIP("87.65.43.21"),
+			ProvisionerID:      "test-provisioner",
+			PublicIP:           net.ParseIP("12.34.56.78"),
+			Region:             "test-worker-group",
 			// should be enough for tests, and travis-ci.org CI environments don't
 			// have a lot of free disk
 			RequiredDiskSpaceMegabytes:     16,
@@ -443,10 +443,10 @@ func GWTest(t *testing.T) *Test {
 	serviceFactory = mocktc.NewServiceFactory(t)
 
 	return &Test{
-		t:                  t,
-		Config:             testConfig,
-		srv:                srv,
-		router:             r,
+		t:      t,
+		Config: testConfig,
+		srv:    srv,
+		router: r,
 	}
 }
 
