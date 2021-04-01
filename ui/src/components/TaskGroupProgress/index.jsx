@@ -52,43 +52,49 @@ const getStatusCount = memoize(
     const statusCount = { ...initialStatusCount };
 
     taskGroupCompactEdges &&
-      taskGroupCompactEdges.forEach(({ node: { status: { state } } }) => {
-        switch (state) {
-          case TASK_STATE.COMPLETED: {
-            statusCount.completed += 1;
-            break;
-          }
+      taskGroupCompactEdges.forEach(
+        ({
+          node: {
+            status: { state },
+          },
+        }) => {
+          switch (state) {
+            case TASK_STATE.COMPLETED: {
+              statusCount.completed += 1;
+              break;
+            }
 
-          case TASK_STATE.FAILED: {
-            statusCount.failed += 1;
-            break;
-          }
+            case TASK_STATE.FAILED: {
+              statusCount.failed += 1;
+              break;
+            }
 
-          case TASK_STATE.EXCEPTION: {
-            statusCount.exception += 1;
-            break;
-          }
+            case TASK_STATE.EXCEPTION: {
+              statusCount.exception += 1;
+              break;
+            }
 
-          case TASK_STATE.UNSCHEDULED: {
-            statusCount.unscheduled += 1;
-            break;
-          }
+            case TASK_STATE.UNSCHEDULED: {
+              statusCount.unscheduled += 1;
+              break;
+            }
 
-          case TASK_STATE.RUNNING: {
-            statusCount.running += 1;
-            break;
-          }
+            case TASK_STATE.RUNNING: {
+              statusCount.running += 1;
+              break;
+            }
 
-          case TASK_STATE.PENDING: {
-            statusCount.pending += 1;
-            break;
-          }
+            case TASK_STATE.PENDING: {
+              statusCount.pending += 1;
+              break;
+            }
 
-          default: {
-            break;
+            default: {
+              break;
+            }
           }
         }
-      });
+      );
 
     return statusCount;
   },
