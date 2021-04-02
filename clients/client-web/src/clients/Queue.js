@@ -26,6 +26,7 @@ export default class Queue extends Client {
     this.reportFailed.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportFailed","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/failed","scopes":"queue:resolve-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.reportException.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"reportException","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/exception","scopes":"queue:resolve-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","input":true,"method":"post","name":"createArtifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":"queue:create-artifact:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.finishArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","input":true,"method":"put","name":"finishArtifact","query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":"queue:create-artifact:<taskId>/<runId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.getArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"getArtifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.getLatestArtifact.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"getLatestArtifact","output":true,"query":[],"route":"/task/<taskId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.listArtifacts.entry = {"args":["taskId","runId"],"category":"Artifacts","method":"get","name":"listArtifacts","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/runs/<runId>/artifacts","scopes":"queue:list-artifacts:<taskId>:<runId>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -123,7 +124,8 @@ export default class Queue extends Client {
   // taken care of. Ideally, you should use a much shorter deadline.
   // **Task expiration**: the `expires` property must be greater than the
   // task `deadline`. If not provided it will default to `deadline` + one
-  // year. Notice, that artifacts created by task must expire before the task.
+  // year. Notice that artifacts created by a task must expire before the
+  // task's expiration.
   // **Task specific routing-keys**: using the `task.routes` property you may
   // define task specific routing-keys. If a task has a task specific
   // routing-key: `<route>`, then when the AMQP message about the task is
@@ -287,9 +289,9 @@ export default class Queue extends Client {
   // This API end-point creates an artifact for a specific run of a task. This
   // should **only** be used by a worker currently operating on this task, or
   // from a process running within the task (ie. on the worker).
-  // All artifacts must specify when they `expires`, the queue will
+  // All artifacts must specify when they expire. The queue will
   // automatically take care of deleting artifacts past their
-  // expiration point. This features makes it feasible to upload large
+  // expiration point. This feature makes it feasible to upload large
   // intermediate artifacts from data processing applications, as the
   // artifacts can be set to expire a few days later.
   /* eslint-enable max-len */
@@ -297,6 +299,20 @@ export default class Queue extends Client {
     this.validate(this.createArtifact.entry, args);
 
     return this.request(this.createArtifact.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This endpoint marks an artifact as present for the given task, and
+  // should be called when the artifact data is fully uploaded.
+  // The storage types `reference`, `link`, and `error` do not need to
+  // be finished, as they are finished immediately by `createArtifact`.
+  // The storage type `s3` does not support this functionality and cannot
+  // be finished.  In all such cases, calling this method is an input error
+  // (400).
+  /* eslint-enable max-len */
+  finishArtifact(...args) {
+    this.validate(this.finishArtifact.entry, args);
+
+    return this.request(this.finishArtifact.entry, args);
   }
   /* eslint-disable max-len */
   // Get artifact by `<name>` from a specific run.

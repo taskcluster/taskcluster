@@ -60,13 +60,13 @@ backend_map:
   # project lindy's builds are stored in a dedicated backend
   - backendId: proj-lindy
     when:
-      name: {regexp: '^builds/'}
+      name: {regexp: '^t/[A-Za-z0-9_-]*/[0-9]*/builds/'}
       projectId: {is: 'lindy'}
 
   # logs are stored in a special reduced-redundancy backend
   - backendId: reduced-redundancy
     when:
-      name: {regexp: '^public/logs/'}
+      name: {regexp: '^t/[A-Za-z0-9_-]*/[0-9]*/public/logs/.*$'}
 
   # catch-all
   - backendId: general-purpose
