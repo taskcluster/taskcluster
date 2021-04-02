@@ -6109,6 +6109,21 @@
       },
       "migrationScript": "begin\n  create table object_hashes (\n    name text not null\n      references objects (name)\n      on delete cascade,\n    algorithm text not null,\n    hash text not null\n  );\n\n  alter table object_hashes add primary key (name, algorithm);\n\n  grant select, insert, update, delete on object_hashes to $db_user_prefix$_object;\nend",
       "version": 67
+    },
+    {
+      "description": "add queue_artifact_present",
+      "methods": {
+        "queue_artifact_present": {
+          "args": "task_id_in text, run_id_in integer, name_in text",
+          "body": "begin\n  return query\n  update queue_artifacts\n  set present = true\n  where\n    queue_artifacts.task_id = task_id_in and\n    queue_artifacts.run_id = run_id_in and\n    queue_artifacts.name = name_in\n  returning\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires;\nend",
+          "deprecated": false,
+          "description": "Mark the given queue artifact as present, returning the updated artifact.  Returns\nnothing if no such artifact exists.",
+          "mode": "write",
+          "returns": "table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 68
     }
   ]
 }

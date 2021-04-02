@@ -103,6 +103,7 @@
    * [`is_task_group_active`](#is_task_group_active)
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
    * [`quarantine_queue_worker`](#quarantine_queue_worker)
+   * [`queue_artifact_present`](#queue_artifact_present)
    * [`queue_worker_seen`](#queue_worker_seen)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
    * [`reclaim_task`](#reclaim_task)
@@ -1232,6 +1233,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`is_task_group_active`](#is_task_group_active)
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
 * [`quarantine_queue_worker`](#quarantine_queue_worker)
+* [`queue_artifact_present`](#queue_artifact_present)
 * [`queue_worker_seen`](#queue_worker_seen)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
 * [`reclaim_task`](#reclaim_task)
@@ -1851,6 +1853,27 @@ Update the quarantine_until date for a worker.  The Queue service interprets a d
 as "not quarantined".  This function also "bumps" the expiration of the worker so that un-quarantined
 workers do not immediately expire.  Returns the worker row just as get_queue_worker would, or no rows if
 no such worker exists.
+
+### queue_artifact_present
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `run_id_in integer`
+  * `name_in text`
+* *Returns*: `table`
+  * `task_id text`
+  * `run_id integer`
+  * `name text`
+  * `storage_type text`
+  * `content_type text`
+  * `details jsonb`
+  * `present boolean`
+  * `expires timestamptz`
+* *Last defined on version*: 68
+
+Mark the given queue artifact as present, returning the updated artifact.  Returns
+nothing if no such artifact exists.
 
 ### queue_worker_seen
 
