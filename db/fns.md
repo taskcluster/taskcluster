@@ -181,6 +181,7 @@
   * `scopes_in jsonb`
   * `delete_on_expiration_in boolean`
 * *Returns*: `void`
+* *Last defined on version*: 41
 
 Create a new client.  The created and last_.. timestamps are all
 initialized to the current time.  If the row exists but scopes,
@@ -194,6 +195,7 @@ UNIQUE_VIOLATION is raised.
 * *Arguments*:
   * `client_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 41
 
 Delete the given client.  If the client does not exist, nothing happens.
 
@@ -202,6 +204,7 @@ Delete the given client.  If the client does not exist, nothing happens.
 * *Mode*: write
 * *Arguments*:
 * *Returns*: `integer`
+* *Last defined on version*: 41
 
 Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set.
 
@@ -222,6 +225,7 @@ Delete all clients with an 'expires' in the past and with 'delete_on_expiration'
   * `  last_date_used timestamptz`
   * `  last_rotated timestamptz`
   * `  delete_on_expiration boolean `
+* *Last defined on version*: 41
 
 Get a client. Returns an empty set if the client does not exist.
 
@@ -244,6 +248,7 @@ Get a client. Returns an empty set if the client does not exist.
   * `  last_date_used timestamptz`
   * `  last_rotated timestamptz`
   * `  delete_on_expiration boolean `
+* *Last defined on version*: 41
 
 Get clients, ordered by client_id.   If specified, only clients with
 client_id beginning with `prefix` are returned.  If the pagination
@@ -261,6 +266,7 @@ rows are returned at offset page_offset.
   * `description text`
   * `last_modified timestamptz`
   * `etag uuid`
+* *Last defined on version*: 25
 
 Get the full set of roles.  Each result row has an etag, but all such
 etags will be the same, representing the etag for the most recent
@@ -273,6 +279,7 @@ modification of the table.  Results are sorted by role_id.
   * `roles_in jsonb`
   * `old_etag_in uuid`
 * *Returns*: `void`
+* *Last defined on version*: 25
 
 Replace the current set of roles entirely with the given set of roles, if the current etag matches the existing etag. 
 The role objects are specified with underscore spelling (`role_id`).
@@ -302,6 +309,7 @@ If there are no existing roles, then the old etag is not used.
   * `  last_date_used timestamptz`
   * `  last_rotated timestamptz`
   * `  delete_on_expiration boolean `
+* *Last defined on version*: 41
 
 Update an existing client, returning the updated client or, if no such client
 exists, an empty set.  This does not implement optimistic concurrency: any non-null
@@ -314,6 +322,7 @@ column is updated automatically, as is last_rotated if the access token is set.
 * *Arguments*:
   * `client_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 41
 
 Indicate that this client has been recently used, updating its last_date_used field.
 Does nothing if the client does not exist.
@@ -346,6 +355,7 @@ Does nothing if the client does not exist.
   * `event_type_in text`
   * `event_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 23
 
 Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists.
 
@@ -358,6 +368,7 @@ Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists.
   * `check_suite_id_in text`
   * `check_run_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 58
 
 Upsert a single check.
 
@@ -367,6 +378,7 @@ Upsert a single check.
 * *Arguments*:
   * `task_group_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 23
 
 Delete a github build.
 
@@ -387,6 +399,7 @@ Delete a github build.
   * `event_type text`
   * `event_id text`
   * `etag uuid`
+* *Last defined on version*: 49
 
 Get a github build. The returned table will have one or zero rows.
 
@@ -411,6 +424,7 @@ Get a github build. The returned table will have one or zero rows.
   * `event_type text`
   * `event_id text`
   * `etag uuid`
+* *Last defined on version*: 49
 
 Get github builds.
 
@@ -424,6 +438,7 @@ Get github builds.
   * `task_id text`
   * `check_suite_id text`
   * `check_run_id text`
+* *Last defined on version*: 37
 
 Get a single check from a task_id.
 
@@ -435,6 +450,7 @@ Get a single check from a task_id.
 * *Returns*: `table`
   * `owner text`
   * `installation_id integer`
+* *Last defined on version*: 36
 
 Get a single integration by owner.
 
@@ -447,6 +463,7 @@ Get a single integration by owner.
 * *Returns*: `table`
   * `owner text`
   * `installation_id integer`
+* *Last defined on version*: 36
 
 Get a list of integrations.
 
@@ -457,6 +474,7 @@ Get a list of integrations.
   * `task_group_id_in text`
   * `state_in text`
 * *Returns*: `void`
+* *Last defined on version*: 49
 
 Only update the state of a build and update the `updated` timestamp
 
@@ -467,6 +485,7 @@ Only update the state of a build and update the `updated` timestamp
   * `owner_in text`
   * `installation_id_in integer`
 * *Returns*: `void`
+* *Last defined on version*: 36
 
 Create a single integration.
 
@@ -512,6 +531,7 @@ Create a single integration.
   * `encrypted_next_task_id jsonb`
   * `next_scheduled_date timestamptz`
   * `trigger_schema jsonb`
+* *Last defined on version*: 35
 
 Create a new hook. Raises UNIQUE_VIOLATION if the artifact already exists.
 Returns the newly created hook.
@@ -525,6 +545,7 @@ Returns the newly created hook.
   * `queue_name_in text`
   * `bindings_in jsonb`
 * *Returns*: `uuid`
+* *Last defined on version*: 49
 
 Create a new hooks queue. Raises UNIQUE_VIOLATION if the hook already exists.
 
@@ -540,6 +561,7 @@ Create a new hooks queue. Raises UNIQUE_VIOLATION if the hook already exists.
   * `result_in text`
   * `error_in text`
 * *Returns*: `uuid`
+* *Last defined on version*: 49
 
 Create a new hook last fire. Raises UNIQUE_VIOLATION if the hook already exists.
 
@@ -550,6 +572,7 @@ Create a new hook last fire. Raises UNIQUE_VIOLATION if the hook already exists.
   * `hook_group_id_in text`
   * `hook_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 35
 
 Delete a hook.
 
@@ -560,6 +583,7 @@ Delete a hook.
   * `hook_group_id_in text`
   * `hook_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 49
 
 Delete a hooks queue.
 
@@ -570,6 +594,7 @@ Delete a hooks queue.
   * `hook_group_id_in text`
   * `hook_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 32
 
 Delete last fires that match a given `hook_group_id` and `hook_id`.
 
@@ -578,6 +603,7 @@ Delete last fires that match a given `hook_group_id` and `hook_id`.
 * *Mode*: write
 * *Arguments*:
 * *Returns*: `integer`
+* *Last defined on version*: 32
 
 Expire last fires that are older than a year.
 Returns a count of rows that have been deleted.
@@ -599,6 +625,7 @@ Returns a count of rows that have been deleted.
   * `encrypted_next_task_id jsonb`
   * `next_scheduled_date timestamptz`
   * `trigger_schema jsonb`
+* *Last defined on version*: 35
 
 Get a hook. The returned table will have one or zero rows.
 
@@ -621,6 +648,7 @@ Get a hook. The returned table will have one or zero rows.
   * `encrypted_next_task_id jsonb`
   * `next_scheduled_date timestamptz`
   * `trigger_schema jsonb`
+* *Last defined on version*: 35
 
 Get existing hooks filtered by the optional `hook_group_id`,
 ordered by the `hook_group_id` and `hook_id`.
@@ -639,6 +667,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `queue_name text`
   * `bindings jsonb`
   * `etag uuid`
+* *Last defined on version*: 49
 
 Get hooks queues ordered by `hook_group_id` and `hook_id`.
 If the pagination arguments are both NULL, all rows are returned.
@@ -660,6 +689,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `result text`
   * `error text`
   * `etag uuid`
+* *Last defined on version*: 49
 
 Get a hook last fire.
 
@@ -680,6 +710,7 @@ Get a hook last fire.
   * `result text`
   * `error text`
   * `etag uuid`
+* *Last defined on version*: 49
 
 Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,
 ordered by `hook_group_id`, `hook_id`, and  `worker_id`.
@@ -711,6 +742,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `encrypted_next_task_id jsonb`
   * `next_scheduled_date timestamptz`
   * `trigger_schema jsonb`
+* *Last defined on version*: 35
 
 Update a queue artifact.
 Returns the up-to-date hook row that have the same hook group id and hook id.
@@ -728,6 +760,7 @@ Returns the up-to-date hook row that have the same hook group id and hook id.
   * `queue_name text`
   * `bindings jsonb`
   * `etag uuid`
+* *Last defined on version*: 49
 
 Update bindings of a hooks queue. If no such queue exists,
 the return value is an empty set.
@@ -757,6 +790,7 @@ the return value is an empty set.
   * `parent text`
   * `name text`
   * `expires timestamptz`
+* *Last defined on version*: 26
 
 Create a new namespace. Raises UNIQUE_VIOLATION if the namespace already exists.
 Returns the newly created namespace.
@@ -778,6 +812,7 @@ Returns the newly created namespace.
   * `task_id text`
   * `data jsonb`
   * `expires timestamptz`
+* *Last defined on version*: 26
 
 Create a new indexed task. Raises UNIQUE_VIOLATION if the indexed task already exists.
 Returns the newly created indexed task.
@@ -789,6 +824,7 @@ Returns the newly created indexed task.
   * `namespace_in text`
   * `name_in text`
 * *Returns*: `void`
+* *Last defined on version*: 65
 
 Delete the named task from the index.  Returns succesfully even if the named
 task does not exist.
@@ -798,6 +834,7 @@ task does not exist.
 * *Mode*: write
 * *Arguments*:
 * *Returns*: `integer`
+* *Last defined on version*: 26
 
 Expire index_namespaces that come before the current time.
 Returns a count of rows that have been deleted.
@@ -807,6 +844,7 @@ Returns a count of rows that have been deleted.
 * *Mode*: write
 * *Arguments*:
 * *Returns*: `integer`
+* *Last defined on version*: 26
 
 Expire indexed tasks that come before the current time.
 Returns a count of rows that have been deleted.
@@ -821,6 +859,7 @@ Returns a count of rows that have been deleted.
   * `parent text`
   * `name text`
   * `expires timestamptz`
+* *Last defined on version*: 26
 
 Get a namespace. The returned table will have one or zero rows.
 
@@ -836,6 +875,7 @@ Get a namespace. The returned table will have one or zero rows.
   * `parent text`
   * `name text`
   * `expires timestamptz`
+* *Last defined on version*: 26
 
 Get existing index_namespaces filtered by the optional arguments,
 ordered by the `parent` and `name`.
@@ -855,6 +895,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `task_id text`
   * `data jsonb`
   * `expires timestamptz`
+* *Last defined on version*: 26
 
 Get an indexed task. The returned table will have one or zero rows.
 
@@ -873,6 +914,7 @@ Get an indexed task. The returned table will have one or zero rows.
   * `task_id text`
   * `data jsonb`
   * `expires timestamptz`
+* *Last defined on version*: 26
 
 Get existing indexed tasks filtered by the optional arguments,
 ordered by the `namespace` and `name`.
@@ -890,6 +932,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `parent text`
   * `name text`
   * `expires timestamptz`
+* *Last defined on version*: 26
 
 Update a namespace.
 Returns the up-to-date namespace row that have the same parent and name.
@@ -912,6 +955,7 @@ If the row is not found then an exception with code 'P0002' is thrown.
   * `task_id text`
   * `data jsonb`
   * `expires timestamptz`
+* *Last defined on version*: 26
 
 Update an indexed task.
 Returns the up-to-date indexed task row that have the same namespace and name.
@@ -930,6 +974,7 @@ Returns the up-to-date indexed task row that have the same namespace and name.
   * `notification_type_in text`
   * `notification_address_in text`
 * *Returns*: `void`
+* *Last defined on version*: 49
 
 If the denylist address already exists, this is a no-op. Otherwise, add the denylist
 address for the taskcluster-notify service, with a new random etag.
@@ -943,6 +988,7 @@ address for the taskcluster-notify service, with a new random etag.
 * *Returns*: `table`
   * `notification_type text`
   * `notification_address text`
+* *Last defined on version*: 17
 
 List all denylist addresses for the taskcluster-notify service.
 
@@ -953,6 +999,7 @@ List all denylist addresses for the taskcluster-notify service.
   * `notification_type_in text`
   * `notification_address_in text`
 * *Returns*: `integer`
+* *Last defined on version*: 17
 
 Delete a denylist address for the taskcluster-notify service.
 Returns number of rows deleted (0 or 1).
@@ -964,6 +1011,7 @@ Returns number of rows deleted (0 or 1).
   * `notification_type_in text`
   * `notification_address_in text`
 * *Returns*: `boolean`
+* *Last defined on version*: 17
 
 Returns a boolean indicating whether the denylist type/address exists.
 
@@ -984,6 +1032,7 @@ Returns a boolean indicating whether the denylist type/address exists.
   * `name_in text`
   * `hashes_in jsonb`
 * *Returns*: `void`
+* *Last defined on version*: 67
 
 Add the given hashes, of the form `{algorithm: hash}`, to the named
 object.  The named object must already exist.  If any of the given
@@ -1004,6 +1053,7 @@ not exist.
   * `data_in jsonb`
   * `expires_in timestamptz`
 * *Returns*: `void`
+* *Last defined on version*: 56
 
 Create an object record ready for upload.
 
@@ -1018,6 +1068,7 @@ exception.  `upload_expires_in` is excluded from this comparison.
 * *Arguments*:
   * `name_in text`
 * *Returns*: `void`
+* *Last defined on version*: 54
 
 Delete an object.
 
@@ -1033,6 +1084,7 @@ Delete an object.
   * `project_id text`
   * `backend_id text`
   * `expires timestamptz`
+* *Last defined on version*: 56
 
 Get objects with an expiration before the current time.  If given, only
 objects with a name greater than `start_at_in` are returned.  The
@@ -1048,6 +1100,7 @@ both expired objects (expires < now) and expired uploads (upload_expires
 * *Returns*: `table`
   * ` algorithm text`
   * `hash text `
+* *Last defined on version*: 67
 
 Get all hashes for the named object.  If the given object has no hashes,
 or doesn't exist, this function returns an empty result.
@@ -1065,6 +1118,7 @@ or doesn't exist, this function returns an empty result.
   * `upload_id text`
   * `upload_expires timestamptz`
   * `expires timestamptz`
+* *Last defined on version*: 56
 
 Get an object by name, or an empty set if no such object exists.
 
@@ -1075,6 +1129,7 @@ Get an object by name, or an empty set if no such object exists.
   * `name_in text`
   * `upload_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 56
 
 Mark an object as uploaded and ready for download.
 
@@ -1098,6 +1153,7 @@ for download.
   * `worker_pool_id text`
   * `cache_name text`
   * `before timestamptz`
+* *Last defined on version*: 50
 
 View all active purge requests.
 
@@ -1107,6 +1163,7 @@ View all active purge requests.
 * *Arguments*:
   * `expires_in timestamptz`
 * *Returns*: `integer`
+* *Last defined on version*: 9
 
 Expire cache purges that come before `expires_in`.
 Returns a count of rows that have been deleted.
@@ -1120,6 +1177,7 @@ Returns a count of rows that have been deleted.
   * `before_in timestamptz`
   * `expires_in timestamptz`
 * *Returns*: `void`
+* *Last defined on version*: 50
 
 Publish a request to purge caches with name `cache_name_in`
 on `provisioner_id_in`/`worker_type_in` workers.
@@ -1133,6 +1191,7 @@ on `provisioner_id_in`/`worker_type_in` workers.
   * `worker_pool_id text`
   * `cache_name text`
   * `before timestamptz`
+* *Last defined on version*: 50
 
 List the caches for this `provisioner_id_in`/`worker_type_in`.
 
@@ -1195,6 +1254,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
   * `requires_in task_requires`
   * `expires_in timestamptz`
 * *Returns*: `void`
+* *Last defined on version*: 49
 
 Create an un-satisfied task dependency between the two tasks, with the given
 requirement style and expiration. If the dependency already exists, nothing
@@ -1206,6 +1266,7 @@ happens.
 * *Arguments*:
   * `queue_name text`
 * *Returns*: `integer`
+* *Last defined on version*: 6
 
 Count non-expired messages in the named queue.
 
@@ -1218,6 +1279,7 @@ Count non-expired messages in the named queue.
   * `message_id uuid`
   * `pop_receipt uuid`
 * *Returns*: `void`
+* *Last defined on version*: 3
 
 Delete the message identified by the given `queue_name`, `message_id` and
 `pop_receipt`.
@@ -1228,6 +1290,7 @@ Delete the message identified by the given `queue_name`, `message_id` and
 * *Mode*: write
 * *Arguments*:
 * *Returns*: `void`
+* *Last defined on version*: 3
 
 Delete all expired messages.  This is a maintenance task that should occur
 about once an hour.
@@ -1244,6 +1307,7 @@ about once an hour.
   * `message_id uuid`
   * `message_text text`
   * `pop_receipt uuid`
+* *Last defined on version*: 5
 
 Get up to `count` messages from the given queue, setting the `visible`
 column of each to the given value.  Returns a `message_id` and
@@ -1260,6 +1324,7 @@ column of each to the given value.  Returns a `message_id` and
   * `visible timestamp`
   * `expires timestamp`
 * *Returns*: `void`
+* *Last defined on version*: 3
 
 Put the given message into the given queue.  The message will not be visible until
 after the visible timestamp, and will disappear after the expires timestamp.
@@ -1275,6 +1340,7 @@ after the visible timestamp, and will disappear after the expires timestamp.
   * `pop_receipt uuid`
   * `visible timestamp`
 * *Returns*: `void`
+* *Last defined on version*: 3
 
 Update the message identified by the given `queue_name`, `message_id` and
 `pop_receipt`, setting its `visible` and `message_text` properties as
@@ -1291,6 +1357,7 @@ given.
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
+* *Last defined on version*: 28
 
 If the current run is pending or running, mark it as exception with the given
 reason.  If the task is unscheduled, a run with that status is
@@ -1308,6 +1375,7 @@ status, or nothing if the current status was not as expected.
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
+* *Last defined on version*: 28
 
 Check the given task for a claim on the given run expiring at the given
 time.  If the run is still running, it is marked as claim-expired and
@@ -1330,6 +1398,7 @@ was not as expected.
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
+* *Last defined on version*: 28
 
 Claim the given run of the given task for the given worker.  The hint is recorded in the run,
 for comparison when the claim expires.  This returns the task's updated
@@ -1356,6 +1425,7 @@ status, or nothing if the current status was not as expected.
   * `details jsonb`
   * `present boolean`
   * `expires timestamptz`
+* *Last defined on version*: 24
 
 Create a new artifact. Raises UNIQUE_VIOLATION if the artifact already exists.
 Returns the newly created artifact.
@@ -1383,6 +1453,7 @@ Returns the newly created artifact.
   * `tags jsonb`
   * `extra jsonb`
 * *Returns*: `void`
+* *Last defined on version*: 63
 
 Create a new task, without scheduling it, and with empty values
 for the status information.
@@ -1395,6 +1466,7 @@ for the status information.
   * `run_id_in integer`
   * `name_in text`
 * *Returns*: `void`
+* *Last defined on version*: 24
 
 Delete a queue artifact.
 
@@ -1406,6 +1478,7 @@ Delete a queue artifact.
   * `stability text`
   * `description text`
 * *Returns*: `void`
+* *Last defined on version*: 45
 
 Delete a queue provisioner.
 
@@ -1418,6 +1491,7 @@ Delete a queue provisioner.
   * `stability text`
   * `description text`
 * *Returns*: `void`
+* *Last defined on version*: 44
 
 Delete a queue worker type.
 
@@ -1429,6 +1503,7 @@ Delete a queue worker type.
   * `scheduler_id_in text`
   * `expires_in timestamptz`
 * *Returns*: `void`
+* *Last defined on version*: 49
 
 Ensure that the given task group exists, has the matching scheduler_id,
 and has an expiration greater than the given expiration.  Expiration is
@@ -1442,6 +1517,7 @@ scheduler_id.
 * *Arguments*:
   * `expires_in timestamptz`
 * *Returns*: `integer`
+* *Last defined on version*: 43
 
 Expire non-quarantined queue workers that come before `expires_in`.
 Returns a count of rows that have been deleted.
@@ -1452,6 +1528,7 @@ Returns a count of rows that have been deleted.
 * *Arguments*:
   * `expires_in timestamptz`
 * *Returns*: `integer`
+* *Last defined on version*: 28
 
 Delete task dependencies with expiration dates before `expires_in`.
 Returns a count of rows that have been deleted.
@@ -1462,6 +1539,7 @@ Returns a count of rows that have been deleted.
 * *Arguments*:
   * `expires_in timestamptz`
 * *Returns*: `integer`
+* *Last defined on version*: 28
 
 Delete task groups with expiration dates before `expires_in`.
 Returns a count of rows that have been deleted.
@@ -1472,6 +1550,7 @@ Returns a count of rows that have been deleted.
 * *Arguments*:
   * `expires_in timestamptz`
 * *Returns*: `integer`
+* *Last defined on version*: 53
 
 Expire task queues that come before `expires_in`.
 Returns a count of rows that have been deleted.
@@ -1482,6 +1561,7 @@ Returns a count of rows that have been deleted.
 * *Arguments*:
   * `expires_in timestamptz`
 * *Returns*: `integer`
+* *Last defined on version*: 28
 
 Delete tasks with expiration dates before `expires_in`.
 Returns a count of rows that have been deleted.
@@ -1499,6 +1579,7 @@ Returns a count of rows that have been deleted.
   * `dependent_task_id text`
   * `requires task_requires`
   * `satisfied boolean`
+* *Last defined on version*: 46
 
 Get the un-expired tasks that depend on this one, limiting to only (un)satisfied
 dependencies if `satisfied_in` is not null.
@@ -1524,6 +1605,7 @@ added or removed.  Typically only one of `page_offset_in` and
   * `details jsonb`
   * `present boolean`
   * `expires timestamptz`
+* *Last defined on version*: 24
 
 Get a queue artifact. The returned table will have one or zero row.
 
@@ -1547,6 +1629,7 @@ Get a queue artifact. The returned table will have one or zero row.
   * `details jsonb`
   * `present boolean`
   * `expires timestamptz`
+* *Last defined on version*: 57
 
 Get existing queue artifacts, filtered by the optional arguments, ordered
 by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify
@@ -1571,6 +1654,7 @@ in the previous page.
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
   * `etag uuid`
+* *Last defined on version*: 53
 
 Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
@@ -1592,6 +1676,7 @@ Workers are not considered expired until after their quarantine date expires.
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
   * `etag uuid`
+* *Last defined on version*: 53
 
 Get non-expired queue workers ordered by task_queue_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
@@ -1607,6 +1692,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `   task_group_id text`
   * `  scheduler_id text`
   * `  expires timestamptz `
+* *Last defined on version*: 28
 
 Get a task group.
 
@@ -1637,6 +1723,7 @@ Get a task group.
   * `  extra jsonb`
   * `  runs jsonb`
   * `  taken_until timestamptz `
+* *Last defined on version*: 63
 
 Get all properties of a task.  Note that all properties but `runs`,
 `retries_left`, and `taken_until` are immutable.
@@ -1654,6 +1741,7 @@ Get all properties of a task.  Note that all properties but `runs`,
   * `description text`
   * `stability text`
   * `etag uuid`
+* *Last defined on version*: 53
 
 Get a non-expired task queue by task_queue_id.
 
@@ -1672,6 +1760,7 @@ Get a non-expired task queue by task_queue_id.
   * `description text`
   * `stability text`
   * `etag uuid`
+* *Last defined on version*: 53
 
 Get task queues ordered by `task_queue_id`.
 If the pagination arguments are both NULL, all rows are returned.
@@ -1706,6 +1795,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `  extra jsonb`
   * `  runs jsonb`
   * `  taken_until timestamptz `
+* *Last defined on version*: 63
 
 Get all properties of all tasks in the given task group.
 
@@ -1715,6 +1805,7 @@ Get all properties of all tasks in the given task group.
 * *Arguments*:
   * `dependent_task_id_in text`
 * *Returns*: `boolean`
+* *Last defined on version*: 28
 
 Return true if the task has remaining un-satisfied dependencies.
 
@@ -1724,6 +1815,7 @@ Return true if the task has remaining un-satisfied dependencies.
 * *Arguments*:
   * `task_group_id_in text`
 * *Returns*: `boolean`
+* *Last defined on version*: 28
 
 temp, removed in next commit
 
@@ -1733,6 +1825,7 @@ temp, removed in next commit
 * *Arguments*:
   * `task_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 28
 
 temp, removed in next commit
 
@@ -1752,6 +1845,7 @@ temp, removed in next commit
   * `expires timestamptz`
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
+* *Last defined on version*: 64
 
 Update the quarantine_until date for a worker.  The Queue service interprets a date in the past
 as "not quarantined".  This function also "bumps" the expiration of the worker so that un-quarantined
@@ -1767,6 +1861,7 @@ no such worker exists.
   * `worker_id_in text`
   * `expires_in timestamptz`
 * *Returns*: `void`
+* *Last defined on version*: 64
 
 Recognize that a worker has been seen by the queue, creating it if necessary.  This is called
 when workers claim or re-claim work.  The expiration time is not allowed to move backward.
@@ -1783,6 +1878,7 @@ client side.
   * `worker_id_in text`
   * `task_run_in jsonb`
 * *Returns*: `void`
+* *Last defined on version*: 64
 
 Update the worker record to indicate that this task run was seen there.  The
 task run should be a JSON object with keys `taskId` and `runId`.  This will
@@ -1801,6 +1897,7 @@ unusual for a nonexistent worker to claim work.
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
+* *Last defined on version*: 28
 
 Relaim the given run of the given task run, until the new taken_until time.
 This returns the task's updated status, or nothing if the current status was not as expected.
@@ -1811,6 +1908,7 @@ This returns the task's updated status, or nothing if the current status was not
 * *Arguments*:
   * `task_id text`
 * *Returns*: `void`
+* *Last defined on version*: 28
 
 Remove the given task, regardless of its expiration status.  This is
 typically used when task creation has failed.
@@ -1822,6 +1920,7 @@ typically used when task creation has failed.
   * `dependent_task_id_in text`
   * `required_task_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 28
 
 Mark the given dependency as satisfied.  If the dependency does not exist, nothing
 happens.
@@ -1835,6 +1934,7 @@ happens.
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
+* *Last defined on version*: 28
 
 Ensure that no run is currently running or pending, and then create a new
 pending run with the given reason.  This also resets the retries_left
@@ -1855,6 +1955,7 @@ current status was not as expected.
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
+* *Last defined on version*: 28
 
 Resolve the given run with the given state and reason, setting
 run.resolved and resetting `taken_until`.  If `retry_reason` is not null
@@ -1871,6 +1972,7 @@ or nothing if the current status was not as expected.
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
+* *Last defined on version*: 28
 
 The given task has reached its deadline, so mark it as resolved, adding a
 run if necessary.  This returns the task's updated status, or nothing if
@@ -1883,6 +1985,7 @@ the current status was not as expected.
   * `dependent_task_id_in text`
   * `required_task_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 28
 
 Mark the given dependency as satisfied.  If the dependency does not exist, nothing
 happens.
@@ -1897,6 +2000,7 @@ happens.
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
+* *Last defined on version*: 28
 
 Schedule the initial run for a task, moving the task from "unscheduled" to "pending".
 This returns the task's updated status, or nothing if the current status was not
@@ -1911,6 +2015,7 @@ as expected.
   * `description_in text`
   * `stability_in text`
 * *Returns*: `void`
+* *Last defined on version*: 64
 
 Recognize that a task queue has been seen, creating it if necessary, updating
 its properties if not null, and in any case bumping its last seen time time. 
@@ -1938,6 +2043,7 @@ client side.
   * `details jsonb`
   * `present boolean`
   * `expires timestamptz`
+* *Last defined on version*: 62
 
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
@@ -1963,6 +2069,7 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
 * *Arguments*:
   * `name_in text`
 * *Returns*: `void`
+* *Last defined on version*: 42
 
 Delete a secret entirely
 
@@ -1971,6 +2078,7 @@ Delete a secret entirely
 * *Mode*: write
 * *Arguments*:
 * *Returns*: `integer`
+* *Last defined on version*: 42
 
 Delete all secrets with an 'expires' in the past.
 
@@ -1983,6 +2091,7 @@ Delete all secrets with an 'expires' in the past.
   * `name text`
   * `encrypted_secret jsonb`
   * `expires timestamptz`
+* *Last defined on version*: 42
 
 Get a single secret (including secret content and expiration)
 
@@ -1994,6 +2103,7 @@ Get a single secret (including secret content and expiration)
   * `page_offset_in integer`
 * *Returns*: `table`
   * `name text`
+* *Last defined on version*: 42
 
 Get many secrets at once. This only includes names.
 Fetch an individual secret to get the contents
@@ -2006,6 +2116,7 @@ Fetch an individual secret to get the contents
   * `encrypted_secret_in jsonb`
   * `expires_in timestamptz`
 * *Returns*: `void`
+* *Last defined on version*: 42
 
 Store an encrypted secret whether it is new or being updated
 
@@ -2032,6 +2143,7 @@ Store an encrypted secret whether it is new or being updated
   * `user_id_in text`
   * `encrypted_access_token_in jsonb`
 * *Returns*: `void`
+* *Last defined on version*: 27
 
 Sets the encrypted access token for `user_id_in` to
 `encrypted_access_token_in`.
@@ -2061,6 +2173,7 @@ to `encrypted_access_token_in`.
   * `identity_provider_id text`
   * `expires timestamptz`
   * `client_details jsonb`
+* *Last defined on version*: 40
 
 Create an access token entry.
 
@@ -2083,6 +2196,7 @@ Create an access token entry.
   * `identity_provider_id text`
   * `expires timestamptz`
   * `client_details jsonb`
+* *Last defined on version*: 39
 
 Create an authorization code.
 
@@ -2092,6 +2206,7 @@ Create an authorization code.
 * *Arguments*:
   * `expires_in timestamptz`
 * *Returns*: `integer`
+* *Last defined on version*: 40
 
 Delete access token entries that expireq before the current time.
 Returns a count of rows that have been deleted.
@@ -2102,6 +2217,7 @@ Returns a count of rows that have been deleted.
 * *Arguments*:
   * `expires_in timestamptz`
 * *Returns*: `integer`
+* *Last defined on version*: 39
 
 Delete authorization codes that expire before `expires_in`.
 Returns a count of rows that have been deleted.
@@ -2111,6 +2227,7 @@ Returns a count of rows that have been deleted.
 * *Mode*: write
 * *Arguments*:
 * *Returns*: `integer`
+* *Last defined on version*: 38
 
 Delete sessions that expire before the current time.
 Returns a count of rows that have been deleted.
@@ -2129,6 +2246,7 @@ Returns a count of rows that have been deleted.
   * `identity_provider_id text`
   * `expires timestamptz`
   * `client_details jsonb`
+* *Last defined on version*: 40
 
 Get an access token entry.
 
@@ -2145,6 +2263,7 @@ Get an access token entry.
   * `identity_provider_id text`
   * `expires timestamptz`
   * `client_details jsonb`
+* *Last defined on version*: 39
 
 Get an authorization code entry given a code.
 
@@ -2155,6 +2274,7 @@ Get an authorization code entry given a code.
   * `user_id_in text`
 * *Returns*: `table`
   * `encrypted_access_token jsonb`
+* *Last defined on version*: 27
 
 Returns the encrypted github access token for a given user.
 
@@ -2167,6 +2287,7 @@ Returns the encrypted github access token for a given user.
   * `data_in jsonb`
   * `expires_in timestamptz`
 * *Returns*: `void`
+* *Last defined on version*: 38
 
 Set a session.
 
@@ -2184,6 +2305,7 @@ with the data in `data_in`.
   * `encrypted_session_id jsonb`
   * `data jsonb`
   * `expires timestamptz`
+* *Last defined on version*: 38
 
 Returns the session for a given hashed session id.
 
@@ -2193,6 +2315,7 @@ Returns the session for a given hashed session id.
 * *Arguments*:
   * `hashed_session_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 38
 
 Removes a web session
 
@@ -2204,6 +2327,7 @@ Removes a web session
   * `data_in jsonb`
   * `expires_in timestamptz`
 * *Returns*: `void`
+* *Last defined on version*: 38
 
 Touch a given session given a hashed session id and session `data`.
 If the hashed session id does not exist, then an error code `P0002` will be thrown.
@@ -2247,6 +2371,7 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
   * `last_modified_in timestamptz`
   * `last_checked_in timestamptz`
 * *Returns*: `uuid`
+* *Last defined on version*: 12
 
 Create a new worker. Raises UNIQUE_VIOLATION if the worker already exists.
 Returns the etag of the newly created worker.
@@ -2266,6 +2391,7 @@ Returns the etag of the newly created worker.
   * `email_on_error_in boolean`
   * `provider_data_in jsonb`
 * *Returns*: `void`
+* *Last defined on version*: 10
 
 Create a new worker pool.  Raises UNIQUE_VIOLATION if the pool already exists.
 
@@ -2281,6 +2407,7 @@ Create a new worker pool.  Raises UNIQUE_VIOLATION if the pool already exists.
   * `description_in text`
   * `extra_in jsonb`
 * *Returns*: `uuid`
+* *Last defined on version*: 29
 
 Create a new worker pool error.  Raises UNIQUE_VIOLATION if the error already exists.
 
@@ -2292,6 +2419,7 @@ Create a new worker pool error.  Raises UNIQUE_VIOLATION if the error already ex
   * `worker_group_in text`
   * `worker_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 12
 
 Delete a worker.
 
@@ -2301,6 +2429,7 @@ Delete a worker.
 * *Arguments*:
   * `worker_pool_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 10
 
 Delete a worker pool immediately.
 
@@ -2311,6 +2440,7 @@ Delete a worker pool immediately.
   * `error_id_in text`
   * `worker_pool_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 29
 
 Delete a worker pool error immediately.
 
@@ -2320,6 +2450,7 @@ Delete a worker pool error immediately.
 * *Arguments*:
   * `expires_in timestamptz`
 * *Returns*: `integer`
+* *Last defined on version*: 29
 
 Expire worker pool errors reported before `expires_in`.
 Returns a count of rows that have been deleted.
@@ -2330,6 +2461,7 @@ Returns a count of rows that have been deleted.
 * *Arguments*:
 * *Returns*: `table`
   * `worker_pool_id text`
+* *Last defined on version*: 10
 
 Expire worker pools, deleting those which have provider-id null-provider and
 no previous_provider_ids.  Returns the worker pool ids that it deletes.
@@ -2340,6 +2472,7 @@ no previous_provider_ids.  Returns the worker pool ids that it deletes.
 * *Arguments*:
   * `expires_in timestamptz`
 * *Returns*: `integer`
+* *Last defined on version*: 12
 
 Expire workers that come before `expires_in`.
 Returns a count of rows that have been deleted.
@@ -2368,6 +2501,7 @@ Returns a count of rows that have been deleted.
   * `secret jsonb`
   * `etag uuid`
   * `quarantine_until timestamptz`
+* *Last defined on version*: 66
 
 Get non-stopped workers filtered by the optional arguments,
 ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
@@ -2398,6 +2532,7 @@ quaratined.
   * `last_checked timestamptz`
   * `secret jsonb`
   * `etag uuid`
+* *Last defined on version*: 14
 
 Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.
 
@@ -2415,6 +2550,7 @@ Get an existing worker. The returned table will have one or (if no such worker i
   * `title text`
   * `description text`
   * `extra jsonb`
+* *Last defined on version*: 29
 
 Get an existing worker pool error.  The returned table will have one or (if no such worker pool error is defined) zero rows.
 
@@ -2434,6 +2570,7 @@ Get an existing worker pool error.  The returned table will have one or (if no s
   * `title text`
   * `description text`
   * `extra jsonb`
+* *Last defined on version*: 31
 
 Get existing worker pool errors filtered by `worker_pool_id` and `error_id`,
 ordered by `reported`.
@@ -2457,6 +2594,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `email_on_error boolean`
   * `provider_data jsonb`
   * `current_capacity integer`
+* *Last defined on version*: 13
 
 Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.
 
@@ -2478,6 +2616,7 @@ Get an existing worker pool.  The returned table will have one or (if no such wo
   * `email_on_error boolean`
   * `provider_data jsonb`
   * `current_capacity integer`
+* *Last defined on version*: 13
 
 Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
@@ -2503,6 +2642,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `capacity integer`
   * `last_modified timestamptz`
   * `last_checked timestamptz`
+* *Last defined on version*: 48
 
 Get existing workers (without their `provider_data`) filtered by the optional arguments,
 ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
@@ -2516,6 +2656,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `worker_pool_id_in text`
   * `provider_id_in text`
 * *Returns*: `void`
+* *Last defined on version*: 10
 
 Remove the given provider_id from the worker pool's previous_provider_ids.  It is
 not an error if the worker pool does not exist, or if the provider_id is not in the
@@ -2552,6 +2693,7 @@ previous_provider_ids set.
   * `last_checked timestamptz`
   * `etag uuid`
   * `secret jsonb`
+* *Last defined on version*: 14
 
 Update a worker.
 Returns the up-to-date worker row that have the same worker_pool_id, worker_group, and worker_id.
@@ -2566,6 +2708,7 @@ Else, the function will fail if the etag is out of date. This is useful for conc
   * `provider_id_in text`
   * `provider_data_in jsonb`
 * *Returns*: `void`
+* *Last defined on version*: 10
 
 Update the provider_data for the given provider_id in this worker pool.  Note that
 this sets the provider_data property unconditionally, and it is up to the service
@@ -2594,6 +2737,7 @@ worker pool does not exist.
   * `email_on_error boolean`
   * `previous_provider_id text`
   * `current_capacity integer`
+* *Last defined on version*: 13
 
 Update API-accessible columns on an existig worker pool.  All fields are
 overridden, but if the provider_id changes, then the existing provider_id

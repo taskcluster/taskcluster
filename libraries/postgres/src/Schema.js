@@ -125,6 +125,7 @@ class Schema {
           if (method.deprecated) {
             Object.assign(method, acc.get(name), { deprecated: true });
           }
+          method.version = version.version;
           acc.set(name, method);
         });
         return acc;
