@@ -97,7 +97,9 @@ export default class Roles extends PureComponent {
   };
 
   handleDialogActionComplete = () => {
-    this.setState({ deleteRoleId: null, dialogError: null });
+    this.setState({ dialogOpen: false, deleteRoleId: null, dialogError: null });
+
+    this.props.data.refetch();
   };
 
   handleDialogActionClose = () => {
@@ -117,8 +119,6 @@ export default class Roles extends PureComponent {
       mutation: deleteRoleQuery,
       variables: { roleId },
     });
-
-    this.props.history.push(`/auth/roles`);
   };
 
   render() {

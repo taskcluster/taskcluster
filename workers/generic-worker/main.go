@@ -207,6 +207,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			DownloadsDir:                   "downloads",
 			IdleTimeoutSecs:                0,
 			LiveLogExecutable:              "livelog",
+			LiveLogPortBase:                60098,
 			NumberOfTasksToRun:             0,
 			ProvisionerID:                  "test-provisioner",
 			RequiredDiskSpaceMegabytes:     10240,

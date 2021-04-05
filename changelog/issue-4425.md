@@ -1,5 +1,4 @@
 audience: developers
-level: minor
-reference: issue 4425
+level: patch
 ---
-The go client now provides convenience methods for uploading/downloading objects to/from the Object Service.
+The client libraries (Go, Python, Rust, and JS) now provide convenience methods for uploading/downloading objects to/from the Object Service.

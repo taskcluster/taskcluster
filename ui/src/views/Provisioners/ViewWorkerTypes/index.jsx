@@ -66,12 +66,7 @@ export default class ViewWorkerTypes extends Component {
           previousCursor,
         },
       },
-      updateQuery(
-        previousResult,
-        {
-          fetchMoreResult: { workerTypes },
-        }
-      ) {
+      updateQuery(previousResult, { fetchMoreResult: { workerTypes } }) {
         const { edges, pageInfo } = workerTypes;
 
         if (!edges.length) {

@@ -25,11 +25,11 @@ type (
 		// Max length: 500
 		ProjectID string `json:"projectId"`
 
-		// Upload methods, with details, that the caller is prepared to execute.  If this
-		// object is empty, then the server will reject the request but still create the
-		// upload with the given `uploadId` and `expires`, so any subsequent calls must
-		// share those values.  The server may choose any of the proposed methods at its
-		// discretion.
+		// Upload methods, with details, that the caller is prepared to execute.  If
+		// this object is empty, then the server will reject the request but still
+		// create the upload with the given `uploadId`, `projectId`, and `expires`,
+		// so any subsequent calls must share those values.  The server may choose
+		// any of the proposed methods at its discretion.
 		ProposedUploadMethods ProposedUploadMethods `json:"proposedUploadMethods"`
 
 		// Unique identifier for this upload.   Once an object is created with an uploadId,
@@ -115,11 +115,11 @@ type (
 		Method string `json:"method"`
 	}
 
-	// Upload methods, with details, that the caller is prepared to execute.  If this
-	// object is empty, then the server will reject the request but still create the
-	// upload with the given `uploadId` and `expires`, so any subsequent calls must
-	// share those values.  The server may choose any of the proposed methods at its
-	// discretion.
+	// Upload methods, with details, that the caller is prepared to execute.  If
+	// this object is empty, then the server will reject the request but still
+	// create the upload with the given `uploadId`, `projectId`, and `expires`,
+	// so any subsequent calls must share those values.  The server may choose
+	// any of the proposed methods at its discretion.
 	ProposedUploadMethods struct {
 
 		// Upload data included directly in the request.  The data has a fixed maximum length, so this should
