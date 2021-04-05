@@ -1,9 +1,10 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
+import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import PlusIcon from 'mdi-react/PlusIcon';
 import escapeStringRegexp from 'escape-string-regexp';
 import qs from 'qs';
@@ -14,9 +15,12 @@ import HelpView from '../../../components/HelpView';
 import Button from '../../../components/Button';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../../utils/constants';
 import ErrorPanel from '../../../components/ErrorPanel';
+import DialogAction from '../../../components/DialogAction';
 import secretsQuery from './secrets.graphql';
+import deleteSecretQuery from './deleteSecret.graphql';
 
 @hot(module)
+@withApollo
 @graphql(secretsQuery, {
   options: props => {
     const { search } = qs.parse(props.location.search.slice(1));
@@ -40,6 +44,12 @@ import secretsQuery from './secrets.graphql';
   },
 }))
 export default class ViewSecrets extends Component {
+  state = {
+    dialogOpen: false,
+    deleteSecretName: null,
+    dialogError: null,
+  };
+
   handleSecretSearchSubmit = async secretSearch => {
     const {
       data: { refetch },
@@ -106,7 +116,41 @@ export default class ViewSecrets extends Component {
     });
   };
 
+  handleDeleteSecret = () => {
+    this.setState({ dialogError: null });
+
+    const name = this.state.deleteSecretName;
+
+    return this.props.client.mutate({
+      mutation: deleteSecretQuery,
+      variables: { name },
+    });
+  };
+
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error });
+  };
+
+  handleDialogActionComplete = () => {
+    this.setState({ dialogOpen: false, deleteSecretName: null });
+
+    this.props.data.refetch();
+  };
+
+  handleDialogActionClose = () => {
+    this.setState({
+      dialogOpen: false,
+      deleteSecretName: null,
+      dialogError: null,
+    });
+  };
+
+  handleDialogActionOpen = secretName => {
+    this.setState({ dialogOpen: true, deleteSecretName: secretName });
+  };
+
   render() {
+    const { dialogOpen, deleteSecretName, dialogError } = this.state;
     const {
       classes,
       description,
@@ -135,6 +179,7 @@ export default class ViewSecrets extends Component {
               searchTerm={secretSearch}
               onPageChange={this.handlePageChange}
               secretsConnection={secrets}
+              onDialogActionOpen={this.handleDialogActionOpen}
             />
           )}
           <Button
@@ -149,6 +194,23 @@ export default class ViewSecrets extends Component {
             color="secondary">
             <PlusIcon />
           </Button>
+          {dialogOpen && (
+            <DialogAction
+              open={dialogOpen}
+              onSubmit={this.handleDeleteSecret}
+              onComplete={this.handleDialogActionComplete}
+              onClose={this.handleDialogActionClose}
+              onError={this.handleDialogActionError}
+              error={dialogError}
+              title="Delete Secret?"
+              body={
+                <Typography variant="body2">
+                  This will delete the secret {deleteSecretName}.
+                </Typography>
+              }
+              confirmText="Delete Secret"
+            />
+          )}
         </Fragment>
       </Dashboard>
     );
