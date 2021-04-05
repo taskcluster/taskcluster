@@ -168,6 +168,8 @@ exports.updateDbFns = async (schema, releases, currentTcVersion) => {
         output.push(`* *Returns*: \`${returns}\``);
       }
 
+      output.push(`* *Last defined on version*: ${method.version}`);
+
       output.push('');
       output.push(method.description);
       output.push('');
