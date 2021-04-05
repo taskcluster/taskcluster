@@ -216,6 +216,10 @@ azure_queue_messages:
   visible: timestamp with time zone not null
   expires: timestamp with time zone not null
   pop_receipt: uuid
+object_hashes:
+  name: text not null
+  algorithm: text not null
+  hash: text not null
 objects:
   name: text not null
   project_id: text not null

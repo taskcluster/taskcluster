@@ -5,6 +5,8 @@ Tests of uploads and downloads using local fakes and requiring no credentials.
 import pytest
 import httptest
 import requests
+import io
+import hashlib
 
 import taskcluster
 from taskcluster import upload, download
@@ -48,6 +50,27 @@ class FakeObject:
         assert payload["projectId"] == self.lastProjectId
 
         return {}
+
+
+def test_hashing_reader_hashes():
+    hashingReader = upload.HashingReader(io.BytesIO(b"some data"))
+    assert(hashingReader.read(4) == b"some")
+    assert(hashingReader.read(1) == b" ")
+    assert(hashingReader.read(16) == b"data")
+    assert(hashingReader.read(16) == b"")
+
+    exp = {}
+    h = hashlib.sha256()
+    h.update(b"some data")
+    exp["sha256"] = h.hexdigest()
+    h = hashlib.sha512()
+    h.update(b"some data")
+    exp["sha512"] = h.hexdigest()
+
+    assert(hashingReader.hashes(9) == exp)
+
+    with pytest.raises(RuntimeError):
+        hashingReader.hashes(999)
 
 
 def test_simple_download_fails():
@@ -133,6 +156,7 @@ def test_putUrl_upload_fails(randbytes):
         def do_PUT(self):
             nonlocal attempts
             attempts += 1
+            self.rfile.read(len(data))
             self.send_response(400)
             self.end_headers()
             self.wfile.write(b'uhoh')
@@ -161,6 +185,7 @@ def test_putUrl_upload_fails_retried(randbytes):
         def do_PUT(self):
             nonlocal attempts
             attempts += 1
+            self.rfile.read(len(data))
             self.send_response(500)
             self.end_headers()
             self.wfile.write(b'uhoh')

@@ -18,6 +18,14 @@ type (
 		// be changed in subsequent calls to the same method.
 		Expires tcclient.Time `json:"expires"`
 
+		// Hashes of the content of this object.  These values will be verified by
+		// well-behaved downloaders.  The format is `{alogrithm: value}`.  Multiple
+		// calls to `createUpload` for the same object can specify additional hashes,
+		// but existing hashes cannot be changed; this allows "amending" an upload
+		// with hashes after the data has been transferred, for example.  Omitting
+		// this property is the same as specifying `hashes: {}`.
+		Hashes ObjectContentHashes `json:"hashes,omitempty"`
+
 		// Project identifier.
 		//
 		// Syntax:     ^([a-zA-Z0-9._/-]*)$
@@ -95,6 +103,14 @@ type (
 
 	FinishUploadRequest struct {
 
+		// Hashes of the content of this object.  These values will be verified by
+		// well-behaved downloaders.  The format is `{alogrithm: value}`.  Multiple
+		// calls to `createUpload` for the same object can specify additional hashes,
+		// but existing hashes cannot be changed; this allows "amending" an upload
+		// with hashes after the data has been transferred, for example.  Omitting
+		// this property is the same as specifying `hashes: {}`.
+		Hashes ObjectContentHashes `json:"hashes,omitempty"`
+
 		// Project identifier.
 		//
 		// Syntax:     ^([a-zA-Z0-9._/-]*)$
@@ -113,6 +129,37 @@ type (
 
 		// Constant value: "HTTP:GET"
 		Method string `json:"method"`
+	}
+
+	// Hashes of the content of this object.  These values will be verified by
+	// well-behaved downloaders.  The format is `{alogrithm: value}`.  Multiple
+	// calls to `createUpload` for the same object can specify additional hashes,
+	// but existing hashes cannot be changed; this allows "amending" an upload
+	// with hashes after the data has been transferred, for example.  Omitting
+	// this property is the same as specifying `hashes: {}`.
+	ObjectContentHashes struct {
+
+		// Syntax:     ^[a-z0-9]{64}$
+		Sha256 string `json:"sha256,omitempty"`
+
+		// Syntax:     ^[a-z0-9]{128}$
+		Sha512 string `json:"sha512,omitempty"`
+	}
+
+	// Metadata about an object.
+	ObjectMetadata struct {
+		Expires tcclient.Time `json:"expires"`
+
+		// Hashes of the content of this object, in the format `{alogrithm: value}`.  See
+		// the `createUpload` request for the list of supported hash algorithms.
+		//
+		// Map entries:
+		Hashes map[string]string `json:"hashes"`
+
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId"`
 	}
 
 	// Upload methods, with details, that the caller is prepared to execute.  If

@@ -20,6 +20,7 @@ if six.PY2:
 import base64
 from shutil import copyfileobj
 import io
+import hashlib
 
 import requests
 
@@ -62,12 +63,20 @@ def upload(*, projectId, name, contentType, contentLength, expires,
     The `objectService` parameter is an instance of the Object class,
     configured with credentials for the upload.
     """
+    # wrap the readerFactory with one that will also hash the data
+    hashingReader = None
+
+    def hashingReaderFactory():
+        nonlocal hashingReader
+        hashingReader = HashingReader(readerFactory())
+        return hashingReader
+
     with requests.Session() as session:
         uploadId = taskcluster.slugid.v4()
         proposedUploadMethods = {}
 
         if contentLength < DATA_INLINE_MAX_SIZE:
-            reader = readerFactory()
+            reader = hashingReaderFactory()
             writer = io.BytesIO()
             copyfileobj(reader, writer)
             encoded = base64.b64encode(writer.getbuffer())
@@ -95,7 +104,7 @@ def upload(*, projectId, name, contentType, contentLength, expires,
                     # data is already uploaded -- nothing to do
                     pass
                 elif 'putUrl' in uploadMethod:
-                    reader = readerFactory()
+                    reader = hashingReaderFactory()
                     _putUrlUpload(uploadMethod['putUrl'], reader, session)
                 else:
                     raise RuntimeError("Could not negotiate an upload method")
@@ -103,13 +112,19 @@ def upload(*, projectId, name, contentType, contentLength, expires,
                 # treat 4xx's as fatal, and retry others
                 if hasattr(exc, 'response') and 400 <= exc.response.status_code < 500:
                     raise exc
+                print("1", exc)
                 return retryFor(exc)
             except requests.RequestException as exc:
                 # retry for all other requests errors
+                print("2", exc)
                 return retryFor(exc)
             # .. anything else is considered fatal
 
         retry(maxRetries, tryUpload)
+
+        # TODO: pass this value to finishUpload when the deployed instance supports it
+        # https://github.com/taskcluster/taskcluster/issues/4714
+        hashingReader.hashes(contentLength)
 
         objectService.finishUpload(name, {
             "projectId": projectId,
@@ -120,3 +135,33 @@ def upload(*, projectId, name, contentType, contentLength, expires,
 def _putUrlUpload(method, reader, session):
     resp = session.put(method['url'], headers=method['headers'], data=reader)
     resp.raise_for_status()
+
+
+class HashingReader:
+    """A Reader implementation that hashes contents as they are read."""
+
+    def __init__(self, inner):
+        self.inner = inner
+        self.sha256 = hashlib.sha256()
+        self.sha512 = hashlib.sha512()
+        self.bytes = 0
+
+    def read(self, max_size):
+        chunk = self.inner.read(max_size)
+        self.update(chunk)
+        return chunk
+
+    def update(self, chunk):
+        self.sha256.update(chunk)
+        self.sha512.update(chunk)
+        self.bytes += len(chunk)
+
+    def hashes(self, contentLength):
+        """Return the hsahes in a format suitable for finishUpload, first checking that all the bytes
+        in the content were hashed."""
+        if contentLength != self.bytes:
+            raise RuntimeError(f"hashed {self.bytes} bytes but content length is {contentLength}")
+        return {
+            "sha256": self.sha256.hexdigest(),
+            "sha512": self.sha512.hexdigest(),
+        }

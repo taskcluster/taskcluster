@@ -14,6 +14,7 @@ export default class Object extends Client {
     this.createUpload.entry = {"args":["name"],"category":"Upload","input":true,"method":"put","name":"createUpload","output":true,"query":[],"route":"/upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.finishUpload.entry = {"args":["name"],"category":"Upload","input":true,"method":"post","name":"finishUpload","query":[],"route":"/finish-upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.startDownload.entry = {"args":["name"],"category":"Download","input":true,"method":"put","name":"startDownload","output":true,"query":[],"route":"/start-download/<name>","scopes":"object:download:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.object.entry = {"args":["name"],"category":"Objects","method":"get","name":"object","output":true,"query":[],"route":"/metadata/<name>","scopes":"object:download:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.download.entry = {"args":["name"],"category":"Download","method":"get","name":"download","query":[],"route":"/download/<name>","scopes":"object:download:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
@@ -38,7 +39,8 @@ export default class Object extends Client {
   // upload an object of that name, regardless of scopes.  Object expiration
   // cannot be changed after the initial call, either.  It is possible to call
   // this method with no proposed upload methods, which has the effect of "locking
-  // in" the `expiration` and `uploadId` properties.
+  // in" the `expiration`, `projectId`, and `uploadId` properties and any
+  // supplied hashes.
   // Unfinished uploads expire after 1 day.
   /* eslint-enable max-len */
   createUpload(...args) {
@@ -68,6 +70,15 @@ export default class Object extends Client {
     this.validate(this.startDownload.entry, args);
 
     return this.request(this.startDownload.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get the metadata for the named object.  This metadata is not sufficient to
+  // get the object's content; for that use `startDownload`.
+  /* eslint-enable max-len */
+  object(...args) {
+    this.validate(this.object.entry, args);
+
+    return this.request(this.object.entry, args);
   }
   /* eslint-disable max-len */
   // Get the data in an object directly.  This method does not return a JSON body, but

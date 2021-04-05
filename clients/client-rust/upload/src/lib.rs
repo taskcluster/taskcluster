@@ -18,7 +18,7 @@ This is accomplished with the [`AsyncReaderFactory`](crate::AsyncReaderFactory) 
 Users for whom the supplied convenience functions are inadequate can add their own implementation of this trait.
 
  */
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, Context as ErrorContext, Result};
 use reqwest::Body;
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -31,6 +31,7 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeekExt, SeekFrom};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 mod factory;
+mod hashing;
 mod service;
 
 pub use factory::{AsyncReaderFactory, CursorReaderFactory, FileReaderFactory};
@@ -121,11 +122,12 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
     content_type: &str,
     content_length: u64,
     expires: &DateTime<Utc>,
-    mut reader_factory: ARF,
+    reader_factory: ARF,
     retry: &Retry,
     object_service: &O,
     upload_id: &str,
 ) -> Result<()> {
+    let mut reader_factory = hashing::HasherAsyncReaderFactory::new(reader_factory);
     let mut proposed_upload_methods = json!({});
 
     // if the data is short enough, try a data-inline upload
@@ -133,6 +135,7 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
         let mut buf = vec![];
         let mut reader = reader_factory.get_reader().await?;
         reader.read_to_end(&mut buf).await?;
+        println!("read {} bytes", buf.len());
         let data_b64 = base64::encode(buf);
         proposed_upload_methods["dataInline"] = json!({
             "contentType": content_type,
@@ -196,6 +199,10 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
             None => return res.context(format!("Download failed after {} attempts", attempts)),
         }
     }
+
+    // TODO: pass this value to finishUpload when the deployed instance supports it
+    // https://github.com/taskcluster/taskcluster/issues/4714
+    let _hashes = reader_factory.hashes(content_length);
 
     // finish the upload
     object_service

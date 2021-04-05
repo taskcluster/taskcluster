@@ -33,6 +33,7 @@
     },
     "object": {
       "tables": {
+        "object_hashes": "write",
         "objects": "write"
       }
     },
@@ -191,6 +192,11 @@
       "namespace": "text not null",
       "rank": "integer not null",
       "task_id": "text not null"
+    },
+    "object_hashes": {
+      "algorithm": "text not null",
+      "hash": "text not null",
+      "name": "text not null"
     },
     "objects": {
       "backend_id": "text not null",
@@ -6077,6 +6083,32 @@
       },
       "migrationScript": "begin\n  grant select on queue_workers to $db_user_prefix$_worker_manager;\nend\n",
       "version": 66
+    },
+    {
+      "description": "add secure storage of object hashes",
+      "downgradeScript": "begin\n  revoke select, insert, update, delete on object_hashes from $db_user_prefix$_object;\n  drop table object_hashes;\nend",
+      "methods": {
+        "add_object_hashes": {
+          "args": "name_in text, hashes_in jsonb",
+          "body": "declare\n  item record;\n  object record;\nbegin\n  select objects.name, objects.upload_id\n    into object\n    from objects\n    where name = name_in;\n  raise log 'object %', object;\n  if not found then\n    raise exception 'object does not exist' using errcode = 'foreign_key_violation';\n  end if;\n  if object.upload_id is null then\n    raise exception 'object upload is already finished' using errcode = 'check_violation';\n  end if;\n\n  -- insert each hash individually; in this case at least all hashes\n  -- end up inserted in the same transaction.  On conflict, we verify\n  -- that the hash value matches.\n  for item in\n    select\n      name_in as name,\n      key as algorithm,\n      value as hash\n    from jsonb_each_text(hashes_in)\n  loop\n    begin\n      insert\n      into object_hashes (name, algorithm, hash)\n      values (item.name, item.algorithm, item.hash);\n    exception\n      when UNIQUE_VIOLATION then\n        perform 1\n        from object_hashes\n        where\n          name = item.name and\n          algorithm = item.algorithm and\n          hash = item.hash;\n        if not found then\n          raise exception 'object hash already exists with different value' using errcode = 'unique_violation';\n        end if;\n    end;\n  end loop;\nend",
+          "deprecated": false,
+          "description": "Add the given hashes, of the form `{algorithm: hash}`, to the named\nobject.  The named object must already exist.  If any of the given\nalgorithms already exist in the table, then the hash must match exactly.\nThis function raises a CHECK_VIOLATION if the object's upload has been\nfinished (upload_id is null) or FOREIGN_KEY_VIOLATION if the object does\nnot exist.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "object"
+        },
+        "get_object_hashes": {
+          "args": "name_in text",
+          "body": "begin\n  return query\n    select\n      object_hashes.algorithm,\n      object_hashes.hash\n    from object_hashes\n    where name = name_in\n    order by algorithm;\nend",
+          "deprecated": false,
+          "description": "Get all hashes for the named object.  If the given object has no hashes,\nor doesn't exist, this function returns an empty result.",
+          "mode": "read",
+          "returns": "table ( algorithm text, hash text )",
+          "serviceName": "object"
+        }
+      },
+      "migrationScript": "begin\n  create table object_hashes (\n    name text not null\n      references objects (name)\n      on delete cascade,\n    algorithm text not null,\n    hash text not null\n  );\n\n  alter table object_hashes add primary key (name, algorithm);\n\n  grant select, insert, update, delete on object_hashes to $db_user_prefix$_object;\nend",
+      "version": 67
     }
   ]
 }

@@ -1,6 +1,8 @@
 const got = require('got');
 const { slugid } = require('./utils');
 const retry = require('./retry');
+const { Transform } = require('stream');
+const { createHash } = require('crypto');
 
 const DATA_INLINE_MAX_SIZE = 8192;
 
@@ -32,6 +34,37 @@ const readFullStream = stream => {
   });
 };
 
+/**
+ * A stream that hashes the bytes passing through it
+ */
+class HashStream extends Transform {
+  constructor() {
+    super();
+    this.sha256 = createHash('sha256');
+    this.sha512 = createHash('sha512');
+    this.bytes = 0;
+  }
+
+  _transform(chunk, enc, cb) {
+    this.sha256.update(chunk);
+    this.sha512.update(chunk);
+    this.bytes += chunk.length;
+    cb(null, chunk);
+  }
+
+  // Return the calculated hashes in a format suitable for finishUpload,
+  // checking that the content length matches the bytes hashed.
+  hashes(contentLength) {
+    if (contentLength !== this.bytes) {
+      throw new Error(`Hashed ${this.bytes} bytes but content length is ${contentLength}`);
+    }
+    return {
+      sha256: this.sha256.digest('hex'),
+      sha512: this.sha512.digest('hex'),
+    };
+  }
+}
+
 const upload = async ({
   projectId,
   name,
@@ -47,6 +80,13 @@ const upload = async ({
 }) => {
   const uploadId = slugid();
 
+  // set up to hash streams as we read them
+  let hashStream;
+  const hashStreamFactory = async () => {
+    hashStream = new HashStream();
+    return (await streamFactory()).pipe(hashStream);
+  };
+
   // apply default retry config
   const retryCfg = {
     retries: retries === undefined ? 5 : retries,
@@ -59,7 +99,7 @@ const upload = async ({
 
   if (contentLength < DATA_INLINE_MAX_SIZE) {
     // get the (small) data as a buffer to include in the request
-    const data = await readFullStream(await streamFactory());
+    const data = await readFullStream(await hashStreamFactory());
 
     proposedUploadMethods.dataInline = {
       contentType,
@@ -77,10 +117,14 @@ const upload = async ({
   if (res.uploadMethod.dataInline) {
     // nothing to do
   } else if (res.uploadMethod.putUrl) {
-    await putUrl({ streamFactory, contentLength, uploadMethod: res.uploadMethod, retryCfg });
+    await putUrl({ streamFactory: hashStreamFactory, contentLength, uploadMethod: res.uploadMethod, retryCfg });
   } else {
     throw new Error("Could not negotiate an upload method");
   }
+
+  // TODO: pass this value to finishUpload when the deployed instance supports it
+  // https://github.com/taskcluster/taskcluster/issues/4714
+  const _ = hashStream.hashes(contentLength);
 
   await object.finishUpload(name, { projectId, uploadId });
 };

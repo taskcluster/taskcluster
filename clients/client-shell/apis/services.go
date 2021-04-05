@@ -933,7 +933,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "createUpload",
 				Title:       "Begin upload of a new object",
-				Description: "Create a new object by initiating upload of its data.\n\nThis endpoint implements negotiation of upload methods.  It can be called\nmultiple times if necessary, either to propose new upload methods or to\nrenew credentials for an already-agreed upload.\n\nThe `name` parameter can contain any printable ASCII character (0x20 - 0x7e).\nThe `uploadId` must be supplied by the caller, and any attempts to upload\nan object with the same name but a different `uploadId` will fail.\nThus the first call to this method establishes the `uploadId` for the\nobject, and as long as that value is kept secret, no other caller can\nupload an object of that name, regardless of scopes.  Object expiration\ncannot be changed after the initial call, either.  It is possible to call\nthis method with no proposed upload methods, which has the effect of \"locking\nin\" the `expiration` and `uploadId` properties.\n\nUnfinished uploads expire after 1 day.",
+				Description: "Create a new object by initiating upload of its data.\n\nThis endpoint implements negotiation of upload methods.  It can be called\nmultiple times if necessary, either to propose new upload methods or to\nrenew credentials for an already-agreed upload.\n\nThe `name` parameter can contain any printable ASCII character (0x20 - 0x7e).\nThe `uploadId` must be supplied by the caller, and any attempts to upload\nan object with the same name but a different `uploadId` will fail.\nThus the first call to this method establishes the `uploadId` for the\nobject, and as long as that value is kept secret, no other caller can\nupload an object of that name, regardless of scopes.  Object expiration\ncannot be changed after the initial call, either.  It is possible to call\nthis method with no proposed upload methods, which has the effect of \"locking\nin\" the `expiration`, `projectId`, and `uploadId` properties and any\nsupplied hashes.\n\nUnfinished uploads expire after 1 day.",
 				Stability:   "experimental",
 				Method:      "put",
 				Route:       "/upload/<name>",
@@ -968,6 +968,19 @@ var services = map[string]definitions.Service{
 				},
 				Query: []string{},
 				Input: "v1/download-object-request.json#",
+			},
+			definitions.Entry{
+				Name:        "object",
+				Title:       "Get an object's metadata",
+				Description: "Get the metadata for the named object.  This metadata is not sufficient to\nget the object's content; for that use `startDownload`.",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/metadata/<name>",
+				Args: []string{
+					"name",
+				},
+				Query: []string{},
+				Input: "",
 			},
 			definitions.Entry{
 				Name:        "download",

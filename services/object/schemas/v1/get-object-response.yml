@@ -1,0 +1,29 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Object Metadata"
+description: |
+  Metadata about an object.
+type:               object
+properties:
+  projectId:
+    title:          "Project Identifier"
+    type:           string
+    minLength:      {$const: projectId-min-length}
+    maxLength:      {$const: projectId-max-length}
+    pattern:        {$const: projectId-pattern}
+  expires:
+    title:          "Expiration"
+    type:           string
+    format:         date-time
+  hashes:
+    title: "Object Content Hashes"
+    description: |
+      Hashes of the content of this object, in the format `{alogrithm: value}`.  See
+      the `createUpload` request for the list of supported hash algorithms.
+    type: object
+    required: []
+    additionalProperties: { type: string }
+additionalProperties: false
+required:
+  - projectId
+  - expires
+  - hashes

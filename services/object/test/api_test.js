@@ -14,7 +14,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withMiddleware(mock, skipping);
   helper.withServer(mock, skipping);
 
-  const createTestObject = async name => {
+  // these don't have to be hashes of anything, just have the right format
+  const sha256 = 'e38808a4dbfdd9c82a351cc9a6055dffc7b4cc8e12020b2685f8eef92f5d1544';
+  const sha512 = sha256 + sha256;
+
+  const createTestObject = async (name, { hashes } = {}) => {
     const data = crypto.randomBytes(128);
     const proposedUploadMethods = {
       dataInline: {
@@ -26,6 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.apiClient.createUpload(name, {
       projectId: 'x',
       uploadId,
+      hashes,
       expires: fromNow('1 year'),
       proposedUploadMethods,
     });
@@ -182,6 +187,72 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(res.uploadMethod, { dataInline: true });
     });
 
+    test('should allow adding new hashes', async function() {
+      const data = crypto.randomBytes(128);
+      const uploadId = taskcluster.slugid();
+      const expires = taskcluster.fromNow('1 day');
+      const proposedUploadMethods = {
+        dataInline: {
+          contentType: 'application/binary',
+          objectData: data.toString('base64'),
+        },
+      };
+
+      let res = await helper.apiClient.createUpload('public/foo', {
+        projectId: 'x',
+        uploadId,
+        expires,
+        hashes: { sha256 },
+        proposedUploadMethods: {}, // propose nothing the first time
+      });
+      assert.equal(res.projectId, 'x');
+      assert.equal(res.uploadId, uploadId);
+      assert.equal(res.expires, expires.toJSON());
+      assert.deepEqual(res.uploadMethod, {}); // no method matched
+
+      res = await helper.apiClient.createUpload('public/foo', {
+        projectId: 'x',
+        uploadId,
+        expires,
+        hashes: { sha256, sha512 },
+        proposedUploadMethods, // propose an actual upload this time
+      });
+      assert.equal(res.projectId, 'x');
+      assert.equal(res.uploadId, uploadId);
+      assert.equal(res.expires, expires.toJSON());
+      assert.deepEqual(res.uploadMethod, { dataInline: true });
+
+      await helper.apiClient.finishUpload('public/foo', { uploadId, projectId: 'x' });
+
+      const objRes = await helper.apiClient.object('public/foo');
+      assert.deepEqual(objRes.hashes, { sha256, sha512 });
+    });
+
+    test('should disallow changing hashes', async function() {
+      const sha256a = 'e38808a4dbfdd9c82a351cc9a6055dffc7b4cc8e12020b2685f8eef92f5d1544';
+      const sha256b = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+      const uploadId = taskcluster.slugid();
+      const expires = taskcluster.fromNow('1 day');
+
+      await helper.apiClient.createUpload('public/foo', {
+        projectId: 'x',
+        uploadId,
+        expires,
+        hashes: { sha256: sha256a },
+        proposedUploadMethods: {},
+      });
+
+      await assert.rejects(
+        () => helper.apiClient.createUpload('public/foo', {
+          projectId: 'x',
+          uploadId,
+          expires,
+          hashes: { sha256: sha256b }, // different sha256 hash
+          proposedUploadMethods: {},
+        }),
+        err => err.statusCode === 409);
+    });
+
     test('should allow a putUrl method', async function() {
       const uploadId = taskcluster.slugid();
       const expires = taskcluster.fromNow('1 day');
@@ -318,7 +389,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         err => err.statusCode === 400);
     });
 
-    test('completes an upload', async function() {
+    test('completes an upload, including hashes', async function() {
       const uploadId = await makeUpload('foo/bar');
 
       // can't download this object yet..
@@ -326,16 +397,74 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         () => helper.apiClient.startDownload('foo/bar', { acceptDownloadMethods: { simple: true } }),
         err => err.stautsCode === 404);
 
-      await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
+      await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256 } });
 
       // now it can be downloaded
       helper.apiClient.startDownload('foo/bar', { acceptDownloadMethods: { simple: true } });
+
+      const res = await helper.apiClient.object('foo/bar');
+      assert.deepEqual(res.hashes, { sha256 });
     });
 
     test('succeeds for an already-completed upload', async function() {
       const uploadId = await makeUpload('foo/bar');
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
+    });
+
+    test('fails for an already-completed upload with different projectId', async function() {
+      const uploadId = await makeUpload('foo/bar');
+      await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
+      await assert.rejects(
+        () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId: 'nosuch' }),
+        err => err.statusCode === 400);
+    });
+
+    test('succeeds for an already-completed upload with hashes', async function() {
+      const uploadId = await makeUpload('foo/bar');
+      await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256, sha512 } });
+      await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256 } });
+    });
+
+    test('fails for an already-completed upload with new hashes', async function() {
+      const uploadId = await makeUpload('foo/bar');
+      await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256 } });
+      await assert.rejects(
+        () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256, sha512 } }),
+        err => err.statusCode === 409);
+    });
+
+    test('fails for an already-completed upload with changed hashes', async function() {
+      const uploadId = await makeUpload('foo/bar');
+      await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256 } });
+      const badSha256 = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+      await assert.rejects(
+        () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256: badSha256 } }),
+        err => err.statusCode === 409);
+    });
+  });
+
+  suite('object method', function() {
+    test('succeeds for an object that exists', async function() {
+      await createTestObject('public/foo');
+      const res = await helper.apiClient.object('public/foo');
+      assert.equal(res.projectId, 'x');
+      assert(new Date(res.expires) > new Date());
+      assert.deepEqual(res.hashes, {});
+    });
+
+    test('contains hashes from upload', async function() {
+      await createTestObject('public/foo', { hashes: { sha256 } });
+      const res = await helper.apiClient.object('public/foo');
+      assert.equal(res.projectId, 'x');
+      assert(new Date(res.expires) > new Date());
+      assert.deepEqual(res.hashes, { sha256 });
+    });
+
+    test('404s for an object that does not exist', async function() {
+      await assert.rejects(
+        () => helper.apiClient.object('public/foo'),
+        err => err.statusCode === 404);
     });
   });
 

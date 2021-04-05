@@ -120,7 +120,8 @@ func (object *Object) Ping() error {
 // upload an object of that name, regardless of scopes.  Object expiration
 // cannot be changed after the initial call, either.  It is possible to call
 // this method with no proposed upload methods, which has the effect of "locking
-// in" the `expiration` and `uploadId` properties.
+// in" the `expiration`, `projectId`, and `uploadId` properties and any
+// supplied hashes.
 //
 // Unfinished uploads expire after 1 day.
 //
@@ -170,6 +171,32 @@ func (object *Object) StartDownload(name string, payload *DownloadObjectRequest)
 	cd := tcclient.Client(*object)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/start-download/"+url.QueryEscape(name), new(DownloadObjectResponse), nil)
 	return responseObject.(*DownloadObjectResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get the metadata for the named object.  This metadata is not sufficient to
+// get the object's content; for that use `startDownload`.
+//
+// Required scopes:
+//   object:download:<name>
+//
+// See #object
+func (object *Object) Object(name string) (*ObjectMetadata, error) {
+	cd := tcclient.Client(*object)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/metadata/"+url.QueryEscape(name), new(ObjectMetadata), nil)
+	return responseObject.(*ObjectMetadata), err
+}
+
+// Returns a signed URL for Object, valid for the specified duration.
+//
+// Required scopes:
+//   object:download:<name>
+//
+// See Object for more details.
+func (object *Object) Object_SignedURL(name string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*object)
+	return (&cd).SignedURL("/metadata/"+url.QueryEscape(name), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
