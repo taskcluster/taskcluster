@@ -31,6 +31,19 @@ class Backend {
   }
 
   /**
+   * Finish an upload for the given object.  This is called during the
+   * `finishUpload` API method, and is intended to support any finalization of
+   * the data the caller uploaded.  It is *not* intended to be a validation
+   * step: in general we assume that the caller has done the right thing, and
+   * that anything it has done wrong will result in an object that can't be
+   * downloaded.  But, implementations may use taskcluster-lib-api's
+   * `reportError` method to report errors.
+   */
+  async finishUpload(object) {
+    return;
+  }
+
+  /**
    * Get the set of download methods available for this object.  All backends
    * must support at least the `simple` method.
    *
