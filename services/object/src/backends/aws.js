@@ -3,6 +3,7 @@ const assert = require('assert');
 const aws = require('aws-sdk');
 const { reportError } = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
+const qs = require('qs');
 
 const PUT_URL_EXPIRES_SECONDS = 45 * 60;
 
@@ -31,6 +32,9 @@ class AwsBackend extends Backend {
       options.region = this.region;
     }
     this.s3 = new aws.S3(options);
+
+    // determine whether we are talking to a genuine AWS S3, or an emulation of it
+    this.isAws = !this.config.endpoint;
   }
 
   async createUpload(object, proposedUploadMethods) {
@@ -59,6 +63,7 @@ class AwsBackend extends Backend {
       Key: object.name,
       ContentType: contentType,
       Body: bytes,
+      Tagging: this.objectTaggingHeader(object),
     }).promise();
 
     return { dataInline: true };
@@ -70,21 +75,44 @@ class AwsBackend extends Backend {
       Bucket: this.config.bucket,
       Key: object.name,
       ContentType: contentType,
+      ...(this.isAws ? { Tagging: this.objectTaggingHeader(object) } : {}),
       // NOTE: AWS does not allow us to enforce Content-Length, so that is ignored here
       Expires: PUT_URL_EXPIRES_SECONDS + 10, // 10s for clock skew
     });
+
+    const headers = {
+      'Content-Type': contentType,
+      'Content-Length': contentLength.toString(),
+      'Content-Encoding': 'identity',
+    };
+
+    // tags are not supported on GCS, so only add this header on AWS
+    if (this.isAws) {
+      headers['x-amz-tagging'] = this.objectTaggingHeader(object);
+    }
 
     return {
       putUrl: {
         url,
         expires: expires.toJSON(),
-        headers: {
-          'Content-Type': contentType,
-          'Content-Length': contentLength.toString(),
-          'Content-Encoding': 'identity',
-        },
+        headers,
       },
     };
+  }
+
+  async finishUpload(object) {
+    if (this.isAws) {
+      // NOTE: AWS does not enforce that the `x-amx-tagging` header is present in
+      // the PUT request merely because `Tagging` is included in the signed PUT
+      // URL (!!), so we also add the tag after-the-fact here, in case a poorly
+      // behaved uploader fails to include the header.  This has the side-effect
+      // of verifying that the object is present on S3 when finished.
+      await this.s3.putObjectTagging({
+        Bucket: this.config.bucket,
+        Key: object.name,
+        Tagging: this.objectTaggingArg(object),
+      }).promise();
+    }
   }
 
   async availableDownloadMethods(object) {
@@ -135,6 +163,33 @@ class AwsBackend extends Backend {
       }
     }
     return true;
+  }
+
+  /**
+   * Get the tags for this object in JSON object format {k: v}.
+   */
+  _objectTags(object) {
+    return {
+      ProjectId: object.project_id,
+    };
+  }
+
+  /**
+   * Construct the "Tagging" argument containing the tags for this object, as included
+   * in the `x-amx-tagging` header.
+   */
+  objectTaggingHeader(object) {
+    return qs.stringify(this._objectTags(object));
+  }
+
+  /**
+   * Construct the "TagSet" argument containing the tags for this object, as passed to
+   * s3.setObjectTagging.
+   */
+  objectTaggingArg(object) {
+    return {
+      TagSet: Object.entries(this._objectTags(object)).map(([Key, Value]) => ({ Key, Value })),
+    };
   }
 }
 

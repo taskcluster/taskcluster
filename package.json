@@ -86,6 +86,7 @@
     "passport-github": "^1.1.0",
     "pg": "^8.0.0",
     "pg-connection-string": "^2.3.0",
+    "qs": "^6.10.1",
     "quick-lru": "^5.0.0",
     "regex-escape": "^3.4.8",
     "request-ip": "^2.0.2",

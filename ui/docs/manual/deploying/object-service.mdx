@@ -79,10 +79,11 @@ backend_map:
 
 The `aws` backend type stores objects using the AWS S3 protocol.
 
-Since Google Cloud provides an S3-interoperability API, this means the AWS
-Backend can _also_ be used to persist objects in Google Cloud Storage.
+Since Google Cloud provides an S3-interoperability API, this means the AWS backend can _also_ be used to persist objects in Google Cloud Storage (GCS); see below.
 
 Objects are stored in the bucket using their full name.
+S3 Objects are tagged with the object's `projectId`, to assist with cost accounting and other cloud-usage analysis.
+Note that GCS does not support tagging.
 
 Each backend has the following configuration parameters:
  * `bucket`

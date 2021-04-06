@@ -59,8 +59,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
+  const projectId = 'test-proj';
+
   const makeObject = async ({ name, data }) => {
-    const projectId = 'test-proj';
     const expires = taskcluster.fromNow('1 hour');
     const uploadId = taskcluster.slugid();
 
@@ -76,6 +77,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.db.fns.object_upload_complete(name, uploadId);
 
     return object;
+  };
+
+  const getObjectContent = async ({ name }) => {
+    const res = await s3.getObject({
+      Bucket: secret.testBucket,
+      Key: name,
+    }).promise();
+
+    // verify tagging is as expected
+    const tagging = await s3.getObjectTagging({
+      Bucket: secret.testBucket,
+      Key: name,
+    }).promise();
+    assert(
+      tagging.TagSet.some(({ Key, Value }) => Key === 'ProjectId' && Value === 'test-proj'),
+      `got tags ${JSON.stringify(tagging)}`);
+
+    return { data: res.Body, contentType: res.ContentType };
   };
 
   const cleanup = async () => {
@@ -129,13 +148,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.testDataInlineUpload({
     mock, skipping, prefix,
     backendId: 'awsPrivate',
-    async getObjectContent({ name }) {
-      const res = await s3.getObject({
-        Bucket: secret.testBucket,
-        Key: name,
-      }).promise();
-      return { data: res.Body, contentType: res.ContentType };
-    },
+    getObjectContent,
   }, async function() {
     teardown(cleanup);
   });
@@ -143,13 +156,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.testPutUrlUpload({
     mock, skipping, prefix,
     backendId: 'awsPrivate',
-    async getObjectContent({ name }) {
-      const res = await s3.getObject({
-        Bucket: secret.testBucket,
-        Key: name,
-      }).promise();
-      return { data: res.Body, contentType: res.ContentType };
-    },
+    getObjectContent,
   }, async function() {
     teardown(cleanup);
   });
