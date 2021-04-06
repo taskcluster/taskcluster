@@ -900,6 +900,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // stubs for removeWorker and provisionResources
       sandbox.stub(provider, 'removeWorker').returns('stopped');
       sandbox.stub(provider, 'provisionResources').returns('requested');
+      sandbox.stub(provider, 'deprovisionResources').returns('requested');
     });
 
     teardown(function() {
@@ -1014,6 +1015,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.reload(helper.db);
       assert(provider.removeWorker.called);
       assert(!provider.provisionResources.called);
+    });
+
+    test('calls deprovisionResources() for a stopping worker that is running', async function() {
+      // this is the state of a worker after a `removeWorker` API call, for example
+      await setState({ state: 'stopping', powerStates: ['PowerState/running'] });
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+      assert(!provider.removeWorker.called);
+      assert(!provider.provisionResources.called);
+      assert(provider.deprovisionResources.called);
+    });
+
+    test('calls deprovisionResources() for a stopping worker that is stopped', async function() {
+      await setState({ state: 'stopping', powerStates: ['PowerState/stopped'] });
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+      assert(!provider.removeWorker.called);
+      assert(!provider.provisionResources.called);
+      assert(provider.deprovisionResources.called);
     });
 
     test('remove unregistered workers after terminateAfter', async function() {
