@@ -4802,9 +4802,9 @@ netmask@^2.0.0:
   integrity sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==
 
 newrelic@^7.0.0:
-  version "7.2.1"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-7.2.1.tgz#5f0aca3c0408daafc5d6588b654b7bd4c7d6f7f6"
-  integrity sha512-m4Uhnf7sKKQ/JcQvHZ+ieMc4teFzHCQnKXsd/AmwFQIIdVkXPdFWIKDzbh2RzH5SY5/SV+7M9p0eDTCdTvHECA==
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-7.3.0.tgz#99a21bf571350c99358ac264b23d450b073ffacd"
+  integrity sha512-oZcFphigeiWsHSPdv1wiDVVitFaw1b6Y+iAryyeIM/qmeAkxrW8+42E3yDDZ5KYSoYoos9L9ZJrS1MOr4muyfw==
   dependencies:
     "@grpc/grpc-js" "^1.2.11"
     "@grpc/proto-loader" "^0.5.6"
