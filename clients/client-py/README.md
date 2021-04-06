@@ -363,11 +363,11 @@ To download, use any of the following:
 
 * `await taskcluster.aio.download.downloadToBuf(name=.., maxRetries=.., objectService=..)` - asynchronously download an object to an in-memory buffer, returning a tuple (buffer, content-type).
   If the file is larger than available memory, this will crash.
-* `await taskcluster.aio.download.downloadToBuf(name=.., maxRetries=.., objectService=.., file=..)` - asynchronously download an object to a standard Python file, returning the content type.
+* `await taskcluster.aio.download.downloadToFile(name=.., maxRetries=.., objectService=.., file=..)` - asynchronously download an object to a standard Python file, returning the content type.
 * `await taskcluster.aio.download.download(name=.., maxRetries=.., objectService=.., writerFactory=..)` - asynchronously download an object to an async writer factory, returning the content type.
 * `taskcluster.download.downloadToBuf(name=.., maxRetries=.., objectService=..)` - download an object to an in-memory buffer, returning a tuple (buffer, content-type).
   If the file is larger than available memory, this will crash.
-* `taskcluster.download.downloadToBuf(name=.., maxRetries=.., objectService=.., file=..)` - download an object to a standard Python file, returning the content type.
+* `taskcluster.download.downloadToFile(name=.., maxRetries=.., objectService=.., file=..)` - download an object to a standard Python file, returning the content type.
 * `taskcluster.download.download(name=.., maxRetries=.., objectService=.., writerFactory=..)` - download an object to a sync writer factory, returning the content type.
 
 A "writer" is an object with a `write(data)` method which writes the given data, async for the async functions and sync for the remainder.
