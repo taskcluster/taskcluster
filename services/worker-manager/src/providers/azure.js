@@ -964,86 +964,51 @@ class AzureProvider extends Provider {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
-    // the vm still exists; if the worker is `stopping`, deprovision it.
+    // the vm still exists; if the worker is STOPPING, deprovision it.
     if (worker.state === states.STOPPING) {
       await this.deprovisionResources({ worker, monitor });
     } else {
-      try {
-        // lets us get power states for the VM
-        const instanceView = await this._enqueue('get', () => this.computeClient.virtualMachines.instanceView(
-          worker.providerData.resourceGroupName,
-          worker.providerData.vm.name,
-        ));
-        const powerStates = instanceView.statuses.map(i => i.code);
-        monitor.debug({
-          message: 'fetched instance view',
-          powerStates,
-        });
+      const { instanceState, instanceStateReason } = await this.queryInstance({ worker, monitor });
 
-        // count this worker as having been seen for later logging
-        this.seen[worker.workerPoolId] += worker.capacity || 1;
+      switch (instanceState) {
+        case 'ok': {
+          // count this worker as having been seen for later logging
+          this.seen[worker.workerPoolId] += worker.capacity || 1;
 
-        // See https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle
-        // for background on the VM lifecycle.
-        let isFailed = false;
-        let reason;
-
-        if (_.some(powerStates, state => failPowerStates.has(state))) {
-          // A VM can transition to one of failPowerStates through an Azure issue of some sort, by being
-          // manually terminated (e.g., in the web UI), or by being halted from within the VM.  In this
-          // case, we consider the worker failed and begin to remove it.
-          isFailed = true;
-          reason = `failed power state; powerStates=${powerStates.join(', ')}`;
-        }
-
-        if (!isFailed && worker.state === states.REQUESTED) {
-          // It's possible for a newly-requested VM to be running (PowerState/running), but have failed
-          // provisioning.  In this case the VM isn't doing any work, but billing continues.  So, we want
-          // to catch this case and also consider it failed.  These state codes have the form
-          // `ProvisioningState/failed/<SomeCode>`.  We allow the user to ignore specific codes.
-          let ignore = new Set(worker.providerData.ignoreFailedProvisioningStates || []);
-          let failedProvisioningCodes = powerStates
-            .filter(state => state.startsWith('ProvisioningState/failed/'))
-            .map(state => state.split('/')[2])
-            .filter(code => !ignore.has(code));
-
-          // any failed-provisioning code is treated as a failure
-          if (failedProvisioningCodes.length > 0) {
-            isFailed = true;
-            reason = `failed provisioning power state; powerStates=${powerStates.join(', ')}`;
-          }
-        }
-
-        if (!isFailed && worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
           // If the worker has not checked in recently enough, we consider it failed regardless of the Azure lifecycle
-          isFailed = true;
-          reason = 'terminateAfter time exceeded';
+          if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
+            const reason = 'terminateAfter time exceeded';
+            await this.removeWorker({ worker, reason });
+          }
+
+          break;
         }
 
-        if (isFailed) {
+        case 'failed': {
           // On failure, call `removeWorker`, which logs and marks the worker as STOPPING
-          await this.removeWorker({ worker, reason });
+          await this.removeWorker({ worker, reason: instanceStateReason });
+          break;
         }
-      } catch (err) {
-        if (err.statusCode !== 404) {
-          throw err;
-        }
-        monitor.debug({ message: `vm instance view not found, in state ${worker.state}` });
 
-        // VM has not been found, so it is either
-        // 1. still being created
-        // 2. already removed but other resources may need to be deleted
-        // 3. deleted outside of provider actions, should start removal
-        if (worker.state === states.REQUESTED) {
-          // continue to try to provision this worker
-          await this.provisionResources({ worker, monitor });
-        } else if (worker.state === states.STOPPING) {
-          // continuing to try to deprovision this worker
-          await this.deprovisionResources({ worker, monitor });
-        } else {
-          // VM in unknown state not found, or deleted outside provider, so start
-          // removing it.
-          await this.removeWorker({ worker, reason: `vm not found in state ${worker.state}` });
+        case 'missing': {
+          // VM has not been found, so it is either...
+          // 2. already removed but other resources may need to be deleted
+          // 3. deleted outside of provider actions, should start removal
+          if (worker.state === states.REQUESTED) {
+            // ...still being created, in which case we should continue to provision...
+            await this.provisionResources({ worker, monitor });
+          } else {
+            // ...or RUNNING and has been deleted outside our control, in which
+            // case we should recognize it as removed and start the
+            // deprovisioning process on the next iteration.  STOPPED workers are
+            // not checked, and STOPPING workers are handled above.
+            await this.removeWorker({ worker, reason: instanceStateReason });
+          }
+          break;
+        }
+
+        default: {
+          throw new Error(`invalid instanceState ${instanceState}: ${instanceStateReason}`);
         }
       }
     }
@@ -1052,6 +1017,68 @@ class AzureProvider extends Provider {
       const now = new Date();
       worker.lastChecked = now;
     });
+  }
+
+  /**
+   * Query Azure for this vm.
+   *
+   * Returns { instanceState, instanceStateReason }, where instanceState is one of
+   *  - missing -- Azure returned a 404 on requesting the instance
+   *  - failed -- instance exists, but is in one of the failPowerStates, or a failed provisioning power state
+   *  - ok -- instance exists and is in a success state
+   *
+   * See https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle
+   * for background on the VM lifecycle.
+   */
+  async queryInstance({ worker, monitor }) {
+    const states = Worker.states;
+    try {
+      // lets us get power states for the VM
+      const instanceView = await this._enqueue('get', () => this.computeClient.virtualMachines.instanceView(
+        worker.providerData.resourceGroupName,
+        worker.providerData.vm.name,
+      ));
+      const powerStates = instanceView.statuses.map(i => i.code);
+      monitor.debug({ message: 'fetched instance view', powerStates });
+
+      if (_.some(powerStates, state => failPowerStates.has(state))) {
+        // A VM can transition to one of failPowerStates through an Azure issue of some sort, by being
+        // manually terminated (e.g., in the web UI), or by being halted from within the VM.  In this
+        // case, we consider the worker failed.
+        return {
+          instanceState: 'failed',
+          instanceStateReason: `failed power state; powerStates=${powerStates.join(', ')}`,
+        };
+      }
+
+      if (worker.state === states.REQUESTED) {
+        // It's possible for a newly-requested VM to be running (PowerState/running), but have failed
+        // provisioning.  In this case the VM isn't doing any work, but billing continues.  So, we want
+        // to catch this case and also consider it failed.  These state codes have the form
+        // `ProvisioningState/failed/<SomeCode>`.  We allow the user to ignore specific codes.
+        let ignore = new Set(worker.providerData.ignoreFailedProvisioningStates || []);
+        let failedProvisioningCodes = powerStates
+          .filter(state => state.startsWith('ProvisioningState/failed/'))
+          .map(state => state.split('/')[2])
+          .filter(code => !ignore.has(code));
+
+        // any failed-provisioning code is treated as a failure
+        if (failedProvisioningCodes.length > 0) {
+          return {
+            instanceState: 'failed',
+            instanceStateReason: `failed provisioning power state; powerStates=${powerStates.join(', ')}`,
+          };
+        }
+      }
+
+      return { instanceState: 'ok', instanceStateReason: 'instance exists and has not failed' };
+    } catch (err) {
+      if (err.statusCode !== 404) {
+        throw err;
+      }
+      monitor.debug({ message: `vm instance view not found, in state ${worker.state}` });
+      return { instanceState: 'missing', instanceStateReason: `vm not found in state ${worker.state}` };
+    }
   }
 
   /*
