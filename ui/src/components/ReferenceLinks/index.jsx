@@ -3,8 +3,8 @@ import { boolean } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import Typography from '@material-ui/core/Typography';
-import Link from '../../utils/Link';
 import { useLocation } from 'react-router-dom';
+import Link from '../../utils/Link';
 
 const styles = withStyles(theme => ({
   card: {
@@ -20,24 +20,25 @@ const styles = withStyles(theme => ({
 // intended only for use in docs/reference/<tier>/<service>/README.mdx, as it
 // uses relative links that are only valid from that document.
 const ReferenceLinks = ({ classes, api, exchanges, logs }) => {
-  let location = useLocation()
+  const location = useLocation();
+
   return (
     <Card raised className={classes.card}>
       <Typography variant="h6">Reference Links</Typography>
       <ul className={classes.unorderedList}>
         {api && (
           <Typography variant="body2" component="li">
-            <Link to={location.pathname + "/api"}>REST API</Link>
+            <Link to={`${location.pathname}/api`}>REST API</Link>
           </Typography>
         )}
         {exchanges && (
           <Typography variant="body2" component="li">
-            <Link to={location.pathname + "/exchanges"}>Pulse Exchanges</Link>
+            <Link to={`${location.pathname}/exchanges`}>Pulse Exchanges</Link>
           </Typography>
         )}
         {logs && (
           <Typography variant="body2" component="li">
-            <Link to={location.pathname + "/logs"}>Log Messages</Link>
+            <Link to={`${location.pathname}/logs`}>Log Messages</Link>
           </Typography>
         )}
       </ul>
