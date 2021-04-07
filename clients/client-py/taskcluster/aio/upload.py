@@ -21,11 +21,12 @@ if six.PY2:
     raise ImportError("upload is only supported in Python 3")
 
 import base64
+import hashlib
 
 import aiohttp
 
 import taskcluster
-from taskcluster.upload import HashingReader as SyncHashingReader
+from .asyncutils import ensureCoro
 from .reader_writer import streamingCopy, BufferReader, BufferWriter, FileReader
 from .retry import retry
 
@@ -70,7 +71,7 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
 
     async def hashingReaderFactory():
         nonlocal hashingReader
-        hashingReader = HashingReader(await readerFactory())
+        hashingReader = HashingReader(await ensureCoro(readerFactory)())
         return hashingReader
 
     async with aiohttp.ClientSession() as session:
@@ -92,7 +93,7 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
             "contentLength": contentLength,
         }
 
-        uploadResp = await objectService.createUpload(name, {
+        uploadResp = await ensureCoro(objectService.createUpload)(name, {
             "expires": expires,
             "projectId": projectId,
             "uploadId": uploadId,
@@ -126,7 +127,7 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
         # https://github.com/taskcluster/taskcluster/issues/4714
         hashingReader.hashes(contentLength)
 
-        await objectService.finishUpload(name, {
+        await ensureCoro(objectService.finishUpload)(name, {
             "projectId": projectId,
             "uploadId": uploadId,
         })
@@ -146,10 +147,38 @@ async def _putUrlUpload(method, reader, session):
     resp.raise_for_status()
 
 
-class HashingReader(SyncHashingReader):
-    """An async version of the sync HashingReader"""
+class HashingReader:
+    """A Reader implementation that hashes contents as they are read."""
+
+    def __init__(self, inner):
+        self.inner = inner
+        self.sha256 = hashlib.sha256()
+        self.sha512 = hashlib.sha512()
+        self.bytes = 0
 
     async def read(self, max_size):
-        chunk = await self.inner.read(max_size)
-        self.update(chunk)
+        chunk = await ensureCoro(self.inner.read)(max_size)
+        try:
+            self.update(chunk)
+        except TypeError:
+            # Best effort: since ensureCoro fails to identify certain cases as
+            # coroutines (e.g. with aiofiles), when we fail to get a bytes-like object
+            # on the first try, we retry without the ensureCoro wrapping.
+            chunk = await self.inner.read(max_size)
+            self.update(chunk)
         return chunk
+
+    def update(self, chunk):
+        self.sha256.update(chunk)
+        self.sha512.update(chunk)
+        self.bytes += len(chunk)
+
+    def hashes(self, contentLength):
+        """Return the hashes in a format suitable for finishUpload, first checking that all the bytes
+        in the content were hashed."""
+        if contentLength != self.bytes:
+            raise RuntimeError(f"hashed {self.bytes} bytes but content length is {contentLength}")
+        return {
+            "sha256": self.sha256.hexdigest(),
+            "sha512": self.sha512.hexdigest(),
+        }
