@@ -35,6 +35,15 @@ class AwsBackend extends Backend {
 
     // determine whether we are talking to a genuine AWS S3, or an emulation of it
     this.isAws = !this.config.endpoint;
+
+    if (this.isAws) {
+      this.tags = this.config.tags || {};
+      if (Object.entries(this.tags).some(([k, v]) => typeof v !== 'string')) {
+        throw new Error(`backend ${this.backendId} has invalid 'tags' configuration`);
+      }
+    } else if (this.config.tags) {
+      throw new Error('tags are only supported on the real AWS S3');
+    }
   }
 
   async createUpload(object, proposedUploadMethods) {
@@ -170,6 +179,7 @@ class AwsBackend extends Backend {
    */
   _objectTags(object) {
     return {
+      ...this.tags,
       ProjectId: object.project_id,
     };
   }

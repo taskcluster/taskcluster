@@ -3,7 +3,7 @@ const assert = require('assert');
 const aws = require('aws-sdk');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const { getBucketRegion } = require('../../src/backends/aws');
+const { AwsBackend, getBucketRegion } = require('../../src/backends/aws');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   if (mock) {
@@ -46,6 +46,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
           secretAccessKey: secret.secretAccessKey,
           bucket: secret.testBucket,
           signGetUrls: true,
+          tags: { Extra: 'yes' },
         },
         awsPublic: {
           backendType: 'aws',
@@ -53,6 +54,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
           secretAccessKey: secret.secretAccessKey,
           bucket: secret.testBucket,
           signGetUrls: false,
+          tags: { Extra: 'yes' },
         },
       },
       backendMap: [],
@@ -91,7 +93,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       Key: name,
     }).promise();
     assert(
-      tagging.TagSet.some(({ Key, Value }) => Key === 'ProjectId' && Value === 'test-proj'),
+      tagging.TagSet.some(({ Key, Value }) => Key === 'ProjectId' && Value === 'test-proj') &&
+      tagging.TagSet.some(({ Key, Value }) => Key === 'Extra' && Value === 'yes'),
       `got tags ${JSON.stringify(tagging)}`);
 
     return { data: res.Body, contentType: res.ContentType };
@@ -114,6 +117,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       }).promise();
     }
   };
+
+  suite('setup', function() {
+    test('invalid tags are rejected', async function() {
+      const backend = new AwsBackend({
+        backendId: 'broken',
+        db: helper.db,
+        monitor: {},
+        rootUrl: 'https://example.com',
+        config: {
+          backendType: 'aws',
+          accessKeyId: secret.accessKeyId,
+          secretAccessKey: secret.secretAccessKey,
+          bucket: secret.testBucket,
+          signGetUrls: true,
+          tags: { Extra: ['not', 'string'] },
+        },
+      });
+      await assert.rejects(
+        () => backend.setup(),
+        /backend broken has invalid 'tags' configuration/);
+    });
+  });
 
   helper.testSimpleDownloadMethod({
     mock, skipping, prefix,
