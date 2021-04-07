@@ -3,6 +3,7 @@ const assert = require('assert');
 const aws = require('aws-sdk');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
+const { AwsBackend } = require('../../src/backends/aws');
 
 helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skipping) {
   if (mock) {
@@ -94,6 +95,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       }).promise();
     }
   };
+
+  suite('setup', function() {
+    test('any tags are rejected', async function() {
+      const backend = new AwsBackend({
+        backendId: 'broken',
+        db: helper.db,
+        monitor: {},
+        rootUrl: 'https://example.com',
+        config: {
+          backendType: 'aws',
+          accessKeyId: secret.accessKeyId,
+          secretAccessKey: secret.secretAccessKey,
+          endpoint: 'https://gcs.example.com',
+          bucket: secret.testBucket,
+          signGetUrls: true,
+          tags: { Extra: 'value' },
+        },
+      });
+      await assert.rejects(
+        () => backend.setup(),
+        /tags are only supported on the real AWS S3/);
+    });
+  });
 
   helper.testSimpleDownloadMethod({
     mock, skipping, prefix,

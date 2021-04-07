@@ -24,7 +24,8 @@ exports.testPutUrlUpload = ({
   // should be set up in suiteSetup.
   backendId,
 
-  // an async function({name}) to get the data for a given object.
+  // an async function({name}) to get the data for a given object, returning {
+  // data, contentType }.
   getObjectContent,
 
   // suiteDefinition defines the suite; add suiteSetup, suiteTeardown here, if
@@ -54,7 +55,7 @@ exports.testPutUrlUpload = ({
 
       await helper.assertSatisfiesSchema(res, responseSchema);
 
-      return { name, data, res, uploadId };
+      return { name, data, res, uploadId, object };
     };
 
     const performUpload = async ({ name, data, res, uploadId }) => {
@@ -66,16 +67,18 @@ exports.testPutUrlUpload = ({
       }
       const putRes = await req.send(data);
       assert(putRes.ok, putRes);
+    };
 
+    const finishUpload = async ({ name, uploadId, object }) => {
+      await backend.finishUpload(object);
       await helper.db.fns.object_upload_complete(name, uploadId);
     };
 
     for (const length of [0, 1024]) {
       test(`upload an object (length=${length})`, async function() {
-        const { name, data, res, uploadId } = await makeUpload({ length });
+        const { name, data, res, object, uploadId } = await makeUpload({ length });
         await performUpload({ name, data, res, uploadId });
-
-        await helper.db.fns.object_upload_complete(name, uploadId);
+        await finishUpload({ name, uploadId, object });
 
         const stored = await getObjectContent({ name });
         assert.equal(stored.contentType, 'application/random-bytes');

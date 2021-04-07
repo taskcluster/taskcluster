@@ -3,7 +3,7 @@ const assert = require('assert');
 const aws = require('aws-sdk');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const { getBucketRegion } = require('../../src/backends/aws');
+const { AwsBackend, getBucketRegion } = require('../../src/backends/aws');
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   if (mock) {
@@ -46,6 +46,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
           secretAccessKey: secret.secretAccessKey,
           bucket: secret.testBucket,
           signGetUrls: true,
+          tags: { Extra: 'yes' },
         },
         awsPublic: {
           backendType: 'aws',
@@ -53,14 +54,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
           secretAccessKey: secret.secretAccessKey,
           bucket: secret.testBucket,
           signGetUrls: false,
+          tags: { Extra: 'yes' },
         },
       },
       backendMap: [],
     });
   });
 
+  const projectId = 'test-proj';
+
   const makeObject = async ({ name, data }) => {
-    const projectId = 'test-proj';
     const expires = taskcluster.fromNow('1 hour');
     const uploadId = taskcluster.slugid();
 
@@ -76,6 +79,25 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.db.fns.object_upload_complete(name, uploadId);
 
     return object;
+  };
+
+  const getObjectContent = async ({ name }) => {
+    const res = await s3.getObject({
+      Bucket: secret.testBucket,
+      Key: name,
+    }).promise();
+
+    // verify tagging is as expected
+    const tagging = await s3.getObjectTagging({
+      Bucket: secret.testBucket,
+      Key: name,
+    }).promise();
+    assert(
+      tagging.TagSet.some(({ Key, Value }) => Key === 'ProjectId' && Value === 'test-proj') &&
+      tagging.TagSet.some(({ Key, Value }) => Key === 'Extra' && Value === 'yes'),
+      `got tags ${JSON.stringify(tagging)}`);
+
+    return { data: res.Body, contentType: res.ContentType };
   };
 
   const cleanup = async () => {
@@ -95,6 +117,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       }).promise();
     }
   };
+
+  suite('setup', function() {
+    test('invalid tags are rejected', async function() {
+      const backend = new AwsBackend({
+        backendId: 'broken',
+        db: helper.db,
+        monitor: {},
+        rootUrl: 'https://example.com',
+        config: {
+          backendType: 'aws',
+          accessKeyId: secret.accessKeyId,
+          secretAccessKey: secret.secretAccessKey,
+          bucket: secret.testBucket,
+          signGetUrls: true,
+          tags: { Extra: ['not', 'string'] },
+        },
+      });
+      await assert.rejects(
+        () => backend.setup(),
+        /backend broken has invalid 'tags' configuration/);
+    });
+  });
 
   helper.testSimpleDownloadMethod({
     mock, skipping, prefix,
@@ -129,13 +173,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.testDataInlineUpload({
     mock, skipping, prefix,
     backendId: 'awsPrivate',
-    async getObjectContent({ name }) {
-      const res = await s3.getObject({
-        Bucket: secret.testBucket,
-        Key: name,
-      }).promise();
-      return { data: res.Body, contentType: res.ContentType };
-    },
+    getObjectContent,
   }, async function() {
     teardown(cleanup);
   });
@@ -143,13 +181,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.testPutUrlUpload({
     mock, skipping, prefix,
     backendId: 'awsPrivate',
-    async getObjectContent({ name }) {
-      const res = await s3.getObject({
-        Bucket: secret.testBucket,
-        Key: name,
-      }).promise();
-      return { data: res.Body, contentType: res.ContentType };
-    },
+    getObjectContent,
   }, async function() {
     teardown(cleanup);
   });

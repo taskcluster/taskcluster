@@ -205,6 +205,15 @@ builder.declare({
       { name, uploadId });
   }
 
+  const backend = this.backends.get(object.backend_id);
+  if (!backend) {
+    return res.reportError(
+      'NoMatchingBackend',
+      'The backend for this object is no longer defined',
+      {});
+  }
+
+  // update the hashes
   try {
     if (hashes) {
       await this.db.fns.add_object_hashes(name, hashes);
@@ -219,7 +228,10 @@ builder.declare({
     throw err;
   }
 
-  // mark its completion
+  // allow the backend to do its thing, possibly raising its own API exceptions.
+  await backend.finishUpload(object);
+
+  // mark the object's successful completion
   await this.db.fns.object_upload_complete({ name_in: name, upload_id_in: uploadId });
 
   return res.reply({});
