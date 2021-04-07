@@ -27,17 +27,17 @@ const ReferenceLinks = ({ classes, api, exchanges, logs }) => {
       <ul className={classes.unorderedList}>
         {api && (
           <Typography variant="body2" component="li">
-            <Link to={location + "/api"}>REST API</Link>
+            <Link to={location.pathname + "/api"}>REST API</Link>
           </Typography>
         )}
         {exchanges && (
           <Typography variant="body2" component="li">
-            <Link to={location + "/exchanges"}>Pulse Exchanges</Link>
+            <Link to={location.pathname + "/exchanges"}>Pulse Exchanges</Link>
           </Typography>
         )}
         {logs && (
           <Typography variant="body2" component="li">
-            <Link to={location + "/logs"}>Log Messages</Link>
+            <Link to={location.pathname + "/logs"}>Log Messages</Link>
           </Typography>
         )}
       </ul>
