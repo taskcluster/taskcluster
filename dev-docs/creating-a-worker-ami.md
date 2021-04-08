@@ -10,7 +10,7 @@ You will need to have the following
 * An AWS account with an IAM user with an API key.
 * Some funds on your AWS account, or backed by a creditcard: building, using and even storing the AMIs you something you will get billed for.
 
-### Cloning the repository and isntalling.
+### Cloning the repository and installing
 
 First you will want to clone the [monopacker](https://github.com/taskcluster/monopacker) repository.
 Set up a folder and run `git clone https://github.com/taskcluster/monopacker` and then `cd` into the directory.
