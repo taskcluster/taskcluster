@@ -69,10 +69,11 @@ Example configuration with SSL on the reverse proxy:
 
    # HTTP Strict Transport Security (mod_headers is required) (63072000 seconds)
    Header always set Strict-Transport-Security "max-age=63072000"
-   ProxyPass / https://x.x.x.x/ # Replace with the ingress IP of your taskcluster deployment. kubectl get ingress
+   ProxyPass / https://x.x.x.x/ nocanon # Replace with the ingress IP of your taskcluster deployment. kubectl get ingress
    ProxyPassReverse / https://x.x.x.x/ # Replace with the ingress IP of your taskcluster deployment. kubectl get ingress
    ProxyPreserveHost on
    SSLProxyCheckPeerCN off # Required when not using a trusted SSL cert (when not changing the ingress SSL cert)
+   AllowEncodedSlashes on
 </VirtualHost>
 ```
 
