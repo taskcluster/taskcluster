@@ -25,22 +25,22 @@ from .aio.asyncutils import ensureCoro, runAsync
 DATA_INLINE_MAX_SIZE = 8192
 
 
-def upload_from_buf(*, data, **kwargs):
+def uploadFromBuf(*, data, **kwargs):
     """
     Convenience method to upload data from an in-memory buffer.  Arguments are the same
     as `upload` except that `readerFactory` should not be supplied.
     """
-    return runAsync(aio_upload.upload_from_buf(data=data, **kwargs))
+    return runAsync(aio_upload.uploadFromBuf(data=data, **kwargs))
 
 
-def upload_from_file(*, file, **kwargs):
+def uploadFromFile(*, file, **kwargs):
     """
     Convenience method to upload data from a a file.  The file should be open
     for reading, in binary mode, and be seekable (`f.seek`).  Remaining
     arguments are the same as `upload` except that `readerFactory` should not
     be supplied.
     """
-    return runAsync(aio_upload.upload_from_file(file=file, **kwargs))
+    return runAsync(aio_upload.uploadFromFile(file=file, **kwargs))
 
 
 def upload(*, readerFactory, **kwargs):

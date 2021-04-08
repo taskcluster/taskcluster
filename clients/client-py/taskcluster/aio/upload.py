@@ -33,7 +33,7 @@ from .retry import retry
 DATA_INLINE_MAX_SIZE = 8192
 
 
-async def upload_from_buf(*, data, **kwargs):
+async def uploadFromBuf(*, data, **kwargs):
     """
     Convenience method to upload data from an in-memory buffer.  Arguments are the same
     as `upload` except that `readerFactory` should not be supplied.
@@ -44,7 +44,7 @@ async def upload_from_buf(*, data, **kwargs):
     await upload(**kwargs, readerFactory=readerFactory)
 
 
-async def upload_from_file(*, file, **kwargs):
+async def uploadFromFile(*, file, **kwargs):
     """
     Convenience method to upload data from a a file.  The file should be open
     for reading, in binary mode, and be seekable (`f.seek`).  Remaining

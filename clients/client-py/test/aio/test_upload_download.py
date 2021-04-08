@@ -1,13 +1,10 @@
 """
 Tests of uploads and downloads using local fakes and requiring no credentials.
 """
-import io
-
 import pytest
 import httptest
 import aiohttp
 import hashlib
-from aiofiles import open as async_open
 
 import taskcluster
 from taskcluster.aio import upload, download
@@ -167,7 +164,7 @@ async def test_putUrl_upload_fails(randbytes):
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
         with pytest.raises(aiohttp.ClientResponseError):
-            await upload.upload_from_buf(
+            await upload.uploadFromBuf(
                 projectId="taskcluster",
                 expires=taskcluster.fromNow('1 hour'),
                 contentType="text/plain",
@@ -194,7 +191,7 @@ async def test_putUrl_upload_fails_retried(randbytes):
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
         with pytest.raises(aiohttp.ClientResponseError):
-            await upload.upload_from_buf(
+            await upload.uploadFromBuf(
                 projectId="taskcluster",
                 expires=taskcluster.fromNow('1 hour'),
                 contentType="text/plain",
@@ -225,7 +222,7 @@ async def test_putUrl_upload_fails_retried_succeeds(randbytes):
 
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
-        await upload.upload_from_buf(
+        await upload.uploadFromBuf(
             projectId="taskcluster",
             expires=taskcluster.fromNow('1 hour'),
             contentType="text/plain",

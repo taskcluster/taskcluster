@@ -67,7 +67,7 @@ async def test_large_upload_download(objectService):
 async def do_over_wire_buf_test(data, objectService):
     """We can upload a small amount of literal data"""
     name = f"taskcluster/test/client-py/{taskcluster.slugid.v4()}"
-    await upload.upload_from_buf(
+    await upload.uploadFromBuf(
         projectId="taskcluster",
         name=name,
         contentType="text/plain",
@@ -94,7 +94,7 @@ async def test_file_upload_download(objectService, tmp_path):
 
     name = f"taskcluster/test/client-py/{taskcluster.slugid.v4()}"
     with open(src, "rb") as file:
-        await upload.upload_from_file(
+        await upload.uploadFromFile(
             projectId="taskcluster",
             name=name,
             contentType="text/plain",

@@ -143,7 +143,7 @@ def test_putUrl_upload_fails(randbytes):
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
         with pytest.raises(aiohttp.ClientResponseError):
-            upload.upload_from_buf(
+            upload.uploadFromBuf(
                 projectId="taskcluster",
                 expires=taskcluster.fromNow('1 hour'),
                 contentType="text/plain",
@@ -172,7 +172,7 @@ def test_putUrl_upload_fails_retried(randbytes):
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
         with pytest.raises(aiohttp.ClientResponseError):
-            upload.upload_from_buf(
+            upload.uploadFromBuf(
                 projectId="taskcluster",
                 expires=taskcluster.fromNow('1 hour'),
                 contentType="text/plain",
@@ -206,7 +206,7 @@ def test_putUrl_upload_fails_retried_succeeds(randbytes):
 
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
-        upload.upload_from_buf(
+        upload.uploadFromBuf(
             projectId="taskcluster",
             expires=taskcluster.fromNow('1 hour'),
             contentType="text/plain",
