@@ -95,6 +95,7 @@ defaults:
     password:                 !env PULSE_PASSWORD
     hostname:                 !env PULSE_HOSTNAME
     vhost:                    !env PULSE_VHOST
+    amqps:                    !env:bool:optional PULSE_AMQPS
 
   aws:
     # Credentials with access to artifact buckets and

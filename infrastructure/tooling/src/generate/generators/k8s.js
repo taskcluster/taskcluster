@@ -28,6 +28,7 @@ const SHARED_CONFIG = {
   taskcluster_root_url: '.Values.rootUrl',
   pulse_hostname: '.Values.pulseHostname',
   pulse_vhost: '.Values.pulseVhost',
+  pulse_amqps: '.Values.pulseAmqps',
   force_ssl: '.Values.forceSSL',
   trust_proxy: '.Values.trustProxy',
   node_env: '.Values.nodeEnv',
@@ -334,6 +335,10 @@ exports.tasks.push({
           type: 'string',
           description: 'A rabbitmq cluster',
         },
+        pulseAmqps: {
+          type: 'boolean',
+          description: 'whether to use amqps (TLS) to communicate with pulse (default true)',
+        },
         pulseVhost: {
           type: 'string',
           description: 'The vhost this deployment will use on the rabbitmq cluster',
@@ -403,6 +408,7 @@ exports.tasks.push({
       ingressStaticIpName: '...',
       ingressCertName: '...',
       pulseHostname: '...',
+      pulseAmqps: true,
       pulseVhost: '...',
       forceSSL: false,
       trustProxy: true,
