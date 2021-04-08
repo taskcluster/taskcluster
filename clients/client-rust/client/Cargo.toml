@@ -5,6 +5,7 @@ authors = ["Wander Lairson Costa <wander.lairson@gmail.com>"]
 edition = "2018"
 license = "MPL-2.0"
 description = "API client for Taskcluster; typically used via `taskcluster`"
+repository = "https://github.com/taskcluster/taskcluster"
 
 [dependencies]
 anyhow = "1.0"

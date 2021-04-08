@@ -5,9 +5,10 @@ authors = ["Dustin J. Mitchell <dustin@mozilla.com>"]
 edition = "2018"
 license = "MPL-2.0"
 description = "Taskcluster Download Support"
+repository = "https://github.com/taskcluster/taskcluster"
 
 [dependencies]
-taskcluster = { path = "../client" }
+taskcluster = { version = "43.0.0", path = "../client" }
 anyhow = "1.0"
 async-trait = "0.1"
 reqwest = { version = "0.11", features = ["json", "stream"] }
