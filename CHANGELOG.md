@@ -3,6 +3,167 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v43.0.0
+
+### DEPLOYERS
+
+▶ [patch] [#4655](https://github.com/taskcluster/taskcluster/issues/4655)
+Since #4586 landed, the built-in-workers service has failed to resolve tasks due to using the wrong credentials.  This issue has been fixed, and no released version of Taskcluster had this bug.
+
+▶ [patch] [#4561](https://github.com/taskcluster/taskcluster/issues/4561)
+The GitHub service now allows collaborators to test out a `.taskcluster.yml` in a PR, when there is no such file in the default branch initialized yet.
+
+▶ [patch] [#4556](https://github.com/taskcluster/taskcluster/issues/4556)
+The `auth.azure_accounts` Helm value is no longer required.
+
+▶ [patch] [#3981](https://github.com/taskcluster/taskcluster/issues/3981)
+The new `queue.task_claim_timeout` Helm configuration parameter controls the duration of the task claim that `queue.claimWork` returns.  The default is 20 minutes, matching the previous hard-coded setting.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#3779](https://github.com/taskcluster/taskcluster/issues/3779)
+Generic-worker simple/docker engine now have a default tasks directory of `tasks`, relative to the working directory. This is a breaking change from previous behaviour.
+
+▶ [patch] [#4691](https://github.com/taskcluster/taskcluster/issues/4691)
+Added a generic-worker config parameter (`livelogPortBase`) to allow configuring which ports are used for live logging.
+
+▶ [patch] [#4715](https://github.com/taskcluster/taskcluster/issues/4715)
+The worker-manager service now deprovisions workers when `removeWorker` is called and when the workers terminate themselves.  Previously it would wait forever for such workers to be deleted, without attempting that deletion.
+
+### USERS
+
+▶ [MAJOR] [#4586](https://github.com/taskcluster/taskcluster/issues/4586)
+The following queue API endpoints no longer support their legacy scopes.
+In most of these cases, the legacy scopes are shorter than the still-supported fully-qualified scopes.
+* `queue.claimTask` no longer accepts `queue:claim-task`.
+* `queue.reclaimTask` no longer accepts `queue:reclaim-task`.
+* `queue.reportCompleted` and `queue.reportException` no longer accept `queue:resolve-task`.
+* `queue.createArtifact` no longer accepts `queue:create-artifact:<name>`.
+
+Investigations detailed in the linked issue suggest that none of these scopes are actively used.
+
+▶ [minor] [#4516](https://github.com/taskcluster/taskcluster/issues/4516)
+The index service has a new `index.deleteTask` method that can be used to delete indexed tasks.
+
+▶ [minor] [#4547](https://github.com/taskcluster/taskcluster/issues/4547)
+This version adds new queue methods `artifact`, `latestArtifact`, `artifactInfo`, and `latestArtifactInfo`, all of which provide more flexible access to information about artifacts.
+
+▶ [patch] [#4502](https://github.com/taskcluster/taskcluster/issues/4502)
+The GitHub service now correctly handles tasks that depend on other tasks not defined in `.taskcluster.yml`.
+
+▶ [patch] [#3794](https://github.com/taskcluster/taskcluster/issues/3794)
+The worker manager no longer considers quarantined users in its definition of existing capacity. If necessary, it will provision new workers for any pending tasks as if the quarantined worker did not exist.
+
+### DEVELOPERS
+
+▶ [patch] [#2393](https://github.com/taskcluster/taskcluster/issues/2393)
+On the Secrets and Roles pages, a delete button now appears on each row.
+
+▶ [patch] 
+The client libraries (Go, Python, Rust, and JS) now provide convenience methods for uploading/downloading objects to/from the Object Service.
+
+▶ [patch] [#3964](https://github.com/taskcluster/taskcluster/issues/3964)
+The styleguidist support in `ui/` was outdated and has been removed.
+
+### OTHER
+
+▶ Additional changes not described here: [bug 1419577](http://bugzil.la/1419577), [bug 1701255](http://bugzil.la/1701255), [#3948](https://github.com/taskcluster/taskcluster/issues/3948), [#3993](https://github.com/taskcluster/taskcluster/issues/3993), [#4133](https://github.com/taskcluster/taskcluster/issues/4133), [#4420](https://github.com/taskcluster/taskcluster/issues/4420), [#4422](https://github.com/taskcluster/taskcluster/issues/4422), [#4423](https://github.com/taskcluster/taskcluster/issues/4423), [#4424](https://github.com/taskcluster/taskcluster/issues/4424), [#4453](https://github.com/taskcluster/taskcluster/issues/4453), [#4523](https://github.com/taskcluster/taskcluster/issues/4523), [#4587](https://github.com/taskcluster/taskcluster/issues/4587), [#4592](https://github.com/taskcluster/taskcluster/issues/4592), [#4608](https://github.com/taskcluster/taskcluster/issues/4608), [#4610](https://github.com/taskcluster/taskcluster/issues/4610), [#4631](https://github.com/taskcluster/taskcluster/issues/4631), [#4631](https://github.com/taskcluster/taskcluster/issues/4631), [#4646](https://github.com/taskcluster/taskcluster/issues/4646), [#4649](https://github.com/taskcluster/taskcluster/issues/4649), [#4705](https://github.com/taskcluster/taskcluster/issues/4705), [#4722](https://github.com/taskcluster/taskcluster/issues/4722), [#4537](https://github.com/taskcluster/taskcluster/issues/4537).
+
+### Automated Package Updates
+
+<details>
+<summary>87 Renovate updates</summary>
+
+* Update dependency date-fns to v2.20.0 (147161c51)
+* Update dependency aws-sdk to v2.882.0 (66b55c44b)
+* Update dependency c8 to v7.7.1 (1114447ee)
+* Update golang.org/x/crypto commit hash to 0c34fe9 (2f3539aba)
+* Update dependency newrelic to v7.3.0 (f40bd6f02)
+* Update dependency @octokit/core to v3.4.0 (ecea473b8)
+* Update dependency googleapis to v70 (9f337e00c)
+* Update dependency highlight.js to v10.7.2 (df0248dcc)
+* Update dependency netmask to v2.0.2 (c1b85704c)
+* Update dependency classnames to v2.3.1 (e1288ae9d)
+* Update dependency ajv-formats to v1.6.1 (c732037d2)
+* Update sentry monorepo to v6.2.5 (acb83ddba)
+* Lock file maintenance (a64902252)
+* Update dependency classnames to v2.3.0 (801d4b22e)
+* Update dependency @azure/ms-rest-nodeauth to v3.0.9 (cd67b124b)
+* Update dependency @sentry/browser to v6.2.4 (f4dabf757)
+* Update sentry monorepo to v6.2.4 (8095de61d)
+* Update babel monorepo (33994a37a)
+* Update dependency semver to v7.3.5 (75b8729ee)
+* Update dependency matrix-js-sdk to v9.10.0 (144178e0e)
+* Update dependency @octokit/core to v3.3.2 (09794f9ac)
+* Update dependency newrelic to v7.2.1 (e1353ac2b)
+* Update dependency webpack-cli to v4.6.0 (39826fb85)
+* Update dependency c8 to v7.7.0 (1274fa2c3)
+* Update dependency cronstrue to v1.111.0 (fe975dfd2)
+* Update dependency karma to v6.3.2 (3014cf357)
+* Update babel monorepo (571dfed8d)
+* Update dependency apollo-server-express to v2.22.2 (e034c01f0)
+* Update dependency ajv-formats to v1.6.0 (b770ddccc)
+* Update dependency ajv to v7.2.4 (b7e86e1b9)
+* Update dependency netmask to v2.0.1 [SECURITY] (12ccc3d98)
+* Update dependency @azure/ms-rest-js to v2.3.0 (f52fa443a)
+* Update dependency eslint to v7.23.0 (2b5cfe601)
+* Update dependency @octokit/rest to v18.5.2 (8e18d296c)
+* Update dependency newrelic to v7.2.0 (70660da47)
+* Update dependency sanitize-html to v2.3.3 (8bca0746c)
+* Update dependency jwks-rsa to v2.0.2 (7391cd61c)
+* Update dependency qs to v6.10.1 (b64ae138f)
+* Update dependency karma to v6.3.1 (9c2ccbbc7)
+* Update dependency mockdate to v3.0.5 (57361d447)
+* Update dependency apollo-server-express to v2.22.1 (824e1ab8c)
+* Update dependency commander to v7.2.0 (fa9fbf0b9)
+* Update dependency @octokit/rest to v18.5.0 (791826713)
+* Update dependency email-templates to v8.0.4 (15aea7477)
+* Update dependency @octokit/auth-app to v3.3.0 (9b1f6093b)
+* Update dependency highlight.js to v10.7.1 (e133da2c1)
+* Update dependency codemirror to v5.60.0 (3bc8581f6)
+* Update dependency @azure/arm-compute to v16.1.0 (3b612f872)
+* Update dependency @azure/ms-rest-nodeauth to v3.0.8 (209a76159)
+* Update dependency @azure/arm-network to v23.3.0 (e4349eb8a)
+* Update dependency prism-themes to v1.6.0 (b1bdf6d93)
+* Update babel monorepo (1eaf00a21)
+* Update dependency sinon to v10 (90090115e)
+* Update dependency mocha to v8.3.2 (597d41365)
+* Update dependency netmask to v2 (baca3986e)
+* Update dependency json-e to v4.4.1 (36a027bd7)
+* Update dependency got to v11.8.2 (a2d93a036)
+* Update dependency memorystore to v1.6.6 (edd1dffbb)
+* Update dependency apollo-server-express to v2.21.2 (c07a423a4)
+* Update dependency qs to v6.10.0 (744632b5d)
+* Update dependency mockdate to v3.0.4 (212ec99f4)
+* Update dependency ajv to v7 (0894eba1a)
+* Update module github.com/sirupsen/logrus to v1.8.1 (6c60fe019)
+* Update dependency query-string to v7 (b57ba45bd)
+* Update sentry monorepo to v6.2.2 (e4780e450)
+* Update dependency ws to v7.4.4 (0d0288e0f)
+* Update dependency nock to v13.0.11 (d3e475f55)
+* Update dependency mocha to v8.3.2 (82ecf1082)
+* Update dependency mockdate to v3.0.3 (8294292ef)
+* Update dependency @octokit/core to v3.3.1 (da988bc58)
+* Update dependency jwks-rsa to v2.0.1 (a31c440d6)
+* Update dependency eslint to v7.22.0 (86b38bc82)
+* Update dependency chai to v4.3.4 (bdcc64e37)
+* Update dependency matrix-js-sdk to v9.9.0 (f51fbb19e)
+* Update dependency json-e to v4.4.1 (5247310e6)
+* Update dependency @material-ui/pickers to v3.3.10 (1973bbaf7)
+* Update dependency jwks-rsa to v2 (1f3634f04)
+* Update dependency newrelic to v7.1.3 (75ea84a48)
+* Update dependency cronstrue to v1.110.0 (98ac5e7f9)
+* Update dependency apollo-server-express to v2.21.1 (df7622487)
+* Update dependency amqplib to v0.7.1 (612d1bc8d)
+* Update dependency @slack/web-api to v6.1.0 (12ae248d4)
+* Update dependency karma to v6.2.0 (549495342)
+* Update dependency @octokit/rest to v18.3.5 (284fdbdc4)
+* Update dependency @octokit/core to v3.3.0 (c30372968)
+* Update dependency nock to v13.0.11 (30d166150)
+* Update dependency nodemailer to v6.5.0 (619bcc75f)
+
+</details>
+
 ## v42.1.1
 
 ### USERS

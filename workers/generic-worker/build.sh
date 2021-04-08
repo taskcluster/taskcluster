@@ -121,8 +121,8 @@ fi
 ls -1 "$OUTPUT_DIR"/generic-worker-*
 
 CGO_ENABLED=0 go get \
-  github.com/taskcluster/taskcluster/v42/tools/livelog \
-  github.com/taskcluster/taskcluster/v42/tools/taskcluster-proxy \
+  github.com/taskcluster/taskcluster/v43/tools/livelog \
+  github.com/taskcluster/taskcluster/v43/tools/taskcluster-proxy \
   golang.org/x/lint/golint \
   github.com/gordonklaus/ineffassign \
   golang.org/x/tools/cmd/goimports
@@ -131,10 +131,10 @@ CGO_ENABLED=0 go get \
 go mod tidy
 
 if $TEST; then
-  CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags simple -ldflags "-X github.com/taskcluster/taskcluster/v42/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags simple -ldflags "-X github.com/taskcluster/taskcluster/v43/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   MYGOHOSTOS="$(go env GOHOSTOS)"
   if [ "${MYGOHOSTOS}" == "linux" ] || [ "${MYGOHOSTOS}" == "darwin" ]; then
-    CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags docker -ldflags "-X github.com/taskcluster/taskcluster/v42/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+    CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags docker -ldflags "-X github.com/taskcluster/taskcluster/v43/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   fi
   golint $(go list ./...) | sed "s*${PWD}/**"
   ineffassign .

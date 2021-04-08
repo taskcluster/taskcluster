@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"sync"
 
-	tcclient "github.com/taskcluster/taskcluster/v42/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v43/clients/client-go"
 )
 
 type (

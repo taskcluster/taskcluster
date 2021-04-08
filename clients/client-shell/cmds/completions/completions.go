@@ -3,7 +3,7 @@ package completions
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster/v42/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v43/clients/client-shell/cmds/root"
 )
 
 var (

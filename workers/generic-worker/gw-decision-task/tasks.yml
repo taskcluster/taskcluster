@@ -228,9 +228,9 @@ Commands:
             cp "${TASK_USER_CREDENTIALS}" next-task-user.json
             # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
             # otherwise tests that call `go run ....` will write go object files to .cache as root
-            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v42/workers/generic-worker.revision=${GITHUB_SHA}" -v ${RACE} ${VET}
+            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v43/workers/generic-worker.revision=${GITHUB_SHA}" -v ${RACE} ${VET}
           fi
-          GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v42/workers/generic-worker.revision=${GITHUB_SHA}" -v ${RACE} ${VET} ./...
+          GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v43/workers/generic-worker.revision=${GITHUB_SHA}" -v ${RACE} ${VET} ./...
           ../../../golangci-lint/golangci-lint-1.23.6-*/golangci-lint run --build-tags "${ENGINE}" --timeout=15m
     Windows:
       - |
@@ -296,9 +296,9 @@ Commands:
       - set CGO_ENABLED=%CGO_ENABLED_TESTS%
       - set GORACE=history_size=7
       - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
-      - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v42/workers/generic-worker.revision=%GITHUB_SHA%" -v %RACE% %VET% ./...'
+      - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v43/workers/generic-worker.revision=%GITHUB_SHA%" -v %RACE% %VET% ./...'
       - set GW_TESTS_RUN_AS_CURRENT_USER=true
-      - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v42/workers/generic-worker.revision=%GITHUB_SHA%" -v %RACE% %VET%'
+      - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v43/workers/generic-worker.revision=%GITHUB_SHA%" -v %RACE% %VET%'
       - |
         :: assumption here is that if something inside the if fails, we'll get a non zero exit code
         :: i've also made it an if/else so that one of them has to run, as there should always be a

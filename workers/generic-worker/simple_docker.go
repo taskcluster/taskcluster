@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v42/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/process"
 )
 
 func (task *TaskRun) formatCommand(index int) string {

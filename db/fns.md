@@ -2048,13 +2048,6 @@ client side.
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
 
-### deprecated methods
-
-* `create_queue_worker_tqid(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, first_claim_in timestamptz, recent_tasks_in jsonb)` (compatibility guaranteed until v43.0.0)
-* `create_task_queue(task_queue_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text)` (compatibility guaranteed until v43.0.0)
-* `update_queue_worker_tqid(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, expires_in timestamptz, recent_tasks_in jsonb)` (compatibility guaranteed until v43.0.0)
-* `update_task_queue(task_queue_id_in text, expires_in timestamptz, last_date_active_in timestamptz, description_in text, stability_in text)` (compatibility guaranteed until v43.0.0)
-
 ## secrets
 
 * [`delete_secret`](#delete_secret)
