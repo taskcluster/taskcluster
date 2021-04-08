@@ -117,8 +117,20 @@ async def putFile(filename, url, contentType, session=None):
         }, session=session)
 
 
+def runAsync(coro):
+    """
+    Replacement of asyncio.run, as it doesn't exist in python<3.7.
+    """
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    loop = asyncio.get_event_loop()
+    result = loop.run_until_complete(coro)
+    loop.close()
+    return result
+
+
 def ensureCoro(func):
-    """If func is a regular function, execute in a thread and return an
+    """
+    If func is a regular function, execute in a thread and return an
     async version of it. If func is already an async function, return
     it without change.
     """

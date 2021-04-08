@@ -17,9 +17,8 @@ import six
 if six.PY2:
     raise ImportError("upload is only supported in Python 3")
 
-import asyncio
-
 from .aio import upload as aio_upload
+from .aio.asyncutils import runAsync
 
 
 DATA_INLINE_MAX_SIZE = 8192
@@ -30,7 +29,7 @@ def upload_from_buf(*, data, **kwargs):
     Convenience method to upload data from an in-memory buffer.  Arguments are the same
     as `upload` except that `readerFactory` should not be supplied.
     """
-    return asyncio.run(aio_upload.upload_from_buf(data=data, **kwargs))
+    return runAsync(aio_upload.upload_from_buf(data=data, **kwargs))
 
 
 def upload_from_file(*, file, **kwargs):
@@ -40,7 +39,7 @@ def upload_from_file(*, file, **kwargs):
     arguments are the same as `upload` except that `readerFactory` should not
     be supplied.
     """
-    return asyncio.run(aio_upload.upload_from_file(file=file, **kwargs))
+    return runAsync(aio_upload.upload_from_file(file=file, **kwargs))
 
 
 def upload(**kwargs):
@@ -50,4 +49,4 @@ def upload(**kwargs):
     The `objectService` parameter is an instance of the Object class,
     configured with credentials for the upload.
     """
-    return asyncio.run(aio_upload.upload(**kwargs))
+    return runAsync(aio_upload.upload(**kwargs))
