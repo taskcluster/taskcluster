@@ -71,7 +71,7 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
 
     async def hashingReaderFactory():
         nonlocal hashingReader
-        hashingReader = HashingReader(await ensureCoro(readerFactory)())
+        hashingReader = HashingReader(await readerFactory())
         return hashingReader
 
     async with aiohttp.ClientSession() as session:
@@ -157,15 +157,8 @@ class HashingReader:
         self.bytes = 0
 
     async def read(self, max_size):
-        chunk = await ensureCoro(self.inner.read)(max_size)
-        try:
-            self.update(chunk)
-        except TypeError:
-            # Best effort: since ensureCoro fails to identify certain cases as
-            # coroutines (e.g. with aiofiles), when we fail to get a bytes-like object
-            # on the first try, we retry without the ensureCoro wrapping.
-            chunk = await self.inner.read(max_size)
-            self.update(chunk)
+        chunk = await self.inner.read(max_size)
+        self.update(chunk)
         return chunk
 
     def update(self, chunk):

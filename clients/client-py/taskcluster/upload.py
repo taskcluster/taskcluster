@@ -12,13 +12,14 @@ once.
 This module provides several pre-defined readers and reader factories for
 common cases.
 """
+import functools
 import six
 
 if six.PY2:
     raise ImportError("upload is only supported in Python 3")
 
 from .aio import upload as aio_upload
-from .aio.asyncutils import runAsync
+from .aio.asyncutils import ensureCoro, runAsync
 
 
 DATA_INLINE_MAX_SIZE = 8192
@@ -42,11 +43,23 @@ def upload_from_file(*, file, **kwargs):
     return runAsync(aio_upload.upload_from_file(file=file, **kwargs))
 
 
-def upload(**kwargs):
+def upload(*, readerFactory, **kwargs):
     """
     Upload the given data to the object service with the given metadata.
     The `maxRetries` parameter has the same meaning as for service clients.
     The `objectService` parameter is an instance of the Object class,
     configured with credentials for the upload.
     """
-    return runAsync(aio_upload.upload(**kwargs))
+    wrappedReaderFactory = _wrapSyncReaderFactory(readerFactory)
+    return runAsync(aio_upload.upload(readerFactory=wrappedReaderFactory, **kwargs))
+
+
+def _wrapSyncReaderFactory(readerFactory):
+    """Modify the reader returned by readerFactory to have an async read."""
+    @functools.wraps(readerFactory)
+    async def wrappedFactory():
+        reader = readerFactory()
+        reader.read = ensureCoro(reader.read)
+        return reader
+
+    return wrappedFactory

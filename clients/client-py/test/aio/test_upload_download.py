@@ -59,11 +59,8 @@ class FakeObject:
         return {}
 
 
-@pytest.mark.parametrize(
-    "reader_factory",
-    [BufferReader, io.BytesIO])
-async def test_hashing_reader_hashes(reader_factory):
-    hashingReader = upload.HashingReader(reader_factory(b"some data"))
+async def test_hashing_reader_hashes():
+    hashingReader = upload.HashingReader(BufferReader(b"some data"))
     assert(await hashingReader.read(4) == b"some")
     assert(await hashingReader.read(1) == b" ")
     assert(await hashingReader.read(16) == b"data")
@@ -81,35 +78,6 @@ async def test_hashing_reader_hashes(reader_factory):
 
     with pytest.raises(RuntimeError):
         hashingReader.hashes(999)
-
-
-async def test_hashing_reader_hashes_aiofile(tmp_path):
-    src = tmp_path / "src"
-    with open(src, "wb") as f:
-        f.write(b"some data")
-
-    async with async_open(src, "rb") as file:
-        file.seek(0)
-        reader = file
-
-        hashingReader = upload.HashingReader(reader)
-        assert(await hashingReader.read(4) == b"some")
-        assert(await hashingReader.read(1) == b" ")
-        assert(await hashingReader.read(16) == b"data")
-        assert(await hashingReader.read(16) == b"")
-
-        exp = {}
-        h = hashlib.sha256()
-        h.update(b"some data")
-        exp["sha256"] = h.hexdigest()
-        h = hashlib.sha512()
-        h.update(b"some data")
-        exp["sha512"] = h.hexdigest()
-
-        assert(hashingReader.hashes(9) == exp)
-
-        with pytest.raises(RuntimeError):
-            hashingReader.hashes(999)
 
 
 async def test_simple_download_fails():

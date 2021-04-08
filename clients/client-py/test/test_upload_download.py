@@ -1,6 +1,7 @@
 """
 Tests of uploads and downloads using local fakes and requiring no credentials.
 """
+import io
 
 import pytest
 import httptest
@@ -215,3 +216,33 @@ def test_putUrl_upload_fails_retried_succeeds(randbytes):
             objectService=objectService)
 
     assert attempts == 3
+
+
+def test_putUrl_upload(randbytes):
+    """Test that upload works with a custom sync reader factory."""
+    data = randbytes(10240)  # >8k to avoid using dataInline
+
+    uploaded_data = b''
+
+    class Server(httptest.Handler):
+        def do_PUT(self):
+            nonlocal uploaded_data
+            uploaded_data = self.rfile.read(len(data))
+            self.send_response(200)
+            self.end_headers()
+
+    def readerFactory():
+        return io.BytesIO(data)
+
+    with httptest.Server(Server) as ts:
+        objectService = FakeObject(ts)
+        upload.upload(
+            projectId="taskcluster",
+            expires=taskcluster.fromNow('1 hour'),
+            contentType="text/plain",
+            contentLength=len(data),
+            name="some/object",
+            readerFactory=readerFactory,
+            objectService=objectService)
+
+    assert uploaded_data == data
