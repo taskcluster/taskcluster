@@ -26,13 +26,15 @@ First we edit `template/builders/amazon_ebs.jinja2` and under `ami_users` set yo
 Then we edit `template/vars/default_aws.yaml` and we change the following:
 
 * Change `instance_type` to an instance type that has the amount of capacity that you will need. For example `c5.large`.
+  Note that this size is only for the instance used to _build_ the image.
+  You can run the image on any sized instance.
 * Change `region:` to the region that you want to build the AMI in.
 * Change `ami_regions:` to regions where you wish to copy the AMI to and use it to deploy workers.
 * Change `volume_size:` to the volume size that you want your boot volume to be, in GB.
 
 Once that has been done, we can build our own template.
 
-Create a YAML file for your template, for example `builders/tc-doc_aws.yaml` and use the following contents:
+Create a YAML file for your template, for example `builders/tc-doc-aws.yaml` and use the following contents:
 
 ```yaml
 template: amazon_ebs
@@ -53,13 +55,13 @@ script_directories:
 
 ### Verifying the files
 
-To verify the files, run `monopacker validate tc-doc_aws`. This will give any errors if something is not valid in your configuration.
+To verify the files, run `monopacker validate tc-doc-aws`. This will give any errors if something is not valid in your configuration.
 
 ### Building the AMI
 
 In order to build the AMI, have your AWS Access ID and your AWS Secret Access Key ready, we are going to need to put these on the command line.
-You can run `AWS_ACCESS_ID='accesskey' AWS_SECRET_ACCESS_KEY='secretkey' monopacker build tc-doc-aws` to build the AMI.
-If you want extra logging, you can put `PACKER_LOG=1` in front of the command, making it `PACKER_LOG=1 AWS_ACCESS_ID='accesskey' AWS_SECRET_ACCESS_KEY='secretkey' monopacker build tc-doc-aws`.
+You can run `AWS_ACCESS_KEY_ID='accesskey' AWS_SECRET_ACCESS_KEY='secretkey' monopacker build tc-doc-aws` to build the AMI.
+If you want extra logging, you can put `PACKER_LOG=1` in front of the command, making it `PACKER_LOG=1 AWS_ACCESS_KEY_ID='accesskey' AWS_SECRET_ACCESS_KEY='secretkey' monopacker build tc-doc-aws`.
 
 This will create and output the new AMI ID(s) that you can use for your worker pool.
 
@@ -81,6 +83,8 @@ providers: {
     }
   }
 ```
+
+For more information, you can check out [this page](https://docs.taskcluster.net/docs/manual/deploying/workers#aws).
 
 ### Example worker pool configuration
 
@@ -109,6 +113,7 @@ Be sure to select the AWS provider that we created earlier.
         "InstanceType": "c5.large", # Here you can specify what instance gets created for the workers.
         "SecurityGroupIds": [
           "sg-0b86e71d4641a91ae" # Set the security group ID of the security group you want your workers to have.
+                                 # Note that security groups are specific to a subnet.
         ],
         "InstanceMarketOptions": {
           "MarketType": "spot"
@@ -129,7 +134,7 @@ Be sure to select the AWS provider that we created earlier.
           }
         },
         "capacityManagement": {
-          "diskspaceThreshold": 1000000000 # Treshold in bytes, if this gets exceeded, the worker will no longer accept jobs.
+          "diskspaceThreshold": 1000000000 # Threshold in bytes, if this gets exceeded, the worker will no longer accept jobs.
         }
       },
       "additionalUserData": {},
