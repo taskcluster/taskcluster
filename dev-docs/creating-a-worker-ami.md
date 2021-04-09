@@ -23,18 +23,19 @@ To install everything we need, from within the venv, run `python setup.py instal
 
 First we edit `template/builders/amazon_ebs.jinja2` and under `ami_users` set your AWS account ID.
 
-Then we edit `template/vars/default_aws.yaml` and we change the following:
+Create a new file called `template/vars/tc-doc-aws.yaml` with the following contents, and be sure to edit them accordingly (see comments):
 
-* Change `instance_type` to an instance type that has the amount of capacity that you will need. For example `c5.large`.
-  Note that this size is only for the instance used to _build_ the image.
-  You can run the image on any sized instance.
-* Change `region:` to the region that you want to build the AMI in.
-* Change `ami_regions:` to regions where you wish to copy the AMI to and use it to deploy workers.
-* Change `volume_size:` to the volume size that you want your boot volume to be, in GB.
+```yaml
+---
+instance_type: c5.large # Change this to the instance type you want to use to build the worker.
+region: us-east-1 # Change this to the region where you want the AMI to be build.
+ami_regions: us-east-1 # Change this to the region where you want your AMI to be copied to (and where you can later deploy the workers to).
+volume_size: 20 # Change this to the size of the volume that you want your workers to have.
+```
 
 Once that has been done, we can build our own template.
 
-Create a YAML file for your template, for example `builders/tc-doc-aws.yaml` and use the following contents:
+Create a YAML file for your template, for example `builders/tc-doc-aws.yaml` and use the following contents (edit the comment):
 
 ```yaml
 template: amazon_ebs
@@ -46,6 +47,7 @@ builder_var_files:
   - default_aws
   - default_firefoxci
   - amazon_ebs_bionic
+  - tc-doc-aws # Put the name of the variable file you created here
 
 script_directories:
   - ubuntu-bionic
