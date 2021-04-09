@@ -1,12 +1,11 @@
 """
 Tests of uploads and downloads using local fakes and requiring no credentials.
 """
+import io
 
 import pytest
 import httptest
-import requests
-import io
-import hashlib
+import aiohttp
 
 import taskcluster
 from taskcluster import upload, download
@@ -52,27 +51,6 @@ class FakeObject:
         return {}
 
 
-def test_hashing_reader_hashes():
-    hashingReader = upload.HashingReader(io.BytesIO(b"some data"))
-    assert(hashingReader.read(4) == b"some")
-    assert(hashingReader.read(1) == b" ")
-    assert(hashingReader.read(16) == b"data")
-    assert(hashingReader.read(16) == b"")
-
-    exp = {}
-    h = hashlib.sha256()
-    h.update(b"some data")
-    exp["sha256"] = h.hexdigest()
-    h = hashlib.sha512()
-    h.update(b"some data")
-    exp["sha512"] = h.hexdigest()
-
-    assert(hashingReader.hashes(9) == exp)
-
-    with pytest.raises(RuntimeError):
-        hashingReader.hashes(999)
-
-
 def test_simple_download_fails():
     "When a simple download's GET fails with a 400, an exception is raised and no retries occur"
     getcount = 0
@@ -87,7 +65,7 @@ def test_simple_download_fails():
 
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
-        with pytest.raises(requests.RequestException):
+        with pytest.raises(aiohttp.ClientResponseError):
             download.downloadToBuf(
                 name="some/object",
                 objectService=objectService)
@@ -108,7 +86,7 @@ def test_simple_download_fails_retried():
 
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
-        with pytest.raises(requests.RequestException):
+        with pytest.raises(aiohttp.ClientResponseError):
             download.downloadToBuf(
                 name="some/object",
                 objectService=objectService)
@@ -147,6 +125,33 @@ def test_simple_download_fails_retried_succeeds(randbytes):
     assert content_type == 'text/plain'
 
 
+def test_download(randbytes):
+    """Test that download works with a custom sync writer factory."""
+    data = randbytes(1024)
+
+    class Server(httptest.Handler):
+        def do_GET(self):
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(data)
+
+    writer = None
+
+    def writerFactory():
+        nonlocal writer
+        writer = io.BytesIO()
+        return writer
+
+    with httptest.Server(Server) as ts:
+        objectService = FakeObject(ts)
+        download.download(
+            name="some/object",
+            writerFactory=writerFactory,
+            objectService=objectService)
+
+    assert bytes(writer.getbuffer()) == data
+
+
 def test_putUrl_upload_fails(randbytes):
     "When a putUrl upload's PUT fails with a 400, an exception is raised"
     data = randbytes(10240)  # >8k to avoid using dataInline
@@ -163,8 +168,8 @@ def test_putUrl_upload_fails(randbytes):
 
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
-        with pytest.raises(requests.RequestException):
-            upload.upload_from_buf(
+        with pytest.raises(aiohttp.ClientResponseError):
+            upload.uploadFromBuf(
                 projectId="taskcluster",
                 expires=taskcluster.fromNow('1 hour'),
                 contentType="text/plain",
@@ -192,8 +197,8 @@ def test_putUrl_upload_fails_retried(randbytes):
 
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
-        with pytest.raises(requests.RequestException):
-            upload.upload_from_buf(
+        with pytest.raises(aiohttp.ClientResponseError):
+            upload.uploadFromBuf(
                 projectId="taskcluster",
                 expires=taskcluster.fromNow('1 hour'),
                 contentType="text/plain",
@@ -227,7 +232,7 @@ def test_putUrl_upload_fails_retried_succeeds(randbytes):
 
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
-        upload.upload_from_buf(
+        upload.uploadFromBuf(
             projectId="taskcluster",
             expires=taskcluster.fromNow('1 hour'),
             contentType="text/plain",
@@ -237,3 +242,33 @@ def test_putUrl_upload_fails_retried_succeeds(randbytes):
             objectService=objectService)
 
     assert attempts == 3
+
+
+def test_putUrl_upload(randbytes):
+    """Test that upload works with a custom sync reader factory."""
+    data = randbytes(10240)  # >8k to avoid using dataInline
+
+    uploaded_data = b''
+
+    class Server(httptest.Handler):
+        def do_PUT(self):
+            nonlocal uploaded_data
+            uploaded_data = self.rfile.read(len(data))
+            self.send_response(200)
+            self.end_headers()
+
+    def readerFactory():
+        return io.BytesIO(data)
+
+    with httptest.Server(Server) as ts:
+        objectService = FakeObject(ts)
+        upload.upload(
+            projectId="taskcluster",
+            expires=taskcluster.fromNow('1 hour'),
+            contentType="text/plain",
+            contentLength=len(data),
+            name="some/object",
+            readerFactory=readerFactory,
+            objectService=objectService)
+
+    assert uploaded_data == data

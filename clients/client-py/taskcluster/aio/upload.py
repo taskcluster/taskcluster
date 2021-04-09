@@ -21,18 +21,19 @@ if six.PY2:
     raise ImportError("upload is only supported in Python 3")
 
 import base64
+import hashlib
 
 import aiohttp
 
 import taskcluster
-from taskcluster.upload import HashingReader as SyncHashingReader
+from .asyncutils import ensureCoro
 from .reader_writer import streamingCopy, BufferReader, BufferWriter, FileReader
 from .retry import retry
 
 DATA_INLINE_MAX_SIZE = 8192
 
 
-async def upload_from_buf(*, data, **kwargs):
+async def uploadFromBuf(*, data, **kwargs):
     """
     Convenience method to upload data from an in-memory buffer.  Arguments are the same
     as `upload` except that `readerFactory` should not be supplied.
@@ -43,7 +44,7 @@ async def upload_from_buf(*, data, **kwargs):
     await upload(**kwargs, readerFactory=readerFactory)
 
 
-async def upload_from_file(*, file, **kwargs):
+async def uploadFromFile(*, file, **kwargs):
     """
     Convenience method to upload data from a a file.  The file should be open
     for reading, in binary mode, and be seekable (`f.seek`).  Remaining
@@ -92,7 +93,7 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
             "contentLength": contentLength,
         }
 
-        uploadResp = await objectService.createUpload(name, {
+        uploadResp = await ensureCoro(objectService.createUpload)(name, {
             "expires": expires,
             "projectId": projectId,
             "uploadId": uploadId,
@@ -126,7 +127,7 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
         # https://github.com/taskcluster/taskcluster/issues/4714
         hashingReader.hashes(contentLength)
 
-        await objectService.finishUpload(name, {
+        await ensureCoro(objectService.finishUpload)(name, {
             "projectId": projectId,
             "uploadId": uploadId,
         })
@@ -146,10 +147,31 @@ async def _putUrlUpload(method, reader, session):
     resp.raise_for_status()
 
 
-class HashingReader(SyncHashingReader):
-    """An async version of the sync HashingReader"""
+class HashingReader:
+    """A Reader implementation that hashes contents as they are read."""
+
+    def __init__(self, inner):
+        self.inner = inner
+        self.sha256 = hashlib.sha256()
+        self.sha512 = hashlib.sha512()
+        self.bytes = 0
 
     async def read(self, max_size):
         chunk = await self.inner.read(max_size)
         self.update(chunk)
         return chunk
+
+    def update(self, chunk):
+        self.sha256.update(chunk)
+        self.sha512.update(chunk)
+        self.bytes += len(chunk)
+
+    def hashes(self, contentLength):
+        """Return the hashes in a format suitable for finishUpload, first checking that all the bytes
+        in the content were hashed."""
+        if contentLength != self.bytes:
+            raise RuntimeError(f"hashed {self.bytes} bytes but content length is {contentLength}")
+        return {
+            "sha256": self.sha256.hexdigest(),
+            "sha512": self.sha512.hexdigest(),
+        }
