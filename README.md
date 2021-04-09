@@ -51,6 +51,7 @@ This repository is used to develop, build, and release the Taskcluster services.
     * [References](infrastructure/references#readme)
     * [Taskcluster Builder](infrastructure/tooling#readme)
 * [Internal Go Packages](internal#readme)
+    * [Mock Services Design](internal/mocktc#readme)
 * [Libraries](libraries#readme)
     * [API Library](libraries/api#readme)
     * [App Library](libraries/app#readme)
@@ -96,7 +97,6 @@ This repository is used to develop, build, and release the Taskcluster services.
 * [Workers](workers#readme)
     * [Docker Worker](workers/docker-worker#readme)
     * [Generic Worker](workers/generic-worker#readme)
-        * [Mock Services Design](workers/generic-worker/mocktc#readme)
 <!-- TOC END -->
 
 ## Team Mentions

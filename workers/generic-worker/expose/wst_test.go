@@ -14,8 +14,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/taskcluster/taskcluster/v43/internal/mocktc"
 	"github.com/taskcluster/taskcluster/v43/tools/websocktunnel/wsproxy"
-	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/mocktc"
 	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/tc"
 )
 
