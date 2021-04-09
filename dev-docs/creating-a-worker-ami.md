@@ -88,6 +88,20 @@ providers: {
 
 For more information, you can check out [this page](https://docs.taskcluster.net/docs/manual/deploying/workers#aws).
 
+### Worker pool secret configuration
+
+In a secret you can specify options for your worker pool that you do not want to be publically viewable.
+The name of the worker pool secret should be `worker-pool:worker_pool_id`. For example: `worker-pool:aws-docker/tc-doc-medium`.
+
+Example value if you want to configure live log viewing, note that you will need to set up a specific DNS server with the same secret (currently no extra documentation on this), which you can find [here](https://github.com/taskcluster/stateless-dns-server)
+
+```yaml
+config:
+  statelessHostname:
+    secret: long-secure-secret # Change this to a long and secure secret
+    domain: taskcluster-worker.example.com # Change this to a domain where workers will be accessable from.
+```
+
 ### Example worker pool configuration
 
 Now that we have the AMi created, we want to use it for a worker pool.
