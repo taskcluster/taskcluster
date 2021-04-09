@@ -6,7 +6,7 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.15.6'
+      - 'go1.16.3'
       - 'git2.24.0.2'
       - 'jq1.6'
       - 'ci-creds'
@@ -21,7 +21,7 @@ Types:
       - Name: 'public/build/generic-worker-${OS}-${ARCH}${EXTENSION}'
         # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
         #   DO NOT CHANGE HERE!
-        Path: 'gopath1.15.6/bin/generic-worker${EXTENSION}'
+        Path: 'gopath1.16.3/bin/generic-worker${EXTENSION}'
         Type: 'file'
     MaxRunTime: 3600
 
@@ -38,7 +38,7 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.15.6'
+      - 'go1.16.3'
     Command: FormatSource
     MaxRunTime: 3600
 
@@ -117,7 +117,7 @@ WorkerPools:
     # The next comment is edited by infrastructure/tooling/src/generate/generators/go-version.js
     #   DO NOT CHANGE HERE!
 
-    # There is no arm release for go 1.15.6 on windows, but 386 release works
+    # There is no arm release for go 1.16.3 on windows, but 386 release works
     # through emulation provided by the host OS.
     Arch: '386'
   proj-taskcluster/gw-ci-windows2012r2-amd64:
@@ -138,7 +138,7 @@ Commands:
           export CGO_ENABLED=0
           # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.15.6/go"
+          export GOROOT="$(pwd)/go1.16.3/go"
           export PATH="${GOROOT}/bin:${PATH}"
           go version
           go env
@@ -191,8 +191,8 @@ Commands:
 
           # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.15.6/go"
-          export GOPATH="$(pwd)/gopath1.15.6"
+          export GOROOT="$(pwd)/go1.16.3/go"
+          export GOPATH="$(pwd)/gopath1.16.3"
 
           export PATH="${GOPATH}/bin:${GOROOT}/bin:$(pwd)/bin:${PATH}"
           git --version
@@ -251,8 +251,8 @@ Commands:
 
       # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - set GOROOT=%CD%\go1.15.6\go
-      - set GOPATH=%CD%\gopath1.15.6
+      - set GOROOT=%CD%\go1.16.3\go
+      - set GOPATH=%CD%\gopath1.16.3
 
       - |
         :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
@@ -318,30 +318,30 @@ Mounts:
   #
   ################################################################################
 
-  go1.15.6:
-    directory: go1.15.6
+  go1.16.3:
+    directory: go1.16.3
     content:
       darwin:
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.15.6.darwin-amd64.tar.gz'
+          url: 'https://storage.googleapis.com/golang/go1.16.3.darwin-amd64.tar.gz'
           sha256: '940a73b45993a3bae5792cf324140dded34af97c548af4864d22fd6d49f3bd9f'
           format: tar.gz
       linux:
         armv6l:
-          url: 'https://storage.googleapis.com/golang/go1.15.6.linux-armv6l.tar.gz'
+          url: 'https://storage.googleapis.com/golang/go1.16.3.linux-armv6l.tar.gz'
           sha256: '40ba9a57764e374195018ef37c38a5fbac9bbce908eab436370631a84bfc5788'
           format: tar.gz
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.15.6.linux-amd64.tar.gz'
+          url: 'https://storage.googleapis.com/golang/go1.16.3.linux-amd64.tar.gz'
           sha256: '3918e6cc85e7eaaa6f859f1bdbaac772e7a825b0eb423c63d3ae68b21f84b844'
           format: tar.gz
       windows:
         386:
-          url: 'https://storage.googleapis.com/golang/go1.15.6.windows-386.zip'
+          url: 'https://storage.googleapis.com/golang/go1.16.3.windows-386.zip'
           sha256: '5872eff6746a0a5f304272b27cbe9ce186f468454e95749cce01e903fbfc0e17'
           format: zip
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.15.6.windows-amd64.zip'
+          url: 'https://storage.googleapis.com/golang/go1.16.3.windows-amd64.zip'
           sha256: 'b7b3808bb072c2bab73175009187fd5a7f20ffe0a31739937003a14c5c4d9006'
           format: zip
   git2.24.0.2:
