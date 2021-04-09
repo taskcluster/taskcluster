@@ -8,6 +8,17 @@ This section describes configuration values specific to the Queue service.
 
 ## Artifact Storage
 
+### Object Service
+
+The preferred approach for artifact storage is to use the object service.
+For this purpose, the queue requires no configuration.
+
+Artifact data will be stored in objects named `t/<taskId>/<runId>/<name>`.
+This naming pattern can be leveraged to store some artifacts differently from others.
+See the [object service](object-service) section for more detail.
+
+### S3 Artifacts
+
 Until everything uses the Object Service, the queue service must be configured to support S3 artifacts.
 That involves the following Helm values:
 

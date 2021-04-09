@@ -30,12 +30,14 @@ type (
 		Name string `json:"name"`
 
 		// This is the `storageType` for the request that was used to create the
-		// artifact.
+		// artifact.  Note that artifacts with the `s3` storage type do not produce
+		// this message.
 		//
 		// Possible values:
 		//   * "reference"
 		//   * "link"
 		//   * "error"
+		//   * "object"
 		StorageType string `json:"storageType"`
 	}
 

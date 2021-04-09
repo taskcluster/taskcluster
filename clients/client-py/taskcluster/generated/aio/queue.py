@@ -19,12 +19,7 @@ class Queue(AsyncBaseClient):
 
     ## Artifact Storage Types
 
-    * **S3 artifacts** are used for static files which will be
-    stored on S3. When creating an S3 artifact the queue will return a
-    pre-signed URL to which you can do a `PUT` request to upload your
-    artifact. Note that `PUT` request **must** specify the `content-length`
-    header and **must** give the `content-type` header the same value as in
-    the request to `createArtifact`.
+    * **Object artifacts** contain arbitrary data, stored via the object service.
     * **Redirect artifacts**, will redirect the caller to URL when fetched
     with a a 303 (See Other) response.  Clients will not apply any kind of
     authentication to that URL.
@@ -41,6 +36,13 @@ class Queue(AsyncBaseClient):
     get a `424` (Failed Dependency) response. This is mainly designed to
     ensure that dependent tasks can distinguish between artifacts that were
     suppose to be generated and artifacts for which the name is misspelled.
+    * **S3 artifacts** are used for static files which will be
+    stored on S3. When creating an S3 artifact the queue will return a
+    pre-signed URL to which you can do a `PUT` request to upload your
+    artifact. Note that `PUT` request **must** specify the `content-length`
+    header and **must** give the `content-type` header the same value as in
+    the request to `createArtifact`. S3 artifacts will be deprecated soon,
+    and users should prefer object artifacts instead.
 
     ## Artifact immutability
 
@@ -164,7 +166,8 @@ class Queue(AsyncBaseClient):
 
         **Task expiration**: the `expires` property must be greater than the
         task `deadline`. If not provided it will default to `deadline` + one
-        year. Notice, that artifacts created by task must expire before the task.
+        year. Notice that artifacts created by a task must expire before the
+        task's expiration.
 
         **Task specific routing-keys**: using the `task.routes` property you may
         define task specific routing-keys. If a task has a task specific
@@ -376,9 +379,9 @@ class Queue(AsyncBaseClient):
         should **only** be used by a worker currently operating on this task, or
         from a process running within the task (ie. on the worker).
 
-        All artifacts must specify when they `expires`, the queue will
+        All artifacts must specify when they expire. The queue will
         automatically take care of deleting artifacts past their
-        expiration point. This features makes it feasible to upload large
+        expiration point. This feature makes it feasible to upload large
         intermediate artifacts from data processing applications, as the
         artifacts can be set to expire a few days later.
 
@@ -386,6 +389,24 @@ class Queue(AsyncBaseClient):
         """
 
         return await self._makeApiCall(self.funcinfo["createArtifact"], *args, **kwargs)
+
+    async def finishArtifact(self, *args, **kwargs):
+        """
+        Finish Artifact
+
+        This endpoint marks an artifact as present for the given task, and
+        should be called when the artifact data is fully uploaded.
+
+        The storage types `reference`, `link`, and `error` do not need to
+        be finished, as they are finished immediately by `createArtifact`.
+        The storage type `s3` does not support this functionality and cannot
+        be finished.  In all such cases, calling this method is an input error
+        (400).
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["finishArtifact"], *args, **kwargs)
 
     async def getArtifact(self, *args, **kwargs):
         """
@@ -859,6 +880,14 @@ class Queue(AsyncBaseClient):
             'output': 'v1/workertype-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
             'stability': 'deprecated',
+        },
+        "finishArtifact": {
+            'args': ['taskId', 'runId', 'name'],
+            'input': 'v1/finish-artifact-request.json#',
+            'method': 'put',
+            'name': 'finishArtifact',
+            'route': '/task/<taskId>/runs/<runId>/artifacts/<name>',
+            'stability': 'experimental',
         },
         "getArtifact": {
             'args': ['taskId', 'runId', 'name'],

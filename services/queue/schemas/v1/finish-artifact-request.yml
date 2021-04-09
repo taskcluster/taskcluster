@@ -1,0 +1,17 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Finish Artifact Request
+description: |
+  Request body for `finishArtifact`
+type: object
+properties:
+  uploadId:
+    title: "Upload ID"
+    description: |-
+      The uploadId from `createArtifact`.  Supplying this value provides an
+      additional check, beyond scopes, that the caller was the entity that
+      uploaded the data.  This must be specified for `storageType: object`.
+    type:             string
+    pattern:          {$const: slugid-pattern}
+additionalProperties: false
+required:
+  - uploadId

@@ -4,6 +4,17 @@ const builder = require('./api');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { artifactUtils } = require('./utils');
 const { Task } = require('./data');
+const slugid = require('slugid');
+const taskcluster = require('taskcluster-client');
+
+// map from storage type to whether it needs a finishArtifact call
+const STORAGE_TYPE_NEEDS_FINISH = {
+  reference: false,
+  link: false,
+  error: false,
+  s3: false,
+  object: true,
+};
 
 /**
  * Get the latest taskId for the given run, or throw a ResourceNotFound.
@@ -41,7 +52,7 @@ const getArtifactFollowingLinks = async function({ taskId, runId, name, req, res
     // Load artifact meta-data from table storage
     const artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
 
-    if (!artifact) {
+    if (!artifact || !artifact.present) {
       return res.reportError('ResourceNotFound', 'Artifact not found', {});
     }
 
@@ -94,6 +105,14 @@ const generateS3Url = async function({ artifact, skipCDN, req }) {
   return url;
 };
 
+/**
+ * Generate the name for an artifact in the object service.  This must not
+ * change, as the name is not stored anywhere and instead re-calculated as needed.
+ * Storing this name would be redundant and consume a substantial amount of space
+ * in large Taskcluster deployments.
+ */
+const artifactToObjectName = (taskId, runId, name) => `t/${taskId}/${runId}/${name}`;
+
 /** Post artifact */
 builder.declare({
   method: 'post',
@@ -110,9 +129,9 @@ builder.declare({
     'should **only** be used by a worker currently operating on this task, or',
     'from a process running within the task (ie. on the worker).',
     '',
-    'All artifacts must specify when they `expires`, the queue will',
+    'All artifacts must specify when they expire. The queue will',
     'automatically take care of deleting artifacts past their',
-    'expiration point. This features makes it feasible to upload large',
+    'expiration point. This feature makes it feasible to upload large',
     'intermediate artifacts from data processing applications, as the',
     'artifacts can be set to expire a few days later.',
   ].join('\n'),
@@ -154,9 +173,9 @@ builder.declare({
       {});
   }
 
-  // Get workerGroup and workerId
-  let workerGroup = run.workerGroup;
-  let workerId = run.workerId;
+  const projectId = task.projectId;
+  const workerGroup = run.workerGroup;
+  const workerId = run.workerId;
 
   // It is possible for these to be null if the task was
   // cancelled or otherwise never claimed
@@ -216,7 +235,29 @@ builder.declare({
   let isPublic = /^public\//.test(name);
   let details = {};
   let present = false;
+  let uploadId, objectName;
   switch (storageType) {
+    case 'object': {
+      present = false; // object artifacts require a call to `finishArtifact`
+
+      // we "lock in" the upload on the object service by making a
+      // `createUpload` call with no proposed methods.
+      uploadId = slugid.nice();
+      objectName = artifactToObjectName(taskId, runId, name);
+      const objectService = this.objectService.use({ authoriizedScopes: `object:upload:${projectId}:t/${objectName}` });
+
+      await objectService.createUpload(objectName, {
+        expires,
+        projectId,
+        uploadId,
+        proposedUploadMethods: {},
+      });
+
+      details.uploadId = uploadId;
+
+      break;
+    }
+
     case 's3':
       present = true;
       if (isPublic) {
@@ -309,9 +350,8 @@ builder.declare({
     );
   }
 
-  // This event is *invalid* for s3 storage types so we'll stop sending it.
-  // It's only valid for the non-storage types.
-  if (['error', 'reference', 'link'].includes(artifact.storageType)) {
+  // This event is *invalid* for s3 storage types so we do not send it at all.
+  if (present && artifact.storageType !== 's3') {
     // Publish message about artifact creation
     await this.publisher.artifactCreated({
       status: task.status(),
@@ -323,6 +363,34 @@ builder.declare({
   }
 
   switch (artifact.storageType) {
+    case 'object': {
+      // use a generated clientId with useful information in it
+      const clientId = `artifact-upload/${taskId}/${runId}/on/${workerGroup}/${workerId}`;
+      // credentials expire at artifact expiration or after 24 hours, whichever is first
+      const oneDay = taskcluster.fromNow('24 hours');
+      const expiry = (expires < oneDay) ? expires : oneDay;
+
+      // generate credentials with permission to upload (including finishUpload) this specific object
+      const credentials = taskcluster.createTemporaryCredentials({
+        clientId,
+        start: new Date(),
+        expiry,
+        scopes: [
+          `object:upload:${projectId}:${objectName}`,
+        ],
+        credentials: this.credentials,
+      });
+
+      return res.reply({
+        storageType: 'object',
+        name: objectName,
+        projectId,
+        uploadId,
+        expires: expires.toJSON(),
+        credentials,
+      });
+    }
+
     case 's3': {
     // Reply with signed S3 URL
       let expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
@@ -358,6 +426,102 @@ builder.declare({
   }
 });
 
+builder.declare({
+  method: 'put',
+  route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
+  name: 'finishArtifact',
+  stability: APIBuilder.stability.experimental,
+  category: 'Artifacts',
+  scopes: 'queue:create-artifact:<taskId>/<runId>',
+  input: 'finish-artifact-request.json#',
+  title: 'Finish Artifact',
+  description: [
+    'This endpoint marks an artifact as present for the given task, and',
+    'should be called when the artifact data is fully uploaded.',
+    '',
+    'The storage types `reference`, `link`, and `error` do not need to',
+    'be finished, as they are finished immediately by `createArtifact`.',
+    'The storage type `s3` does not support this functionality and cannot',
+    'be finished.  In all such cases, calling this method is an input error',
+    '(400).',
+  ].join('\n'),
+}, async function(req, res) {
+  const taskId = req.params.taskId;
+  const runId = parseInt(req.params.runId, 10);
+  const name = req.params.name;
+  const { uploadId } = req.body;
+
+  const [[artifact_row], task] = await Promise.all([
+    this.db.fns.get_queue_artifact(taskId, runId, name),
+    Task.get(this.db, taskId),
+  ]);
+
+  if (!artifact_row || !task || !task.runs[runId]) {
+    return res.reportError(
+      'ResourceNotFound',
+      'Artifact with taskId `{{taskId}}`, runId {{runId}}, name `{{name}}` not found',
+      { taskId, runId, name },
+    );
+  }
+
+  const artifact = artifactUtils.fromDb(artifact_row);
+  const run = task.runs[runId]; // checked to exist above
+
+  const publishCreatedMessage = async () => {
+    await this.publisher.artifactCreated({
+      status: task.status(),
+      artifact: artifactUtils.serialize(artifact),
+      workerGroup: run.workerGroup,
+      workerId: run.workerId,
+      runId,
+    }, task.routes);
+  };
+
+  // if this is of a type that is already finished, that's not allowed
+  if (!STORAGE_TYPE_NEEDS_FINISH[artifact.storageType]) {
+    return res.resportError('InputError', 'Only object artifacts can be finished', {});
+  }
+
+  // If already marked present, this is an idempotent call, in which case
+  // we send the Pulse message again (at-least-once semantics)
+  if (artifact.present) {
+    await publishCreatedMessage();
+    return res.status(204).send();
+  }
+
+  if (uploadId !== artifact.details?.uploadId) {
+    return res.reportError(
+      'InputError',
+      'given uploadId does not match that for the artifact',
+      {});
+  }
+
+  // verify object is complete with object service, before allowing this
+  // operation to complete
+  try {
+    await this.objectService.object(artifactToObjectName(taskId, runId, name));
+  } catch (err) {
+    if (err.statusCode !== 404) {
+      throw err;
+    }
+    return res.reportError('InputError', 'Object storing artifact data does not exist', {});
+  }
+  await this.db.fns.queue_artifact_present(taskId, runId, name);
+  await publishCreatedMessage();
+
+  // clear out the details, since the uploadId is no longer relevant
+  await this.db.fns.update_queue_artifact_2({
+    task_id_in: taskId,
+    run_id_in: runId,
+    name_in: name,
+    storage_type_in: null,
+    details_in: {},
+    expires_in: null,
+  });
+
+  return res.status(204).send();
+});
+
 /**
  * Reply to an artifact request using taskId, runId, name and context
  *
@@ -378,7 +542,36 @@ let replyWithArtifactDownload = async function({ taskId, runId, name, req, res, 
   // slightly different logic for each artifact type
   res.set('x-taskcluster-artifact-storage-type', storageType);
 
-  // Handle S3 artifacts
+  if (storageType === 'object') {
+    // get the "simple" download URL from the object service
+    const name = artifactToObjectName(taskId, runId, artifact.name);
+    const scope = `object:download:${name}`;
+    const objectService = this.objectService.use({ authorizedScopes: [scope] });
+
+    let dlRes;
+    try {
+      dlRes = await objectService.startDownload(name, {
+        acceptDownloadMethods: {
+          simple: true,
+        },
+      });
+    } catch (err) {
+      if (err.statusCode !== 404) {
+        throw err;
+      }
+      return res.reportError('ResourceNotFound', 'Object does not exist.', {});
+    }
+
+    if (dlRes.method !== 'simple') {
+      return res.reportError('ResourceNotFound', 'Object does not support simple downloads.', {});
+    }
+    const { uri } = dlRes;
+
+    res.set('location', uri);
+    res.reply({ storageType, url: uri }, 303);
+    return;
+  }
+
   if (storageType === 's3') {
     // We have a header to skip the CDN (cloudfront) for those requests
     // which require it
@@ -640,7 +833,7 @@ const replyWithArtifactInfo = async function({ taskId, runId, name, req, res }) 
   const artifact = artifactUtils.fromDbRows(
     await this.db.fns.get_queue_artifact(taskId, runId, name));
 
-  if (!artifact) {
+  if (!artifact || !artifact.present) {
     return res.reportError('ResourceNotFound', 'Artifact not found', {});
   }
 
@@ -703,6 +896,23 @@ const replyWithArtifactContent = async function({ taskId, runId, name, req, res 
   const { storageType } = artifact;
 
   switch (storageType) {
+    case 'object': {
+      const name = artifactToObjectName(taskId, runId, artifact.name);
+      // use a generated clientId with useful information in it
+      const clientId = `artifact-download/${taskId}/${runId}/${artifact.name}`;
+      const expiry = taskcluster.fromNow('1 hour');
+
+      // generate credentials with permission to download this object
+      const credentials = taskcluster.createTemporaryCredentials({
+        clientId,
+        start: new Date(),
+        expiry,
+        scopes: [`object:download:${name}`],
+        credentials: this.credentials,
+      });
+      return res.reply({ storageType, name, credentials });
+    }
+
     case 's3': {
       const skipCDN = false; // not supported for artifact-content
       const url = await generateS3Url.call(this, { artifact, skipCDN, req });

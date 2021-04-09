@@ -113,6 +113,7 @@ type (
 		//
 		// Possible values:
 		//   * "s3"
+		//   * "object"
 		//   * "reference"
 		//   * "link"
 		//   * "error"
@@ -228,6 +229,17 @@ type (
 		StorageType string `json:"storageType"`
 	}
 
+	// Request body for `finishArtifact`
+	FinishArtifactRequest struct {
+
+		// The uploadId from `createArtifact`.  Supplying this value provides an
+		// additional check, beyond scopes, that the caller was the entity that
+		// uploaded the data.  This must be specified for `storageType: object`.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		UploadID string `json:"uploadId"`
+	}
+
 	// Response to the `artifact` and `latestArtifact` methods.  It is one of the
 	// following types, as identified by the `storageType` property.
 	//
@@ -235,6 +247,7 @@ type (
 	//   * GetArtifactContentResponse1
 	//   * GetArtifactContentResponse2
 	//   * GetArtifactContentResponse3
+	//   * GetArtifactContentResponse4
 	GetArtifactContentResponse json.RawMessage
 
 	// Response to the `artifact` and `latestArtifact` methods.  It is one of the
@@ -249,9 +262,29 @@ type (
 		URL string `json:"url"`
 	}
 
+	// An object name, and credentials to use to access that object on the object service.
+	// The credentials expire one hour after this call; this should allow ample time for
+	// retries, slow downloads, and clock skew.
+	GetArtifactContentResponse2 struct {
+
+		// Temporary credentials for access to the object service.
+		//
+		// These credentials are used both to download artifacts from the object service
+		// (`getArtifactContent`) and to upload artifacts (`createArtifact`).
+		Credentials ObjectServiceCredentials `json:"credentials"`
+
+		// Name of the object on the object service.
+		//
+		// Syntax:     ^[\x20-\x7e]+$
+		Name string `json:"name"`
+
+		// Constant value: "object"
+		StorageType string `json:"storageType"`
+	}
+
 	// Response to the `artifact` and `latestArtifact` methods.  It is one of the
 	// following types, as identified by the `storageType` property.
-	GetArtifactContentResponse2 struct {
+	GetArtifactContentResponse3 struct {
 
 		// Constant value: "reference"
 		StorageType string `json:"storageType"`
@@ -262,7 +295,7 @@ type (
 
 	// Response to the `artifact` and `latestArtifact` methods.  It is one of the
 	// following types, as identified by the `storageType` property.
-	GetArtifactContentResponse3 struct {
+	GetArtifactContentResponse4 struct {
 
 		// Error message
 		Message string `json:"message"`
@@ -448,10 +481,100 @@ type (
 		Workers []Worker `json:"workers"`
 	}
 
+	// Request to create an artifact via the object service.
+	ObjectArtifactRequest struct {
+
+		// Artifact content type.  This is advisory in nature and can be used,
+		// for example, to select appropriate icons to display artifact links.
+		//
+		// Max length: 255
+		ContentType string `json:"contentType"`
+
+		// Date-time after which the artifact should be deleted.
+		Expires tcclient.Time `json:"expires"`
+
+		// Artifact storage type, in this case `'object'`
+		//
+		// Possible values:
+		//   * "object"
+		StorageType string `json:"storageType"`
+	}
+
+	// Information supporting uploading an object to the object service.  This
+	// consists of an object name and uploadId, together with credentials
+	// allowing an upload of the designated object to the service.  The
+	// resulting credentials are valid for 24 hours or until the artifact
+	// expires, whichever is shorter, allowing ample time for any method
+	// negotiation, retries, and so on.  The caller should call
+	// `object.createUpload` with the given credentials, and perform the upload.
+	// Note that the `uploadId`, `projectId`, and `expires` given to
+	// `createUpload` must match those in this response.  The caller should call
+	// `object.finishUpload` when the upload is finished, at which point the
+	// object is immutable and the credentials are no longer useful.
+	ObjectArtifactResponse struct {
+
+		// Temporary credentials for access to the object service.
+		//
+		// These credentials are used both to download artifacts from the object service
+		// (`getArtifactContent`) and to upload artifacts (`createArtifact`).
+		Credentials ObjectServiceCredentials `json:"credentials"`
+
+		// Expiration time for the artifact.
+		Expires tcclient.Time `json:"expires"`
+
+		// Name of the object on the object service.
+		//
+		// Syntax:     ^[\x20-\x7e]+$
+		Name string `json:"name"`
+
+		// Project identifier.
+		//
+		// Syntax:     ^([a-zA-Z0-9._/-]*)$
+		// Min length: 1
+		// Max length: 500
+		ProjectID string `json:"projectId"`
+
+		// Artifact storage type, in this case `'object'`
+		//
+		// Possible values:
+		//   * "object"
+		StorageType string `json:"storageType"`
+
+		// Unique identifier for this upload.   Once an object is created with an uploadId,
+		// uploads of the same object with different uploadIds will be rejected.  Callers
+		// should pass a randomly-generated slugid here.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		UploadID string `json:"uploadId"`
+	}
+
+	// Temporary credentials for access to the object service.
+	//
+	// These credentials are used both to download artifacts from the object service
+	// (`getArtifactContent`) and to upload artifacts (`createArtifact`).
+	ObjectServiceCredentials struct {
+
+		// The `accessToken` for the temporary credentials.
+		//
+		// Min length: 1
+		AccessToken string `json:"accessToken"`
+
+		// The `certificate` for the temporary credentials.
+		//
+		// Min length: 1
+		Certificate string `json:"certificate"`
+
+		// The `clientId` for the temporary credentials.
+		//
+		// Min length: 1
+		ClientID string `json:"clientId"`
+	}
+
 	// Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.
 	//
 	// One of:
 	//   * S3ArtifactRequest
+	//   * ObjectArtifactRequest
 	//   * RedirectArtifactRequest
 	//   * LinkArtifactRequest
 	//   * ErrorArtifactRequest
@@ -462,6 +585,7 @@ type (
 	//
 	// One of:
 	//   * S3ArtifactResponse
+	//   * ObjectArtifactResponse
 	//   * RedirectArtifactResponse
 	//   * LinkArtifactResponse
 	//   * ErrorArtifactResponse

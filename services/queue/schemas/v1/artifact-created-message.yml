@@ -38,12 +38,14 @@ properties:
         title:    "Artifact Storage-Type"
         description: |
           This is the `storageType` for the request that was used to create the
-          artifact.
+          artifact.  Note that artifacts with the `s3` storage type do not produce
+          this message.
         type:         string
         enum:
           - reference
           - link
           - error
+          - object
       name:
         title:    "Artifact Name"
         description: |

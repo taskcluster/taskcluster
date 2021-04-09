@@ -100,8 +100,11 @@ const artifactUtils = {
         }
       }
 
+      // note that 'object' artifacts are deleted at expiration by the object
+      // service, so nothing needs done here.
+
       // When underlying artifact is deleted (if any underlying artifact exists)
-      // we delete the artifact Entity.
+      // we delete the artifact row.
       try {
         await deleted;
 

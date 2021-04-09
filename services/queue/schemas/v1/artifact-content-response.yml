@@ -19,6 +19,25 @@ oneOf:
     - storageType
     - url
 - type: object
+  description: |
+    An object name, and credentials to use to access that object on the object service.
+    The credentials expire one hour after this call; this should allow ample time for
+    retries, slow downloads, and clock skew.
+  properties:
+    storageType:
+      const: object
+    name:
+      description: |
+        Name of the object on the object service.
+      type: string
+      pattern: '^[\x20-\x7e]+$'
+    credentials: {$ref: "object-credentials.json#"}
+  additionalProperties: false
+  required:
+    - storageType
+    - name
+    - credentials
+- type: object
   properties:
     storageType:
       const: reference

@@ -90,6 +90,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   suite('without public artifact signing', () => {
     withCleanLoaderState();
+    helper.withObjectService(mock, skipping);
     helper.withDb(mock, skipping);
     helper.withAmazonIPRanges(mock, skipping);
     helper.withPulse(mock, skipping);
@@ -131,8 +132,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         new helper.Queue({ rootUrl: helper.rootUrl, credentials: taskCredentials });
       const createRes = await queue.createArtifact(taskId, 0, name, artifact);
 
-      if (putFn) {
+      if (artifact.storageType === 's3' && putFn) {
         await putFn(createRes);
+      }
+
+      if (artifact.storageType === 'object') {
+        await queue.finishArtifact(taskId, 0, name, {});
       }
     };
 
@@ -149,6 +154,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         assume(putRes.ok).is.ok();
       },
     };
+
+    const tempCredScopes = credentials => JSON.parse(credentials.certificate).scopes;
 
     test('Download an artifact with anonymous scopes', async () => {
       await makeAndClaimTask();
@@ -535,6 +542,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         'queue:worker-id:my-worker-group/my-worker',
       );
       await makeArtifact({ ...s3Artifact, useClientCreds: true });
+      helper.assertNoPulseMessage('artifact-created');
     });
 
     test('Post S3 artifact with permacreds without necessary scopes', async () => {
@@ -543,6 +551,72 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       await assert.rejects(
         () => makeArtifact({ ...s3Artifact, useClientCreds: true }),
         err => err.code === 'InsufficientScopes');
+    });
+
+    test('Object artifact visible only after finish', async () => {
+      const name = 'my/object';
+      await makeAndClaimTask();
+      helper.scopes(
+        `queue:create-artifact:${taskId}/0`,
+        `queue:get-artifact:my/object`,
+        'queue:list-artifacts:*',
+        'queue:worker-id:my-worker-group/my-worker',
+      );
+
+      let res = await helper.queue.createArtifact(taskId, 0, name, {
+        storageType: 'object',
+        expires: taskcluster.fromNowJSON('1 day'),
+        contentType: 'application/json',
+      });
+      helper.assertNoPulseMessage('artifact-created');
+
+      assert.equal(res.storageType, 'object');
+      assert.equal(res.name, `t/${taskId}/0/my/object`);
+      assert.equal(res.projectId, 'none');
+      const uploadId = res.uploadId;
+
+      assert.deepEqual(tempCredScopes(res.credentials), [`object:upload:none:${res.name}`]);
+
+      await assert.rejects(
+        () => helper.queue.artifactInfo(taskId, 0, name),
+        err => err.statusCode === 404);
+
+      await assert.rejects(
+        () => helper.queue.artifact(taskId, 0, name),
+        err => err.statusCode === 404);
+
+      await assert.rejects(
+        () => helper.queue.getArtifact(taskId, 0, name),
+        err => err.statusCode === 404);
+
+      // finishing the artifact before the object is finished should fail
+      await assert.rejects(
+        () => helper.queue.finishArtifact(taskId, 0, name, {}),
+        err => err.statusCode === 400);
+      helper.assertNoPulseMessage('artifact-created');
+
+      await helper.objectService.finishUpload(res.name, { uploadId });
+
+      // finishing the artifact with the wrong uploadId should fail
+      await assert.rejects(
+        () => helper.queue.finishArtifact(taskId, 0, name, { uploadId: taskcluster.slugid() }),
+        err => err.statusCode === 400);
+      helper.assertNoPulseMessage('artifact-created');
+
+      await helper.queue.finishArtifact(taskId, 0, name, { uploadId });
+      helper.assertPulseMessage('artifact-created');
+
+      res = await helper.queue.artifactInfo(taskId, 0, name);
+      assert.equal(res.storageType, 'object');
+      assert.equal(res.name, `my/object`);
+
+      res = await helper.queue.artifact(taskId, 0, name);
+      assert.equal(res.storageType, 'object');
+      assert.equal(res.name, `t/${taskId}/0/my/object`);
+      assert.deepEqual(tempCredScopes(res.credentials), [`object:download:${res.name}`]);
+
+      res = await helper.queue.getArtifact(taskId, 0, name);
+      assert.equal(res.url, 'https://tc-download.example.com');
     });
 
     test('Expire artifact', async () => {
@@ -593,6 +667,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       debug('### List artifacts');
       const r3 = await helper.queue.listArtifacts(taskId, 0);
       assume(r3.artifacts.length).equals(0);
+    });
+
+    test('finish an artifact for a task that does not exist', async function() {
+      await assert.rejects(
+        () => helper.queue.finishArtifact(taskId, 0, 'public/foo.json', { uploadId: taskcluster.slugid() }),
+        err => err.statusCode === 404);
+    });
+
+    test('finish an artifact that does not exist', async function() {
+      await makeAndClaimTask();
+      await assert.rejects(
+        () => helper.queue.finishArtifact(taskId, 0, 'public/foo.json', { uploadId: taskcluster.slugid() }),
+        err => err.statusCode === 404);
     });
 
     test('Post and get error artifact', async () => {
@@ -654,6 +741,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         url: 'https://google.com',
         contentType: 'text/html',
       });
+      helper.assertPulseMessage('artifact-created');
 
       debug('### Fetch artifact content');
       const content = await helper.queue.artifact(taskId, 0, 'public/redirect.json');
@@ -692,6 +780,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         expires: taskcluster.fromNowJSON('1 day'),
         artifact: 'public/s3.json',
       });
+      helper.assertPulseMessage('artifact-created');
 
       debug('### Fetch artifact content');
       const content = await helper.queue.artifact(taskId, 0, 'public/link.json');

@@ -12,6 +12,7 @@ properties:
     type:         string
     enum:
       - s3
+      - object
       - reference
       - link
       - error

@@ -40,6 +40,62 @@ oneOf:
       - putUrl
       - expires
       - contentType
+  - title:          "Object Artifact Response"
+    description: |
+      Information supporting uploading an object to the object service.  This
+      consists of an object name and uploadId, together with credentials
+      allowing an upload of the designated object to the service.  The
+      resulting credentials are valid for 24 hours or until the artifact
+      expires, whichever is shorter, allowing ample time for any method
+      negotiation, retries, and so on.  The caller should call
+      `object.createUpload` with the given credentials, and perform the upload.
+      Note that the `uploadId`, `projectId`, and `expires` given to
+      `createUpload` must match those in this response.  The caller should call
+      `object.finishUpload` when the upload is finished, at which point the
+      object is immutable and the credentials are no longer useful.
+    type:           object
+    properties:
+      storageType:
+        description: |
+          Artifact storage type, in this case `'object'`
+        type:       string
+        enum:
+          - object
+      name:
+        description: |
+          Name of the object on the object service.
+        type: string
+        pattern: '^[\x20-\x7e]+$'
+      credentials: {$ref: "object-credentials.json#"}
+      projectId:
+        title:          "Project Identifier"
+        description: |
+          Project identifier.
+        type:           string
+        minLength:      {$const: projectId-min-length}
+        maxLength:      {$const: projectId-max-length}
+        pattern:        {$const: projectId-pattern}
+      uploadId:
+        title: "Upload ID"
+        description: |-
+          Unique identifier for this upload.   Once an object is created with an uploadId,
+          uploads of the same object with different uploadIds will be rejected.  Callers
+          should pass a randomly-generated slugid here.
+        type:             string
+        pattern:          {$const: slugid-pattern}
+      expires:
+        description: |
+          Expiration time for the artifact.
+        type:       string
+        format:     date-time
+    additionalProperties: false
+    required:
+      - storageType
+      - name
+      - projectId
+      - uploadId
+      - credentials
+      - expires
   - title:          "Redirect Artifact Response"
     description: |
       Response to a request for the queue to redirect to a URL for a given

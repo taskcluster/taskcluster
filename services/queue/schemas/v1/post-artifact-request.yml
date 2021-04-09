@@ -36,6 +36,33 @@ oneOf:
       - storageType
       - expires
       - contentType
+  - title:          "Object Artifact Request"
+    description: |
+      Request to create an artifact via the object service.
+    type:           object
+    properties:
+      storageType:
+        description: |
+          Artifact storage type, in this case `'object'`
+        type:       string
+        enum:
+          - object
+      expires:
+        description: |
+          Date-time after which the artifact should be deleted.
+        type:       string
+        format:     date-time
+      contentType:
+        description: |
+          Artifact content type.  This is advisory in nature and can be used,
+          for example, to select appropriate icons to display artifact links.
+        type:       string
+        maxLength:  255
+    additionalProperties: false
+    required:
+      - storageType
+      - expires
+      - contentType
   - title:          "Redirect Artifact Request"
     description: |
       Request the queue to redirect fetches for this artifact to a URL.  An

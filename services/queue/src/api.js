@@ -76,12 +76,7 @@ let builder = new APIBuilder({
     '',
     '## Artifact Storage Types',
     '',
-    '* **S3 artifacts** are used for static files which will be',
-    'stored on S3. When creating an S3 artifact the queue will return a',
-    'pre-signed URL to which you can do a `PUT` request to upload your',
-    'artifact. Note that `PUT` request **must** specify the `content-length`',
-    'header and **must** give the `content-type` header the same value as in',
-    'the request to `createArtifact`.',
+    '* **Object artifacts** contain arbitrary data, stored via the object service.',
     '* **Redirect artifacts**, will redirect the caller to URL when fetched',
     'with a a 303 (See Other) response.  Clients will not apply any kind of',
     'authentication to that URL.',
@@ -98,6 +93,13 @@ let builder = new APIBuilder({
     'get a `424` (Failed Dependency) response. This is mainly designed to',
     'ensure that dependent tasks can distinguish between artifacts that were',
     'suppose to be generated and artifacts for which the name is misspelled.',
+    '* **S3 artifacts** are used for static files which will be',
+    'stored on S3. When creating an S3 artifact the queue will return a',
+    'pre-signed URL to which you can do a `PUT` request to upload your',
+    'artifact. Note that `PUT` request **must** specify the `content-length`',
+    'header and **must** give the `content-type` header the same value as in',
+    'the request to `createArtifact`. S3 artifacts will be deprecated soon,',
+    'and users should prefer object artifacts instead.',
     '',
     '## Artifact immutability',
     '',
@@ -130,9 +132,9 @@ let builder = new APIBuilder({
   context: [
     'db', // Database instance
     'taskGroupExpiresExtension', // Time delay before expiring a task-group
-    'signPublicArtifactUrls', // Whether to use AWS signed URLs for public artifacts
-    'publicBucket', // bucket instance for public artifacts
-    'privateBucket', // bucket instance for private artifacts
+    'signPublicArtifactUrls', // Whether to use AWS signed URLs for public s3 artifacts
+    'publicBucket', // bucket instance for public s3 artifacts
+    'privateBucket', // bucket instance for private s3 artifacts
     'publisher', // publisher from base.Exchanges
     'claimTimeout', // Number of seconds before a claim expires
     'queueService', // Azure QueueService object from queueservice.js
@@ -142,8 +144,9 @@ let builder = new APIBuilder({
     'monitor', // base.monitor instance
     'workClaimer', // Instance of WorkClaimer
     'workerInfo', // Instance of WorkerInfo
-    'artifactRegion', // Region where artifacts are stored
+    'artifactRegion', // AWS Region where s3 artifacts are stored
     'LRUcache', // LRU cache for tasks
+    'objectService', // Object service API client
   ],
 });
 
@@ -530,7 +533,8 @@ builder.declare({
     '',
     '**Task expiration**: the `expires` property must be greater than the',
     'task `deadline`. If not provided it will default to `deadline` + one',
-    'year. Notice, that artifacts created by task must expire before the task.',
+    'year. Notice that artifacts created by a task must expire before the',
+    'task\'s expiration.',
     '',
     '**Task specific routing-keys**: using the `task.routes` property you may',
     'define task specific routing-keys. If a task has a task specific ',

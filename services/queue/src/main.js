@@ -103,6 +103,14 @@ let load = loader({
     },
   },
 
+  objectService: {
+    requires: ["cfg"],
+    setup: ({ cfg }) => new taskcluster.Object({
+      rootUrl: cfg.taskcluster.rootUrl,
+      credentials: cfg.taskcluster.credentials,
+    }),
+  },
+
   db: {
     requires: ["cfg", "process", "monitor"],
     setup: ({ cfg, process, monitor }) => tcdb.setup({
@@ -180,7 +188,7 @@ let load = loader({
       'cfg', 'publisher', 'schemaset', 'db', 'queueService',
       'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker',
-      'workClaimer', 'workerInfo',
+      'workClaimer', 'workerInfo', 'objectService',
     ],
     setup: (ctx) => builder.build({
       context: {
@@ -200,6 +208,7 @@ let load = loader({
         workClaimer: ctx.workClaimer,
         workerInfo: ctx.workerInfo,
         LRUcache: new QuickLRU({ maxSize: ctx.cfg.app.taskCacheMaxSize || 10 }),
+        objectService: ctx.objectService,
       },
       rootUrl: ctx.cfg.taskcluster.rootUrl,
       schemaset: ctx.schemaset,

@@ -483,6 +483,20 @@
     "title": "Queue Configuration"
   },
   {
+    "element": "h3",
+    "id": "object-service",
+    "path": "/manual/deploying/queue-config",
+    "subtitle": "Object Service",
+    "title": "Queue Configuration"
+  },
+  {
+    "element": "h3",
+    "id": "s3-artifacts",
+    "path": "/manual/deploying/queue-config",
+    "subtitle": "S3 Artifacts",
+    "title": "Queue Configuration"
+  },
+  {
     "element": "h2",
     "id": "task-cache",
     "path": "/manual/deploying/queue-config",
@@ -2878,9 +2892,23 @@
   },
   {
     "element": "h2",
+    "id": "creating-artifacts",
+    "path": "/reference/platform/queue/artifacts",
+    "subtitle": "Creating Artifacts",
+    "title": "Artifacts"
+  },
+  {
+    "element": "h2",
     "id": "getting-artifacts",
     "path": "/reference/platform/queue/artifacts",
     "subtitle": "Getting Artifacts",
+    "title": "Artifacts"
+  },
+  {
+    "element": "h3",
+    "id": "simple-downloads",
+    "path": "/reference/platform/queue/artifacts",
+    "subtitle": "Simple Downloads",
     "title": "Artifacts"
   },
   {

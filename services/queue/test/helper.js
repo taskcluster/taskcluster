@@ -147,6 +147,69 @@ exports.withDb = (mock, skipping) => {
 };
 
 /**
+ * Set up a fake object service that supports uploads and downlods.
+ */
+exports.withObjectService = (mock, skipping) => {
+  let objects = new Map();
+  suiteSetup(async function() {
+    const err404 = message => {
+      const err = new Error(message);
+      err.statusCode = 404;
+      return err;
+    };
+    helper.objectService = new taskcluster.Object({
+      rootUrl: helper.rootUrl,
+      fake: {
+        createUpload: async (name, { expires, hashes, projectId, proposedUploadMethods, uploadId }) => {
+          if (objects.has(name)) {
+            throw new Error(`Object ${name} already exists`);
+          }
+          objects.set(name, { uploadId, expires, projectId, hashes });
+          return { expires, projectId, uploadId, uploadMethod: {} };
+        },
+        finishUpload: async (name, { expires, hashes, projectId, uploadId }) => {
+          const object = objects.get(name);
+          if (!object) {
+            throw err404(`No such object ${name}`);
+          }
+          assert.equal(object.uploadId, uploadId);
+          object.uploadId = null;
+          return {};
+        },
+        startDownload: async (name, { acceptDownloadMethods }) => {
+          if (!acceptDownloadMethods.simple) {
+            throw new Error('Expected download method `simple`');
+          }
+          const object = objects.get(name);
+          if (!object) {
+            throw err404(`No such object ${name}`);
+          }
+          if (object.uploadId) {
+            throw err404(`Object ${name} not finished`);
+          }
+          return { method: 'simple', uri: 'https://tc-download.example.com' };
+        },
+        object: async (name) => {
+          const object = objects.get(name);
+          if (!object) {
+            throw err404(`No such object ${name}`);
+          }
+          if (object.uploadId) {
+            throw err404(`Object ${name} not finished`);
+          }
+          return { expires: object.expires, projectId: object.projectId, hashes: object.hashes };
+        },
+      },
+    });
+    exports.load.inject('objectService', helper.objectService);
+  });
+
+  setup(function() {
+    objects = new Map();
+  });
+};
+
+/**
  * Set up an API server.  Call this after withDb, so the server
  * uses the same Entities classes.
  *

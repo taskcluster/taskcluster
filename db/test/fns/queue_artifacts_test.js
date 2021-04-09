@@ -129,6 +129,36 @@ suite(testing.suiteName(), function() {
     assert.equal(artifact.expires.toJSON(), now.toJSON());
   });
 
+  helper.dbTest('queue_artifact_present sets present', async function(db) {
+    const taskId = slugid.nice();
+    const [artifact] = await db.fns.create_queue_artifact(
+      taskId,
+      0,
+      'name',
+      'storage-type',
+      'content-type',
+      {},
+      false,
+      new Date(),
+    );
+    assert.equal(artifact.present, false);
+
+    const [artifact2] = await db.fns.queue_artifact_present({ task_id_in: taskId, run_id_in: 0, name_in: 'name' });
+    assert.equal(artifact2.present, true);
+
+    const [artifact3] = await db.fns.get_queue_artifact(taskId, 0, 'name');
+    assert.equal(artifact3.present, true);
+
+    // check idempotency
+    await db.fns.queue_artifact_present({ task_id_in: taskId, run_id_in: 0, name_in: 'name' });
+  });
+
+  helper.dbTest('queue_artifact_present returns nothing for missing artifact', async function(db) {
+    const taskId = slugid.nice();
+    const [artifact] = await db.fns.queue_artifact_present({ task_id_in: taskId, run_id_in: 0, name_in: 'name' });
+    assert(!artifact);
+  });
+
   helper.dbTest('get_queue_artifact gets an artifact', async function(db) {
     const taskId = slugid.nice();
     const now = new Date();

@@ -6,7 +6,7 @@ title: Artifacts
 
 ## Artifact Storage Types
 
-Each artifact has a storageType, defining how it is stored and how it behaves.
+Each artifact has a `storageType`, defining how it is stored and how it behaves.
 See the [Queue API documentation](./api) for details.
 
 ## Getting Artifacts
@@ -14,15 +14,44 @@ See the [Queue API documentation](./api) for details.
 The queue service has a plethora of methods for accessing artifacts.
 They are grouped in pairs, with a version taking a `runId` and a version that uses the latest run.
 
-To get metadata about all of a task's artifacts, use `listArtifacts`/`listLatestArtifacts`.
-For a single artifact, use `getArtifactInfo`/`getLatestArtifactInfo`.
+To get metadata about all of a task's artifacts, use [`listArtifacts`](/docs/reference/platform/queue/api#listArtifacts)/[`listLatestArtifacts`](/docs/reference/platform/queue/api#listLatestArtifacts).
+For a single artifact, use [`getArtifactInfo`](/docs/reference/platform/queue/api#getArtifactInfo)/[`getLatestArtifactInfo`](/docs/reference/platform/queue/api#getLatestArtifactInfo).
 None of these methods follow `link` artifacts.
 
-To get artifact content, use `artifact`/`latestArtfact`.
+To get artifact content, use [`artifact`](/docs/reference/platform/queue/api#artifact)/[`latestArtfact`](/docs/reference/platform/queue/api#latestArtfact).
 These methods return a structure specific to the storage type.
 For storage types that contain data, this structure will include enough information to access that data (such as a URL).
 
-The alternative methods to get artifact content are `getArtifact`/`getLatestArtifact`.
+In particular, for `storageType: "object"`, the response contains Taskcluster credentials and an object name.
+The caller should use the given credentials to call an object-service download method such as [`object.startDownload`](/docs/reference/platform/object/api#startDownload).
+The recommended approach is to use the download functions from the [client library](https://docs.taskcluster.net/docs/manual/using/api) appropriate to the implementation language.
+
+### Simple Downloads
+
+The alternative methods to get artifact content are [`getArtifact`](/docs/reference/platform/queue/api#getArtifact)/[`getLatestArtifact`](/docs/reference/platform/queue/api#getLatestArtifact).
 These methods are similar to the "simple" download method supported by the object service.
 They redirect to the backend data for artifacts containing data, or return an HTTP 424 error for `error` artifacts.
-Typically, these methods are used with utilities like `curl` or `requests`, which handle bulk data transfer directly.
+It is safe to construct signed URLs or, when the artifact content is public, unsigned URLs for these endpoints and pass those URLs to other tools.
+Typically, these methods are used with utilities like `curl` or `requests`, which handle bulk data transfer directly, or with a browser to render the artifact content directly.
+
+## Creating Artifacts
+
+The queue is designed to allow workers to create artifacts for tasks they are executing.
+The following describes the recommended process for creating artifacts containing output from a task (not including error, reference, and link artifacts).
+
+1. Using the task credentials, call [`queue.createArtifact`](/docs/reference/platform/queue/api#createArtifact) specifying `storageType: "object"`.
+   The `contentType` of the artifact should match what will be uploaded to the object service.
+   General-purpose workers will typically "guess" the content type based on file extension or other metadata.
+
+1. The response from `queue.createArtifact` will contain a set of Taskcluster credentials which can be used to upload the object to the object service, using [`object.createUpload`](/docs/reference/platform/object/api#createUpload).
+   The response also contains `name`, `projectId`, `expires`, and `uploadID`, all of which must be passed unchanged to `object.createUpload`.
+   At this time, the queue has already begun the object upload, and the object service will reject requests that do not match.
+   While the `name` of the artifact follows a simple pattern, workers should not assume that this pattern holds and should always use the `name` from the response.
+
+1. Proceed to upload the object data, using provided credentials.
+   Use the upload functions from the [client library](https://docs.taskcluster.net/docs/manual/using/api) appropriate to the implementation language, which support retries, method negotiation, and other best-practices for data transfer.
+   The credentials are valid for 24 hours, allowing ample time for retries, slow uploads, and so on.
+
+1. Once the upload has been completed successfully, call [`queue.finishArtifact`](/docs/reference/platform/queue/api#finishArtifact).
+   The artifact is only available for download from the task after this call is made, and the `artifactCreated` message is sent at this time.
+   Note that it is only necessary to call `finishUpload` for artifacts with `storageType: "object"`.
