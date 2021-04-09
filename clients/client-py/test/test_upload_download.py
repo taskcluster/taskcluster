@@ -6,7 +6,6 @@ import io
 import pytest
 import httptest
 import aiohttp
-import requests
 
 import taskcluster
 from taskcluster import upload, download
@@ -66,7 +65,7 @@ def test_simple_download_fails():
 
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
-        with pytest.raises(requests.RequestException):
+        with pytest.raises(aiohttp.ClientResponseError):
             download.downloadToBuf(
                 name="some/object",
                 objectService=objectService)
@@ -87,7 +86,7 @@ def test_simple_download_fails_retried():
 
     with httptest.Server(Server) as ts:
         objectService = FakeObject(ts)
-        with pytest.raises(requests.RequestException):
+        with pytest.raises(aiohttp.ClientResponseError):
             download.downloadToBuf(
                 name="some/object",
                 objectService=objectService)
@@ -124,6 +123,33 @@ def test_simple_download_fails_retried_succeeds(randbytes):
     assert attempts == 3
     assert buf == data
     assert content_type == 'text/plain'
+
+
+def test_download(randbytes):
+    """Test that download works with a custom sync writer factory."""
+    data = randbytes(1024)
+
+    class Server(httptest.Handler):
+        def do_GET(self):
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(data)
+
+    writer = None
+
+    def writerFactory():
+        nonlocal writer
+        writer = io.BytesIO()
+        return writer
+
+    with httptest.Server(Server) as ts:
+        objectService = FakeObject(ts)
+        download.download(
+            name="some/object",
+            writerFactory=writerFactory,
+            objectService=objectService)
+
+    assert bytes(writer.getbuffer()) == data
 
 
 def test_putUrl_upload_fails(randbytes):

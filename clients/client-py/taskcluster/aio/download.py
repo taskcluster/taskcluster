@@ -21,6 +21,7 @@ if six.PY2:
 
 import aiohttp
 
+from .asyncutils import ensureCoro
 from .reader_writer import streamingCopy, BufferWriter, FileWriter
 from .retry import retry
 
@@ -66,7 +67,7 @@ async def download(*, name, maxRetries=5, objectService, writerFactory):
     upload.  Returns the content-type.
     """
     async with aiohttp.ClientSession() as session:
-        downloadResp = await objectService.startDownload(name, {
+        downloadResp = await ensureCoro(objectService.startDownload)(name, {
             "acceptDownloadMethods": {
                 "simple": True,
             },
