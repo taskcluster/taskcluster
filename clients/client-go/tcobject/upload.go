@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -144,12 +143,6 @@ func putURLUpload(httpBackoffClient *httpbackoff.Client, uploadMethod SelectedUp
 		putResp, tempError = httpClient.Do(httpRequest)
 		if tempError != nil {
 			return
-		}
-		// bug 1394557: s3 incorrectly returns HTTP 400 for connection
-		// inactivity, so make this a temp error rather than a permanent error
-		// if it occurs, in case this is a put request to s3
-		if putResp.StatusCode == 400 {
-			tempError = fmt.Errorf("Status code 400 which might be an intermittent issue - see https://bugzilla.mozilla.org/show_bug.cgi?id=1394557")
 		}
 		return
 	}
