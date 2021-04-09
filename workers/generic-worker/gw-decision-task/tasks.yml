@@ -324,25 +324,25 @@ Mounts:
       darwin:
         amd64:
           url: 'https://storage.googleapis.com/golang/go1.16.3.darwin-amd64.tar.gz'
-          sha256: '940a73b45993a3bae5792cf324140dded34af97c548af4864d22fd6d49f3bd9f'
+          sha256: '6bb1cf421f8abc2a9a4e39140b7397cdae6aca3e8d36dcff39a1a77f4f1170ac'
           format: tar.gz
       linux:
         armv6l:
           url: 'https://storage.googleapis.com/golang/go1.16.3.linux-armv6l.tar.gz'
-          sha256: '40ba9a57764e374195018ef37c38a5fbac9bbce908eab436370631a84bfc5788'
+          sha256: '0dae30385e3564a557dac7f12a63eedc73543e6da0f6017990e214ce8cc8797c'
           format: tar.gz
         amd64:
           url: 'https://storage.googleapis.com/golang/go1.16.3.linux-amd64.tar.gz'
-          sha256: '3918e6cc85e7eaaa6f859f1bdbaac772e7a825b0eb423c63d3ae68b21f84b844'
+          sha256: '951a3c7c6ce4e56ad883f97d9db74d3d6d80d5fec77455c6ada6c1f7ac4776d2'
           format: tar.gz
       windows:
         386:
           url: 'https://storage.googleapis.com/golang/go1.16.3.windows-386.zip'
-          sha256: '5872eff6746a0a5f304272b27cbe9ce186f468454e95749cce01e903fbfc0e17'
+          sha256: 'a3c16e1531bf9726f47911c4a9ed7cb665a6207a51c44f10ebad4db63b4bcc5a'
           format: zip
         amd64:
           url: 'https://storage.googleapis.com/golang/go1.16.3.windows-amd64.zip'
-          sha256: 'b7b3808bb072c2bab73175009187fd5a7f20ffe0a31739937003a14c5c4d9006'
+          sha256: 'a4400345135b36cb7942e52bbaf978b66814738b855eeff8de879a09fd99de7f'
           format: zip
   git2.24.0.2:
     directory: git
