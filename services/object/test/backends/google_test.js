@@ -152,6 +152,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
   helper.testDataInlineUpload({
     mock, skipping, prefix,
     backendId: 'googlePrivate',
+    omit: [
+      // see https://github.com/taskcluster/taskcluster/issues/4748
+      'htmlContentDisposition',
+    ],
     async getObjectContent({ name }) {
       const res = await s3.getObject({
         Bucket: secret.testBucket,
@@ -166,6 +170,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
   helper.testPutUrlUpload({
     mock, skipping, prefix,
     backendId: 'googlePrivate',
+    omit: [
+      // see https://github.com/taskcluster/taskcluster/issues/4748
+      'htmlContentDisposition',
+    ],
     async getObjectContent({ name }) {
       const res = await s3.getObject({
         Bucket: secret.testBucket,

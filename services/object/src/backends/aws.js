@@ -4,6 +4,7 @@ const aws = require('aws-sdk');
 const { reportError } = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
 const qs = require('qs');
+const { parse: parseContentType } = require('content-type');
 
 const PUT_URL_EXPIRES_SECONDS = 45 * 60;
 
@@ -67,10 +68,15 @@ class AwsBackend extends Backend {
       return reportError('InputError', 'Invalid base64 objectData', {});
     }
 
+    const contentDisposition = this.contentDisposition(contentType);
+
     await this.s3.putObject({
       Bucket: this.config.bucket,
       Key: object.name,
       ContentType: contentType,
+      // note that GCS's S3 emulation does not support this; see
+      // https://github.com/taskcluster/taskcluster/issues/4748
+      ...(this.isAws && contentDisposition ? { ContentDisposition: contentDisposition } : {}),
       Body: bytes,
       Tagging: this.objectTaggingHeader(object),
     }).promise();
@@ -94,6 +100,16 @@ class AwsBackend extends Backend {
       'Content-Length': contentLength.toString(),
       'Content-Encoding': 'identity',
     };
+
+    // we want to force HTML files to have an "attachment" disposition, so that
+    // browsers do not render them as "regular" web pages, which would open up
+    // all sorts of browser-based vulnerabilities.  note that GCS's S3
+    // emulation does not support this; see
+    // https://github.com/taskcluster/taskcluster/issues/4748
+    const contentDisposition = this.contentDisposition(contentType);
+    if (this.isAws && contentDisposition) {
+      headers['Content-Disposition'] = contentDisposition;
+    }
 
     // tags are not supported on GCS, so only add this header on AWS
     if (this.isAws) {
@@ -172,6 +188,15 @@ class AwsBackend extends Backend {
       }
     }
     return true;
+  }
+
+  /**
+   * Get the content disposition header for this object, if any
+   */
+  contentDisposition(contentType) {
+    if (parseContentType(contentType).type === 'text/html') {
+      return 'attachment';
+    }
   }
 
   /**

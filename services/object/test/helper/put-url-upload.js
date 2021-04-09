@@ -25,8 +25,12 @@ exports.testPutUrlUpload = ({
   backendId,
 
   // an async function({name}) to get the data for a given object, returning {
-  // data, contentType }.
+  // data, contentType, contentDisposition }.
   getObjectContent,
+
+  // omit testing certain functionality that's not supported on this backend; options:
+  // - htmlContentDisposition -- enforcing content-disposition for text/html objects
+  omit = [],
 
   // suiteDefinition defines the suite; add suiteSetup, suiteTeardown here, if
   // necessary, and any extra tests
@@ -40,7 +44,7 @@ exports.testPutUrlUpload = ({
       backend = backends.get(backendId);
     });
 
-    const makeUpload = async ({ length = 256 } = {}) => {
+    const makeUpload = async ({ length = 256, contentType = 'application/random-bytes' } = {}) => {
       const data = crypto.randomBytes(length);
       const name = helper.testObjectName(prefix);
       const expires = taskcluster.fromNow('1 hour');
@@ -50,7 +54,7 @@ exports.testPutUrlUpload = ({
       const [object] = await helper.db.fns.get_object_with_upload(name);
 
       const res = await backend.createUpload(object, {
-        putUrl: { contentType: 'application/random-bytes', contentLength: data.length },
+        putUrl: { contentType, contentLength: data.length },
       });
 
       await helper.assertSatisfiesSchema(res, responseSchema);
@@ -100,5 +104,19 @@ exports.testPutUrlUpload = ({
       // this request should fail, somehow (how depends on the backend)
       assert(!putRes.ok);
     });
+
+    if (!omit.includes('htmlContentDisposition')) {
+      test(`upload of type text/html has attachment disposition`, async function() {
+        const { name, data, res, object, uploadId } = await makeUpload({ contentType: 'text/html' });
+
+        await performUpload({ name, data, res, uploadId });
+        await finishUpload({ name, uploadId, object });
+
+        const stored = await getObjectContent({ name });
+        assert.equal(stored.contentType, 'text/html');
+        assert.equal(stored.contentDisposition, 'attachment');
+        assert.deepEqual(stored.data, data);
+      });
+    }
   });
 };

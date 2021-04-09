@@ -97,7 +97,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       tagging.TagSet.some(({ Key, Value }) => Key === 'Extra' && Value === 'yes'),
       `got tags ${JSON.stringify(tagging)}`);
 
-    return { data: res.Body, contentType: res.ContentType };
+    const head = await s3.headObject({
+      Bucket: secret.testBucket,
+      Key: name,
+    }).promise();
+
+    return { data: res.Body, contentType: res.ContentType, contentDisposition: head.ContentDisposition };
   };
 
   const cleanup = async () => {
