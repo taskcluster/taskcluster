@@ -40,7 +40,7 @@ class TestBackend extends Backend {
     if (object.name === 'has/no/methods') {
       return [];
     }
-    return ['simple', 'HTTP:GET'];
+    return ['simple'];
   }
 
   async startDownload(object, method, params) {
@@ -51,16 +51,6 @@ class TestBackend extends Backend {
         return {
           method,
           url: 'data:;base64,' + this.data.get(object.name).toString('base64'),
-        };
-      }
-
-      case 'HTTP:GET': {
-        assert.equal(params, true);
-        return {
-          method,
-          details: {
-            url: 'https://google.ca',
-          },
         };
       }
 

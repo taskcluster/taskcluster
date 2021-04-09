@@ -934,7 +934,7 @@ var services = map[string]definitions.Service{
 				Name:        "createUpload",
 				Title:       "Begin upload of a new object",
 				Description: "Create a new object by initiating upload of its data.\n\nThis endpoint implements negotiation of upload methods.  It can be called\nmultiple times if necessary, either to propose new upload methods or to\nrenew credentials for an already-agreed upload.\n\nThe `name` parameter can contain any printable ASCII character (0x20 - 0x7e).\nThe `uploadId` must be supplied by the caller, and any attempts to upload\nan object with the same name but a different `uploadId` will fail.\nThus the first call to this method establishes the `uploadId` for the\nobject, and as long as that value is kept secret, no other caller can\nupload an object of that name, regardless of scopes.  Object expiration\ncannot be changed after the initial call, either.  It is possible to call\nthis method with no proposed upload methods, which has the effect of \"locking\nin\" the `expiration`, `projectId`, and `uploadId` properties and any\nsupplied hashes.\n\nUnfinished uploads expire after 1 day.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "put",
 				Route:       "/upload/<name>",
 				Args: []string{
@@ -947,7 +947,7 @@ var services = map[string]definitions.Service{
 				Name:        "finishUpload",
 				Title:       "Mark an upload as complete.",
 				Description: "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "post",
 				Route:       "/finish-upload/<name>",
 				Args: []string{
@@ -960,7 +960,7 @@ var services = map[string]definitions.Service{
 				Name:        "startDownload",
 				Title:       "Download object data",
 				Description: "Start the process of downloading an object's data.  Call this endpoint with a list of acceptable\ndownload methods, and the server will select a method and return the corresponding payload.\n\nReturns a 406 error if none of the given download methods are available.\n\nSee [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "put",
 				Route:       "/start-download/<name>",
 				Args: []string{
@@ -973,7 +973,7 @@ var services = map[string]definitions.Service{
 				Name:        "object",
 				Title:       "Get an object's metadata",
 				Description: "Get the metadata for the named object.  This metadata is not sufficient to\nget the object's content; for that use `startDownload`.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/metadata/<name>",
 				Args: []string{
@@ -986,7 +986,7 @@ var services = map[string]definitions.Service{
 				Name:        "download",
 				Title:       "Get an object's data",
 				Description: "Get the data in an object directly.  This method does not return a JSON body, but\nredirects to a location that will serve the object content directly.\n\nURLs for this endpoint, perhaps with attached authentication (`?bewit=..`),\nare typically used for downloads of objects by simple HTTP clients such as\nweb browsers, curl, or wget.\n\nThis method is limited by the common capabilities of HTTP, so it may not be\nthe most efficient, resilient, or featureful way to retrieve an artifact.\nSituations where such functionality is required should ues the\n`startDownload` API endpoint.\n\nSee [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "get",
 				Route:       "/download/<name>",
 				Args: []string{
@@ -1287,7 +1287,7 @@ var services = map[string]definitions.Service{
 				Name:        "finishArtifact",
 				Title:       "Finish Artifact",
 				Description: "This endpoint marks an artifact as present for the given task, and\nshould be called when the artifact data is fully uploaded.\n\nThe storage types `reference`, `link`, and `error` do not need to\nbe finished, as they are finished immediately by `createArtifact`.\nThe storage type `s3` does not support this functionality and cannot\nbe finished.  In all such cases, calling this method is an input error\n(400).",
-				Stability:   "experimental",
+				Stability:   "stable",
 				Method:      "put",
 				Route:       "/task/<taskId>/runs/<runId>/artifacts/<name>",
 				Args: []string{

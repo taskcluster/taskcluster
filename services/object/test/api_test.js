@@ -491,15 +491,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('startDownload for a supported method succeeds', async function() {
-      await createTestObject('public/foo');
+      const data = await createTestObject('public/foo');
       const res = await helper.apiClient.startDownload('public/foo', {
-        acceptDownloadMethods: { 'HTTP:GET': true },
+        acceptDownloadMethods: { 'simple': true },
       });
       assert.deepEqual(res, {
-        method: 'HTTP:GET',
-        details: {
-          url: 'https://google.ca',
-        },
+        method: 'simple',
+        url: 'data:;base64,' + data.toString('base64'),
       });
     });
 
@@ -520,7 +518,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await createTestObject('has/no/methods');
       await assert.rejects(
         () => helper.apiClient.startDownload('has/no/methods', {
-          acceptDownloadMethods: { simple: true, 'HTTP:GET': true },
+          acceptDownloadMethods: { simple: true },
         }),
         err => err.code === 'NoMatchingMethod' && err.statusCode === 406,
       );

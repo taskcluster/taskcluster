@@ -104,8 +104,6 @@ func (object *Object) Ping() error {
 	return err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Create a new object by initiating upload of its data.
 //
 // This endpoint implements negotiation of upload methods.  It can be called
@@ -135,8 +133,6 @@ func (object *Object) CreateUpload(name string, payload *CreateUploadRequest) (*
 	return responseObject.(*CreateUploadResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint marks an upload as complete.  This indicates that all data has been
 // transmitted to the backend.  After this call, no further calls to `uploadObject` are
 // allowed, and downloads of the object may begin.  This method is idempotent, but will
@@ -154,8 +150,6 @@ func (object *Object) FinishUpload(name string, payload *FinishUploadRequest) er
 	return err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Start the process of downloading an object's data.  Call this endpoint with a list of acceptable
 // download methods, and the server will select a method and return the corresponding payload.
 //
@@ -173,8 +167,6 @@ func (object *Object) StartDownload(name string, payload *DownloadObjectRequest)
 	return responseObject.(*DownloadObjectResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get the metadata for the named object.  This metadata is not sufficient to
 // get the object's content; for that use `startDownload`.
 //
@@ -199,8 +191,6 @@ func (object *Object) Object_SignedURL(name string, duration time.Duration) (*ur
 	return (&cd).SignedURL("/metadata/"+url.QueryEscape(name), nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Get the data in an object directly.  This method does not return a JSON body, but
 // redirects to a location that will serve the object content directly.
 //

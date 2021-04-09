@@ -3,5 +3,4 @@ title: "Download Object Response"
 description: |
   See [Download Methods](https://docs.taskcluster.net/docs/docs/reference/platform/object/download-methods) for details.
 oneOf:
-  - $ref: "download-method-http-get.json#/definitions/response"
   - $ref: "download-method-simple.json#/definitions/response"

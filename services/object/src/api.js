@@ -8,7 +8,6 @@ const taskcluster = require('taskcluster-client');
  */
 const DOWNLOAD_METHODS = [
   'simple',
-  'HTTP:GET',
 ];
 
 // Object names are limited to printable ASCII, including space.

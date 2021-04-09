@@ -570,8 +570,6 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArti
 	return responseObject.(*PostArtifactResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint marks an artifact as present for the given task, and
 // should be called when the artifact data is fully uploaded.
 //

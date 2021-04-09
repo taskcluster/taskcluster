@@ -82,10 +82,6 @@ type (
 		ObjectData string `json:"objectData"`
 	}
 
-	Details struct {
-		URL string `json:"url"`
-	}
-
 	// See [Download Methods](https://docs.taskcluster.net/docs/docs/reference/platform/object/download-methods) for details.
 	DownloadObjectRequest struct {
 
@@ -97,7 +93,6 @@ type (
 	// See [Download Methods](https://docs.taskcluster.net/docs/docs/reference/platform/object/download-methods) for details.
 	//
 	// One of:
-	//   * HTTPGETDownloadResponse
 	//   * SimpleDownloadResponse
 	DownloadObjectResponse json.RawMessage
 
@@ -122,13 +117,6 @@ type (
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		UploadID string `json:"uploadId"`
-	}
-
-	HTTPGETDownloadResponse struct {
-		Details Details `json:"details"`
-
-		// Constant value: "HTTP:GET"
-		Method string `json:"method"`
 	}
 
 	// Hashes of the content of this object.  These values will be verified by
@@ -239,9 +227,6 @@ type (
 	// Download methods that the caller can suport, together with parameters for each method.
 	// The server will choose one method and make the corresponding response.
 	SupportedDownloadMethods struct {
-
-		// Constant value: %!q(bool=true)
-		HTTPGET bool `json:"HTTP:GET,omitempty"`
 
 		// Constant value: %!q(bool=true)
 		Simple bool `json:"simple,omitempty"`
