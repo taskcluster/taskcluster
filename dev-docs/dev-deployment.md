@@ -11,7 +11,7 @@ Moreover, dev deployments are difficult and consume substantial resources.
 You will need to have the following
 
 * A running kubernetes cluster with at least 2000 mCPU and 4GB RAM available.
-  * Helm installed (either 2 or 3 should Just Work)
+  * Helm 3 installed
   * The latest version of kubectl installed, and credentials configured to talk to the cluster
 * A RabbitMQ cluster running the latest available version.
 * A Postgres server running Postgres 11.x (see below for Google Cloud SQL, or use another provider).
