@@ -28,6 +28,8 @@ func (qp *QueueProvider) RegisterService(r *mux.Router) {
 	// TODO: currently mocks don't support more than one task run per task - and all assume runId == "0"
 	s.HandleFunc("/task/{taskId}/runs/{runId}/artifacts/{name}", qp.GetLatestArtifact_SignedURL).Methods("GET")
 	s.HandleFunc("/task/{taskId}/runs/{runId}/artifacts", qp.ListArtifacts).Methods("GET")
+	s.HandleFunc("/task/{taskId}/runs/{runId}/artifact-content/{name}", qp.Artifact).Methods("GET")
+	s.HandleFunc("/task/{taskId}/artifact-content/{name}", qp.LatestArtifact).Methods("GET")
 	s.HandleFunc("/task/{taskId}/runs/{runId}/reclaim", qp.ReclaimTask).Methods("POST")
 	s.HandleFunc("/task/{taskId}/runs/{runId}/completed", qp.ReportCompleted).Methods("POST")
 	s.HandleFunc("/task/{taskId}/runs/{runId}/exception", qp.ReportException).Methods("POST")
@@ -74,6 +76,26 @@ func (qp *QueueProvider) GetLatestArtifact_SignedURL(w http.ResponseWriter, r *h
 func (qp *QueueProvider) ListArtifacts(w http.ResponseWriter, r *http.Request) {
 	vars := Vars(r)
 	out, err := qp.queue.ListArtifacts(vars["taskId"], vars["runId"], vars["continuationToken"], vars["limit"])
+	JSON(w, out, err)
+}
+
+func (qp *QueueProvider) Artifact(w http.ResponseWriter, r *http.Request) {
+	vars := Vars(r)
+	out, err := qp.queue.Artifact(vars["taskId"], vars["runId"], vars["name"])
+	if err != nil {
+		ReportError(w, err)
+		return
+	}
+	JSON(w, out, err)
+}
+
+func (qp *QueueProvider) LatestArtifact(w http.ResponseWriter, r *http.Request) {
+	vars := Vars(r)
+	out, err := qp.queue.LatestArtifact(vars["taskId"], vars["name"])
+	if err != nil {
+		ReportError(w, err)
+		return
+	}
 	JSON(w, out, err)
 }
 

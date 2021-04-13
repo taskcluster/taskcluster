@@ -87,12 +87,13 @@ func Marshal(req *http.Request, payload interface{}) {
 	}
 }
 
-func ServiceProviders(t *testing.T) []httputil.ServiceProvider {
+func ServiceProviders(t *testing.T, baseURL string) []httputil.ServiceProvider {
 	return []httputil.ServiceProvider{
 		NewAuthProvider(NewAuth(t)),
-		NewQueueProvider(NewQueue(t)),
+		NewQueueProvider(NewQueue(t, baseURL)),
 		NewSecretsProvider(NewSecrets()),
 		NewWorkerManagerProvider(NewWorkerManager(t)),
 		mocks3.New(t),
+		NewObjectProvider(NewObject(t, baseURL)),
 	}
 }

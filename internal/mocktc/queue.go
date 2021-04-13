@@ -3,6 +3,7 @@ package mocktc
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"reflect"
 	"strings"
@@ -28,13 +29,16 @@ type Queue struct {
 
 	// artifacts["<taskId>:<runId>"]["<name>"]
 	artifacts map[string]map[string]interface{}
+
+	baseURL string
 }
 
-func NewQueue(t *testing.T) *Queue {
+func NewQueue(t *testing.T, baseURL string) *Queue {
 	return &Queue{
 		t:         t,
 		tasks:     map[string]*tcqueue.TaskDefinitionAndStatus{},
 		artifacts: map[string]map[string]interface{}{},
+		baseURL:   baseURL,
 	}
 }
 
@@ -90,13 +94,17 @@ func (queue *Queue) ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequ
 	}, nil
 }
 
+func (queue *Queue) ensureArtifactMap(taskId, runId string) {
+	if _, mapAlreadyCreated := queue.artifacts[taskId+":"+runId]; !mapAlreadyCreated {
+		queue.artifacts[taskId+":"+runId] = map[string]interface{}{}
+	}
+}
+
 func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *tcqueue.PostArtifactRequest) (*tcqueue.PostArtifactResponse, error) {
 	queue.mu.Lock()
 	defer queue.mu.Unlock()
 
-	if _, mapAlreadyCreated := queue.artifacts[taskId+":"+runId]; !mapAlreadyCreated {
-		queue.artifacts[taskId+":"+runId] = map[string]interface{}{}
-	}
+	queue.ensureArtifactMap(taskId, runId)
 
 	var request tcqueue.Artifact
 	err := json.Unmarshal([]byte(*payload), &request)
@@ -412,6 +420,81 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 	}, nil
 }
 
+func (queue *Queue) Artifact(taskId, runId, name string) (*tcqueue.GetArtifactContentResponse, error) {
+	queue.mu.RLock()
+	defer queue.mu.RUnlock()
+	taskRunArtifacts, exists := queue.artifacts[taskId+":"+runId]
+	if !exists {
+		return nil, &tcclient.APICallException{
+			CallSummary: &tcclient.CallSummary{
+				HTTPResponseBody: fmt.Sprintf("No artifacts for task %v (runId 0) found", taskId),
+			},
+			RootCause: httpbackoff.BadHttpResponseCode{
+				HttpResponseCode: 404,
+			},
+		}
+	}
+	artifact, exists := taskRunArtifacts[name]
+	if !exists {
+		log.Printf("%#v", taskRunArtifacts)
+		return nil, &tcclient.APICallException{
+			CallSummary: &tcclient.CallSummary{
+				HTTPResponseBody: fmt.Sprintf("Task %v (runId 0) found, but does not have artifact %v", taskId, name),
+			},
+			RootCause: httpbackoff.BadHttpResponseCode{
+				HttpResponseCode: 404,
+			},
+		}
+	}
+	var jsonResp []byte
+	switch a := artifact.(type) {
+	case *tcqueue.S3ArtifactRequest:
+		url := queue.baseURL + "/s3/" + url.PathEscape(taskId) + "/" + runId + "/" + url.PathEscape(name)
+		resp := tcqueue.GetArtifactContentResponse1{
+			StorageType: "s3",
+			URL:         url,
+		}
+		var err error
+		jsonResp, err = json.Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+
+	case *tcqueue.ObjectArtifactRequest:
+		resp := tcqueue.GetArtifactContentResponse2{
+			StorageType: "object",
+			Name:        fmt.Sprintf("t/%s/%s/%s", taskId, runId, name),
+			Credentials: tcqueue.ObjectServiceCredentials{
+				ClientID: "object-fetching-client",
+			},
+		}
+		var err error
+		jsonResp, err = json.Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+
+	case *tcqueue.ErrorArtifactRequest:
+		return nil, fmt.Errorf("Error Artifact: %s: %s", a.Message, a.Reason)
+
+	default:
+		return nil, fmt.Errorf("Unsupported artifact storage type %T", artifact)
+	}
+
+	// convert that encoded JSON into an object of the correct type
+	var resp tcqueue.GetArtifactContentResponse
+	err := (&resp).UnmarshalJSON(jsonResp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+func (queue *Queue) LatestArtifact(taskId, name string) (*tcqueue.GetArtifactContentResponse, error) {
+	// for "latest", default to RunId 0
+	return queue.Artifact(taskId, "0", name)
+}
+
 func (queue *Queue) ReclaimTask(taskId, runId string) (*tcqueue.TaskReclaimResponse, error) {
 	err := queue.ensureRunning(taskId, runId)
 	if err != nil {
@@ -480,6 +563,48 @@ func (queue *Queue) Task(taskId string) (*tcqueue.TaskDefinitionResponse, error)
 		}
 	}
 	return &queue.tasks[taskId].Task, nil
+}
+
+///////////////////////////////////
+
+// FakeS3Artifact makes a fake artifact with storageType 's3', outside of the
+// usual API flow.  It is up to the caller to also create the data on mocks3,
+// if necessary
+func (queue *Queue) FakeS3Artifact(taskId string, runId string, name string, contentType string) {
+	queue.ensureArtifactMap(taskId, runId)
+	req := &tcqueue.S3ArtifactRequest{
+		ContentType: contentType,
+		Expires:     tcclient.Time(time.Now().AddDate(1, 0, 0)),
+		StorageType: "s3",
+	}
+	queue.artifacts[taskId+":"+runId][name] = req
+}
+
+// FakeObjectArtifact makes a fake artifact with storageType 'object', outside of the
+// usual API flow.  It is up to the caller to also create the data in the object service,
+// if necessary
+func (queue *Queue) FakeObjectArtifact(taskId string, runId string, name string, contentType string) {
+	queue.ensureArtifactMap(taskId, runId)
+	req := &tcqueue.ObjectArtifactRequest{
+		ContentType: contentType,
+		Expires:     tcclient.Time(time.Now().AddDate(1, 0, 0)),
+		StorageType: "object",
+	}
+	queue.artifacts[taskId+":"+runId][name] = req
+}
+
+// FakeErrorArtifact makes a fake artifact with storageType 'object', outside of the
+// usual API flow.  It is up to the caller to also create the data in the object service,
+// if necessary
+func (queue *Queue) FakeErrorArtifact(taskId string, runId string, name string, message string, reason string) {
+	queue.ensureArtifactMap(taskId, runId)
+	req := &tcqueue.ErrorArtifactRequest{
+		Message:     message,
+		Reason:      reason,
+		Expires:     tcclient.Time(time.Now().AddDate(1, 0, 0)),
+		StorageType: "error",
+	}
+	queue.artifacts[taskId+":"+runId][name] = req
 }
 
 ///////////////////////////////////
