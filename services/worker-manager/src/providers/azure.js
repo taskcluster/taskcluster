@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const generator = require('generate-password');
-const request = require('superagent');
+const got = require('got');
 const { rootCertificates } = require('tls');
 const { WorkerPool, Worker } = require('../data');
 
@@ -206,11 +206,12 @@ class AzureProvider extends Provider {
   // Return a response Promise, where .body is the binary file
   // This method is patched for testing
   async downloadBinaryResponse(url) {
-    return await request.get(url)
-      .timeout(this.downloadTimeout)
-      .ok(res => res.status === 200)
-      .redirects(0)
-      .buffer(true);
+    return await got(url, {
+      responseType: 'buffer',
+      resolveBodyOnly: true,
+      timeout: this.downloadTimeout,
+      followRedirect: false,
+    });
   }
 
   async setup() {
@@ -505,7 +506,7 @@ class AzureProvider extends Provider {
         if (method === 'CA Issuer' && location.startsWith('http:')) {
           let raw_data = null;
           try {
-            raw_data = (await this.downloadBinaryResponse(location)).body;
+            raw_data = await this.downloadBinaryResponse(location);
           } catch (err) {
             this.monitor.log.registrationErrorWarning({
               message: 'Error downloading intermediate certificate',
