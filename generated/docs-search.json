@@ -2773,6 +2773,13 @@
   },
   {
     "element": "h2",
+    "id": "security-considerations",
+    "path": "/reference/platform/object/simple-downloads",
+    "subtitle": "Security Considerations",
+    "title": "Simple Downloads"
+  },
+  {
+    "element": "h2",
     "id": "url-format",
     "path": "/reference/platform/object/simple-downloads",
     "subtitle": "URL Format",

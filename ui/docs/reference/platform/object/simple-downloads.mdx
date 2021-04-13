@@ -38,3 +38,15 @@ We recommand the following invocation:
 ```
 $ curl -sSL --fail $url
 ```
+
+## Security Considerations
+
+When loading an object using a simple download, a browser will follow the redirect and, if it renders the object in-window, will display the target URL in the address bar.
+If that URL contains authentication information, such as for a private artifact, then it is vulnerable to disclosure via the `Referer` header or by a user copy/pasting it.
+
+The [origin](https://tools.ietf.org/html/rfc6454#section-7) of such a resource will, depending on the backend, be shared with many other objects.
+For example, all objects in a single S3 bucket share the same origin.
+This makes it particularly dangerous to serve HTML content directly to browsers from objects.
+
+To avoid this, where supported by the backend, HTML content will be rendered with `Content-Disposition: attachment`.
+This will cause browsers to download the content, rather than rendering it inline.
