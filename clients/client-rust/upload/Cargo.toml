@@ -5,9 +5,10 @@ authors = ["Dustin J. Mitchell <dustin@mozilla.com>"]
 edition = "2018"
 license = "MPL-2.0"
 description = "Taskcluster Upload Support"
+repository = "https://github.com/taskcluster/taskcluster"
 
 [dependencies]
-taskcluster = { path = "../client" }
+taskcluster = { version = "43.0.0", path = "../client" }
 anyhow = "1.0"
 async-trait = "0.1"
 reqwest = { version = "0.11", features = ["json", "stream"] }
@@ -22,4 +23,4 @@ sha2 = "0.9"
 [dev-dependencies]
 httptest = "^0.15.1"
 tempfile = "3"
-ring = "*"
+ring = "0.16"

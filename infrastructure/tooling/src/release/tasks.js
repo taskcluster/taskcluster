@@ -156,7 +156,9 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         const rsclient = `clients/client-rust/${dir}/Cargo.toml`;
         utils.status({ message: `Update ${rsclient}` });
         await modifyRepoFile(rsclient, contents =>
-          contents.replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`));
+          contents
+            .replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`)
+            .replace(/^taskcluster = .*$/m, `taskcluster = { version = "${requirements['release-version']}", path = "../client" }`));
         changed.push(rsclient);
       }
 
