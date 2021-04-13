@@ -11,9 +11,11 @@ Moreover, dev deployments are difficult and consume substantial resources.
 You will need to have the following
 
 * A running kubernetes cluster with at least 2000 mCPU and 4GB RAM available.
-  * Helm installed (either 2 or 3 should Just Work)
+  * Helm 3 installed
   * The latest version of kubectl installed, and credentials configured to talk to the cluster
 * A RabbitMQ cluster running the latest available version.
+  The deployment process requires administrative access (the RabbitMQ management API) and creates multiple users.
+  The free levels of CloudAMQP's service do not support this.
 * A Postgres server running Postgres 11.x (see below for Google Cloud SQL, or use another provider).
   The Postgres server must be initialized with the `en_US.utf8` locale; see [the deployment docs](../ui/docs/manual/deploying/database.mdx).
 * An AWS account and an IAM user in that account
