@@ -15,8 +15,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/taskcluster/taskcluster/v43/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v43/tools/websocktunnel/client"
-	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/tc"
 )
 
 type wstExposer struct {

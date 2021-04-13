@@ -15,8 +15,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/taskcluster/taskcluster/v43/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v43/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v43/tools/websocktunnel/wsproxy"
-	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/tc"
 )
 
 const WST_WORKER_GROUP = "expose-tests"

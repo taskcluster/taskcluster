@@ -1,4 +1,4 @@
-package tchttputil
+package httputil
 
 import (
 	"fmt"

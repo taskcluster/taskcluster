@@ -9,7 +9,7 @@ import (
 	"github.com/taskcluster/taskcluster/v43/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v43/clients/client-go/tcsecrets"
 	"github.com/taskcluster/taskcluster/v43/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/tc"
+	"github.com/taskcluster/taskcluster/v43/internal/mocktc/tc"
 )
 
 type ServiceFactory struct {

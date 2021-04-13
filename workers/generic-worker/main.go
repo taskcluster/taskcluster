@@ -30,6 +30,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/v43/clients/client-go"
 	"github.com/taskcluster/taskcluster/v43/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v43/internal"
+	"github.com/taskcluster/taskcluster/v43/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v43/internal/scopes"
 	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/errorreport"
 	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/expose"
@@ -39,7 +40,6 @@ import (
 	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v43/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/tc"
 	"github.com/xeipuuv/gojsonschema"
 )
 
