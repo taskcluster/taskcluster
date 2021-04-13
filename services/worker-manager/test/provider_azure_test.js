@@ -1279,7 +1279,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const expectedUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt';
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error downloading intermediate certificate');
-          assert.equal(log0.error, `Error: Timeout of 1ms exceeded; location=${expectedUrl}`);
+          assert.equal(log0.error, `TimeoutError: Timeout awaiting 'request' for 1ms; location=${expectedUrl}`);
           const expectedSubject = dnToString(deletedCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: expectedUrl },
@@ -1317,11 +1317,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert(deletedCert);
 
           // Download is not a binary certificate
-          provider.downloadBinaryResponse = (url) => {
-            return new Promise((resolve, reject) => {
-              resolve({ body: '<html><body><h1>Apache2 Default Page</h1></body></html>' });
-            });
-          };
+          provider.downloadBinaryResponse = async url =>
+            '<html><body><h1>Apache2 Default Page</h1></body></html>';
 
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
