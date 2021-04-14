@@ -866,10 +866,15 @@
     "@types/node" "*"
     form-data "^3.0.0"
 
-"@types/node@*", "@types/node@>=12.0.0", "@types/node@>=12.12.47", "@types/node@>=6", "@types/node@>=8.9.0":
+"@types/node@*", "@types/node@>=12.0.0", "@types/node@>=6", "@types/node@>=8.9.0":
   version "14.14.37"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.37.tgz#a3dd8da4eb84a996c36e331df98d82abd76b516e"
   integrity sha512-XYmBiy+ohOR4Lh5jE379fV2IU+6Jn4g5qASinhitfyO71b/sCo6MKsMLF5tc7Zf2CE8hViVQyYSobJNke8OvUw==
+
+"@types/node@>=12.12.47":
+  version "14.14.39"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.39.tgz#9ef394d4eb52953d2890e4839393c309aa25d2d1"
+  integrity sha512-Qipn7rfTxGEDqZiezH+wxqWYR8vcXq5LRpZrETD19Gs4o8LbklbmqotSUsMU+s5G3PJwMRDfNEYoxrcBwIxOuw==
 
 "@types/node@^10.1.0":
   version "10.17.56"
@@ -877,9 +882,9 @@
   integrity sha512-LuAa6t1t0Bfw4CuSR0UITsm1hP17YL+u82kfHGrHUWdhlBtH7sa7jGY5z7glGaIj/WDYDkRtgGd+KCjCzxBW1w==
 
 "@types/node@^13.7.0":
-  version "13.13.48"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.13.48.tgz#46a3df718aed5217277f2395a682e055a487e341"
-  integrity sha512-z8wvSsgWQzkr4sVuMEEOvwMdOQjiRY2Y/ZW4fDfjfe3+TfQrZqFKOthBgk2RnVEmtOKrkwdZ7uTvsxTBLjKGDQ==
+  version "13.13.49"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.13.49.tgz#c274f1d842879082237f700a0e3140f875764aa5"
+  integrity sha512-v5fPzKjPAZ33/G4X8EXvGlbHFKQClfKAz1bKF/+cKaWss9lAIqrOETfcFNL3xG+DG2VCEev+dK4/lCa+YZaxBA==
 
 "@types/node@^8.0.47":
   version "8.10.66"
@@ -4814,9 +4819,9 @@ netmask@^2.0.0:
   integrity sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==
 
 newrelic@^7.0.0:
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-7.3.0.tgz#99a21bf571350c99358ac264b23d450b073ffacd"
-  integrity sha512-oZcFphigeiWsHSPdv1wiDVVitFaw1b6Y+iAryyeIM/qmeAkxrW8+42E3yDDZ5KYSoYoos9L9ZJrS1MOr4muyfw==
+  version "7.3.1"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-7.3.1.tgz#2ab15cf057c7b27b3899f12add643bcc752101fb"
+  integrity sha512-PtFIJqaZnrj8+blZrE/kEpOYsL4rYZjs2L2mWRgfdAl7KJfmbAalRHFyae7Pn2o5wYSXGrIoUqHJY7hcKZNXKQ==
   dependencies:
     "@grpc/grpc-js" "^1.2.11"
     "@grpc/proto-loader" "^0.5.6"
