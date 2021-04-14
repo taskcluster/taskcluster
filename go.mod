@@ -5,7 +5,7 @@ go 1.16
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
-	github.com/Microsoft/go-winio v0.4.16
+	github.com/Microsoft/go-winio v0.4.17
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/certifi/gocertifi v0.0.0-20200922220541-2c3bb06c6054 // indirect
 	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
