@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "@azure/arm-compute": "^16.0.0",
-    "@azure/arm-network": "^23.0.0",
+    "@azure/arm-network": "^24.0.0",
     "@azure/ms-rest-azure-js": "^2.0.1",
     "@azure/ms-rest-js": "^2.0.5",
     "@azure/ms-rest-nodeauth": "^3.0.5",
