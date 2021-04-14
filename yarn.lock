@@ -64,10 +64,10 @@
     "@azure/ms-rest-js" "^2.0.4"
     tslib "^1.10.0"
 
-"@azure/arm-network@^23.0.0":
-  version "23.3.0"
-  resolved "https://registry.yarnpkg.com/@azure/arm-network/-/arm-network-23.3.0.tgz#c5570a2343af455c1219a852b0dbb3009497d727"
-  integrity sha512-6hGLMb5I0fs01e7hjTBvfp9pbuN9zI82HokDtmPAhk6awG+Lupex2CDRUXRm08ZKLoH1Kaqly+/uH0+OTNkWpA==
+"@azure/arm-network@^24.0.0":
+  version "24.0.0"
+  resolved "https://registry.yarnpkg.com/@azure/arm-network/-/arm-network-24.0.0.tgz#c498102cf665caa16c231a521190b15fbf94d6a3"
+  integrity sha512-eZCN8gbhuItXTW7YrPD40k0z1fBUeNZ+7nOJRK71EOon1fHBRlc2vJMBONgew8losvU80V44SXpLXVC/0DL+9w==
   dependencies:
     "@azure/ms-rest-azure-js" "^2.0.1"
     "@azure/ms-rest-js" "^2.0.4"
