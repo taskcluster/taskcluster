@@ -1,8 +1,8 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import provisionersQuery from './provisioners.graphql';
+import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import ErrorPanel from '../../../components/ErrorPanel';

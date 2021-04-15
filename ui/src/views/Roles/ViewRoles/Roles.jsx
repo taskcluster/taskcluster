@@ -1,10 +1,10 @@
 import React, { PureComponent, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { string } from 'prop-types';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import dotProp from 'dot-prop-immutable';
 import escapeStringRegexp from 'escape-string-regexp';
+import Spinner from '../../../components/Spinner';
 import RolesTable from '../../../components/RolesTable';
 import ErrorPanel from '../../../components/ErrorPanel';
 import DialogAction from '../../../components/DialogAction';

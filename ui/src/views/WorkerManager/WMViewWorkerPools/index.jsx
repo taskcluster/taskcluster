@@ -5,7 +5,7 @@ import PlusIcon from 'mdi-react/PlusIcon';
 import escapeStringRegexp from 'escape-string-regexp';
 import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import workerPoolsQuery from './WMWorkerPools.graphql';
 import ErrorPanel from '../../../components/ErrorPanel';

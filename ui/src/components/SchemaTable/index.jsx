@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { string } from 'prop-types';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import SchemaViewer from 'material-ui-json-schema-viewer/build/SchemaViewer';
 import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import jsonSchemaDraft07 from 'ajv/lib/refs/json-schema-draft-07.json';
+import Spinner from '../Spinner';
 import ErrorPanel from '../ErrorPanel';
 import references from '../../../../generated/references.json';
 

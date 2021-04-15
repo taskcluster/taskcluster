@@ -3,7 +3,7 @@ import { string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import Paper from '@material-ui/core/Paper';
-import Markdown from '@mozilla-frontend-infra/components/Markdown';
+import Markdown from '../../../../components/Markdown';
 
 const styles = withStyles(theme => ({
   root: {

@@ -1,12 +1,12 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import MuiTreeView from 'material-ui-treeview';
 import PlusIcon from 'mdi-react/PlusIcon';
 import qs, { parse, stringify } from 'qs';
+import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';

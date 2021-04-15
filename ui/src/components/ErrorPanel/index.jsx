@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 import { bool, oneOfType, string, object } from 'prop-types';
-import MuiErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
+import MuiErrorPanel from './MuiErrorPanel';
 import { CONTENT_MAX_WIDTH } from '../../utils/constants';
 
 @withStyles(theme => ({

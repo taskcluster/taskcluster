@@ -18,7 +18,7 @@ import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
+import CodeEditor from '../CodeEditor';
 import TextField from '../TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import DialogAction from '../DialogAction';

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { arrayOf, func, shape } from 'prop-types';
 import classNames from 'classnames';
-import Code from '@mozilla-frontend-infra/components/Code';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -10,6 +9,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
+import Code from '../Code';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
 import { artifact, indexedTask, date, pageInfo } from '../../utils/prop-types';

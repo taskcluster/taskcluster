@@ -1,8 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
-import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -19,6 +17,8 @@ import CheckIcon from 'mdi-react/CheckIcon';
 import RestartIcon from 'mdi-react/RestartIcon';
 import { dump } from 'js-yaml';
 import debounce from 'lodash.debounce';
+import Spinner from '../../components/Spinner';
+import CodeEditor from '../../components/CodeEditor';
 import TextField from '../../components/TextField';
 import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';

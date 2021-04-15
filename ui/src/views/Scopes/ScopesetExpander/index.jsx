@@ -1,14 +1,14 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { Query } from 'react-apollo';
-import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { parse, stringify } from 'qs';
+import Spinner from '../../../components/Spinner';
+import CodeEditor from '../../../components/CodeEditor';
 import HelpView from '../../../components/HelpView';
 import Dashboard from '../../../components/Dashboard/index';
 import Button from '../../../components/Button';

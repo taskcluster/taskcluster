@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import { oneOf, bool, string } from 'prop-types';
-import Label from '@mozilla-frontend-infra/components/Label';
 import purple from '@material-ui/core/colors/purple';
 import { withStyles } from '@material-ui/core/styles';
+import Label from '../Label';
 import labels from '../../utils/labels';
 
 @withStyles(theme => ({

@@ -3,7 +3,7 @@ import React, { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
 import { graphql } from 'react-apollo';
 import cloneDeep from 'lodash.clonedeep';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
 import parameterizeTask from '../../../utils/parameterizeTask';
