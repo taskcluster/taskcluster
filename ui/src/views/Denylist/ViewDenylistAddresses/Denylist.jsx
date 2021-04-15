@@ -1,8 +1,8 @@
 import React, { PureComponent, Fragment } from 'react';
 import { string } from 'prop-types';
 import { graphql } from 'react-apollo';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import dotProp from 'dot-prop-immutable';
+import Spinner from '../../../components/Spinner';
 import DenylistTable from '../../../components/DenylistTable';
 import ErrorPanel from '../../../components/ErrorPanel';
 import notificationsQuery from './denylist.graphql';

@@ -1,7 +1,7 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Spinner from '../../../components/Spinner';
 import Snackbar from '../../../components/Snackbar';
 import Dashboard from '../../../components/Dashboard';
 import RoleForm from '../../../components/RoleForm';

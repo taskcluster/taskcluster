@@ -96,8 +96,7 @@ const styles = withStyles(theme => {
 
 /**
  * An input text field with a diff view feature.
- * Refer to `mozilla-frontend-infra/components` MarkdownTextArea components
- * ref: https://github.com/mozilla-frontend-infra/components/blob/master/src/components/MarkdownTextArea/index.jsx
+ * Refer to the MarkdownTextArea component
  */
 function DiffTextArea(props) {
   const {

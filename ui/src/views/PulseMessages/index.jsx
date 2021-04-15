@@ -17,7 +17,7 @@ import DownloadIcon from 'mdi-react/DownloadIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
 import StopIcon from 'mdi-react/StopIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
-import Code from '@mozilla-frontend-infra/components/Code';
+import Code from '../../components/Code';
 import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import Dashboard from '../../components/Dashboard';

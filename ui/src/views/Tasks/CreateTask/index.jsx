@@ -14,7 +14,6 @@ import {
   addMilliseconds,
   addHours,
 } from 'date-fns';
-import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import { withStyles } from '@material-ui/core/styles';
 import Switch from '@material-ui/core/Switch';
 import Typography from '@material-ui/core/Typography';
@@ -27,6 +26,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
+import CodeEditor from '../../../components/CodeEditor';
 import SpeedDial from '../../../components/SpeedDial';
 import SiteSpecific from '../../../components/SiteSpecific';
 import SpeedDialAction from '../../../components/SpeedDialAction';

@@ -2,7 +2,7 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { VIEW_WORKER_POOL_ERRORS_PAGE_SIZE } from '../../../utils/constants';

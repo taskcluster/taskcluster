@@ -1,8 +1,8 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
+import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import DenylistForm from '../../../components/DenylistForm';
 import ErrorPanel from '../../../components/ErrorPanel';

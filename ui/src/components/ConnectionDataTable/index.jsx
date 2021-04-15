@@ -10,7 +10,6 @@ import {
   bool,
 } from 'prop-types';
 import classNames from 'classnames';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -19,6 +18,7 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import Spinner from '../Spinner';
 import { pageInfo } from '../../utils/prop-types';
 
 @withStyles(theme => ({

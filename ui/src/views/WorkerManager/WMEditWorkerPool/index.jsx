@@ -2,7 +2,7 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import { bool } from 'prop-types';
-import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import createWorkerPoolQuery from './createWorkerPool.graphql';
 import updateWorkerPoolQuery from './updateWorkerPool.graphql';

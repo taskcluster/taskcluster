@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
-import Label from '@mozilla-frontend-infra/components/Label';
 import { shape, func, arrayOf, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import { camelCase } from 'camel-case';
@@ -18,6 +17,7 @@ import {
   WorkerManagerWorkerPoolSummary,
   pageInfo,
 } from '../../utils/prop-types';
+import Label from '../Label';
 import ConnectionDataTable from '../ConnectionDataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
