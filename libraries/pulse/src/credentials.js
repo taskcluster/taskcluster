@@ -7,26 +7,32 @@ const assert = require('assert');
  *   password:          // Pulse password
  *   hostname:          // Hostname to use
  *   vhost   :          // vhost to use
+ *   amqps   :          // whether to use amqps over amqp (default true)
  * }
  */
-const pulseCredentials = ({ username, password, hostname, vhost }) => {
+const pulseCredentials = ({ username, password, hostname, vhost, amqps }) => {
   assert(username, 'options.username is required');
   assert(password, 'options.password is required');
   assert(hostname, 'options.hostname is required');
   assert(vhost, 'options.vhost is required');
 
+  if (amqps === undefined) {
+    amqps = true;
+  }
+
   // Construct connection string
   return async () => {
     return {
       connectionString: [
-        'amqps://', // Ensure that we're using SSL
+        amqps ? 'amqps' : 'amqp',
+        '://',
         encodeURIComponent(username),
         ':',
         encodeURIComponent(password),
         '@',
         hostname,
         ':',
-        5671, // Port for SSL
+        amqps ? 5671 : 5672,
         '/',
         encodeURIComponent(vhost),
         // don't artificially limit frame size (https://bugzilla.mozilla.org/show_bug.cgi?id=1582376)

@@ -12,7 +12,7 @@ This is satisfied by a mostly-default RabbitMQ installation.
 
 The following Helm configuration properties must be set, and are shared by all services:
 
-* `pulseHostname` - hostname of the Pulse server.  This must be listening on the amqps port.
+* `pulseHostname` - hostname of the Pulse server.  This must be listening on the amqps or amqp port.
 * `pulseVhost` - vhost on which Taskcluster should communicate.  Taskcluster will create some exchanges and queues with fixed names (`exchange/taskcluster-<service/*` and `queue/taskcluster-<service>/*`) in this vhost.
 
 Services that use Pulse require service-specific credentials for access to Pulse.

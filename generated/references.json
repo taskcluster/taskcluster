@@ -9156,6 +9156,10 @@
           "title": "Configuration options for object",
           "type": "object"
         },
+        "pulseAmqps": {
+          "description": "whether to use amqps (TLS) to communicate with pulse (default true)",
+          "type": "boolean"
+        },
         "pulseHostname": {
           "description": "A rabbitmq cluster",
           "type": "string"

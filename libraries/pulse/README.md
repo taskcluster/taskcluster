@@ -37,6 +37,7 @@ credentials = pulse.pulseCredentials({
   password: 'sekrit',
   hostname: 'pulse.mycompany.com',
   vhost: '/',
+  amqps: true, // whether to use amqps instead of amqp (optional, default true)
 });
 
 // ..or a connection string

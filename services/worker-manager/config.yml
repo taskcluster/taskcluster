@@ -25,6 +25,7 @@ defaults:
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD
     vhost: !env PULSE_VHOST
+    amqps: !env:bool:optional PULSE_AMQPS
   providers: !env:json PROVIDERS
 
   # new relic config (processed in services/prelude.js)

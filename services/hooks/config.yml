@@ -33,6 +33,7 @@ defaults:
     password:       !env PULSE_PASSWORD
     hostname:       !env PULSE_HOSTNAME
     vhost:          !env PULSE_VHOST
+    amqps:          !env:bool:optional PULSE_AMQPS
     # a list of regular expressions for exchanges that are prohibited
     denylist:
      # triggering a hook on task-created could create a "task bomb" that just spews

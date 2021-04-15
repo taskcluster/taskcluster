@@ -79,6 +79,7 @@ defaults:
     password:                 !env PULSE_PASSWORD
     hostname:                 !env PULSE_HOSTNAME
     vhost:                    !env PULSE_VHOST
+    amqps:                    !env:bool:optional PULSE_AMQPS
 
   # Accounts that auth can delegate access to, as JSON
   azureAccounts:            !env:json:optional AZURE_ACCOUNTS
