@@ -71,7 +71,6 @@ script/minify) shift; exec yarn run minify "${@}";;
 script/changelog) shift; exec yarn run changelog "${@}";;
 script/changelog:show) shift; exec yarn run changelog:show "${@}";;
 script/changelog:check) shift; exec yarn run changelog:check "${@}";;
-script/shared-secrets) shift; exec yarn run shared-secrets "${@}";;
 script/heroku-prebuild) shift; exec yarn run heroku-prebuild "${@}";;
 script/heroku-postbuild) shift; exec yarn run heroku-postbuild "${@}";;
 script/dev:init) shift; exec yarn run dev:init "${@}";;
