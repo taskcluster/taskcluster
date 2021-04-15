@@ -3,6 +3,72 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v43.1.0
+
+### GENERAL
+
+▶ [patch] [#4696](https://github.com/taskcluster/taskcluster/issues/4696)
+The `github.com/taskcluster/taskcluster/vNN/workers/generic-worker/mocktc` library is no longer publicly exposed.
+
+▶ [patch] 
+Upgrade from node 14.16.0 to 14.16.1 across services and docker-worker.
+
+### DEPLOYERS
+
+▶ [patch] [bug 1442024](http://bugzil.la/1442024)
+The object service now serves `text/html` content with `Content-Disposition: attachment` to avoid security issues inherent in serving arbitrary HTML documents.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] 
+Go major version upgrade for generic-worker and worker-runner (go 1.15.6 -> go 1.16.3). Prerequisite step for providing native darwin/arm64 binaries for both (native Apple Silicon builds).
+
+### USERS
+
+▶ [minor] [#4548](https://github.com/taskcluster/taskcluster/issues/4548)
+The queue now additionally supports artifacts with the storageType `object`, stored via the object service.
+
+▶ [patch] [#4576](https://github.com/taskcluster/taskcluster/issues/4576)
+The shell client now has two new commands to download data from Taskcluster:
+ * `taskcluster download object <name> <filename>` -- download directly from the object service
+ * `taskcluster download artifact <taskId> [<runId>] <name> <filename>` -- download the content of an artifact
+These commands follow current best practices, including retries with backoff.  When supported by the object service, they will also verify download integrity.
+
+▶ [patch] [#4698](https://github.com/taskcluster/taskcluster/issues/4698)
+Uploading functions in the Python client have been renamed to use camel-case instead of underscores.
+
+### OTHER
+
+▶ Additional changes not described here: [#4623](https://github.com/taskcluster/taskcluster/issues/4623), [#4631](https://github.com/taskcluster/taskcluster/issues/4631), [#4739](https://github.com/taskcluster/taskcluster/issues/4739), [#4741](https://github.com/taskcluster/taskcluster/issues/4741), [#4744](https://github.com/taskcluster/taskcluster/issues/4744).
+
+### Automated Package Updates
+
+<details>
+<summary>20 Renovate updates</summary>
+
+* Update dependency js-yaml to v4.1.0 (bc2dda559)
+* Update dependency apollo-server-express to v2.23.0 (66941613e)
+* Update dependency newrelic to v7.3.1 (bd6a791e4)
+* Update dependency date-fns to v2.21.0 (64f8cc301)
+* Update module github.com/Microsoft/go-winio to v0.4.17 (426fca502)
+* Update dependency @azure/arm-network to v24 (f825d482d)
+* Update dependency pg to v8.6.0 (30f5a5e10)
+* Update dependency pg-connection-string to v2.5.0 (2242418b5)
+* Update dependency date-fns to v2.20.3 (ca4880d6a)
+* Update dependency matrix-js-sdk to v9.11.0 (ddae91aeb)
+* Update dependency date-fns to v2.20.2 (4f6c915d6)
+* Update dependency googleapis to v71 (b3a9a029e)
+* Update dependency marked to v2.0.3 (9b7f98b46)
+* Update dependency @fontsource/roboto to v4.2.3 (80ca3de16)
+* Update dependency eslint to v7.24.0 (b41017797)
+* Update dependency mock-aws-s3 to v4.0.2 (9be4a7c0e)
+* Update dependency date-fns to v2.20.1 (ecc66230b)
+* Update babel monorepo to v7.13.15 (9a5a263fd)
+* Update dependency taskcluster-client-web to v43 (9fd14d658)
+* Update dependency taskcluster-client to v43 (ef7574f3c)
+
+</details>
+
 ## v43.0.0
 
 ### DEPLOYERS
