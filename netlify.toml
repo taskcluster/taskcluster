@@ -1,8 +1,0 @@
-[build]
-  command = "yarn styleguide:build"
-  publish = "styleguide"
-
-[build.environment]
-  YARN_FLAGS = "--frozen-lockfile"
-  YARN_VERSION = "1.17.3"
-  NODE_VERSION = "10.0.0"
