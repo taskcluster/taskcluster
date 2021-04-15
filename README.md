@@ -19,9 +19,6 @@
   <a href="https://chat.mozilla.org/#/welcome">
     <img src="https://img.shields.io/badge/matrix-%23taskcluster%3Amozilla.org-informational" alt="Chat" />
   </a>
-  <a href="https://codecov.io/gh/taskcluster/taskcluster">
-    <img src="https://codecov.io/gh/taskcluster/taskcluster/branch/main/graph/badge.svg" alt="Codecov" />
-  </a>
   <a href="https://app.netlify.com/sites/taskcluster-web/deploys">
     <img src="https://api.netlify.com/api/v1/badges/bc284a9a-8986-4ba4-b91a-3ede1a56e5a4/deploy-status" alt="netlify" />
   </a>

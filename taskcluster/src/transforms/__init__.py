@@ -54,7 +54,7 @@ def add_task_env(config, jobs):
         env["GITHUB_BRANCH"] = config.params["head_ref"]
         env["GITHUB_SHA"] = config.params["head_rev"]
 
-        # These are for the way codecov wants them
+        # These were for codecov, but are handy to see anyway
         env["CI_BUILD_URL"] = "{}/tasks/{}".format(os.environ.get("TASKCLUSTER_ROOT_URL"), os.environ.get("TASK_ID"))
         env["GIT_BRANCH"] = config.params["head_ref"]
 
