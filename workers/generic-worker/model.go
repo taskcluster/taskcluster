@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/taskcluster/v43/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v43/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/process"
-	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/tc"
 )
 
 type (

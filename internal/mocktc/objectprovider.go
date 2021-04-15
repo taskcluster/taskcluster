@@ -5,7 +5,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/taskcluster/taskcluster/v43/clients/client-go/tcobject"
-	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/tc"
+	"github.com/taskcluster/taskcluster/v43/internal/mocktc/tc"
 )
 
 type ObjectProvider struct {

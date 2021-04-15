@@ -9,8 +9,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/taskcluster/httpbackoff/v3"
 	tcclient "github.com/taskcluster/taskcluster/v43/clients/client-go"
-	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/mocks3"
-	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/tchttputil"
+	"github.com/taskcluster/taskcluster/v43/internal/httputil"
+	"github.com/taskcluster/taskcluster/v43/internal/mocktc/mocks3"
 )
 
 func Vars(r *http.Request) map[string]string {
@@ -87,12 +87,13 @@ func Marshal(req *http.Request, payload interface{}) {
 	}
 }
 
-func ServiceProviders(t *testing.T) []tchttputil.ServiceProvider {
-	return []tchttputil.ServiceProvider{
+func ServiceProviders(t *testing.T, baseURL string) []httputil.ServiceProvider {
+	return []httputil.ServiceProvider{
 		NewAuthProvider(NewAuth(t)),
-		NewQueueProvider(NewQueue(t)),
+		NewQueueProvider(NewQueue(t, baseURL)),
 		NewSecretsProvider(NewSecrets()),
 		NewWorkerManagerProvider(NewWorkerManager(t)),
 		mocks3.New(t),
+		NewObjectProvider(NewObject(t, baseURL)),
 	}
 }

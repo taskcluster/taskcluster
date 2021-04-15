@@ -296,6 +296,18 @@ Note: the exponential backoff settings of the Object Service client
 (`object.HTTPBackoffClient`) are also used when uploading/downloading data to
 external URLs by these convenience methods.
 
+### Downloading Artifacts
+
+The `tcqueue` package provides convenience functions for downloading artifacts.
+These functions apply the same best-practices as the object methods described above.
+
+```go
+queue := tcqueue.New()
+data, contentType, contentLength, err := queue.DownloadArtifactToBuf(taskId, runId, name)
+```
+
+See the [Go documentation](https://pkg.go.dev/github.com/taskcluster/taskcluster/v43/clients/client-go/tcqueue) for more detail.
+
 ## Compatibility
 
 This library is co-versioned with Taskcluster itself.

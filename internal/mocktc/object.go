@@ -20,6 +20,9 @@ type (
 	Obj struct {
 		uploadRequest  *tcobject.CreateUploadRequest
 		uploadFinished bool
+		// if true, then assume this object is on mocks3; otherwise, serve
+		// simple downloads from <baseUrl>/simple
+		onMockS3 bool
 	}
 )
 
@@ -54,7 +57,7 @@ func (object *Object) FinishUpload(name string, payload *tcobject.FinishUploadRe
 }
 
 func (object *Object) StartDownload(name string, payload *tcobject.DownloadObjectRequest) (*tcobject.DownloadObjectResponse, error) {
-	_, exists := object.objects[name]
+	o, exists := object.objects[name]
 	if !exists {
 		return nil, fmt.Errorf("Cannot start download for upload ID %v (not found)", name)
 	}
@@ -70,9 +73,16 @@ func (object *Object) StartDownload(name string, payload *tcobject.DownloadObjec
 			},
 		}
 	case payload.AcceptDownloadMethods.Simple:
-		resp = tcobject.SimpleDownloadResponse{
-			Method: "simple",
-			URL:    object.baseURL + "/simple",
+		if o.onMockS3 {
+			resp = tcobject.SimpleDownloadResponse{
+				Method: "simple",
+				URL:    fmt.Sprintf("%s/s3/%s", object.baseURL, name),
+			}
+		} else {
+			resp = tcobject.SimpleDownloadResponse{
+				Method: "simple",
+				URL:    object.baseURL + "/simple",
+			}
 		}
 	}
 	dor, err = json.Marshal(resp)
@@ -80,6 +90,19 @@ func (object *Object) StartDownload(name string, payload *tcobject.DownloadObjec
 		object.t.Fatalf("Error marshalling into json: %v", err)
 	}
 	return &dor, nil
+}
+
+/////////////////////////////////////////////////
+
+// FakeS3Object creates a fake object which is assumed to be stored in mocks3
+// at an object of the same name.  It is up to the caller to create the object
+// in mocks3 if necesary.
+func (object *Object) FakeObject(name string) {
+	object.objects[name] = Obj{
+		uploadRequest:  &tcobject.CreateUploadRequest{},
+		uploadFinished: true,
+		onMockS3:       true,
+	}
 }
 
 /////////////////////////////////////////////////

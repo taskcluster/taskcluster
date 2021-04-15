@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v43/workers/generic-worker/tchttputil"
+	"github.com/taskcluster/taskcluster/v43/internal/httputil"
 )
 
 // LiveLog provides access to a livelog process running on the OS. Use
@@ -143,9 +143,9 @@ func (l *LiveLog) connectInputStream() error {
 	// livelog process has started...
 	// Note we can't wait for GET port to be active before returning since
 	// livelog will only serve from that port once some content is sent - so no
-	// good to execute tchttputil.WaitForLocalTCPListener(l.getPort) here...  We
+	// good to execute httputil.WaitForLocalTCPListener(l.getPort) here...  We
 	// would need to fix this in livelog codebase not here...
-	err = tchttputil.WaitForLocalTCPListener(l.PUTPort, time.Minute*1)
+	err = httputil.WaitForLocalTCPListener(l.PUTPort, time.Minute*1)
 	if err != nil {
 		return err
 	}

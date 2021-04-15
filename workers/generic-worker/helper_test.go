@@ -414,15 +414,6 @@ func GWTest(t *testing.T) *Test {
 
 	r := mux.NewRouter().UseEncodedPath()
 
-	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") == "" {
-		for _, s := range mocktc.ServiceProviders(t) {
-			s.RegisterService(r)
-		}
-		testConfig.AccessToken = "test-access-token"
-		testConfig.ClientID = "test-client-id"
-		testConfig.Certificate = ""
-	}
-
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(404)
 		_, _ = w.Write([]byte(fmt.Sprintf("URL %v with method %v NOT FOUND\n", req.URL, req.Method)))
@@ -439,6 +430,15 @@ func GWTest(t *testing.T) *Test {
 	go func() {
 		_ = srv.ListenAndServe()
 	}()
+
+	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") == "" {
+		for _, s := range mocktc.ServiceProviders(t, "http://localhost:13243") {
+			s.RegisterService(r)
+		}
+		testConfig.AccessToken = "test-access-token"
+		testConfig.ClientID = "test-client-id"
+		testConfig.Certificate = ""
+	}
 
 	serviceFactory = mocktc.NewServiceFactory(t)
 
