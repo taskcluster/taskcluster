@@ -403,7 +403,7 @@ class Queue(AsyncBaseClient):
         be finished.  In all such cases, calling this method is an input error
         (400).
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["finishArtifact"], *args, **kwargs)
@@ -887,7 +887,7 @@ class Queue(AsyncBaseClient):
             'method': 'put',
             'name': 'finishArtifact',
             'route': '/task/<taskId>/runs/<runId>/artifacts/<name>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "getArtifact": {
             'args': ['taskId', 'runId', 'name'],

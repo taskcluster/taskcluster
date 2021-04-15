@@ -4608,9 +4608,6 @@
       "description": "See [Download Methods](https://docs.taskcluster.net/docs/docs/reference/platform/object/download-methods) for details.\n",
       "oneOf": [
         {
-          "$ref": "download-method-http-get.json#/definitions/response"
-        },
-        {
           "$ref": "download-method-simple.json#/definitions/response"
         }
       ],
@@ -4629,9 +4626,6 @@
           "additionalProperties": false,
           "description": "Download methods that the caller can suport, together with parameters for each method.\nThe server will choose one method and make the corresponding response.",
           "properties": {
-            "HTTP:GET": {
-              "$ref": "download-method-http-get.json#/definitions/request"
-            },
             "simple": {
               "$ref": "download-method-simple.json#/definitions/request"
             }
@@ -4683,48 +4677,6 @@
       "title": "simple Download Method"
     },
     "filename": "schemas/object/v1/download-method-simple.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/object/v1/download-method-http-get.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "definitions": {
-        "request": {
-          "const": true,
-          "type": "boolean"
-        },
-        "response": {
-          "additionalProperties": false,
-          "properties": {
-            "details": {
-              "additionalProperties": false,
-              "properties": {
-                "url": {
-                  "format": "uri",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "url"
-              ],
-              "type": "object"
-            },
-            "method": {
-              "const": "HTTP:GET",
-              "type": "string"
-            }
-          },
-          "required": [
-            "method",
-            "details"
-          ],
-          "title": "HTTP:GET Download Response",
-          "type": "object"
-        }
-      },
-      "title": "HTTP:GET Download Method"
-    },
-    "filename": "schemas/object/v1/download-method-http-get.json"
   },
   {
     "content": {
@@ -14768,7 +14720,7 @@
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
           "scopes": "queue:create-artifact:<taskId>/<runId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Finish Artifact",
           "type": "function"
         },
@@ -15725,7 +15677,7 @@
           ],
           "route": "/upload/<name>",
           "scopes": "object:upload:<projectId>:<name>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Begin upload of a new object",
           "type": "function"
         },
@@ -15742,7 +15694,7 @@
           ],
           "route": "/finish-upload/<name>",
           "scopes": "object:upload:<projectId>:<name>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Mark an upload as complete.",
           "type": "function"
         },
@@ -15760,7 +15712,7 @@
           ],
           "route": "/start-download/<name>",
           "scopes": "object:download:<name>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Download object data",
           "type": "function"
         },
@@ -15777,7 +15729,7 @@
           ],
           "route": "/metadata/<name>",
           "scopes": "object:download:<name>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get an object's metadata",
           "type": "function"
         },
@@ -15793,7 +15745,7 @@
           ],
           "route": "/download/<name>",
           "scopes": "object:download:<name>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get an object's data",
           "type": "function"
         }

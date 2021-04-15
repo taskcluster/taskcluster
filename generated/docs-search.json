@@ -2696,13 +2696,6 @@
   },
   {
     "element": "h2",
-    "id": "experimental",
-    "path": "/reference/platform/object",
-    "subtitle": "Experimental!",
-    "title": "Object Service"
-  },
-  {
-    "element": "h2",
     "id": "usage",
     "path": "/reference/platform/object",
     "subtitle": "Usage",

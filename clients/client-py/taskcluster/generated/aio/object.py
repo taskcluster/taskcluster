@@ -60,7 +60,7 @@ class Object(AsyncBaseClient):
 
         Unfinished uploads expire after 1 day.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["createUpload"], *args, **kwargs)
@@ -76,7 +76,7 @@ class Object(AsyncBaseClient):
 
         Note that, once `finishUpload` is complete, the object is considered immutable.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["finishUpload"], *args, **kwargs)
@@ -92,7 +92,7 @@ class Object(AsyncBaseClient):
 
         See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["startDownload"], *args, **kwargs)
@@ -104,7 +104,7 @@ class Object(AsyncBaseClient):
         Get the metadata for the named object.  This metadata is not sufficient to
         get the object's content; for that use `startDownload`.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["object"], *args, **kwargs)
@@ -127,7 +127,7 @@ class Object(AsyncBaseClient):
 
         See [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["download"], *args, **kwargs)
@@ -140,14 +140,14 @@ class Object(AsyncBaseClient):
             'name': 'createUpload',
             'output': 'v1/create-upload-response.json#',
             'route': '/upload/<name>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "download": {
             'args': ['name'],
             'method': 'get',
             'name': 'download',
             'route': '/download/<name>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "finishUpload": {
             'args': ['name'],
@@ -155,7 +155,7 @@ class Object(AsyncBaseClient):
             'method': 'post',
             'name': 'finishUpload',
             'route': '/finish-upload/<name>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "object": {
             'args': ['name'],
@@ -163,7 +163,7 @@ class Object(AsyncBaseClient):
             'name': 'object',
             'output': 'v1/get-object-response.json#',
             'route': '/metadata/<name>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "ping": {
             'args': [],
@@ -179,7 +179,7 @@ class Object(AsyncBaseClient):
             'name': 'startDownload',
             'output': 'v1/download-object-response.json#',
             'route': '/start-download/<name>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
     }
 

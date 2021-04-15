@@ -8,7 +8,6 @@ const taskcluster = require('taskcluster-client');
  */
 const DOWNLOAD_METHODS = [
   'simple',
-  'HTTP:GET',
 ];
 
 // Object names are limited to printable ASCII, including space.
@@ -43,7 +42,7 @@ builder.declare({
   name: 'createUpload',
   input: 'create-upload-request.yml',
   output: 'create-upload-response.yml',
-  stability: 'experimental',
+  stability: APIBuilder.stability.stable,
   category: 'Upload',
   scopes: 'object:upload:<projectId>:<name>',
   title: 'Begin upload of a new object',
@@ -140,7 +139,7 @@ builder.declare({
   route: '/finish-upload/:name',
   name: 'finishUpload',
   input: 'finish-upload-request.yml',
-  stability: 'experimental',
+  stability: APIBuilder.stability.stable,
   category: 'Upload',
   scopes: 'object:upload:<projectId>:<name>',
   title: 'Mark an upload as complete.',
@@ -243,7 +242,7 @@ builder.declare({
   name: 'startDownload',
   input: 'download-object-request.yml',
   output: 'download-object-response.yml',
-  stability: 'experimental',
+  stability: APIBuilder.stability.stable,
   category: 'Download',
   scopes: 'object:download:<name>',
   title: 'Download object data',
@@ -303,7 +302,7 @@ builder.declare({
   method: 'get',
   route: '/metadata/:name(*)',
   name: 'object',
-  stability: 'experimental',
+  stability: APIBuilder.stability.stable,
   category: 'Objects',
   output: 'get-object-response.yml',
   scopes: 'object:download:<name>',
@@ -334,7 +333,7 @@ builder.declare({
   method: 'get',
   route: '/download/:name(*)',
   name: 'download',
-  stability: 'experimental',
+  stability: APIBuilder.stability.stable,
   category: 'Download',
   scopes: 'object:download:<name>',
   title: 'Get an object\'s data',

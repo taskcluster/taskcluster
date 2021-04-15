@@ -11,7 +11,6 @@ properties:
       Download methods that the caller can suport, together with parameters for each method.
       The server will choose one method and make the corresponding response.
     properties:
-      'HTTP:GET': {$ref: "download-method-http-get.json#/definitions/request"}
       simple: {$ref: "download-method-simple.json#/definitions/request"}
     additionalProperties: false
     required: []

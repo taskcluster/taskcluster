@@ -65,13 +65,6 @@ func (object *Object) StartDownload(name string, payload *tcobject.DownloadObjec
 	var dor tcobject.DownloadObjectResponse
 	var resp interface{}
 	switch {
-	case payload.AcceptDownloadMethods.HTTPGET:
-		resp = tcobject.HTTPGETDownloadResponse{
-			Method: "simple",
-			Details: tcobject.Details{
-				URL: object.baseURL + "/HTTPGET",
-			},
-		}
 	case payload.AcceptDownloadMethods.Simple:
 		if o.onMockS3 {
 			resp = tcobject.SimpleDownloadResponse{

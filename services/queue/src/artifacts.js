@@ -430,7 +430,7 @@ builder.declare({
   method: 'put',
   route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name: 'finishArtifact',
-  stability: APIBuilder.stability.experimental,
+  stability: APIBuilder.stability.stable,
   category: 'Artifacts',
   scopes: 'queue:create-artifact:<taskId>/<runId>',
   input: 'finish-artifact-request.json#',

@@ -1644,7 +1644,7 @@ module.exports = {
           ],
           "route": "/upload/<name>",
           "scopes": "object:upload:<projectId>:<name>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Begin upload of a new object",
           "type": "function"
         },
@@ -1661,7 +1661,7 @@ module.exports = {
           ],
           "route": "/finish-upload/<name>",
           "scopes": "object:upload:<projectId>:<name>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Mark an upload as complete.",
           "type": "function"
         },
@@ -1679,7 +1679,7 @@ module.exports = {
           ],
           "route": "/start-download/<name>",
           "scopes": "object:download:<name>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Download object data",
           "type": "function"
         },
@@ -1696,7 +1696,7 @@ module.exports = {
           ],
           "route": "/metadata/<name>",
           "scopes": "object:download:<name>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get an object's metadata",
           "type": "function"
         },
@@ -1712,7 +1712,7 @@ module.exports = {
           ],
           "route": "/download/<name>",
           "scopes": "object:download:<name>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get an object's data",
           "type": "function"
         }
@@ -2174,7 +2174,7 @@ module.exports = {
           ],
           "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
           "scopes": "queue:create-artifact:<taskId>/<runId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Finish Artifact",
           "type": "function"
         },

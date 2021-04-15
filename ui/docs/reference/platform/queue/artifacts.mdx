@@ -55,3 +55,6 @@ The following describes the recommended process for creating artifacts containin
 1. Once the upload has been completed successfully, call [`queue.finishArtifact`](/docs/reference/platform/queue/api#finishArtifact).
    The artifact is only available for download from the task after this call is made, and the `artifactCreated` message is sent at this time.
    Note that it is only necessary to call `finishUpload` for artifacts with `storageType: "object"`.
+
+Note that the queue continues to support `s3` artifacts, but this functionality [will be removed in the future](https://github.com/taskcluster/taskcluster/issues/4549).
+Prefer to use object artifacts in new development.
