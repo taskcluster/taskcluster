@@ -91,7 +91,7 @@ notify:
 object:
   procs:
     web:
-      replicas: 0
+      replicas: 1
       cpu: 50m
       memory: 100Mi
     expire:
