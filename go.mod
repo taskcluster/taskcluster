@@ -54,7 +54,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
-	golang.org/x/sys v0.0.0-20210314195730-07df6a141424
+	golang.org/x/sys v0.0.0-20210415045647-66c3f260301c
 	golang.org/x/tools v0.1.0
 	gopkg.in/tylerb/graceful.v1 v1.2.15
 	gopkg.in/yaml.v2 v2.4.0
