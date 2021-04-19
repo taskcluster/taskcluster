@@ -1,7 +1,6 @@
 web:
   type: web
   command: node services/object/src/main.js server
-  defaultReplicas: 0
 expire:
   type: cron
   schedule: '0 0 * * *'
