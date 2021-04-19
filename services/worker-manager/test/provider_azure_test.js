@@ -52,7 +52,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('helpers', function() {
     const testCertPath = path.resolve(
-      __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_2.pem');
+      __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_2.pem');
     const testCert = forge.pki.certificateFromPem(fs.readFileSync(testCertPath));
 
     test('dnToString of subject', async function() {
@@ -1214,7 +1214,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           // Remove the intermediate certificate
           const intermediateCertPath = path.resolve(
-            __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_4.pem');
+            __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_4.pem');
           const intermediateCertPem = fs.readFileSync(intermediateCertPath);
           const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
           const deletedCert = provider.caStore.removeCertificate(intermediateCert);
@@ -1267,7 +1267,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           // Remove the intermediate certificate
           const intermediateCertPath = path.resolve(
-            __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_4.pem');
+            __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_4.pem');
           const intermediateCertPem = fs.readFileSync(intermediateCertPath);
           const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
           const deletedCert = provider.caStore.removeCertificate(intermediateCert);
@@ -1310,7 +1310,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           // Remove the intermediate certificate
           const intermediateCertPath = path.resolve(
-            __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_4.pem');
+            __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_4.pem');
           const intermediateCertPem = fs.readFileSync(intermediateCertPath);
           const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
           const deletedCert = provider.caStore.removeCertificate(intermediateCert);
@@ -1356,7 +1356,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           // Remove the intermediate certificate
           const intermediateCertPath = path.resolve(
-            __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_4.pem');
+            __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_4.pem');
           const intermediateCertPem = fs.readFileSync(intermediateCertPath);
           const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
           const deletedCert = provider.caStore.removeCertificate(intermediateCert);
@@ -1485,7 +1485,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           // Remove the intermediate certificate
           const intermediateCertPath = path.resolve(
-            __dirname, '../src/providers/azure-ca-certs/microsoft_it_tls_ca_4.pem');
+            __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_4.pem');
           const intermediateCertPem = fs.readFileSync(intermediateCertPath);
           const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
           const deletedCert = provider.caStore.removeCertificate(intermediateCert);

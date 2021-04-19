@@ -78,7 +78,7 @@ This repository is used to develop, build, and release the Taskcluster services.
     * [Web-Server Service](services/web-server#readme)
     * [Worker Manager Service](services/worker-manager#readme)
         * [About the Keys in this  Directory](services/worker-manager/src/providers/aws-keys#readme)
-        * [Azure Trusted Certificates](services/worker-manager/src/providers/azure-ca-certs#readme)
+        * [Azure Trusted Certificates](services/worker-manager/src/providers/azure/azure-ca-certs#readme)
 * [Tools](tools#readme)
     * [jsonschema2go](tools/jsonschema2go#readme)
     * [livelog](tools/livelog#readme)

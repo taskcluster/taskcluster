@@ -9,7 +9,7 @@ const fs = require('fs');
 const generator = require('generate-password');
 const got = require('got');
 const { rootCertificates } = require('tls');
-const { WorkerPool, Worker } = require('../data');
+const { WorkerPool, Worker } = require('../../data');
 
 const auth = require('@azure/ms-rest-nodeauth');
 const armCompute = require('@azure/arm-compute');
@@ -17,8 +17,8 @@ const armNetwork = require('@azure/arm-network');
 const msRestJS = require('@azure/ms-rest-js');
 const msRestAzure = require('@azure/ms-rest-azure-js');
 
-const { ApiError, Provider } = require('./provider');
-const { CloudAPI } = require('./cloudapi');
+const { ApiError, Provider } = require('../provider');
+const { CloudAPI } = require('../cloudapi');
 
 // Azure provisioning and VM power states
 // see here: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/states-lifecycle
