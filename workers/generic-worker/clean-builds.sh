@@ -44,6 +44,7 @@ rm -rf "${GOPATH}"
 go get -d -v 'github.com/taskcluster/generic-worker'
 "${GOPATH}/src/github.com/taskcluster/generic-worker/build.sh" -a -t
 
+mv "${GOPATH}/bin/darwin_arm64/generic-worker" target/generic-worker-darwin-arm64
 mv "${GOPATH}/bin/darwin_386/generic-worker" target/generic-worker-darwin-386
 mv "${GOPATH}/bin/generic-worker" target/generic-worker-darwin-amd64
 mv "${GOPATH}/bin/linux_386/generic-worker" target/generic-worker-linux-386

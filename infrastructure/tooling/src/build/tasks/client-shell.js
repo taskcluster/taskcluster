@@ -18,7 +18,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         utils,
       });
 
-      const osarch = 'linux/amd64 darwin/amd64';
+      const osarch = 'linux/amd64 darwin/amd64 darwin/arm64';
       await execCommand({
         dir: path.join(REPO_ROOT, 'clients', 'client-shell'),
         command: [

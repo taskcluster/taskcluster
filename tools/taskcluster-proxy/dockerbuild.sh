@@ -18,6 +18,7 @@ echo "Building tc-proxy:"
 build windows 386
 build windows amd64
 build darwin amd64
+build darwin arm64
 build linux 386
 build linux amd64
 build linux arm
