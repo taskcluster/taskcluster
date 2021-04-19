@@ -6645,10 +6645,10 @@ markdown-it@^12.0.0:
     mdurl "^1.0.1"
     uc.micro "^1.0.5"
 
-material-ui-json-schema-viewer@^1.1.1:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/material-ui-json-schema-viewer/-/material-ui-json-schema-viewer-1.2.0.tgz#81f486b293ddf6cf689b491bfbd5d754d78b8dbd"
-  integrity sha512-KKRtIEuo4Pv0QwXv/SVXK/dIw7zS72htUhnzkjc+Htiv3xnXZbVn9tnNhgV6xExJXVjXTJSUjtKa8inCvq91Zw==
+material-ui-json-schema-viewer@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/material-ui-json-schema-viewer/-/material-ui-json-schema-viewer-2.0.0.tgz#fc232ea594dc4ed8bdf742a5d272841051b03863"
+  integrity sha512-5casEuVC0NGfcx6rcDeYPeyktf/SRuKs7CU1yt8NL435IRsgBLrkJezAYijBv0Z+ipzYvwvTRvsvn6il/sHcZQ==
   dependencies:
     classnames "^2.2.6"
     markdown-it "^10.0.0"
