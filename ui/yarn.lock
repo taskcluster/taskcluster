@@ -6646,9 +6646,9 @@ markdown-it@^12.0.0:
     uc.micro "^1.0.5"
 
 material-ui-json-schema-viewer@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/material-ui-json-schema-viewer/-/material-ui-json-schema-viewer-1.1.1.tgz#5923a68234d250d361f7c56ad8df67371aac75a5"
-  integrity sha512-d75vf/3blHF6TktdJYipUdpzYjltJ2bmWi+lCGFZcZ4Qn3kGNfFs+NOh7ieJFjO7Q+8/7etP0dlmAWbNsZIiKA==
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/material-ui-json-schema-viewer/-/material-ui-json-schema-viewer-1.2.0.tgz#81f486b293ddf6cf689b491bfbd5d754d78b8dbd"
+  integrity sha512-KKRtIEuo4Pv0QwXv/SVXK/dIw7zS72htUhnzkjc+Htiv3xnXZbVn9tnNhgV6xExJXVjXTJSUjtKa8inCvq91Zw==
   dependencies:
     classnames "^2.2.6"
     markdown-it "^10.0.0"
