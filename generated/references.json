@@ -1119,6 +1119,21 @@
               "storageProfile": {
                 "additionalProperties": true,
                 "properties": {
+                  "dataDisks": {
+                    "items": {
+                      "additionalProperties": true,
+                      "description": "See https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/datadisk.\nNote that naming disks is not supported; any provided name will be overwritten with a\ndynamically generated name.\n",
+                      "properties": {
+                      },
+                      "required": [
+                      ],
+                      "title": "Data Disk",
+                      "type": "object"
+                    },
+                    "title": "Data Disks",
+                    "type": "array",
+                    "uniqueItems": false
+                  },
                   "imageReference": {
                     "additionalProperties": true,
                     "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#imagereference",
@@ -1133,7 +1148,7 @@
                   },
                   "osDisk": {
                     "additionalProperties": true,
-                    "description": "Naming disks is not supported.\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk\n",
+                    "description": "See https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk.\nNote that naming disks is not supported; any provided name will be overwritten with a\ndynamically generated name.\n",
                     "properties": {
                       "createOption": {
                         "description": "FromImage creates the disk from the specified image\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes\n",

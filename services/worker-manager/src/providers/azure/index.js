@@ -299,8 +299,9 @@ class AzureProvider extends Provider {
     // Create "empty" workers to provision in provisionResources loop
     await Promise.all(cfgs.map(async cfg => {
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
-      // 38 chars is workerId limit
-      const virtualMachineName = `vm-${nicerId()}-${nicerId()}`.slice(0, 38);
+      // 38 chars is workerId limit, and we have a 3-character prefix (`vm-`), so this is 35 characters.
+      const nameSuffix = `${nicerId()}${nicerId()}`.slice(0, 35);
+      const virtualMachineName = `vm-${nameSuffix}`;
       // Windows computer name cannot be more than 15 characters long, be entirely numeric,
       // or contain the following characters: ` ~ ! @ # $ % ^ & * ( ) = + _ [ ] { } \\ | ; : . " , < > / ?
       const computerName = nicerId().slice(0, 15);
@@ -322,14 +323,29 @@ class AzureProvider extends Provider {
         workerConfig: cfg.workerConfig || {},
       })).toString('base64');
 
-      // Disallow users from naming disk
-      // required
-      let osDisk = { ..._.omit(cfg.storageProfile.osDisk, ['name']) };
-      // optional
+      // make a list of the disk resources, for later deletion
+      const disks = [];
+
+      // osDisk is required.  Azure would name it for us, but we give it a name up-front
+      // so that we can delete it on de-provisioning
+      let osDisk = {
+        ...cfg.storageProfile.osDisk,
+        name: `disk-${nameSuffix}-os`,
+      };
+      disks.push({ name: osDisk.name, id: true });
+
+      // dataDisks is optional.  Azure will not generate names for data disks,
+      // so we must invent names for them here.  We disallow users from naming
+      // disk, since that would try to share the same disk among multiple vms,
+      // but give each disk a unique name so that we can find it later to
+      // delete it.
       let dataDisks = [];
       if (_.has(cfg, 'storageProfile.dataDisks')) {
+        let i = 1;
         for (let disk of cfg.storageProfile.dataDisks) {
-          dataDisks.push({ ..._.omit(disk, 'name') });
+          const name = `disk-${nameSuffix}-${i++}`;
+          disks.push({ name, id: true });
+          dataDisks.push({ ...disk, name });
         }
       }
 
@@ -387,9 +403,7 @@ class AzureProvider extends Provider {
           operation: false,
           id: false,
         },
-        disks: [
-          // gets populated when we lookup the VM
-        ],
+        disks,
         subnet: {
           id: cfg.subnetId,
         },
@@ -811,6 +825,10 @@ class AzureProvider extends Provider {
    */
 
   async provisionResources({ worker, monitor }) {
+    // early-out if we've already completed this whole process
+    if (worker.providerData.provisioningComplete) {
+      return;
+    }
 
     let titleString = "";
 
@@ -878,23 +896,6 @@ class AzureProvider extends Provider {
       }
 
       // VM
-      let vmModifyFunc = (w, vm) => {
-        let disks = [];
-        disks.push({
-          name: vm.storageProfile.osDisk.name,
-          id: true,
-        });
-        for (let disk of vm.storageProfile.dataDisks || []) {
-          disks.push(
-            {
-              name: disk.name,
-              id: true,
-            },
-          );
-        }
-        w.providerData.disks = disks;
-      };
-
       titleString = "VM Creation Error";
 
       worker = await this.provisionResource({
@@ -902,7 +903,7 @@ class AzureProvider extends Provider {
         client: this.computeClient.virtualMachines,
         resourceType: 'vm',
         resourceConfig: workerConfigWithSecrets(worker.providerData.vm.config),
-        modifyFn: vmModifyFunc,
+        modifyFn: () => {},
         monitor,
       });
       if (!worker.providerData.vm.id) {
@@ -911,6 +912,9 @@ class AzureProvider extends Provider {
 
       // Here, the worker is full provisioned, but we do not mark it RUNNING until
       // it calls registerWorker.
+      await worker.update(this.db, worker => {
+        worker.providerData.provisioningComplete = true;
+      });
       return;
     } catch (err) {
       const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
@@ -978,7 +982,12 @@ class AzureProvider extends Provider {
           if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
             const reason = 'terminateAfter time exceeded';
             await this.removeWorker({ worker, reason });
+            break;
           }
+
+          // Call provisionResources to allow it to finish up gathering data about the
+          // vm.  This becomes a no-op once all required operations are complete.
+          await this.provisionResources({ worker, monitor });
 
           break;
         }
@@ -991,9 +1000,7 @@ class AzureProvider extends Provider {
 
         case 'missing': {
           // VM has not been found, so it is either...
-          // 2. already removed but other resources may need to be deleted
-          // 3. deleted outside of provider actions, should start removal
-          if (worker.state === states.REQUESTED) {
+          if (worker.state === states.REQUESTED && !worker.providerData.provisioningComplete) {
             // ...still being created, in which case we should continue to provision...
             await this.provisionResources({ worker, monitor });
           } else {
