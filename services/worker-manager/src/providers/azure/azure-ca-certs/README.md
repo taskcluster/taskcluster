@@ -8,16 +8,14 @@ and converted from DER to PEM format.  The idea behind bundling them here is so
 that we can more easily verify the chain of trust of the certificate used to sign the
 [attested data message](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service#attested-data).
 
-The certificates expire in May 2024, but may be revoked in February 2021
-(see below). When they are revoked, they can be removed or moved to tests
-([issue #3925](https://github.com/taskcluster/taskcluster/issues/3925)).
+The certificates expire in October 2024.  When that occurs, the service should continue
+to operate, by downloading any replacement certificates, but as with anything Azure-related,
+this is not guaranteed.
 
 The certs are:
 
 * ``microsoft_it_tls_ca_1.pem``
 * ``microsoft_it_tls_ca_2.pem``
-* ``microsoft_it_tls_ca_4.pem``
-* ``microsoft_it_tls_ca_5.pem``
 
 ## Microsoft Root Certificates
 
@@ -41,18 +39,13 @@ The two certificates are included here until we update Node.js
 These commands download and convert the certificates, with ``curl`` and ``openssl`` installed:
 
 ```
-curl http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%201.crt -o microsoft_it_tls_ca_1.crt
-curl http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%202.crt -o microsoft_it_tls_ca_2.crt
-curl http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt -o microsoft_it_tls_ca_4.crt
-curl http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%205.crt -o microsoft_it_tls_ca_5.crt
+curl http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2001.crt -o microsoft_rsa_tls_ca_1.crt
+curl http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2002.crt -o microsoft_rsa_tls_ca_2.crt
+openssl x509 -inform DER -in microsoft_rsa_tls_ca_1.crt -out microsoft_rsa_tls_ca_1.pem
+openssl x509 -inform DER -in microsoft_rsa_tls_ca_2.crt -out microsoft_rsa_tls_ca_2.pem
 
 curl https://www.microsoft.com/pkiops/certs/Microsoft%20RSA%20Root%20Certificate%20Authority%202017.crt -o microsoft_rsa_root_certificate_authority_2017.crt
 curl https://www.microsoft.com/pkiops/certs/Microsoft%20ECC%20Root%20Certificate%20Authority%202017.crt -o microsoft_ecc_root_certificate_authority_2017.crt
-
-openssl x509 -inform DER -in microsoft_it_tls_ca_1.crt -out microsoft_it_tls_ca_1.pem
-openssl x509 -inform DER -in microsoft_it_tls_ca_2.crt -out microsoft_it_tls_ca_2.pem
-openssl x509 -inform DER -in microsoft_it_tls_ca_4.crt -out microsoft_it_tls_ca_4.pem
-openssl x509 -inform DER -in microsoft_it_tls_ca_5.crt -out microsoft_it_tls_ca_5.pem
 openssl x509 -inform DER -in microsoft_rsa_root_certificate_authority_2017.crt -out microsoft_rsa_root_certificate_authority_2017.pem
 openssl x509 -inform DER -in microsoft_ecc_root_certificate_authority_2017.crt -out microsoft_ecc_root_certificate_authority_2017.pem
 

@@ -265,9 +265,7 @@ class AzureProvider extends Provider {
     rootCertFiles.forEach(pem => this.addRootCertPem(pem, true));
 
     // load known microsoft intermediate certs from disk
-    // TODO (issue #3925): Remove these around February 2021, when they are
-    // planned to be revoked.
-    let intermediateFiles = [1, 2, 4, 5].map(i => fs.readFileSync(path.resolve(__dirname, `azure-ca-certs/microsoft_it_tls_ca_${i}.pem`)));
+    let intermediateFiles = [1, 2].map(i => fs.readFileSync(path.resolve(__dirname, `azure-ca-certs/microsoft_rsa_tls_ca_${i}.pem`)));
     let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
     intermediateCerts.forEach(cert => this.addIntermediateCert(cert));
 

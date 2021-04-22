@@ -50,31 +50,36 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     monitor = await helper.load('monitor');
   });
 
+  // This is the intermediate certificate that azure_signature_good is signed
+  // with; to figure out which this is, print the certificate in
+  // `registerWorker`.  It will be one of the certs on on
+  // https://www.microsoft.com/pki/mscorp/cps/default.htm
+  const intermediateCertFingerprint = 'B0:C2:D2:D1:3C:DD:56:CD:AA:6A:B6:E2:C0:44:40:BE:4A:42:9C:75';
+  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft RSA TLS CA 02';
+  const intermediateCertIssuer = '/C=IE,/O=Baltimore,/OU=CyberTrust,/CN=Baltimore CyberTrust Root';
+  const intermediateCertPath = path.resolve(
+    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_rsa_tls_ca_2.pem');
+  const intermediateCertUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2002.crt';
+
   suite('helpers', function() {
     const testCertPath = path.resolve(
-      __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_2.pem');
+      __dirname, '../src/providers/azure/azure-ca-certs/microsoft_rsa_tls_ca_2.pem');
     const testCert = forge.pki.certificateFromPem(fs.readFileSync(testCertPath));
 
     test('dnToString of subject', async function() {
       const dn = dnToString(testCert.subject);
-      assert.equal(
-        dn,
-        '/C=US,/ST=Washington,/L=Redmond,/O=Microsoft Corporation,' +
-        '/OU=Microsoft IT,/CN=Microsoft IT TLS CA 2');
+      assert.equal(dn, intermediateCertSubject);
     });
 
     test('dnToString of issuer', async function() {
       const dn = dnToString(testCert.issuer);
-      assert.equal(
-        dn,
-        '/C=IE,/O=Baltimore,/OU=CyberTrust,/CN=Baltimore CyberTrust Root');
+      assert.equal(dn, intermediateCertIssuer);
     });
 
     test('getCertFingerprint', async function() {
       const fingerprint = getCertFingerprint(testCert);
-      assert.equal(
-        fingerprint,
-        '54:D9:D2:02:39:08:0C:32:31:6E:D9:FF:98:0A:48:98:8F:4A:DF:2D');
+      // this matches the "thumbprint" (?) on https://www.microsoft.com/pki/mscorp/cps/default.htm
+      assert.equal(fingerprint, intermediateCertFingerprint);
     });
 
     test('getAuthorityAccessInfo', async function() {
@@ -1061,7 +1066,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('registerWorker', function() {
     const workerGroup = 'westus';
-    const vmId = '5d06deb3-807b-46dd-aef5-78aaf9193f71';
+    const vmId = 'fd776641-6588-4bad-9aaf-6c1ff20358bc';
     const baseWorker = {
       workerPoolId,
       workerGroup,
@@ -1084,7 +1089,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     setup('create vm', function() {
       fake.computeClient.virtualMachines.makeFakeResource('rgrp', 'some-vm', {
-        vmId: '5d06deb3-807b-46dd-aef5-78aaf9193f71',
+        vmId: 'fd776641-6588-4bad-9aaf-6c1ff20358bc',
       });
     });
 
@@ -1191,9 +1196,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           });
           await worker.create(helper.db);
 
+          // this document was acquired by starting an Ubuntu instance and running
+          // curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/attested/document?api-version=2020-09-01" | jq -r .signature
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = { document };
-          provider._now = () => new Date(); // The certs that are checked-in are old so they should be expired now
+          provider._now = () => new Date(2022, 1, 1); // in the future for this fixture
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
@@ -1212,9 +1219,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
 
-          // Remove the intermediate certificate
-          const intermediateCertPath = path.resolve(
-            __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_4.pem');
           const intermediateCertPem = fs.readFileSync(intermediateCertPath);
           const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
           const deletedCert = provider.caStore.removeCertificate(intermediateCert);
@@ -1230,15 +1234,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
-          const expectedUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt';
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error downloading intermediate certificate');
           assert.equal(
             log0.error,
-            `Error: Mocked downloadBinaryResponse; location=${expectedUrl}`);
+            `Error: Mocked downloadBinaryResponse; location=${intermediateCertUrl}`);
           const expectedSubject = dnToString(deletedCert.subject);
           const expectedAIA = JSON.stringify([
-            { method: 'CA Issuer', location: expectedUrl },
+            { method: 'CA Issuer', location: intermediateCertUrl },
             { method: "OSCP", location: "http://ocsp.msocsp.com" },
           ]);
           const log1 = monitor.manager.messages[1].Fields;
@@ -1266,8 +1269,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           provider.downloadTimeout = 1; // 1 millisecond
 
           // Remove the intermediate certificate
-          const intermediateCertPath = path.resolve(
-            __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_4.pem');
           const intermediateCertPem = fs.readFileSync(intermediateCertPath);
           const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
           const deletedCert = provider.caStore.removeCertificate(intermediateCert);
@@ -1276,13 +1277,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
-          const expectedUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt';
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error downloading intermediate certificate');
-          assert.equal(log0.error, `TimeoutError: Timeout awaiting 'request' for 1ms; location=${expectedUrl}`);
+          assert.equal(log0.error, `TimeoutError: Timeout awaiting 'request' for 1ms; location=${intermediateCertUrl}`);
           const expectedSubject = dnToString(deletedCert.subject);
           const expectedAIA = JSON.stringify([
-            { method: 'CA Issuer', location: expectedUrl },
+            { method: 'CA Issuer', location: intermediateCertUrl },
             { method: "OSCP", location: "http://ocsp.msocsp.com" },
           ]);
           const log1 = monitor.manager.messages[1].Fields;
@@ -1309,8 +1309,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
 
           // Remove the intermediate certificate
-          const intermediateCertPath = path.resolve(
-            __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_4.pem');
           const intermediateCertPem = fs.readFileSync(intermediateCertPath);
           const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
           const deletedCert = provider.caStore.removeCertificate(intermediateCert);
@@ -1323,15 +1321,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
-          const expectedUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt';
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error reading intermediate certificate');
           assert.equal(
             log0.error,
-            `Error: Too few bytes to read ASN.1 value.; location=${expectedUrl}`);
+            `Error: Too few bytes to read ASN.1 value.; location=${intermediateCertUrl}`);
           const expectedSubject = dnToString(deletedCert.subject);
           const expectedAIA = JSON.stringify([
-            { method: 'CA Issuer', location: expectedUrl },
+            { method: 'CA Issuer', location: intermediateCertUrl },
             { method: "OSCP", location: "http://ocsp.msocsp.com" },
           ]);
           const log1 = monitor.manager.messages[1].Fields;
@@ -1355,8 +1352,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const workerIdentityProof = { document };
 
           // Remove the intermediate certificate
-          const intermediateCertPath = path.resolve(
-            __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_4.pem');
           const intermediateCertPem = fs.readFileSync(intermediateCertPath);
           const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
           const deletedCert = provider.caStore.removeCertificate(intermediateCert);
@@ -1484,8 +1479,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const workerIdentityProof = { document };
 
           // Remove the intermediate certificate
-          const intermediateCertPath = path.resolve(
-            __dirname, '../src/providers/azure/azure-ca-certs/microsoft_it_tls_ca_4.pem');
           const intermediateCertPem = fs.readFileSync(intermediateCertPath);
           const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
           const deletedCert = provider.caStore.removeCertificate(intermediateCert);
@@ -1501,17 +1494,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert.equal(log0.Type, 'registration-new-intermediate-certificate');
           assert.equal(
             log0.Fields.fingerprint,
-            '8A:38:75:5D:09:96:82:3F:E8:FA:31:16:A2:77:CE:44:6E:AC:4E:99');
-          assert.equal(
-            log0.Fields.issuer,
-            '/C=IE,/O=Baltimore,/OU=CyberTrust,/CN=Baltimore CyberTrust Root');
-          assert.equal(
-            log0.Fields.subject,
-            '/C=US,/ST=Washington,/L=Redmond,/O=Microsoft Corporation,' +
-            '/OU=Microsoft IT,/CN=Microsoft IT TLS CA 4');
-          assert.equal(
-            log0.Fields.url,
-            'http://www.microsoft.com/pki/mscorp/Microsoft%20IT%20TLS%20CA%204.crt');
+            intermediateCertFingerprint);
+          assert.equal(log0.Fields.issuer, intermediateCertIssuer);
+          assert.equal(log0.Fields.subject, intermediateCertSubject);
+          assert.equal(log0.Fields.url, intermediateCertUrl);
         });
       });
     }
