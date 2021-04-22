@@ -2169,13 +2169,13 @@ country-language@^0.1.7:
     underscore "~1.7.0"
     underscore.deep "~0.5.1"
 
-cron-parser@3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/cron-parser/-/cron-parser-3.3.0.tgz#7d3a801e87f1691e3b5155f9dd107cb07bf39abc"
-  integrity sha512-Tz5WxSrDVhR7YVuLuUxhXoMGHCWoe8I7g8APkyRZNaINXHQ3zcfK97av6hBYy9ue4sOLI7ZH7SeQqi/t4jR+5A==
+cron-parser@3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/cron-parser/-/cron-parser-3.4.0.tgz#6aa3216461c3f6ff6ff5aecbff67381834ac2a59"
+  integrity sha512-BT8wn9fAnUUbO99Lj1BbtZc80w+jqxu5+woQq07vadJPsD0hZs3CI3zEmHXCg2WLn4z9tBCcAQKfAEA40mMsmA==
   dependencies:
-    is-nan "^1.3.0"
-    luxon "^1.25.0"
+    is-nan "^1.3.2"
+    luxon "^1.26.0"
 
 cronstrue@^1.101.0:
   version "1.112.0"
@@ -3851,7 +3851,7 @@ is-glob@^4.0.0, is-glob@^4.0.1, is-glob@~4.0.1:
   dependencies:
     is-extglob "^2.1.1"
 
-is-nan@^1.3.0:
+is-nan@^1.3.2:
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/is-nan/-/is-nan-1.3.2.tgz#043a54adea31748b55b6cd4e09aadafa69bd9e1d"
   integrity sha512-E+zBKpQ2t6MEo1VsonYmluk9NxGrbzpeeLC2xIViuO2EjU2xsXsBPwTr3Ykv9l08UYEVEdWeRZNouaZqF6RN0w==
@@ -4477,7 +4477,7 @@ lru_map@^0.3.3:
   resolved "https://registry.yarnpkg.com/lru_map/-/lru_map-0.3.3.tgz#b5c8351b9464cbd750335a79650a0ec0e56118dd"
   integrity sha1-tcg1G5Rky9dQM1p5ZQoOwOVhGN0=
 
-luxon@^1.25.0:
+luxon@^1.26.0:
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.26.0.tgz#d3692361fda51473948252061d0f8561df02b578"
   integrity sha512-+V5QIQ5f6CDXQpWNICELwjwuHdqeJM1UenlZWx5ujcRMc9venvluCjFb4t5NYLhb6IhkbMVOxzVuOqkgMxee2A==
