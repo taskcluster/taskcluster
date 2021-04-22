@@ -60,6 +60,7 @@ if ${ALL_PLATFORMS}; then
   install windows amd64
   # darwin
   install darwin     amd64
+  install darwin     arm64
   # linux
   install linux      amd64
   install linux      arm

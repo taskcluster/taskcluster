@@ -93,6 +93,7 @@ if ${ALL_PLATFORMS}; then
   install multiuser windows 386
 
   install multiuser darwin  amd64
+  install multiuser darwin  arm64
   install simple    darwin  amd64
 
   install multiuser linux   amd64
