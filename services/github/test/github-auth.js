@@ -2,6 +2,7 @@ const Debug = require('debug');
 const sinon = require('sinon');
 const _ = require('lodash');
 const assert = require('assert');
+const nock = require('nock');
 
 class FakeGithub {
   constructor(installation_id) {
@@ -238,15 +239,21 @@ class FakeGithub {
     return { data: this._statuses[key] };
   }
 
-  getComments({ owner, repo, number }) {
-    const key = `${owner}/${repo}@${number}`;
-    return { data: this._comments[key] };
-  }
+  // getComments({ owner, repo, number }) {
+  //   const key = `${owner}/${repo}@${number}`;
+  //   return { data: this._comments[key] };
+  // }
 
   hasNextPage() {
     return false;
   }
 }
+
+nock('https://api.github.com')
+  .get('${owner}/${repo}@${number}')
+  .reply(200, {
+    body: 'Task failed here'
+  })
 
 class FakeGithubAuth {
   constructor() {
