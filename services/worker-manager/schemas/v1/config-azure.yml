@@ -121,8 +121,9 @@ properties:
               title: OS Disk
               type: object
               description: |
-                Naming disks is not supported.
-                https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk
+                See https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk.
+                Note that naming disks is not supported; any provided name will be overwritten with a
+                dynamically generated name.
               additionalProperties: true
               required: []
               properties:
@@ -131,6 +132,20 @@ properties:
                   description: |
                     FromImage creates the disk from the specified image
                     https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes
+            dataDisks:
+              title: Data Disks
+              type: array
+              uniqueItems: false
+              items:
+                title: Data Disk
+                type: object
+                description: |
+                  See https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/datadisk.
+                  Note that naming disks is not supported; any provided name will be overwritten with a
+                  dynamically generated name.
+                additionalProperties: true
+                required: []
+                properties: {}
             imageReference:
               description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#imagereference
               type: object

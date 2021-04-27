@@ -194,13 +194,15 @@ An Azure-based provider is configured in `providers` with the following structur
 }
 ```
 
-`clientId` and `secret` are properties of Azure application secrets. See [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)
-for information on creating Azure AD Applications, assigning roles, and getting credentials.
-Note that the Azure credentials can be configured to expire.
-We recommend choosing "never" for this option, unless you have a robust credential-rotation sytem in place, as Azure will provide no warning before the expiration.
+Create a new resource group, in which all resources will be created (note that the location of the resource group is not related to the location of the workers).
+
+Create a new "App Registration" as well, but do not create secrets for it yet.
+It must first be granted appropriate permissions.
+See [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for information on creating Azure AD Applications, assigning roles, and getting credentials.
 
 Azure-based providers need permissions to manage virtual machines, network interfaces, disks, and public IP addresses.
-Here is an example custom Azure role definition that encompasses the scope of permissions an Azure-based provider needs:
+The following is an example custom Azure role definition that encompasses the scope of permissions an Azure-based provider needs.
+Add this under your subscription -> "IAM" -> "Create a Custom Role", and start from JSON using content like this:
 
 ```json
 {
@@ -237,6 +239,24 @@ Here is an example custom Azure role definition that encompasses the scope of pe
   ]
 }
 ```
+
+Again under your subscription -> "IAM", choose "Add" -> "Add role assignment" and assign the new role to the Enterprise App created earlier.
+The app will be listed under "User, group, or service principal".
+
+Back in the App Registration, select "Certificates & Secrets" and create a new client secret.
+Note that the credentials cannot be configured to not expire.
+We recommend choosing the maximum expiration, and scheduling a reminder before that expiration date, as Azure will provide no notice of credential expiration.
+
+Note that the ID of the client secret is not used.
+
+Now set the following configuration:
+
+* `subscriptionId` - the Subscription containing this App Registration
+* `clientId` - the "Application (client) ID"
+* `domain` - the "Directory (tenant) ID"
+* `secret` the generated secret
+* `resourceGroupName` - the name of the resource group
+* `apiRateLimits` - optional limits on the rate at which worker-manager calls Azure APIs
 
 ### Resource Groups
 

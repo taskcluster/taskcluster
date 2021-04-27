@@ -933,13 +933,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(worker.providerData.disks[0].name, "old_test_disk");
     });
 
-    test('does nothing for still-running workers', async function() {
+    test('calls provisionResources for still-running workers', async function() {
       await setState({ state: 'running', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
       assert.equal(worker.state, 'running');
       assert(!provider.removeWorker.called);
-      assert(!provider.provisionResources.called);
+      assert(provider.provisionResources.called);
     });
 
     test('calls provisionResources for requested workers that have no instanceView', async function() {
@@ -951,13 +951,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.provisionResources.called);
     });
 
-    test('does nothing for requested workers that are fully started', async function() {
+    test('calls provisionResources for requested workers that are fully started', async function() {
       await setState({ state: 'requested', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
       assert.equal(worker.state, 'requested'); // registerWorker changes this, not checkWorker
       assert(!provider.removeWorker.called);
-      assert(!provider.provisionResources.called);
+      assert(provider.provisionResources.called);
     });
 
     test('calls removeWorker() for a running worker that is stopping', async function() {
@@ -1000,7 +1000,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('does nothing for a requested worker that has failed OS Provisioning, if ignoring that', async function() {
+    test('calls provisionResources for a requested worker that is present but has failed OS Provisioning, if ignoring that', async function() {
       await worker.update(helper.db, worker => {
         worker.providerData.ignoreFailedProvisioningStates = ['OSProvisioningTimedOut', 'SomethingElse'];
       });
@@ -1008,7 +1008,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
       assert(!provider.removeWorker.called);
-      assert(!provider.provisionResources.called);
+      assert(provider.provisionResources.called);
     });
 
     test('calls removeWorker() for a requested worker that has failed with an internal error that is not ignored', async function() {
@@ -1060,7 +1060,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.reload(helper.db);
       assert(worker.state === 'requested');
       assert(!provider.removeWorker.called);
-      assert(!provider.provisionResources.called);
+      assert(provider.provisionResources.called);
     });
   });
 

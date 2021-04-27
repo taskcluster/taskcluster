@@ -33,6 +33,7 @@ properties:
         type: object
         properties:
           testProperty: {}
+          name: {type: string}
         additionalProperties: false
         required: []
       dataDisks:
@@ -41,6 +42,7 @@ properties:
           type: object
           properties:
             testProperty: {}
+            name: {type: string}
           additionalProperties: false
           required: []
       testProperty: {}
