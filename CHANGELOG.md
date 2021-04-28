@@ -3,6 +3,80 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v43.2.0
+
+### DEPLOYERS
+
+▶ [minor] [#4746](https://github.com/taskcluster/taskcluster/issues/4746)
+The object service is now ready for use.
+The queue supports an `object` storage type which will be stored in the object service.
+As of this version, we recommended setting `procs: 1` for the object service if it had previously been set to `0`, and [configuring at least one backend](https://docs.taskcluster.net/docs/manual/deploying/object-service) for artifacts.
+
+▶ [patch] [#4648](https://github.com/taskcluster/taskcluster/issues/4648)
+All services now have a `<service>.pulse_amqps` Helm configuration that controls whether to use amqps (with TLS) to communicate with the Pulse server.  The value defaults to true, matching current behavior, but can be set to false in cases where the AMQP server is local and encryption is unnecessary.
+
+▶ [patch] 
+The object service now defaults to 1 replica, not 0.  The service will not start if it is not properly configured, and we recommend setting the service up at this time, as in the next major release workers will begin uploading objects to the queue.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [bug 1631824](http://bugzil.la/1631824)
+The Azure provider of the worker-manager service now assigns unique names to all data disks attached to a VM, allowing those disks to be removed when the worker is removed.
+
+▶ [patch] [#4765](https://github.com/taskcluster/taskcluster/issues/4765)
+Native "Apple silicon" binaries of taskcluster-proxy, livelog, start-worker and generic-worker are provided (darwin-arm64). The darwin amd64 executables no longer need to be run through Rosetta 2 binary translation on darwin/arm64 workers.
+
+▶ [patch] [#3925](https://github.com/taskcluster/taskcluster/issues/3925)
+The worker-manager service now ships with the latest CA certs, avoiding the need to download these at runtime.  These certificates are good until October 8, 2024.
+
+### OTHER
+
+▶ Additional changes not described here: [#4707](https://github.com/taskcluster/taskcluster/issues/4707), [#4779](https://github.com/taskcluster/taskcluster/issues/4779), [#4795](https://github.com/taskcluster/taskcluster/issues/4795).
+
+### Automated Package Updates
+
+<details>
+<summary>36 Renovate updates</summary>
+
+* Update dependency nodemailer to v6.6.0 (017dabd7a)
+* Update dependency graphql-scalars to v1.9.3 (45bc9229d)
+* Update dependency dockerode to v3.3.0 (8468771e4)
+* Update dependency acorn-walk to v8.1.0 (441cbbd37)
+* Update dependency acorn-loose to v8.1.0 (3173f9ef7)
+* Update dependency @sentry/node to v6.3.1 (2d544b14e)
+* Update sentry monorepo to v6.3.1 (97356358d)
+* Update module github.com/elastic/go-sysinfo to v1.7.0 (fec645d00)
+* Update dependency eslint to v7.25.0 (7a16de292)
+* Update dependency cron-parser to v3.5.0 (544d48373)
+* Update dependency matrix-js-sdk to v10 (a8b8859ce)
+* Update dependency sift to v13.5.2 (9f53306db)
+* Update dependency mock-fs to v4.14.0 (2db47d750)
+* Update dependency jwks-rsa to v2.0.3 (03791e002)
+* Update module github.com/Microsoft/go-winio to v0.4.19 (5948f9cde)
+* Update dependency @octokit/auth-app to v3.4.0 (cd84ff0c0)
+* Update dependency codemirror to v5.61.0 (2230e8455)
+* Update dependency chalk to v4.1.1 (1a83c1860)
+* Update dependency @octokit/rest to v18.5.3 (8d73079f6)
+* Update dependency serialize-error to v8.1.0 (c2e871c97)
+* Update dependency cron-parser to v3.4.0 (30614faef)
+* Update sentry monorepo to v6.3.0 (ad265870e)
+* Update babel monorepo to v7.13.16 (b06a39065)
+* Update module github.com/Microsoft/go-winio to v0.4.18 (549708f6b)
+* Update dependency @azure/ms-rest-js to v2.4.0 (63e03fbb4)
+* Update dependency cronstrue to v1.112.0 (5cff320d3)
+* Update dependency material-ui-json-schema-viewer to v1.2.0 (ea79b2183)
+* Update dependency fast-azure-storage to v3.1.4 (705d8460e)
+* Update golang.org/x/net commit hash to e915ea6 (55c6abd6d)
+* Update golang.org/x/sys commit hash to 66c3f26 (c957d084c)
+* Update golang.org/x/crypto commit hash to 4f45737 (85a4e60dd)
+* Update dependency ws to v7.4.5 (226ed46e3)
+* Update dependency escape-string-regexp to v5 (7de69356b)
+* Update dependency markdown-it to v12.0.6 (37ffe8301)
+* Update dependency markdown-it to v12.0.5 (82cf42d2b)
+* Update dependency date-fns to v2.21.1 (71095d097)
+
+</details>
+
 ## v43.1.0
 
 ### GENERAL
