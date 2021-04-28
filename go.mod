@@ -5,7 +5,7 @@ go 1.16
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
-	github.com/Microsoft/go-winio v0.4.19
+	github.com/Microsoft/go-winio v0.5.0
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/certifi/gocertifi v0.0.0-20200922220541-2c3bb06c6054 // indirect
 	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
@@ -13,7 +13,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/dsnet/compress v0.0.1 // indirect
-	github.com/elastic/go-sysinfo v1.7.0
+	github.com/elastic/go-sysinfo v1.6.0
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/fatih/camelcase v1.0.0
 	github.com/frankban/quicktest v1.10.0 // indirect
