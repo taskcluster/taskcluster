@@ -6001,9 +6001,9 @@ side-channel@^1.0.4:
     object-inspect "^1.9.0"
 
 sift@^13.5.0:
-  version "13.5.2"
-  resolved "https://registry.yarnpkg.com/sift/-/sift-13.5.2.tgz#24a715e13c617b086166cd04917d204a591c9da6"
-  integrity sha512-+gxdEOMA2J+AI+fVsCqeNn7Tgx3M9ZN9jdi95939l1IJ8cZsqS8sqpJyOkic2SJk+1+98Uwryt/gL6XDaV+UZA==
+  version "13.5.3"
+  resolved "https://registry.yarnpkg.com/sift/-/sift-13.5.3.tgz#4b41e4ee02ac5482f76507f4449fc5d90c92a9b6"
+  integrity sha512-KnA9BluMbwkFm21O1dR+0FeliK+waXG+ICbpdMWnLR2clgZfU2fuVNqi2EhsBFiVtApuYMclrM1wPbYoGeHfEA==
 
 signal-exit@^3.0.2, signal-exit@^3.0.3:
   version "3.0.3"
