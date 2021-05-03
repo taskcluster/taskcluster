@@ -261,7 +261,7 @@
         ],
         "matchCurrentVersion": "!/^0/",
         "paths": [
-          "+(package.json)"
+          "package.json"
         ],
         "automerge": true
       }
