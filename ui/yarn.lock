@@ -8075,9 +8075,9 @@ pretty-error@^2.1.1:
     renderkid "^2.0.4"
 
 prism-themes@^1.0.1:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/prism-themes/-/prism-themes-1.6.0.tgz#3bdb4f0780588a4abd770f70537e5cc4898198d1"
-  integrity sha512-L7pbxbUvFj8bVIWpcHCwDFOykhozk6Dja9sxqdcFCWwUI77tSFsWE7imf9OQQAmezLNLaBxRlXNcD2k0VCE/0w==
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/prism-themes/-/prism-themes-1.7.0.tgz#487a5d16152cab515a298af3145345eafb7be372"
+  integrity sha512-D5EsUQXOY4W9pcGwrOXFJiT22RRUuxWaaxyVNMGHRGr96h86K1XLLWMhzc3tXL0Qri7BhRE8mJtEN/ZZSNau6w==
 
 prismjs@^1.15.0:
   version "1.23.0"
