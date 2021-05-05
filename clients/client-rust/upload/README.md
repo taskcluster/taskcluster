@@ -4,7 +4,7 @@ This library is a companion to the `[docs.rs](https://docs.rs/taskcluster)` Task
 
 ## Usage
 
-See [docs.rs](https://docs.rs/taskcluster) for detailed usage information.
+See [docs.rs](https://docs.rs/taskcluster-upload) for detailed usage information.
 
 ## Compatibility
 
