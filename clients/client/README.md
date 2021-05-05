@@ -357,6 +357,7 @@ The generates _nice_ random slugids, refer to slugid module for further details.
 ### Uploading and Downloading
 
 The Object service provides an API for reliable uploads and downloads of large objects.
+These are most frequently used to store artifacts on behalf of the Queue service.
 This library provides convenience methods to implement the client portion of those APIs, providing well-tested, resilient upload and download functionality.
 These methods will negotiate the appropriate method with the object service and perform the required steps to transfer the data.
 
@@ -392,7 +393,7 @@ await taskcluster.upload({
 });
 ```
 
-For download, which returns the content type:
+For downloading objects, returning the content type:
 
 ```javascript
 let contentType = await taskcluster.download({
@@ -417,6 +418,26 @@ const contentType = await taskcluster.download({
   name: 'testing/data.tgz',
   object,
   streamFactory: () => fs.createWriteStream('data.tgz'),
+});
+```
+
+And, wrapping that to support downloading artifacts:
+```javascript
+let contentType = await taskcluster.downloadArtifact({
+  // the artifact to download
+  taskId,
+  runId, // optional, defaulting to the latest run
+  name,
+
+  queue, // Queue instance with appropriate credentials to read the artifact
+  // (the queue will supply object-service credentials if necessary)
+
+  // see above
+  streamFactory,
+  retries.,
+  delayFactor.,
+  randomizationFactor.,
+  maxDelay.,
 });
 ```
 
