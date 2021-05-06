@@ -39,7 +39,7 @@ const setupIam = async ({ iam, iamName, iamPolicy }) => {
 module.exports = async ({ userConfig, answer, configTmpl }) => {
   const iam = new AWS.IAM();
   const s3 = new AWS.S3();
-  const prefix = (answer.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix;
+  const prefix = answer.meta?.deploymentPrefix || userConfig.meta?.deploymentPrefix;
 
   userConfig.queue = userConfig.queue || {};
   userConfig.meta = userConfig.meta || {};

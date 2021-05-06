@@ -35,7 +35,7 @@ const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
     when: () => !userConfig.pulseVhost,
     type: 'input',
     name: 'pulseVhost',
-    default: previous => (previous.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix,
+    default: previous => previous.meta?.deploymentPrefix || userConfig.meta?.deploymentPrefix,
     message: 'What is the vhost for this deployment inside your rabbitmq cluster?',
     validate: vhost => {
       if (!/^[a-z0-9]+$/.test(vhost)) {
@@ -48,7 +48,7 @@ const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
   prompts.push({
     type: 'input',
     when: () => setupNeeded.length,
-    default: () => (userConfig.meta || {}).rabbitAdminUser || '',
+    default: () => userConfig.meta?.rabbitAdminUser || '',
     name: 'meta.rabbitAdminUser',
     message: 'We have detected we need to set up some new rabbitmq accounts. Provide a rabbitmq admin username.',
   });
@@ -75,7 +75,7 @@ const rabbitResources = async ({ userConfig, answer, configTmpl }) => {
   delete answer.rabbitAdminPassword;
 
   const host = `https://${answer.pulseHostname || userConfig.pulseHostname}/api`;
-  const agent = request.agent().auth(answer.meta.rabbitAdminUser, rabbitAdminPassword).type('json');
+  const agent = request.agent().auth(answer.meta?.rabbitAdminUser, rabbitAdminPassword).type('json');
   const vhost = answer.pulseVhost || userConfig.pulseVhost;
   console.log(`(Re-)creating RabbitMQ vhost ${vhost}`);
   await agent.put(`${host}/vhosts/${encodeURIComponent(vhost)}`);

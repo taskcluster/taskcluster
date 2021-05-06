@@ -17,7 +17,7 @@ const actions = [
     provides: ['dev-config'],
     run: async (requirements, utils) => {
       const config = await readRepoYAML('dev-config.yml');
-      if (!config.meta || !config.meta.deploymentPrefix) {
+      if (!config.meta?.deploymentPrefix) {
         throw new Error('Must have configured dev-config.yml to deploy.');
       }
 
@@ -81,7 +81,7 @@ const actions = [
     requires: ['dev-config'],
     provides: ['dev-namespace'],
     run: async (requirements, utils) => {
-      const namespace = requirements['dev-config'].meta.deploymentPrefix;
+      const namespace = requirements['dev-config'].meta?.deploymentPrefix;
       await execCommand({
         command: ['kubectl', 'create', 'namespace', namespace],
         dir: REPO_ROOT,
