@@ -48,24 +48,26 @@ module.exports = async ({ userConfig, answer, configTmpl }) => {
 
   const rootUrl = answer.rootUrl || userConfig.rootUrl;
 
-  // The following are some hacks for now until we can do all of this in a
-  // nicer way (presumably?)
-
+  // Simple defaults that can be updated by the user later
   setDefault('worker_manager.providers', {});
-
-  // TODO: Figure out what any of these should be set to
   setDefault('web_server.public_url', rootUrl);
   setDefault('web_server.additional_allowed_cors_origin', '');
   setDefault('web_server.ui_login_strategies', {});
   setDefault('web_server.session_secret', slugid.v4());
+  setDefault('web_server.registered_clients', []);
+  setDefault('ui.ui_login_strategy_names', '');
 
-  //TODO: These github things can/should be questions in this setup thing
+  // TODO: These github things can/should be questions in this setup thing; github
+  // will not work until these are set, so we set replicas to 0.
   setDefault('github.bot_username', '???');
   setDefault('github.github_private_pem', '???');
   setDefault('github.github_app_id', '???');
   setDefault('github.webhook_secret', '???');
+  setDefault('github.procs.web.replicas', 0);
+  setDefault('github.procs.worker.replicas', 0);
 
-  // TODO: This eventually should just build these from rootUrl itself probably
+  // UI should just build these from rootUrl itself, but that makes testing
+  // difficult.
   setDefault('ui.graphql_subscription_endpoint', `${rootUrl}/subscription`);
   setDefault('ui.graphql_endpoint', `${rootUrl}/graphql`);
 
