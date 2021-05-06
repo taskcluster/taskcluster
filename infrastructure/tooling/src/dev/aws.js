@@ -44,9 +44,6 @@ module.exports = async ({ userConfig, answer, configTmpl }) => {
   userConfig.queue = userConfig.queue || {};
   userConfig.meta = userConfig.meta || {};
 
-  // TODO: Add both blob buckets
-  // TODO: Also set up auth/notify aws stuff
-
   const publicBucketName = `${prefix}-public-artifacts`;
   const privateBucketName = `${prefix}-private-artifacts`;
 
@@ -56,6 +53,14 @@ module.exports = async ({ userConfig, answer, configTmpl }) => {
       ACL: 'public-read',
     }).promise();
     userConfig.queue.public_artifact_bucket = publicBucketName;
+  }
+
+  if (!userConfig.queue.artifact_region) {
+    const { LocationConstraint } = await s3.getBucketLocation({
+      Bucket: publicBucketName,
+    }).promise();
+    const region = LocationConstraint === '' ? 'us-east-1' : LocationConstraint;
+    userConfig.queue.artifact_region = region;
   }
 
   const publicPolicy = {
