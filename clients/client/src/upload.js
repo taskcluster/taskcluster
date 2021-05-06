@@ -122,11 +122,9 @@ const upload = async ({
     throw new Error("Could not negotiate an upload method");
   }
 
-  // TODO: pass this value to finishUpload when the deployed instance supports it
-  // https://github.com/taskcluster/taskcluster/issues/4714
-  const _ = hashStream.hashes(contentLength);
+  const hashes = hashStream.hashes(contentLength);
 
-  await object.finishUpload(name, { projectId, uploadId });
+  await object.finishUpload(name, { projectId, uploadId, hashes });
 };
 
 module.exports = { upload };

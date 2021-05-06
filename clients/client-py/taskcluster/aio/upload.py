@@ -123,13 +123,12 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
 
         await retry(maxRetries, tryUpload)
 
-        # TODO: pass this value to finishUpload when the deployed instance supports it
-        # https://github.com/taskcluster/taskcluster/issues/4714
-        hashingReader.hashes(contentLength)
+        hashes = hashingReader.hashes(contentLength)
 
         await ensureCoro(objectService.finishUpload)(name, {
             "projectId": projectId,
             "uploadId": uploadId,
+            "hashes": hashes,
         })
 
 

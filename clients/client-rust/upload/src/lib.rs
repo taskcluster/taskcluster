@@ -200,9 +200,7 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
         }
     }
 
-    // TODO: pass this value to finishUpload when the deployed instance supports it
-    // https://github.com/taskcluster/taskcluster/issues/4714
-    let _hashes = reader_factory.hashes(content_length);
+    let hashes = reader_factory.hashes(content_length);
 
     // finish the upload
     object_service
@@ -211,6 +209,7 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
             &json!({
                 "projectId": project_id,
                 "uploadId": upload_id,
+                "hashes": hashes,
             }),
         )
         .await?;

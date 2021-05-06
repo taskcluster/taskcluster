@@ -92,9 +92,8 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 			return
 		}
 
-		// TODO: pass this value to finishUpload when the deployed instance supports it
-		// https://github.com/taskcluster/taskcluster/issues/4714
-		_, err = hashingReadSeeker.hashes(contentLength)
+		var hashes ObjectContentHashes
+		hashes, err = hashingReadSeeker.hashes(contentLength)
 		if err != nil {
 			return
 		}
@@ -104,6 +103,7 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 			&FinishUploadRequest{
 				ProjectID: projectID,
 				UploadID:  uploadID,
+				Hashes:    hashes,
 			},
 		)
 	}()
