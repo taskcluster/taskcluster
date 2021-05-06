@@ -49,8 +49,8 @@ func TestMissingScopes(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 	logtext := LogText(t)
-	if !strings.Contains(logtext, "queue:get-artifact:SampleArtifacts/_/X.txt") || !strings.Contains(logtext, "generic-worker:cache:banana-cache") {
-		t.Fatalf("Was expecting log file to contain missing scopes, but it doesn't")
+	if !strings.Contains(logtext, "generic-worker:cache:banana-cache") {
+		t.Fatalf("Was expecting log file to contain missing worker-enforced scopes, but it doesn't")
 	}
 }
 

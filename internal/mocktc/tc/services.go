@@ -53,6 +53,8 @@ type Queue interface {
 	ReportFailed(taskId, runId string) (*tcqueue.TaskStatusResponse, error)
 	Status(taskId string) (*tcqueue.TaskStatusResponse, error)
 	Task(taskId string) (*tcqueue.TaskDefinitionResponse, error)
+	DownloadArtifactToFile(taskId string, runId int64, name string, filename string) (string, int64, error)
+	DownloadArtifactToBuf(taskId string, runId int64, name string) ([]byte, string, int64, error)
 }
 
 type Object interface {

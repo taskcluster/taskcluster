@@ -7,11 +7,9 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/mholt/archiver"
@@ -204,12 +202,10 @@ func (uc *URLContent) RequiredScopes() []string {
 	return []string{}
 }
 
-// Scopes queue:get-artifact:<artifact-name> required for non public/ artifacts
+// The Queue enforces required scopes for artifacts, so we do
+// not need to consider anything
 func (ac *ArtifactContent) RequiredScopes() []string {
-	if strings.HasPrefix(ac.Artifact, "public/") {
-		return []string{}
-	}
-	return []string{"queue:get-artifact:" + ac.Artifact}
+	return []string{}
 }
 
 //No scopes required to mount files in a task
@@ -716,12 +712,21 @@ func UnmarshalInto(c json.RawMessage, fsContent FSContent) (FSContent, error) {
 func (ac *ArtifactContent) Download(task *TaskRun) (file string, sha256 string, err error) {
 	basename := slugid.Nice()
 	file = filepath.Join(config.DownloadsDir, basename)
-	var signedURL *url.URL
-	signedURL, err = task.Queue.GetLatestArtifact_SignedURL(ac.TaskID, ac.Artifact, time.Minute*30)
+
+	task.Infof("[mounts] Downloading %v to %v", ac, file)
+
+	var runID int64 = -1 // use the latest run
+	_, contentLength, err := task.Queue.DownloadArtifactToFile(ac.TaskID, runID, ac.Artifact, file)
 	if err != nil {
 		return
 	}
-	sha256, _, err = DownloadFile(signedURL.String(), ac.String(), file, task)
+
+	sha256, err = fileutil.CalculateSHA256(file)
+	if err != nil {
+		task.Infof("[mounts] Downloaded %v bytes from %s to %v but cannot calculate SHA256", contentLength, ac, file)
+		panic(fmt.Sprintf("Internal worker bug! Cannot calculate SHA256 of file %v that I just downloaded: %v", file, err))
+	}
+	task.Infof("[mounts] Downloaded %v bytes with SHA256 %v from %s to %v", contentLength, sha256, ac, file)
 	return
 }
 

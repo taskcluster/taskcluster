@@ -6,12 +6,16 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/taskcluster/httpbackoff/v3"
 	tcclient "github.com/taskcluster/taskcluster/v43/clients/client-go"
 	"github.com/taskcluster/taskcluster/v43/clients/client-go/tcqueue"
 )
@@ -108,7 +112,7 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 		} else {
 			t.Errorf("Artifact '%s' not created", artifact)
 		}
-		b, rawResp, resp, url := getArtifactContent(t, taskID, artifact)
+		b, rawResp, resp, url := getArtifactContentWithResponses(t, taskID, artifact)
 		defer resp.Body.Close()
 		for _, requiredSubstring := range expected.Extracts {
 			if !strings.Contains(string(b), requiredSubstring) {
@@ -122,4 +126,47 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 			t.Fatalf("Content-Type in Signed URL %v response (%v) does not match Content-Type of artifact (%v)", url, actualContentType, expected.ContentType)
 		}
 	}
+}
+
+// getArtifactContentWithResponses downloads the given artifact, failing the
+// test if this is not possible.  It returns responses for both a "raw" fetch
+// (without compression) and a fetch potentially automatically decoding any
+// content-encoding.  This only works for S3 artifacts, and is only used to
+// test content-encoding.
+func getArtifactContentWithResponses(t *testing.T, taskID string, artifact string) ([]byte, *http.Response, *http.Response, *url.URL) {
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
+	url, err := queue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
+	if err != nil {
+		t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
+	}
+	t.Logf("Getting from url %v", url.String())
+	// need to do this so Content-Encoding header isn't swallowed by Go for test later on
+	tr := &http.Transport{
+		DisableCompression: true,
+	}
+	client := &http.Client{Transport: tr}
+	rawResp, _, err := httpbackoff.ClientGet(client, url.String())
+	if err != nil {
+		t.Fatalf("Error trying to fetch decompressed artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	resp, _, err := httpbackoff.Get(url.String())
+	if err != nil {
+		t.Fatalf("Error trying to fetch artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	return b, rawResp, resp, url
+}
+
+// getArtifactContent downloads the given artifact's content,
+// failing the test if this is not possible.
+func getArtifactContent(t *testing.T, taskID string, artifact string) []byte {
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
+	buf, _, _, err := queue.DownloadArtifactToBuf(taskID, -1, artifact)
+	if err != nil {
+		t.Fatalf("Error trying to fetch artifact:\n%e", err)
+	}
+	return buf
 }

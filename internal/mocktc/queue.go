@@ -3,7 +3,9 @@ package mocktc
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
@@ -475,7 +477,19 @@ func (queue *Queue) Artifact(taskId, runId, name string) (*tcqueue.GetArtifactCo
 		}
 
 	case *tcqueue.ErrorArtifactRequest:
-		return nil, fmt.Errorf("Error Artifact: %s: %s", a.Message, a.Reason)
+		resp := tcqueue.GetArtifactContentResponse4{
+			StorageType: "error",
+			Message:     a.Message,
+			Reason:      a.Reason,
+		}
+		var err error
+		jsonResp, err = json.Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+
+	case *tcqueue.LinkArtifactRequest:
+		return queue.Artifact(taskId, runId, a.Artifact)
 
 	default:
 		return nil, fmt.Errorf("Unsupported artifact storage type %T", artifact)
@@ -563,6 +577,96 @@ func (queue *Queue) Task(taskId string) (*tcqueue.TaskDefinitionResponse, error)
 		}
 	}
 	return &queue.tasks[taskId].Task, nil
+}
+
+func (queue *Queue) DownloadArtifactToFile(taskId string, runId int64, name string, filename string) (string, int64, error) {
+	buf, contentType, contentLength, err := queue.DownloadArtifactToBuf(taskId, runId, name)
+	if err != nil {
+		return "", 0, err
+	}
+	err = ioutil.WriteFile(filename, buf, 0600)
+	if err != nil {
+		return "", 0, err
+	}
+	return contentType, contentLength, err
+}
+
+func (queue *Queue) DownloadArtifactToBuf(taskId string, runId int64, name string) (buf []byte, contentType string, contentLength int64, err error) {
+	if runId == -1 {
+		runId = 0 // "Latest" always means run 0 in this mock implementation
+	}
+	var artifactJSON *tcqueue.GetArtifactContentResponse
+	artifactJSON, err = queue.Artifact(taskId, fmt.Sprintf("%d", runId), name)
+	if err != nil {
+		return
+	}
+	var artifact struct {
+		StorageType string `json:"storageType"`
+	}
+	err = json.Unmarshal(*artifactJSON, &artifact)
+	if err != nil {
+		return
+	}
+
+	switch artifact.StorageType {
+	case "reference", "s3":
+		// `reference` and `s3` both have a URL from which we should download
+		// directly, so handle them with the same code
+		var urlContent struct {
+			URL string `json:"url"`
+		}
+		err = json.Unmarshal(*artifactJSON, &urlContent)
+		if err != nil {
+			return
+		}
+
+		var resp *http.Response
+		resp, err = http.Get(urlContent.URL)
+		if err != nil {
+			return
+		}
+
+		contentType = resp.Header.Get("Content-Type")
+		buf, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return
+		}
+
+		contentLength = int64(len(buf))
+		return
+
+	case "object":
+		// supporting this requires finding the fake object instance created by the
+		// service factory, as it contains the artifact data
+		panic("fake DownloadArtifactTo..() is not yet supported for object artifacts")
+
+	case "error":
+		var errContent struct {
+			Message string `json:"message"`
+			Reason  string `json:"reason"`
+		}
+		err = json.Unmarshal(*artifactJSON, &errContent)
+		if err != nil {
+			return
+		}
+
+		err = fmt.Errorf("%s: %s", errContent.Message, errContent.Reason)
+		return
+
+	case "link":
+		var linkContent struct {
+			Artifact string `json:"artifact"`
+		}
+		err = json.Unmarshal(*artifactJSON, &linkContent)
+		if err != nil {
+			return
+		}
+		return queue.DownloadArtifactToBuf(taskId, runId, linkContent.Artifact)
+
+	default:
+		err = fmt.Errorf("Unsupported artifact storageType '%s'", artifact.StorageType)
+		return
+	}
 }
 
 ///////////////////////////////////
