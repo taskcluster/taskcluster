@@ -59,6 +59,14 @@ const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
     name: 'rabbitAdminPassword',
     message: 'Now the password for that user.',
   });
+
+  prompts.push({
+    type: 'input',
+    when: () => setupNeeded.length,
+    default: () => userConfig.pulseHostname ? `https://${userConfig.pulseHostname}` : '',
+    name: 'rabbitAdminManagementOrigin',
+    message: 'Now the origin of the management API for that RabbitMQ cluster (http? different port?).',
+  });
 };
 
 const rabbitResources = async ({ userConfig, answer, configTmpl }) => {
@@ -74,23 +82,23 @@ const rabbitResources = async ({ userConfig, answer, configTmpl }) => {
   // remove it from the answers
   delete answer.rabbitAdminPassword;
 
-  const host = `https://${answer.pulseHostname || userConfig.pulseHostname}/api`;
+  const apiUrl = `${answer.rabbitAdminManagementOrigin || userConfig.rabbitAdminManagementOrigin}/api`;
   const agent = request.agent().auth(answer.meta?.rabbitAdminUser, rabbitAdminPassword).type('json');
   const vhost = answer.pulseVhost || userConfig.pulseVhost;
   console.log(`(Re-)creating RabbitMQ vhost ${vhost}`);
-  await agent.put(`${host}/vhosts/${encodeURIComponent(vhost)}`);
+  await agent.put(`${apiUrl}/vhosts/${encodeURIComponent(vhost)}`);
 
   for (const service of setupNeeded) {
     const user = `${vhost}-taskcluster-${service.replace(/_/g, '-')}`;
     const password = slugid.v4();
 
     console.log(`Creating RabbitMQ user ${user}`);
-    await agent.put(`${host}/users/${encodeURIComponent(user)}`).send({
+    await agent.put(`${apiUrl}/users/${encodeURIComponent(user)}`).send({
       password,
       tags: '',
     });
     const regexName = `taskcluster\\-${service.replace(/_/g, '\\-')}`;
-    await agent.put(`${host}/permissions/${encodeURIComponent(vhost)}/${encodeURIComponent(user)}`).send({
+    await agent.put(`${apiUrl}/permissions/${encodeURIComponent(vhost)}/${encodeURIComponent(user)}`).send({
       configure: `^(queue/${regexName}/.*|exchange/${regexName}/.*)`,
       write: `^(queue/${regexName}/.*|exchange/${regexName}/.*)`,
       read: `^(queue/${regexName}/.*|exchange/.*)`,
