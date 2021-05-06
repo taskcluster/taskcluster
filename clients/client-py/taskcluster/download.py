@@ -52,6 +52,37 @@ def download(*, writerFactory, **kwargs):
     return runAsync(aio_download.download(writerFactory=wrappedWriterFactory, **kwargs))
 
 
+def downloadArtifactToBuf(**kwargs):
+    """
+    Convenience method to download an artifact to an in-memory buffer and return the
+    downloaded data.  Arguments are the same as `downloadArtifact`, except that
+    `writerFactory` should not be supplied.  Returns a tuple (buffer, contentType).
+    """
+    return runAsync(aio_download.downloadArtifactToBuf(**kwargs))
+
+
+def downloadArtifactToFile(file, **kwargs):
+    """
+    Convenience method to download an artifact to a file object.  The file must be
+    writeable, in binary mode, seekable (`f.seek`), and truncatable
+    (`f.truncate`) to support retries.  Arguments are the same as `downloadArtifac`,
+    except that `writerFactory` should not be supplied.  Returns the content-type.
+    """
+    return runAsync(aio_download.downloadArtifactToFile(file=file, **kwargs))
+
+
+def downloadArtifact(*, writerFactory, **kwargs):
+    """
+    Download the named artifact with the appropriate storageType, using a writer returned
+    from `writerFactory` to write the data.  The `maxRetries` parameter has
+    the same meaning as for service clients.  The `queueService` parameter is
+    an instance of the Queue class, configured with credentials for the
+    download.  Returns the content-type.
+    """
+    wrappedWriterFactory = _wrapSyncWriterFactory(writerFactory)
+    return runAsync(aio_download.downloadArtifact(writerFactory=wrappedWriterFactory, **kwargs))
+
+
 def _wrapSyncWriterFactory(writerFactory):
     """Modify the reader returned by readerFactory to have an async read."""
     @functools.wraps(writerFactory)
