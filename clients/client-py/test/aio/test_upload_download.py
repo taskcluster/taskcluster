@@ -7,6 +7,7 @@ import aiohttp
 import hashlib
 
 import taskcluster
+from taskcluster import exceptions
 from taskcluster.aio import upload, download
 from taskcluster.aio.reader_writer import BufferReader
 
@@ -16,11 +17,47 @@ pytestmark = [
 ]
 
 
+class FakeQueue:
+    def __init__(self, storageType, ts):
+        self.storageType = storageType
+        self.ts = ts
+        self.options = {"rootUrl": "https://tc-testing.example.com"}
+
+    async def latestArtifact(self, taskId, name):
+        return await self.artifact(taskId, 1, name)
+
+    async def artifact(self, taskId, runId, name):
+        assert taskId == 'task-id'
+        assert runId == 1
+        assert name == 'public/test.data'
+
+        if self.storageType == 's3' or self.storageType == 'reference':
+            return {
+                "storageType": self.storageType,
+                "url": f"{self.ts.url()}data",
+            }
+
+        elif self.storageType == 'object':
+            return {
+                "storageType": self.storageType,
+                "name": "some/object",
+                "credentials": {"clientId": "c", "accessToken": "a"},
+            }
+
+        elif self.storageType == 'error':
+            return {
+                "storageType": self.storageType,
+                "message": "uhoh",
+                "reason": "testing",
+            }
+
+
 class FakeObject:
     def __init__(self, ts):
         self.ts = ts
 
     async def startDownload(self, name, payload):
+        assert name == "some/object"
         assert payload["acceptDownloadMethods"]["simple"]
         return {
             "method": "simple",
@@ -232,3 +269,71 @@ async def test_putUrl_upload_fails_retried_succeeds(randbytes):
             objectService=objectService)
 
     assert attempts == 3
+
+
+async def test_download_s3_artifact(randbytes):
+    "Download an S3 artifact"
+    data = randbytes(1024)
+
+    class Server(httptest.Handler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header('content-type', 'text/plain')
+            self.send_header('content-length', str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+    with httptest.Server(Server) as ts:
+        queueService = FakeQueue("s3", ts)
+        buf, content_type = await download.downloadArtifactToBuf(
+            taskId='task-id',
+            runId=1,
+            name="public/test.data",
+            queueService=queueService)
+
+    assert buf == data
+    assert content_type == 'text/plain'
+
+
+async def test_download_object_artifact(randbytes, monkeypatch):
+    "Download an object artifact"
+    data = randbytes(1024)
+
+    class Server(httptest.Handler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header('content-type', 'text/plain')
+            self.send_header('content-length', str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+    with httptest.Server(Server) as ts:
+        def make_fake_object(options):
+            assert options["credentials"] == {"clientId": "c", "accessToken": "a"}
+            assert options["rootUrl"] == "https://tc-testing.example.com"
+            return FakeObject(ts)
+
+        monkeypatch.setattr(taskcluster.aio.download, "Object", make_fake_object)
+
+        queueService = FakeQueue("object", ts)
+        buf, content_type = await download.downloadArtifactToBuf(
+            taskId='task-id',
+            runId=1,
+            name="public/test.data",
+            queueService=queueService)
+
+    assert buf == data
+    assert content_type == 'text/plain'
+
+
+async def test_download_error_artifact(randbytes):
+    "Download an error artifact"
+    queueService = FakeQueue("error", None)
+    with pytest.raises(exceptions.TaskclusterArtifactError) as excinfo:
+        await download.downloadArtifactToBuf(
+            taskId='task-id',
+            name="public/test.data",
+            queueService=queueService)
+
+    assert str(excinfo.value) == "uhoh"
+    assert excinfo.value.reason == "testing"

@@ -11,6 +11,41 @@ import taskcluster
 from taskcluster import upload, download
 
 
+class FakeQueue:
+    def __init__(self, storageType, ts):
+        self.storageType = storageType
+        self.ts = ts
+        self.options = {"rootUrl": "https://tc-testing.example.com"}
+
+    def latestArtifact(self, taskId, name):
+        return self.artifact(taskId, 1, name)
+
+    def artifact(self, taskId, runId, name):
+        assert taskId == 'task-id'
+        assert runId == 1
+        assert name == 'public/test.data'
+
+        if self.storageType == 's3' or self.storageType == 'reference':
+            return {
+                "storageType": self.storageType,
+                "url": f"{self.ts.url()}data",
+            }
+
+        elif self.storageType == 'object':
+            return {
+                "storageType": self.storageType,
+                "name": "some/object",
+                "credentials": {"clientId": "c", "accessToken": "a"},
+            }
+
+        elif self.storageType == 'error':
+            return {
+                "storageType": self.storageType,
+                "message": "uhoh",
+                "reason": "testing",
+            }
+
+
 class FakeObject:
     def __init__(self, ts):
         self.ts = ts
@@ -272,3 +307,39 @@ def test_putUrl_upload(randbytes):
             objectService=objectService)
 
     assert uploaded_data == data
+
+
+def test_download_object_artifact(randbytes, monkeypatch):
+    "Download an object artifact"
+    # note: other artifact types are tested in tests/aio; this just
+    # validates the sync wrappers
+    data = randbytes(1024)
+
+    class Server(httptest.Handler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header('content-type', 'text/plain')
+            self.send_header('content-length', str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+    with httptest.Server(Server) as ts:
+        # the wrapped async download will create an _async_ Object client,
+        # so we use the fake from the async tests
+        def make_fake_async_object(options):
+            from aio.test_upload_download import FakeObject
+            assert options["credentials"] == {"clientId": "c", "accessToken": "a"}
+            assert options["rootUrl"] == "https://tc-testing.example.com"
+            return FakeObject(ts)
+
+        monkeypatch.setattr(taskcluster.aio.download, "Object", make_fake_async_object)
+
+        queueService = FakeQueue("object", ts)
+        buf, content_type = download.downloadArtifactToBuf(
+            taskId='task-id',
+            runId=1,
+            name="public/test.data",
+            queueService=queueService)
+
+    assert buf == data
+    assert content_type == 'text/plain'

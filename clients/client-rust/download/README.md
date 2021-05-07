@@ -1,10 +1,10 @@
-# Taskcluster Upload Support
+# Taskcluster Download Support
 
 This library is a companion to the `[docs.rs](https://docs.rs/taskcluster)` Taskcluster client, with support for downloading objects.
 
 ## Usage
 
-See [docs.rs](https://docs.rs/taskcluster) for detailed usage information.
+See [docs.rs](https://docs.rs/taskcluster-download) for detailed usage information.
 
 ## Compatibility
 
