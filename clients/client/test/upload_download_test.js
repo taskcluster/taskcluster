@@ -215,4 +215,120 @@ suite(testing.suiteName(), function() {
       nock.cleanAll();
     }
   });
+
+  suite("downloadArtifact", function() {
+    let queue;
+    let artifact;
+
+    suiteSetup(function() {
+      // for testing artifact downloads, we use a fake queue but a real object service.
+      queue = new taskcluster.Queue({
+        ...taskcluster.fromEnvVars(),
+        retries: 0,
+        fake: {
+          artifact: async (taskId, runId, name) => {
+            assert.equal(taskId, 'taskid');
+            assert.equal(runId, 1);
+            assert.equal(name, "public/test.file");
+            return artifact;
+          },
+          latestArtifact: async (taskId, name) => {
+            assert.equal(taskId, 'taskid');
+            assert.equal(name, "public/test.file");
+            return artifact;
+          },
+        },
+      });
+    });
+
+    const createObject = async () => {
+      const name = "taskcluster/test/client/" + taskcluster.slugid();
+      const expires = taskcluster.fromNow('1 hour');
+      const data = 'hello, world';
+
+      await taskcluster.upload({
+        projectId: "taskcluster",
+        name,
+        contentType: 'application/random',
+        contentLength: data.length,
+        expires,
+        object,
+        streamFactory: async () => {
+          const stream = new ReadableStreamBuffer({ initialSize: data.length, frequency: 0 });
+          stream.put(data);
+          stream.stop();
+          return stream;
+        },
+      });
+      return name;
+    };
+
+    const tryDownloadArtifact = async () => {
+      let stream;
+      const contentType = await taskcluster.downloadArtifact({
+        taskId: 'taskid',
+        runId: 1,
+        name: "public/test.file",
+        queue,
+        streamFactory: async () => {
+          stream = new WritableStreamBuffer();
+          return stream;
+        },
+        retries: 0,
+      });
+      return {
+        contentType,
+        content: stream.getContents(),
+      };
+    };
+
+    test("s3 artifact", async function() {
+      const name = await createObject();
+      const { url } = await object.startDownload(name, { acceptDownloadMethods: { simple: true } });
+
+      artifact = { storageType: 's3', url };
+
+      const { contentType, content } = await tryDownloadArtifact();
+      assert.equal(contentType, "application/random");
+      assert.deepEqual(content, Buffer.from('hello, world'));
+    });
+
+    test("reference artifact", async function() {
+      const name = await createObject();
+      const { url } = await object.startDownload(name, { acceptDownloadMethods: { simple: true } });
+
+      artifact = { storageType: 'reference', url };
+
+      const { contentType, content } = await tryDownloadArtifact();
+      assert.equal(contentType, "application/random");
+      assert.deepEqual(content, Buffer.from('hello, world'));
+    });
+
+    test("object artifact", async function() {
+      const name = await createObject();
+
+      artifact = {
+        storageType: 'object',
+        name,
+        credentials: taskcluster.createTemporaryCredentials({
+          start: new Date(),
+          expiry: taskcluster.fromNow('1 hour'),
+          scopes: [`object:download:${name}`],
+          credentials: taskcluster.fromEnvVars().credentials,
+        }),
+      };
+
+      const { contentType, content } = await tryDownloadArtifact();
+      assert.equal(contentType, "application/random");
+      assert.deepEqual(content, Buffer.from('hello, world'));
+    });
+
+    test("error artifact", async function() {
+      artifact = { storageType: 'error', message: 'oh noes', reason: 'test case' };
+
+      await assert.rejects(
+        () => tryDownloadArtifact(),
+        err => err.message === 'oh noes' && err.reason === 'test case');
+    });
+  });
 });
