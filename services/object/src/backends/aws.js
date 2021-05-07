@@ -238,7 +238,10 @@ const getBucketRegion = async ({ bucket, endpoint, ...credentials }) => {
     Bucket: bucket,
   }).promise();
 
-  return LocationConstraint;
+  // us-east-1 is represented by an empty LocationConstraint,
+  // because it was invented before there were regions (c.f.
+  // https://en.wikipedia.org/wiki/Pangaea)
+  return LocationConstraint === '' ? 'us-east-1' : LocationConstraint;
 };
 
 module.exports = { getBucketRegion, AwsBackend };

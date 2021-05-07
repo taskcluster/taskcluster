@@ -39,7 +39,7 @@ module.exports = ({ userConfig, prompts, configTmpl }) => {
   });
 
   prompts.push({
-    when: () => !userConfig.meta || !userConfig.meta.deploymentPrefix,
+    when: () => !userConfig.meta?.deploymentPrefix,
     type: 'input',
     name: 'meta.deploymentPrefix',
     message: 'Specify a prefix to use for most resources needed by this deployment.',
