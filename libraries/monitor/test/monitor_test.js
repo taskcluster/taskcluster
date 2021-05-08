@@ -348,6 +348,23 @@ suite(testing.suiteName(), function() {
         'uhoh\nsomething went wrong\n..again');
     });
 
+    test('should record top-level string or numeric fields of errors, but no more', function() {
+      const err = new Error('uhoh');
+      err.color = "prussian blue";
+      err.temperature = 290.8; // Kelvin, obviously
+      err.count = 13;
+      err.object = { x: 10 };
+      err.array = [1, 2];
+      monitor.reportError(err);
+      assert.equal(monitorManager.messages.length, 1);
+      assert(monitorManager.messages[0].message.startsWith("Error: uhoh\n"));
+      assert.equal(monitorManager.messages[0].Fields.color, "prussian blue");
+      assert.equal(monitorManager.messages[0].Fields.temperature, 290.8);
+      assert.equal(monitorManager.messages[0].Fields.count, 13);
+      assert.equal(monitorManager.messages[0].Fields.object, undefined); // omitted
+      assert.equal(monitorManager.messages[0].Fields.array, undefined); // omitted
+    });
+
     test('should record errors with extra', function() {
       monitor.reportError(new Error('oh no'), { foo: 5 });
       assert.equal(monitorManager.messages.length, 1);

@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const assert = require('assert');
-const { serializeError } = require('serialize-error');
 const { Logger } = require('./logger');
 const TimeKeeper = require('./timekeeper');
 
@@ -263,7 +262,22 @@ class Monitor {
       extra = level;
       level = 'err';
     }
-    const serialized = serializeError(err);
+
+    // serializing an arbitrary error object can result in a huge blob of JSON.
+    // Instead, we take just the normal error properties (most of which are not
+    // enumerable) as well as any top-level properties that have scalar values.
+    const serialized = {
+      message: err.message,
+      name: err.name,
+      stack: err.stack,
+      code: err.code,
+    };
+    for (const [k, v] of Object.entries(err)) {
+      if (typeof v === 'string' || typeof v === 'number') {
+        serialized[k] = v;
+      }
+    }
+
     if (this.manager._reporter) {
       extra['reportId'] = this.manager._reporter.report(err, level, extra);
     }
