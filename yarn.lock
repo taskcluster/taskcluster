@@ -111,9 +111,9 @@
     xml2js "^0.4.19"
 
 "@azure/ms-rest-js@^2.0.5":
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/@azure/ms-rest-js/-/ms-rest-js-2.4.1.tgz#efb06e9375ab128ac194ccabcb8ac651dd445764"
-  integrity sha512-76Tc+RRqXj1bqwg/1TX2KHaAGyFLzypqBQ65+FaVxw+oSeZhZcePRFM4r0lqRVwweC9RTct95aNPnMZSzGxDwA==
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@azure/ms-rest-js/-/ms-rest-js-2.5.0.tgz#a998ce3822e16528841e8ba9a7bd649a07ade461"
+  integrity sha512-mXezdECH1Vjr+7FkH5+LlL85/YEHOrXHYqd9qh8b6dgvvE7sVvUk3qrtRGk3WZr4TLrZvRLE7NbFU7RgHHg45Q==
   dependencies:
     "@azure/core-auth" "^1.1.4"
     abort-controller "^3.0.0"
