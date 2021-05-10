@@ -1,7 +1,7 @@
-use crate::Object;
 use anyhow::Error;
 use async_trait::async_trait;
 use serde_json::Value;
+use taskcluster::Object;
 
 /// A private wrapper around the necessary methods of the object service.  This is only necessary
 /// to allow injecting a fake implementation during testing.
