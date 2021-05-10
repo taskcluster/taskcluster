@@ -101,6 +101,9 @@ pub struct Client {
     /// If None, then unauthenticated requests are made.
     credentials: Option<hawk::Credentials>,
 
+    /// The root URL used to configure this client
+    root_url: String,
+
     /// The `ext` string for any requests made by this client, if any
     ext: Option<String>,
 
@@ -200,10 +203,13 @@ impl Client {
             }),
         };
 
+        let root_url = b.root_url;
+
         Ok(Client {
             credentials,
             ext,
             retry,
+            root_url,
             base_url,
             host,
             port,
@@ -286,6 +292,11 @@ impl Client {
                 None => return Err(retry_for.into()),
             }
         }
+    }
+
+    /// Get the root URL with which this client was configured
+    pub fn root_url(&self) -> &str {
+        self.root_url.as_ref()
     }
 
     fn build_request(

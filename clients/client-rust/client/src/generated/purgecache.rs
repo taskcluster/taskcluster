@@ -14,16 +14,21 @@ use crate::util::urlencode;
 /// User create purge requests for specific caches on specific workers, and
 /// these requests are timestamped.  Workers consult the service before
 /// starting a new task, and purge any caches older than the timestamp.
-pub struct PurgeCache (Client);
+pub struct PurgeCache {
+    /// The underlying client used to make API calls for this service.
+    pub client: Client
+}
 
 #[allow(non_snake_case)]
 impl PurgeCache {
-    /// Create a new undefined instance, based on the given client.
+    /// Create a new PurgeCache instance, based on the given client builder
     pub fn new<CB: Into<ClientBuilder>>(client_builder: CB) -> Result<Self, Error> {
-        Ok(Self(client_builder
-            .into()
-            .path_prefix("api/purge-cache/v1/")
-            .build()?))
+        Ok(Self{
+            client: client_builder
+                .into()
+                .path_prefix("api/purge-cache/v1/")
+                .build()?,
+        })
     }
 
     /// Ping Server
@@ -34,7 +39,7 @@ impl PurgeCache {
         let method = "GET";
         let (path, query) = Self::ping_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -42,13 +47,13 @@ impl PurgeCache {
     /// Generate an unsigned URL for the ping endpoint
     pub fn ping_url(&self) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the ping endpoint
     pub fn ping_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for ping
@@ -70,7 +75,7 @@ impl PurgeCache {
         let method = "POST";
         let (path, query) = Self::purgeCache_details(workerPoolId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -96,20 +101,20 @@ impl PurgeCache {
         let method = "GET";
         let (path, query) = Self::allPurgeRequests_details(continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the allPurgeRequests endpoint
     pub fn allPurgeRequests_url(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::allPurgeRequests_details(continuationToken, limit);
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the allPurgeRequests endpoint
     pub fn allPurgeRequests_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::allPurgeRequests_details(continuationToken, limit);
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for allPurgeRequests
@@ -136,20 +141,20 @@ impl PurgeCache {
         let method = "GET";
         let (path, query) = Self::purgeRequests_details(workerPoolId, since);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the purgeRequests endpoint
     pub fn purgeRequests_url(&self, workerPoolId: &str, since: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::purgeRequests_details(workerPoolId, since);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the purgeRequests endpoint
     pub fn purgeRequests_signed_url(&self, workerPoolId: &str, since: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::purgeRequests_details(workerPoolId, since);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for purgeRequests

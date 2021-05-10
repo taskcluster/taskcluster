@@ -14,16 +14,21 @@ use crate::util::urlencode;
 /// Objects can be uploaded and downloaded, with the object data flowing directly
 /// from the storage "backend" to the caller, and not directly via this service.
 /// Once uploaded, objects are immutable until their expiration time.
-pub struct Object (Client);
+pub struct Object {
+    /// The underlying client used to make API calls for this service.
+    pub client: Client
+}
 
 #[allow(non_snake_case)]
 impl Object {
-    /// Create a new undefined instance, based on the given client.
+    /// Create a new Object instance, based on the given client builder
     pub fn new<CB: Into<ClientBuilder>>(client_builder: CB) -> Result<Self, Error> {
-        Ok(Self(client_builder
-            .into()
-            .path_prefix("api/object/v1/")
-            .build()?))
+        Ok(Self{
+            client: client_builder
+                .into()
+                .path_prefix("api/object/v1/")
+                .build()?,
+        })
     }
 
     /// Ping Server
@@ -34,7 +39,7 @@ impl Object {
         let method = "GET";
         let (path, query) = Self::ping_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -42,13 +47,13 @@ impl Object {
     /// Generate an unsigned URL for the ping endpoint
     pub fn ping_url(&self) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the ping endpoint
     pub fn ping_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for ping
@@ -83,7 +88,7 @@ impl Object {
         let method = "PUT";
         let (path, query) = Self::createUpload_details(name);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -107,7 +112,7 @@ impl Object {
         let method = "POST";
         let (path, query) = Self::finishUpload_details(name);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -132,7 +137,7 @@ impl Object {
         let method = "PUT";
         let (path, query) = Self::startDownload_details(name);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -152,20 +157,20 @@ impl Object {
         let method = "GET";
         let (path, query) = Self::object_details(name);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the object endpoint
     pub fn object_url(&self, name: &str) -> Result<String, Error> {
         let (path, query) = Self::object_details(name);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the object endpoint
     pub fn object_signed_url(&self, name: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::object_details(name);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for object
@@ -195,7 +200,7 @@ impl Object {
         let method = "GET";
         let (path, query) = Self::download_details(name);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -203,13 +208,13 @@ impl Object {
     /// Generate an unsigned URL for the download endpoint
     pub fn download_url(&self, name: &str) -> Result<String, Error> {
         let (path, query) = Self::download_details(name);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the download endpoint
     pub fn download_signed_url(&self, name: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::download_details(name);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for download

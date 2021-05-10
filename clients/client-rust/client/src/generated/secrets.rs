@@ -16,16 +16,21 @@ use crate::util::urlencode;
 /// Secrets also have an expiration date, and once a secret has expired it can no
 /// longer be read.  This is useful for short-term secrets such as a temporary
 /// service credential or a one-time signing key.
-pub struct Secrets (Client);
+pub struct Secrets {
+    /// The underlying client used to make API calls for this service.
+    pub client: Client
+}
 
 #[allow(non_snake_case)]
 impl Secrets {
-    /// Create a new undefined instance, based on the given client.
+    /// Create a new Secrets instance, based on the given client builder
     pub fn new<CB: Into<ClientBuilder>>(client_builder: CB) -> Result<Self, Error> {
-        Ok(Self(client_builder
-            .into()
-            .path_prefix("api/secrets/v1/")
-            .build()?))
+        Ok(Self{
+            client: client_builder
+                .into()
+                .path_prefix("api/secrets/v1/")
+                .build()?,
+        })
     }
 
     /// Ping Server
@@ -36,7 +41,7 @@ impl Secrets {
         let method = "GET";
         let (path, query) = Self::ping_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -44,13 +49,13 @@ impl Secrets {
     /// Generate an unsigned URL for the ping endpoint
     pub fn ping_url(&self) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the ping endpoint
     pub fn ping_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for ping
@@ -69,7 +74,7 @@ impl Secrets {
         let method = "PUT";
         let (path, query) = Self::set_details(name);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -89,7 +94,7 @@ impl Secrets {
         let method = "DELETE";
         let (path, query) = Self::remove_details(name);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -112,20 +117,20 @@ impl Secrets {
         let method = "GET";
         let (path, query) = Self::get_details(name);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the get endpoint
     pub fn get_url(&self, name: &str) -> Result<String, Error> {
         let (path, query) = Self::get_details(name);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the get endpoint
     pub fn get_signed_url(&self, name: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::get_details(name);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for get
@@ -153,20 +158,20 @@ impl Secrets {
         let method = "GET";
         let (path, query) = Self::list_details(continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the list endpoint
     pub fn list_url(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::list_details(continuationToken, limit);
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the list endpoint
     pub fn list_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::list_details(continuationToken, limit);
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for list

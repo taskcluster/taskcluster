@@ -17,16 +17,21 @@ use crate::util::urlencode;
 ///
 /// When Github forbids an action, this service returns an HTTP 403
 /// with code ForbiddenByGithub.
-pub struct Github (Client);
+pub struct Github {
+    /// The underlying client used to make API calls for this service.
+    pub client: Client
+}
 
 #[allow(non_snake_case)]
 impl Github {
-    /// Create a new undefined instance, based on the given client.
+    /// Create a new Github instance, based on the given client builder
     pub fn new<CB: Into<ClientBuilder>>(client_builder: CB) -> Result<Self, Error> {
-        Ok(Self(client_builder
-            .into()
-            .path_prefix("api/github/v1/")
-            .build()?))
+        Ok(Self{
+            client: client_builder
+                .into()
+                .path_prefix("api/github/v1/")
+                .build()?,
+        })
     }
 
     /// Ping Server
@@ -37,7 +42,7 @@ impl Github {
         let method = "GET";
         let (path, query) = Self::ping_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -45,13 +50,13 @@ impl Github {
     /// Generate an unsigned URL for the ping endpoint
     pub fn ping_url(&self) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the ping endpoint
     pub fn ping_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for ping
@@ -70,7 +75,7 @@ impl Github {
         let method = "POST";
         let (path, query) = Self::githubWebHookConsumer_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -92,20 +97,20 @@ impl Github {
         let method = "GET";
         let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha);
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the builds endpoint
     pub fn builds_url(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha);
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the builds endpoint
     pub fn builds_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha);
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for builds
@@ -139,7 +144,7 @@ impl Github {
         let method = "GET";
         let (path, query) = Self::badge_details(owner, repo, branch);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -147,13 +152,13 @@ impl Github {
     /// Generate an unsigned URL for the badge endpoint
     pub fn badge_url(&self, owner: &str, repo: &str, branch: &str) -> Result<String, Error> {
         let (path, query) = Self::badge_details(owner, repo, branch);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the badge endpoint
     pub fn badge_signed_url(&self, owner: &str, repo: &str, branch: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::badge_details(owner, repo, branch);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for badge
@@ -172,20 +177,20 @@ impl Github {
         let method = "GET";
         let (path, query) = Self::repository_details(owner, repo);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the repository endpoint
     pub fn repository_url(&self, owner: &str, repo: &str) -> Result<String, Error> {
         let (path, query) = Self::repository_details(owner, repo);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the repository endpoint
     pub fn repository_signed_url(&self, owner: &str, repo: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::repository_details(owner, repo);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for repository
@@ -207,7 +212,7 @@ impl Github {
         let method = "GET";
         let (path, query) = Self::latest_details(owner, repo, branch);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -215,13 +220,13 @@ impl Github {
     /// Generate an unsigned URL for the latest endpoint
     pub fn latest_url(&self, owner: &str, repo: &str, branch: &str) -> Result<String, Error> {
         let (path, query) = Self::latest_details(owner, repo, branch);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the latest endpoint
     pub fn latest_signed_url(&self, owner: &str, repo: &str, branch: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::latest_details(owner, repo, branch);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for latest
@@ -242,7 +247,7 @@ impl Github {
         let method = "POST";
         let (path, query) = Self::createStatus_details(owner, repo, sha);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -262,7 +267,7 @@ impl Github {
         let method = "POST";
         let (path, query) = Self::createComment_details(owner, repo, number);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
