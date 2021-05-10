@@ -161,9 +161,9 @@
   integrity sha512-OhsyMrqygfk5v8HmWwOzlYjJrtLaFhF34MrfG/Z73DgYCI6ojNUTUp2TYbtnjo8PegeJp12eamsNettCQjKjVw==
 
 "@babel/runtime@^7.12.5":
-  version "7.13.10"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.13.10.tgz#47d42a57b6095f4468da440388fdbad8bebf0d7d"
-  integrity sha512-4QPkjJq6Ns3V/RgpEahRk+AGfL0eO6RHHtTWoNNr5mO49G6B5+X6d6THgWEAvTrznU5xYpbAlVKRYcsCgh/Akw==
+  version "7.14.0"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.14.0.tgz#46794bc20b612c5f75e62dd071e24dfd95f1cbe6"
+  integrity sha512-JELkvo/DlpNdJ7dlyw/eY7E0suy5i5GQH+Vlxaq1nsNJ+H7f4Vtv3jMeCEgRhZZQFXTjldYfQgv2qmM6M1v5wA==
   dependencies:
     regenerator-runtime "^0.13.4"
 
@@ -4528,9 +4528,9 @@ math-interval-parser@^2.0.1:
   integrity sha512-VmlAmb0UJwlvMyx8iPhXUDnVW1F9IrGEd9CIOmv+XL8AErCUUuozoDMrgImvnYt2A+53qVX/tPW6YJurMKYsvA==
 
 matrix-js-sdk@^10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-10.0.0.tgz#571e97c8d8351715ac609ccedd38cad79d0b752e"
-  integrity sha512-40QN9HITqWBSYi/e8QQidDL6UOhWBpst437i+lHIqQ8a7SQtbcquDSRXWR22BjM2qbssR+02zfrLI/Kez7IoBQ==
+  version "10.1.0"
+  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-10.1.0.tgz#11a78e0330530f78498847c52d390d2a599b029b"
+  integrity sha512-VR1bwSKOf7jZa9+0UoAsYvyvLsNGBhT/BdxHMgQKuwx34GwZucp3Tqg/Ng2oTK+0b991xkEk4nRvJoCKK++Ulg==
   dependencies:
     "@babel/runtime" "^7.12.5"
     another-json "^0.2.0"
@@ -4961,9 +4961,9 @@ object-inspect@^1.5.0, object-inspect@^1.6.0:
   integrity sha512-i3Bp9iTqwhaLZBxGkRfo5ZbE07BQRT7MGu8+nNgwW9ItGp1TzCTw2DLEoWwjClxBjOFI/hWljTAmYGCEwmtnOw==
 
 object-inspect@^1.9.0:
-  version "1.10.2"
-  resolved "https://registry.yarnpkg.com/object-inspect/-/object-inspect-1.10.2.tgz#b6385a3e2b7cae0b5eafcf90cddf85d128767f30"
-  integrity sha512-gz58rdPpadwztRrPjZE9DZLOABUpTGdcANUgOwBFO1C+HZZhePoP83M65WGDmbpwFYJSWqavbl4SgDn4k8RYTA==
+  version "1.10.3"
+  resolved "https://registry.yarnpkg.com/object-inspect/-/object-inspect-1.10.3.tgz#c2aa7d2d09f50c99375704f7a0adf24c5782d369"
+  integrity sha512-e5mCJlSH7poANfC8z8S9s9S2IN5/4Zb3aZ33f5s8YqoazCFzNLloLU8r5VCG+G7WoqLvAAZoVMcy3tp/3X0Plw==
 
 object-keys@^1.0.12, object-keys@^1.1.1:
   version "1.1.1"
