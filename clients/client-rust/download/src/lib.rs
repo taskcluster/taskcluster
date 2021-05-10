@@ -13,7 +13,17 @@ Most uses of this crate can utilize one of the following convenience functions:
 
 * [download_to_buf] -- download data to a fixed-size buffer;
 * [download_to_vec] -- download data to a dynamically allocated buffer; or
-* [download_to_file] -- writing to a [tokio::fs::File].
+* [download_to_file] -- download data to a [tokio::fs::File].
+
+## Artifacts
+
+This crate also supports downloads of artifacts, including all defined storage types.
+This combines a query to the queue service to request the artifact metadata with the appropriate process to download that data.
+In the case of error artifacts, a [`Result::Err`] is returned.
+
+* [download_artifact_to_buf] -- download artifact data to a fixed-size buffer;
+* [download_artifact_to_vec] -- download artifact data to a dynamically allocated buffer; or
+* [download_artifact_to_file] -- download artifact data to a [tokio::fs::File].
 
 ## Factories
 
@@ -22,9 +32,18 @@ This is accomplished with the [`AsyncWriterFactory`](crate::AsyncWriterFactory) 
 Users for whom the supplied convenience functions are inadequate can add their own implementation of this trait.
 
  */
+mod artifact;
 mod factory;
+mod geturl;
 mod object;
 mod service;
 
+#[cfg(test)]
+mod test_helpers;
+
+pub use artifact::{
+    download_artifact_to_buf, download_artifact_to_file, download_artifact_to_vec,
+    download_artifact_with_factory,
+};
 pub use factory::{AsyncWriterFactory, CursorWriterFactory, FileWriterFactory};
 pub use object::{download_to_buf, download_to_file, download_to_vec, download_with_factory};
