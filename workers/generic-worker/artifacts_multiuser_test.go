@@ -123,13 +123,13 @@ func TestChainOfTrustUpload(t *testing.T) {
 
 	expectedArtifacts.Validate(t, taskID, 0)
 
-	cotUnsignedBytes, _, _, _ := getArtifactContent(t, taskID, "public/chain-of-trust.json")
+	cotUnsignedBytes := getArtifactContent(t, taskID, "public/chain-of-trust.json")
 	var cotCert ChainOfTrustData
 	err := json.Unmarshal(cotUnsignedBytes, &cotCert)
 	if err != nil {
 		t.Fatalf("Could not interpret public/chain-of-trust.json as json")
 	}
-	cotSignature, _, _, _ := getArtifactContent(t, taskID, "public/chain-of-trust.json.sig")
+	cotSignature := getArtifactContent(t, taskID, "public/chain-of-trust.json.sig")
 	var ed25519Pubkey ed25519.PublicKey
 	base64Ed25519Pubkey, err := ioutil.ReadFile(filepath.Join("testdata", "ed25519_public_key"))
 	if err != nil {
@@ -301,8 +301,8 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 		a[j.Name] = true
 	}
 
-	x, _, _, _ := getArtifactContent(t, taskID, "public/X.txt")
-	y, _, _, _ := getArtifactContent(t, taskID, "public/Y.txt")
+	x := getArtifactContent(t, taskID, "public/X.txt")
+	y := getArtifactContent(t, taskID, "public/Y.txt")
 
 	if string(x) != string(y) {
 		t.Fatalf("Artifacts X.txt and Y.txt should have identical content in task %v, but they do not", taskID)
@@ -319,7 +319,7 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 			t.Fatalf("Artifact %v missing in task %v", artifactName, taskID)
 		}
 		// make sure artifact content isn't from copied file
-		b, _, _, _ := getArtifactContent(t, taskID, artifactName)
+		b := getArtifactContent(t, taskID, artifactName)
 		if string(b) == string(x) {
 			t.Fatalf("Protected artifact %v seems to have overridden content from X.txt in task %v", artifactName, taskID)
 		}
