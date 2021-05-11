@@ -374,6 +374,21 @@ A "writer" is an object with a `write(data)` method which writes the given data,
 A "writer factory" is a callable (again either async or sync) which returns a fresh writer, ready to write the first byte of the object.
 When uploads are retried, the writer factory may be called more than once.
 
+### Artifact Downlodas
+
+Artifacts can be downloaded from the queue service with similar functions to those above.
+These functions support all of the queue's storage types, raising an error for `error` artifacts.
+In each case, if `runId` is omitted then the most recent run will be used.
+
+* `await taskcluster.aio.download.downloadArtifactToBuf(taskId=.., runId=.., name=.., maxRetries=.., queueService=..)` - asynchronously download an object to an in-memory buffer, returning a tuple (buffer, content-type).
+  If the file is larger than available memory, this will crash.
+* `await taskcluster.aio.download.downloadArtifactToFile(taskId=.., runId=.., name=.., maxRetries=.., queueService=.., file=..)` - asynchronously download an object to a standard Python file, returning the content type.
+* `await taskcluster.aio.download.downloadArtifact(taskId=.., runId=.., name=.., maxRetries=.., queueService=.., writerFactory=..)` - asynchronously download an object to an async writer factory, returning the content type.
+* `taskcluster.download.downloadArtifactToBuf(taskId=.., runId=.., name=.., maxRetries=.., queueService=..)` - download an object to an in-memory buffer, returning a tuple (buffer, content-type).
+  If the file is larger than available memory, this will crash.
+* `taskcluster.download.downloadArtifactToFile(taskId=.., runId=.., name=.., maxRetries=.., queueService=.., file=..)` - download an object to a standard Python file, returning the content type.
+* `taskcluster.download.downloadArtifact(taskId=.., runId=.., name=.., maxRetries=.., queueService=.., writerFactory=..)` - download an object to a sync writer factory, returning the content type.
+
 ## Integration Helpers
 
 The Python Taskcluster client has a module `taskcluster.helper` with utilities which allows you to easily share authentication options across multiple services in your project.
