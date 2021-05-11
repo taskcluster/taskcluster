@@ -16,16 +16,21 @@ use crate::util::urlencode;
 ///   * Inspect or audit clients and roles,
 ///   * Gain access to various services guarded by this API.
 ///
-pub struct Auth (Client);
+pub struct Auth {
+    /// The underlying client used to make API calls for this service.
+    pub client: Client
+}
 
 #[allow(non_snake_case)]
 impl Auth {
-    /// Create a new undefined instance, based on the given client.
+    /// Create a new Auth instance, based on the given client builder
     pub fn new<CB: Into<ClientBuilder>>(client_builder: CB) -> Result<Self, Error> {
-        Ok(Self(client_builder
-            .into()
-            .path_prefix("api/auth/v1/")
-            .build()?))
+        Ok(Self{
+            client: client_builder
+                .into()
+                .path_prefix("api/auth/v1/")
+                .build()?,
+        })
     }
 
     /// Ping Server
@@ -36,7 +41,7 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::ping_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -44,13 +49,13 @@ impl Auth {
     /// Generate an unsigned URL for the ping endpoint
     pub fn ping_url(&self) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the ping endpoint
     pub fn ping_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for ping
@@ -76,20 +81,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::listClients_details(prefix, continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listClients endpoint
     pub fn listClients_url(&self, prefix: Option<&str>, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listClients_details(prefix, continuationToken, limit);
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the listClients endpoint
     pub fn listClients_signed_url(&self, prefix: Option<&str>, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listClients_details(prefix, continuationToken, limit);
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for listClients
@@ -116,20 +121,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::client_details(clientId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the client endpoint
     pub fn client_url(&self, clientId: &str) -> Result<String, Error> {
         let (path, query) = Self::client_details(clientId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the client endpoint
     pub fn client_signed_url(&self, clientId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::client_details(clientId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for client
@@ -158,7 +163,7 @@ impl Auth {
         let method = "PUT";
         let (path, query) = Self::createClient_details(clientId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -182,7 +187,7 @@ impl Auth {
         let method = "POST";
         let (path, query) = Self::resetAccessToken_details(clientId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -205,7 +210,7 @@ impl Auth {
         let method = "POST";
         let (path, query) = Self::updateClient_details(clientId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -228,7 +233,7 @@ impl Auth {
         let method = "POST";
         let (path, query) = Self::enableClient_details(clientId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -250,7 +255,7 @@ impl Auth {
         let method = "POST";
         let (path, query) = Self::disableClient_details(clientId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -270,7 +275,7 @@ impl Auth {
         let method = "DELETE";
         let (path, query) = Self::deleteClient_details(clientId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -294,20 +299,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::listRoles_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listRoles endpoint
     pub fn listRoles_url(&self) -> Result<String, Error> {
         let (path, query) = Self::listRoles_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the listRoles endpoint
     pub fn listRoles_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listRoles_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for listRoles
@@ -331,20 +336,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::listRoles2_details(continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listRoles2 endpoint
     pub fn listRoles2_url(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listRoles2_details(continuationToken, limit);
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the listRoles2 endpoint
     pub fn listRoles2_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listRoles2_details(continuationToken, limit);
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for listRoles2
@@ -372,20 +377,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::listRoleIds_details(continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listRoleIds endpoint
     pub fn listRoleIds_url(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listRoleIds_details(continuationToken, limit);
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the listRoleIds endpoint
     pub fn listRoleIds_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listRoleIds_details(continuationToken, limit);
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for listRoleIds
@@ -410,20 +415,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::role_details(roleId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the role endpoint
     pub fn role_url(&self, roleId: &str) -> Result<String, Error> {
         let (path, query) = Self::role_details(roleId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the role endpoint
     pub fn role_signed_url(&self, roleId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::role_details(roleId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for role
@@ -449,7 +454,7 @@ impl Auth {
         let method = "PUT";
         let (path, query) = Self::createRole_details(roleId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -474,7 +479,7 @@ impl Auth {
         let method = "POST";
         let (path, query) = Self::updateRole_details(roleId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -494,7 +499,7 @@ impl Auth {
         let method = "DELETE";
         let (path, query) = Self::deleteRole_details(roleId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -515,7 +520,7 @@ impl Auth {
         let method = "POST";
         let (path, query) = Self::expandScopes_details();
         let body = Some(payload);
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -536,20 +541,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::currentScopes_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the currentScopes endpoint
     pub fn currentScopes_url(&self) -> Result<String, Error> {
         let (path, query) = Self::currentScopes_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the currentScopes endpoint
     pub fn currentScopes_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::currentScopes_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for currentScopes
@@ -602,20 +607,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::awsS3Credentials_details(level, bucket, prefix, format);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the awsS3Credentials endpoint
     pub fn awsS3Credentials_url(&self, level: &str, bucket: &str, prefix: &str, format: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::awsS3Credentials_details(level, bucket, prefix, format);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the awsS3Credentials endpoint
     pub fn awsS3Credentials_signed_url(&self, level: &str, bucket: &str, prefix: &str, format: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::awsS3Credentials_details(level, bucket, prefix, format);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for awsS3Credentials
@@ -636,20 +641,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::azureAccounts_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the azureAccounts endpoint
     pub fn azureAccounts_url(&self) -> Result<String, Error> {
         let (path, query) = Self::azureAccounts_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the azureAccounts endpoint
     pub fn azureAccounts_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::azureAccounts_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for azureAccounts
@@ -667,20 +672,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::azureTables_details(account, continuationToken);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the azureTables endpoint
     pub fn azureTables_url(&self, account: &str, continuationToken: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::azureTables_details(account, continuationToken);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the azureTables endpoint
     pub fn azureTables_signed_url(&self, account: &str, continuationToken: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::azureTables_details(account, continuationToken);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for azureTables
@@ -706,20 +711,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::azureTableSAS_details(account, table, level);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the azureTableSAS endpoint
     pub fn azureTableSAS_url(&self, account: &str, table: &str, level: &str) -> Result<String, Error> {
         let (path, query) = Self::azureTableSAS_details(account, table, level);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the azureTableSAS endpoint
     pub fn azureTableSAS_signed_url(&self, account: &str, table: &str, level: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::azureTableSAS_details(account, table, level);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for azureTableSAS
@@ -737,20 +742,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::azureContainers_details(account, continuationToken);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the azureContainers endpoint
     pub fn azureContainers_url(&self, account: &str, continuationToken: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::azureContainers_details(account, continuationToken);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the azureContainers endpoint
     pub fn azureContainers_signed_url(&self, account: &str, continuationToken: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::azureContainers_details(account, continuationToken);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for azureContainers
@@ -776,20 +781,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::azureContainerSAS_details(account, container, level);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the azureContainerSAS endpoint
     pub fn azureContainerSAS_url(&self, account: &str, container: &str, level: &str) -> Result<String, Error> {
         let (path, query) = Self::azureContainerSAS_details(account, container, level);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the azureContainerSAS endpoint
     pub fn azureContainerSAS_signed_url(&self, account: &str, container: &str, level: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::azureContainerSAS_details(account, container, level);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for azureContainerSAS
@@ -813,20 +818,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::sentryDSN_details(project);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the sentryDSN endpoint
     pub fn sentryDSN_url(&self, project: &str) -> Result<String, Error> {
         let (path, query) = Self::sentryDSN_details(project);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the sentryDSN endpoint
     pub fn sentryDSN_signed_url(&self, project: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::sentryDSN_details(project);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for sentryDSN
@@ -853,20 +858,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::websocktunnelToken_details(wstAudience, wstClient);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the websocktunnelToken endpoint
     pub fn websocktunnelToken_url(&self, wstAudience: &str, wstClient: &str) -> Result<String, Error> {
         let (path, query) = Self::websocktunnelToken_details(wstAudience, wstClient);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the websocktunnelToken endpoint
     pub fn websocktunnelToken_signed_url(&self, wstAudience: &str, wstClient: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::websocktunnelToken_details(wstAudience, wstClient);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for websocktunnelToken
@@ -892,20 +897,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::gcpCredentials_details(projectId, serviceAccount);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the gcpCredentials endpoint
     pub fn gcpCredentials_url(&self, projectId: &str, serviceAccount: &str) -> Result<String, Error> {
         let (path, query) = Self::gcpCredentials_details(projectId, serviceAccount);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the gcpCredentials endpoint
     pub fn gcpCredentials_signed_url(&self, projectId: &str, serviceAccount: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::gcpCredentials_details(projectId, serviceAccount);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for gcpCredentials
@@ -928,7 +933,7 @@ impl Auth {
         let method = "POST";
         let (path, query) = Self::authenticateHawk_details();
         let body = Some(payload);
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -957,7 +962,7 @@ impl Auth {
         let method = "POST";
         let (path, query) = Self::testAuthenticate_details();
         let body = Some(payload);
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -990,20 +995,20 @@ impl Auth {
         let method = "GET";
         let (path, query) = Self::testAuthenticateGet_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the testAuthenticateGet endpoint
     pub fn testAuthenticateGet_url(&self) -> Result<String, Error> {
         let (path, query) = Self::testAuthenticateGet_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the testAuthenticateGet endpoint
     pub fn testAuthenticateGet_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::testAuthenticateGet_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for testAuthenticateGet

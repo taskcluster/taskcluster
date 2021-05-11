@@ -19,16 +19,21 @@ use std::time::Duration;
 use crate::util::urlencode;
 
 ${t.description}
-pub struct ${t.className} (Client);
+pub struct ${t.className} {
+    /// The underlying client used to make API calls for this service.
+    pub client: Client
+}
 
 #[allow(non_snake_case)]
 impl ${t.className} {
-    /// Create a new ${t.clsasName} instance, based on the given client.
+    /// Create a new ${t.className} instance, based on the given client builder
     pub fn new<CB: Into<ClientBuilder>>(client_builder: CB) -> Result<Self, Error> {
-        Ok(Self(client_builder
-            .into()
-            .path_prefix("api/${t.serviceName}/${t.apiVersion}/")
-            .build()?))
+        Ok(Self{
+            client: client_builder
+                .into()
+                .path_prefix("api/${t.serviceName}/${t.apiVersion}/")
+                .build()?,
+        })
     }${t.methods}
 }`;
 
@@ -65,7 +70,7 @@ ${t.doc}pub async fn ${t.name}(${define_args(with_self(t.args))}) -> Result<${t.
     let method = "${t.method.toUpperCase()}";
     let (path, query) = Self::${t.name}_details(${call_args(without_payload(t.args))});
     let body = ${t.input ? 'Some(payload)' : 'None'};
-    let resp = self.0.request(method, ${t.staticPath ? 'path' : '&path'}, query, body).await?;
+    let resp = self.client.request(method, ${t.staticPath ? 'path' : '&path'}, query, body).await?;
 ${t.output ? `\
     Ok(resp.json().await?)\
 ` : `\
@@ -78,7 +83,7 @@ const URL_FUNC_TEMPLATE = t => `\
 /// Generate an unsigned URL for the ${t.name} endpoint
 pub fn ${t.name}_url(${define_args(with_self(t.args))}) -> Result<String, Error> {
     let (path, query) = Self::${t.name}_details(${call_args(without_payload(t.args))});
-    self.0.make_url(${t.staticPath ? 'path' : '&path'}, query)
+    self.client.make_url(${t.staticPath ? 'path' : '&path'}, query)
 }
 `;
 
@@ -86,7 +91,7 @@ const SIGNED_URL_FUNC_TEMPLATE = t => `\
 /// Generate a signed URL for the ${t.name} endpoint
 pub fn ${t.name}_signed_url(${define_args(with_ttl(with_self(t.args)))}) -> Result<String, Error> {
     let (path, query) = Self::${t.name}_details(${call_args(without_payload(t.args))});
-    self.0.make_signed_url(${t.staticPath ? 'path' : '&path'}, query, ttl)
+    self.client.make_signed_url(${t.staticPath ? 'path' : '&path'}, query, ttl)
 }
 `;
 

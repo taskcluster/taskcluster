@@ -11,16 +11,21 @@ use crate::util::urlencode;
 ///
 /// The notification service listens for tasks with associated notifications
 /// and handles requests to send emails and post pulse messages.
-pub struct Notify (Client);
+pub struct Notify {
+    /// The underlying client used to make API calls for this service.
+    pub client: Client
+}
 
 #[allow(non_snake_case)]
 impl Notify {
-    /// Create a new undefined instance, based on the given client.
+    /// Create a new Notify instance, based on the given client builder
     pub fn new<CB: Into<ClientBuilder>>(client_builder: CB) -> Result<Self, Error> {
-        Ok(Self(client_builder
-            .into()
-            .path_prefix("api/notify/v1/")
-            .build()?))
+        Ok(Self{
+            client: client_builder
+                .into()
+                .path_prefix("api/notify/v1/")
+                .build()?,
+        })
     }
 
     /// Ping Server
@@ -31,7 +36,7 @@ impl Notify {
         let method = "GET";
         let (path, query) = Self::ping_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -39,13 +44,13 @@ impl Notify {
     /// Generate an unsigned URL for the ping endpoint
     pub fn ping_url(&self) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the ping endpoint
     pub fn ping_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for ping
@@ -66,7 +71,7 @@ impl Notify {
         let method = "POST";
         let (path, query) = Self::email_details();
         let body = Some(payload);
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -86,7 +91,7 @@ impl Notify {
         let method = "POST";
         let (path, query) = Self::pulse_details();
         let body = Some(payload);
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -112,7 +117,7 @@ impl Notify {
         let method = "POST";
         let (path, query) = Self::matrix_details();
         let body = Some(payload);
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -137,7 +142,7 @@ impl Notify {
         let method = "POST";
         let (path, query) = Self::slack_details();
         let body = Some(payload);
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -158,7 +163,7 @@ impl Notify {
         let method = "POST";
         let (path, query) = Self::addDenylistAddress_details();
         let body = Some(payload);
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -178,7 +183,7 @@ impl Notify {
         let method = "DELETE";
         let (path, query) = Self::deleteDenylistAddress_details();
         let body = Some(payload);
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -208,20 +213,20 @@ impl Notify {
         let method = "GET";
         let (path, query) = Self::listDenylist_details(continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listDenylist endpoint
     pub fn listDenylist_url(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listDenylist_details(continuationToken, limit);
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the listDenylist endpoint
     pub fn listDenylist_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listDenylist_details(continuationToken, limit);
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for listDenylist

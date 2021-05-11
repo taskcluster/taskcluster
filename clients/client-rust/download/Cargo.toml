@@ -11,7 +11,7 @@ repository = "https://github.com/taskcluster/taskcluster"
 taskcluster = { version = "43.2.0", path = "../client" }
 anyhow = "1.0"
 async-trait = "0.1"
-reqwest = { version = "0.11", features = ["json", "stream"] }
+reqwest = { version = "0.11", features = ["json", "stream", "gzip", "brotli"] }
 serde_json = "1.0.48"
 tokio = { version = "1.2", features = ["macros", "time", "fs"] }
 tokio-util = { version = "0.6", features = ["codec", "io"] }
@@ -20,3 +20,4 @@ futures-util = "0.3"
 [dev-dependencies]
 httptest = "^0.15.1"
 tempfile = "3"
+flate2 = "1"

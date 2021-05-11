@@ -14,16 +14,21 @@ use crate::util::urlencode;
 /// Methods interacting with a provider may return a 503 response if that provider has
 /// not been able to start up, such as if the service to which it interfaces has an
 /// outage.  Such requests can be retried as for any other 5xx response.
-pub struct WorkerManager (Client);
+pub struct WorkerManager {
+    /// The underlying client used to make API calls for this service.
+    pub client: Client
+}
 
 #[allow(non_snake_case)]
 impl WorkerManager {
-    /// Create a new undefined instance, based on the given client.
+    /// Create a new WorkerManager instance, based on the given client builder
     pub fn new<CB: Into<ClientBuilder>>(client_builder: CB) -> Result<Self, Error> {
-        Ok(Self(client_builder
-            .into()
-            .path_prefix("api/worker-manager/v1/")
-            .build()?))
+        Ok(Self{
+            client: client_builder
+                .into()
+                .path_prefix("api/worker-manager/v1/")
+                .build()?,
+        })
     }
 
     /// Ping Server
@@ -34,7 +39,7 @@ impl WorkerManager {
         let method = "GET";
         let (path, query) = Self::ping_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -42,13 +47,13 @@ impl WorkerManager {
     /// Generate an unsigned URL for the ping endpoint
     pub fn ping_url(&self) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the ping endpoint
     pub fn ping_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for ping
@@ -66,20 +71,20 @@ impl WorkerManager {
         let method = "GET";
         let (path, query) = Self::listProviders_details(continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listProviders endpoint
     pub fn listProviders_url(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listProviders_details(continuationToken, limit);
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the listProviders endpoint
     pub fn listProviders_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listProviders_details(continuationToken, limit);
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for listProviders
@@ -103,7 +108,7 @@ impl WorkerManager {
         let method = "PUT";
         let (path, query) = Self::createWorkerPool_details(workerPoolId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -128,7 +133,7 @@ impl WorkerManager {
         let method = "POST";
         let (path, query) = Self::updateWorkerPool_details(workerPoolId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -149,7 +154,7 @@ impl WorkerManager {
         let method = "DELETE";
         let (path, query) = Self::deleteWorkerPool_details(workerPoolId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -168,20 +173,20 @@ impl WorkerManager {
         let method = "GET";
         let (path, query) = Self::workerPool_details(workerPoolId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the workerPool endpoint
     pub fn workerPool_url(&self, workerPoolId: &str) -> Result<String, Error> {
         let (path, query) = Self::workerPool_details(workerPoolId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the workerPool endpoint
     pub fn workerPool_signed_url(&self, workerPoolId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::workerPool_details(workerPoolId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for workerPool
@@ -199,20 +204,20 @@ impl WorkerManager {
         let method = "GET";
         let (path, query) = Self::listWorkerPools_details(continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listWorkerPools endpoint
     pub fn listWorkerPools_url(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listWorkerPools_details(continuationToken, limit);
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the listWorkerPools endpoint
     pub fn listWorkerPools_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listWorkerPools_details(continuationToken, limit);
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for listWorkerPools
@@ -244,7 +249,7 @@ impl WorkerManager {
         let method = "POST";
         let (path, query) = Self::reportWorkerError_details(workerPoolId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -263,20 +268,20 @@ impl WorkerManager {
         let method = "GET";
         let (path, query) = Self::listWorkerPoolErrors_details(workerPoolId, continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listWorkerPoolErrors endpoint
     pub fn listWorkerPoolErrors_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listWorkerPoolErrors_details(workerPoolId, continuationToken, limit);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listWorkerPoolErrors endpoint
     pub fn listWorkerPoolErrors_signed_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listWorkerPoolErrors_details(workerPoolId, continuationToken, limit);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listWorkerPoolErrors
@@ -300,20 +305,20 @@ impl WorkerManager {
         let method = "GET";
         let (path, query) = Self::listWorkersForWorkerGroup_details(workerPoolId, workerGroup, continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listWorkersForWorkerGroup endpoint
     pub fn listWorkersForWorkerGroup_url(&self, workerPoolId: &str, workerGroup: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listWorkersForWorkerGroup_details(workerPoolId, workerGroup, continuationToken, limit);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listWorkersForWorkerGroup endpoint
     pub fn listWorkersForWorkerGroup_signed_url(&self, workerPoolId: &str, workerGroup: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listWorkersForWorkerGroup_details(workerPoolId, workerGroup, continuationToken, limit);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listWorkersForWorkerGroup
@@ -337,20 +342,20 @@ impl WorkerManager {
         let method = "GET";
         let (path, query) = Self::worker_details(workerPoolId, workerGroup, workerId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the worker endpoint
     pub fn worker_url(&self, workerPoolId: &str, workerGroup: &str, workerId: &str) -> Result<String, Error> {
         let (path, query) = Self::worker_details(workerPoolId, workerGroup, workerId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the worker endpoint
     pub fn worker_signed_url(&self, workerPoolId: &str, workerGroup: &str, workerId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::worker_details(workerPoolId, workerGroup, workerId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for worker
@@ -373,7 +378,7 @@ impl WorkerManager {
         let method = "PUT";
         let (path, query) = Self::createWorker_details(workerPoolId, workerGroup, workerId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -398,7 +403,7 @@ impl WorkerManager {
         let method = "POST";
         let (path, query) = Self::updateWorker_details(workerPoolId, workerGroup, workerId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -421,7 +426,7 @@ impl WorkerManager {
         let method = "DELETE";
         let (path, query) = Self::removeWorker_details(workerPoolId, workerGroup, workerId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -441,20 +446,20 @@ impl WorkerManager {
         let method = "GET";
         let (path, query) = Self::listWorkersForWorkerPool_details(workerPoolId, continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listWorkersForWorkerPool endpoint
     pub fn listWorkersForWorkerPool_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listWorkersForWorkerPool_details(workerPoolId, continuationToken, limit);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listWorkersForWorkerPool endpoint
     pub fn listWorkersForWorkerPool_signed_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listWorkersForWorkerPool_details(workerPoolId, continuationToken, limit);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listWorkersForWorkerPool
@@ -482,7 +487,7 @@ impl WorkerManager {
         let method = "POST";
         let (path, query) = Self::registerWorker_details();
         let body = Some(payload);
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -506,7 +511,7 @@ impl WorkerManager {
         let method = "POST";
         let (path, query) = Self::reregisterWorker_details();
         let body = Some(payload);
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 

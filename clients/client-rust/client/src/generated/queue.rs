@@ -54,16 +54,21 @@ use crate::util::urlencode;
 /// * A `reference` artifact can replace an existing `reference` artifact.
 /// * A `link` artifact can replace an existing `reference` artifact.
 /// * Any artifact's `expires` can be extended (made later, but not earlier).
-pub struct Queue (Client);
+pub struct Queue {
+    /// The underlying client used to make API calls for this service.
+    pub client: Client
+}
 
 #[allow(non_snake_case)]
 impl Queue {
-    /// Create a new undefined instance, based on the given client.
+    /// Create a new Queue instance, based on the given client builder
     pub fn new<CB: Into<ClientBuilder>>(client_builder: CB) -> Result<Self, Error> {
-        Ok(Self(client_builder
-            .into()
-            .path_prefix("api/queue/v1/")
-            .build()?))
+        Ok(Self{
+            client: client_builder
+                .into()
+                .path_prefix("api/queue/v1/")
+                .build()?,
+        })
     }
 
     /// Ping Server
@@ -74,7 +79,7 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::ping_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -82,13 +87,13 @@ impl Queue {
     /// Generate an unsigned URL for the ping endpoint
     pub fn ping_url(&self) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the ping endpoint
     pub fn ping_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for ping
@@ -108,20 +113,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::task_details(taskId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the task endpoint
     pub fn task_url(&self, taskId: &str) -> Result<String, Error> {
         let (path, query) = Self::task_details(taskId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the task endpoint
     pub fn task_signed_url(&self, taskId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::task_details(taskId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for task
@@ -139,20 +144,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::status_details(taskId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the status endpoint
     pub fn status_url(&self, taskId: &str) -> Result<String, Error> {
         let (path, query) = Self::status_details(taskId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the status endpoint
     pub fn status_signed_url(&self, taskId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::status_details(taskId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for status
@@ -185,20 +190,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::listTaskGroup_details(taskGroupId, continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listTaskGroup endpoint
     pub fn listTaskGroup_url(&self, taskGroupId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listTaskGroup_details(taskGroupId, continuationToken, limit);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listTaskGroup endpoint
     pub fn listTaskGroup_signed_url(&self, taskGroupId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listTaskGroup_details(taskGroupId, continuationToken, limit);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listTaskGroup
@@ -237,20 +242,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::listDependentTasks_details(taskId, continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listDependentTasks endpoint
     pub fn listDependentTasks_url(&self, taskId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listDependentTasks_details(taskId, continuationToken, limit);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listDependentTasks endpoint
     pub fn listDependentTasks_signed_url(&self, taskId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listDependentTasks_details(taskId, continuationToken, limit);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listDependentTasks
@@ -299,7 +304,7 @@ impl Queue {
         let method = "PUT";
         let (path, query) = Self::createTask_details(taskId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -331,7 +336,7 @@ impl Queue {
         let method = "POST";
         let (path, query) = Self::scheduleTask_details(taskId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -364,7 +369,7 @@ impl Queue {
         let method = "POST";
         let (path, query) = Self::rerunTask_details(taskId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -394,7 +399,7 @@ impl Queue {
         let method = "POST";
         let (path, query) = Self::cancelTask_details(taskId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -420,7 +425,7 @@ impl Queue {
         let method = "POST";
         let (path, query) = Self::claimWork_details(taskQueueId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -439,7 +444,7 @@ impl Queue {
         let method = "POST";
         let (path, query) = Self::claimTask_details(taskId, runId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -478,7 +483,7 @@ impl Queue {
         let method = "POST";
         let (path, query) = Self::reclaimTask_details(taskId, runId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -497,7 +502,7 @@ impl Queue {
         let method = "POST";
         let (path, query) = Self::reportCompleted_details(taskId, runId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -522,7 +527,7 @@ impl Queue {
         let method = "POST";
         let (path, query) = Self::reportFailed_details(taskId, runId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -553,7 +558,7 @@ impl Queue {
         let method = "POST";
         let (path, query) = Self::reportException_details(taskId, runId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -580,7 +585,7 @@ impl Queue {
         let method = "POST";
         let (path, query) = Self::createArtifact_details(taskId, runId, name);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -606,7 +611,7 @@ impl Queue {
         let method = "PUT";
         let (path, query) = Self::finishArtifact_details(taskId, runId, name);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -673,20 +678,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::getArtifact_details(taskId, runId, name);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the getArtifact endpoint
     pub fn getArtifact_url(&self, taskId: &str, runId: &str, name: &str) -> Result<String, Error> {
         let (path, query) = Self::getArtifact_details(taskId, runId, name);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the getArtifact endpoint
     pub fn getArtifact_signed_url(&self, taskId: &str, runId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::getArtifact_details(taskId, runId, name);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for getArtifact
@@ -720,20 +725,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::getLatestArtifact_details(taskId, name);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the getLatestArtifact endpoint
     pub fn getLatestArtifact_url(&self, taskId: &str, name: &str) -> Result<String, Error> {
         let (path, query) = Self::getLatestArtifact_details(taskId, name);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the getLatestArtifact endpoint
     pub fn getLatestArtifact_signed_url(&self, taskId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::getLatestArtifact_details(taskId, name);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for getLatestArtifact
@@ -759,20 +764,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::listArtifacts_details(taskId, runId, continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listArtifacts endpoint
     pub fn listArtifacts_url(&self, taskId: &str, runId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listArtifacts_details(taskId, runId, continuationToken, limit);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listArtifacts endpoint
     pub fn listArtifacts_signed_url(&self, taskId: &str, runId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listArtifacts_details(taskId, runId, continuationToken, limit);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listArtifacts
@@ -805,20 +810,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::listLatestArtifacts_details(taskId, continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listLatestArtifacts endpoint
     pub fn listLatestArtifacts_url(&self, taskId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listLatestArtifacts_details(taskId, continuationToken, limit);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listLatestArtifacts endpoint
     pub fn listLatestArtifacts_signed_url(&self, taskId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listLatestArtifacts_details(taskId, continuationToken, limit);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listLatestArtifacts
@@ -846,20 +851,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::artifactInfo_details(taskId, runId, name);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the artifactInfo endpoint
     pub fn artifactInfo_url(&self, taskId: &str, runId: &str, name: &str) -> Result<String, Error> {
         let (path, query) = Self::artifactInfo_details(taskId, runId, name);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the artifactInfo endpoint
     pub fn artifactInfo_signed_url(&self, taskId: &str, runId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::artifactInfo_details(taskId, runId, name);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for artifactInfo
@@ -881,20 +886,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::latestArtifactInfo_details(taskId, name);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the latestArtifactInfo endpoint
     pub fn latestArtifactInfo_url(&self, taskId: &str, name: &str) -> Result<String, Error> {
         let (path, query) = Self::latestArtifactInfo_details(taskId, name);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the latestArtifactInfo endpoint
     pub fn latestArtifactInfo_signed_url(&self, taskId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::latestArtifactInfo_details(taskId, name);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for latestArtifactInfo
@@ -918,20 +923,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::artifact_details(taskId, runId, name);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the artifact endpoint
     pub fn artifact_url(&self, taskId: &str, runId: &str, name: &str) -> Result<String, Error> {
         let (path, query) = Self::artifact_details(taskId, runId, name);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the artifact endpoint
     pub fn artifact_signed_url(&self, taskId: &str, runId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::artifact_details(taskId, runId, name);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for artifact
@@ -955,20 +960,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::latestArtifact_details(taskId, name);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the latestArtifact endpoint
     pub fn latestArtifact_url(&self, taskId: &str, name: &str) -> Result<String, Error> {
         let (path, query) = Self::latestArtifact_details(taskId, name);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the latestArtifact endpoint
     pub fn latestArtifact_signed_url(&self, taskId: &str, name: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::latestArtifact_details(taskId, name);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for latestArtifact
@@ -995,20 +1000,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::listProvisioners_details(continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listProvisioners endpoint
     pub fn listProvisioners_url(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listProvisioners_details(continuationToken, limit);
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the listProvisioners endpoint
     pub fn listProvisioners_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listProvisioners_details(continuationToken, limit);
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for listProvisioners
@@ -1036,20 +1041,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::getProvisioner_details(provisionerId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the getProvisioner endpoint
     pub fn getProvisioner_url(&self, provisionerId: &str) -> Result<String, Error> {
         let (path, query) = Self::getProvisioner_details(provisionerId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the getProvisioner endpoint
     pub fn getProvisioner_signed_url(&self, provisionerId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::getProvisioner_details(provisionerId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for getProvisioner
@@ -1076,7 +1081,7 @@ impl Queue {
         let method = "PUT";
         let (path, query) = Self::declareProvisioner_details(provisionerId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -1100,20 +1105,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::pendingTasks_details(taskQueueId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the pendingTasks endpoint
     pub fn pendingTasks_url(&self, taskQueueId: &str) -> Result<String, Error> {
         let (path, query) = Self::pendingTasks_details(taskQueueId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the pendingTasks endpoint
     pub fn pendingTasks_signed_url(&self, taskQueueId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::pendingTasks_details(taskQueueId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for pendingTasks
@@ -1136,20 +1141,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::listWorkerTypes_details(provisionerId, continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listWorkerTypes endpoint
     pub fn listWorkerTypes_url(&self, provisionerId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listWorkerTypes_details(provisionerId, continuationToken, limit);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listWorkerTypes endpoint
     pub fn listWorkerTypes_signed_url(&self, provisionerId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listWorkerTypes_details(provisionerId, continuationToken, limit);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listWorkerTypes
@@ -1173,20 +1178,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::getWorkerType_details(provisionerId, workerType);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the getWorkerType endpoint
     pub fn getWorkerType_url(&self, provisionerId: &str, workerType: &str) -> Result<String, Error> {
         let (path, query) = Self::getWorkerType_details(provisionerId, workerType);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the getWorkerType endpoint
     pub fn getWorkerType_signed_url(&self, provisionerId: &str, workerType: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::getWorkerType_details(provisionerId, workerType);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for getWorkerType
@@ -1209,7 +1214,7 @@ impl Queue {
         let method = "PUT";
         let (path, query) = Self::declareWorkerType_details(provisionerId, workerType);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -1233,20 +1238,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::listTaskQueues_details(continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listTaskQueues endpoint
     pub fn listTaskQueues_url(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listTaskQueues_details(continuationToken, limit);
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the listTaskQueues endpoint
     pub fn listTaskQueues_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listTaskQueues_details(continuationToken, limit);
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for listTaskQueues
@@ -1270,20 +1275,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::getTaskQueue_details(taskQueueId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the getTaskQueue endpoint
     pub fn getTaskQueue_url(&self, taskQueueId: &str) -> Result<String, Error> {
         let (path, query) = Self::getTaskQueue_details(taskQueueId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the getTaskQueue endpoint
     pub fn getTaskQueue_signed_url(&self, taskQueueId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::getTaskQueue_details(taskQueueId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for getTaskQueue
@@ -1310,20 +1315,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, quarantined);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listWorkers endpoint
     pub fn listWorkers_url(&self, provisionerId: &str, workerType: &str, continuationToken: Option<&str>, limit: Option<&str>, quarantined: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, quarantined);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listWorkers endpoint
     pub fn listWorkers_signed_url(&self, provisionerId: &str, workerType: &str, continuationToken: Option<&str>, limit: Option<&str>, quarantined: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, quarantined);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listWorkers
@@ -1350,20 +1355,20 @@ impl Queue {
         let method = "GET";
         let (path, query) = Self::getWorker_details(provisionerId, workerType, workerGroup, workerId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the getWorker endpoint
     pub fn getWorker_url(&self, provisionerId: &str, workerType: &str, workerGroup: &str, workerId: &str) -> Result<String, Error> {
         let (path, query) = Self::getWorker_details(provisionerId, workerType, workerGroup, workerId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the getWorker endpoint
     pub fn getWorker_signed_url(&self, provisionerId: &str, workerType: &str, workerGroup: &str, workerId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::getWorker_details(provisionerId, workerType, workerGroup, workerId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for getWorker
@@ -1381,7 +1386,7 @@ impl Queue {
         let method = "PUT";
         let (path, query) = Self::quarantineWorker_details(provisionerId, workerType, workerGroup, workerId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -1403,7 +1408,7 @@ impl Queue {
         let method = "PUT";
         let (path, query) = Self::declareWorker_details(provisionerId, workerType, workerGroup, workerId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 

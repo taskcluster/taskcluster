@@ -16,16 +16,21 @@ use crate::util::urlencode;
 /// messages, so the most common use of API methods is to read from the index.
 ///
 /// Slashes (`/`) aren't allowed in index paths.
-pub struct Index (Client);
+pub struct Index {
+    /// The underlying client used to make API calls for this service.
+    pub client: Client
+}
 
 #[allow(non_snake_case)]
 impl Index {
-    /// Create a new undefined instance, based on the given client.
+    /// Create a new Index instance, based on the given client builder
     pub fn new<CB: Into<ClientBuilder>>(client_builder: CB) -> Result<Self, Error> {
-        Ok(Self(client_builder
-            .into()
-            .path_prefix("api/index/v1/")
-            .build()?))
+        Ok(Self{
+            client: client_builder
+                .into()
+                .path_prefix("api/index/v1/")
+                .build()?,
+        })
     }
 
     /// Ping Server
@@ -36,7 +41,7 @@ impl Index {
         let method = "GET";
         let (path, query) = Self::ping_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -44,13 +49,13 @@ impl Index {
     /// Generate an unsigned URL for the ping endpoint
     pub fn ping_url(&self) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the ping endpoint
     pub fn ping_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for ping
@@ -69,20 +74,20 @@ impl Index {
         let method = "GET";
         let (path, query) = Self::findTask_details(indexPath);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the findTask endpoint
     pub fn findTask_url(&self, indexPath: &str) -> Result<String, Error> {
         let (path, query) = Self::findTask_details(indexPath);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the findTask endpoint
     pub fn findTask_signed_url(&self, indexPath: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::findTask_details(indexPath);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for findTask
@@ -106,20 +111,20 @@ impl Index {
         let method = "GET";
         let (path, query) = Self::listNamespaces_details(namespace, continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listNamespaces endpoint
     pub fn listNamespaces_url(&self, namespace: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listNamespaces_details(namespace, continuationToken, limit);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listNamespaces endpoint
     pub fn listNamespaces_signed_url(&self, namespace: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listNamespaces_details(namespace, continuationToken, limit);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listNamespaces
@@ -152,20 +157,20 @@ impl Index {
         let method = "GET";
         let (path, query) = Self::listTasks_details(namespace, continuationToken, limit);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listTasks endpoint
     pub fn listTasks_url(&self, namespace: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
         let (path, query) = Self::listTasks_details(namespace, continuationToken, limit);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listTasks endpoint
     pub fn listTasks_signed_url(&self, namespace: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listTasks_details(namespace, continuationToken, limit);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listTasks
@@ -193,7 +198,7 @@ impl Index {
         let method = "PUT";
         let (path, query) = Self::insertTask_details(namespace);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -215,7 +220,7 @@ impl Index {
         let method = "DELETE";
         let (path, query) = Self::deleteTask_details(namespace);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -248,7 +253,7 @@ impl Index {
         let method = "GET";
         let (path, query) = Self::findArtifactFromTask_details(indexPath, name);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -256,13 +261,13 @@ impl Index {
     /// Generate an unsigned URL for the findArtifactFromTask endpoint
     pub fn findArtifactFromTask_url(&self, indexPath: &str, name: &str) -> Result<String, Error> {
         let (path, query) = Self::findArtifactFromTask_details(indexPath, name);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the findArtifactFromTask endpoint
     pub fn findArtifactFromTask_signed_url(&self, indexPath: &str, name: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::findArtifactFromTask_details(indexPath, name);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for findArtifactFromTask

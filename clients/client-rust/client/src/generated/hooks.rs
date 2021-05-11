@@ -11,16 +11,21 @@ use crate::util::urlencode;
 ///
 /// The hooks service provides a mechanism for creating tasks in response to events.
 ///
-pub struct Hooks (Client);
+pub struct Hooks {
+    /// The underlying client used to make API calls for this service.
+    pub client: Client
+}
 
 #[allow(non_snake_case)]
 impl Hooks {
-    /// Create a new undefined instance, based on the given client.
+    /// Create a new Hooks instance, based on the given client builder
     pub fn new<CB: Into<ClientBuilder>>(client_builder: CB) -> Result<Self, Error> {
-        Ok(Self(client_builder
-            .into()
-            .path_prefix("api/hooks/v1/")
-            .build()?))
+        Ok(Self{
+            client: client_builder
+                .into()
+                .path_prefix("api/hooks/v1/")
+                .build()?,
+        })
     }
 
     /// Ping Server
@@ -31,7 +36,7 @@ impl Hooks {
         let method = "GET";
         let (path, query) = Self::ping_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -39,13 +44,13 @@ impl Hooks {
     /// Generate an unsigned URL for the ping endpoint
     pub fn ping_url(&self) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the ping endpoint
     pub fn ping_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::ping_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for ping
@@ -63,20 +68,20 @@ impl Hooks {
         let method = "GET";
         let (path, query) = Self::listHookGroups_details();
         let body = None;
-        let resp = self.0.request(method, path, query, body).await?;
+        let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listHookGroups endpoint
     pub fn listHookGroups_url(&self) -> Result<String, Error> {
         let (path, query) = Self::listHookGroups_details();
-        self.0.make_url(path, query)
+        self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the listHookGroups endpoint
     pub fn listHookGroups_signed_url(&self, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listHookGroups_details();
-        self.0.make_signed_url(path, query, ttl)
+        self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for listHookGroups
@@ -95,20 +100,20 @@ impl Hooks {
         let method = "GET";
         let (path, query) = Self::listHooks_details(hookGroupId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listHooks endpoint
     pub fn listHooks_url(&self, hookGroupId: &str) -> Result<String, Error> {
         let (path, query) = Self::listHooks_details(hookGroupId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listHooks endpoint
     pub fn listHooks_signed_url(&self, hookGroupId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listHooks_details(hookGroupId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listHooks
@@ -127,20 +132,20 @@ impl Hooks {
         let method = "GET";
         let (path, query) = Self::hook_details(hookGroupId, hookId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the hook endpoint
     pub fn hook_url(&self, hookGroupId: &str, hookId: &str) -> Result<String, Error> {
         let (path, query) = Self::hook_details(hookGroupId, hookId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the hook endpoint
     pub fn hook_signed_url(&self, hookGroupId: &str, hookId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::hook_details(hookGroupId, hookId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for hook
@@ -161,20 +166,20 @@ impl Hooks {
         let method = "GET";
         let (path, query) = Self::getHookStatus_details(hookGroupId, hookId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the getHookStatus endpoint
     pub fn getHookStatus_url(&self, hookGroupId: &str, hookId: &str) -> Result<String, Error> {
         let (path, query) = Self::getHookStatus_details(hookGroupId, hookId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the getHookStatus endpoint
     pub fn getHookStatus_signed_url(&self, hookGroupId: &str, hookId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::getHookStatus_details(hookGroupId, hookId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for getHookStatus
@@ -196,7 +201,7 @@ impl Hooks {
         let method = "PUT";
         let (path, query) = Self::createHook_details(hookGroupId, hookId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -216,7 +221,7 @@ impl Hooks {
         let method = "POST";
         let (path, query) = Self::updateHook_details(hookGroupId, hookId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -235,7 +240,7 @@ impl Hooks {
         let method = "DELETE";
         let (path, query) = Self::removeHook_details(hookGroupId, hookId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         resp.bytes().await?;
         Ok(())
     }
@@ -259,7 +264,7 @@ impl Hooks {
         let method = "POST";
         let (path, query) = Self::triggerHook_details(hookGroupId, hookId);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -279,20 +284,20 @@ impl Hooks {
         let method = "GET";
         let (path, query) = Self::getTriggerToken_details(hookGroupId, hookId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the getTriggerToken endpoint
     pub fn getTriggerToken_url(&self, hookGroupId: &str, hookId: &str) -> Result<String, Error> {
         let (path, query) = Self::getTriggerToken_details(hookGroupId, hookId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the getTriggerToken endpoint
     pub fn getTriggerToken_signed_url(&self, hookGroupId: &str, hookId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::getTriggerToken_details(hookGroupId, hookId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for getTriggerToken
@@ -311,7 +316,7 @@ impl Hooks {
         let method = "POST";
         let (path, query) = Self::resetTriggerToken_details(hookGroupId, hookId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -334,7 +339,7 @@ impl Hooks {
         let method = "POST";
         let (path, query) = Self::triggerHookWithToken_details(hookGroupId, hookId, token);
         let body = Some(payload);
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
@@ -354,20 +359,20 @@ impl Hooks {
         let method = "GET";
         let (path, query) = Self::listLastFires_details(hookGroupId, hookId);
         let body = None;
-        let resp = self.0.request(method, &path, query, body).await?;
+        let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listLastFires endpoint
     pub fn listLastFires_url(&self, hookGroupId: &str, hookId: &str) -> Result<String, Error> {
         let (path, query) = Self::listLastFires_details(hookGroupId, hookId);
-        self.0.make_url(&path, query)
+        self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listLastFires endpoint
     pub fn listLastFires_signed_url(&self, hookGroupId: &str, hookId: &str, ttl: Duration) -> Result<String, Error> {
         let (path, query) = Self::listLastFires_details(hookGroupId, hookId);
-        self.0.make_signed_url(&path, query, ttl)
+        self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listLastFires
