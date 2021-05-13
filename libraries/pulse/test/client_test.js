@@ -11,7 +11,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   if (mock) {
     return; // Only test with real creds
   }
-  let connectionString;
+  let connectionString, credentials;
 
   // use a unique name for each test run, just to ensure nothing interferes
   const unique = new Date().getTime().toString();
@@ -24,6 +24,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
 
   setup(async function() {
     connectionString = helper.secrets.get('pulse').connectionString;
+    credentials = connectionStringCredentials(connectionString);
   });
 
   // publish a message to the exchange using just amqplib, declaring the
@@ -43,8 +44,6 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
     await conn.close();
     debug('publish complete');
   };
-
-  const credentials = connectionStringCredentials(connectionString);
 
   test('start and immediately stop', async function() {
     let gotConnection = false;
