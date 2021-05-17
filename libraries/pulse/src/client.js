@@ -165,7 +165,13 @@ class Client extends events.EventEmitter {
       try {
         this.lastConnectionTime = new Date().getTime();
         const { connectionString } = await this.credentials();
-        newConn.connect(connectionString);
+        newConn.connect(connectionString).catch(err => {
+          // .connect should be infallible, but just in case..
+          this.monitor.log.pulseDisconnected({
+            error: `Error in Connection.connect: ${err}`,
+          });
+          newConn.failed();
+        });
       } catch (err) {
         this.monitor.log.pulseDisconnected({
           error: `Error while fetching credentials: ${err}`,
