@@ -3,19 +3,21 @@ use anyhow::{anyhow, Context, Error};
 use crypto::hmac::Hmac;
 use crypto::mac::Mac;
 use crypto::sha2::Sha256;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::env;
 use std::iter::{IntoIterator, Iterator};
 use std::time::{Duration, SystemTime};
 
 /// Credentials represents the set of credentials required to access protected
 /// Taskcluster HTTP APIs.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Credentials {
     /// Client ID
+    #[serde(rename = "clientId")]
     pub client_id: String,
 
     /// Access token
+    #[serde(rename = "accessToken")]
     pub access_token: String,
 
     /// Certificate for temporary credentials
@@ -292,6 +294,56 @@ mod tests {
         env::set_var("TASKCLUSTER_CLIENT_ID", "a-client");
         // (no access token)
         assert!(Credentials::from_env().is_err());
+    }
+
+    #[test]
+    fn test_from_json() {
+        let v = json!({
+            "clientId": "cli",
+            "accessToken": "at",
+        });
+        let c: Credentials = serde_json::from_value(v).unwrap();
+        assert_eq!(
+            c,
+            Credentials {
+                client_id: "cli".to_string(),
+                access_token: "at".to_string(),
+                certificate: None,
+            }
+        );
+    }
+
+    #[test]
+    fn test_from_json_cert() {
+        let v = json!({
+            "clientId": "cli",
+            "accessToken": "at",
+            "certificate": "{}",
+        });
+        let c: Credentials = serde_json::from_value(v).unwrap();
+        assert_eq!(
+            c,
+            Credentials {
+                client_id: "cli".to_string(),
+                access_token: "at".to_string(),
+                certificate: Some("{}".to_string()),
+            }
+        );
+    }
+
+    #[test]
+    fn test_json_round_trip() {
+        // note that the order of JSON properties is not defined in the string format,
+        // so we cannot compare strings; instead we round-trip to a string and back
+        // and compare the result.
+        let c1 = Credentials {
+            client_id: "cli".to_string(),
+            access_token: "at".to_string(),
+            certificate: Some("{}".to_string()),
+        };
+        let s = serde_json::to_string(&c1).unwrap();
+        let c2: Credentials = serde_json::from_str(&s).unwrap();
+        assert_eq!(c1, c2);
     }
 
     #[test]
