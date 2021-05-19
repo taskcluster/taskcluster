@@ -79,7 +79,9 @@ class Artifacts {
       let entryPath = header.name.split('/');
       entryPath.shift();
       if (entryPath.length && entryPath[0]) {
-        entryName += '/' + entryPath.join('/');
+        // the trimEnd here avoids superfluous `/` when the artifact key in the
+        // task payload contains a trailing `/`.
+        entryName = entryName.trimEnd('/') + '/' + entryPath.join('/');
       }
 
       // The first item in the tar should always match the intended artifact
