@@ -2,6 +2,7 @@ const events = require('events');
 const amqplib = require('amqplib');
 const assert = require('assert');
 const { MonitorManager } = require('taskcluster-lib-monitor');
+const URL = require('url');
 
 let clientCounter = 0;
 
@@ -164,7 +165,13 @@ class Client extends events.EventEmitter {
       try {
         this.lastConnectionTime = new Date().getTime();
         const { connectionString } = await this.credentials();
-        newConn.connect(connectionString);
+        newConn.connect(connectionString).catch(err => {
+          // .connect should be infallible, but just in case..
+          this.monitor.log.pulseDisconnected({
+            error: `Error in Connection.connect: ${err}`,
+          });
+          newConn.failed();
+        });
       } catch (err) {
         this.monitor.log.pulseDisconnected({
           error: `Error while fetching credentials: ${err}`,
@@ -324,11 +331,20 @@ class Connection extends events.EventEmitter {
 
     this.state = 'connecting';
 
-    const amqp = await amqplib.connect(connectionString, {
+    const socketOptions = {
       heartbeat: 120,
       noDelay: true,
       timeout: 30 * 1000,
-    }).catch(err => {
+    };
+
+    // work around https://github.com/squaremo/amqp.node/pull/567 by passing an
+    // explicit servername if the connection is via amqps
+    const parsedUrl = URL.parse(connectionString);
+    if (parsedUrl.protocol === 'amqps:') {
+      socketOptions.servername = parsedUrl.hostname;
+    }
+
+    const amqp = await amqplib.connect(connectionString, socketOptions).catch(err => {
       this.monitor.log.pulseDisconnected({ error: `${err}` });
       this.failed();
     });
