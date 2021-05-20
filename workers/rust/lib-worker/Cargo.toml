@@ -11,4 +11,4 @@ anyhow = "1"
 async-trait = "0.1"
 serde_json = "*"
 serde = "*"
-tokio = { version = "*", features = [ "rt", "rt-multi-thread", "macros", "time" ] }
+tokio = { version = "*", features = [ "rt", "rt-multi-thread", "macros", "time", "sync" ] }
