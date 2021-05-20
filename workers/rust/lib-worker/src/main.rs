@@ -1,17 +1,50 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use taskcluster::{ClientBuilder, Credentials, Queue};
-use taskcluster_lib_worker::claim::{TaskClaim, TaskExecutor, WorkClaimer};
-use taskcluster_lib_worker::process::ProcessFactory;
+use taskcluster_lib_worker::claim::{TaskClaim, WorkClaimer, WorkClaimerConfig};
+use taskcluster_lib_worker::executor::{self, Executor};
+use taskcluster_lib_worker::process::{Process, ProcessFactory};
+use tokio::sync::mpsc;
 
-struct NullWorker {
+struct NullExecutor {
+    root_url: String,
+}
+
+impl Executor for NullExecutor {
+    fn start_task(&mut self, task_claim: TaskClaim) -> Process<executor::Command> {
+        let execution = NullExecution {
+            root_url: self.root_url.clone(),
+            task_claim,
+        };
+        execution.start()
+    }
+}
+
+struct NullExecution {
     root_url: String,
     task_claim: TaskClaim,
 }
 
 #[async_trait]
-impl TaskExecutor for NullWorker {
-    async fn execute_task(self) -> Result<()> {
+impl ProcessFactory for NullExecution {
+    type Command = executor::Command;
+
+    async fn run(self, mut commands: mpsc::Receiver<Self::Command>) {
+        tokio::select! {
+            res = self.run_task() => {
+                if let Err(e) = res {
+                    panic!("error in run_task: {:?}", e);
+                }
+            },
+            // on stop, return immediately (dropping the task execution)
+            // TODO: mark as worker-shutdown?
+            None = commands.recv() => {},
+        }
+    }
+}
+
+impl NullExecution {
+    async fn run_task(self) -> Result<()> {
         let queue = Queue::new(
             ClientBuilder::new(&self.root_url).credentials(self.task_claim.credentials.clone()),
         )?;
@@ -32,19 +65,18 @@ impl TaskExecutor for NullWorker {
 
 #[tokio::main]
 async fn main() {
-    let wc = WorkClaimer {
+    let root_url = "https://dustin.taskcluster-dev.net";
+    let wc = WorkClaimer::new(WorkClaimerConfig {
         capacity: 1,
-        root_url: "https://dustin.taskcluster-dev.net".to_owned(),
+        root_url: root_url.to_owned(),
         worker_creds: Credentials::from_env().unwrap(),
         task_queue_id: "aa/bb".to_owned(),
         worker_group: "rust".to_owned(),
         worker_id: "worker".to_owned(),
-        executor_factory: |root_url, task_claim| NullWorker {
-            root_url,
-            task_claim,
+        executor: NullExecutor {
+            root_url: root_url.to_owned(),
         },
-        running: vec![],
-    };
+    });
     let mut wc = wc.start();
     tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
     println!("stopping");

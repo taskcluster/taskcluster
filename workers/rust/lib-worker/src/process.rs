@@ -32,7 +32,8 @@ where
         Ok(())
     }
 
-    /// Wait for this process to complete
+    /// Wait for this process to complete.
+    // TODO: &mut self, wait for a stopped message on a oneshot channel, etc.
     pub async fn wait(self) -> Result<()> {
         Ok(self.async_task.await?)
     }
