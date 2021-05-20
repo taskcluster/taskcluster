@@ -318,7 +318,14 @@ impl Client {
 
         let meth = reqwest::Method::from_str(method)?;
 
-        let req = self.client.request(meth, url);
+        let mut req = self.client.request(meth, url);
+
+        // pass content-length: 0 if there is no body.  This is implicit for GET requests,
+        // but not for methods that typically have a body.  Most other HTTP clients do this
+        // automatically!
+        if body.is_none() {
+            req = req.header("Content-Length", "0");
+        }
 
         let req = match body {
             Some(b) => req.json(&b),

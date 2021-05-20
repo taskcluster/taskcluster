@@ -55,6 +55,24 @@ async fn test_no_such_client() -> Result<()> {
     Ok(())
 }
 
+/// Test that a POST request with no payload doesn't give a 411 (#4890).
+#[tokio::test]
+async fn test_empty_post() -> Result<()> {
+    if let Some(root_url) = get_root_url() {
+        let auth = Auth::new(ClientBuilder::new(&root_url))?;
+        let res = auth.resetAccessToken("no/such/client/for/rust/tests").await;
+        let status_code = err_status_code(&res.err().unwrap());
+
+        // if we had no credentials, this should be FORBIDDEN, but in case the credentials were
+        // valid it will return 404.  Anything else is not good!
+        if status_code != Some(StatusCode::NOT_FOUND) && status_code != Some(StatusCode::FORBIDDEN)
+        {
+            panic!("Got unexpected status code {:?}", status_code);
+        }
+    }
+    Ok(())
+}
+
 /// Test a call with a query
 #[tokio::test]
 async fn test_auth_list_clients_paginated() -> Result<()> {
