@@ -29,16 +29,12 @@ struct NullExecution {
 impl ProcessFactory for NullExecution {
     type Command = executor::Command;
 
-    async fn run(self, mut commands: mpsc::Receiver<Self::Command>) {
+    async fn run(self, mut commands: mpsc::Receiver<Self::Command>) -> Result<()> {
         tokio::select! {
-            res = self.run_task() => {
-                if let Err(e) = res {
-                    panic!("error in run_task: {:?}", e);
-                }
-            },
+            res = self.run_task() => { res }
             // on stop, return immediately (dropping the task execution)
             // TODO: mark as worker-shutdown?
-            None = commands.recv() => {},
+            None = commands.recv() => { Ok(()) },
         }
     }
 }

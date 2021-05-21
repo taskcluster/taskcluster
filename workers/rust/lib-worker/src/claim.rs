@@ -85,20 +85,7 @@ pub enum Command {
 #[async_trait]
 impl<E: Executor> ProcessFactory for WorkClaimer<E> {
     type Command = Command;
-    async fn run(self, commands: mpsc::Receiver<Self::Command>) {
-        self.claim_loop(commands)
-            .await
-            .expect("work claimer failed");
-    }
-}
-
-impl<E: Executor> WorkClaimer<E> {
-    /// Create a new WorkClaimer based on the given configuration
-    pub fn new(cfg: WorkClaimerConfig<E>) -> Self {
-        Self { cfg }
-    }
-
-    async fn claim_loop(mut self, mut commands: mpsc::Receiver<Command>) -> Result<()> {
+    async fn run(mut self, mut commands: mpsc::Receiver<Self::Command>) -> Result<()> {
         let (tasks_tx, mut tasks_rx) = mpsc::channel(self.cfg.capacity);
         let mut long_poller = ClaimWorkLongPoll {
             tasks_tx,
@@ -135,13 +122,24 @@ impl<E: Executor> WorkClaimer<E> {
                     }
                     bail!("ClaimWorkLongPoll process exited unexpectedly");
                 }
-                _ = running.wait(), if num_running > 0 => {
+                res = running.wait(), if num_running > 0 => {
                     // a running task process has completed, so we can poll for one
                     // more task
                     long_poller.command(LongPollCommand::IncrementCapacity).await?;
+                    // if the execution failed, log that and move on.
+                    if let Err(e) = res.context("Internal task execution error") {
+                        log::error!("{:?}", e);
+                    }
                 },
             }
         }
+    }
+}
+
+impl<E: Executor> WorkClaimer<E> {
+    /// Create a new WorkClaimer based on the given configuration
+    pub fn new(cfg: WorkClaimerConfig<E>) -> Self {
+        Self { cfg }
     }
 }
 
@@ -170,10 +168,9 @@ enum LongPollCommand {
 #[async_trait]
 impl ProcessFactory for ClaimWorkLongPoll {
     type Command = LongPollCommand;
-    async fn run(mut self, mut commands: mpsc::Receiver<Self::Command>) {
+    async fn run(mut self, mut commands: mpsc::Receiver<Self::Command>) -> Result<()> {
         let queue =
-            Queue::new(ClientBuilder::new(&self.root_url).credentials(self.worker_creds.clone()))
-                .unwrap();
+            Queue::new(ClientBuilder::new(&self.root_url).credentials(self.worker_creds.clone()))?;
 
         // ideally, we could run the `queue.claimWork` call concurrently with polling the command
         // channel, but the simpler option is to just alternate the two.
@@ -185,7 +182,8 @@ impl ProcessFactory for ClaimWorkLongPoll {
                     cmd = commands.recv() => {
                         match cmd {
                             Some(LongPollCommand::IncrementCapacity) => self.available_capacity += 1,
-                            None => return,
+                            // command channel has closed -> time to exit
+                            None => return Ok(()),
                         }
                     },
                     // if capacity is nonzero and there aren't messages, break out of the loop
@@ -203,16 +201,13 @@ impl ProcessFactory for ClaimWorkLongPoll {
                 "calling queue.claimWork for {} tasks",
                 self.available_capacity
             );
-            let claims = queue
-                .claimWork(&self.task_queue_id, &payload)
-                .await
-                .unwrap();
+            let claims = queue.claimWork(&self.task_queue_id, &payload).await?;
             if let Some(task_claims) = claims.get("tasks").map(|tasks| tasks.as_array()).flatten() {
                 log::trace!("claimWork returned {} tasks", task_claims.len());
                 for v in task_claims {
-                    let task_claim: TaskClaimJson = serde_json::from_value(v.clone()).unwrap();
+                    let task_claim: TaskClaimJson = serde_json::from_value(v.clone())?;
                     self.available_capacity -= 1;
-                    self.tasks_tx.send(task_claim.into()).await.unwrap();
+                    self.tasks_tx.send(task_claim.into()).await?;
                 }
             }
         }

@@ -1,5 +1,11 @@
-//! Generic support for independent tokio Tasks that communicate via channels.  To avoid confusion
-//! with Taskcluster tasks, and in a nod to the "Communicating Sequntial Procesess" model.
+//! This module implements generic support for independent tokio Tasks that communicate via
+//! channels.  To avoid confusion with Taskcluster tasks, and in a nod to the "Communicating
+//! Sequntial Procesess" model, it uses the term "process" instead of "task".
+//!
+//! Every [`Process`] is constructed from a one-shot factory that defines initial conditions for
+//! the process, and once started can not be accessed directly.  Instead, whoever holds the
+//! [`Process`] can send commands to it, stop it, or wait for it to complete.  Any other
+//! communication channels should be arranged in advance via the factory.
 
 use anyhow::{anyhow, Context as AnyhowContext, Result};
 use async_trait::async_trait;
@@ -22,7 +28,7 @@ where
 {
     commands: Option<mpsc::Sender<CMD>>,
     #[pin]
-    join_handle: JoinHandle<()>,
+    join_handle: JoinHandle<Result<()>>,
 }
 
 impl<CMD> Process<CMD>
@@ -54,12 +60,11 @@ where
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         match self.project().join_handle.poll(cx) {
             Poll::Pending => Poll::Pending,
-            Poll::Ready(r) => Poll::Ready(r.context("process panicked")),
+            Poll::Ready(Err(e)) => Poll::Ready(Err(e).context("Process panicked")),
+            Poll::Ready(Ok(r)) => Poll::Ready(r),
         }
     }
 }
-
-// TODO: support broadcast susbcriptions, too
 
 /// A ProcessFactory defines the starting conditions for a process, and exposes a `start` method
 /// to initiate the process itself.
@@ -75,23 +80,18 @@ pub trait ProcessFactory {
         Self: 'static + Send + Sized,
     {
         let (cmd_tx, cmd_rx) = mpsc::channel(10);
-        let join_handle = tokio::spawn(async move {
-            self.run(cmd_rx).await;
-        });
+        let join_handle = tokio::spawn(async move { self.run(cmd_rx).await });
         Process {
             commands: Some(cmd_tx),
             join_handle,
         }
     }
 
-    // TODO: let this return a Result, since waiting already returns a result
-    /// Implementation of the process.  This will typically loop receiving commands and taking
-    /// any other actions required of the process.  The process should stop when the sender is
-    /// drpoped.
-    async fn run(self, commands: mpsc::Receiver<Self::Command>);
+    /// Implementation of the process.  This will typically loop receiving commands and taking any
+    /// other actions required of the process.  The process should stop gracefully when the sender
+    /// is dropped (that is, `commands.recv()` returns None).
+    async fn run(self, commands: mpsc::Receiver<Self::Command>) -> Result<()>;
 }
-
-// TODO: impl ProcessFactory for Fn with signature of run?
 
 /// A set of processes, which can be stopped and waited-for as a group.  New processes
 /// can be added, but processes are only removed when they are finished.
@@ -176,7 +176,7 @@ mod test {
         impl ProcessFactory for Factory {
             type Command = FooCommand;
 
-            async fn run(self, mut commands: mpsc::Receiver<Self::Command>) {
+            async fn run(self, mut commands: mpsc::Receiver<Self::Command>) -> Result<()> {
                 loop {
                     if let Some(_) = commands.recv().await {
                         self.foos.fetch_add(1, Ordering::SeqCst);
@@ -184,6 +184,8 @@ mod test {
                         break;
                     }
                 }
+
+                Ok(())
             }
         }
 
@@ -222,6 +224,23 @@ mod test {
     }
 
     #[tokio::test]
+    async fn process_error() {
+        struct Factory;
+
+        #[async_trait]
+        impl ProcessFactory for Factory {
+            type Command = ();
+
+            async fn run(self, _commands: mpsc::Receiver<Self::Command>) -> Result<()> {
+                anyhow::bail!("uhoh!");
+            }
+        }
+
+        let process = Factory.start();
+        assert!(process.await.is_err());
+    }
+
+    #[tokio::test]
     async fn process_panic() {
         struct Factory;
 
@@ -229,7 +248,7 @@ mod test {
         impl ProcessFactory for Factory {
             type Command = ();
 
-            async fn run(self, _commands: mpsc::Receiver<Self::Command>) {
+            async fn run(self, _commands: mpsc::Receiver<Self::Command>) -> Result<()> {
                 panic!("uhoh!");
             }
         }
@@ -248,10 +267,11 @@ mod test {
         impl ProcessFactory for Factory {
             type Command = ();
 
-            async fn run(self, _commands: mpsc::Receiver<Self::Command>) {
+            async fn run(self, _commands: mpsc::Receiver<Self::Command>) -> Result<()> {
                 // task just pauses for long enough to schedule other stuff
                 tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
                 dbg!(self.id);
+                Ok(())
             }
         }
 
@@ -291,10 +311,11 @@ mod test {
         impl ProcessFactory for Factory {
             type Command = ();
 
-            async fn run(self, _commands: mpsc::Receiver<Self::Command>) {
+            async fn run(self, _commands: mpsc::Receiver<Self::Command>) -> Result<()> {
                 // task just pauses for long enough to schedule other stuff
                 tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
                 self.counter.fetch_add(1, Ordering::SeqCst);
+                Ok(())
             }
         }
 
