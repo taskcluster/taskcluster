@@ -1,15 +1,28 @@
 //! Generic support for independent tokio Tasks that communicate via channels.  To avoid confusion
 //! with Taskcluster tasks, and in a nod to the "Communicating Sequntial Procesess" model.
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context as AnyhowContext, Result};
 use async_trait::async_trait;
+use futures::future::select_all;
+use pin_project::pin_project;
+use std::pin::Pin;
+use std::task::{Context, Poll};
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 
 /// A Process represents a running process, to which messages can be sent to control its behavior.
-pub struct Process<CMD> {
+///
+/// ## Process Completion
+///
+/// A Process acts much like a JoinHandle, and can be awaited to wait for its completion.
+#[pin_project]
+pub struct Process<CMD>
+where
+    CMD: 'static + Sync + Send + std::fmt::Debug,
+{
     commands: Option<mpsc::Sender<CMD>>,
-    async_task: JoinHandle<()>,
+    #[pin]
+    join_handle: JoinHandle<()>,
 }
 
 impl<CMD> Process<CMD>
@@ -31,11 +44,18 @@ where
         self.commands = None;
         Ok(())
     }
+}
 
-    /// Wait for this process to complete.
-    // TODO: &mut self, wait for a stopped message on a oneshot channel, etc.
-    pub async fn wait(self) -> Result<()> {
-        Ok(self.async_task.await?)
+impl<CMD> std::future::Future for Process<CMD>
+where
+    CMD: 'static + Sync + Send + std::fmt::Debug,
+{
+    type Output = Result<()>;
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        match self.project().join_handle.poll(cx) {
+            Poll::Pending => Poll::Pending,
+            Poll::Ready(r) => Poll::Ready(r.context("process panicked")),
+        }
     }
 }
 
@@ -45,7 +65,7 @@ where
 /// to initiate the process itself.
 #[async_trait]
 pub trait ProcessFactory {
-    type Command: 'static + Send;
+    type Command: 'static + Sync + Send + std::fmt::Debug;
 
     /// Start the process. This takes ownership of self, making self a good spot to put any
     /// initial configuration for the process.  The returned value represents the running
@@ -54,13 +74,13 @@ pub trait ProcessFactory {
     where
         Self: 'static + Send + Sized,
     {
-        let (tx, rx) = mpsc::channel(10);
-        let async_task = tokio::spawn(async move {
-            self.run(rx).await;
+        let (cmd_tx, cmd_rx) = mpsc::channel(10);
+        let join_handle = tokio::spawn(async move {
+            self.run(cmd_rx).await;
         });
         Process {
-            commands: Some(tx),
-            async_task,
+            commands: Some(cmd_tx),
+            join_handle,
         }
     }
 
@@ -70,29 +90,227 @@ pub trait ProcessFactory {
     async fn run(self, commands: mpsc::Receiver<Self::Command>);
 }
 
+// TODO: impl ProcessFactory for Fn with signature of run?
+
+/// A set of processes, which can be stopped and waited-for as a group.  New processes
+/// can be added, but processes are only removed when they are finished.
+pub struct ProcessSet<CMD>
+where
+    CMD: 'static + Sync + Send + std::fmt::Debug,
+{
+    procs: Vec<Process<CMD>>,
+}
+
+impl<CMD> ProcessSet<CMD>
+where
+    CMD: 'static + Sync + Send + std::fmt::Debug,
+{
+    /// Create a new ProcessSet with zero processes.
+    pub fn new() -> Self {
+        ProcessSet { procs: vec![] }
+    }
+
+    /// Add a process to this process set
+    pub fn add(&mut self, proc: Process<CMD>) {
+        self.procs.push(proc);
+    }
+
+    /// Get the number of proceses in this process set.  Note that this may
+    /// include some processes which have completed but which have not yet
+    /// been consumed by `wait()`.
+    pub fn len(&self) -> usize {
+        self.procs.len()
+    }
+
+    /// Iterate over the processes in this process set, mutably.
+    pub fn iter(&mut self) -> std::slice::IterMut<'_, Process<CMD>> {
+        self.procs.iter_mut()
+    }
+
+    /// Stop all processes in this process set
+    pub async fn stop(&mut self) -> Result<()> {
+        for proc in self.procs.iter_mut() {
+            proc.stop().await?;
+        }
+        Ok(())
+    }
+
+    /// Wait for a process in this set to exit.  On return, the process set
+    /// is one process smaller.  If called with no processes, this will wait
+    /// forever.  Paniced processes result in an error return.
+    pub async fn wait(&mut self) -> Result<()> {
+        if self.len() == 0 {
+            return std::future::pending().await;
+        }
+
+        let (res, _, rest) = select_all(self.procs.drain(..)).await;
+        self.procs = rest;
+        res
+    }
+
+    /// Wait for all contained processes to exit.
+    pub async fn wait_all(&mut self) -> Result<()> {
+        while self.len() > 0 {
+            self.wait().await?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::sync::atomic::{AtomicU32, Ordering};
+    use std::sync::Arc;
 
     #[tokio::test]
-    async fn start_and_stop() {
+    async fn start_and_command_and_stop() {
         #[derive(Debug)]
-        struct StopCommand;
+        struct FooCommand;
+        struct Factory {
+            foos: Arc<AtomicU32>,
+        };
+
+        #[async_trait]
+        impl ProcessFactory for Factory {
+            type Command = FooCommand;
+
+            async fn run(self, mut commands: mpsc::Receiver<Self::Command>) {
+                loop {
+                    if let Some(_) = commands.recv().await {
+                        self.foos.fetch_add(1, Ordering::SeqCst);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+
+        let foos = Arc::new(AtomicU32::new(0));
+        let factory = Factory { foos: foos.clone() };
+        let mut process = factory.start();
+
+        // wait a few milliseconds, demonstrating that we can select and drop
+        // the wait() call
+        tokio::select! {
+            _ = (&mut process) => { panic!("process stopped early"); },
+            _ = tokio::time::sleep(tokio::time::Duration::from_millis(5)) => {},
+        };
+
+        assert_eq!(foos.load(Ordering::SeqCst), 0u32);
+
+        process.command(FooCommand).await.unwrap();
+
+        tokio::select! {
+            _ = (&mut process) => { panic!("process stopped early"); },
+            _ = tokio::time::sleep(tokio::time::Duration::from_millis(5)) => {},
+        };
+
+        assert_eq!(foos.load(Ordering::SeqCst), 1u32);
+
+        process.stop().await.unwrap();
+
+        // this time, wait should resolve
+        tokio::select! {
+            _ = (&mut process) => { },
+            // 100ms here to allow time for message proapagation
+            _ = tokio::time::sleep(tokio::time::Duration::from_millis(100)) => { panic!("wait did not resolve"); },
+        };
+
+        assert_eq!(foos.load(Ordering::SeqCst), 1u32);
+    }
+
+    #[tokio::test]
+    async fn process_panic() {
         struct Factory;
 
         #[async_trait]
         impl ProcessFactory for Factory {
-            type Command = StopCommand;
+            type Command = ();
 
-            async fn run(self, mut commands: mpsc::Receiver<Self::Command>) {
-                commands.recv().await;
+            async fn run(self, _commands: mpsc::Receiver<Self::Command>) {
+                panic!("uhoh!");
             }
         }
 
-        let factory = Factory;
-        let process = factory.start();
+        let process = Factory.start();
+        assert!(process.await.is_err());
+    }
 
-        process.command(StopCommand).await.unwrap();
-        process.wait().await.unwrap();
+    #[tokio::test]
+    async fn process_set() {
+        struct Factory {
+            id: u32,
+        };
+
+        #[async_trait]
+        impl ProcessFactory for Factory {
+            type Command = ();
+
+            async fn run(self, _commands: mpsc::Receiver<Self::Command>) {
+                // task just pauses for long enough to schedule other stuff
+                tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
+                dbg!(self.id);
+            }
+        }
+
+        let mut id = 0;
+        let mut processes = ProcessSet::new();
+
+        // create an initial task
+        processes.add(Factory { id }.start());
+        id += 1;
+
+        loop {
+            tokio::select! {
+                _ = processes.wait() => {
+                    if id < 200 {
+                        // for every finished process, add two more
+                        processes.add(Factory{ id }.start());
+                        id += 1;
+                        processes.add(Factory{ id }.start());
+                        id += 1;
+                    }
+                }
+            }
+
+            if processes.len() == 0 {
+                break;
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn process_set_wait_all() {
+        struct Factory {
+            counter: Arc<AtomicU32>,
+        };
+
+        #[async_trait]
+        impl ProcessFactory for Factory {
+            type Command = ();
+
+            async fn run(self, _commands: mpsc::Receiver<Self::Command>) {
+                // task just pauses for long enough to schedule other stuff
+                tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
+                self.counter.fetch_add(1, Ordering::SeqCst);
+            }
+        }
+
+        let mut processes = ProcessSet::new();
+
+        let counter = Arc::new(AtomicU32::new(0));
+        for _ in 0..100 {
+            processes.add(
+                Factory {
+                    counter: counter.clone(),
+                }
+                .start(),
+            );
+        }
+
+        processes.wait_all().await.unwrap();
+
+        assert_eq!(counter.load(Ordering::SeqCst), 100);
     }
 }

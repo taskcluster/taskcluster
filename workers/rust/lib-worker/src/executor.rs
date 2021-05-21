@@ -1,6 +1,7 @@
 use crate::claim::TaskClaim;
 use crate::process::Process;
 
+#[derive(Debug)]
 pub enum Command {
     // TODO: is this needed?
 }

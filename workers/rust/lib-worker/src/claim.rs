@@ -1,5 +1,5 @@
-use crate::executor::{self, Executor};
-use crate::process::{Process, ProcessFactory};
+use crate::executor::Executor;
+use crate::process::{ProcessFactory, ProcessSet};
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::Deserialize;
@@ -70,9 +70,7 @@ pub struct WorkClaimerConfig<E: Executor> {
 /// Initial state for a work claimer.
 pub struct WorkClaimer<E: Executor> {
     cfg: WorkClaimerConfig<E>,
-
-    /// Processes for running tasks
-    running: Vec<Process<executor::Command>>,
+    // TODO this may later have private fields?
 }
 
 // TODO: new from another struct so that caller isn't expected to set internal tracking fields
@@ -97,10 +95,7 @@ impl<E: Executor> ProcessFactory for WorkClaimer<E> {
 impl<E: Executor> WorkClaimer<E> {
     /// Create a new WorkClaimer based on the given configuration
     pub fn new(cfg: WorkClaimerConfig<E>) -> Self {
-        Self {
-            cfg,
-            running: vec![],
-        }
+        Self { cfg }
     }
 
     async fn claim_loop(mut self, mut commands: mpsc::Receiver<Command>) -> Result<()> {
@@ -108,24 +103,38 @@ impl<E: Executor> WorkClaimer<E> {
             ClientBuilder::new(&self.cfg.root_url).credentials(self.cfg.worker_creds.clone()),
         )?;
 
+        let mut running = ProcessSet::new();
+
         loop {
             println!("loop");
+            let num_running = running.len();
             tokio::select! {
                 // TODO: this gets interrupted on every message
-                _ = self.long_poll(&queue), if self.running.len() < self.cfg.capacity => {},
+                task_claims = self.long_poll(num_running, &queue), if num_running < self.cfg.capacity => {
+                    for task_claim in task_claims? {
+                        running.add(self.cfg.executor.start_task(task_claim));
+                    }
+                },
                 // ..or, did we get a command
                 None = commands.recv() => {
                     // TODO: stop gracefully by default?
+                    for proc in running.iter() {
+                        proc.stop().await?;
+                    }
+                    running.wait_all().await?;
                     return Ok(())
                 }
+                _ = running.wait(), if num_running > 0 => {
+                    // a process has completed, so continue around the loop
+                },
             }
         }
     }
 
     /// Call queue.claimWork if there is capacity for more tasks, or sleep for 30s.
-    async fn long_poll(&mut self, queue: &Queue) -> Result<()> {
+    async fn long_poll(&self, num_running: usize, queue: &Queue) -> Result<Vec<TaskClaim>> {
         let payload = json!({
-            "tasks": self.cfg.capacity - self.running.len(),
+            "tasks": self.cfg.capacity - num_running,
             "workerGroup": &self.cfg.worker_group,
             "workerId": &self.cfg.worker_id,
         });
@@ -133,13 +142,14 @@ impl<E: Executor> WorkClaimer<E> {
         let claims = queue.claimWork(&self.cfg.task_queue_id, &payload).await?;
         if let Some(task_claims) = claims.get("tasks").map(|tasks| tasks.as_array()).flatten() {
             println!("claimWork returned {} tasks", task_claims.len());
-            for task_claim in task_claims {
-                let task_claim: TaskClaimJson = serde_json::from_value(task_claim.clone())?;
-                let task_claim: TaskClaim = task_claim.into();
-                self.running.push(self.cfg.executor.start_task(task_claim));
-            }
+            return Ok(task_claims
+                .iter()
+                .map(|v| serde_json::from_value::<TaskClaimJson>(v.clone()))
+                .map(|tcj| tcj.map(|tcj| TaskClaim::from(tcj)))
+                .collect::<std::result::Result<Vec<_>, serde_json::Error>>()?);
         }
+        println!("claimWork returned nothing");
 
-        Ok(())
+        Ok(vec![])
     }
 }

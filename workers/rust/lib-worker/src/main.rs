@@ -78,10 +78,7 @@ async fn main() {
         },
     });
     let mut wc = wc.start();
-    tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
-    println!("stopping");
-    wc.stop().await.unwrap();
-    wc.wait().await.unwrap();
+    wc.await.unwrap();
     println!("exiting");
 }
 
