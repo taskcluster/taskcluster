@@ -144,8 +144,8 @@ where
             return std::future::pending().await;
         }
 
-        let (res, _, rest) = select_all(self.procs.drain(..)).await;
-        self.procs = rest;
+        let (res, i, _) = select_all(self.procs.iter_mut()).await;
+        self.procs.swap_remove(i);
         res
     }
 
@@ -299,6 +299,44 @@ mod test {
                 break;
             }
         }
+    }
+
+    /// Test that ProcessSet::wait can be dropped without dropping all of the processes
+    #[tokio::test]
+    async fn process_set_wait_dropped() {
+        struct Factory;
+
+        #[async_trait]
+        impl ProcessFactory for Factory {
+            type Command = ();
+
+            async fn run(self, _commands: mpsc::Receiver<Self::Command>) -> Result<()> {
+                // 50 millis is long enough for the first select to finish, dropping
+                // the `processes.wait()` Future
+                tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+                Ok(())
+            }
+        }
+
+        let mut processes = ProcessSet::new();
+
+        // create some initial tasks
+        processes.add(Factory.start());
+        processes.add(Factory.start());
+
+        // nothing is ready yet, so this should fall through, and in the process
+        // drop the processes.await() future
+        tokio::select! {
+            biased;
+            _ = processes.wait() => {panic!("should not have gotten here") }
+            _ = std::future::ready(()) => {},
+        }
+
+        assert_eq!(processes.len(), 2);
+        processes.wait().await.unwrap();
+        assert_eq!(processes.len(), 1);
+        processes.wait().await.unwrap();
+        assert_eq!(processes.len(), 0);
     }
 
     #[tokio::test]
