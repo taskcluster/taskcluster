@@ -48,9 +48,10 @@ impl NullExecution {
         let queue = Queue::new(
             ClientBuilder::new(&self.root_url).credentials(self.task_claim.credentials.clone()),
         )?;
-        println!(
-            "execute {:?} / {}",
-            self.task_claim.task_id, self.task_claim.run_id
+        log::info!(
+            "executing null {:?} / {}",
+            self.task_claim.task_id,
+            self.task_claim.run_id
         );
         dbg!(&self.task_claim.task.get("payload").unwrap());
         queue
@@ -65,6 +66,8 @@ impl NullExecution {
 
 #[tokio::main]
 async fn main() {
+    env_logger::init();
+
     let root_url = "https://dustin.taskcluster-dev.net";
     let wc = WorkClaimer::new(WorkClaimerConfig {
         capacity: 4,
@@ -79,7 +82,5 @@ async fn main() {
     });
     let wc = wc.start();
     wc.await.unwrap();
-    println!("exiting");
+    log::info!("exiting");
 }
-
-// TODO: logging

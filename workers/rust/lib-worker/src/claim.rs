@@ -114,10 +114,10 @@ impl<E: Executor> WorkClaimer<E> {
         let mut running = ProcessSet::new();
 
         loop {
-            println!("loop");
             let num_running = running.len();
             tokio::select! {
                 Some(task_claim) = tasks_rx.recv(), if num_running < self.cfg.capacity => {
+                    log::info!("Starting task {} run {}", &task_claim.task_id, task_claim.run_id);
                     running.add(self.cfg.executor.start_task(task_claim));
                 },
                 None = commands.recv() => {
@@ -180,7 +180,6 @@ impl ProcessFactory for ClaimWorkLongPoll {
         loop {
             // first, read as much as we can from the channel, blocking if there's no capacity
             loop {
-                println!("waiting for messages");
                 tokio::select! {
                     biased;
                     cmd = commands.recv() => {
@@ -200,20 +199,21 @@ impl ProcessFactory for ClaimWorkLongPoll {
                 "workerGroup": &self.worker_group,
                 "workerId": &self.worker_id,
             });
-            println!("calling claimWork");
+            log::debug!(
+                "calling queue.claimWork for {} tasks",
+                self.available_capacity
+            );
             let claims = queue
                 .claimWork(&self.task_queue_id, &payload)
                 .await
                 .unwrap();
             if let Some(task_claims) = claims.get("tasks").map(|tasks| tasks.as_array()).flatten() {
-                println!("claimWork returned {} tasks", task_claims.len());
+                log::trace!("claimWork returned {} tasks", task_claims.len());
                 for v in task_claims {
                     let task_claim: TaskClaimJson = serde_json::from_value(v.clone()).unwrap();
                     self.available_capacity -= 1;
                     self.tasks_tx.send(task_claim.into()).await.unwrap();
                 }
-            } else {
-                println!("claimWork returned nothing");
             }
         }
     }
