@@ -13,4 +13,4 @@ serde_json = "*"
 serde = "*"
 tokio = { version = "*", features = [ "rt", "rt-multi-thread", "macros", "time", "sync" ] }
 futures = "*"
-pin-project =  "*"
+pin-project = "*"

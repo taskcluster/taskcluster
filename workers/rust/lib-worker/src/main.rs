@@ -67,7 +67,7 @@ impl NullExecution {
 async fn main() {
     let root_url = "https://dustin.taskcluster-dev.net";
     let wc = WorkClaimer::new(WorkClaimerConfig {
-        capacity: 1,
+        capacity: 4,
         root_url: root_url.to_owned(),
         worker_creds: Credentials::from_env().unwrap(),
         task_queue_id: "aa/bb".to_owned(),
@@ -77,7 +77,7 @@ async fn main() {
             root_url: root_url.to_owned(),
         },
     });
-    let mut wc = wc.start();
+    let wc = wc.start();
     wc.await.unwrap();
     println!("exiting");
 }

@@ -84,6 +84,7 @@ pub trait ProcessFactory {
         }
     }
 
+    // TODO: let this return a Result, since waiting already returns a result
     /// Implementation of the process.  This will typically loop receiving commands and taking
     /// any other actions required of the process.  The process should stop when the sender is
     /// drpoped.
