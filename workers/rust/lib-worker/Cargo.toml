@@ -14,5 +14,6 @@ serde = "*"
 tokio = { version = "*", features = [ "rt", "rt-multi-thread", "macros", "time", "sync" ] }
 futures = "*"
 pin-project = "*"
-env_logger = "^0.8.3"
-log = "^0.4.14"
+slog = "2"
+slog-term = "2"
+slog-async = "2"

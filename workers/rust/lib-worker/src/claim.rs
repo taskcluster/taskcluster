@@ -4,6 +4,7 @@ use anyhow::{bail, Context as AnyhowContext, Result};
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::json;
+use slog::{debug, error, info, o, trace, Logger};
 use taskcluster::{ClientBuilder, Credentials, Queue};
 use tokio::sync::mpsc;
 
@@ -45,8 +46,8 @@ impl From<TaskClaimJson> for TaskClaim {
 }
 
 pub struct WorkClaimerConfig<E: Executor> {
-    /// The capacity for this worker (total number of tasks it can run in parallel)
-    pub capacity: usize,
+    /// The logger for this process
+    pub logger: Logger,
 
     /// The root URL for the deployment against which this worker is running
     pub root_url: String,
@@ -63,17 +64,43 @@ pub struct WorkClaimerConfig<E: Executor> {
     /// The `workerId` identifier for this worker
     pub worker_id: String,
 
+    /// The capacity for this worker (total number of tasks it can run in parallel)
+    pub capacity: usize,
+
     /// An executor to execute the claimed tasks
     pub executor: E,
 }
 
 /// Initial state for a work claimer.
 pub struct WorkClaimer<E: Executor> {
-    cfg: WorkClaimerConfig<E>,
-    // TODO this may later have private fields?
+    logger: Logger,
+    root_url: String,
+    worker_creds: Credentials,
+    task_queue_id: String,
+    worker_group: String,
+    worker_id: String,
+    capacity: usize,
+    executor: E,
 }
 
-// TODO: new from another struct so that caller isn't expected to set internal tracking fields
+impl<E: Executor> WorkClaimer<E> {
+    /// Create a new WorkClaimer based on the given configuration
+    pub fn new(cfg: WorkClaimerConfig<E>) -> Self {
+        Self {
+            logger: cfg.logger.new(o!(
+                "worker_group" => cfg.worker_group.clone(),
+                "worker_id" => cfg.worker_id.clone(),
+                "task_queue_id" => cfg.task_queue_id.clone())),
+            root_url: cfg.root_url,
+            worker_creds: cfg.worker_creds,
+            task_queue_id: cfg.task_queue_id,
+            worker_group: cfg.worker_group,
+            worker_id: cfg.worker_id,
+            capacity: cfg.capacity,
+            executor: cfg.executor,
+        }
+    }
+}
 
 #[derive(Debug)]
 pub enum Command {
@@ -86,15 +113,16 @@ pub enum Command {
 impl<E: Executor> ProcessFactory for WorkClaimer<E> {
     type Command = Command;
     async fn run(mut self, mut commands: mpsc::Receiver<Self::Command>) -> Result<()> {
-        let (tasks_tx, mut tasks_rx) = mpsc::channel(self.cfg.capacity);
+        let (tasks_tx, mut tasks_rx) = mpsc::channel(self.capacity);
         let mut long_poller = ClaimWorkLongPoll {
+            logger: self.logger.clone(),
             tasks_tx,
-            available_capacity: self.cfg.capacity,
-            root_url: self.cfg.root_url,
-            worker_creds: self.cfg.worker_creds,
-            task_queue_id: self.cfg.task_queue_id,
-            worker_group: self.cfg.worker_group,
-            worker_id: self.cfg.worker_id,
+            available_capacity: self.capacity,
+            root_url: self.root_url,
+            worker_creds: self.worker_creds,
+            task_queue_id: self.task_queue_id,
+            worker_group: self.worker_group,
+            worker_id: self.worker_id,
         }
         .start();
 
@@ -103,9 +131,10 @@ impl<E: Executor> ProcessFactory for WorkClaimer<E> {
         loop {
             let num_running = running.len();
             tokio::select! {
-                Some(task_claim) = tasks_rx.recv(), if num_running < self.cfg.capacity => {
-                    log::info!("Starting task {} run {}", &task_claim.task_id, task_claim.run_id);
-                    running.add(self.cfg.executor.start_task(task_claim));
+                Some(task_claim) = tasks_rx.recv(), if num_running < self.capacity => {
+                    let logger = self.logger.new(o!("task_id" => task_claim.task_id.clone(), "run_id" => task_claim.run_id));
+                    info!(logger, "Starting task");
+                    running.add(self.executor.start_task(logger, task_claim));
                 },
                 None = commands.recv() => {
                     long_poller.stop().await?;
@@ -125,10 +154,11 @@ impl<E: Executor> ProcessFactory for WorkClaimer<E> {
                 res = running.wait(), if num_running > 0 => {
                     // a running task process has completed, so we can poll for one
                     // more task
+                    debug!(self.logger, "process complete -> sending increment"; "num-running" => running.len());
                     long_poller.command(LongPollCommand::IncrementCapacity).await?;
                     // if the execution failed, log that and move on.
                     if let Err(e) = res.context("Internal task execution error") {
-                        log::error!("{:?}", e);
+                        error!(self.logger, "{:?}", e);
                     }
                 },
             }
@@ -136,16 +166,12 @@ impl<E: Executor> ProcessFactory for WorkClaimer<E> {
     }
 }
 
-impl<E: Executor> WorkClaimer<E> {
-    /// Create a new WorkClaimer based on the given configuration
-    pub fn new(cfg: WorkClaimerConfig<E>) -> Self {
-        Self { cfg }
-    }
-}
-
 /// A process to manage the long-polling calls to queue.claimWork, minimizing the number of times
 /// we interrupt the connection.
 struct ClaimWorkLongPoll {
+    /// Logger for this instance
+    logger: Logger,
+
     /// Channel over which new tasks are sent
     tasks_tx: mpsc::Sender<TaskClaim>,
 
@@ -181,7 +207,10 @@ impl ProcessFactory for ClaimWorkLongPoll {
                     biased;
                     cmd = commands.recv() => {
                         match cmd {
-                            Some(LongPollCommand::IncrementCapacity) => self.available_capacity += 1,
+                            Some(LongPollCommand::IncrementCapacity) => {
+                                self.available_capacity += 1;
+                                debug!(self.logger, "got IncrementCapacity"; "available_capacity" => self.available_capacity);
+                            }
                             // command channel has closed -> time to exit
                             None => return Ok(()),
                         }
@@ -197,16 +226,21 @@ impl ProcessFactory for ClaimWorkLongPoll {
                 "workerGroup": &self.worker_group,
                 "workerId": &self.worker_id,
             });
-            log::debug!(
-                "calling queue.claimWork for {} tasks",
-                self.available_capacity
+            debug!(
+                self.logger,
+                "calling queue.claimWork for {} tasks", self.available_capacity
             );
             let claims = queue.claimWork(&self.task_queue_id, &payload).await?;
             if let Some(task_claims) = claims.get("tasks").map(|tasks| tasks.as_array()).flatten() {
-                log::trace!("claimWork returned {} tasks", task_claims.len());
+                trace!(
+                    self.logger,
+                    "claimWork returned {} tasks",
+                    task_claims.len()
+                );
                 for v in task_claims {
                     let task_claim: TaskClaimJson = serde_json::from_value(v.clone())?;
                     self.available_capacity -= 1;
+                    debug!(self.logger, "sent a task"; "available_capacity" => self.available_capacity);
                     self.tasks_tx.send(task_claim.into()).await?;
                 }
             }
