@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use slog::{info, o, Drain, Logger};
 use taskcluster::{ClientBuilder, Credentials, Queue};
 use taskcluster_lib_worker::claim::{TaskClaim, WorkClaimer, WorkClaimerConfig};
-use taskcluster_lib_worker::executor::{self, Executor};
+use taskcluster_lib_worker::executor::{Executor, TaskCommand};
 use taskcluster_lib_worker::process::{Process, ProcessFactory};
 use tokio::sync::mpsc;
 use tokio::time;
@@ -13,7 +13,7 @@ struct NullExecutor {
 }
 
 impl Executor for NullExecutor {
-    fn start_task(&mut self, logger: Logger, task_claim: TaskClaim) -> Process<executor::Command> {
+    fn start_task(&mut self, logger: Logger, task_claim: TaskClaim) -> Process<TaskCommand> {
         let execution = NullExecution {
             logger,
             root_url: self.root_url.clone(),
@@ -31,14 +31,19 @@ struct NullExecution {
 
 #[async_trait]
 impl ProcessFactory for NullExecution {
-    type Command = executor::Command;
+    type Command = TaskCommand;
 
     async fn run(self, mut commands: mpsc::Receiver<Self::Command>) -> Result<()> {
         tokio::select! {
             res = self.run_task() => { res }
-            // on stop, return immediately (dropping the task execution)
-            // TODO: mark as worker-shutdown?
-            None = commands.recv() => { Ok(()) },
+            cmd = commands.recv() => {
+                match cmd {
+                    // on a stop request, bail out (dropping the task execution)
+                    // TODO: mark task as worker-stopped
+                    None => return Ok(()),
+                    Some(_) => todo!(),
+                }
+            },
         }
     }
 }

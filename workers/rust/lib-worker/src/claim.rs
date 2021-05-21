@@ -104,9 +104,7 @@ impl<E: Executor> WorkClaimer<E> {
 
 #[derive(Debug)]
 pub enum Command {
-    // TODO: task complete
-// TODO: graceful
-// TODO: update worker creds
+    // TODO: GracefulStop, Credentials(new_worker_creds)
 }
 
 #[async_trait]
@@ -134,7 +132,7 @@ impl<E: Executor> ProcessFactory for WorkClaimer<E> {
                 Some(task_claim) = tasks_rx.recv(), if num_running < self.capacity => {
                     let logger = self.logger.new(o!("task_id" => task_claim.task_id.clone(), "run_id" => task_claim.run_id));
                     info!(logger, "Starting task");
-                    running.add(self.executor.start_task(logger, task_claim));
+                    running.add(self.executor.execute(logger, task_claim));
                 },
                 None = commands.recv() => {
                     long_poller.stop().await?;
