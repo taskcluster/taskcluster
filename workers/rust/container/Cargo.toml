@@ -1,0 +1,18 @@
+[package]
+name = "container-worker"
+version = "0.1.0"
+authors = ["Dustin J. Mitchell <dustin@mozilla.com>"]
+edition = "2018"
+
+[dependencies]
+# temporarily use the local copy until #4890 lands
+taskcluster = { path = "../../../clients/client-rust/client" }
+taskcluster-lib-worker = { path = "../lib-worker" }
+anyhow = "1"
+async-trait = "0.1"
+serde_json = "*"
+serde = "*"
+tokio = { version = "*", features = [ "rt", "rt-multi-thread", "macros", "time", "sync" ] }
+slog = "2"
+slog-term = "2"
+slog-async = "2"

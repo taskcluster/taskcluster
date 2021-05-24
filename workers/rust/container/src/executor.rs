@@ -1,20 +1,27 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use slog::{info, o, Drain, Logger};
-use taskcluster::{ClientBuilder, Credentials, Queue};
-use taskcluster_lib_worker::claim::{TaskClaim, WorkClaimer, WorkClaimerConfig};
+use slog::{info, Logger};
+use taskcluster::{ClientBuilder, Queue};
+use taskcluster_lib_worker::claim::TaskClaim;
 use taskcluster_lib_worker::executor::{Executor, TaskCommand};
 use taskcluster_lib_worker::process::{Process, ProcessFactory};
 use tokio::sync::mpsc;
 use tokio::time;
 
-struct NullExecutor {
+/// An executor for container-worker tasks.
+pub(crate) struct ContainerExecutor {
     root_url: String,
 }
 
-impl Executor for NullExecutor {
+impl ContainerExecutor {
+    pub(crate) fn new(root_url: String) -> Self {
+        Self { root_url }
+    }
+}
+
+impl Executor for ContainerExecutor {
     fn start_task(&mut self, logger: Logger, task_claim: TaskClaim) -> Process<TaskCommand> {
-        let execution = NullExecution {
+        let execution = ContainerExecution {
             logger,
             root_url: self.root_url.clone(),
             task_claim,
@@ -23,14 +30,15 @@ impl Executor for NullExecutor {
     }
 }
 
-struct NullExecution {
+/// An execution of a container-worker task.
+struct ContainerExecution {
     logger: Logger,
     root_url: String,
     task_claim: TaskClaim,
 }
 
 #[async_trait]
-impl ProcessFactory for NullExecution {
+impl ProcessFactory for ContainerExecution {
     type Command = TaskCommand;
 
     async fn run(self, mut commands: mpsc::Receiver<Self::Command>) -> Result<()> {
@@ -48,7 +56,7 @@ impl ProcessFactory for NullExecution {
     }
 }
 
-impl NullExecution {
+impl ContainerExecution {
     async fn run_task(self) -> Result<()> {
         let queue = Queue::new(
             ClientBuilder::new(&self.root_url).credentials(self.task_claim.credentials.clone()),
@@ -64,31 +72,4 @@ impl NullExecution {
             .await?;
         Ok(())
     }
-}
-
-#[tokio::main]
-async fn main() {
-    let decorator = slog_term::TermDecorator::new().build();
-    let drain = slog_term::FullFormat::new(decorator).build().fuse();
-    let drain = slog_async::Async::new(drain).build().fuse();
-
-    let logger = Logger::root(drain, o!());
-
-    info!(logger, "Starting Worker");
-
-    let root_url = "https://dustin.taskcluster-dev.net";
-    let wc = WorkClaimer::new(WorkClaimerConfig {
-        logger: logger.clone(),
-        root_url: root_url.to_owned(),
-        worker_creds: Credentials::from_env().unwrap(),
-        task_queue_id: "aa/bb".to_owned(),
-        worker_group: "rust".to_owned(),
-        worker_id: "worker".to_owned(),
-        capacity: 4,
-        executor: NullExecutor {
-            root_url: root_url.to_owned(),
-        },
-    });
-    let wc = wc.start();
-    wc.await.unwrap();
 }
