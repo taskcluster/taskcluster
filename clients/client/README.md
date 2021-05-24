@@ -378,6 +378,7 @@ await taskcluster.upload({
   projectId,
   name,
   expires,
+  uploadId, // optional; will be generated randomly if omitted
 
   // metadata about the data being uploaded
   contentType,

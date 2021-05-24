@@ -345,17 +345,19 @@ NOTE: There is an helper function to upload `s3` artifacts, `taskcluster.helper.
 
 To upload, use any of the following:
 
-* `await taskcluster.aio.upload.uploadFromBuf(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., data=..)` - asynchronously upload data from a buffer full of bytes.
-* `await taskcluster.aio.upload.uploadFromFile(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., file=..)` - asynchronously upload data from a standard Python file.
+* `await taskcluster.aio.upload.uploadFromBuf(projectId=.., name=.., contentType=.., contentLength=.., uploadId=.., expires=.., maxRetries=.., objectService=.., data=..)` - asynchronously upload data from a buffer full of bytes.
+* `await taskcluster.aio.upload.uploadFromFile(projectId=.., name=.., contentType=.., contentLength=.., uploadId=.., expires=.., maxRetries=.., objectService=.., file=..)` - asynchronously upload data from a standard Python file.
   Note that this is [probably what you want](https://github.com/python/asyncio/wiki/ThirdParty#filesystem), even in an async context.
-* `await taskcluster.aio.upload(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., readerFactory=..)` - asynchronously upload data from an async reader factory.
-* `taskcluster.upload.uploadFromBuf(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., data=..)` - upload data from a buffer full of bytes.
-* `taskcluster.upload.uploadFromFile(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., file=..)` - upload data from a standard Python file.
-* `taskcluster.upload(projectId=.., name=.., contentType=.., contentLength=.., expires=.., maxRetries=.., objectService=.., readerFactory=..)` - upload data from a sync reader factory.
+* `await taskcluster.aio.upload(projectId=.., name=.., contentType=.., contentLength=.., expires=.., uploadId=.., maxRetries=.., objectService=.., readerFactory=..)` - asynchronously upload data from an async reader factory.
+* `taskcluster.upload.uploadFromBuf(projectId=.., name=.., contentType=.., contentLength=.., expires=.., uploadId=.., maxRetries=.., objectService=.., data=..)` - upload data from a buffer full of bytes.
+* `taskcluster.upload.uploadFromFile(projectId=.., name=.., contentType=.., contentLength=.., expires=.., uploadId=.., maxRetries=.., objectService=.., file=..)` - upload data from a standard Python file.
+* `taskcluster.upload(projectId=.., name=.., contentType=.., contentLength=.., expires=.., uploadId=.., maxRetries=.., objectService=.., readerFactory=..)` - upload data from a sync reader factory.
 
 A "reader" is an object with a `read(max_size=-1)` method which reads and returns a chunk of 1 .. `max_size` bytes, or returns an empty string at EOF, async for the async functions and sync for the remainder.
 A "reader factory" is an async callable which returns a fresh reader, ready to read the first byte of the object.
 When uploads are retried, the reader factory may be called more than once.
+
+The `uploadId` parameter may be omitted, in which case a new slugId will be generated.
 
 ### Downloads
 

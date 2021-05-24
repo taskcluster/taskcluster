@@ -12,7 +12,6 @@ import (
 
 	"github.com/cenkalti/backoff/v3"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v43/clients/client-go"
 )
 
@@ -21,17 +20,18 @@ const (
 )
 
 // UploadFromBuf is a convenience method to publish an Object to the Object
-// Service with content buf and given projectID, name, contentType and expires.
-func (object *Object) UploadFromBuf(projectID string, name string, contentType string, expires time.Time, buf []byte) (err error) {
+// Service with content buf and given projectID, name, contentType, expires,
+// and uploadID.
+func (object *Object) UploadFromBuf(projectID string, name string, contentType string, expires time.Time, uploadID string, buf []byte) (err error) {
 	readSeeker := bytes.NewReader(buf)
 	contentLength := int64(len(buf))
-	return object.UploadFromReadSeeker(projectID, name, contentType, contentLength, expires, readSeeker)
+	return object.UploadFromReadSeeker(projectID, name, contentType, contentLength, expires, uploadID, readSeeker)
 }
 
 // UploadFromFile is a convenience method to publish an Object to the Object
-// Server from file with path filepath and given projectID, name, contentType
-// and expires.
-func (object *Object) UploadFromFile(projectID string, name string, contentType string, expires time.Time, filepath string) (err error) {
+// Server from file with path filepath and given projectID, name, contentType,
+// expires, and uploadID.
+func (object *Object) UploadFromFile(projectID string, name string, contentType string, expires time.Time, uploadID string, filepath string) (err error) {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return err
@@ -42,18 +42,17 @@ func (object *Object) UploadFromFile(projectID string, name string, contentType 
 		return err
 	}
 	contentLength := fileInfo.Size()
-	return object.UploadFromReadSeeker(projectID, name, contentType, contentLength, expires, file)
+	return object.UploadFromReadSeeker(projectID, name, contentType, contentLength, expires, uploadID, file)
 }
 
 // UploadFromReadSeeker publishes an Object to the Object Service, with given
-// name, projectID, contentType, contentLength and expiry, with the object
-// content read from readSeeker. The value of contentLength is not validated
-// prior to upload.
-func (object *Object) UploadFromReadSeeker(projectID string, name string, contentType string, contentLength int64, expires time.Time, readSeeker io.ReadSeeker) (err error) {
+// name, projectID, contentType, contentLength, expiry, and uploadID, with the
+// object content read from readSeeker. The value of contentLength is not
+// validated prior to upload.
+func (object *Object) UploadFromReadSeeker(projectID string, name string, contentType string, contentLength int64, expires time.Time, uploadID string, readSeeker io.ReadSeeker) (err error) {
 	// wrap the readSeeker so that it will capture hashes
 	hashingReadSeeker := newHashingReadSeeker(readSeeker)
 
-	uploadID := slugid.Nice()
 	proposedUploadMethods := ProposedUploadMethods{}
 
 	if contentLength < DataInlineMaxSize {

@@ -77,8 +77,11 @@ const upload = async ({
   delayFactor,
   randomizationFactor,
   maxDelay,
+  uploadId,
 }) => {
-  const uploadId = slugid();
+  if (!uploadId) {
+    uploadId = slugid();
+  }
 
   // set up to hash streams as we read them
   let hashStream;
