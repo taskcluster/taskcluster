@@ -1,4 +1,4 @@
-use crate::executor::Executor;
+use crate::executor::{ExecutionFactory, Executor, Payload};
 use crate::process::{ProcessFactory, ProcessSet};
 use crate::task::Task;
 use anyhow::{bail, Context as AnyhowContext, Result};
@@ -6,6 +6,8 @@ use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::json;
 use slog::{debug, error, info, o, Logger};
+use std::marker::PhantomData;
+use std::sync::Arc;
 use taskcluster::{ClientBuilder, Credentials, Queue};
 use tokio::sync::mpsc;
 
@@ -26,7 +28,7 @@ struct TaskClaimJson {
 
 /// Information about a single task as returned from `queue.claimWork`
 #[derive(Debug)]
-pub struct TaskClaim {
+pub(crate) struct TaskClaim {
     pub task_id: String,
     pub run_id: u32,
     /// The task definition
@@ -46,7 +48,7 @@ impl From<TaskClaimJson> for TaskClaim {
     }
 }
 
-pub struct WorkClaimerConfig<E: Executor> {
+pub struct WorkClaimerConfig<P: Payload, E: Executor<P>> {
     /// The logger for this process
     pub logger: Logger,
 
@@ -70,10 +72,14 @@ pub struct WorkClaimerConfig<E: Executor> {
 
     /// An executor to execute the claimed tasks
     pub executor: E,
+
+    // TODO: remove this from public API
+    /// The type o the payload the executor expects
+    pub payload_type: PhantomData<P>,
 }
 
 /// Initial state for a work claimer.
-pub struct WorkClaimer<E: Executor> {
+pub struct WorkClaimer<P: Payload, E: Executor<P>> {
     logger: Logger,
     root_url: String,
     worker_creds: Credentials,
@@ -81,12 +87,13 @@ pub struct WorkClaimer<E: Executor> {
     worker_group: String,
     worker_id: String,
     capacity: usize,
-    executor: E,
+    executor: Arc<E>,
+    payload_type: PhantomData<P>,
 }
 
-impl<E: Executor> WorkClaimer<E> {
+impl<P: Payload, E: Executor<P>> WorkClaimer<P, E> {
     /// Create a new WorkClaimer based on the given configuration
-    pub fn new(cfg: WorkClaimerConfig<E>) -> Self {
+    pub fn new(cfg: WorkClaimerConfig<P, E>) -> Self {
         Self {
             logger: cfg.logger.new(o!(
                 "worker_group" => cfg.worker_group.clone(),
@@ -98,7 +105,8 @@ impl<E: Executor> WorkClaimer<E> {
             worker_group: cfg.worker_group,
             worker_id: cfg.worker_id,
             capacity: cfg.capacity,
-            executor: cfg.executor,
+            executor: Arc::new(cfg.executor),
+            payload_type: cfg.payload_type,
         }
     }
 }
@@ -109,7 +117,7 @@ pub enum Command {
 }
 
 #[async_trait]
-impl<E: Executor> ProcessFactory for WorkClaimer<E> {
+impl<P: Payload, E: Clone + Executor<P>> ProcessFactory for WorkClaimer<P, E> {
     type Command = Command;
     async fn run(mut self, mut commands: mpsc::Receiver<Self::Command>) -> Result<()> {
         let (tasks_tx, mut tasks_rx) = mpsc::channel(self.capacity);
@@ -117,7 +125,7 @@ impl<E: Executor> ProcessFactory for WorkClaimer<E> {
             logger: self.logger.clone(),
             tasks_tx,
             available_capacity: self.capacity,
-            root_url: self.root_url,
+            root_url: self.root_url.clone(),
             worker_creds: self.worker_creds,
             task_queue_id: self.task_queue_id,
             worker_group: self.worker_group,
@@ -133,7 +141,8 @@ impl<E: Executor> ProcessFactory for WorkClaimer<E> {
                 Some(task_claim) = tasks_rx.recv(), if num_running < self.capacity => {
                     let logger = self.logger.new(o!("task_id" => task_claim.task_id.clone(), "run_id" => task_claim.run_id));
                     info!(logger, "Starting task");
-                    running.add(self.executor.execute(logger, task_claim));
+                    let ef = ExecutionFactory::new(self.root_url.clone(), self.executor.clone(), logger, task_claim);
+                    running.add(ef.start());
                 },
                 None = commands.recv() => {
                     long_poller.stop().await?;

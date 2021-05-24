@@ -1,10 +1,10 @@
 use bollard::Docker;
 use slog::{info, Logger};
+use std::marker::PhantomData;
 use taskcluster::Credentials;
 use taskcluster_lib_worker::claim::{WorkClaimer, WorkClaimerConfig};
 use taskcluster_lib_worker::process::ProcessFactory;
 
-mod execution;
 mod executor;
 mod task;
 
@@ -17,7 +17,7 @@ pub async fn main(logger: Logger) -> anyhow::Result<()> {
     info!(logger, "Starting Worker");
 
     let docker = Docker::connect_with_local_defaults()?;
-    let executor = ContainerExecutor::new(root_url.to_owned(), docker);
+    let executor = ContainerExecutor::new(docker);
 
     let wc = WorkClaimer::new(WorkClaimerConfig {
         logger: logger.clone(),
@@ -28,6 +28,7 @@ pub async fn main(logger: Logger) -> anyhow::Result<()> {
         worker_id: "worker".to_owned(),
         capacity: 4,
         executor,
+        payload_type: PhantomData,
     });
     let wc = wc.start();
     wc.await
