@@ -16,3 +16,5 @@ tokio = { version = "*", features = [ "rt", "rt-multi-thread", "macros", "time",
 slog = "2"
 slog-term = "2"
 slog-async = "2"
+bollard = "0.10"
+futures = "*"
