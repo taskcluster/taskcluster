@@ -13,8 +13,3 @@ pub mod claim;
 pub mod execute;
 pub mod process;
 pub mod task;
-
-// TODO: worker-runner protocol
-// TODO: artifact support
-// TODO: live-logging support (websocktunnel)
-// TODO: testing utilities

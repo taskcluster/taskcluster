@@ -97,6 +97,7 @@ This repository is used to develop, build, and release the Taskcluster services.
 * [Workers](workers#readme)
     * [Docker Worker](workers/docker-worker#readme)
     * [Generic Worker](workers/generic-worker#readme)
+    * [Rust Worker Support](workers/rust#readme)
 <!-- TOC END -->
 
 ## Team Mentions
