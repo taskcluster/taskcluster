@@ -4,7 +4,6 @@ use taskcluster::Credentials;
 use taskcluster_lib_worker::claim::WorkClaimer;
 
 mod executor;
-mod task;
 
 use crate::executor::ContainerExecutor;
 

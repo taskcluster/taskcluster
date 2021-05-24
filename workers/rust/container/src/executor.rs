@@ -1,4 +1,3 @@
-use crate::task::Payload;
 use async_trait::async_trait;
 use bollard::container::{
     Config, CreateContainerOptions, LogOutput, LogsOptions, RemoveContainerOptions,
@@ -15,6 +14,13 @@ use std::sync::Arc;
 use taskcluster::{ClientBuilder, Credentials, Object, Retry};
 use taskcluster_lib_worker::execute::{ExecutionContext, Executor, Success};
 use taskcluster_upload::upload_from_buf;
+
+/// A container-worker payload
+#[derive(Debug, Deserialize)]
+pub(crate) struct Payload {
+    pub(crate) image: String,
+    pub(crate) command: Vec<String>,
+}
 
 /// An executor for container-worker tasks.
 #[derive(Clone)]

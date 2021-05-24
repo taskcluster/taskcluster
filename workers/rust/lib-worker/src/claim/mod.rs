@@ -21,12 +21,6 @@ struct Payload {
     success: bool,
 }
 
-impl execute::Payload for Payload {
-    fn from_value(v: serde_json::Value) -> Result<Self, anyhow::Error> {
-        Ok(serde_json::from_value(v)?)
-    }
-}
-
 struct SimpleExecutor;
 
 #[async_trait]
