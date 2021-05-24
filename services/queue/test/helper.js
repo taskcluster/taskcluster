@@ -187,7 +187,7 @@ exports.withObjectService = (mock, skipping) => {
           if (object.uploadId) {
             throw err404(`Object ${name} not finished`);
           }
-          return { method: 'simple', uri: 'https://tc-download.example.com' };
+          return { method: 'simple', url: 'https://tc-download.example.com' };
         },
         object: async (name) => {
           const object = objects.get(name);
