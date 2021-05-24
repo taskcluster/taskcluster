@@ -18,3 +18,5 @@ pub mod task;
 // TODO: worker-runner protocol
 // TODO: artifact support
 // TODO: live-logging support (websocktunnel)
+// TODO: move more of executor into lib-worker, to handle creds rotation, posting status, artifact upload, etc.
+// TODO: testing utilities

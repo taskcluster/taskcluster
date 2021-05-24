@@ -4,14 +4,17 @@ use bollard::container::{
 };
 use bollard::image::CreateImageOptions;
 use bollard::Docker;
+use chrono::prelude::*;
 use futures::stream::TryStreamExt;
 use serde::Deserialize;
 use slog::{debug, info, o, Logger};
 use std::convert::TryFrom;
+use std::io::Write;
 use std::sync::Arc;
-use taskcluster::{ClientBuilder, Credentials, Queue};
+use taskcluster::{ClientBuilder, Credentials, Object, Queue, Retry};
 use taskcluster_lib_worker::claim::TaskClaim;
 use taskcluster_lib_worker::task::Task as TaskDefinition;
+use taskcluster_upload::upload_from_buf;
 
 /// A container-worker payload
 #[derive(Debug, Deserialize)]
@@ -52,6 +55,8 @@ impl Task {
     ) -> anyhow::Result<()> {
         // TODO: queue factory
         let queue = Queue::new(ClientBuilder::new(&root_url).credentials(credentials.clone()))?;
+        let mut log: Vec<u8> = Vec::new();
+
         info!(logger, "executing task");
 
         debug!(logger, "downloading image");
@@ -67,7 +72,8 @@ impl Task {
             )
             .try_for_each(|bi| {
                 if let Some(ref msg) = bi.status {
-                    info!(logger, "{}", msg);
+                    log.write_all(msg.as_bytes()).unwrap();
+                    log.push(b'\n');
                 }
                 std::future::ready(Ok(()))
             })
@@ -113,12 +119,14 @@ impl Task {
                 }),
             )
             .try_for_each(|lo| {
-                match lo {
-                    LogOutput::StdOut { message: b } => info!(logger, "log: {:?}", b),
-                    LogOutput::StdErr { message: b } => info!(logger, "err: {:?}", b),
-                    LogOutput::Console { message: b } => info!(logger, "console: {:?}", b),
-                    _ => {}
-                };
+                if let Some(b) = match lo {
+                    LogOutput::StdOut { message: ref b } => Some(b),
+                    LogOutput::StdErr { message: ref b } => Some(b),
+                    LogOutput::Console { message: ref b } => Some(b),
+                    _ => None,
+                } {
+                    log.write_all(b).unwrap();
+                }
                 std::future::ready(Ok(()))
             })
             .await?;
@@ -134,7 +142,58 @@ impl Task {
             )
             .await?;
 
-        info!(logger, "completing task");
+        debug!(logger, "uploading live-log artifact");
+        let run_id_str = format!("{}", self.run_id);
+        let res = queue
+            .createArtifact(
+                &self.task_id,
+                &run_id_str,
+                "public/logs/live.log",
+                &serde_json::json!({
+                    "storageType": "object",
+                    "contentType": "text/plain",
+                    "expires": self.task_def.expires,
+                }),
+            )
+            .await?;
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct CreateArtifactResponse {
+            credentials: Credentials,
+            expires: DateTime<Utc>,
+            name: String,
+            project_id: String,
+            upload_id: String,
+        }
+        let res: CreateArtifactResponse = serde_json::from_value(res)?;
+
+        let object = Object::new(ClientBuilder::new(&root_url).credentials(res.credentials))?;
+        let retry = Retry::default();
+        upload_from_buf(
+            &res.project_id,
+            &res.name,
+            "text/plain",
+            &res.expires,
+            &log,
+            &retry,
+            &object,
+            &res.upload_id,
+        )
+        .await?;
+
+        queue
+            .finishArtifact(
+                &self.task_id,
+                &run_id_str,
+                "public/logs/live.log",
+                &serde_json::json!({
+                    "uploadId": res.upload_id,
+                }),
+            )
+            .await?;
+
+        debug!(logger, "completing task");
         queue
             .reportCompleted(&self.task_id, &format!("{}", self.run_id))
             .await?;
