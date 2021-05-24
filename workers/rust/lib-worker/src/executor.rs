@@ -1,3 +1,15 @@
+//! This module supports execution of tasks.  It handles
+//!
+//!  * deserializing the payload
+//!  * reclaiming the task (TODO) and providing fresh task credentials
+//!  * resolving the task
+//!
+//! The task is performed by an async function you provide.  It receives an ExecutionContext
+//! as an argument, and returns a value indicating success or failure.  Any error return is
+//! treated as an exception.
+//!
+//! See [`crate::claim`] for a simple example of an executor implementation.
+
 use crate::claim::TaskClaim;
 use crate::process::ProcessFactory;
 use crate::task::Task;

@@ -3,7 +3,7 @@
 //! Sequntial Procesess" model, it uses the term "process" instead of "task".
 //!
 //! Every [`Process`] is constructed from a one-shot factory that defines initial conditions for
-//! the process, and once started can not be accessed directly.  Instead, whoever holds the
+//! the process, and once started can not be accessed externally.  Instead, whoever holds the
 //! [`Process`] can send commands to it, stop it, or wait for it to complete.  Any other
 //! communication channels should be arranged in advance via the factory.
 

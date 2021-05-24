@@ -1,6 +1,6 @@
 use super::long_poll::{ClaimWorkLongPoll, LongPollCommand};
 use crate::executor::{ExecutionFactory, Executor, Payload};
-use crate::process::{ProcessFactory, ProcessSet};
+use crate::process::{Process, ProcessFactory, ProcessSet};
 use anyhow::{bail, Context as AnyhowContext, Result};
 use async_trait::async_trait;
 use slog::{debug, error, info, o, Logger};
@@ -118,6 +118,11 @@ impl<P: Payload, E: Executor<P>> WorkClaimer<P, E> {
             payload_type: PhantomData,
         }
     }
+
+    /// Start the work-claimer, returning a Process representing it.
+    pub fn start(self) -> Process<Command> {
+        ProcessFactory::start(self)
+    }
 }
 
 #[derive(Debug)]
@@ -126,7 +131,7 @@ pub enum Command {
 }
 
 #[async_trait]
-impl<P: Payload, E: Clone + Executor<P>> ProcessFactory for WorkClaimer<P, E> {
+impl<P: Payload, E: Executor<P>> ProcessFactory for WorkClaimer<P, E> {
     type Command = Command;
     async fn run(mut self, mut commands: mpsc::Receiver<Self::Command>) -> Result<()> {
         let (tasks_tx, mut tasks_rx) = mpsc::channel(self.capacity);

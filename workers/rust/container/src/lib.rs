@@ -2,7 +2,6 @@ use bollard::Docker;
 use slog::{info, Logger};
 use taskcluster::Credentials;
 use taskcluster_lib_worker::claim::WorkClaimer;
-use taskcluster_lib_worker::process::ProcessFactory;
 
 mod executor;
 mod task;
@@ -19,8 +18,8 @@ pub async fn main(logger: Logger) -> anyhow::Result<()> {
     let executor = ContainerExecutor::new(docker);
 
     let wc = WorkClaimer::new(executor)
-        .logger(logger.clone())
-        .root_url(root_url.to_owned())
+        .logger(logger)
+        .root_url(root_url)
         .worker_creds(Credentials::from_env()?)
         .task_queue_id("aa/bb".to_owned())
         .worker_group("rust".to_owned())
