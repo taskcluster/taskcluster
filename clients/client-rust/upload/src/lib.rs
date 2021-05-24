@@ -135,7 +135,6 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
         let mut buf = vec![];
         let mut reader = reader_factory.get_reader().await?;
         reader.read_to_end(&mut buf).await?;
-        println!("read {} bytes", buf.len());
         let data_b64 = base64::encode(buf);
         proposed_upload_methods["dataInline"] = json!({
             "contentType": content_type,
