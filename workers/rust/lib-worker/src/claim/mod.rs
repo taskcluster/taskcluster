@@ -13,7 +13,7 @@ use serde::Deserialize;
 use slog::{o, Drain, Logger};
 use taskcluster::Credentials;
 use taskcluster_lib_worker::claim::WorkClaimer;
-use taskcluster_lib_worker::executor::{self, ExecutionContext, Executor, Success};
+use taskcluster_lib_worker::execute::{self, ExecutionContext, Executor, Success};
 use async_trait::async_trait;
 
 #[derive(Deserialize)]
@@ -21,7 +21,7 @@ struct Payload {
     success: bool,
 }
 
-impl executor::Payload for Payload {
+impl execute::Payload for Payload {
     fn from_value(v: serde_json::Value) -> Result<Self, anyhow::Error> {
         Ok(serde_json::from_value(v)?)
     }

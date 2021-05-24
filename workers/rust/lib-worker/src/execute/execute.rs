@@ -1,115 +1,14 @@
-//! This module supports execution of tasks.  It handles
-//!
-//!  * deserializing the payload
-//!  * reclaiming the task (TODO) and providing fresh task credentials
-//!  * resolving the task
-//!
-//! The task is performed by an async function you provide.  It receives an ExecutionContext
-//! as an argument, and returns a value indicating success or failure.  Any error return is
-//! treated as an exception.
-//!
-//! See [`crate::claim`] for a simple example of an executor implementation.
-
 use crate::claim::TaskClaim;
+use crate::execute::creds_container::CredsContainer;
+use crate::execute::{ExecutionContext, Executor, Payload, QueueFactory, Success};
 use crate::process::ProcessFactory;
-use crate::task::Task;
 use anyhow::Result;
 use async_trait::async_trait;
 use serde_json::json;
 use slog::{error, Logger};
 use std::marker::PhantomData;
-use std::sync::{Arc, Mutex};
-use taskcluster::{ClientBuilder, Credentials, Queue};
+use std::sync::Arc;
 use tokio::sync::mpsc;
-
-/// An executor is an object that knows how to execute tasks; it is the main trait to implement
-/// to use this crate.
-#[async_trait]
-pub trait Executor<P: Payload>: 'static + Sync + Send {
-    async fn execute(&self, ctx: ExecutionContext<P>) -> Result<Success, anyhow::Error>;
-}
-
-/// A valid Payload can be constructed from a JSON Value, carries no references, and is
-/// thread-safe.  An ['Executor`] specifies a payload type, and this crate takes care
-/// of constructing that type before beginning execution.
-pub trait Payload: 'static + Sync + Send + Sized {
-    fn from_value(value: serde_json::Value) -> Result<Self, anyhow::Error>;
-}
-
-/// Context for an execution.  In effect, this struct represents keyword arguments for
-/// [`Executor::execute`], allowing additional arguments to be added later.
-pub struct ExecutionContext<P: Payload> {
-    pub task_id: String,
-    pub run_id: u32,
-    pub task_def: Task,
-    pub payload: P,
-    pub logger: Logger,
-    pub root_url: String,
-    pub queue_factory: Box<dyn QueueFactory + Sync + Send>,
-}
-
-/// Result of a task execution that did not encounter any unexpected errors.
-pub enum Success {
-    /// Task succeeded
-    Succeeded,
-    /// Task failed normally,
-    Failed,
-}
-
-/// A QueueFactory can efficiently supply Queue instances on-demand.  Call this each time
-/// you need a queue, rather than caching the value for any length of time, to allow new
-/// instances to be created.  This trait is also a useful point for depnedency injection
-/// in tests.
-pub trait QueueFactory {
-    fn queue(&self) -> anyhow::Result<Arc<Queue>>;
-}
-
-/// Clonable credentials container, allowing updates as they expire.  This is used as the
-/// QueueFactory.
-#[derive(Clone)]
-struct CredentialsContainer(Arc<Mutex<CredentialsContainerInner>>);
-struct CredentialsContainerInner {
-    root_url: String,
-    creds: Credentials,
-    queue: Option<Arc<Queue>>,
-}
-
-#[allow(dead_code)]
-impl CredentialsContainer {
-    fn new(root_url: String, creds: Credentials) -> Self {
-        Self(Arc::new(Mutex::new(CredentialsContainerInner {
-            root_url,
-            creds,
-            queue: None,
-        })))
-    }
-
-    fn get(&self) -> Credentials {
-        return self.0.lock().unwrap().creds.clone();
-    }
-
-    fn set(&self, creds: Credentials) {
-        let mut inner = self.0.lock().unwrap();
-        inner.creds = creds;
-        // queue is invalidated, so reset it to None
-        inner.queue = None;
-    }
-}
-
-impl QueueFactory for CredentialsContainer {
-    fn queue(&self) -> anyhow::Result<Arc<Queue>> {
-        let mut inner = self.0.lock().unwrap();
-        if let Some(ref queue) = inner.queue {
-            Ok((*queue).clone())
-        } else {
-            let queue = Arc::new(Queue::new(
-                ClientBuilder::new(&inner.root_url).credentials(inner.creds.clone()),
-            )?);
-            inner.queue = Some(queue.clone());
-            Ok(queue)
-        }
-    }
-}
 
 /// Result of `run_inner`.
 enum InnerResult {
@@ -131,7 +30,7 @@ pub(crate) struct ExecutionFactory<P: Payload, E: Executor<P>> {
     executor: Arc<E>,
     logger: Logger,
     task_claim: TaskClaim,
-    creds_container: CredentialsContainer,
+    creds_container: CredsContainer,
     _phantom: PhantomData<P>,
 }
 
@@ -185,8 +84,7 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
         logger: Logger,
         task_claim: TaskClaim,
     ) -> Self {
-        let creds_container =
-            CredentialsContainer::new(root_url.clone(), task_claim.credentials.clone());
+        let creds_container = CredsContainer::new(root_url.clone(), task_claim.credentials.clone());
         Self {
             root_url,
             executor,

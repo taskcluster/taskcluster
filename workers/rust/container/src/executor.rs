@@ -13,7 +13,7 @@ use slog::{debug, info, o};
 use std::io::Write;
 use std::sync::Arc;
 use taskcluster::{ClientBuilder, Credentials, Object, Retry};
-use taskcluster_lib_worker::executor::{ExecutionContext, Executor, Success};
+use taskcluster_lib_worker::execute::{ExecutionContext, Executor, Success};
 use taskcluster_upload::upload_from_buf;
 
 /// An executor for container-worker tasks.
