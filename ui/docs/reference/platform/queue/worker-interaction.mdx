@@ -176,12 +176,10 @@ an exception and create a new run, if the task has additional retries left.
 
 
 ## Uploading Artifacts
+
 To upload artifacts the worker should use the `createArtifact` API end-point.
-Generally, workers should create S3 artifacts using
-`createArtifact(taskId, runId, name, {storageType: 's3', expires, contentType})`
-which returns a `putUrl`. The file is then uploaded to S3 by making a PUT
-request to the `putUrl` with `content-length`, `content-type` and artifact data
-as body.
+Generally, workers should create artifacts using the `object` storage type, as
+the `s3` type is deprecated.
 
 The `createArtifact` calls must be signed with the most recent temporary
 credentials returned from `claimWork` or `reclaimTask`. Artifacts can be
