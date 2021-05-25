@@ -1,8 +1,9 @@
 use crate::claim::TaskClaim;
-use crate::execute::creds_container::CredsContainer;
-use crate::execute::{ExecutionContext, Executor, Payload, QueueFactory, Success};
+use crate::execute::{ExecutionContext, Executor, Payload, Success};
 use crate::log::{TaskLog, TaskLogFactory};
 use crate::process::ProcessFactory;
+use crate::tc::CredsContainer;
+use crate::tc::QueueFactory;
 use anyhow::Result;
 use async_trait::async_trait;
 use serde_json::json;

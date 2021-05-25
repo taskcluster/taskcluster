@@ -10,11 +10,10 @@
 //!
 //! See [`crate::claim`] for a simple example of an executor implementation.
 
-mod creds_container;
 mod execute;
 mod payload;
 mod types;
 
 pub(crate) use execute::ExecutionFactory;
 pub use payload::Payload;
-pub use types::{ExecutionContext, Executor, QueueFactory, Success};
+pub use types::{ExecutionContext, Executor, Success};

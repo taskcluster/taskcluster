@@ -1,11 +1,11 @@
-use crate::execute::QueueFactory;
+use crate::tc::{QueueFactory, QueueService};
 use std::sync::{Arc, Mutex};
 use taskcluster::{ClientBuilder, Credentials, Queue};
 
-/// Clonable credentials container, allowing updates as they expire.  This is used as the
-/// QueueFactory.
+/// Clonable credentials container, allowing updates as they expire.  This is used as a
+/// QueueFactory in practice, for both task credentials and worker credentials.
 #[derive(Clone)]
-pub(super) struct CredsContainer(Arc<Mutex<Inner>>);
+pub(crate) struct CredsContainer(Arc<Mutex<Inner>>);
 
 struct Inner {
     root_url: String,
@@ -15,7 +15,7 @@ struct Inner {
 
 #[allow(dead_code)]
 impl CredsContainer {
-    pub(super) fn new(root_url: String, creds: Credentials) -> Self {
+    pub(crate) fn new(root_url: String, creds: Credentials) -> Self {
         Self(Arc::new(Mutex::new(Inner {
             root_url,
             creds,
@@ -23,11 +23,11 @@ impl CredsContainer {
         })))
     }
 
-    pub(super) fn get(&self) -> Credentials {
+    pub(crate) fn get(&self) -> Credentials {
         return self.0.lock().unwrap().creds.clone();
     }
 
-    pub(super) fn set(&self, creds: Credentials) {
+    pub(crate) fn set(&self, creds: Credentials) {
         let mut inner = self.0.lock().unwrap();
         inner.creds = creds;
         // queue is invalidated, so reset it to None
@@ -36,7 +36,7 @@ impl CredsContainer {
 }
 
 impl QueueFactory for CredsContainer {
-    fn queue(&self) -> anyhow::Result<Arc<Queue>> {
+    fn queue(&self) -> anyhow::Result<Arc<dyn QueueService>> {
         let mut inner = self.0.lock().unwrap();
         if let Some(ref queue) = inner.queue {
             Ok((*queue).clone())

@@ -1,11 +1,10 @@
 use crate::execute::Payload;
 use crate::log::TaskLog;
 use crate::task::Task;
+use crate::tc::QueueFactory;
 use anyhow::Result;
 use async_trait::async_trait;
 use slog::Logger;
-use std::sync::Arc;
-use taskcluster::Queue;
 
 /// An executor is an object that knows how to execute tasks; it is the main trait to implement
 /// to use this crate.
@@ -33,12 +32,4 @@ pub enum Success {
     Succeeded,
     /// Task failed normally,
     Failed,
-}
-
-/// A QueueFactory can efficiently supply Queue instances on-demand.  Call this each time
-/// you need a queue, rather than caching the value for any length of time, to allow new
-/// instances to be created.  This trait is also a useful point for depnedency injection
-/// in tests.
-pub trait QueueFactory: 'static + Sync + Send {
-    fn queue(&self) -> anyhow::Result<Arc<Queue>>;
 }
