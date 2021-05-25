@@ -1,6 +1,7 @@
 use crate::claim::TaskClaim;
 use crate::execute::creds_container::CredsContainer;
 use crate::execute::{ExecutionContext, Executor, Payload, QueueFactory, Success};
+use crate::log::{TaskLog, TaskLogFactory};
 use crate::process::ProcessFactory;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -23,6 +24,15 @@ enum InnerResult {
     /// Task was cancelled and its status should not be updated
     #[allow(dead_code)]
     Cancelled,
+}
+
+impl InnerResult {
+    fn is_err(&self) -> bool {
+        match self {
+            InnerResult::Err(_) => true,
+            _ => false,
+        }
+    }
 }
 
 pub(crate) struct ExecutionFactory<P: Payload, E: Executor<P>> {
@@ -96,6 +106,20 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
     }
 
     async fn run_inner(self, _commands: mpsc::Receiver<()>) -> InnerResult {
+        let task_id = self.task_claim.task_id;
+        let run_id = self.task_claim.run_id;
+        let queue_factory = Box::new(self.creds_container);
+
+        let mut task_log_process = TaskLogFactory::new(
+            self.logger.clone(),
+            self.root_url.clone(),
+            queue_factory.clone(),
+            task_id.clone(),
+            run_id,
+            self.task_claim.task.expires,
+        )
+        .start();
+
         // first, get the payload, failing with "malformed-payload"
         let payload: P = match P::from_value(self.task_claim.task.payload.clone()) {
             Ok(p) => p,
@@ -105,16 +129,23 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
             }
         };
 
-        let queue_factory = Box::new(self.creds_container);
+        // get a TaskLog; in this case we know the process has not been
+        // stopped, so it's safe to unwrap.
+        let mut task_log = TaskLog::new(&task_log_process).unwrap();
+        task_log
+            .write_all(format!("Task ID: {}\n", &task_id))
+            .await
+            .unwrap();
 
         let ctx = ExecutionContext {
-            task_id: self.task_claim.task_id,
-            run_id: self.task_claim.run_id,
+            task_id,
+            run_id,
             task_def: self.task_claim.task,
             payload,
             logger: self.logger,
             root_url: self.root_url,
             queue_factory,
+            task_log: task_log.clone(),
         };
 
         let executor = self.executor;
@@ -122,11 +153,40 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
 
         // TODO: select! from task, commands, etc.
 
-        match tokio_task.await {
+        let task_res = match tokio_task.await {
             Ok(Ok(Success::Succeeded)) => InnerResult::Ok,
             Ok(Ok(Success::Failed)) => InnerResult::Failed,
-            Ok(Err(e)) => InnerResult::Err(e),
+            Ok(Err(e)) => {
+                // ignore the result; if things have exploded, that's OK, they'll
+                // be logged in the worker's log as well
+                let _ = task_log
+                    .write_all(format!("Error executing task: {}\n", e))
+                    .await;
+                InnerResult::Err(e)
+            }
             // if the task panics, it is returned as an outer error
+            Err(e) => {
+                // ignore the result as above
+                let _ = task_log
+                    .write_all(format!("Panic executing task: {}\n", e))
+                    .await;
+                InnerResult::Err(e.into())
+            }
+        };
+
+        // stop the task log and wait for it to complete
+        drop(task_log);
+        let mut tl_res = task_log_process.stop().await;
+        if tl_res.is_ok() {
+            tl_res = task_log_process.await;
+        }
+
+        match tl_res {
+            // task log finished successfully, so return the result of the task
+            Ok(_) => task_res,
+            // finishing the task log failed, but we prefer to report the task's result
+            // if it was also an error
+            Err(_) if task_res.is_err() => task_res,
             Err(e) => InnerResult::Err(e.into()),
         }
     }

@@ -7,7 +7,6 @@ edition = "2018"
 [dependencies]
 # temporarily use the local copy until #4890 lands
 taskcluster = { path = "../../../clients/client-rust/client" }
-taskcluster-upload = { path = "../../../clients/client-rust/upload" }
 taskcluster-lib-worker = { path = "../lib-worker" }
 anyhow = "1"
 async-trait = "0.1"

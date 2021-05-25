@@ -44,8 +44,21 @@ where
         Ok(commands.send(command).await?)
     }
 
-    /// Signal that this process should stop, by closing its command channel.
-    /// No further commands can be sent after this call.
+    /// Get a [`ProcessHandle`] to this process, supporting sending to the process from multiple
+    /// locations.  Note that the `stop` operation can only be performed from the parent process,
+    /// and that it only takes effect when all [`ProcessHandle`] instances have been dropped.
+    pub fn handle(&self) -> Result<ProcessHandle<CMD>> {
+        let commands = self
+            .commands
+            .as_ref()
+            .ok_or_else(|| anyhow!("Process is already stopping"))?
+            .clone();
+        Ok(ProcessHandle(commands))
+    }
+
+    /// Signal that this process should stop, by closing its command channel.  No further commands
+    /// can be sent after this call.  If any ProcessHandles still exist, the stop will not take
+    /// place until those are dropped.
     pub async fn stop(&mut self) -> Result<()> {
         self.commands = None;
         Ok(())
@@ -63,6 +76,22 @@ where
             Poll::Ready(Err(e)) => Poll::Ready(Err(e).context("Process panicked")),
             Poll::Ready(Ok(r)) => Poll::Ready(r),
         }
+    }
+}
+
+/// A ProcessHandle provides an own-able way to send commands to a [`Process`].  Note that the
+/// existence of ProcessHandles will prevent the [`Process::stop`] method from sending the stop
+/// indication.
+#[derive(Clone)]
+pub struct ProcessHandle<CMD: 'static + Sync + Send + std::fmt::Debug>(mpsc::Sender<CMD>);
+
+impl<CMD> ProcessHandle<CMD>
+where
+    CMD: 'static + Sync + Send + std::fmt::Debug,
+{
+    /// Send a command to this process
+    pub async fn command(&self, command: CMD) -> Result<()> {
+        Ok(self.0.send(command).await?)
     }
 }
 
@@ -211,7 +240,27 @@ mod test {
 
         assert_eq!(foos.load(Ordering::SeqCst), 1u32);
 
+        let handle = process.handle().unwrap();
+        handle.command(FooCommand).await.unwrap();
+
+        tokio::select! {
+            _ = (&mut process) => { panic!("process stopped early"); },
+            _ = tokio::time::sleep(tokio::time::Duration::from_millis(5)) => {},
+        };
+
+        assert_eq!(foos.load(Ordering::SeqCst), 2u32);
+
         process.stop().await.unwrap();
+
+        // stop hasn't taken effect due to the outstanding handle
+        tokio::select! {
+            _ = (&mut process) => { panic!("process stopped early"); },
+            _ = tokio::time::sleep(tokio::time::Duration::from_millis(5)) => {},
+        };
+
+        assert_eq!(foos.load(Ordering::SeqCst), 2u32);
+
+        drop(handle);
 
         // this time, wait should resolve
         tokio::select! {
@@ -220,7 +269,7 @@ mod test {
             _ = tokio::time::sleep(tokio::time::Duration::from_millis(100)) => { panic!("wait did not resolve"); },
         };
 
-        assert_eq!(foos.load(Ordering::SeqCst), 1u32);
+        assert_eq!(foos.load(Ordering::SeqCst), 2u32);
     }
 
     #[tokio::test]

@@ -1,4 +1,5 @@
 use crate::execute::Payload;
+use crate::log::TaskLog;
 use crate::task::Task;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -23,6 +24,7 @@ pub struct ExecutionContext<P: Payload> {
     pub logger: Logger,
     pub root_url: String,
     pub queue_factory: Box<dyn QueueFactory>,
+    pub task_log: TaskLog,
 }
 
 /// Result of a task execution that did not encounter any unexpected errors.

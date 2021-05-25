@@ -182,7 +182,6 @@ dependencies = [
  "slog-term",
  "taskcluster",
  "taskcluster-lib-worker",
- "taskcluster-upload",
  "tokio",
 ]
 
@@ -1440,6 +1439,7 @@ dependencies = [
  "slog-async",
  "slog-term",
  "taskcluster",
+ "taskcluster-upload",
  "tokio",
 ]
 

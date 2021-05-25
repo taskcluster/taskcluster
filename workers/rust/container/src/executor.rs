@@ -5,15 +5,11 @@ use bollard::container::{
 };
 use bollard::image::CreateImageOptions;
 use bollard::Docker;
-use chrono::prelude::*;
-use futures::stream::TryStreamExt;
+use futures::stream::StreamExt;
 use serde::Deserialize;
 use slog::{debug, info, o};
-use std::io::Write;
 use std::sync::Arc;
-use taskcluster::{ClientBuilder, Credentials, Object, Retry};
 use taskcluster_lib_worker::execute::{ExecutionContext, Executor, Success};
-use taskcluster_upload::upload_from_buf;
 
 /// A container-worker payload
 #[derive(Debug, Deserialize)]
@@ -38,30 +34,29 @@ impl ContainerExecutor {
 
 #[async_trait]
 impl Executor<Payload> for ContainerExecutor {
-    async fn execute(&self, ctx: ExecutionContext<Payload>) -> Result<Success, anyhow::Error> {
-        let mut log: Vec<u8> = Vec::new();
-
+    async fn execute(&self, mut ctx: ExecutionContext<Payload>) -> Result<Success, anyhow::Error> {
         info!(ctx.logger, "executing task");
 
-        debug!(ctx.logger, "downloading image");
-        self.docker
-            .create_image(
-                // TODO: ensure this specifies a single image? `alpine` seems to dl all of them
-                Some(CreateImageOptions::<&str> {
-                    from_image: ctx.payload.image.as_ref(),
-                    ..Default::default()
-                }),
-                None,
-                None,
-            )
-            .try_for_each(|bi| {
-                if let Some(ref msg) = bi.status {
-                    log.write_all(msg.as_bytes()).unwrap();
-                    log.push(b'\n');
-                }
-                std::future::ready(Ok(()))
-            })
+        let image_id = ctx.payload.image.as_ref();
+        debug!(ctx.logger, "downloading image"; o!("image_id" => image_id));
+        ctx.task_log
+            .write_all(format!("Downloading image {}\n", image_id))
             .await?;
+        let mut log_stream = self.docker.create_image(
+            // TODO: ensure this specifies a single image? `alpine` seems to dl all of them
+            Some(CreateImageOptions::<&str> {
+                from_image: image_id,
+                ..Default::default()
+            }),
+            None,
+            None,
+        );
+        while let Some(bi_res) = log_stream.next().await {
+            if let Some(b) = bi_res?.status {
+                ctx.task_log.write_all(b).await?;
+                ctx.task_log.write_all(b"\n").await?;
+            }
+        }
 
         let container_name = format!("{}-run{}", ctx.task_id, ctx.run_id);
         debug!(ctx.logger, "creating container {}", &container_name);
@@ -83,6 +78,7 @@ impl Executor<Payload> for ContainerExecutor {
         let container_id = result.id.clone();
         assert_ne!(container_id.len(), 0);
         debug!(ctx.logger, "starting container"; o!("container_id" => &container_id));
+        ctx.task_log.write_all("Starting container\n").await?;
 
         self.docker
             .start_container(
@@ -92,29 +88,27 @@ impl Executor<Payload> for ContainerExecutor {
             .await?;
 
         debug!(ctx.logger, "reading logs"; o!("container_id" => &container_id));
-        self.docker
-            .logs(
-                container_name.as_ref(),
-                Some(LogsOptions {
-                    follow: true,
-                    stdout: true,
-                    stderr: true,
-                    tail: "all".to_string(),
-                    ..Default::default()
-                }),
-            )
-            .try_for_each(|lo| {
-                if let Some(b) = match lo {
-                    LogOutput::StdOut { message: ref b } => Some(b),
-                    LogOutput::StdErr { message: ref b } => Some(b),
-                    LogOutput::Console { message: ref b } => Some(b),
-                    _ => None,
-                } {
-                    log.write_all(b).unwrap();
-                }
-                std::future::ready(Ok(()))
-            })
-            .await?;
+        let mut log_stream = self.docker.logs(
+            container_name.as_ref(),
+            Some(LogsOptions {
+                follow: true,
+                stdout: true,
+                stderr: true,
+                tail: "all".to_string(),
+                ..Default::default()
+            }),
+        );
+
+        while let Some(log_data_res) = log_stream.next().await {
+            if let Some(b) = match log_data_res? {
+                LogOutput::StdOut { message: ref b } => Some(b),
+                LogOutput::StdErr { message: ref b } => Some(b),
+                LogOutput::Console { message: ref b } => Some(b),
+                _ => None,
+            } {
+                ctx.task_log.write_all(b).await?;
+            }
+        }
 
         debug!(ctx.logger, "removing container");
         self.docker
@@ -123,60 +117,6 @@ impl Executor<Payload> for ContainerExecutor {
                 Some(RemoveContainerOptions {
                     force: true,
                     ..Default::default()
-                }),
-            )
-            .await?;
-
-        debug!(ctx.logger, "uploading live-log artifact");
-        let run_id_str = format!("{}", ctx.run_id);
-        let res = ctx
-            .queue_factory
-            .queue()?
-            .createArtifact(
-                &ctx.task_id,
-                &run_id_str,
-                "public/logs/live.log",
-                &serde_json::json!({
-                    "storageType": "object",
-                    "contentType": "text/plain",
-                    "expires": ctx.task_def.expires,
-                }),
-            )
-            .await?;
-
-        #[derive(Deserialize)]
-        #[serde(rename_all = "camelCase")]
-        struct CreateArtifactResponse {
-            credentials: Credentials,
-            expires: DateTime<Utc>,
-            name: String,
-            project_id: String,
-            upload_id: String,
-        }
-        let res: CreateArtifactResponse = serde_json::from_value(res)?;
-
-        let object = Object::new(ClientBuilder::new(&ctx.root_url).credentials(res.credentials))?;
-        let retry = Retry::default();
-        upload_from_buf(
-            &res.project_id,
-            &res.name,
-            "text/plain",
-            &res.expires,
-            &log,
-            &retry,
-            &object,
-            &res.upload_id,
-        )
-        .await?;
-
-        ctx.queue_factory
-            .queue()?
-            .finishArtifact(
-                &ctx.task_id,
-                &run_id_str,
-                "public/logs/live.log",
-                &serde_json::json!({
-                    "uploadId": res.upload_id,
                 }),
             )
             .await?;

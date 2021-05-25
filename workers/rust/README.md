@@ -15,8 +15,7 @@ This directory contains several crates for Taskcluster workers.
 * Loading configuration from a JSON file
 * Reclaiming tasks (in `taskcluster_lib_worker::execute`)
 * Task logging
-  * ExecutionContext should have some easy-to-use object for writing logs, including connecting a Stream of strings or bytes
-  * That object should (optionally) implement live-logging use websocktunnel
+  * (optionally) implement live-logging using websocktunnel
 * Artifact support
   * ExecutionContext should have an easy way to upload stuff as artifacts
 * Testing support
