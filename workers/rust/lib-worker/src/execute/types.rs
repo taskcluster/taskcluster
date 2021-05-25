@@ -22,7 +22,7 @@ pub struct ExecutionContext<P: Payload> {
     pub payload: P,
     pub logger: Logger,
     pub root_url: String,
-    pub queue_factory: Box<dyn QueueFactory + Sync + Send>,
+    pub queue_factory: Box<dyn QueueFactory>,
 }
 
 /// Result of a task execution that did not encounter any unexpected errors.
@@ -37,6 +37,6 @@ pub enum Success {
 /// you need a queue, rather than caching the value for any length of time, to allow new
 /// instances to be created.  This trait is also a useful point for depnedency injection
 /// in tests.
-pub trait QueueFactory {
+pub trait QueueFactory: 'static + Sync + Send {
     fn queue(&self) -> anyhow::Result<Arc<Queue>>;
 }
