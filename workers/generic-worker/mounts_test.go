@@ -284,7 +284,7 @@ func TestInvalidSHA256(t *testing.T) {
 			TaskRunReasonResolved:  "failed",
 			PerTaskRunLogExcerpts: [][]string{
 				// Required text from first task with no cached value
-				[]string{
+				{
 					`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 					`Removing cache artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip from cache table`,
@@ -292,7 +292,7 @@ func TestInvalidSHA256(t *testing.T) {
 					`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task definition explicitly requires 9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850; not retrying download as there were no connection failures and HTTP response status code was 200`,
 				},
 				// Required text from second task when download is already cached
-				[]string{
+				{
 					`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 					`Removing cache artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip from cache table`,
