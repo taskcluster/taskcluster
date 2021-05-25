@@ -5,6 +5,7 @@ const _ = require('lodash');
 const request = require('superagent');
 const taskcluster = require('taskcluster-client');
 const { Netmask } = require('netmask');
+const { createArtifactCallsCompatible } = require('../src/artifacts.js');
 const assume = require('assume');
 const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
@@ -551,6 +552,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       await assert.rejects(
         () => makeArtifact({ ...s3Artifact, useClientCreds: true }),
         err => err.code === 'InsufficientScopes');
+    });
+
+    test('createArtifact is idempotent', async () => {
+      await makeAndClaimTask();
+
+      const name = 'my/object';
+      const payload = {
+        storageType: 's3',
+        expires: taskcluster.fromNowJSON('1 day'),
+        contentType: 'application/json',
+      };
+      await helper.queue.createArtifact(taskId, 0, name, payload);
+      await helper.queue.createArtifact(taskId, 0, name, payload);
+      helper.assertNoPulseMessage('artifact-created');
     });
 
     test('Object artifact visible only after finish', async () => {
@@ -1114,6 +1129,74 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       res = await request.get(res.headers.location);
       assume(res.ok).is.ok();
       assume(res.body).to.be.eql({ message: 'Hello World' });
+    });
+  });
+
+  suite('createArtifactCallsCompatible', function() {
+    const sooner = taskcluster.fromNow('1 day');
+    const later = taskcluster.fromNow('2 day');
+    const base = {
+      storageType: 'error',
+      contentType: 'text/plain',
+      expires: sooner,
+      details: { x: 10 },
+    };
+
+    test('same call is compatible', function() {
+      assume(createArtifactCallsCompatible(base, base)).is.ok();
+    });
+
+    test('extending expires is compatible', function() {
+      assume(createArtifactCallsCompatible(
+        base,
+        { ...base, expires: later }))
+        .is.ok();
+    });
+
+    test('reducing expires is not compatible', function() {
+      assume(createArtifactCallsCompatible(
+        { ...base, expires: later },
+        { ...base, expires: sooner }))
+        .is.not.ok();
+    });
+
+    for (const storageType of ['error', 's3', 'object', 'link']) {
+      // NOTE: the list above omits 'reference', as it allows detail changes
+      test(`changing details for storageType ${storageType} is not allowed`, function() {
+        assume(createArtifactCallsCompatible(
+          { ...base, storageType, details: { x: 10 } },
+          { ...base, storageType, details: { x: 20 } }))
+          .is.not.ok();
+      });
+    }
+
+    test('changing details for storageType reference is allowed', function() {
+      assume(createArtifactCallsCompatible(
+        { ...base, storageType: 'reference', details: { x: 10 } },
+        { ...base, storageType: 'reference', details: { x: 20 } }))
+        .is.ok();
+    });
+
+    for (const original of ['error', 's3', 'object', 'link', 'reference']) {
+      for (const update of ['error', 's3', 'object', 'link', 'reference']) {
+        // filter out things that should not fail
+        if (original === update || (original === 'reference' && update === 'link')) {
+          continue;
+        }
+        test(`storageType ${original} -> ${update} is not allowed`, function() {
+          assume(createArtifactCallsCompatible(
+            { ...base, storageType: original },
+            { ...base, storageType: update }))
+            .is.not.ok();
+        });
+      }
+    }
+
+    test(`storageType reference -> link is allowed, and content-type is ignored in this case`, function() {
+      assume(createArtifactCallsCompatible(
+        { ...base, storageType: 'reference', details: { url: 'abc' }, contentType: 'old/content-type' },
+        { ...base, storageType: 'link', details: { artiact: 'def' }, contentType: 'new/content-type' }))
+        .is.ok();
     });
   });
 });

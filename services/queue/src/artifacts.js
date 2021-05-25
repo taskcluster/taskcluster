@@ -105,6 +105,34 @@ const generateS3Url = async function({ artifact, skipCDN, req }) {
   return url;
 };
 
+// Determine if two calls to createArtifact are compatible, allowing for the documented
+// exceptions.
+const createArtifactCallsCompatible = (original, { storageType, contentType, expires, details }) => {
+  // calls can never change the content type, but links do not have a content-type
+  if (storageType !== 'link' && original.contentType !== contentType) {
+    return false;
+  }
+
+  // Special case: Any artifact's `expires` can be extended, but not shortened
+  if (original.expires.getTime() > expires.getTime()) {
+    return false;
+  }
+
+  if (original.storageType === storageType) {
+    // If the storage type matches, then the details must match as well, except for
+    // reference artifacts, for which details can be updated
+    if (!_.isEqual(original.details, details) && storageType !== 'reference') {
+      return false;
+    }
+    // a link artifact can replace a reference artifact; other changes to storageType
+    // are not allowed
+  } else if (!(original.storageType === 'reference' && storageType === 'link')) {
+    return false;
+  }
+
+  return true;
+};
+
 /**
  * Generate the name for an artifact in the object service.  This must not
  * change, as the name is not stored anywhere and instead re-calculated as needed.
@@ -309,21 +337,7 @@ builder.declare({
     // Load original Artifact entity
     const original = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
 
-    let ok = true;
-    ok = ok && original.storageType === storageType;
-    ok = ok && original.contentType === contentType;
-    ok = ok && original.expires === expires;
-    ok = ok && _.isEqual(original.details, details),
-
-    // Allow special cases:
-    // * A `reference` artifact can replace an existing `reference` artifact`.
-    ok = ok || (original.storageType === 'reference' && storageType === 'reference');
-
-    // * A `link` artifact can replace an existing `reference` artifact`.
-    ok = ok || (original.storageType === 'reference' && storageType === 'link');
-
-    // * Any artifact\'s `expires` can be extended.
-    ok = ok || (original.expires.getTime() < expires.getTime());
+    let ok = createArtifactCallsCompatible(original, { storageType, contentType, expires, details });
 
     if (!ok) {
       return res.reportError('RequestConflict',
@@ -991,3 +1005,6 @@ builder.declare({
   const runId = await getLatestRunId.call(this, { taskId, res });
   return replyWithArtifactContent.call(this, { taskId, runId, name, req, res });
 });
+
+// export for testing
+module.exports = { createArtifactCallsCompatible };
