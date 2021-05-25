@@ -42,3 +42,59 @@ impl TryFrom<serde_json::Value> for TaskClaim {
         })
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn deserialize() {
+        let input = json!({
+            "status": {
+                "taskId": "tid"
+            },
+            "task": {
+                "provisionerId": "aa",
+                "workerType": "bb",
+                "taskQueueId": "aa/bb",
+                "schedulerId": "taskcluster-ui",
+                "projectId": "taskcluster",
+                "taskGroupId": "BnSDHIv5QN6gMEyMRbcBDQ",
+                "dependencies": [],
+                "requires": "all-completed",
+                "routes": [],
+                "priority": "lowest",
+                "retries": 0,
+                "created": "2021-05-25T20:23:26.803Z",
+                "deadline": "2021-05-25T23:23:26.803Z",
+                "expires": "2022-05-25T20:23:26.803Z",
+                "scopes": [],
+                "payload": {
+                    "command": [ "echo", "hello" ],
+                    "image": "python:2.7"
+                },
+                "metadata": {
+                    "name": "test",
+                    "owner": "taskcluster-internal@mozilla.com",
+                    "source": "https://github.com/taskcluster/taskcluster-lib-urls.git",
+                    "description": "Test"
+                },
+                "tags": {},
+                "extra": {}
+            },
+            "credentials": {
+                "clientId": "cli",
+                "accessToken": "at",
+                "certificate": "{..}"
+            },
+            "runId": 10
+        });
+
+        let tc = TaskClaim::try_from(input).unwrap();
+        assert_eq!(tc.task_id, "tid");
+        assert_eq!(tc.run_id, 10);
+        assert_eq!(tc.credentials.client_id, "cli");
+        assert_eq!(tc.task.task_queue_id, "aa/bb");
+    }
+}
