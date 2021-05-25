@@ -105,7 +105,7 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
         }
     }
 
-    async fn run_inner(self, _commands: mpsc::Receiver<()>) -> InnerResult {
+    async fn run_inner(self, mut commands: mpsc::Receiver<()>) -> InnerResult {
         let task_id = self.task_claim.task_id;
         let run_id = self.task_claim.run_id;
         let queue_factory = Box::new(self.creds_container);
@@ -120,15 +120,6 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
         )
         .start();
 
-        // first, get the payload, failing with "malformed-payload"
-        let payload: P = match P::from_value(self.task_claim.task.payload.clone()) {
-            Ok(p) => p,
-            Err(_) => {
-                // TODO: create a live-log artifact containing this error
-                return InnerResult::Exception("malformed-payload");
-            }
-        };
-
         // get a TaskLog; in this case we know the process has not been
         // stopped, so it's safe to unwrap.
         let mut task_log = TaskLog::new(&task_log_process).unwrap();
@@ -137,40 +128,72 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
             .await
             .unwrap();
 
-        let ctx = ExecutionContext {
-            task_id,
-            run_id,
-            task_def: self.task_claim.task,
-            payload,
-            logger: self.logger,
-            root_url: self.root_url,
-            queue_factory,
-            task_log: task_log.clone(),
-        };
+        // execute the task, using `break 'task_loop task_res` when done (note that this loop never
+        // loops, but Rust does not yet allow labeled blocks)
+        let task_res = 'task_loop: loop {
+            // first, get the payload, failing with "malformed-payload"
+            let payload: P = match P::from_value(self.task_claim.task.payload.clone()) {
+                Ok(p) => p,
+                Err(e) => {
+                    // ignore the result; if things have exploded, that's OK, they'll
+                    // be logged in the worker's log as well
+                    let _ignored = task_log
+                        .write_all(format!("Malformed payload: {}\n", e))
+                        .await;
+                    break 'task_loop InnerResult::Exception("malformed-payload");
+                }
+            };
 
-        let executor = self.executor;
-        let tokio_task = tokio::spawn(async move { executor.execute(ctx).await });
+            let ctx = ExecutionContext {
+                task_id,
+                run_id,
+                task_def: self.task_claim.task,
+                payload,
+                logger: self.logger,
+                root_url: self.root_url,
+                queue_factory,
+                task_log: task_log.clone(),
+            };
 
-        // TODO: select! from task, commands, etc.
+            let executor = self.executor;
+            let tokio_task = tokio::spawn(async move { executor.execute(ctx).await });
 
-        let task_res = match tokio_task.await {
-            Ok(Ok(Success::Succeeded)) => InnerResult::Ok,
-            Ok(Ok(Success::Failed)) => InnerResult::Failed,
-            Ok(Err(e)) => {
-                // ignore the result; if things have exploded, that's OK, they'll
-                // be logged in the worker's log as well
-                let _ = task_log
-                    .write_all(format!("Error executing task: {}\n", e))
-                    .await;
-                InnerResult::Err(e)
-            }
-            // if the task panics, it is returned as an outer error
-            Err(e) => {
-                // ignore the result as above
-                let _ = task_log
-                    .write_all(format!("Panic executing task: {}\n", e))
-                    .await;
-                InnerResult::Err(e.into())
+            // keep tabs on the various bits that are executing, breaking out when
+            // appropriate
+            loop {
+                tokio::select! {
+                    res = tokio_task => {
+                        break 'task_loop match res {
+                            Ok(Ok(Success::Succeeded)) => InnerResult::Ok,
+                            Ok(Ok(Success::Failed)) => InnerResult::Failed,
+                            Ok(Err(e)) => {
+                                let _ignored = task_log
+                                    .write_all(format!("Error executing task: {}\n", e))
+                                    .await;
+                                InnerResult::Err(e)
+                            }
+                            // if the task panics, it is returned as an outer error
+                            Err(e) => {
+                                let _ignored = task_log
+                                    .write_all(format!("Panic executing task: {}\n", e))
+                                    .await;
+                                InnerResult::Err(e.into())
+                            }
+                        }
+                    }
+
+                    cmd = commands.recv() => {
+                        match cmd {
+                            None => {
+                                let _ignored = task_log
+                                    .write_all(format!("Execution abandoned: worker shutting down\n"))
+                                    .await;
+                                break 'task_loop InnerResult::Exception("worker-shutdown");
+                            }
+                            Some(()) => todo!() // no other messages defined yet
+                        }
+                    }
+                }
             }
         };
 
