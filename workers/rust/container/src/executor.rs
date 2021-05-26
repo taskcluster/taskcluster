@@ -34,7 +34,7 @@ impl ContainerExecutor {
 
 #[async_trait]
 impl Executor<Payload> for ContainerExecutor {
-    async fn execute(&self, mut ctx: ExecutionContext<Payload>) -> Result<Success, anyhow::Error> {
+    async fn execute(&self, ctx: ExecutionContext<Payload>) -> Result<Success, anyhow::Error> {
         info!(ctx.logger, "executing task");
 
         let image_id = ctx.payload.image.as_ref();
@@ -54,7 +54,7 @@ impl Executor<Payload> for ContainerExecutor {
         while let Some(bi_res) = log_stream.next().await {
             if let Some(b) = bi_res?.status {
                 ctx.task_log.write_all(b).await?;
-                ctx.task_log.write_all(b"\n").await?;
+                ctx.task_log.write_all("\n").await?;
             }
         }
 
@@ -78,7 +78,7 @@ impl Executor<Payload> for ContainerExecutor {
         let container_id = result.id.clone();
         assert_ne!(container_id.len(), 0);
         debug!(ctx.logger, "starting container"; o!("container_id" => &container_id));
-        ctx.task_log.write_all("Starting container\n").await?;
+        ctx.task_log.writeln("Starting container").await?;
 
         self.docker
             .start_container(
@@ -106,7 +106,7 @@ impl Executor<Payload> for ContainerExecutor {
                 LogOutput::Console { message: ref b } => Some(b),
                 _ => None,
             } {
-                ctx.task_log.write_all(b).await?;
+                ctx.task_log.write_all(b.clone()).await?;
             }
         }
 

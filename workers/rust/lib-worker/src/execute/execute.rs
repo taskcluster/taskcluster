@@ -1,12 +1,12 @@
 use crate::claim::TaskClaim;
 use crate::execute::{ExecutionContext, Executor, Payload, Success};
-use crate::log::{TaskLog, TaskLogFactory};
+use crate::log::TaskLogFactory;
 use crate::process::ProcessFactory;
 use crate::tc::{CredsContainer, ServiceFactory};
 use anyhow::Result;
 use async_trait::async_trait;
 use serde_json::json;
-use slog::{error, Logger};
+use slog::{error, info, Logger};
 use std::marker::PhantomData;
 use std::sync::Arc;
 use tokio::sync::mpsc;
@@ -110,7 +110,7 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
         let task_id = self.task_claim.task_id;
         let run_id = self.task_claim.run_id;
 
-        let mut task_log_process = TaskLogFactory::new(
+        let (mut task_log_process, task_log) = TaskLogFactory::new(
             self.logger.clone(),
             self.service_factory.clone(),
             task_id.clone(),
@@ -119,13 +119,9 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
         )
         .start();
 
-        // get a TaskLog; in this case we know the process has not been
-        // stopped, so it's safe to unwrap.
-        let mut task_log = TaskLog::new(&task_log_process).unwrap();
         task_log
-            .write_all(format!("Task ID: {}\n", &task_id))
-            .await
-            .unwrap();
+            .try_write_all(format!("Task ID: {}\n", &task_id))
+            .await;
 
         // execute the task, using `break 'task_loop task_res` when done (note that this loop never
         // loops, but Rust does not yet allow labeled blocks)
@@ -136,8 +132,8 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                 Err(e) => {
                     // ignore the result; if things have exploded, that's OK, they'll
                     // be logged in the worker's log as well
-                    let _ignored = task_log
-                        .write_all(format!("Malformed payload: {}\n", e))
+                    task_log
+                        .try_write_all(format!("Malformed payload: {}\n", e))
                         .await;
                     break 'task_loop InnerResult::Exception("malformed-payload");
                 }
@@ -148,7 +144,7 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                 run_id,
                 task_def: self.task_claim.task,
                 payload,
-                logger: self.logger,
+                logger: self.logger.clone(),
                 service_factory: self.service_factory,
                 task_log: task_log.clone(),
             };
@@ -165,16 +161,12 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                             Ok(Ok(Success::Succeeded)) => InnerResult::Ok,
                             Ok(Ok(Success::Failed)) => InnerResult::Failed,
                             Ok(Err(e)) => {
-                                let _ignored = task_log
-                                    .write_all(format!("Error executing task: {}\n", e))
-                                    .await;
+                                task_log.try_write_all(format!("Error executing task: {}\n", e)).await;
                                 InnerResult::Err(e)
                             }
                             // if the task panics, it is returned as an outer error
                             Err(e) => {
-                                let _ignored = task_log
-                                    .write_all(format!("Panic executing task: {}\n", e))
-                                    .await;
+                                task_log.try_write_all(format!("Panic executing task: {}\n", e)).await;
                                 InnerResult::Err(e.into())
                             }
                         }
@@ -183,9 +175,7 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                     cmd = commands.recv() => {
                         match cmd {
                             None => {
-                                let _ignored = task_log
-                                    .write_all(format!("Execution abandoned: worker shutting down\n"))
-                                    .await;
+                                task_log.try_writeln("Execution abandoned: worker shutting down").await;
                                 break 'task_loop InnerResult::Exception("worker-shutdown");
                             }
                             Some(()) => todo!() // no other messages defined yet
@@ -195,7 +185,14 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
             }
         };
 
-        // stop the task log and wait for it to complete
+        // stop the task log and wait for it to complete.  This will not occur until all references
+        // to the task log are finished, so this may wait.  Issue a nice warning when that occurs.
+        if !task_log.is_last_ref() {
+            info!(
+                self.logger,
+                "TaskLog is still in use; waiting for all references to complete"
+            );
+        }
         drop(task_log);
         let mut tl_res = task_log_process.stop().await;
         if tl_res.is_ok() {

@@ -21,6 +21,8 @@ This directory contains several crates for Taskcluster workers.
 * Testing support
   * Provide traits for various pieces (queue, logging, artifact support) and provide fake versions
   * It should be easy to run an Executor in a one-shot fashion with a fake task, fake queue, fake artifacts, etc.
+* ClaimWorkLongPoll should be resilient to errors from the queue.claimWork call, and just keep claiming, so that a
+  failure of the queue service doesn't cause all workers to die precipitously
 
 ### container-worker
 
