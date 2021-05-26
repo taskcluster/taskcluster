@@ -12,6 +12,7 @@ use async_trait::async_trait;
 use chrono::prelude::*;
 use serde::Deserialize;
 use slog::{debug, Logger};
+use std::sync::Arc;
 use taskcluster::{ClientBuilder, Credentials, Object, Retry};
 use taskcluster_upload::upload_from_buf;
 use tokio::sync::mpsc;
@@ -22,7 +23,7 @@ use tokio::sync::mpsc;
 pub(crate) struct TaskLogFactory {
     logger: Logger,
     root_url: String,
-    service_factory: Box<dyn ServiceFactory>,
+    service_factory: Arc<dyn ServiceFactory>,
     task_id: String,
     run_id: u32,
     expires: DateTime<Utc>,
@@ -32,7 +33,7 @@ impl TaskLogFactory {
     pub(crate) fn new(
         logger: Logger,
         root_url: String,
-        service_factory: Box<dyn ServiceFactory>,
+        service_factory: Arc<dyn ServiceFactory>,
         task_id: String,
         run_id: u32,
         expires: DateTime<Utc>,

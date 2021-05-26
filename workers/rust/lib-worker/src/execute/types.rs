@@ -5,6 +5,7 @@ use crate::tc::ServiceFactory;
 use anyhow::Result;
 use async_trait::async_trait;
 use slog::Logger;
+use std::sync::Arc;
 
 /// An executor is an object that knows how to execute tasks; it is the main trait to implement
 /// to use this crate.
@@ -22,7 +23,7 @@ pub struct ExecutionContext<P: Payload> {
     pub payload: P,
     pub logger: Logger,
     pub root_url: String,
-    pub service_factory: Box<dyn ServiceFactory>,
+    pub service_factory: Arc<dyn ServiceFactory>,
     pub task_log: TaskLog,
 }
 

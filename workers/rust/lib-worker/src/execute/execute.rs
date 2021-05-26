@@ -40,7 +40,7 @@ pub(crate) struct ExecutionFactory<P: Payload, E: Executor<P>> {
     executor: Arc<E>,
     logger: Logger,
     task_claim: TaskClaim,
-    creds_container: CredsContainer,
+    service_factory: Arc<dyn ServiceFactory>,
     _phantom: PhantomData<P>,
 }
 
@@ -49,7 +49,7 @@ impl<P: Payload, E: Executor<P>> ProcessFactory for ExecutionFactory<P, E> {
     type Command = ();
     async fn run(self, commands: mpsc::Receiver<Self::Command>) -> Result<()> {
         // get a copy of information to use when resolving the task
-        let creds_container = self.creds_container.clone();
+        let service_factory = self.service_factory.clone();
         let task_id = self.task_claim.task_id.clone();
         let run_id = self.task_claim.run_id.to_string();
         let logger = self.logger.clone();
@@ -60,7 +60,7 @@ impl<P: Payload, E: Executor<P>> ProcessFactory for ExecutionFactory<P, E> {
         // Report the task status to the queue.  Note that if any of these fail, the failure
         // will be logged and the worker will continue.  This may happen if, for example, the
         // task deadline is exceeded while stlil running.
-        let queue = creds_container.queue()?;
+        let queue = service_factory.queue()?;
         match res {
             InnerResult::Ok => {
                 queue.reportCompleted(&task_id, &run_id).await?;
@@ -94,13 +94,16 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
         logger: Logger,
         task_claim: TaskClaim,
     ) -> Self {
-        let creds_container = CredsContainer::new(root_url.clone(), task_claim.credentials.clone());
+        let service_factory = Arc::new(CredsContainer::new(
+            root_url.clone(),
+            task_claim.credentials.clone(),
+        ));
         Self {
             root_url,
             executor,
             logger,
             task_claim,
-            creds_container,
+            service_factory,
             _phantom: PhantomData,
         }
     }
@@ -108,12 +111,11 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
     async fn run_inner(self, mut commands: mpsc::Receiver<()>) -> InnerResult {
         let task_id = self.task_claim.task_id;
         let run_id = self.task_claim.run_id;
-        let service_factory = Box::new(self.creds_container);
 
         let mut task_log_process = TaskLogFactory::new(
             self.logger.clone(),
             self.root_url.clone(),
-            service_factory.clone(),
+            self.service_factory.clone(),
             task_id.clone(),
             run_id,
             self.task_claim.task.expires,
@@ -151,7 +153,7 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                 payload,
                 logger: self.logger,
                 root_url: self.root_url,
-                service_factory,
+                service_factory: self.service_factory,
                 task_log: task_log.clone(),
             };
 
