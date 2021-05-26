@@ -143,7 +143,7 @@ mod test {
     use bollard::Docker;
     use serde_json::json;
     use taskcluster_lib_worker::task::Task;
-    use taskcluster_lib_worker::testing::{execute_task, TestServiceFactory};
+    use taskcluster_lib_worker::testing::{execute_task, TestArtifactManager, TestServiceFactory};
 
     #[tokio::test]
     async fn simple_echo_true() {
@@ -159,13 +159,20 @@ mod test {
         };
 
         // this worker does not call any APIs, so it doesn't need any fakes
+        let artifact_manager = TestArtifactManager::new();
         let service_factory = TestServiceFactory {
             ..Default::default()
         };
 
-        let result = execute_task(executor, task, Arc::new(service_factory))
-            .await
-            .unwrap();
+        let result = execute_task(
+            executor,
+            task,
+            artifact_manager.as_artifact_manager(),
+            service_factory.as_service_factory(),
+        )
+        .await
+        .unwrap();
+
         assert_eq!(result.success, Success::Succeeded);
 
         println!(
