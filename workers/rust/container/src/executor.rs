@@ -125,3 +125,49 @@ impl Executor<Payload> for ContainerExecutor {
         Ok(Success::Succeeded)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use bollard::Docker;
+    use serde_json::json;
+    use taskcluster_lib_worker::task::Task;
+    use taskcluster_lib_worker::testing::{execute_task, TestServiceFactory};
+
+    #[tokio::test]
+    async fn simple_echo_true() {
+        let docker = Docker::connect_with_local_defaults().unwrap();
+        let executor = ContainerExecutor::new(docker);
+
+        let task = Task {
+            payload: json!({
+                "image": "alpine:latest",
+                "command": ["sh", "-c", "echo hello!"],
+            }),
+            ..Default::default()
+        };
+
+        // this worker does not call any APIs, so it doesn't need any fakes
+        let service_factory = TestServiceFactory {
+            ..Default::default()
+        };
+
+        let result = execute_task(executor, task, Arc::new(service_factory))
+            .await
+            .unwrap();
+        assert_eq!(result.success, Success::Succeeded);
+
+        println!(
+            "logs:\n{}",
+            String::from_utf8_lossy(result.task_log.as_ref())
+        );
+        let mut found = false;
+        for line in result.task_log.split(|c| *c == '\n' as u8) {
+            if line == b"hello!" {
+                found = true;
+                break;
+            }
+        }
+        assert!(found);
+    }
+}
