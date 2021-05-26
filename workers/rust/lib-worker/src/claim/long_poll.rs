@@ -87,3 +87,119 @@ impl ProcessFactory for ClaimWorkLongPoll {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::tc::{QueueService, TestServiceFactory};
+    use crate::test::{test_logger, test_task_json};
+    use serde_json::{json, Value};
+    use std::sync::Mutex;
+    use tokio::time::{sleep, Duration};
+
+    /// Fake Queue that returns the given claims on each call.  The Mutex allows
+    /// us to modify (to pop items from the vector) in a thread-safe fashion.
+    struct FakeQueue(Mutex<Vec<Vec<Value>>>);
+
+    #[async_trait]
+    impl QueueService for FakeQueue {
+        async fn claimWork(
+            &self,
+            task_queue_id: &str,
+            payload: &Value,
+        ) -> std::result::Result<Value, anyhow::Error> {
+            assert_eq!(task_queue_id, "aa/bb");
+            assert_eq!(payload["workerGroup"], json!("wg"));
+            assert_eq!(payload["workerId"], json!("wi"));
+
+            let num_requested = payload["tasks"].as_i64().unwrap() as usize;
+
+            let mut return_values = self.0.lock().unwrap();
+            let task_claim_values = if return_values.len() > 0 {
+                let claims = return_values.remove(0);
+                assert!(num_requested >= claims.len());
+                Value::Array(claims)
+            } else {
+                Value::Array(vec![])
+            };
+
+            Ok(json!({ "tasks": task_claim_values }))
+        }
+    }
+
+    fn make_claim(task_id: &'static str) -> Value {
+        json!({
+            "status": {
+                "taskId": task_id,
+            },
+            "task": test_task_json(),
+            "credentials": {
+                "clientId": "cli",
+                "accessToken": "at",
+            },
+            "runId": 0
+        })
+    }
+
+    #[tokio::test]
+    async fn test_poll_counts() {
+        // and we read the resulting TaskClaims here
+        let (tasks_tx, mut tasks_rx) = mpsc::channel(5);
+
+        let claims = vec![
+            vec![make_claim("task1"), make_claim("task2")],
+            vec![make_claim("task3")],
+            vec![make_claim("task4")],
+            vec![make_claim("task5")],
+        ];
+
+        let worker_service_factory = Arc::new(TestServiceFactory {
+            queue: Some(Arc::new(FakeQueue(Mutex::new(claims)))),
+            ..Default::default()
+        });
+
+        let lp = ClaimWorkLongPoll {
+            logger: test_logger(),
+            tasks_tx,
+            available_capacity: 3,
+            worker_service_factory,
+            task_queue_id: "aa/bb".to_owned(),
+            worker_group: "wg".to_owned(),
+            worker_id: "wi".to_owned(),
+        };
+        let mut lp = lp.start();
+
+        // with capacity 3, we should get three tasks before timing out
+        let mut got_tasks = vec![];
+        loop {
+            tokio::select! {
+                Err(e) = (&mut lp) => { panic!("long poller exited early: {:?}", e); },
+                Some(tc) = tasks_rx.recv() => { got_tasks.push(tc.task_id); },
+                _ = sleep(Duration::from_millis(100)) => { break },
+            };
+        }
+        assert_eq!(
+            got_tasks,
+            vec!["task1".to_owned(), "task2".to_owned(), "task3".to_owned()]
+        );
+
+        // indicate capacity is available, and get the next task; but note we never get task5
+        lp.command(LongPollCommand::IncrementCapacity)
+            .await
+            .unwrap();
+
+        let mut got_tasks = vec![];
+        loop {
+            tokio::select! {
+                Err(e) = (&mut lp) => { panic!("long poller exited early: {:?}", e); },
+                Some(tc) = tasks_rx.recv() => { got_tasks.push(tc.task_id); },
+                _ = sleep(Duration::from_millis(100)) => { break },
+            };
+        }
+        assert_eq!(got_tasks, vec!["task4".to_owned()]);
+
+        // shut down the poller
+        lp.stop().await.unwrap();
+        lp.await.unwrap();
+    }
+}

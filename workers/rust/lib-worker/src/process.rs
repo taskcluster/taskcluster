@@ -192,6 +192,7 @@ mod test {
     use super::*;
     use std::sync::atomic::{AtomicU32, Ordering};
     use std::sync::Arc;
+    use tokio::time::{sleep, Duration};
 
     #[tokio::test]
     async fn start_and_command_and_stop() {
@@ -226,7 +227,7 @@ mod test {
         // the wait() call
         tokio::select! {
             _ = (&mut process) => { panic!("process stopped early"); },
-            _ = tokio::time::sleep(tokio::time::Duration::from_millis(5)) => {},
+            _ = sleep(Duration::from_millis(5)) => {},
         };
 
         assert_eq!(foos.load(Ordering::SeqCst), 0u32);
@@ -235,7 +236,7 @@ mod test {
 
         tokio::select! {
             _ = (&mut process) => { panic!("process stopped early"); },
-            _ = tokio::time::sleep(tokio::time::Duration::from_millis(5)) => {},
+            _ = sleep(Duration::from_millis(5)) => {},
         };
 
         assert_eq!(foos.load(Ordering::SeqCst), 1u32);
@@ -245,7 +246,7 @@ mod test {
 
         tokio::select! {
             _ = (&mut process) => { panic!("process stopped early"); },
-            _ = tokio::time::sleep(tokio::time::Duration::from_millis(5)) => {},
+            _ = sleep(Duration::from_millis(5)) => {},
         };
 
         assert_eq!(foos.load(Ordering::SeqCst), 2u32);
@@ -255,7 +256,7 @@ mod test {
         // stop hasn't taken effect due to the outstanding handle
         tokio::select! {
             _ = (&mut process) => { panic!("process stopped early"); },
-            _ = tokio::time::sleep(tokio::time::Duration::from_millis(5)) => {},
+            _ = sleep(Duration::from_millis(5)) => {},
         };
 
         assert_eq!(foos.load(Ordering::SeqCst), 2u32);
@@ -266,7 +267,7 @@ mod test {
         tokio::select! {
             _ = (&mut process) => { },
             // 100ms here to allow time for message proapagation
-            _ = tokio::time::sleep(tokio::time::Duration::from_millis(100)) => { panic!("wait did not resolve"); },
+            _ = sleep(Duration::from_millis(100)) => { panic!("wait did not resolve"); },
         };
 
         assert_eq!(foos.load(Ordering::SeqCst), 2u32);
@@ -318,7 +319,7 @@ mod test {
 
             async fn run(self, _commands: mpsc::Receiver<Self::Command>) -> Result<()> {
                 // task just pauses for long enough to schedule other stuff
-                tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
+                sleep(Duration::from_millis(1)).await;
                 dbg!(self.id);
                 Ok(())
             }
@@ -362,7 +363,7 @@ mod test {
             async fn run(self, _commands: mpsc::Receiver<Self::Command>) -> Result<()> {
                 // 50 millis is long enough for the first select to finish, dropping
                 // the `processes.wait()` Future
-                tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+                sleep(Duration::from_millis(50)).await;
                 Ok(())
             }
         }
@@ -400,7 +401,7 @@ mod test {
 
             async fn run(self, _commands: mpsc::Receiver<Self::Command>) -> Result<()> {
                 // task just pauses for long enough to schedule other stuff
-                tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
+                sleep(Duration::from_millis(1)).await;
                 self.counter.fetch_add(1, Ordering::SeqCst);
                 Ok(())
             }

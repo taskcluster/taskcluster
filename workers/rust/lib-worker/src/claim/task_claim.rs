@@ -46,6 +46,7 @@ impl TryFrom<serde_json::Value> for TaskClaim {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::test::test_task_json;
     use serde_json::json;
 
     #[test]
@@ -54,35 +55,7 @@ mod test {
             "status": {
                 "taskId": "tid"
             },
-            "task": {
-                "provisionerId": "aa",
-                "workerType": "bb",
-                "taskQueueId": "aa/bb",
-                "schedulerId": "taskcluster-ui",
-                "projectId": "taskcluster",
-                "taskGroupId": "BnSDHIv5QN6gMEyMRbcBDQ",
-                "dependencies": [],
-                "requires": "all-completed",
-                "routes": [],
-                "priority": "lowest",
-                "retries": 0,
-                "created": "2021-05-25T20:23:26.803Z",
-                "deadline": "2021-05-25T23:23:26.803Z",
-                "expires": "2022-05-25T20:23:26.803Z",
-                "scopes": [],
-                "payload": {
-                    "command": [ "echo", "hello" ],
-                    "image": "python:2.7"
-                },
-                "metadata": {
-                    "name": "test",
-                    "owner": "taskcluster-internal@mozilla.com",
-                    "source": "https://github.com/taskcluster/taskcluster-lib-urls.git",
-                    "description": "Test"
-                },
-                "tags": {},
-                "extra": {}
-            },
+            "task": test_task_json(),
             "credentials": {
                 "clientId": "cli",
                 "accessToken": "at",

@@ -8,3 +8,6 @@ mod services;
 
 pub(crate) use creds_container::CredsContainer;
 pub use services::{QueueService, ServiceFactory};
+
+#[cfg(debug_assertions)]
+pub use services::TestServiceFactory;
