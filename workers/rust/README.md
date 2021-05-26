@@ -19,8 +19,6 @@ This directory contains several crates for Taskcluster workers.
 * Artifact support
   * support for downloading artifacts
   * support for creating non-data artifacts
-* ClaimWorkLongPoll should be resilient to errors from the queue.claimWork call, and just keep claiming, so that a
-  failure of the queue service doesn't cause all workers to die precipitously
 
 ### container-worker
 

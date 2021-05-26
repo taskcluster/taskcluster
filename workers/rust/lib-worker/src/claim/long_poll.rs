@@ -7,6 +7,7 @@ use serde_json::json;
 use slog::{debug, Logger};
 use std::convert::TryInto;
 use std::sync::Arc;
+use taskcluster::err_status_code;
 use tokio::sync::mpsc;
 
 /// A process to manage the long-polling calls to queue.claimWork, minimizing the number of times
@@ -71,7 +72,24 @@ impl ProcessFactory for ClaimWorkLongPoll {
                 self.logger,
                 "calling queue.claimWork for {} tasks", self.available_capacity
             );
-            let claims = queue.claimWork(&self.task_queue_id, &payload).await?;
+            let claims = match queue.claimWork(&self.task_queue_id, &payload).await {
+                Ok(claims) => claims,
+                Err(e) => {
+                    // fail on client errors (4xx), causing the worker to exit
+                    if let Some(status_code) = err_status_code(&e) {
+                        if status_code.is_client_error() {
+                            return Err(e);
+                        }
+                    }
+                    // .. but for everything else, retry indefinitely, rather than interrupting
+                    // running tasks and perhaps leaving the worker in a state from which it must
+                    // be manually recovered.
+                    //
+                    // The client library will already have retried this call a few times, so
+                    // there's no need for an additional sleep here.
+                    continue;
+                }
+            };
             if let Some(task_claims) = claims.get("tasks").map(|tasks| tasks.as_array()).flatten() {
                 debug!(
                     self.logger,
