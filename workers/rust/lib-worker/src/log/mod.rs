@@ -22,7 +22,6 @@ use tokio::sync::mpsc;
 /// appropriately and exits.
 pub(crate) struct TaskLogFactory {
     logger: Logger,
-    root_url: String,
     service_factory: Arc<dyn ServiceFactory>,
     task_id: String,
     run_id: u32,
@@ -32,7 +31,6 @@ pub(crate) struct TaskLogFactory {
 impl TaskLogFactory {
     pub(crate) fn new(
         logger: Logger,
-        root_url: String,
         service_factory: Arc<dyn ServiceFactory>,
         task_id: String,
         run_id: u32,
@@ -40,7 +38,6 @@ impl TaskLogFactory {
     ) -> Self {
         Self {
             logger,
-            root_url,
             service_factory,
             task_id,
             run_id,
@@ -99,7 +96,9 @@ impl ProcessFactory for TaskLogFactory {
         }
         let res: CreateArtifactResponse = serde_json::from_value(res)?;
 
-        let object = Object::new(ClientBuilder::new(&self.root_url).credentials(res.credentials))?;
+        let object = Object::new(
+            ClientBuilder::new(&self.service_factory.root_url()).credentials(res.credentials),
+        )?;
         let retry = Retry::default();
         upload_from_buf(
             &res.project_id,

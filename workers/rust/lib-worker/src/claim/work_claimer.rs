@@ -44,7 +44,8 @@ impl<P: Payload, E: Executor<P>> WorkClaimerBuilder<P, E> {
     }
 
     /// Set a [`ServiceFactory`] that will supply worker credentials.  This is typically only used
-    /// in tests, as a way to inject fake services, and overrides `worker_creds`.
+    /// in tests, as a way to inject fake services, and overrides `worker_creds` and `root_url`,
+    /// making them unnecessary.
     pub fn worker_service_factory(
         mut self,
         worker_service_factory: Arc<dyn ServiceFactory>,
@@ -88,12 +89,12 @@ impl<P: Payload, E: Executor<P>> WorkClaimerBuilder<P, E> {
                 "worker_group" => worker_group.clone(),
                 "worker_id" => worker_id.clone(),
                 "task_queue_id" => task_queue_id.clone()));
-        let root_url = self.root_url.expect("root_url not set");
         let worker_service_factory = if self.worker_service_factory.is_some() {
             self.worker_service_factory.unwrap()
         } else {
+            let root_url = self.root_url.expect("root_url not set");
             Arc::new(CredsContainer::new(
-                root_url.clone(),
+                root_url,
                 self.worker_creds
                     .expect("neither worker_service_factory not worker_creds are set"),
             ))
@@ -104,7 +105,6 @@ impl<P: Payload, E: Executor<P>> WorkClaimerBuilder<P, E> {
 
         WorkClaimer {
             logger,
-            root_url,
             worker_service_factory,
             task_queue_id,
             worker_group,
@@ -119,9 +119,6 @@ impl<P: Payload, E: Executor<P>> WorkClaimerBuilder<P, E> {
 /// Initial state for a work claimer.
 pub struct WorkClaimer<P: Payload, E: Executor<P>> {
     logger: Logger,
-    root_url: String,
-    // TODO: move root_url into ServiceFactories
-    // TODO: all ServiceFactories could be Arc<dyn ServiceFactory>
     worker_service_factory: Arc<dyn ServiceFactory>,
     task_queue_id: String,
     worker_group: String,
@@ -183,7 +180,7 @@ impl<P: Payload, E: Executor<P>> ProcessFactory for WorkClaimer<P, E> {
                 Some(task_claim) = tasks_rx.recv(), if num_running < self.capacity => {
                     let logger = self.logger.new(o!("task_id" => task_claim.task_id.clone(), "run_id" => task_claim.run_id));
                     info!(logger, "Starting task");
-                    let ef = ExecutionFactory::new(self.root_url.clone(), self.executor.clone(), logger, task_claim);
+                    let ef = ExecutionFactory::new(self.worker_service_factory.root_url(), self.executor.clone(), logger, task_claim);
                     running.add(ef.start());
                 },
                 None = commands.recv() => {

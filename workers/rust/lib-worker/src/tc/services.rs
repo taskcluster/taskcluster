@@ -9,41 +9,59 @@ use taskcluster::Queue;
 /// instances to be created.  This trait is also a useful point for depnedency injection
 /// in tests.
 pub trait ServiceFactory: 'static + Sync + Send {
+    /// Get the root URL
+    fn root_url(&self) -> String;
+
+    /// Get an implementation of the Queue service
     fn queue(&self) -> anyhow::Result<Arc<dyn QueueService>>;
 }
 
 /// A trait including all of the Queue methods that workers need; in production this will call
-/// the queue service, but in testing it can be faked.
+/// the queue service, but in testing it can be faked.  Each method has a default implementation
+/// that panics with "Not implemented", so tests need only implement the neecessary methods.
 #[allow(non_snake_case)]
+#[allow(unused_variables)]
 #[async_trait]
 pub trait QueueService: 'static + Sync + Send {
     async fn claimWork(
         &self,
         taskQueueId: &str,
         payload: &Value,
-    ) -> std::result::Result<Value, Error>;
+    ) -> std::result::Result<Value, Error> {
+        todo!()
+    }
     async fn createArtifact(
         &self,
         taskId: &str,
         runId: &str,
         name: &str,
         payload: &Value,
-    ) -> Result<Value, Error>;
+    ) -> Result<Value, Error> {
+        todo!()
+    }
     async fn finishArtifact(
         &self,
         taskId: &str,
         runId: &str,
         name: &str,
         payload: &Value,
-    ) -> Result<(), Error>;
-    async fn reportCompleted(&self, taskId: &str, runId: &str) -> Result<Value, Error>;
-    async fn reportFailed(&self, taskId: &str, runId: &str) -> Result<Value, Error>;
+    ) -> Result<(), Error> {
+        todo!()
+    }
+    async fn reportCompleted(&self, taskId: &str, runId: &str) -> Result<Value, Error> {
+        todo!()
+    }
+    async fn reportFailed(&self, taskId: &str, runId: &str) -> Result<Value, Error> {
+        todo!()
+    }
     async fn reportException(
         &self,
         taskId: &str,
         runId: &str,
         payload: &Value,
-    ) -> Result<Value, Error>;
+    ) -> Result<Value, Error> {
+        todo!()
+    }
 }
 
 /// Trivial implementation of the [`QueueService`] trait for the [`Queue`] client struct

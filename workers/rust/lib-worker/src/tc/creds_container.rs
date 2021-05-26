@@ -36,6 +36,11 @@ impl CredsContainer {
 }
 
 impl ServiceFactory for CredsContainer {
+    fn root_url(&self) -> String {
+        let inner = self.0.lock().unwrap();
+        inner.root_url.clone()
+    }
+
     fn queue(&self) -> anyhow::Result<Arc<dyn QueueService>> {
         let mut inner = self.0.lock().unwrap();
         if let Some(ref queue) = inner.queue {

@@ -36,7 +36,6 @@ impl InnerResult {
 }
 
 pub(crate) struct ExecutionFactory<P: Payload, E: Executor<P>> {
-    root_url: String,
     executor: Arc<E>,
     logger: Logger,
     task_claim: TaskClaim,
@@ -95,11 +94,10 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
         task_claim: TaskClaim,
     ) -> Self {
         let service_factory = Arc::new(CredsContainer::new(
-            root_url.clone(),
+            root_url,
             task_claim.credentials.clone(),
         ));
         Self {
-            root_url,
             executor,
             logger,
             task_claim,
@@ -114,7 +112,6 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
 
         let mut task_log_process = TaskLogFactory::new(
             self.logger.clone(),
-            self.root_url.clone(),
             self.service_factory.clone(),
             task_id.clone(),
             run_id,
@@ -152,7 +149,6 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                 task_def: self.task_claim.task,
                 payload,
                 logger: self.logger,
-                root_url: self.root_url,
                 service_factory: self.service_factory,
                 task_log: task_log.clone(),
             };

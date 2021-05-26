@@ -22,7 +22,6 @@ pub struct ExecutionContext<P: Payload> {
     pub task_def: Task,
     pub payload: P,
     pub logger: Logger,
-    pub root_url: String,
     pub service_factory: Arc<dyn ServiceFactory>,
     pub task_log: TaskLog,
 }
