@@ -1,6 +1,7 @@
 use super::long_poll::{ClaimWorkLongPoll, LongPollCommand};
 use crate::execute::{ExecutionFactory, Executor, Payload};
 use crate::process::{Process, ProcessFactory, ProcessSet};
+use crate::tc::{CredsContainer, ServiceFactory};
 use anyhow::{bail, Context as AnyhowContext, Result};
 use async_trait::async_trait;
 use slog::{debug, error, info, o, Logger};
@@ -14,6 +15,7 @@ pub struct WorkClaimerBuilder<P: Payload, E: Executor<P>> {
     logger: Option<Logger>,
     root_url: Option<String>,
     worker_creds: Option<Credentials>,
+    worker_service_factory: Option<Arc<dyn ServiceFactory>>,
     task_queue_id: Option<String>,
     worker_group: Option<String>,
     worker_id: Option<String>,
@@ -38,6 +40,16 @@ impl<P: Payload, E: Executor<P>> WorkClaimerBuilder<P, E> {
     /// Set the (initial) worker credentials
     pub fn worker_creds(mut self, worker_creds: Credentials) -> Self {
         self.worker_creds = Some(worker_creds);
+        self
+    }
+
+    /// Set a [`ServiceFactory`] that will supply worker credentials.  This is typically only used
+    /// in tests, as a way to inject fake services, and overrides `worker_creds`.
+    pub fn worker_service_factory(
+        mut self,
+        worker_service_factory: Arc<dyn ServiceFactory>,
+    ) -> Self {
+        self.worker_service_factory = Some(worker_service_factory);
         self
     }
 
@@ -69,23 +81,37 @@ impl<P: Payload, E: Executor<P>> WorkClaimerBuilder<P, E> {
     /// Build the WorkClaimer.  This will panic if any parameter that does not have
     /// a default is not set.
     pub fn build(self) -> WorkClaimer<P, E> {
+        let task_queue_id = self.task_queue_id.expect("task_queue_id not set");
         let worker_group = self.worker_group.expect("worker_group not set");
         let worker_id = self.worker_id.expect("worker_id not set");
-        let task_queue_id = self.task_queue_id.expect("task_queue_id not set");
         let logger = self.logger.expect("logger not set").new(o!(
                 "worker_group" => worker_group.clone(),
                 "worker_id" => worker_id.clone(),
                 "task_queue_id" => task_queue_id.clone()));
+        let root_url = self.root_url.expect("root_url not set");
+        let worker_service_factory = if self.worker_service_factory.is_some() {
+            self.worker_service_factory.unwrap()
+        } else {
+            Arc::new(CredsContainer::new(
+                root_url.clone(),
+                self.worker_creds
+                    .expect("neither worker_service_factory not worker_creds are set"),
+            ))
+        };
+        let capacity = self.capacity.unwrap_or(1);
+        let executor = Arc::new(self.executor);
+        let payload_type = self.payload_type;
+
         WorkClaimer {
             logger,
-            root_url: self.root_url.expect("root_url not set"),
-            worker_creds: self.worker_creds.expect("worker_creds not set"),
+            root_url,
+            worker_service_factory,
             task_queue_id,
             worker_group,
             worker_id,
-            capacity: self.capacity.unwrap_or(1),
-            executor: Arc::new(self.executor),
-            payload_type: self.payload_type,
+            capacity,
+            executor,
+            payload_type,
         }
     }
 }
@@ -94,7 +120,9 @@ impl<P: Payload, E: Executor<P>> WorkClaimerBuilder<P, E> {
 pub struct WorkClaimer<P: Payload, E: Executor<P>> {
     logger: Logger,
     root_url: String,
-    worker_creds: Credentials,
+    // TODO: move root_url into ServiceFactories
+    // TODO: all ServiceFactories could be Arc<dyn ServiceFactory>
+    worker_service_factory: Arc<dyn ServiceFactory>,
     task_queue_id: String,
     worker_group: String,
     worker_id: String,
@@ -110,6 +138,7 @@ impl<P: Payload, E: Executor<P>> WorkClaimer<P, E> {
             logger: None,
             root_url: None,
             worker_creds: None,
+            worker_service_factory: None,
             task_queue_id: None,
             worker_group: None,
             worker_id: None,
@@ -139,8 +168,7 @@ impl<P: Payload, E: Executor<P>> ProcessFactory for WorkClaimer<P, E> {
             logger: self.logger.clone(),
             tasks_tx,
             available_capacity: self.capacity,
-            root_url: self.root_url.clone(),
-            worker_creds: self.worker_creds,
+            worker_service_factory: self.worker_service_factory.clone(),
             task_queue_id: self.task_queue_id,
             worker_group: self.worker_group,
             worker_id: self.worker_id,

@@ -1,11 +1,12 @@
 use crate::claim::TaskClaim;
 use crate::process::ProcessFactory;
+use crate::tc::ServiceFactory;
 use anyhow::Result;
 use async_trait::async_trait;
 use serde_json::json;
 use slog::{debug, Logger};
 use std::convert::TryInto;
-use taskcluster::{ClientBuilder, Credentials, Queue};
+use std::sync::Arc;
 use tokio::sync::mpsc;
 
 /// A process to manage the long-polling calls to queue.claimWork, minimizing the number of times
@@ -20,8 +21,7 @@ pub(super) struct ClaimWorkLongPoll {
     /// Current available capacity for new tasks
     pub(super) available_capacity: usize,
 
-    pub(super) root_url: String,
-    pub(super) worker_creds: Credentials,
+    pub(super) worker_service_factory: Arc<dyn ServiceFactory>,
     pub(super) task_queue_id: String,
     pub(super) worker_group: String,
     pub(super) worker_id: String,
@@ -37,9 +37,6 @@ pub(super) enum LongPollCommand {
 impl ProcessFactory for ClaimWorkLongPoll {
     type Command = LongPollCommand;
     async fn run(mut self, mut commands: mpsc::Receiver<Self::Command>) -> Result<()> {
-        let queue =
-            Queue::new(ClientBuilder::new(&self.root_url).credentials(self.worker_creds.clone()))?;
-
         // ideally, we could run the `queue.claimWork` call concurrently with polling the command
         // channel, but the simpler option is to just alternate the two.  The channel has enough
         // space to hold `capacity` IncrementCapacity commands, which is the most that might exist
@@ -63,6 +60,8 @@ impl ProcessFactory for ClaimWorkLongPoll {
             }
 
             // next, perform the long poll and send the results
+
+            let queue = self.worker_service_factory.queue()?;
             let payload = json!({
                 "tasks": self.available_capacity,
                 "workerGroup": &self.worker_group,
