@@ -2,8 +2,7 @@ use crate::claim::TaskClaim;
 use crate::execute::{ExecutionContext, Executor, Payload, Success};
 use crate::log::{TaskLog, TaskLogFactory};
 use crate::process::ProcessFactory;
-use crate::tc::CredsContainer;
-use crate::tc::QueueFactory;
+use crate::tc::{CredsContainer, ServiceFactory};
 use anyhow::Result;
 use async_trait::async_trait;
 use serde_json::json;
@@ -109,12 +108,12 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
     async fn run_inner(self, mut commands: mpsc::Receiver<()>) -> InnerResult {
         let task_id = self.task_claim.task_id;
         let run_id = self.task_claim.run_id;
-        let queue_factory = Box::new(self.creds_container);
+        let service_factory = Box::new(self.creds_container);
 
         let mut task_log_process = TaskLogFactory::new(
             self.logger.clone(),
             self.root_url.clone(),
-            queue_factory.clone(),
+            service_factory.clone(),
             task_id.clone(),
             run_id,
             self.task_claim.task.expires,
@@ -152,7 +151,7 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                 payload,
                 logger: self.logger,
                 root_url: self.root_url,
-                queue_factory,
+                service_factory,
                 task_log: task_log.clone(),
             };
 

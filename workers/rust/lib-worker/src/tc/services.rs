@@ -4,11 +4,11 @@ use serde_json::Value;
 use std::sync::Arc;
 use taskcluster::Queue;
 
-/// A QueueFactory can efficiently supply Queue instances on-demand.  Call this each time
+/// A ServiceFactory can efficiently supply Queue instances on-demand.  Call this each time
 /// you need a queue, rather than caching the value for any length of time, to allow new
 /// instances to be created.  This trait is also a useful point for depnedency injection
 /// in tests.
-pub trait QueueFactory: 'static + Sync + Send {
+pub trait ServiceFactory: 'static + Sync + Send {
     fn queue(&self) -> anyhow::Result<Arc<dyn QueueService>>;
 }
 

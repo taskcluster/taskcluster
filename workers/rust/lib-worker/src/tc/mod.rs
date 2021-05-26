@@ -4,7 +4,7 @@
 //! * Support for injecting fake implementations to support testing worker implementations
 
 mod creds_container;
-mod queue;
+mod services;
 
 pub(crate) use creds_container::CredsContainer;
-pub use queue::{QueueFactory, QueueService};
+pub use services::{QueueService, ServiceFactory};

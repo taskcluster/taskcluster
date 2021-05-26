@@ -7,7 +7,7 @@
 //!  * uploading a log artifact at task completion
 
 use crate::process::{Process, ProcessFactory, ProcessHandle};
-use crate::tc::QueueFactory;
+use crate::tc::ServiceFactory;
 use async_trait::async_trait;
 use chrono::prelude::*;
 use serde::Deserialize;
@@ -22,7 +22,7 @@ use tokio::sync::mpsc;
 pub(crate) struct TaskLogFactory {
     logger: Logger,
     root_url: String,
-    queue_factory: Box<dyn QueueFactory>,
+    service_factory: Box<dyn ServiceFactory>,
     task_id: String,
     run_id: u32,
     expires: DateTime<Utc>,
@@ -32,7 +32,7 @@ impl TaskLogFactory {
     pub(crate) fn new(
         logger: Logger,
         root_url: String,
-        queue_factory: Box<dyn QueueFactory>,
+        service_factory: Box<dyn ServiceFactory>,
         task_id: String,
         run_id: u32,
         expires: DateTime<Utc>,
@@ -40,7 +40,7 @@ impl TaskLogFactory {
         Self {
             logger,
             root_url,
-            queue_factory,
+            service_factory,
             task_id,
             run_id,
             expires,
@@ -73,7 +73,7 @@ impl ProcessFactory for TaskLogFactory {
         debug!(self.logger, "uploading task-log artifact");
         let run_id_str = format!("{}", self.run_id);
         let res = self
-            .queue_factory
+            .service_factory
             .queue()?
             .createArtifact(
                 &self.task_id,
@@ -112,7 +112,7 @@ impl ProcessFactory for TaskLogFactory {
         )
         .await?;
 
-        self.queue_factory
+        self.service_factory
             .queue()?
             .finishArtifact(
                 &self.task_id,

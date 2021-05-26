@@ -1,7 +1,7 @@
 use crate::execute::Payload;
 use crate::log::TaskLog;
 use crate::task::Task;
-use crate::tc::QueueFactory;
+use crate::tc::ServiceFactory;
 use anyhow::Result;
 use async_trait::async_trait;
 use slog::Logger;
@@ -22,7 +22,7 @@ pub struct ExecutionContext<P: Payload> {
     pub payload: P,
     pub logger: Logger,
     pub root_url: String,
-    pub queue_factory: Box<dyn QueueFactory>,
+    pub service_factory: Box<dyn ServiceFactory>,
     pub task_log: TaskLog,
 }
 

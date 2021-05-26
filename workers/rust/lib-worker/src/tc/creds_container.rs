@@ -1,9 +1,9 @@
-use crate::tc::{QueueFactory, QueueService};
+use crate::tc::{QueueService, ServiceFactory};
 use std::sync::{Arc, Mutex};
 use taskcluster::{ClientBuilder, Credentials, Queue};
 
 /// Clonable credentials container, allowing updates as they expire.  This is used as a
-/// QueueFactory in practice, for both task credentials and worker credentials.
+/// ServiceFactory in practice, for both task credentials and worker credentials.
 #[derive(Clone)]
 pub(crate) struct CredsContainer(Arc<Mutex<Inner>>);
 
@@ -35,7 +35,7 @@ impl CredsContainer {
     }
 }
 
-impl QueueFactory for CredsContainer {
+impl ServiceFactory for CredsContainer {
     fn queue(&self) -> anyhow::Result<Arc<dyn QueueService>> {
         let mut inner = self.0.lock().unwrap();
         if let Some(ref queue) = inner.queue {
