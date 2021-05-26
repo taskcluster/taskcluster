@@ -1,3 +1,4 @@
+use crate::artifact::TaskArtifactManager;
 use crate::claim::TaskClaim;
 use crate::execute::{ExecutionContext, Executor, Payload, Success};
 use crate::log::TaskLogFactory;
@@ -110,11 +111,16 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
         let task_id = self.task_claim.task_id;
         let run_id = self.task_claim.run_id;
 
-        let (mut task_log_process, task_log) = TaskLogFactory::new(
+        let artifact_manager = TaskArtifactManager::new(
             self.logger.clone(),
             self.service_factory.clone(),
             task_id.clone(),
             run_id,
+        );
+
+        let (mut task_log_process, task_log) = TaskLogFactory::new(
+            self.logger.clone(),
+            artifact_manager.clone(),
             self.task_claim.task.expires,
         )
         .start();
@@ -145,6 +151,7 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                 task_def: self.task_claim.task,
                 payload,
                 logger: self.logger.clone(),
+                artifact_manager,
                 service_factory: self.service_factory,
                 task_log: task_log.clone(),
             };

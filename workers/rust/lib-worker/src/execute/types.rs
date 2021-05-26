@@ -1,3 +1,4 @@
+use crate::artifact::ArtifactManager;
 use crate::execute::Payload;
 use crate::log::TaskLog;
 use crate::task::Task;
@@ -22,6 +23,7 @@ pub struct ExecutionContext<P: Payload> {
     pub task_def: Task,
     pub payload: P,
     pub logger: Logger,
+    pub artifact_manager: Arc<dyn ArtifactManager>,
     pub service_factory: Arc<dyn ServiceFactory>,
     pub task_log: TaskLog,
 }

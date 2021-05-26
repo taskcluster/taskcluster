@@ -1,6 +1,7 @@
 //! This library implements a collection of utilities for writing a Taskcluster worker in Rust,
 //! supplementing the Rust client.
 //!
+//! * [`artifact`] implements interfacing with artifacts
 //! * [`claim`] implements work claiming
 //! * [`execute`] abstracts task execution
 //! * [`log`] provides support for the task log
@@ -12,6 +13,7 @@
 //! A typical worker will start a [`claim::WorkClaimer`], passing it a custom
 //! [`execute::Executor`] implementation.
 
+pub mod artifact;
 pub mod claim;
 pub mod execute;
 pub mod log;

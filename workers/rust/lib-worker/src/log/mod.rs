@@ -6,16 +6,13 @@
 //!  * live logging (TODO)
 //!  * uploading a log artifact at task completion
 
+use crate::artifact::ArtifactManager;
 use crate::process::{Process, ProcessFactory, ProcessHandle};
-use crate::tc::ServiceFactory;
 use async_trait::async_trait;
 use bytes::{Bytes, BytesMut};
 use chrono::prelude::*;
-use serde::Deserialize;
 use slog::{debug, Logger};
 use std::sync::Arc;
-use taskcluster::{ClientBuilder, Credentials, Object, Retry};
-use taskcluster_upload::upload_from_buf;
 use tokio::sync::mpsc;
 
 /// A TaskLogFactory is a ProcessFactory that accepts "commands" in the form of byte vectors,
@@ -23,25 +20,19 @@ use tokio::sync::mpsc;
 /// appropriately and exits.
 pub(crate) struct TaskLogFactory {
     logger: Logger,
-    service_factory: Arc<dyn ServiceFactory>,
-    task_id: String,
-    run_id: u32,
+    artifact_manager: Arc<dyn ArtifactManager>,
     expires: DateTime<Utc>,
 }
 
 impl TaskLogFactory {
     pub(crate) fn new(
         logger: Logger,
-        service_factory: Arc<dyn ServiceFactory>,
-        task_id: String,
-        run_id: u32,
+        artifact_manager: Arc<dyn ArtifactManager>,
         expires: DateTime<Utc>,
     ) -> Self {
         Self {
             logger,
-            service_factory,
-            task_id,
-            run_id,
+            artifact_manager,
             expires,
         }
     }
@@ -77,58 +68,12 @@ impl ProcessFactory for TaskLogFactory {
         // ..and then upload the log artifact
 
         debug!(self.logger, "uploading task-log artifact");
-        let run_id_str = format!("{}", self.run_id);
-        let res = self
-            .service_factory
-            .queue()?
-            .createArtifact(
-                &self.task_id,
-                &run_id_str,
+        self.artifact_manager
+            .create_artifact_from_buf(
                 "public/logs/live.log",
-                &serde_json::json!({
-                    "storageType": "object",
-                    "contentType": "text/plain",
-                    "expires": self.expires,
-                }),
-            )
-            .await?;
-
-        #[derive(Deserialize)]
-        #[serde(rename_all = "camelCase")]
-        struct CreateArtifactResponse {
-            credentials: Credentials,
-            expires: DateTime<Utc>,
-            name: String,
-            project_id: String,
-            upload_id: String,
-        }
-        let res: CreateArtifactResponse = serde_json::from_value(res)?;
-
-        let object = Object::new(
-            ClientBuilder::new(&self.service_factory.root_url()).credentials(res.credentials),
-        )?;
-        let retry = Retry::default();
-        upload_from_buf(
-            &res.project_id,
-            &res.name,
-            "text/plain",
-            &res.expires,
-            &log,
-            &retry,
-            &object,
-            &res.upload_id,
-        )
-        .await?;
-
-        self.service_factory
-            .queue()?
-            .finishArtifact(
-                &self.task_id,
-                &run_id_str,
-                "public/logs/live.log",
-                &serde_json::json!({
-                    "uploadId": res.upload_id,
-                }),
+                "text/plain",
+                self.expires,
+                log.as_ref(),
             )
             .await?;
 

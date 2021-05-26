@@ -1,13 +1,16 @@
 //! This module contains support for testing workers.
 
+use crate::artifact::ArtifactManager;
 use crate::execute::{ExecutionContext, Executor, Payload, Success};
 use crate::log::{TaskLog, TaskLogSink};
 use crate::task::Task;
 use crate::tc::{QueueService, ServiceFactory};
 use async_trait::async_trait;
 use bytes::{Bytes, BytesMut};
+use chrono::prelude::*;
 use slog::{o, Drain, Logger};
 use std::sync::{Arc, Mutex};
+use taskcluster_upload::AsyncReaderFactory;
 
 /// The result of a call to [`execute_task`].
 pub struct TestExecutionResult {
@@ -52,6 +55,7 @@ pub async fn execute_task<P: Payload, E: Executor<P>>(
     let payload = P::from_value(task_def.payload.clone()).expect("test payload invalid");
 
     let test_task_log = TestTaskLog::new();
+    let artifact_manager = TestArtifactManager::new();
 
     let ctx = ExecutionContext {
         task_id: "R6ta4hSOR1izWgW3S9Fa5g".to_owned(),
@@ -59,6 +63,7 @@ pub async fn execute_task<P: Payload, E: Executor<P>>(
         task_def,
         payload,
         logger,
+        artifact_manager,
         service_factory,
         task_log: test_task_log.task_log(),
     };
@@ -141,5 +146,27 @@ mod test {
             .unwrap();
         assert_eq!(result.success, Success::Succeeded);
         assert_eq!(result.task_log.as_ref(), b"I ran.\n");
+    }
+}
+
+pub struct TestArtifactManager;
+
+impl TestArtifactManager {
+    pub fn new() -> Arc<dyn ArtifactManager> {
+        Arc::new(Self)
+    }
+}
+
+#[async_trait]
+impl ArtifactManager for TestArtifactManager {
+    async fn create_artifact_with_factory(
+        &self,
+        name: &str,
+        content_type: &str,
+        content_length: u64,
+        expires: DateTime<Utc>,
+        factory: Box<dyn AsyncReaderFactory + 'static + Sync + Send>,
+    ) -> anyhow::Result<()> {
+        todo!()
     }
 }

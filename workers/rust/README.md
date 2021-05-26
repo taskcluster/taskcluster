@@ -17,10 +17,8 @@ This directory contains several crates for Taskcluster workers.
 * Task logging
   * (optionally) implement live-logging using websocktunnel
 * Artifact support
-  * ExecutionContext should have an easy way to upload stuff as artifacts
-* Testing support
-  * Provide traits for various pieces (queue, logging, artifact support) and provide fake versions
-  * It should be easy to run an Executor in a one-shot fashion with a fake task, fake queue, fake artifacts, etc.
+  * support for downloading artifacts
+  * support for creating non-data artifacts
 * ClaimWorkLongPoll should be resilient to errors from the queue.claimWork call, and just keep claiming, so that a
   failure of the queue service doesn't cause all workers to die precipitously
 

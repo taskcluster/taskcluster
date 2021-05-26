@@ -52,6 +52,7 @@ impl Executor<Payload> for ContainerExecutor {
             None,
         );
         while let Some(bi_res) = log_stream.next().await {
+            dbg!(&bi_res);
             if let Some(b) = bi_res?.status {
                 ctx.task_log.write_all(b).await?;
                 ctx.task_log.write_all("\n").await?;
@@ -118,6 +119,16 @@ impl Executor<Payload> for ContainerExecutor {
                     force: true,
                     ..Default::default()
                 }),
+            )
+            .await?;
+
+        // demonstrate that creating artifacts is pretty easy
+        ctx.artifact_manager
+            .create_artifact_from_buf(
+                "public/info.txt",
+                "text/plain",
+                ctx.task_def.expires,
+                b"Hello, world.",
             )
             .await?;
 
