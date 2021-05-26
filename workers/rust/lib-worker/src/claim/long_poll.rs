@@ -91,8 +91,9 @@ impl ProcessFactory for ClaimWorkLongPoll {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::tc::{QueueService, TestServiceFactory};
+    use crate::tc::QueueService;
     use crate::test::{test_logger, test_task_json};
+    use crate::testing::TestServiceFactory;
     use serde_json::{json, Value};
     use std::sync::Mutex;
     use tokio::time::{sleep, Duration};

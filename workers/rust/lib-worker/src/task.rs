@@ -1,5 +1,6 @@
-use chrono::prelude::*;
+use chrono::{prelude::*, Duration};
 use serde::Deserialize;
+use serde_json::json;
 use std::collections::HashMap;
 
 /// A Task, as read from the Queue API.  See that documentation for details of the fields.
@@ -39,6 +40,35 @@ impl Task {
     /// Get the payload, deserialized as a specific type
     pub fn payload<T: for<'de> serde::Deserialize<'de>>(&self) -> Result<T, serde_json::Error> {
         serde_json::from_value(self.payload.clone())
+    }
+}
+
+impl Default for Task {
+    fn default() -> Self {
+        Self {
+            created: Utc::now(),
+            deadline: Utc::now() + Duration::days(1),
+            expires: Utc::now() + Duration::days(2),
+            dependencies: vec![],
+            metadata: TaskMetadata {
+                description: "test task".to_owned(),
+                name: "test task".to_owned(),
+                owner: "tester".to_owned(),
+                source: "https://example.com".to_owned(),
+            },
+            priority: "normal".to_owned(),
+            project_id: "none".to_owned(),
+            requires: "all-complete".to_owned(),
+            retries: 5,
+            routes: vec![],
+            scheduler_id: "-".to_owned(),
+            scopes: vec![],
+            tags: HashMap::new(),
+            task_group_id: "R6ta4hSOR1izWgW3S9Fa5g".to_owned(),
+            task_queue_id: "test/workers".to_owned(),
+            extra: json!({}),
+            payload: json!({}),
+        }
     }
 }
 

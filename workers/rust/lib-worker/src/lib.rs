@@ -7,6 +7,7 @@
 //! * [`process`] provides an abstraction for concurrent proceses
 //! * [`task`] provides a deserializable task struct, with some useful utilities
 //! * [`tc`] provides support for calling Taskcluster APIs
+//! * [`testing`] provides support for testing workers (only available in debug builds)
 //!
 //! A typical worker will start a [`claim::WorkClaimer`], passing it a custom
 //! [`execute::Executor`] implementation.
@@ -17,6 +18,9 @@ pub mod log;
 pub mod process;
 pub mod task;
 pub mod tc;
+
+#[cfg(debug_assertions)]
+pub mod testing;
 
 #[cfg(test)]
 mod test;

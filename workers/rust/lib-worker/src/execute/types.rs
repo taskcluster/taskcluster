@@ -27,6 +27,7 @@ pub struct ExecutionContext<P: Payload> {
 }
 
 /// Result of a task execution that did not encounter any unexpected errors.
+#[derive(Debug, PartialEq)]
 pub enum Success {
     /// Task succeeded
     Succeeded,

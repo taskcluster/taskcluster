@@ -16,29 +16,6 @@ pub trait ServiceFactory: 'static + Sync + Send {
     fn queue(&self) -> anyhow::Result<Arc<dyn QueueService>>;
 }
 
-/// An implementation of ServiceFactory that just returns the same value every time, and
-/// returns a fake root URL.  This is used for testing, and is only avaliable in debug builds.
-#[cfg(debug_assertions)]
-#[derive(Default)]
-pub struct TestServiceFactory {
-    pub queue: Option<Arc<dyn QueueService>>,
-}
-
-impl ServiceFactory for TestServiceFactory {
-    fn root_url(&self) -> String {
-        "https://tc-tests.example.com".to_owned()
-    }
-
-    /// Get an implementation of the Queue service
-    fn queue(&self) -> anyhow::Result<Arc<dyn QueueService>> {
-        if let Some(ref queue) = self.queue {
-            Ok(queue.clone())
-        } else {
-            anyhow::bail!("No test queue instance defined")
-        }
-    }
-}
-
 /// A trait including all of the Queue methods that workers need; in production this will call
 /// the queue service, but in testing it can be faked.  Each method has a default implementation
 /// that panics with "Not implemented", so tests need only implement the neecessary methods.
@@ -141,6 +118,7 @@ impl QueueService for Queue {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::testing::TestServiceFactory;
 
     #[tokio::test]
     async fn test_service_factory() {
