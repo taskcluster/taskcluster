@@ -28,7 +28,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
 
     let task1 = await worker.postToQueue({
       payload: {
-        image: 'tutum/curl',
+        image: 'curlimages/curl:latest',
         artifacts: {
           'public/image.tar.zst': {
             type: 'file',
@@ -70,7 +70,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
 
     let task1 = await worker.postToQueue({
       payload: {
-        image: 'tutum/curl',
+        image: 'curlimages/curl:latest',
         artifacts: {
           'public/image.tar.zst': {
             type: 'file',
