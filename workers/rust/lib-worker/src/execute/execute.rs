@@ -3,7 +3,7 @@ use crate::claim::TaskClaim;
 use crate::execute::{ExecutionContext, Executor, Payload, Success};
 use crate::log::TaskLogFactory;
 use crate::process::ProcessFactory;
-use crate::tc::{CredsContainer, ServiceFactory};
+use crate::tc::CredsContainer;
 use anyhow::Result;
 use async_trait::async_trait;
 use serde_json::json;
@@ -40,7 +40,7 @@ pub(crate) struct ExecutionFactory<P: Payload, E: Executor<P>> {
     executor: Arc<E>,
     logger: Logger,
     task_claim: TaskClaim,
-    service_factory: Arc<dyn ServiceFactory>,
+    creds_container: CredsContainer,
     _phantom: PhantomData<P>,
 }
 
@@ -49,7 +49,7 @@ impl<P: Payload, E: Executor<P>> ProcessFactory for ExecutionFactory<P, E> {
     type Command = ();
     async fn run(self, commands: mpsc::Receiver<Self::Command>) -> Result<()> {
         // get a copy of information to use when resolving the task
-        let service_factory = self.service_factory.clone();
+        let service_factory = self.creds_container.as_service_factory();
         let task_id = self.task_claim.task_id.clone();
         let run_id = self.task_claim.run_id.to_string();
         let logger = self.logger.clone();
@@ -94,15 +94,12 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
         logger: Logger,
         task_claim: TaskClaim,
     ) -> Self {
-        let service_factory = Arc::new(CredsContainer::new(
-            root_url,
-            task_claim.credentials.clone(),
-        ));
+        let creds_container = CredsContainer::new(root_url, task_claim.credentials.clone());
         Self {
             executor,
             logger,
             task_claim,
-            service_factory,
+            creds_container,
             _phantom: PhantomData,
         }
     }
@@ -113,7 +110,7 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
 
         let artifact_manager = TaskArtifactManager::new(
             self.logger.clone(),
-            self.service_factory.clone(),
+            self.creds_container.as_service_factory(),
             task_id.clone(),
             run_id,
         );
@@ -152,7 +149,7 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                 payload,
                 logger: self.logger.clone(),
                 artifact_manager,
-                service_factory: self.service_factory,
+                service_factory: self.creds_container.as_service_factory(),
                 task_log: task_log.clone(),
             };
 

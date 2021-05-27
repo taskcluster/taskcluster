@@ -24,10 +24,12 @@ This directory contains several crates for Taskcluster workers.
 
 * duplicate all advertized docker-worker functionality, following docker-worker's payload schema
   * artifacts
+  * env
   * caches
   * loading images from other tasks or the index
   * maxRunTime
   * onExitStatus
   * funky features and capabilities
   * ...
+* build a trait-based abstraction around the container engine to allow using various OCI implementations (and to allow testing)
 * testing (this was the downfall of docker-worker!)

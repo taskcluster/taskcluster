@@ -2,9 +2,13 @@ use crate::tc::{QueueService, ServiceFactory};
 use std::sync::{Arc, Mutex};
 use taskcluster::{ClientBuilder, Credentials, Queue};
 
-/// Clonable credentials container, allowing updates as they expire.  This is used as a
-/// ServiceFactory in practice, for both task credentials and worker credentials.
-#[derive(Clone)]
+// ---dyn SF----> () ----Inner---> ()
+// CC ----------> () --^
+
+/// A CredsContainer holds information necessary to create service clients, and
+/// implements [`ServiceFactory`] to provide those clients.  Owners of the
+/// CredsContainer itself can update the credentials, so that subsequent service
+/// clients will use the new credentials.
 pub(crate) struct CredsContainer(Arc<Mutex<Inner>>);
 
 struct Inner {
@@ -23,22 +27,27 @@ impl CredsContainer {
         })))
     }
 
-    pub(crate) fn get(&self) -> Credentials {
-        return self.0.lock().unwrap().creds.clone();
-    }
-
-    pub(crate) fn set(&self, creds: Credentials) {
+    /// Update the credentials in this container.  Any subsequent use of the associated
+    /// [`ServiceFactory`] will return updated service clients, although existing clients (such as
+    /// those in mid-transaction) will continue to use the old credentials.
+    pub(crate) fn set_creds(&self, creds: Credentials) {
         let mut inner = self.0.lock().unwrap();
         inner.creds = creds;
         // queue is invalidated, so reset it to None
         inner.queue = None;
     }
+
+    /// Get a [`ServiceFactory`] associated with this container
+    pub(crate) fn as_service_factory(&self) -> Arc<dyn ServiceFactory> {
+        // this creates Arc<Arc<..>>, which seems odd -- but the outer
+        // Arc is a trait object, while the inner is a CredsCotnainer
+        Arc::new(Self(self.0.clone()))
+    }
 }
 
 impl ServiceFactory for CredsContainer {
     fn root_url(&self) -> String {
-        let inner = self.0.lock().unwrap();
-        inner.root_url.clone()
+        return self.0.lock().unwrap().root_url.clone();
     }
 
     fn queue(&self) -> anyhow::Result<Arc<dyn QueueService>> {
