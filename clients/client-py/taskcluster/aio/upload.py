@@ -59,7 +59,7 @@ async def uploadFromFile(*, file, **kwargs):
 
 
 async def upload(*, projectId, name, contentType, contentLength, expires,
-                 readerFactory, maxRetries=5, objectService):
+                 readerFactory, maxRetries=5, uploadId=None, objectService):
     """
     Upload the given data to the object service with the given metadata.
     The `maxRetries` parameter has the same meaning as for service clients.
@@ -75,7 +75,8 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
         return hashingReader
 
     async with aiohttp.ClientSession() as session:
-        uploadId = taskcluster.slugid.nice()
+        if not uploadId:
+            uploadId = taskcluster.slugid.nice()
         proposedUploadMethods = {}
 
         if contentLength < DATA_INLINE_MAX_SIZE:

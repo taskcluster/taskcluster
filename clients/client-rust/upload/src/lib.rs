@@ -48,6 +48,7 @@ pub async fn upload_from_buf(
     data: &[u8],
     retry: &Retry,
     object_service: &Object,
+    upload_id: &str,
 ) -> Result<()> {
     upload_with_factory(
         project_id,
@@ -58,6 +59,7 @@ pub async fn upload_from_buf(
         CursorReaderFactory::new(data),
         retry,
         object_service,
+        upload_id,
     )
     .await
 }
@@ -72,6 +74,7 @@ pub async fn upload_from_file(
     mut file: File,
     retry: &Retry,
     object_service: &Object,
+    upload_id: &str,
 ) -> Result<()> {
     let content_length = file.seek(SeekFrom::End(0)).await?;
     upload_with_factory(
@@ -83,6 +86,7 @@ pub async fn upload_from_file(
         FileReaderFactory::new(file),
         retry,
         object_service,
+        upload_id,
     )
     .await
 }
@@ -98,8 +102,8 @@ pub async fn upload_with_factory<ARF: AsyncReaderFactory>(
     reader_factory: ARF,
     retry: &Retry,
     object_service: &Object,
+    upload_id: &str,
 ) -> Result<()> {
-    let upload_id = slugid::v4();
     upload_impl(
         project_id,
         name,
@@ -135,7 +139,6 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
         let mut buf = vec![];
         let mut reader = reader_factory.get_reader().await?;
         reader.read_to_end(&mut buf).await?;
-        println!("read {} bytes", buf.len());
         let data_b64 = base64::encode(buf);
         proposed_upload_methods["dataInline"] = json!({
             "contentType": content_type,
