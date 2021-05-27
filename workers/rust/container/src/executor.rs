@@ -52,7 +52,6 @@ impl Executor<Payload> for ContainerExecutor {
             None,
         );
         while let Some(bi_res) = log_stream.next().await {
-            dbg!(&bi_res);
             if let Some(b) = bi_res?.status {
                 ctx.task_log.write_all(b).await?;
                 ctx.task_log.write_all("\n").await?;

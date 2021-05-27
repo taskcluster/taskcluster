@@ -309,9 +309,7 @@ mod test {
 
     #[tokio::test]
     async fn process_set() {
-        struct Factory {
-            id: u32,
-        };
+        struct Factory;
 
         #[async_trait]
         impl ProcessFactory for Factory {
@@ -320,27 +318,26 @@ mod test {
             async fn run(self, _commands: mpsc::Receiver<Self::Command>) -> Result<()> {
                 // task just pauses for long enough to schedule other stuff
                 sleep(Duration::from_millis(1)).await;
-                dbg!(self.id);
                 Ok(())
             }
         }
 
-        let mut id = 0;
+        let mut count = 0;
         let mut processes = ProcessSet::new();
 
         // create an initial task
-        processes.add(Factory { id }.start());
-        id += 1;
+        processes.add(Factory.start());
+        count += 1;
 
         loop {
             tokio::select! {
                 _ = processes.wait() => {
-                    if id < 200 {
+                    if count < 200 {
                         // for every finished process, add two more
-                        processes.add(Factory{ id }.start());
-                        id += 1;
-                        processes.add(Factory{ id }.start());
-                        id += 1;
+                        processes.add(Factory.start());
+                        count += 1;
+                        processes.add(Factory.start());
+                        count += 1;
                     }
                 }
             }
