@@ -9,6 +9,7 @@
 //! * [`task`] provides a deserializable task struct, with some useful utilities
 //! * [`tc`] provides support for calling Taskcluster APIs
 //! * [`testing`] provides support for testing workers (only available in debug builds)
+//! * [`workerproto`] supports communication with worker-runner
 //!
 //! A typical worker will start a [`claim::WorkClaimer`], passing it a custom
 //! [`execute::Executor`] implementation.
@@ -20,6 +21,7 @@ pub mod log;
 pub mod process;
 pub mod task;
 pub mod tc;
+pub mod workerproto;
 
 #[cfg(debug_assertions)]
 pub mod testing;

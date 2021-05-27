@@ -13,6 +13,7 @@ This directory contains several crates for Taskcluster workers.
   * Renewing worker credentials
   * Graceful shutdown
 * Loading configuration from a JSON file
+* Resolve a task smoothly as Cancelled on a 409 from queue.reclaimTask
 * Task logging
   * (optionally) implement live-logging using websocktunnel
 * Artifact support
