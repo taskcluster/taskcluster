@@ -2,13 +2,11 @@ use crate::tc::{QueueService, ServiceFactory};
 use std::sync::{Arc, Mutex};
 use taskcluster::{ClientBuilder, Credentials, Queue};
 
-// ---dyn SF----> () ----Inner---> ()
-// CC ----------> () --^
-
 /// A CredsContainer holds information necessary to create service clients, and
 /// implements [`ServiceFactory`] to provide those clients.  Owners of the
 /// CredsContainer itself can update the credentials, so that subsequent service
 /// clients will use the new credentials.
+#[derive(Clone)]
 pub(crate) struct CredsContainer(Arc<Mutex<Inner>>);
 
 struct Inner {
@@ -35,6 +33,13 @@ impl CredsContainer {
         inner.creds = creds;
         // queue is invalidated, so reset it to None
         inner.queue = None;
+    }
+
+    /// Get the credentials in this container (currently only used for tests)
+    #[cfg(test)]
+    pub(crate) fn get(&self) -> Credentials {
+        let inner = self.0.lock().unwrap();
+        inner.creds.clone()
     }
 
     /// Get a [`ServiceFactory`] associated with this container

@@ -30,6 +30,9 @@ pub trait QueueService: 'static + Sync + Send {
     ) -> std::result::Result<Value, Error> {
         todo!()
     }
+    async fn reclaimTask(&self, taskId: &str, runId: &str) -> Result<Value, Error> {
+        todo!()
+    }
     async fn createArtifact(
         &self,
         taskId: &str,
@@ -74,6 +77,9 @@ impl QueueService for Queue {
         payload: &Value,
     ) -> std::result::Result<Value, Error> {
         (self as &Queue).claimWork(taskQueueId, payload).await
+    }
+    async fn reclaimTask(&self, taskId: &str, runId: &str) -> Result<Value, Error> {
+        (self as &Queue).reclaimTask(taskId, runId).await
     }
     async fn createArtifact(
         &self,

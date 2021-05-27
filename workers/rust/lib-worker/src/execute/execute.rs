@@ -1,13 +1,14 @@
+use super::reclaim::TaskReclaimer;
 use crate::artifact::TaskArtifactManager;
 use crate::claim::TaskClaim;
 use crate::execute::{ExecutionContext, Executor, Payload, Success};
 use crate::log::TaskLogFactory;
 use crate::process::ProcessFactory;
 use crate::tc::CredsContainer;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use serde_json::json;
-use slog::{error, info, Logger};
+use slog::{debug, error, info, Logger};
 use std::marker::PhantomData;
 use std::sync::Arc;
 use tokio::sync::mpsc;
@@ -107,10 +108,20 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
     async fn run_inner(self, mut commands: mpsc::Receiver<()>) -> InnerResult {
         let task_id = self.task_claim.task_id;
         let run_id = self.task_claim.run_id;
+        let service_factory = self.creds_container.as_service_factory();
+
+        let mut task_reclaimer = TaskReclaimer::new(
+            self.logger.clone(),
+            self.creds_container,
+            self.task_claim.taken_until,
+            task_id.clone(),
+            run_id,
+        )
+        .start();
 
         let artifact_manager = TaskArtifactManager::new(
             self.logger.clone(),
-            self.creds_container.as_service_factory(),
+            service_factory.clone(),
             task_id.clone(),
             run_id,
         );
@@ -149,7 +160,7 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                 payload,
                 logger: self.logger.clone(),
                 artifact_manager,
-                service_factory: self.creds_container.as_service_factory(),
+                service_factory,
                 task_log: task_log.clone(),
             };
 
@@ -185,6 +196,24 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                             Some(()) => todo!() // no other messages defined yet
                         }
                     }
+
+                    // check for early task_log exit
+                    res = &mut task_log_process => {
+                        let err = match res {
+                            Ok(_) => anyhow!("task log exited unexpectedly"),
+                            Err(e) => e.into(),
+                        };
+                        break 'task_loop InnerResult::Err(err);
+                    }
+
+                    // check for early task_reclaimer exit
+                    res = &mut task_reclaimer => {
+                        let err = match res {
+                            Ok(_) => anyhow!("task reclaimer exited unexpectedly"),
+                            Err(e) => e.into(),
+                        };
+                        break 'task_loop InnerResult::Err(err);
+                    }
                 }
             }
         };
@@ -197,19 +226,30 @@ impl<P: Payload, E: Executor<P>> ExecutionFactory<P, E> {
                 "TaskLog is still in use; waiting for all references to complete"
             );
         }
+
+        // A number of things need to be shut down.  We will try to do all of these, gathering them
+        // up into a single result.  If any of these are missed, the drops that occur automatically
+        // at the end of this function will try to clean things up.
+
+        debug!(self.logger, "Stopping task log");
         drop(task_log);
         let mut tl_res = task_log_process.stop().await;
         if tl_res.is_ok() {
             tl_res = task_log_process.await;
         }
 
-        match tl_res {
-            // task log finished successfully, so return the result of the task
-            Ok(_) => task_res,
-            // finishing the task log failed, but we prefer to report the task's result
-            // if it was also an error
-            Err(_) if task_res.is_err() => task_res,
-            Err(e) => InnerResult::Err(e.into()),
+        debug!(self.logger, "Stopping claim renewer");
+        let mut tr_res = task_reclaimer.stop().await;
+        if tr_res.is_ok() {
+            tr_res = task_reclaimer.await;
+        }
+
+        // now, choose which error to return, preferring the task, then the task log
+        match (task_res.is_err(), tl_res, tr_res) {
+            (true, _, _) => task_res,
+            (false, Err(e), _) => InnerResult::Err(e),
+            (false, Ok(_), Err(e)) => InnerResult::Err(e),
+            (false, Ok(_), Ok(_)) => task_res,
         }
     }
 }
