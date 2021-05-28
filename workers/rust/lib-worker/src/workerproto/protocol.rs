@@ -43,6 +43,11 @@ impl<R: AsyncRead + Unpin, W: AsyncWrite + Unpin> Protocol<R, W> {
         self.capabilities.capable(cap)
     }
 
+    /// Get the protocol's capabilities
+    pub fn capabilities(&self) -> Capabilities {
+        self.capabilities.clone()
+    }
+
     /// Send a message over this protocol
     pub async fn send(&mut self, message: Message) {
         self.transport.send(message).await

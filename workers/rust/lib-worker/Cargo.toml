@@ -12,7 +12,7 @@ anyhow = "1"
 async-trait = "0.1"
 serde_json = "*"
 serde = "*"
-tokio = { version = "*", features = [ "rt", "rt-multi-thread", "macros", "time", "sync", "fs" ] }
+tokio = { version = "*", features = [ "rt", "rt-multi-thread", "macros", "time", "sync", "fs", "io-std" ] }
 futures = "*"
 pin-project = "*"
 slog = "2"
@@ -24,3 +24,4 @@ tokio-util = { version = "0.6", features = [ "codec" ] }
 tokio-stream = "0.1"
 strum = "0.20"
 strum_macros = "0.20"
+atty = "0.2"

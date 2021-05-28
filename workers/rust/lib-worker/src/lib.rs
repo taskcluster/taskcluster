@@ -24,7 +24,6 @@ resolves tasks with either success or failure, depending on the payload.
 
 ```
 use serde::Deserialize;
-use slog::{o, Drain, Logger};
 use taskcluster::Credentials;
 use taskcluster_lib_worker::Worker;
 use taskcluster_lib_worker::execute::{self, ExecutionContext, Executor, Success};
@@ -47,11 +46,6 @@ impl Executor<Payload> for SimpleExecutor {
 }
 
 async fn worker() -> anyhow::Result<()> {
-    let decorator = slog_term::TermDecorator::new().build();
-    let drain = slog_term::FullFormat::new(decorator).build().fuse();
-    let drain = slog_async::Async::new(drain).build().fuse();
-    let logger = Logger::root(drain, o!());
-
     // this information would typically come from a configuraiton file
     let root_url = std::env::var("TASKCLUSTER_ROOT_URL").unwrap();
     let worker_group = std::env::var("WORKER_GROUP").unwrap();
@@ -60,7 +54,6 @@ async fn worker() -> anyhow::Result<()> {
 
     let executor = SimpleExecutor;
     let w = Worker::new(executor)
-        .logger(logger)
         .root_url(root_url)
         .worker_creds(Credentials::from_env().unwrap())
         .task_queue_id(task_queue_id)

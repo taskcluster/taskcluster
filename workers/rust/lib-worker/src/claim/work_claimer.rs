@@ -24,7 +24,7 @@ pub struct WorkClaimer<P: Payload, E: Executor<P>> {
 
 #[derive(Debug)]
 pub enum Command {
-    // TODO: GracefulStop, Credentials(new_worker_creds)
+    GracefulTermination { finish_tasks: bool },
 }
 
 #[async_trait]
@@ -54,14 +54,24 @@ impl<P: Payload, E: Executor<P>> ProcessFactory for WorkClaimer<P, E> {
                     let ef = ExecutionFactory::new(self.worker_service_factory.root_url(), self.executor.clone(), logger, task_claim);
                     running.add(ef.start());
                 },
-                None = commands.recv() => {
-                    long_poller.stop().await?;
-                    // TODO: stop gracefully by default?
-                    for proc in running.iter() {
-                        proc.stop().await?;
+                maybe_cmd = commands.recv() => {
+                    match maybe_cmd {
+                        Some(Command::GracefulTermination { finish_tasks: true }) => {
+                            // the shutdown code after the loop body will wait for all
+                            // running tasks to complete
+                            break;
+                        }
+                        Some(Command::GracefulTermination { finish_tasks: false }) | None => {
+                            info!(self.logger, "Shutting down running tasks immediately");
+                            // NOTE: this currently causes some errors to be reported from the
+                            // tokio runtime, but the desired effect occurs all the same: the
+                            // worker exits.
+                            for proc in running.iter() {
+                                proc.stop().await?;
+                            }
+                            break;
+                        }
                     }
-                    running.wait_all().await?;
-                    return Ok(())
                 }
                 res = (&mut long_poller) => {
                     if res.is_err() {
@@ -81,5 +91,18 @@ impl<P: Payload, E: Executor<P>> ProcessFactory for WorkClaimer<P, E> {
                 },
             }
         }
+
+        // abort the long poller so that we do not claim more tasks, and so that any ongoing
+        // long polling is dropped.  The process will end in an error, so we ignore the result.
+        long_poller.abort().await?;
+        let _ = long_poller.await;
+
+        if running.len() > 0 {
+            info!(self.logger, "Waiting for running tasks to complete");
+            running.wait_all().await?;
+        }
+
+        debug!(self.logger, "Work Claimer is finished");
+        return Ok(());
     }
 }

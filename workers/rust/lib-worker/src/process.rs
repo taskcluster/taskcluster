@@ -63,6 +63,13 @@ where
         self.commands = None;
         Ok(())
     }
+
+    /// Abort this process, dropping it immediately.
+    pub async fn abort(&mut self) -> Result<()> {
+        self.commands = None;
+        self.join_handle.abort();
+        Ok(())
+    }
 }
 
 impl<CMD> std::future::Future for Process<CMD>
@@ -73,7 +80,7 @@ where
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         match self.project().join_handle.poll(cx) {
             Poll::Pending => Poll::Pending,
-            Poll::Ready(Err(e)) => Poll::Ready(Err(e).context("Process panicked")),
+            Poll::Ready(Err(e)) => Poll::Ready(Err(e).context("Tokio task failed")),
             Poll::Ready(Ok(r)) => Poll::Ready(r),
         }
     }

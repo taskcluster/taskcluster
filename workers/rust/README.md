@@ -10,11 +10,9 @@ This directory contains several crates for Taskcluster workers.
 ### Taskcluster-Lib-Worker
 
 * Support workerproto in Worker
-  * Renewing worker credentials
-  * Graceful Termination
   * Shutdown
   * Logging
-  * Error handling
+  * Error reporting
 * Loading configuration from a JSON file
 * Resolve a task smoothly as Cancelled on a 409 from queue.reclaimTask
 * Task logging
@@ -22,6 +20,15 @@ This directory contains several crates for Taskcluster workers.
 * More artifact support
   * support for downloading artifacts
   * support for creating non-data artifacts
+
+There appears to be a tokio bug, where the process does not exit when `main`
+returns.  `container/src/bin/contaner-worker.rs` calls `std::process::exit(0)`
+to work around this.
+
+This may not be an issue once the workerproto "shutdown" support is
+implemented, as that specifies a way for the worker to explicitly shut itself
+down by sending a `shutdown` message to worker-runner and exiting.  That will
+be a natural place to call `std::process:exit(0)`.
 
 ### container-worker
 

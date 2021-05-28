@@ -1,10 +1,11 @@
-use crate::claim::WorkClaimer;
+use crate::claim::{self, WorkClaimer};
 use crate::execute::{Executor, Payload};
 use crate::process::{Process, ProcessFactory};
 use crate::tc::CredsContainer;
+use crate::workerproto::{Capabilities, Capability, Message, Protocol, Transport};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use slog::{info, o, Logger};
+use slog::{debug, info, o, Drain, Logger};
 use std::marker::PhantomData;
 use std::sync::Arc;
 use taskcluster::Credentials;
@@ -12,7 +13,6 @@ use tokio::sync::mpsc;
 
 /// Top-level struct combining all aspects of a worker together
 pub struct Worker<P: Payload, E: Executor<P>> {
-    logger: Option<Logger>,
     root_url: Option<String>,
     worker_creds: Option<Credentials>,
     task_queue_id: Option<String>,
@@ -29,7 +29,6 @@ impl<P: Payload, E: Executor<P>> Worker<P, E> {
     /// all necessary parameters are supplied, call `start()`.
     pub fn new(executor: E) -> Self {
         Self {
-            logger: None,
             root_url: None,
             worker_creds: None,
             task_queue_id: None,
@@ -39,12 +38,6 @@ impl<P: Payload, E: Executor<P>> Worker<P, E> {
             executor,
             payload_type: PhantomData,
         }
-    }
-
-    /// Set the [`slog::Logger`] that will be used by this work claimer
-    pub fn logger(mut self, logger: Logger) -> Self {
-        self.logger = Some(logger);
-        self
     }
 
     /// Set the root URL for this work claimer
@@ -102,13 +95,6 @@ impl<P: Payload, E: Executor<P>> ProcessFactory for Worker<P, E> {
             .worker_group
             .ok_or_else(|| anyhow!("worker_group not set"))?;
         let worker_id = self.worker_id.ok_or_else(|| anyhow!("worker_id not set"))?;
-        let logger = self
-            .logger
-            .ok_or_else(|| anyhow!("logger not set"))?
-            .new(o!(
-                "worker_group" => worker_group.clone(),
-                "worker_id" => worker_id.clone(),
-                "task_queue_id" => task_queue_id.clone()));
         let root_url = self.root_url.ok_or_else(|| anyhow!("root_url not set"))?;
         let worker_creds = self
             .worker_creds
@@ -120,10 +106,30 @@ impl<P: Payload, E: Executor<P>> ProcessFactory for Worker<P, E> {
         let executor = Arc::new(self.executor);
         let payload_type = self.payload_type;
 
-        info!(logger, "Starting Worker");
+        // if we're attache to a tty, we assume we're running in a testing environment
+        // and not worker-runner (which would connect stdio to a pipe, not a tty)
+        let use_worker_runner = atty::isnt(atty::Stream::Stdin);
+
+        let mut proto = Self::start_proto(use_worker_runner).await?;
+
+        // TODO: when using worker-runner, pipe this over the protocol instead
+        let decorator = slog_term::TermDecorator::new().build();
+        let drain = slog_term::FullFormat::new(decorator).build().fuse();
+        let drain = slog_async::Async::new(drain).build().fuse();
+        let logger = Logger::root(
+            drain,
+            o!(
+                "worker_group" => worker_group.clone(),
+                "worker_id" => worker_id.clone(),
+                "task_queue_id" => task_queue_id.clone()),
+        );
+
+        info!(logger, "Starting Worker"; o!(
+            "use_worker_runner" => use_worker_runner,
+            "capabilities" => proto.capabilities().to_vec().join(", ")));
 
         let mut work_claimer = WorkClaimer {
-            logger,
+            logger: logger.clone(),
             worker_service_factory,
             task_queue_id,
             worker_group,
@@ -138,8 +144,53 @@ impl<P: Payload, E: Executor<P>> ProcessFactory for Worker<P, E> {
         loop {
             tokio::select! {
                 _ = commands.recv() => { work_claimer.stop().await?; },
+                Some(msg) = proto.recv() => {
+                    match msg {
+                        Message::GracefulTermination { finish_tasks }=> {
+                            debug!(logger, "Initiating graceful termination");
+                            work_claimer.command(claim::Command::GracefulTermination { finish_tasks } ).await?;
+                        }
+                        Message::NewCredentials { client_id, access_token, certificate } =>  {
+                            debug!(logger, "Got new worker credentials"; o!("clientId" => &client_id));
+                            let creds = Credentials {client_id, access_token, certificate};
+                            creds_container.set_creds(creds);
+                        }
+                        _ => info!(logger, "Unhandled worker-runner message {:?}", msg),
+                    }
+                }
                 res = &mut work_claimer => { return res; },
             }
         }
+    }
+}
+
+/// The capabilities defined by this library
+const CAPABILITIES: &[Capability] = &[
+    Capability::Log,
+    Capability::GracefulTermination,
+    Capability::NewCredentials,
+];
+
+impl<P: Payload, E: Executor<P>> Worker<P, E> {
+    /// Start the worker-runner protocol.  If `use_worker_runner` is false, ten the protocol is
+    /// started with no capabilities, and no negotiation takes place -- this is suitable for
+    /// running things in testing.
+    async fn start_proto(
+        use_worker_runner: bool,
+    ) -> anyhow::Result<Protocol<tokio::io::Stdin, tokio::io::Stdout>> {
+        if !use_worker_runner {
+            return Ok(Protocol::new(
+                Transport::new(tokio::io::stdin(), tokio::io::stdout()),
+                Capabilities::from_capabilities(&[]),
+            ));
+        }
+
+        let mut proto = Protocol::new(
+            Transport::new(tokio::io::stdin(), tokio::io::stdout()),
+            Capabilities::from_capabilities(CAPABILITIES),
+        );
+        proto.negotiate().await?;
+
+        Ok(proto)
     }
 }

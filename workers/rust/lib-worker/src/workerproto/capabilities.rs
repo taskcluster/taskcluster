@@ -19,6 +19,7 @@ pub enum Capability {
     NewCredentials,
 }
 
+#[derive(Debug, Clone)]
 pub struct Capabilities(HashSet<Capability>);
 
 impl Capabilities {
@@ -38,6 +39,11 @@ impl Capabilities {
             }
         }
         caps
+    }
+
+    /// Get a list of strings for this value
+    pub fn to_vec(&self) -> Vec<String> {
+        self.0.iter().map(|c| c.to_string()).collect()
     }
 
     /// Create a new Capabilities object with the given capabilities.
