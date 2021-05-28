@@ -1,16 +1,10 @@
 use serde_json::{json, Value};
-use slog::{o, Drain, Logger};
-
-/// Create a Logger for use in tests
-pub(crate) fn test_logger() -> Logger {
-    let decorator = slog_term::PlainSyncDecorator::new(slog_term::TestStdoutWriter);
-    let drain = slog_term::FullFormat::new(decorator).build().fuse();
-
-    Logger::root(drain, o!())
-}
 
 /// Create a full task definition that can deserialize to a Task.
-pub(crate) fn test_task_json() -> Value {
+///
+/// Note that in most cases while testing workers, you will want to use [`crate::task::Task`] and
+/// `Default::default`.
+pub fn test_task_json() -> Value {
     json!({
         "provisionerId": "aa", // ignored
         "workerType": "bb", // ignored

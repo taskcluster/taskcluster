@@ -90,6 +90,3 @@ pub use worker::Worker;
 
 #[cfg(debug_assertions)]
 pub mod testing;
-
-#[cfg(test)]
-mod test;

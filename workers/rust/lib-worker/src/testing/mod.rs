@@ -86,8 +86,12 @@ async fn main() {
 mod artifact;
 mod execute;
 mod log;
+mod logger;
 mod services;
+mod test_task;
 
 pub use artifact::TestArtifactManager;
 pub use execute::{execute_task, TestExecutionResult};
+pub use logger::test_logger;
 pub use services::TestServiceFactory;
+pub use test_task::test_task_json;

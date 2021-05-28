@@ -51,7 +51,7 @@ impl TryFrom<serde_json::Value> for TaskClaim {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::test::test_task_json;
+    use crate::testing::test_task_json;
     use serde_json::json;
 
     #[test]

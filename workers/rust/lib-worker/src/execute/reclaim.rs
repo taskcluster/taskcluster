@@ -121,7 +121,7 @@ impl ProcessFactory for TaskReclaimer {
 mod test {
     use super::*;
     use crate::tc::QueueService;
-    use crate::test::test_logger;
+    use crate::testing::test_logger;
     use crate::testing::TestServiceFactory;
     use async_trait::async_trait;
     use serde_json::{json, Value};
