@@ -9,14 +9,17 @@ This directory contains several crates for Taskcluster workers.
 
 ### Taskcluster-Lib-Worker
 
-* Support for the worker-runner protocol
+* Support workerproto in Worker
   * Renewing worker credentials
-  * Graceful shutdown
+  * Graceful Termination
+  * Shutdown
+  * Logging
+  * Error handling
 * Loading configuration from a JSON file
 * Resolve a task smoothly as Cancelled on a 409 from queue.reclaimTask
 * Task logging
-  * (optionally) implement live-logging using websocktunnel
-* Artifact support
+  * implement live-logging using websocktunnel (optionally, only if necessary config is provided)
+* More artifact support
   * support for downloading artifacts
   * support for creating non-data artifacts
 
