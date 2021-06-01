@@ -11,7 +11,7 @@
         if (window.opener) {
           window.opener.postMessage({
             type: 'login',
-            profile: <%- JSON.stringify(user.profile) %>,
+            encodedProfile: <%- JSON.stringify(user.encodedProfile) %>,
             identityProviderId: <%- JSON.stringify(user.identityProviderId) %>,
             providerExpires: <%- JSON.stringify(user.providerExpires) %>,
           }, <%- JSON.stringify(publicUrl) %>);

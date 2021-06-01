@@ -17,6 +17,14 @@ export default class UserSession {
   }
 
   static create(options) {
+    let { encodedProfile } = options;
+
+    if (encodedProfile) {
+      encodedProfile = JSON.parse(atob(encodedProfile));
+
+      return new UserSession({ ...options, profile: encodedProfile });
+    }
+
     return new UserSession(options);
   }
 
