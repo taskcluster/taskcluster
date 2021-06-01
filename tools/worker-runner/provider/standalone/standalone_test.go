@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v43/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v43/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/run"
 )
 
 func TestConfigureRunNoOptional(t *testing.T) {

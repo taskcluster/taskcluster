@@ -7,12 +7,12 @@ import (
 	"log"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v43/clients/client-go"
-	"github.com/taskcluster/taskcluster/v43/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v43/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v43/tools/worker-runner/files"
-	"github.com/taskcluster/taskcluster/v43/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v43/tools/worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/files"
+	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/tc"
 )
 
 func clientFactory(rootURL string, credentials *tcclient.Credentials) (tc.Secrets, error) {

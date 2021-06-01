@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v43/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
 	"golang.org/x/crypto/ed25519"
 )
 

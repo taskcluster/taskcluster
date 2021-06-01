@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/orcaman/writerseeker"
-	"github.com/taskcluster/taskcluster/v43/clients/client-go/internal"
+	"github.com/taskcluster/taskcluster/v44/clients/client-go/internal"
 )
 
 type HTTPRetryError = internal.HTTPRetryError

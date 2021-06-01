@@ -13,7 +13,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v43/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v44/tools/jsonschema2go"
 	"golang.org/x/tools/imports"
 )
 
@@ -185,7 +185,7 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	// in GOPATH, so reset the TC version to the appropriate value.  Note that
 	// the last argument here will be updated to the current version by `yarn
 	// release`, so this will always substitute the correct version.
-	formattedContent = regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v43/"))
+	formattedContent = regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v44/"))
 
 	// only perform general format, if that worked...
 	formattedContent, err = format.Source(formattedContent)
@@ -256,10 +256,10 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 
 	for i := range apiDefs {
 		if strings.Contains(apiDefs[i].PackageName, "events") {
-			amqpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v43/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			amqpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v44/clients/client-go/" + apiDefs[i].PackageName + "\n"
 
 		} else {
-			httpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v43/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			httpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v44/clients/client-go/" + apiDefs[i].PackageName + "\n"
 
 		}
 	}

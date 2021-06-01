@@ -3,6 +3,95 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.0.0
+
+### GENERAL
+
+▶ [patch] [bug 1712924](http://bugzil.la/1712924)
+Resolves an issue with github logins
+
+### DEPLOYERS
+
+▶ [patch] [#4882](https://github.com/taskcluster/taskcluster/issues/4882)
+Taskcluster-lib-pulse now supports connections to servers that use SNI, such as up-to-date CloudAMQP clusters using a custom certificate.  It does so by passing an explicit `servername` socket option.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#4606](https://github.com/taskcluster/taskcluster/issues/4606)
+Generic-worker now supports downloading object artifacts as well as the older s3 artifacts.
+
+### USERS
+
+▶ [MAJOR] [#4895](https://github.com/taskcluster/taskcluster/issues/4895)
+The upload helper functions included with each client now take an uploadId parameter.  For Go and Rust, these parameters are required.
+
+▶ [patch] [bug 1711612](http://bugzil.la/1711612)
+Retried calls to `queue.createArtifact` will now work correctly, allowing both retries and the documented updates.
+
+▶ [patch] [#4764](https://github.com/taskcluster/taskcluster/issues/4764)
+The JS, Rust, Go (in a previous release) and Python clients now have artifact download functions which will download an artifact regardless of its storage type, applying retries and other best practices.
+
+▶ [patch] [#4714](https://github.com/taskcluster/taskcluster/issues/4714)
+The client libraries' object-upload functions now calculate and send hashes for the uploaded objects.
+
+▶ [patch] [#4890](https://github.com/taskcluster/taskcluster/issues/4890)
+This version fixes a bug in the rust client where API methods with method POST but without a request payload would result in 411 errors due to a missing Content-Length header.
+
+▶ [patch] [bug 1711921](http://bugzil.la/1711921)
+When a docker-worker's payload specifies an artifact name ending with `/`, it has historically produced an artifact containing `//`.  That is now normalized to a single `/`.
+
+### OTHER
+
+▶ Additional changes not described here: [#4757](https://github.com/taskcluster/taskcluster/issues/4757), [#4807](https://github.com/taskcluster/taskcluster/issues/4807), [#4889](https://github.com/taskcluster/taskcluster/issues/4889).
+
+### Automated Package Updates
+
+<details>
+<summary>40 Renovate updates</summary>
+
+* Update golang.org/x/crypto commit hash to c07d793 (ea40252e1)
+* Update dependency markdown-it-highlightjs to v3.5.0 (d67d60600)
+* Update babel monorepo to v7.14.2 (115ac480b)
+* Update dependency @slack/web-api to v6.2.3 (3d16b170a)
+* Update dependency newrelic to v7.4.0 (90fe4b739)
+* Update dependency @slack/web-api to v6.2.2 (7ba2251ef)
+* Update dependency @slack/web-api to v6.2.0 (b25bc43b5)
+* Update dependency dotenv to v9.0.2 (dfbf4b795)
+* Update dependency @azure/ms-rest-js to v2.5.0 (7c591e5e6)
+* Update dependency matrix-js-sdk to v10.1.0 (b3ccf63db)
+* Update sentry monorepo to v6.3.6 (710cf7ec4)
+* Update dependency dotenv to v9.0.1 (04f077b34)
+* Update dependency date-fns to v2.21.3 (48c0813c0)
+* Update dependency eslint to v7.26.0 (97e6c18e8)
+* Update dependency @fontsource/roboto to v4.3.0 (09b4e5db2)
+* Update dependency mocha to v8.4.0 (4557c4f26)
+* Update dependency glob to v7.1.7 (bf726bf1e)
+* Update dependency cronstrue to v1.113.0 (467bf9cc1)
+* Update dependency webpack-cli to v4.7.0 (a196ecfde)
+* Update dependency react-error-boundary to v3.1.2 (83fda51a3)
+* Update dependency dotenv to v9 (da7db4cf8)
+* Update dependency @azure/ms-rest-js to v2.4.1 (bd381f834)
+* Update dependency dotenv to v8.6.0 (0504cbc01)
+* Update dependency dotenv to v8.5.1 (7c1d516fa)
+* Update dependency date-fns to v2.21.2 (1bd674399)
+* Update dependency prism-themes to v1.7.0 (79933532b)
+* Update dependency @babel/preset-env to v7.14.1 (9a0a0acdf)
+* Update golang.org/x/crypto commit hash to e9a3299 (785646e19)
+* Update dependency utf-8-validate to v5.0.5 (d03cd44fc)
+* Update dependency sift to v13.5.3 (ff7806d5e)
+* Update dependency c8 to v7.7.2 (9ea49cac1)
+* Update dependency googleapis to v73 (b1d025c50)
+* Update dependency @babel/core to v7.14.0 (e9403fe28)
+* Update dependency apollo-server-express to v2.24.0 (c3b2d47bd)
+* Update sentry monorepo to v6.3.5 (6254bca4c)
+* Update sentry monorepo to v6.3.4 (f964f5786)
+* Update babel monorepo to v7.14.0 (cc6150681)
+* Update dependency graphql-tag to v2.12.4 (890bc312c)
+* Update mui monorepo (436da33e3)
+* Update module github.com/Microsoft/go-winio to v0.5.0 (4837680df)
+
+</details>
+
 ## v43.2.0
 
 ### DEPLOYERS
