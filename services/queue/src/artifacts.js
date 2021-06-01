@@ -579,10 +579,10 @@ let replyWithArtifactDownload = async function({ taskId, runId, name, req, res, 
     if (dlRes.method !== 'simple') {
       return res.reportError('ResourceNotFound', 'Object does not support simple downloads.', {});
     }
-    const { uri } = dlRes;
+    const { url } = dlRes;
 
-    res.set('location', uri);
-    res.reply({ storageType, url: uri }, 303);
+    res.set('location', url);
+    res.reply({ storageType, url }, 303);
     return;
   }
 
