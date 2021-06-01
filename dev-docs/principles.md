@@ -57,7 +57,7 @@ Here are a few bullet-point practical principles we follow in developing and rev
 * *Services do not share code* - no service ever `require`s (or `imports`) code from another service.
   When necessary, common code is factored out into libraries (under `libraries/` and in packages named `taskcluster-lib-...`).
 
-* *Services are tiered* - the "platform" services are interndependent and not expected to work without each other.
+* *Services are tiered* - the "platform" services are interdependent and not expected to work without each other.
   For example, the queue service will fail if the auth service is down.
   The "core" and "integration" services depend on platform services, but the reverse is not the case.
   For example, the secrets service will fail if the queue service is down, but the queue service will continue running when the secrets service is down.
