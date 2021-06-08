@@ -62,37 +62,37 @@ func TestLogFormat(t *testing.T) {
 		ResultFormat string
 	}
 	testCases := []LogFormatTest{
-		LogFormatTest{
+		{
 			LogCall: func(task *TaskRun) {
 				task.Info("Another day for you and me in paradise")
 			},
 			ResultFormat: `^\[taskcluster 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] Another day for you and me in paradise` + "\n$",
 		},
-		LogFormatTest{
+		{
 			LogCall: func(task *TaskRun) {
 				task.Warn("I believe in a thing called love")
 			},
 			ResultFormat: `^\[taskcluster:warn 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] I believe in a thing called love` + "\n$",
 		},
-		LogFormatTest{
+		{
 			LogCall: func(task *TaskRun) {
 				task.Error("Well lawdy, lawdy, lawdy Miss Clawdy")
 			},
 			ResultFormat: `^\[taskcluster:error\] Well lawdy, lawdy, lawdy Miss Clawdy` + "\n$",
 		},
-		LogFormatTest{
+		{
 			LogCall: func(task *TaskRun) {
 				task.Infof("It only takes a minute %v", "girl")
 			},
 			ResultFormat: `^\[taskcluster 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] It only takes a minute girl` + "\n$",
 		},
-		LogFormatTest{
+		{
 			LogCall: func(task *TaskRun) {
 				task.Warnf("When you %v %v best, but you don't succeed", "try", "your")
 			},
 			ResultFormat: `^\[taskcluster:warn 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] When you try your best, but you don't succeed` + "\n$",
 		},
-		LogFormatTest{
+		{
 			LogCall: func(task *TaskRun) {
 				task.Errorf("Thought I saw a man %v to life", "brought")
 			},
