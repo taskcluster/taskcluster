@@ -15,6 +15,7 @@ var (
 	Command = &cobra.Command{
 		Use:   "validate-json <json-schema> <json-file>",
 		Short: "Validate json file by provided json-schema",
+		Args:  cobra.ExactArgs(2),
 		RunE:  validate,
 	}
 
@@ -35,17 +36,16 @@ func validate(cmd *cobra.Command, args []string) error {
 	result, err := js.Validate(schema, document)
 
 	if err != nil {
-		log.Panic(err.Error())
+		return err
 	}
 
 	if result.Valid() {
 		log.Info("The document is valid\n")
 	} else {
-		log.Error("The document is not valid. see errors :\n")
 		for _, desc := range result.Errors() {
 			log.Infof("- %s\n", desc)
 		}
-		return errors.New("The document is not valid")
+		return errors.New("the document is not valid")
 	}
 	return nil
 }
