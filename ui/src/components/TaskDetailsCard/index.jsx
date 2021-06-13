@@ -17,7 +17,7 @@ import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import Label from '../Label';
-import Code from '../Code';
+import JsonDisplay from '../JsonDisplay';
 import ConnectionDataTable from '../ConnectionDataTable';
 import CopyToClipboardListItem from '../CopyToClipboardListItem';
 import DateDistance from '../DateDistance';
@@ -203,9 +203,11 @@ export default class TaskDetailsCard extends Component {
                     <ListItemText
                       disableTypography
                       primary={
-                        <Code className={classes.payload} language="json">
-                          {JSON.stringify(payload, null, 2)}
-                        </Code>
+                        <JsonDisplay
+                          wrapperClassName={classes.payload}
+                          syntax="json"
+                          objectContent={payload}
+                        />
                       }
                     />
                   </ListItem>
@@ -481,9 +483,7 @@ export default class TaskDetailsCard extends Component {
                         <Typography variant="subtitle1">Extra</Typography>
                       }
                       secondary={
-                        <Code language="json">
-                          {JSON.stringify(task.extra, null, 2)}
-                        </Code>
+                        <JsonDisplay language="json" toDisplay={task.extra} />
                       }
                     />
                   </ListItem>
