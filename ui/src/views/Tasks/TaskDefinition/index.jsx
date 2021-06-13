@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import Spinner from '../../../components/Spinner';
-import Code from '../../../components/Code';
+import JsonDisplay from '../../../components/JsonDisplay';
 import Dashboard from '../../../components/Dashboard';
 import taskQuery from './task.graphql';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -50,9 +50,11 @@ export default class TaskDefinition extends Component {
         title={`${taskId} Definition`}
         disableTitleFormatting
         disablePadding>
-        <Code className={classes.rawDefinition} language="json">
-          {JSON.stringify(rawDefinition, null, 2)}
-        </Code>
+        <JsonDisplay
+          className={classes.rawDefinition}
+          language="json"
+          toDisplay={rawDefinition}
+        />
       </Dashboard>
     );
   }
