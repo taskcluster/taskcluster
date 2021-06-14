@@ -13,5 +13,6 @@ import (
 	_ "github.com/taskcluster/taskcluster/v44/clients/client-shell/cmds/signin"
 	_ "github.com/taskcluster/taskcluster/v44/clients/client-shell/cmds/slugid"
 	_ "github.com/taskcluster/taskcluster/v44/clients/client-shell/cmds/task"
+	_ "github.com/taskcluster/taskcluster/v44/clients/client-shell/cmds/validate-json"
 	_ "github.com/taskcluster/taskcluster/v44/clients/client-shell/cmds/version"
 )
