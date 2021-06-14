@@ -28,18 +28,18 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
 
     let task1 = await worker.postToQueue({
       payload: {
-        image: 'tutum/curl',
+        image: 'curlimages/curl',
         artifacts: {
           'public/image.tar.zst': {
             type: 'file',
             expires: expires(),
-            path: '/image.tar.zst',
+            path: '/tmp/image.tar.zst',
           },
         },
         command: [
           'curl',
           '-o',
-          '/image.tar.zst',
+          '/tmp/image.tar.zst',
           '-L',
           'https://s3-us-west-2.amazonaws.com/docker-worker-manifest-test/image.tar.zst',
         ],
@@ -70,18 +70,18 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
 
     let task1 = await worker.postToQueue({
       payload: {
-        image: 'tutum/curl',
+        image: 'curlimages/curl',
         artifacts: {
           'public/image.tar.zst': {
             type: 'file',
             expires: expires(),
-            path: '/image.tar.zst',
+            path: '/tmp/image.tar.zst',
           },
         },
         command: [
           'curl',
           '-o',
-          '/image.tar.zst',
+          '/tmp/image.tar.zst',
           '-L',
           // This image is the busybox image build from https://hg.mozilla.org/try/rev/b76a6f5b3a26211da5ea1fa6a86329f921a302b7
           // It is a docker image built with kaniko based on `FROM busybox`, with the workaround we have been using for
