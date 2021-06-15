@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { PureComponent } from 'react';
 import { parse, stringify } from 'qs';
 import { withStyles } from '@material-ui/core/styles';
@@ -9,7 +8,6 @@ import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import HelpView from '../../../components/HelpView';
 
-@hot(module)
 @withStyles(theme => ({
   plusIconSpan: {
     ...theme.mixins.fab,

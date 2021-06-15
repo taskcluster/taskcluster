@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import Typography from '@material-ui/core/Typography';
@@ -13,7 +12,6 @@ import { withAuth } from '../../utils/Auth';
 import ErrorPanel from '../../components/ErrorPanel';
 import profileQuery from './profile.graphql';
 
-@hot(module)
 @withAuth
 @graphql(profileQuery, {
   skip: ({ user }) => !user,

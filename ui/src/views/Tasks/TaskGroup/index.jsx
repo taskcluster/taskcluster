@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import cloneDeep from 'lodash.clonedeep';
 import React, { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
@@ -55,7 +54,6 @@ const updateTaskGroupIdHistory = id => {
   db.taskGroupIdsHistory.put({ taskGroupId: id });
 };
 
-@hot(module)
 @withApollo
 @graphql(taskGroupQuery, {
   options: props => ({

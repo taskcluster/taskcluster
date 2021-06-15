@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
@@ -16,7 +15,6 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import cachePurgesQuery from './cachePurges.graphql';
 import Search from '../../../components/Search';
 
-@hot(module)
 @graphql(cachePurgesQuery, {
   options: () => ({
     fetchPolicy: 'network-only',

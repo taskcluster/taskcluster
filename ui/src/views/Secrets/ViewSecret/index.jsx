@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import Spinner from '../../../components/Spinner';
@@ -12,7 +11,6 @@ import createSecretQuery from './createSecret.graphql';
 import updateSecretQuery from './updateSecret.graphql';
 import deleteSecretQuery from './deleteSecret.graphql';
 
-@hot(module)
 @withApollo
 @graphql(secretQuery, {
   skip: ({ match: { params } }) => !params.secret,

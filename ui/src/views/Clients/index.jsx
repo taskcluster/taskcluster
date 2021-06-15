@@ -1,10 +1,8 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
 import routes from './routes';
 
-@hot(module)
 export default class Clients extends Component {
   render() {
     const {

@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { withRouter } from 'react-router-dom';
@@ -11,7 +10,6 @@ import WorkerManagerWorkersTable from '../../../components/WMWorkersTable';
 import workersQuery from './WMWorkers.graphql';
 import Search from '../../../components/Search';
 
-@hot(module)
 @withRouter
 @graphql(workersQuery, {
   options: props => ({

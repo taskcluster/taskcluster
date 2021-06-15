@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
@@ -15,7 +14,6 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import Link from '../../../utils/Link';
 import hooksQuery from './hooks.graphql';
 
-@hot(module)
 @graphql(hooksQuery, {
   options: {
     fetchPolicy: 'network-only',

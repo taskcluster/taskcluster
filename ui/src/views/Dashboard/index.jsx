@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -12,7 +11,6 @@ import { withAuth } from '../../utils/Auth';
 import { DOCS_PATH_PREFIX } from '../../utils/constants';
 import Link from '../../utils/Link';
 
-@hot(module)
 @withStyles(theme => ({
   buttonIcon: {
     marginRight: theme.spacing(2),

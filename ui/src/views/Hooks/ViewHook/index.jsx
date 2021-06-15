@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import Spinner from '../../../components/Spinner';
@@ -12,7 +11,6 @@ import deleteHookQuery from './deleteHook.graphql';
 import updateHookQuery from './updateHook.graphql';
 import triggerHookQuery from './triggerHook.graphql';
 
-@hot(module)
 @withApollo
 @graphql(hookQuery, {
   skip: ({ match: { params } }) => !params.hookId,

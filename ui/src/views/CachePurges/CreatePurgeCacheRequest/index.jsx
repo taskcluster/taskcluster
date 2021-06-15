@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
@@ -11,7 +10,6 @@ import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
 import purgeCacheQuery from './purgeCache.graphql';
 
-@hot(module)
 @withApollo
 @withStyles(theme => ({
   contentSaveButtonSpan: {

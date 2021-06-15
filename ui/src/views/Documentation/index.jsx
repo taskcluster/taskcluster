@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { lowerCase } from 'lower-case';
@@ -24,7 +23,6 @@ import docsSearchOptions from '../../../../generated/docs-search.json';
 import ErrorPanel from '../../components/ErrorPanel';
 import PageMeta from './PageMeta';
 
-@hot(module)
 @withStyles(
   theme => ({
     documentation: {

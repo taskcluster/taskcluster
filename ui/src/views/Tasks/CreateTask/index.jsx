@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
 import { parse, stringify } from 'qs';
@@ -70,7 +69,6 @@ const defaultTask = {
   },
 };
 
-@hot(module)
 @withApollo
 @withStyles(theme => ({
   createIcon: {

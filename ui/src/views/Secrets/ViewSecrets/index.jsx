@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
@@ -19,7 +18,6 @@ import DialogAction from '../../../components/DialogAction';
 import secretsQuery from './secrets.graphql';
 import deleteSecretQuery from './deleteSecret.graphql';
 
-@hot(module)
 @withApollo
 @graphql(secretsQuery, {
   options: props => {

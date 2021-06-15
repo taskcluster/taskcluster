@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { arrayOf } from 'prop-types';
 import storage from 'localforage';
@@ -35,7 +34,6 @@ import './index.css';
 const absoluteUrl = (url, overrides = {}) =>
   Object.assign(new URL(url, window.location), overrides).toString();
 
-@hot(module)
 export default class App extends Component {
   static propTypes = {
     routes: arrayOf(route).isRequired,

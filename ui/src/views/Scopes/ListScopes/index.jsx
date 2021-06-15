@@ -1,11 +1,9 @@
 import React, { PureComponent } from 'react';
-import { hot } from 'react-hot-loader';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import HelpView from '../../../components/HelpView';
 
-@hot(module)
 export default class ListScopes extends PureComponent {
   handleSearchSubmit = searchTerm => {
     this.props.history.push(`/auth/scopes/${encodeURIComponent(searchTerm)}`);

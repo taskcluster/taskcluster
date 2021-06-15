@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
@@ -22,7 +21,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import workersQuery from './workers.graphql';
 
-@hot(module)
 @withAuth
 @graphql(workersQuery, {
   skip: props => !props.match.params.provisionerId,

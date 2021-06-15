@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
@@ -10,7 +9,6 @@ import WorkerManagerErrorsTable from '../../../components/WMErrorsTable';
 import errorsQuery from './errors.graphql';
 import Search from '../../../components/Search';
 
-@hot(module)
 @graphql(errorsQuery, {
   options: props => ({
     variables: {

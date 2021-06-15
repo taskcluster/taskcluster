@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import Typography from '@material-ui/core/Typography';
@@ -11,7 +10,6 @@ import denylistAddressQuery from './denylistAddress.graphql';
 import addAddressQuery from './addAddress.graphql';
 import deleteAddressQuery from './deleteAddress.graphql';
 
-@hot(module)
 @withApollo
 @graphql(denylistAddressQuery, {
   skip: ({ match: { params } }) => !params.notificationAddress,

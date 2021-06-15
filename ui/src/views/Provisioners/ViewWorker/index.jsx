@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { format, parseISO, addYears, isAfter } from 'date-fns';
@@ -22,7 +21,6 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import workerQuery from './worker.graphql';
 import quarantineWorkerQuery from './quarantineWorker.graphql';
 
-@hot(module)
 @withApollo
 @withAuth
 @graphql(workerQuery, {

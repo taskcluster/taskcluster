@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
@@ -15,7 +14,6 @@ import { getArtifactUrl } from '../../../utils/getArtifactUrl';
 import { withAuth } from '../../../utils/Auth';
 
 @withAuth
-@hot(module)
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,

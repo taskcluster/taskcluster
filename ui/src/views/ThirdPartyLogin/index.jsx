@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
@@ -11,7 +10,6 @@ import { withAuth } from '../../utils/Auth';
 import fromNowJSON from '../../utils/fromNowJSON';
 import thirdPartyLoginQuery from './thirdPartyLogin.graphql';
 
-@hot(module)
 @withAuth
 @graphql(thirdPartyLoginQuery, {
   skip: ({ user }) => !user,

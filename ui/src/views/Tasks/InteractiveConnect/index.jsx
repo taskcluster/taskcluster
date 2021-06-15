@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
@@ -52,7 +51,6 @@ const getInteractiveStatus = ({
   return INTERACTIVE_TASK_STATUS.READY;
 };
 
-@hot(module)
 @withAuth
 @graphql(taskQuery, {
   options: props => ({

@@ -1,5 +1,4 @@
 import React, { PureComponent, Fragment } from 'react';
-import { hot } from 'react-hot-loader';
 import { graphql, withApollo } from 'react-apollo';
 import { parse, stringify } from 'qs';
 import { withStyles } from '@material-ui/core/styles';
@@ -19,7 +18,6 @@ import clientsQuery from './clients.graphql';
 import deleteClientQuery from './deleteClient.graphql';
 import ErrorPanel from '../../../components/ErrorPanel';
 
-@hot(module)
 @withApollo
 @graphql(clientsQuery, {
   options: props => ({
