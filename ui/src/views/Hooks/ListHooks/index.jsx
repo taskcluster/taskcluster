@@ -7,6 +7,7 @@ import TreeView from '@material-ui/lab/TreeView';
 import TreeItem from '@material-ui/lab/TreeItem';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { parse, stringify } from 'qs';
+import Typography from '@material-ui/core/Typography';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
@@ -82,6 +83,10 @@ export default class ListHooks extends Component {
     }
   }
 
+  toggleState(stateName) {
+    return (event, nodeIds) => this.setState({ [stateName]: nodeIds });
+  }
+
   render() {
     const {
       classes,
@@ -116,8 +121,6 @@ export default class ListHooks extends Component {
           );
         })
       : [];
-    const handleState = stateName => (event, nodeIds) =>
-      this.setState({ [stateName]: nodeIds });
     const { expanded, selected } = this.state;
 
     return (
@@ -133,16 +136,19 @@ export default class ListHooks extends Component {
         }>
         {!hookGroups && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
-        {hookGroups && (
-          <TreeView
-            {...{ expanded, selected }}
-            onNodeToggle={handleState('expanded')}
-            onNodeSelect={handleState('selected')}
-            defaultCollapseIcon={<ArrowDropDownIcon />}
-            defaultExpandIcon={<ArrowRightIcon />}>
-            {tree}
-          </TreeView>
-        )}
+        {!loading &&
+          (tree.length ? (
+            <TreeView
+              {...{ expanded, selected }}
+              onNodeToggle={this.toggleState('expanded')}
+              onNodeSelect={this.toggleState('selected')}
+              defaultCollapseIcon={<ArrowDropDownIcon />}
+              defaultExpandIcon={<ArrowRightIcon />}>
+              {tree}
+            </TreeView>
+          ) : (
+            <Typography variant="subtitle1">No hooks are defined</Typography>
+          ))}
         <Button
           spanProps={{ className: classes.actionButton }}
           tooltipProps={{ title: 'Create Hook' }}
