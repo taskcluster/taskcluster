@@ -159,7 +159,7 @@
     "snake-case": "^3.0.3",
     "taskcluster-lib-testing": "link:libraries/testing",
     "temporary": "^1.0.0",
-    "ws": "^7.3.1",
+    "ws": "^7.4.6",
     "yarn-minify": "^1.0.1",
     "zen-observable": "^0.8.11",
     "zurvan": "^0.8.0"
