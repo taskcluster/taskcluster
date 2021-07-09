@@ -43,7 +43,7 @@ exports.tasks.push({
     const docFile = path.join('ui', 'docs', 'manual', 'deploying', 'monitoring.mdx');
     await modifyRepoFile(docFile,
       content => content.replace(
-        /(-- BEGIN MONITORING TABLE --)(?:.|\n)*(-- END MONITORING TABLE --)/m,
+        /(-- BEGIN MONITORING TABLE -->)(?:.|\n)*(<!-- END MONITORING TABLE --)/m,
         `$1\n${table(res)}\n$2`));
   },
 });

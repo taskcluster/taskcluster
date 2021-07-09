@@ -34,10 +34,10 @@ of the form:
 
 They will also have Fields for `status`, `duration`, and a serialized `error` if an error occured.
 
-The processes that have `continuous` for their dedaline and schedule run every few minutes and should complete fairly quickly. The rest
+The processes that have `continuous` for their deadline and schedule run every few minutes and should complete fairly quickly. The rest
 have their schedules and maximum allowed duration defined here. All times are relative to the timezone of the k8s cluster.
 
-<!-- BEGIN MONITORING TABLE --
+<!-- BEGIN MONITORING TABLE -->
 | Service        | Name                         | Logger                     | Deadline (seconds) | Schedule                    |
 | -------------- | ---------------------------- | -------------------------- | ------------------ | --------------------------- |
 | auth           | purgeExpiredClients          | taskcluster.auth           | 86400              | At 12:00 AM                 |
@@ -64,4 +64,4 @@ have their schedules and maximum allowed duration defined here. All times are re
 | worker-manager | expire-workers               | taskcluster.worker-manager | 86400              | At 12:00 AM                 |
 | worker-manager | expire-worker-pools          | taskcluster.worker-manager | 86400              | At 01:00 AM                 |
 | worker-manager | expire-errors                | taskcluster.worker-manager | 86400              | At 12:10 AM                 |
--- END MONITORING TABLE -->
+<!-- END MONITORING TABLE -->
