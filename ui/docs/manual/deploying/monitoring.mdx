@@ -1,6 +1,9 @@
 ---
 title: Monitoring Services
 ---
+import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+import Image from 'taskcluster-ui/views/Documentation/Image'
+import telescopeDiagram from './telescope-diagram.svg'
 
 # Monitoring Services
 
@@ -65,3 +68,93 @@ have their schedules and maximum allowed duration defined here. All times are re
 | worker-manager | expire-worker-pools          | taskcluster.worker-manager | 86400              | At 01:00 AM                 |
 | worker-manager | expire-errors                | taskcluster.worker-manager | 86400              | At 12:10 AM                 |
 <!-- END MONITORING TABLE -->
+
+## Telescope
+
+Taskcluster supports being monitored by [Telescope](https://github.com/mozilla-services/telescope).
+
+### Image
+
+This is an svg image generated for use in the Telescope UI. Download it and read the Telescope
+documentation for how to use it. It is designed to work with the config below.
+
+<Image src={telescopeDiagram} />
+
+### Configuration
+
+For this deployment of Taskcluster, a config file may look as follows:
+
+<SiteSpecific>
+Simply replace `EXAMPLE.COM` with your rootUrl (in this case %root_url%).
+</SiteSpecific>
+
+<!-- BEGIN POUCAVE CONFIG -->
+```toml
+[checks.taskcluster.auth-heartbeat]
+description = "auth service is alive"
+module = "checks.core.heartbeat"
+ttl = 60
+"params.url" = "https://EXAMPLE.COM/api/auth/v1/ping"
+
+[checks.taskcluster.github-heartbeat]
+description = "github service is alive"
+module = "checks.core.heartbeat"
+ttl = 60
+"params.url" = "https://EXAMPLE.COM/api/github/v1/ping"
+
+[checks.taskcluster.hooks-heartbeat]
+description = "hooks service is alive"
+module = "checks.core.heartbeat"
+ttl = 60
+"params.url" = "https://EXAMPLE.COM/api/hooks/v1/ping"
+
+[checks.taskcluster.index-heartbeat]
+description = "index service is alive"
+module = "checks.core.heartbeat"
+ttl = 60
+"params.url" = "https://EXAMPLE.COM/api/index/v1/ping"
+
+[checks.taskcluster.notify-heartbeat]
+description = "notify service is alive"
+module = "checks.core.heartbeat"
+ttl = 60
+"params.url" = "https://EXAMPLE.COM/api/notify/v1/ping"
+
+[checks.taskcluster.object-heartbeat]
+description = "object service is alive"
+module = "checks.core.heartbeat"
+ttl = 60
+"params.url" = "https://EXAMPLE.COM/api/object/v1/ping"
+
+[checks.taskcluster.purge-cache-heartbeat]
+description = "purge-cache service is alive"
+module = "checks.core.heartbeat"
+ttl = 60
+"params.url" = "https://EXAMPLE.COM/api/purge-cache/v1/ping"
+
+[checks.taskcluster.queue-heartbeat]
+description = "queue service is alive"
+module = "checks.core.heartbeat"
+ttl = 60
+"params.url" = "https://EXAMPLE.COM/api/queue/v1/ping"
+
+[checks.taskcluster.secrets-heartbeat]
+description = "secrets service is alive"
+module = "checks.core.heartbeat"
+ttl = 60
+"params.url" = "https://EXAMPLE.COM/api/secrets/v1/ping"
+
+[checks.taskcluster.web-server-heartbeat]
+description = "web-server service is alive"
+module = "checks.core.heartbeat"
+ttl = 60
+"params.url" = "https://EXAMPLE.COM/api/web-server/v1/ping"
+
+[checks.taskcluster.worker-manager-heartbeat]
+description = "worker-manager service is alive"
+module = "checks.core.heartbeat"
+ttl = 60
+"params.url" = "https://EXAMPLE.COM/api/worker-manager/v1/ping"
+
+```
+<!-- END POUCAVE CONFIG -->

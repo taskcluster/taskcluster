@@ -350,10 +350,31 @@
     "title": "Monitoring Services"
   },
   {
+    "element": "h3",
+    "id": "configuration",
+    "path": "/manual/deploying/monitoring",
+    "subtitle": "Configuration",
+    "title": "Monitoring Services"
+  },
+  {
+    "element": "h3",
+    "id": "image",
+    "path": "/manual/deploying/monitoring",
+    "subtitle": "Image",
+    "title": "Monitoring Services"
+  },
+  {
     "element": "h2",
     "id": "new-relic",
     "path": "/manual/deploying/monitoring",
     "subtitle": "New Relic",
+    "title": "Monitoring Services"
+  },
+  {
+    "element": "h2",
+    "id": "telescope",
+    "path": "/manual/deploying/monitoring",
+    "subtitle": "Telescope",
     "title": "Monitoring Services"
   },
   {
