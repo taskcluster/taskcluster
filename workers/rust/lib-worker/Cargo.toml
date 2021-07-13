@@ -1,0 +1,27 @@
+[package]
+name = "taskcluster-lib-worker"
+version = "0.1.0"
+authors = ["Dustin J. Mitchell <dustin@mozilla.com>"]
+edition = "2018"
+
+[dependencies]
+# temporarily use the local copy until #4890 lands
+taskcluster = { path = "../../../clients/client-rust/client" }
+taskcluster-upload = { path = "../../../clients/client-rust/upload" }
+anyhow = "1"
+async-trait = "0.1"
+serde_json = "*"
+serde = "*"
+tokio = { version = "*", features = [ "rt", "rt-multi-thread", "macros", "time", "sync", "fs", "io-std" ] }
+futures = "*"
+pin-project = "*"
+slog = "2"
+slog-term = "2"
+slog-async = "2"
+chrono = "0.4"
+bytes = "*"
+tokio-util = { version = "0.6", features = [ "codec" ] }
+tokio-stream = "0.1"
+strum = "0.20"
+strum_macros = "0.20"
+atty = "0.2"
