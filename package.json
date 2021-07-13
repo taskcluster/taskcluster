@@ -27,7 +27,7 @@
     "ajv": "^7.2.1",
     "ajv-formats": "^1.5.1",
     "amqplib": "^0.7.0",
-    "apollo-server-express": "^2.14.2",
+    "apollo-server-express": "^3.0.0",
     "aws-sdk": "^2.394.0",
     "body-parser": "1.19.0",
     "body-parser-graphql": "^1.0.0",
