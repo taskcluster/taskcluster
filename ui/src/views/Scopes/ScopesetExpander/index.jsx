@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { Query } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
@@ -18,7 +17,6 @@ import Link from '../../../utils/Link';
 import scopesetQuery from './scopeset.graphql';
 import { formatScope, scopeLink } from '../../../utils/scopeUtils';
 
-@hot(module)
 @withStyles(theme => ({
   actionButton: {
     ...theme.mixins.fab,

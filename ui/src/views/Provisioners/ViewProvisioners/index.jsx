@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import provisionersQuery from './provisioners.graphql';
@@ -8,7 +7,6 @@ import HelpView from '../../../components/HelpView';
 import ErrorPanel from '../../../components/ErrorPanel';
 import ProvisionerDetailsTable from '../../../components/ProvisionerDetailsTable';
 
-@hot(module)
 @graphql(provisionersQuery)
 export default class ViewProvisioners extends Component {
   render() {

@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
@@ -10,7 +9,6 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import { withAuth } from '../../../utils/Auth';
 
 @withAuth
-@hot(module)
 @withStyles(theme => ({
   rawDefinition: {
     bottom: theme.spacing(3),

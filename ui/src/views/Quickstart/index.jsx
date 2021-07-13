@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
@@ -144,7 +143,6 @@ const imageForLanguage = {
   go: 'golang:latest',
 };
 
-@hot(module)
 @withApollo
 @withStyles(theme => ({
   separator: {

@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import { bool } from 'prop-types';
@@ -12,7 +11,6 @@ import providersQuery from './providers.graphql';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
 import ErrorPanel from '../../../components/ErrorPanel';
 
-@hot(module)
 @withApollo
 @graphql(providersQuery, {
   name: 'providersData',

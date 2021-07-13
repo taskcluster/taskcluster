@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -15,7 +14,6 @@ import Button from '../../../components/Button';
 import updateWorkerPoolQuery from '../WMEditWorkerPool/updateWorkerPool.graphql';
 import { VIEW_WORKER_POOLS_PAGE_SIZE } from '../../../utils/constants';
 
-@hot(module)
 @withApollo
 @graphql(workerPoolsQuery, {
   options: () => ({

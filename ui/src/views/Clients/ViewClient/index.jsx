@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { parse } from 'qs';
@@ -33,7 +32,6 @@ import { THEME } from '../../../utils/constants';
 import fromNow from '../../../utils/fromNow';
 import { withAuth } from '../../../utils/Auth';
 
-@hot(module)
 @withAuth
 @withApollo
 @graphql(clientQuery, {

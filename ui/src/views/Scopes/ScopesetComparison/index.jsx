@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { equals } from 'ramda';
@@ -44,7 +43,6 @@ const getCellColors = scopesetDiff => {
   return cellColors;
 };
 
-@hot(module)
 @withStyles(theme => ({
   actionButton: {
     ...theme.mixins.fab,

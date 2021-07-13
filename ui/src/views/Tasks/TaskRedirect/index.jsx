@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
 import { graphql } from 'react-apollo';
@@ -10,7 +9,6 @@ import parameterizeTask from '../../../utils/parameterizeTask';
 import removeKeys from '../../../utils/removeKeys';
 import taskQuery from './task.graphql';
 
-@hot(module)
 @graphql(taskQuery, {
   options: props => ({
     variables: {

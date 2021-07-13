@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { withAuth } from '../../utils/Auth';
 import lazy from '../../utils/lazy';
@@ -8,7 +7,6 @@ const Dashboard = lazy(() =>
   import(/* webpackChunkName: 'Dashboard' */ '../Dashboard')
 );
 
-@hot(module)
 @withAuth
 export default class HomeOrDashboard extends Component {
   render() {

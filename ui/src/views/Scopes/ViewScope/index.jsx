@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import { parse, stringify } from 'qs';
@@ -15,7 +14,6 @@ import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../../utils/constants';
 import ErrorPanel from '../../../components/ErrorPanel';
 import scopesQuery from '../scopes.graphql';
 
-@hot(module)
 @graphql(scopesQuery)
 @withStyles(theme => ({
   icon: {

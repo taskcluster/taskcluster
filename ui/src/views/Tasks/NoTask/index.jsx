@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -12,7 +11,6 @@ import Search from '../../../components/Search';
 import db from '../../../utils/db';
 import Link from '../../../utils/Link';
 
-@hot(module)
 @withStyles(theme => ({
   infoText: {
     marginBottom: theme.spacing(1),

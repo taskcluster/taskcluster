@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import { omit, pathOr, mergeRight } from 'ramda';
@@ -79,7 +78,6 @@ const taskInContext = (tagSetList, taskTags) =>
 const getCachesFromTask = task =>
   Object.keys(pathOr({}, ['payload', 'cache'], task));
 
-@hot(module)
 @withApollo
 @withStyles(theme => ({
   title: {

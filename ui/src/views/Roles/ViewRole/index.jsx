@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import Spinner from '../../../components/Spinner';
@@ -11,7 +10,6 @@ import createRoleQuery from './createRole.graphql';
 import updateRoleQuery from './updateRole.graphql';
 import deleteRoleQuery from './deleteRole.graphql';
 
-@hot(module)
 @withApollo
 @graphql(roleQuery, {
   skip: ({ match: { params } }) => !params.roleId,

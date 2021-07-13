@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
@@ -16,7 +15,6 @@ import artifactsQuery from './artifacts.graphql';
 import indexedTaskQuery from './indexedTask.graphql';
 import Link from '../../../../utils/Link';
 
-@hot(module)
 @withStyles(theme => ({
   link: {
     ...theme.mixins.link,

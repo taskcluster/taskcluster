@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
@@ -15,7 +14,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import workerTypesQuery from './workerTypes.graphql';
 
-@hot(module)
 @withStyles(theme => ({
   bar: {
     display: 'flex',
