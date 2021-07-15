@@ -17,6 +17,36 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import Link from '../../../utils/Link';
 import hooksQuery from './hooks.graphql';
 
+const TreeItems = ({ groups }) => {
+  return groups
+    ? groups.map(group => {
+        const nodes = group.hooks.map(hook => (
+          <TreeItem
+            key={hook.hookId}
+            nodeId={hook.hookId}
+            label={
+              <Link
+                to={`/hooks/${group.hookGroupId}/${encodeURIComponent(
+                  hook.hookId
+                )}`}>
+                {hook.hookId}
+              </Link>
+            }
+          />
+        ));
+
+        return (
+          <TreeItem
+            key={group.hookGroupId}
+            nodeId={group.hookGroupId}
+            label={group.hookGroupId}>
+            {nodes}
+          </TreeItem>
+        );
+      })
+    : [];
+};
+
 @graphql(hooksQuery, {
   options: {
     fetchPolicy: 'network-only',
@@ -94,33 +124,7 @@ export default class ListHooks extends Component {
       data: { loading, error, hookGroups },
     } = this.props;
     const { search } = parse(window.location.search.slice(1));
-    const tree = hookGroups
-      ? hookGroups.map(group => {
-          const nodes = group.hooks.map(hook => (
-            <TreeItem
-              key={hook.hookId}
-              nodeId={hook.hookId}
-              label={
-                <Link
-                  to={`/hooks/${group.hookGroupId}/${encodeURIComponent(
-                    hook.hookId
-                  )}`}>
-                  {hook.hookId}
-                </Link>
-              }
-            />
-          ));
-
-          return (
-            <TreeItem
-              key={group.hookGroupId}
-              nodeId={group.hookGroupId}
-              label={group.hookGroupId}>
-              {nodes}
-            </TreeItem>
-          );
-        })
-      : [];
+    const tree = <TreeItems groups={hookGroups} />;
     const { expanded, selected } = this.state;
 
     return (
