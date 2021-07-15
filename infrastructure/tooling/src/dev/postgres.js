@@ -131,9 +131,10 @@ const postgresResources = async ({ userConfig, answer, configTmpl }) => {
         username, password,
         dbname: dbName,
       });
-      console.log(`Creating DB user ${username}`);
+      console.log(`(Re)creating DB user ${username}`);
       // this is all user-generated content without `'`, so including it literally
       // in the SQL is OK
+      await client.query(`drop user if exists ${username}`);
       await client.query(`create user ${username} password '${password}'`);
       userConfig[serviceName].read_db_url = url;
       userConfig[serviceName].write_db_url = url;
