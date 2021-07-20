@@ -64,7 +64,7 @@ const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
     type: 'input',
     when: () => setupNeeded.length,
     default: () => userConfig.pulseHostname ? `https://${userConfig.pulseHostname}` : '',
-    name: 'rabbitAdminManagementOrigin',
+    name: 'meta.rabbitAdminManagementOrigin',
     message: 'Now the origin of the management API for that RabbitMQ cluster (http? different port?).',
   });
 };
@@ -82,7 +82,7 @@ const rabbitResources = async ({ userConfig, answer, configTmpl }) => {
   // remove it from the answers
   delete answer.rabbitAdminPassword;
 
-  const apiUrl = `${answer.rabbitAdminManagementOrigin || userConfig.rabbitAdminManagementOrigin}/api`;
+  const apiUrl = `${answer.meta?.rabbitAdminManagementOrigin || userConfig.meta?.rabbitAdminManagementOrigin}/api`;
   const agent = request.agent().auth(answer.meta?.rabbitAdminUser, rabbitAdminPassword).type('json');
   const vhost = answer.pulseVhost || userConfig.pulseVhost;
   console.log(`(Re-)creating RabbitMQ vhost ${vhost}`);
