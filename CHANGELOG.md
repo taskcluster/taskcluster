@@ -3,6 +3,44 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.1.0
+
+### USERS
+
+▶ [minor] [bug 1131975](http://bugzil.la/1131975)
+taskcluster command line tool to validate json against a schema. having syntax `taskcluster validate-json https://some_schema.json https://example.son`
+
+▶ [patch] [#4896](https://github.com/taskcluster/taskcluster/issues/4896)
+The queue no longer returns 500 errors when calling `queue.getArtifact` for an object artifact.
+
+### DEVELOPERS
+
+▶ [patch] [#4934](https://github.com/taskcluster/taskcluster/issues/4934)
+When running ``yarn dev:init``, store the RabbitMQ cluster management API
+origin at ``meta.rabbitAdminManagementOrigin`` rather than the root key
+``rabbitAdminManagementOrigin``.  This avoids a schema validation error when
+running ``yarn dev:apply``. If you've already run ``yarn dev:init``, then you
+can manually move ``rabbitAdminManagementOrigin`` in ``dev-config.yml``.
+
+▶ [patch] [#2749](https://github.com/taskcluster/taskcluster/issues/2749)
+updated the hook component to be using ListView from material-ui
+
+### OTHER
+
+▶ Additional change not described here: [#4920](https://github.com/taskcluster/taskcluster/issues/4920).
+
+### Automated Package Updates
+
+<details>
+<summary>4 Renovate updates</summary>
+
+* Update dependency dot-prop-immutable to v2.1.1 (ab1053410)
+* Update dependency dotenv to v10 (2a5debab3)
+* Update dependency highlight.js to v11 (580294e2e)
+* Update golang.org/x/net commit hash to 04defd4 (26471370b)
+
+</details>
+
 ## v44.0.0
 
 ### GENERAL
