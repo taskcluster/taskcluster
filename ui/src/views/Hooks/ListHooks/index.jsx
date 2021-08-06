@@ -141,7 +141,7 @@ export default class ListHooks extends Component {
         {!hookGroups && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
         {!loading &&
-          (tree.length ? (
+          (hookGroups.length ? (
             <TreeView
               {...{ expanded, selected }}
               onNodeToggle={this.toggleState('expanded')}
