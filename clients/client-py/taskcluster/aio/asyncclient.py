@@ -141,7 +141,6 @@ class AsyncBaseClient(BaseClient):
                 # outside this loop.
                 headers['Content-Type'] = 'application/json'
 
-            log.debug('Making attempt %d', retry)
             try:
                 response = await asyncutils.makeSingleHttpRequest(
                     method, url, payload, headers, session=self.session
