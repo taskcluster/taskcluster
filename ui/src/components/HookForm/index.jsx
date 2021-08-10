@@ -893,9 +893,9 @@ export default class HookForm extends Component {
                       Schema
                     </Typography>
                     <JsonDisplay
-                      language="yaml"
+                      syntax="yaml"
                       className={classes.code}
-                      toDisplay={hook.TriggerSchema}
+                      objectContent={hook.TriggerSchema}
                     />
                   </Grid>
                 </Grid>

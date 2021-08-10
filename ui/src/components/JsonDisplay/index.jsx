@@ -9,7 +9,7 @@ const JsonDisplay = props => {
   const YamlJsonSwitch = ({ handleChange, value }) => (
     <Typography component="div">
       <Grid component="label" container alignItems="center" spacing={1}>
-        <Grid item>Yaml</Grid>
+        <Grid item>Json</Grid>
         <Grid item>
           <Switch
             checked={value === 'yaml'}
@@ -17,7 +17,7 @@ const JsonDisplay = props => {
             name="yaml_json_switch"
           />
         </Grid>
-        <Grid item>Json</Grid>
+        <Grid item>Yaml</Grid>
       </Grid>
     </Typography>
   );
@@ -33,11 +33,8 @@ const JsonDisplay = props => {
         value={language}
         handleChange={() => setLanguage(language === 'yaml' ? 'json' : 'yaml')}
       />
-      <Code
-        language={props.syntax}
-        className={props.wrapperClassName}
-        toDisplay={props.objectContent}>
-        {toText(props.toDisplay)}
+      <Code language={props.syntax} className={props.wrapperClassName}>
+        {toText(props.objectContent)}
       </Code>
     </React.Fragment>
   );

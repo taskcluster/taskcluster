@@ -49,9 +49,9 @@ export default class TaskDefinition extends Component {
         disableTitleFormatting
         disablePadding>
         <JsonDisplay
-          wrapperClassName={classes.rawDefinition}
+          className={classes.rawDefinition}
           syntax="json"
-          objectContent={rawDefinition}
+          toDisplay={rawDefinition}
         />
       </Dashboard>
     );
