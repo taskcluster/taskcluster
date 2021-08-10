@@ -376,7 +376,7 @@ A "writer" is an object with a `write(data)` method which writes the given data,
 A "writer factory" is a callable (again either async or sync) which returns a fresh writer, ready to write the first byte of the object.
 When uploads are retried, the writer factory may be called more than once.
 
-### Artifact Downlodas
+### Artifact Downloads
 
 Artifacts can be downloaded from the queue service with similar functions to those above.
 These functions support all of the queue's storage types, raising an error for `error` artifacts.
