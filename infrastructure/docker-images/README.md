@@ -10,7 +10,7 @@ The images are based on the same Node and Go versions as the rest of Taskcluster
 The image label is based on these versions.
 
 To generate the docker images, [install jq](https://github.com/stedolan/jq/wiki/Installation) and run `./build-<imagename>.sh`.
-If you are happy with the results, you have to push them to make them available for tests in taskcluster.
+If you are happy with the results, you have to push them to make them available for tests in Taskcluster.
 
 ## Browser Test
 
@@ -36,4 +36,4 @@ This is pretty much exactly the standard node image but with rabbitmq-server ins
 ## Node-Go
 
 This is a base Node image with the necessary bits of the Golang image copied in.
-This takes advantage of the fact that both imgaes are based on Debian "buster".
+This takes advantage of the fact that both images are based on Debian "buster".
