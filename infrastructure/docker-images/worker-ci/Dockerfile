@@ -22,7 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN curl -SL "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" | \
     tar xz -C /usr/local --strip-components=1 && \
-    npm install -g babel-cli yarn@1.0.2
+    npm install -g yarn@1.0.2 && \
+    yarn global add babel-cli
 
 env HOME /home/tester
 env SHELL /bin/bash
