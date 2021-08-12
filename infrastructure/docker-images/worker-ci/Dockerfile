@@ -6,7 +6,8 @@ ENV DOCKER_VERSION=18.06.3~ce~3-0~ubuntu
 RUN apt-get update && apt-get install -y apt-transport-https
 
 # Add key for docker apt repository
-RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 9DC858229FC7DD38854AE2D88D81803C0EBFCD88 && \
+COPY download.docker.com.gpg /tmp/download.docker.com.gpg
+RUN apt-key add /tmp/download.docker.com.gpg && \
     echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu trusty stable" > /etc/apt/sources.list.d/docker.list
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
