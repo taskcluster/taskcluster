@@ -14,5 +14,5 @@ FROM node:${node_version}-stretch
 RUN apt-get update && apt-get install -y rabbitmq-server
 EOF
 
-docker build -t "taskcluster/rabbit-test:${node_version}" ${tmpdir}
+docker build --platform linux/amd64 -t "taskcluster/rabbit-test:${node_version}" ${tmpdir}
 [ -n "$DOCKER_PUSH" ] && docker push "taskcluster/rabbit-test:${node_version}"
