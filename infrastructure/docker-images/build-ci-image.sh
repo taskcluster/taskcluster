@@ -59,5 +59,5 @@ RUN bash /pginstall && rm /pginstall
 ENV TEST_DB_URL=postgresql://postgres@localhost/postgres
 EOF
 
-docker build -t "taskcluster/ci-image:node${node_version}-pg${pg_version}-go${go_version}" ${tmpdir}
+docker build --platform linux/amd64 -t "taskcluster/ci-image:node${node_version}-pg${pg_version}-go${go_version}" ${tmpdir}
 [ -n "$DOCKER_PUSH" ] && docker push "taskcluster/ci-image:node${node_version}-pg${pg_version}-go${go_version}"

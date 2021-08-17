@@ -9,5 +9,5 @@ fi
 
 tag="taskcluster/worker-ci:node${NODE_VERSION}"
 
-docker build --build-arg NODE_VERSION=$NODE_VERSION -t ${tag}  ./worker-ci
+docker build --platform linux/amd64 --build-arg NODE_VERSION=$NODE_VERSION -t ${tag}  ./worker-ci
 [ -n "$DOCKER_PUSH" ] && docker push ${tag}
