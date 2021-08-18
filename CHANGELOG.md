@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.2.2
+
+### DEPLOYERS
+
+▶ [patch] 
+No changes. Deployment failed for 44.2.1 as well.
+
 ## v44.2.1
 
 ### DEPLOYERS
