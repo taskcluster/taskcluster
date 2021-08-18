@@ -3,6 +3,22 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.2.0
+
+### GENERAL
+
+▶ [minor] 
+Upgrade from node 14.16.1 to 14.17.5, and from go 1.16.3 to 1.16.7.
+
+### ADMINS
+
+▶ [patch] [#4946](https://github.com/taskcluster/taskcluster/issues/4946)
+On the UI page /hooks, fix the "no hooks" detection so that hook groups are displayed.
+
+### OTHER
+
+▶ Additional change not described here: [#4944](https://github.com/taskcluster/taskcluster/issues/4944).
+
 ## v44.1.0
 
 ### USERS
