@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.2.1
+
+### DEPLOYERS
+
+▶ [patch] 
+No changes. Deployment failed on 44.2.0 due to intermittent network issue.
+
 ## v44.2.0
 
 ### GENERAL
