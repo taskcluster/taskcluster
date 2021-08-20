@@ -132,29 +132,29 @@ export default class RolesTable extends Component {
         renderRow={({ node: role }) => (
           <TableRow key={role.roleId}>
             <TableCell>
-              <TableCellItem dense button>
-                <Box className={classes.roleContainer}>
-                  <Box className={classes.roleIdContainer}>
-                    <Link to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
-                      {role.roleId}
-                    </Link>
+              <Link to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
+                {role.roleId}
+                <TableCellItem dense button>
+                  <Box className={classes.roleContainer}>
+                    <Box className={classes.roleIdContainer}>
+                    </Box>
+                    <Box className={classes.roleLinkContainer}>
+                      <Link
+                        to={`/auth/roles/${encodeURIComponent(role.roleId)}`}
+                        className={classes.roleLinkIcon}>
+                        <LinkIcon size={iconSize} />
+                      </Link>
+                    </Box>
+                    <Button
+                      requiresAuth
+                      tooltipProps={{ title: 'Delete Role' }}
+                      size="small"
+                      onClick={() => onDialogActionOpen(role.roleId)}>
+                      <DeleteIcon size={iconSize} />
+                    </Button>
                   </Box>
-                  <Box className={classes.roleLinkContainer}>
-                    <Link
-                      to={`/auth/roles/${encodeURIComponent(role.roleId)}`}
-                      className={classes.roleLinkIcon}>
-                      <LinkIcon size={iconSize} />
-                    </Link>
-                  </Box>
-                  <Button
-                    requiresAuth
-                    tooltipProps={{ title: 'Delete Role' }}
-                    size="small"
-                    onClick={() => onDialogActionOpen(role.roleId)}>
-                    <DeleteIcon size={iconSize} />
-                  </Button>
-                </Box>
-              </TableCellItem>
+                </TableCellItem>
+              </Link>
             </TableCell>
           </TableRow>
         )}
