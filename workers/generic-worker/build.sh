@@ -95,6 +95,7 @@ if ${ALL_PLATFORMS}; then
   install multiuser darwin  amd64
   install multiuser darwin  arm64
   install simple    darwin  amd64
+  install simple    darwin  arm64
 
   install multiuser linux   amd64
   install docker    linux   amd64
