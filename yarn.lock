@@ -3157,9 +3157,9 @@ gcp-metadata@^4.2.0:
     json-bigint "^1.0.0"
 
 generate-password@^1.5.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/generate-password/-/generate-password-1.6.0.tgz#9dff4fcca7f831e6832d464509910fab333d0323"
-  integrity sha512-YUJTQkApkLT/fru0QdYWP0lVZdPKhF5kXCP24sgI4gR/vFMJFopCj5t1+9FAKIYcML/nxzx2PMkA1ymO1FC+tQ==
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/generate-password/-/generate-password-1.6.1.tgz#c2a7a2af74abb353dd855c16b3e13336b9d80272"
+  integrity sha512-JvtWSiN4KVmF6kBFi89Uz9LLN7l/EuGZYiKrIxddFlKcjSgc3D3va0Z5faooNwN85O0VBlt/ZtTdqhbQKhAOyw==
 
 get-assigned-identifiers@^1.1.0:
   version "1.2.0"
@@ -6327,7 +6327,7 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "44.1.0"
+  version "44.2.2"
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
@@ -6337,37 +6337,37 @@ tar-stream@^2.0.0:
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-db@link:db":
-  version "44.1.0"
+  version "44.2.2"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "44.1.0"
+  version "44.2.2"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "44.1.0"
+  version "44.2.2"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "44.1.0"
+  version "44.2.2"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "44.1.0"
+  version "44.2.2"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "44.1.0"
+  version "44.2.2"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "44.1.0"
+  version "44.2.2"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "44.1.0"
+  version "44.2.2"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "44.1.0"
+  version "44.2.2"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "44.1.0"
+  version "44.2.2"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "44.1.0"
+  version "44.2.2"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6377,7 +6377,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "44.1.0"
+  version "44.2.2"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6385,7 +6385,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "44.1.0"
+  version "44.2.2"
 
 temporary@^1.0.0:
   version "1.1.0"
