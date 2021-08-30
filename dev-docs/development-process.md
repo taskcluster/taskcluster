@@ -92,8 +92,6 @@ To run the Taskcluster UI:
     For example:
     ```sh
     export READ_DB_URL=$TEST_DB_URL
-    ```
-    ```sh
     export WRITE_DB_URL=$TEST_DB_URL
     ```
     
