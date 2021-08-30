@@ -89,6 +89,14 @@ To run the Taskcluster UI:
 * In a shell window for taskcluster-web-server:
   * Make sure Postgres is set up as described above.
   * Set both `READ_DB_URL` and `WRITE_DB_URL` to the URL for your postgres server, as described above.
+    For example:
+    ```sh
+    export READ_DB_URL=$TEST_DB_URL
+    ```
+    ```sh
+    export WRITE_DB_URL=$TEST_DB_URL
+    ```
+    
   * Set `TASKCLUSTER_ROOT_URL` to point to a Taskcluster deployment you wish to represent in the UI.
     For example:
 
@@ -106,6 +114,8 @@ To run the Taskcluster UI:
     You will only need to do this when the dependencies change.
   * Run `yarn start` to start the development server.
     It will output a localhost URL on which you can see the site.
+    
+    *Note* : Make sure you have set all the above mentioned environment variables in the shell session.
 
 ## Hacking on Services and Libraries
 
