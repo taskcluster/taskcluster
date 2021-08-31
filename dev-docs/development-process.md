@@ -89,6 +89,11 @@ To run the Taskcluster UI:
 * In a shell window for taskcluster-web-server:
   * Make sure Postgres is set up as described above.
   * Set both `READ_DB_URL` and `WRITE_DB_URL` to the URL for your postgres server, as described above.
+    For example:
+    ```sh
+    export READ_DB_URL=postgresql://postgres@localhost/postgres
+    export WRITE_DB_URL=postgresql://postgres@localhost/postgres
+    ```
   * Set `TASKCLUSTER_ROOT_URL` to point to a Taskcluster deployment you wish to represent in the UI.
     For example:
 
@@ -97,8 +102,10 @@ To run the Taskcluster UI:
     ```
   * Change to the `services/web-server` directory and run `yarn start`.
     This will start a web server on port 3050.
-    Note that it will warn "No Pulse namespace defined".
-    Unless you are working on parts of the UI that require Pulse support (and most do not), this is OK.
+    
+    > *Note 1*: It will warn "No Pulse namespace defined". <br />
+              Unless you are working on parts of the UI that require Pulse support (and most do not), this is OK. <br />      
+    > *Note 2*: If you get an error like `readDbUrl is required`, ensure you've set all the above mentioned environment variables in the same shell session.
 
 * In another shell window for taskcluster-ui:
   * Change to the `ui/` directory.
