@@ -35,7 +35,10 @@ export default class Code extends Component {
 
   render() {
     const { children, language, className, ...props } = this.props;
-    const code = highlight(language, children, true).value;
+    const code = highlight(children, {
+      language,
+      ignoreIllegals: true,
+    }).value;
 
     /* eslint-disable react/no-danger */
     return (
