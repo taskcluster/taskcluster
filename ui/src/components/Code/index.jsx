@@ -38,7 +38,7 @@ export default class Code extends Component {
     const code = highlight(children, {
       language,
       ignoreIllegals: true,
-    });
+    }).value;
 
     /* eslint-disable react/no-danger */
     return (
