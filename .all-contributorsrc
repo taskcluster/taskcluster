@@ -46,7 +46,7 @@
       "profile": "http://code.v.igoro.us/",
       "contributions": [
         "code",
-        "staff"
+        "former-staff"
       ]
     },
     {
@@ -106,7 +106,7 @@
       "profile": "https://imbstack.com",
       "contributions": [
         "code",
-        "staff"
+        "former-staff"
       ]
     },
     {
@@ -167,6 +167,16 @@
       "contributions": [
         "code",
         "former-staff"
+      ]
+    },
+    {
+      "login": "leplatrem",
+      "name": "Mathieu Leplatre",
+      "avatar_url": "https://avatars.githubusercontent.com/u/546692?v=4",
+      "profile": "https://blog.mathieu-leplatre.info/pages/about.html",
+      "contributions": [
+        "code",
+        "staff"
       ]
     },
     {
