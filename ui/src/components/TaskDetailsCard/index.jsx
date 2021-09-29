@@ -483,10 +483,7 @@ export default class TaskDetailsCard extends Component {
                         <Typography variant="subtitle1">Extra</Typography>
                       }
                       secondary={
-                        <JsonDisplay
-                          syntax="json"
-                          objectContent={task.extra}
-                        />
+                        <JsonDisplay syntax="json" objectContent={task.extra} />
                       }
                     />
                   </ListItem>
