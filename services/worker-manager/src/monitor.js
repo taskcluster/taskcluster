@@ -169,6 +169,9 @@ MonitorManager.register({
   fields: {
     message: 'Description of this error from the taskcluster side',
     error: 'Error message from cloud that triggered this',
+    workerPoolId: 'The worker pool ID',
+    providerId: 'The provider that did the work for this worker pool.',
+    workerId: 'The worker that failed',
   },
 });
 
