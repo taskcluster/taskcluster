@@ -21,6 +21,6 @@ base64 = "0.12.0"
 sha2 = "0.9"
 
 [dev-dependencies]
-httptest = "^0.15.1"
+httptest = "0.15.3"
 tempfile = "3"
 ring = "0.16"
