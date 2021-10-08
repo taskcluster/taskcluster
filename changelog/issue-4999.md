@@ -1,10 +1,10 @@
 audience: admins
-level: minor
+level: patch
 reference: issue 4999
 ---
-Add workerPoolId, providerId, and workerId to registration-error-warning
-context, logged from the Azure provider's register() function in
-worker-manager.
+The registration-error-warning, logged from the Azure provider's register()
+function in worker-manager, now includes workerPoolId, providerID, and
+workerID in its context.
 
-Add workerState to the warning context when the state is not REQUESTED,
-to help diagnose registration with an unexpected state.
+When register-error-warning is due to the state not being REQUESTED,
+the workerState is also in the context.
