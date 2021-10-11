@@ -11,7 +11,6 @@ import CardContent from '@material-ui/core/CardContent';
 import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
 import ClearIcon from 'mdi-react/ClearIcon';
-import Typography from '@material-ui/core/Typography';
 import { addYears } from 'date-fns';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
 import Spinner from '../../../components/Spinner';
@@ -31,6 +30,7 @@ import clientQuery from './client.graphql';
 import { THEME } from '../../../utils/constants';
 import fromNow from '../../../utils/fromNow';
 import { withAuth } from '../../../utils/Auth';
+import SignInDialog from '../../../components/SignInDialog';
 
 @withAuth
 @withApollo
@@ -412,9 +412,7 @@ export default class ViewClient extends Component {
             )}
           </Fragment>
         ) : (
-          <Typography variant="subtitle1">
-            Sign in to create a client
-          </Typography>
+          <SignInDialog open />
         )}
         <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Dashboard>
