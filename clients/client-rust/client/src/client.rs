@@ -467,10 +467,13 @@ mod tests {
             }
             let auth_header: hawk::Header = auth_header[5..].parse().unwrap();
 
-            let host = format!("{}", self.1.ip());
+            // determine the host from the SocketAddr the same way that URL parsing
+            // does -- this picks up "special" things like [..] around ipv6 literals
+            let url = reqwest::Url::parse(format!("http://{}", self.1).as_ref()).unwrap();
+            let host = url.host_str().unwrap();
             let hawk_req = hawk::RequestBuilder::new(
                 input.method().as_str(),
-                &host,
+                host,
                 self.1.port(),
                 input.uri().path(),
             )
