@@ -51,7 +51,7 @@ export default class TaskDefinition extends Component {
         <JsonDisplay
           className={classes.rawDefinition}
           syntax="json"
-          toDisplay={rawDefinition}
+          objectContent={rawDefinition}
         />
       </Dashboard>
     );
