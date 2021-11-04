@@ -295,7 +295,7 @@ properties:
       `login-identity/<login-identity>/rdpinfo.json` which is only readable for
       the given login identity (for example
       `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpinfo.json`). See the
-      [artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information.
+      [artifact namespace guide](https://docs.taskcluster.net/docs/manual/using/namespaces#artifacts) for more information.
 
       Use of this feature requires scope
       `generic-worker:allow-rdp:<provisionerId>/<workerType>` which must be
