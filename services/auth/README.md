@@ -6,7 +6,7 @@ The auth service manages permissions and credentials in a Taskcluster deployment
 
 No special configuration is required for development.
 
-Run `yarn workspace taskcluster-hooks test` to run the tess.
+Run `yarn workspace taskcluster-hooks test` to run the test.
 Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
 
 If you are modifying something requiring credentials, you may need to set up credentials.
@@ -32,18 +32,19 @@ Then set `gcpCredentials.alloewdProjects` in `user-config.yml` as follows (inclu
 
 ```yaml
 gcpCredentials:
-  allowedProjects:
-    test-proj:
-      credentials: {
-        "type": "service_account",
-        "project_id": "dustin-svc-account-experiments",
-        "private_key_id": "99b2a524554e2450aa23cb9d73d076b19173da5a",
-        "client_email": "credgranter@test-proj.iam.gserviceaccount.com",
-        ...
-      }
-      allowedServiceAccounts: 
-      - "target@test-proj.iam.gserviceaccount.com"
-      - "invalid@mozilla.com"
+    allowedProjects:
+        test-proj:
+            credentials:
+                {
+                    'type': 'service_account',
+                    'project_id': 'dustin-svc-account-experiments',
+                    'private_key_id': '99b2a524554e2450aa23cb9d73d076b19173da5a',
+                    'client_email': 'credgranter@test-proj.iam.gserviceaccount.com',
+                    ...,
+                }
+            allowedServiceAccounts:
+                - 'target@test-proj.iam.gserviceaccount.com'
+                - 'invalid@mozilla.com'
 ```
 
 alternately, you can set env var `GCP_CREDENTIALS_ALLOWED_PROJECTS` to a string
