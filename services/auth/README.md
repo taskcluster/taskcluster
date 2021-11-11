@@ -6,7 +6,7 @@ The auth service manages permissions and credentials in a Taskcluster deployment
 
 No special configuration is required for development.
 
-Run `yarn workspace taskcluster-hooks test` to run the test.
+Run `yarn workspace taskcluster-hooks test` to run the tests.
 Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
 
 If you are modifying something requiring credentials, you may need to set up credentials.
