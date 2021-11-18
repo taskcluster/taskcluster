@@ -33,5 +33,5 @@ Until this time, download requests for the object are rejected.
 
 No special configuration is required for development.
 
-Run `yarn workspace taskcluster-object test` to run the tess.
+Run `yarn workspace taskcluster-object test` to run the tests.
 Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
