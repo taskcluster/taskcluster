@@ -144,7 +144,7 @@ func Usage() string {
 	return strings.ReplaceAll(`
 
 The "generic-worker" worker implementation starts generic-worker
-(https://github.com/taskcluster/generic-worker).  It takes the following
+(https://github.com/taskcluster/generic-worker). It takes the following
 values in the 'worker' section of the runner configuration:
 
 `+"```yaml"+`
