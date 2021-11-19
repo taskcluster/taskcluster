@@ -22,7 +22,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import { docs } from 'taskcluster-lib-urls';
 import CodeEditor from '../CodeEditor';
-import Code from '../Code';
+import JsonDisplay from '../JsonDisplay';
 import TextField from '../TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import ErrorPanel from '../ErrorPanel';
@@ -892,9 +892,11 @@ export default class HookForm extends Component {
                     <Typography gutterBottom variant="subtitle1">
                       Schema
                     </Typography>
-                    <Code language="yaml" className={classes.code}>
-                      {dump(hook.triggerSchema)}
-                    </Code>
+                    <JsonDisplay
+                      syntax="yaml"
+                      className={classes.code}
+                      objectContent={hook.triggerSchema}
+                    />
                   </Grid>
                 </Grid>
               </Fragment>

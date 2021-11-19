@@ -16,7 +16,7 @@ import DownloadIcon from 'mdi-react/DownloadIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
 import StopIcon from 'mdi-react/StopIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
-import Code from '../../components/Code';
+import JsonDisplay from '../../components/JsonDisplay';
 import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import Dashboard from '../../components/Dashboard';
@@ -387,9 +387,10 @@ export default class PulseMessages extends Component {
                       }}
                       secondary={
                         drawerMessage && (
-                          <Code language="json">
-                            {JSON.stringify(drawerMessage.payload, null, 2)}
-                          </Code>
+                          <JsonDisplay
+                            syntax="json"
+                            objectContent={drawerMessage.payload}
+                          />
                         )
                       }
                     />

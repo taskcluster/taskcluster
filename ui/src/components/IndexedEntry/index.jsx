@@ -9,7 +9,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
-import Code from '../Code';
+import JsonDisplay from '../JsonDisplay';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
 import { artifact, indexedTask, date, pageInfo } from '../../utils/prop-types';
@@ -190,9 +190,7 @@ export default class IndexedEntry extends Component {
               component: 'div',
             }}
             secondary={
-              <Code language="json">
-                {JSON.stringify(indexedTask.data, null, 2)}
-              </Code>
+              <JsonDisplay syntax="json" objectContent={indexedTask.data} />
             }
           />
         </ListItem>

@@ -3,9 +3,8 @@ import { string, object, func } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import { dump } from 'js-yaml';
 import CodeEditor from '../CodeEditor';
-import Code from '../Code';
+import JsonDisplay from '../JsonDisplay';
 import ErrorPanel from '../ErrorPanel';
 import Markdown from '../Markdown';
 
@@ -76,9 +75,11 @@ export default class TaskActionForm extends Component {
               <Typography gutterBottom variant="subtitle1">
                 Schema
               </Typography>
-              <Code language="yaml" className={classes.code}>
-                {dump(action.schema || {})}
-              </Code>
+              <JsonDisplay
+                syntax="yaml"
+                wrapperClassName={classes.code}
+                objectContent={action.schema || {}}
+              />
             </Grid>
           </Grid>
         )}
