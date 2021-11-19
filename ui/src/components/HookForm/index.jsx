@@ -895,7 +895,7 @@ export default class HookForm extends Component {
                     <JsonDisplay
                       syntax="yaml"
                       className={classes.code}
-                      objectContent={hook.TriggerSchema}
+                      objectContent={hook.triggerSchema}
                     />
                   </Grid>
                 </Grid>
