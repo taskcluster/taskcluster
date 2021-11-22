@@ -42,6 +42,9 @@ const iconSize = 16;
   roleIdContainer: {
     flexGrow: 1,
   },
+  roleIdLink: {
+    display: 'flex',
+  },
 }))
 export default class RolesTable extends Component {
   static propTypes = {
@@ -135,7 +138,9 @@ export default class RolesTable extends Component {
               <TableCellItem dense button>
                 <Box className={classes.roleContainer}>
                   <Box className={classes.roleIdContainer}>
-                    <Link to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
+                    <Link
+                      className={classes.roleIdLink}
+                      to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
                       {role.roleId}
                     </Link>
                   </Box>
