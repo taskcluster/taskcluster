@@ -47,7 +47,7 @@ func New(runnercfg *cfg.RunnerConfig) (worker.Worker, error) {
 func Usage() string {
 	return `
 The "dummy" worker implementation does nothing but dump the state instead of
-"starting" anything.  It is intended for debugging.
+"starting" anything. It is intended for debugging.
 
 ` + "```yaml" + `
 worker:

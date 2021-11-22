@@ -6,10 +6,10 @@ This service implements the `built-in/succeed` and `built-in/fail` workerTypes, 
 
 No special configuration is required for development.
 
-Run `yarn workspace taskcluster-built-in-workers test` to run the tess.
+Run `yarn workspace taskcluster-built-in-workers test` to run the tests.
 Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
 
-To run *all* tests, you will need appropriate Taskcluster credentials.
+To run _all_ tests, you will need appropriate Taskcluster credentials.
 Using [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli), run `eval $(taskcluster signin --scope assume:project:taskcluster:tests:taskcluster-built-in-workers)`, then run the tests again.
 
 ## Deployment

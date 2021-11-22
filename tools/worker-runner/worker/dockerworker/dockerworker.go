@@ -174,7 +174,7 @@ func Usage() string {
 	return `
 
 The "docker-worker" worker implementation starts docker-worker
-(https://github.com/taskcluster/docker-worker).  It takes the following
+(https://github.com/taskcluster/taskcluster/tree/main/workers/docker-worker). It takes the following
 values in the 'worker' section of the runner configuration:
 
 ` + "```yaml" + `

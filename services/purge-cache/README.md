@@ -4,7 +4,7 @@
 
 No special configuration is required for development.
 
-Run `yarn workspace taskcluster-purge-cache test` to run the tess.
+Run `yarn workspace taskcluster-purge-cache test` to run the tests.
 Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
 
 To run *all* tests, you will need appropriate Taskcluster credentials.

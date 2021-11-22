@@ -21,7 +21,7 @@ You will need to have the following
 * An AWS account and an IAM user in that account
   Set up your `aws` command-line to use the IAM user (`aws configure`).
   The user must be able to configure S3 and IAM resources.
-  It's safe to use a root or admin account for this, as it is just used to create new IAM users wihch will be used by the Taskcluster deployment.
+  It's safe to use a root or admin account for this, as it is just used to create new IAM users which will be used by the Taskcluster deployment.
 * A hostname for which you control DNS.
   Your deployments "root URL" will be `https://<hostname>`.
 
@@ -104,14 +104,15 @@ To set up a Google Cloud SQL server:
     Note that there are two buttons to click: "Allocate and Create" and then later "Save".
     Each can take several minutes.
 
-That much only need be done once, in fact -- multiple dev environments can share the same DB.  For a specific deployment:
+That much only needs to be done once, in fact -- multiple dev environments can share the same DB.  For a specific deployment:
 
- 1. Under "Users", create a new user with the name of your deployment (`<yourname>`) and generate a good password and make a note of it.
-   * This will also be the "username prefix" from which the per-service usernames are derived
-   * Google creates this user as a superuser on the server, which is a bit more than required, but will do for development environments.
- 1. Under "Databases", create one with the name of your deployment (`<yourname>`).
+  1. Under "Users", create a new user with the name of your deployment (`<yourname>`) and generate a good password and make a note of it.
+       * This will also be the "username prefix" from which the per-service usernames are derived
+       * Google creates this user as a superuser on the server, which is a bit more than required, but will do for development environments.
+  1. Under "Databases", create one with the name of your deployment (`<yourname>`).
 
 You will need the following to tell `yarn dev:init`:
+
  * Public and Private IP addresses (on the "Overview" tab)
  * The admin username and password
  * The database name

@@ -144,7 +144,7 @@ func Usage() string {
 	return strings.ReplaceAll(`
 
 The "generic-worker" worker implementation starts generic-worker
-(https://github.com/taskcluster/generic-worker).  It takes the following
+(https://github.com/taskcluster/generic-worker). It takes the following
 values in the 'worker' section of the runner configuration:
 
 `+"```yaml"+`
@@ -172,7 +172,7 @@ See [Deployment](/docs/reference/workers/worker-runner/deployment).
 In most cases, |protocolPipe| can be omitted to use the default value.
 This would only need to be overridden if multiple copies of generic-worker are running on the same host.
 
-To run generic-worker as a child process, specify |implementation, |path| and |configPath|.
+To run generic-worker as a child process, specify |implementation|, |path| and |configPath|.
 In this case, |protocolPipe| is not used.
 `, "|", "`")
 }

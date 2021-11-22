@@ -12,7 +12,7 @@ not require a build step to use.
 
 ## Installation
 
-You can install this package using Yarn ore npm:
+You can install this package using Yarn or npm:
 
 ```bash
 yarn add taskcluster-client-web
