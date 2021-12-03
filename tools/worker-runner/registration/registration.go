@@ -2,6 +2,7 @@ package registration
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -82,6 +83,14 @@ func (reg *RegistrationManager) RegisterWorker(workerIdentityProofMap map[string
 }
 
 func (reg *RegistrationManager) UseCachedRun() error {
+	expire := time.Time(reg.state.CredentialsExpire)
+	if expire.IsZero() {
+		return nil
+	}
+	if expire.Before(time.Now()) {
+		return errors.New("Cached worker credentials have expired; cannot re-register")
+	}
+
 	return nil
 }
 
