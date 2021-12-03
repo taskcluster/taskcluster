@@ -58,3 +58,14 @@ func TestConfigureRun(t *testing.T) {
 		"staticSecret": "quiet",
 	}, proof)
 }
+
+func TestUseCachedRun(t *testing.T) {
+	runnercfg := &cfg.RunnerConfig{}
+
+	p, err := new(runnercfg, tc.FakeWorkerManagerClientFactory)
+	require.NoError(t, err, "creating provider")
+
+	// UseCachedRun should unconditionally return an error
+	err = p.UseCachedRun(&run.State{})
+	require.Error(t, err)
+}
