@@ -17,6 +17,12 @@ const CLUSTER_DEFAULTS = {
   taskcluster_client_id: cfg => `static/taskcluster/${cfg.name}`,
 };
 
+// Defaults for things for which the type-based default (configToExample) is
+// incorrect.
+const DEFAULT_OVERRIDES = {
+  'web_server.registered_clients': [],
+};
+
 // Things like port that we always set ourselves
 const NON_CONFIGURABLE = [
   'port',
@@ -478,6 +484,8 @@ exports.tasks.push({
         }
         if (Object.keys(CLUSTER_DEFAULTS).includes(varName)) {
           valuesYAML[confName][varName] = CLUSTER_DEFAULTS[varName](cfg);
+        } else if (DEFAULT_OVERRIDES[`${confName}.${varName}`]) {
+          exampleConfig[confName][varName] = DEFAULT_OVERRIDES[`${confName}.${varName}`];
         } else {
           exampleConfig[confName][varName] = configToExample(v.type);
         }
