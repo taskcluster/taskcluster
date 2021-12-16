@@ -17,6 +17,10 @@ spec:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-built-in-workers-secret.yaml") . | sha256sum }}'
       labels: *ref_0
     spec:
+    {{- with.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
       serviceAccountName: taskcluster-built-in-workers
       containers:
         - name: taskcluster-built-in-workers-server

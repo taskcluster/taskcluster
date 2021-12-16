@@ -7,6 +7,10 @@
       "description": "The name of this deployment of Taskcluster.",
       "type": "string"
     },
+    "imagePullSecrets": {
+      "description": "Secrets to get the docker image",
+      "type": "array"
+    },
     "auth": {
       "additionalProperties": false,
       "properties": {

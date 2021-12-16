@@ -17,6 +17,10 @@ spec:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-object-secret.yaml") . | sha256sum }}'
       labels: *ref_0
     spec:
+    {{- with.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
       serviceAccountName: taskcluster-object
       containers:
         - name: taskcluster-object-web

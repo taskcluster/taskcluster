@@ -1,4 +1,5 @@
 dockerImage: taskcluster/taskcluster:v44.4.0
+imagePullSecrets: []
 trustProxy: true
 forceSSL: false
 nodeEnv: production
