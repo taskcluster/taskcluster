@@ -466,7 +466,13 @@ class AzureProvider extends Provider {
       let asn1 = forge.asn1.fromDer(forge.util.createBuffer(decodedMessage));
       message = forge.pkcs7.messageFromAsn1(asn1);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({ message: 'Error extracting PKCS#7 message', error: err.toString() });
+      this.monitor.log.registrationErrorWarning({
+        message: 'Error extracting PKCS#7 message',
+        error: err.toString(),
+        workerPoolId: workerPool.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
+      });
       throw error();
     }
 
@@ -481,7 +487,13 @@ class AzureProvider extends Provider {
       pem = forge.pki.publicKeyToPem(crt.publicKey);
       sig = message.rawCapture.signature;
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({ message: 'Error extracting PKCS#7 message content', error: err.toString() });
+      this.monitor.log.registrationErrorWarning({
+        message: 'Error extracting PKCS#7 message content',
+        error: err.toString(),
+        workerPoolId: workerPool.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
+      });
       throw error();
     }
 
@@ -491,7 +503,13 @@ class AzureProvider extends Provider {
       verifier.update(Buffer.from(content));
       assert(verifier.verify(pem, sig, 'binary'));
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({ message: 'Error verifying PKCS#7 message signature', error: err.toString() });
+      this.monitor.log.registrationErrorWarning({
+        message: 'Error verifying PKCS#7 message signature',
+        error: err.toString(),
+        workerPoolId: workerPool.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
+      });
       throw error();
     }
 
@@ -503,6 +521,9 @@ class AzureProvider extends Provider {
       this.monitor.log.registrationErrorWarning({
         message: 'Wrong PKCS#7 message signature subject',
         error: `Expected "/CN=metadata.azure.com", got "${dnToString(crt.subject)}"`,
+        workerPoolId: workerPool.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
       });
       throw error();
     }
@@ -523,6 +544,9 @@ class AzureProvider extends Provider {
             this.monitor.log.registrationErrorWarning({
               message: 'Error downloading intermediate certificate',
               error: `${err.toString()}; location=${location}`,
+              workerPoolId: workerPool.workerPoolId,
+              providerId: this.providerId,
+              workerId: worker.workerId,
             });
             // Continue, there may be a further CA Issuer that works
           }
@@ -536,6 +560,9 @@ class AzureProvider extends Provider {
               this.monitor.log.registrationErrorWarning({
                 message: 'Error reading intermediate certificate',
                 error: `${err.toString()}; location=${location}`,
+                workerPoolId: workerPool.workerPoolId,
+                providerId: this.providerId,
+                workerId: worker.workerId,
               });
               // Continue, there may be a later CA Issuer that works
             }
@@ -554,6 +581,9 @@ class AzureProvider extends Provider {
           this.monitor.log.registrationErrorWarning({
             message: 'Error verifying new intermediate certificate',
             error: err.message,
+            workerPoolId: workerPool.workerPoolId,
+            providerId: this.providerId,
+            workerId: worker.workerId,
           });
           throw error();
         }
@@ -568,6 +598,9 @@ class AzureProvider extends Provider {
           message: 'Unable to download intermediate certificate',
           error: `Certificate "${dnToString(crt.issuer)}";` +
                  ` AuthorityAccessInfo ${JSON.stringify(authorityAccessInfo)}`,
+          workerPoolId: workerPool.workerPoolId,
+          providerId: this.providerId,
+          workerId: worker.workerId,
         });
         throw error();
       }
@@ -577,7 +610,13 @@ class AzureProvider extends Provider {
     try {
       forge.pki.verifyCertificateChain(this.caStore, [crt]);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({ message: 'Error verifying certificate chain', error: err.message });
+      this.monitor.log.registrationErrorWarning({
+        message: 'Error verifying certificate chain',
+        error: err.message,
+        workerPoolId: workerPool.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
+      });
       throw error();
     }
 
@@ -585,7 +624,13 @@ class AzureProvider extends Provider {
     try {
       payload = JSON.parse(content);
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({ message: 'Payload was not valid JSON', error: err.toString() });
+      this.monitor.log.registrationErrorWarning({
+        message: 'Payload was not valid JSON',
+        error: err.toString(),
+        workerPoolId: workerPool.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
+      });
       throw error();
     }
 
@@ -602,9 +647,11 @@ class AzureProvider extends Provider {
       this.monitor.log.registrationErrorWarning({
         message: 'vmId mismatch',
         error: err.toString(),
+        workerPoolId: workerPool.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
         vmId: payload.vmId,
         expectedVmId: workerVmId,
-        workerId: worker.workerId,
       });
       throw error();
     }
@@ -613,12 +660,26 @@ class AzureProvider extends Provider {
     try {
       assert(new Date(payload.timeStamp.expiresOn) > this._now());
     } catch (err) {
-      this.monitor.log.registrationErrorWarning({ message: 'Expired message', error: err.toString(), expires: payload.timeStamp.expiresOn });
+      this.monitor.log.registrationErrorWarning({
+        message: 'Expired message',
+        error: err.toString(),
+        workerPoolId: workerPool.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
+        expires: payload.timeStamp.expiresOn,
+      });
       throw error();
     }
 
     if (worker.state !== Worker.states.REQUESTED) {
-      this.monitor.log.registrationErrorWarning({ message: 'Worker was already running.', error: 'Worker was already running.' });
+      this.monitor.log.registrationErrorWarning({
+        message: 'Worker was already running.',
+        error: 'Worker was already running.',
+        workerPoolId: workerPool.workerPoolId,
+        providerId: this.providerId,
+        workerId: worker.workerId,
+        workerState: worker.state,
+      });
       throw error();
     }
 

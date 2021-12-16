@@ -12390,7 +12390,10 @@
           "description": "Something has tried to register as a worker but failed. This could indicate either a bug\nor that somebody is trying to impersonate a worker.",
           "fields": {
             "error": "Error message from cloud that triggered this",
-            "message": "Description of this error from the taskcluster side"
+            "message": "Description of this error from the taskcluster side",
+            "providerId": "The provider that did the work for this worker pool.",
+            "workerId": "The worker that failed",
+            "workerPoolId": "The worker pool ID"
           },
           "level": "warning",
           "name": "registrationErrorWarning",
