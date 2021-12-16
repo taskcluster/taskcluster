@@ -119,4 +119,8 @@ defined by this provider has the following fields:
 
 as well as any worker location values from the configuration.
 
+NOTE: do not use the 'cacheOverRestarts' configuration with the static
+provider.  The static provider can re-initialize itself "from scratch" on every
+startup, and does not need to cache anything.
+
 <!-- PROVIDERS END -->
