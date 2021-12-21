@@ -19,7 +19,7 @@ import DialogAction from '../DialogAction';
 import { role } from '../../utils/prop-types';
 import Link from '../../utils/Link';
 import splitLines from '../../utils/splitLines';
-import { formatScope, scopeLink } from '../../utils/scopeUtils';
+import scopeLink from '../../utils/scopeLink';
 
 @withStyles(theme => ({
   fab: {
@@ -243,19 +243,7 @@ export default class RoleForm extends Component {
                       {expandedScopes.map(scope => (
                         <Link key={scope} to={scopeLink(scope)}>
                           <ListItem button className={classes.listItemButton}>
-                            <ListItemText
-                              disableTypography
-                              secondary={
-                                <Typography variant="body2">
-                                  <code
-                                    // eslint-disable-next-line react/no-danger
-                                    dangerouslySetInnerHTML={{
-                                      __html: formatScope(scope),
-                                    }}
-                                  />
-                                </Typography>
-                              }
-                            />
+                            <ListItemText secondary={<code>{scope}</code>} />
                             <LinkIcon />
                           </ListItem>
                         </Link>
