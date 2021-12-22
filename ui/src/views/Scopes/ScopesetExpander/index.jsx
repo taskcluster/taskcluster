@@ -15,7 +15,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import splitLines from '../../../utils/splitLines';
 import Link from '../../../utils/Link';
 import scopesetQuery from './scopeset.graphql';
-import { formatScope, scopeLink } from '../../../utils/scopeUtils';
+import scopeLink from '../../../utils/scopeLink';
 
 @withStyles(theme => ({
   actionButton: {
@@ -104,12 +104,7 @@ export default class ScopesetExpander extends Component {
                       data.expandScopes.map(scope => (
                         <Link key={scope} to={scopeLink(scope)}>
                           <ListItem button className={classes.listItemButton}>
-                            <code
-                              // eslint-disable-next-line react/no-danger
-                              dangerouslySetInnerHTML={{
-                                __html: formatScope(scope),
-                              }}
-                            />
+                            <code>{scope}</code>
                             <LinkIcon size={16} />
                           </ListItem>
                         </Link>
