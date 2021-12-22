@@ -200,16 +200,10 @@ export default class Markdown extends Component {
   render() {
     const { classes, children, className, ...props } = this.props;
 
-    /* eslint-disable react/no-danger */
     return (
-      <span
-        className={classNames(classes.root, className)}
-        dangerouslySetInnerHTML={{
-          __html: markdown.render(children),
-        }}
-        {...props}
-      />
+      <span className={classNames(classes.root, className)} {...props}>
+        {markdown.render(children)}
+      </span>
     );
-    /* eslint-enable react/no-danger */
   }
 }
