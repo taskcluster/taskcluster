@@ -11,9 +11,8 @@ import datetime
 import calendar
 import requests
 import time
-import six
 import warnings
-from six.moves import urllib
+import urllib
 
 import mohawk
 import mohawk.bewit
@@ -66,7 +65,7 @@ class BaseClient(object):
         if credentials:
             for x in ('accessToken', 'clientId', 'certificate'):
                 value = credentials.get(x)
-                if value and not isinstance(value, six.binary_type):
+                if value and not isinstance(value, bytes):
                     try:
                         credentials[x] = credentials[x].encode('ascii')
                     except Exception:
@@ -98,9 +97,9 @@ class BaseClient(object):
             ext = {}
             cert = c.get('certificate')
             if cert:
-                if six.PY3 and isinstance(cert, six.binary_type):
+                if isinstance(cert, bytes):
                     cert = cert.decode()
-                if isinstance(cert, six.string_types):
+                if isinstance(cert, str):
                     cert = json.loads(cert)
                 ext['certificate'] = cert
 
@@ -130,7 +129,7 @@ class BaseClient(object):
         }
 
         # If we are passed in a string, we can short-circuit this function
-        if isinstance(routingKeyPattern, six.string_types):
+        if isinstance(routingKeyPattern, str):
             log.debug('Passing through string for topic exchange key')
             data['routingKeyPattern'] = routingKeyPattern
             return data
@@ -355,12 +354,12 @@ class BaseClient(object):
         # These all need to be rendered down to a string, let's just check that
         # they are up front and fail fast
         for arg in args:
-            if not isinstance(arg, six.string_types) and not isinstance(arg, int):
+            if not isinstance(arg, str) and not isinstance(arg, int):
                 raise exceptions.TaskclusterFailure(
                     'Positional arg "%s" to %s is not a string or int' % (arg, entry['name']))
 
-        for name, arg in six.iteritems(kwApiArgs):
-            if not isinstance(arg, six.string_types) and not isinstance(arg, int):
+        for name, arg in kwApiArgs.items():
+            if not isinstance(arg, str) and not isinstance(arg, int):
                 raise exceptions.TaskclusterFailure(
                     'KW arg "%s: %s" to %s is not a string or int' % (name, arg, entry['name']))
 
@@ -419,7 +418,7 @@ class BaseClient(object):
 
         route = entry['route']
 
-        for arg, val in six.iteritems(args):
+        for arg, val in args.items():
             toReplace = "<%s>" % arg
             if toReplace not in route:
                 raise exceptions.TaskclusterFailure(
@@ -650,7 +649,7 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes, nam
     """
 
     for scope in scopes:
-        if not isinstance(scope, six.string_types):
+        if not isinstance(scope, str):
             raise exceptions.TaskclusterFailure('Scope must be string')
 
     # Credentials can only be valid for 31 days.  I hope that
@@ -687,7 +686,7 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes, nam
     ] + scopes)
     sigStr = '\n'.join(sig).encode()
 
-    if isinstance(accessToken, six.text_type):
+    if isinstance(accessToken, str):
         accessToken = accessToken.encode()
     sig = hmac.new(accessToken, sigStr, hashlib.sha256).digest()
 

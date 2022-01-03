@@ -6,8 +6,7 @@
 **A Taskcluster client library for Python.**
 
 This library is a complete interface to Taskcluster in Python.  It provides
-both synchronous and asynchronous interfaces for all Taskcluster API methods,
-in both Python-2 and Python-3 variants.
+both synchronous and asynchronous interfaces for all Taskcluster API methods.
 
 ## Usage
 
@@ -22,9 +21,8 @@ required, and it's unusual to configure any other options aside from
 `credentials`.
 
 For each service, there are sync and async variants.  The classes under
-`taskcluster` (e.g., `taskcluster.Queue`) are Python-2 compatible and operate
-synchronously.  The classes under `taskcluster.aio` (e.g.,
-`taskcluster.aio.Queue`) require Python >= 3.6.
+`taskcluster` (e.g., `taskcluster.Queue`) operate synchronously.  The classes
+under `taskcluster.aio` (e.g., `taskcluster.aio.Queue`) are asynchronous.
 
 #### Authentication Options
 
@@ -335,7 +333,6 @@ This library provides convenience methods to implement the client portion of tho
 These methods will negotiate the appropriate method with the object service and perform the required steps to transfer the data.
 
 All methods are available in both sync and async versions, with identical APIs except for the `async`/`await` keywords.
-These methods are not available for Python-2.7.
 
 In either case, you will need to provide a configured `Object` instance with appropriate credentials for the operation.
 
