@@ -31,8 +31,6 @@ install_requires = [
     'mohawk>=0.3.4',
     'slugid>=2',
     'taskcluster-urls>=12.1.0',
-
-    # python-3 only
     'aiohttp>=3.7.4',
     'async_timeout>=2.0.0',
 ]
