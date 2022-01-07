@@ -152,7 +152,7 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         contents.replace(/VERSION = .*/, `VERSION = '${requirements['release-version']}'`));
       changed.push(pyclient);
 
-      for (const dir of ['client', 'upload', 'download', 'integration-tests']) {
+      for (const dir of ['client', 'upload', 'download', 'integration_tests']) {
         const rsclient = `clients/client-rust/${dir}/Cargo.toml`;
         utils.status({ message: `Update ${rsclient}` });
         await modifyRepoFile(rsclient, contents =>
