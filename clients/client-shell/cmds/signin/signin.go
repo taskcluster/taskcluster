@@ -2,6 +2,7 @@
 package signin
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -9,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
@@ -19,7 +19,6 @@ import (
 	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcauth"
 	"github.com/taskcluster/taskcluster/v44/clients/client-shell/cmds/root"
 	"github.com/taskcluster/taskcluster/v44/clients/client-shell/config"
-	graceful "gopkg.in/tylerb/graceful.v1"
 )
 
 var log = root.Logger
@@ -66,14 +65,11 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	// Find port, choose 0 meaning random port, if none
 	port, _ := cmd.Flags().GetInt("port")
 
-	// Setup server that we can shutdown gracefully
-	s := graceful.Server{
-		Timeout: 5 * time.Second,
-		Server:  &http.Server{},
-	}
+	// Set up server for the redirect page after a successful sign in
+	s := http.Server{}
 
 	// Handle callback
-	s.Server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	s.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		qs := r.URL.Query()
 		csh, _ := cmd.Flags().GetBool("csh")
 		rootURL := config.RootURL()
@@ -101,7 +97,9 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 				</body>
 			</html>
 		`))
-		s.Stop(50 * time.Millisecond)
+		if err := s.Shutdown(context.Background()); err != nil {
+			log.Errorf("Error shutting down server: %s\n", err)
+		}
 	})
 
 	// Start listening on localhost
