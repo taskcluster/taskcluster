@@ -9,9 +9,10 @@ let assert = require('assert');
  * options:
  * {
  *   bucket:             // S3 bucket to use
- *   credentials: {
+ *   awsOptions: {
  *     accessKeyId:      // ...
  *     secretAccessKey:  // ...
+ *     ..any other AWS option; see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#constructor-property
  *     // --or--
  *     mock: <obj>,     // use mock S3 object
  *   },
@@ -22,7 +23,7 @@ let assert = require('assert');
 let Bucket = function(options) {
   assert(options, 'options must be given');
   assert(options.bucket, 'bucket must be specified');
-  assert(options.credentials, 'credentials must be specified');
+  assert(options.awsOptions, 'awsOptions must be specified');
   assert(!options.bucketCDN || typeof options.bucketCDN === 'string',
     'Expected bucketCDN to be a hostname or empty string for none');
   assert(options.monitor, 'options.monitor is required');
@@ -36,14 +37,14 @@ let Bucket = function(options) {
   // Ensure access to the bucket property
   this.bucket = options.bucket;
   // Create S3 client
-  if (!options.credentials.mock) {
+  if (!options.awsOptions.mock) {
     this.s3 = new aws.S3(_.defaults({
       params: {
         Bucket: options.bucket,
       },
-    }, options.credentials));
+    }, options.awsOptions));
   } else {
-    this.s3 = options.credentials.mock;
+    this.s3 = options.awsOptions.mock;
   }
   // Store bucket CDN
   this.bucketCDN = options.bucketCDN;

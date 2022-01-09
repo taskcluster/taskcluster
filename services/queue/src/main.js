@@ -82,7 +82,7 @@ let load = loader({
     setup: async ({ cfg, monitor }) => {
       let bucket = new Bucket({
         bucket: cfg.app.publicArtifactBucket,
-        credentials: cfg.aws,
+        awsOptions: cfg.aws,
         bucketCDN: cfg.app.publicArtifactBucketCDN,
         monitor: monitor.childMonitor('public-bucket'),
       });
@@ -95,7 +95,7 @@ let load = loader({
     setup: async ({ cfg, monitor }) => {
       let bucket = new Bucket({
         bucket: cfg.app.privateArtifactBucket,
-        credentials: cfg.aws,
+        awsOptions: cfg.aws,
         monitor: monitor.childMonitor('private-bucket'),
       });
       await bucket.setupCORS();
