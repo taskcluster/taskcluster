@@ -6,7 +6,6 @@ import async_timeout
 import functools
 import logging
 import os
-import six
 
 import taskcluster.utils as utils
 import taskcluster.exceptions as exceptions
@@ -101,7 +100,7 @@ async def makeSingleHttpRequest(method, url, payload, headers, session=None):
             log.debug('Received HTTP Status:    %s' % resp.status)
             log.debug('Received HTTP Headers: %s' % str(resp.headers))
             log.debug('Received HTTP Payload: %s (limit 1024 char)' %
-                      six.text_type(response_text)[:1024])
+                      str(response_text)[:1024])
             return resp
     finally:
         if implicit:

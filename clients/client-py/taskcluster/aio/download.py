@@ -14,11 +14,6 @@ file IO is important to the application.
 This module provides several pre-defined writers and writer factories for
 common cases.
 """
-import six
-
-if six.PY2:
-    raise ImportError("download is only supported in Python 3")
-
 import aiohttp
 import contextlib
 

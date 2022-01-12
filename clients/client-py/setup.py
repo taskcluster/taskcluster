@@ -10,7 +10,7 @@ tests_require = [
     'pytest',
     'pytest-cov',   
     'pytest-mock',
-    'pytest-asyncio; python_version>="3.6"',
+    'pytest-asyncio',
     'httmock',
     'mock',
     'setuptools-lint',
@@ -20,9 +20,8 @@ tests_require = [
     'tox',
     'coverage',
     'python-dateutil',
-    'subprocess32; python_version=="2.7"',
-    'aiofiles; python_version>="3.6"',
-    'httptest; python_version>="3.6"',
+    'aiofiles',
+    'httptest',
 ]
 
 # requests has a policy of not breaking apis between major versions
@@ -32,11 +31,8 @@ install_requires = [
     'mohawk>=0.3.4',
     'slugid>=2',
     'taskcluster-urls>=12.1.0',
-    'six>=1.10.0',
-
-    # python-3 only
-    'aiohttp>=3.7.4; python_version>="3.6"',
-    'async_timeout>=2.0.0; python_version>="3.6"',
+    'aiohttp>=3.7.4',
+    'async_timeout>=2.0.0',
 ]
 
 # from http://testrun.org/tox/latest/example/basic.html
@@ -65,12 +61,8 @@ class Tox(TestCommand):
 if sys.version_info[0] == 3 and sys.version_info[:2] < (3, 5):
     raise Exception('This library does not support Python 3 versions below 3.5')
 
-if sys.version_info.major == 2:
-    with open('README.md') as f:
-        long_description = f.read()
-else:
-    with open('README.md', encoding='utf8') as f:
-        long_description = f.read()
+with open('README.md', encoding='utf8') as f:
+    long_description = f.read()
 
 if __name__ == '__main__':
     setup(
@@ -96,8 +88,10 @@ if __name__ == '__main__':
         },
         cmdclass={'test': Tox},
         zip_safe=False,
-        classifiers=['Programming Language :: Python :: 2.7',
-                     'Programming Language :: Python :: 3.5',
-                     'Programming Language :: Python :: 3.6',
-                     'Programming Language :: Python :: 3.7'],
+        classifiers=[
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
+            'Programming Language :: Python :: 3.9',
+        ],
     )

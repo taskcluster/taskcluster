@@ -31,10 +31,6 @@ python3 -mvenv .release/py3
 # Work around https://bitbucket.org/pypa/wheel/issues/147/bdist_wheel-should-start-by-cleaning-up
 rm -rf build/
 
-virtualenv --python=python2 .release/py2
-.release/py2/bin/pip install -U setuptools wheel
-.release/py2/bin/python setup.py bdist_wheel
-
 ls -al dist
 
 # Publish to PyPI using Twine, as recommended by:
