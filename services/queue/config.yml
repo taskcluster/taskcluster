@@ -103,6 +103,7 @@ defaults:
     accessKeyId:      !env AWS_ACCESS_KEY_ID
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
     region:           !env ARTIFACT_REGION
+    endpoint:         !env AWS_ENDPOINT
     apiVersion:       2014-01-01
 
   # new relic config (processed in services/prelude.js)

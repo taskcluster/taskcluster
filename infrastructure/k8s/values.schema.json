@@ -1025,6 +1025,9 @@
         "aws_access_key_id": {
           "type": "string"
         },
+        "aws_endpoint": {
+          "type": "string"
+        },
         "aws_secret_access_key": {
           "type": "string"
         },
@@ -1279,7 +1282,8 @@
         "pulse_password",
         "aws_access_key_id",
         "aws_secret_access_key",
-        "artifact_region"
+        "artifact_region",
+        "aws_endpoint"
       ],
       "title": "Configuration options for queue",
       "type": "object"
