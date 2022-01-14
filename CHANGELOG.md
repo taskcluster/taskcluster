@@ -3,6 +3,22 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.4.0
+
+### DEPLOYERS
+
+▶ [patch] [#5039](https://github.com/taskcluster/taskcluster/issues/5039)
+The new `queue.aws_endpoint` Helm configuration value allows setting the endpoint used to access S3 buckets.  This configuration enables use of non-AWS S3-compatible backends.
+
+### DEVELOPERS
+
+▶ [minor] [#4614](https://github.com/taskcluster/taskcluster/issues/4614)
+This version drops support for Python-2.7 in the Python client. Python-2.7's support window ended over one year ago.
+
+### OTHER
+
+▶ Additional change not described here: [#4594](https://github.com/taskcluster/taskcluster/issues/4594).
+
 ## v44.3.1
 
 
