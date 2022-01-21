@@ -473,7 +473,7 @@ export default class QuickStart extends Component {
             </ListItem>
             <ListItem>
               <FormControl component="fieldset">
-                <FormLabel component="legend">
+                <FormLabel component="legend" focused={false}>
                   This task should run on
                 </FormLabel>
                 <div className={classes.taskShouldRunFlex}>
