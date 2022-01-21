@@ -1,5 +1,5 @@
 audience: developers
-level: patch
+level: silent
 reference: issue 5070
 ---
 The CI tasks now use the latest versions of the taskgraph code (cb3ae27,
