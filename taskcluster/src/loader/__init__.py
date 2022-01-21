@@ -1,6 +1,5 @@
 import logging
-
-from pathlib2 import Path
+from pathlib import Path
 
 from taskgraph.util.templates import merge
 
