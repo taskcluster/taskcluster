@@ -45,6 +45,7 @@
     "ejs": "^3.1.7",
     "email-templates": "^8.0.0",
     "express": "4.17.1",
+    "express-rate-limit": "^6.4.0",
     "express-session": "^1.17.3",
     "express-sslify": "1.2.0",
     "fast-azure-storage": "^3.1.2",

@@ -6,6 +6,12 @@ defaults:
     playground: false
     # Delete expired entries in both the access token and authorization code tables
     authorizationCodeExpirationDelay: '- 10 minutes'
+    # auth rate limit maximum number of requests per minute
+    # set to 0 to disable rate limiting
+    authRateLimitMaxRequests: !env:number AUTH_RATE_LIMIT_MAX_REQUESTS
+    # number of proxies between the user and the server
+    # set to 0 for no reverse proxy
+    numberOfProxies: !env:number NUMBER_OF_PROXIES
 
   monitoring:
     level: !env:optional LEVEL
@@ -104,6 +110,8 @@ development:
 test:
   app:
     publicUrl: http://localhost:5080
+    authRateLimitMaxRequests: 0
+    numberOfProxies: 0
 
   taskcluster:
     rootUrl: https://tc.example.com

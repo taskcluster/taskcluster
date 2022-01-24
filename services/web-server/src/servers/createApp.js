@@ -5,6 +5,7 @@ const session = require('express-session');
 const compression = require('compression');
 const cors = require('cors');
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const playground = require('graphql-playground-middleware-express').default;
 const passport = require('passport');
 const url = require('url');
@@ -134,8 +135,19 @@ module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
     getCredentials,
   } = oauth2(cfg, db, strategies, auth, monitor);
 
+  // set up auth rate limiter: maximum # requests per minute
+  const authLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: cfg.app.authRateLimitMaxRequests,
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  });
+
+  // set number of proxies between the user and the server
+  // to ensure rate limiter doesn't behave like a global one
+  app.set('trust proxy', cfg.app.numberOfProxies);
+
   // 1. Render a dialog asking the user to grant access
-  app.get('/login/oauth/authorize', cors(corsOptions), authorization);
+  app.get('/login/oauth/authorize', authLimiter, cors(corsOptions), authorization);
   // 2. Process the dialog submission (skipped if redirectUri is whitelisted)
   app.post('/login/oauth/authorize/decision', cors(corsOptions), decision);
   // 3. Exchange code for an OAuth2 token

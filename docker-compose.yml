@@ -468,6 +468,8 @@ services:
       - local
     environment:
       PUBLIC_URL: http://localhost:8080
+      AUTH_RATE_LIMIT_MAX_REQUESTS: 5
+      NUMBER_OF_PROXIES: 0
       LEVEL: debug
       PORT: 80
       TRUST_PROXY: 'true'

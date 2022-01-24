@@ -51,6 +51,8 @@ module.exports = async ({ userConfig, answer, configTmpl }) => {
   // Simple defaults that can be updated by the user later
   setDefault('worker_manager.providers', {});
   setDefault('web_server.public_url', rootUrl);
+  setDefault('web_server.auth_rate_limit_max_requests', 5);
+  setDefault('web_server.number_of_proxies', 0);
   setDefault('web_server.additional_allowed_cors_origin', '');
   setDefault('web_server.ui_login_strategies', {});
   setDefault('web_server.session_secret', slugid.v4());

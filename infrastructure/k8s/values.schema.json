@@ -1523,6 +1523,9 @@
         "additional_allowed_cors_origin": {
           "type": "string"
         },
+        "auth_rate_limit_max_requests": {
+          "type": "number"
+        },
         "azure_crypto_key": {
           "type": "string"
         },
@@ -1543,6 +1546,9 @@
         },
         "level": {
           "type": "string"
+        },
+        "number_of_proxies": {
+          "type": "number"
         },
         "procs": {
           "additionalProperties": false,
@@ -1675,6 +1681,8 @@
       "required": [
         "procs",
         "public_url",
+        "auth_rate_limit_max_requests",
+        "number_of_proxies",
         "additional_allowed_cors_origin",
         "taskcluster_client_id",
         "taskcluster_access_token",

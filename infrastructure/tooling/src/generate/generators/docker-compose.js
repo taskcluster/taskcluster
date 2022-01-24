@@ -109,6 +109,8 @@ const defaultValues = {
   PUBLIC_URL: `http://localhost:${servicePrimaryPort('ingress')}`,
   ADDITIONAL_ALLOWED_CORS_ORIGIN: '',
   REGISTERED_CLIENTS: '[]',
+  AUTH_RATE_LIMIT_MAX_REQUESTS: 5,
+  NUMBER_OF_PROXIES: 0,
 };
 
 exports.tasks = [];
