@@ -5,8 +5,8 @@ from voluptuous import Required, Optional, Extra, Any
 
 bare_schema = Schema({
     Required("using"): "bare",
-    Required("command"): Any(basestring, [basestring]),
-    Optional("install"): Any(basestring, [basestring]),
+    Required("command"): Any(str, [str]),
+    Optional("install"): Any(str, [str]),
     Optional("clone"): bool,
     Extra: object
     })

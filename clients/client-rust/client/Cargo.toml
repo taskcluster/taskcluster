@@ -1,6 +1,6 @@
 [package]
 name = "taskcluster"
-version = "44.3.1"
+version = "44.4.0"
 authors = ["Wander Lairson Costa <wander.lairson@gmail.com>"]
 edition = "2018"
 license = "MPL-2.0"

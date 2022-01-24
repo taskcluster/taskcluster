@@ -29,10 +29,10 @@ That involves the following Helm values:
 * `queue.public_artifact_bucket_cdn` (optional)
 * `queue.aws_access_key_id`
 * `queue.aws_secret_access_key`
+* `queue.aws_endpoint` (optional; use this to interface with non-AWS services' S3-compatibility support)
 
 The service uses the public bucket for artifacts having prefix `public/`, and the private bucket for all others.
 Both buckets must be in the given `artifact_region`.
-
 
 In a public deployment of Taskcluster, it may make sense to allow public read access to the public bucket, in which case setting `sign_public_artifact_urls` to false will allow simpler (unsigned) URLs for public artifacts.
 A further optional step is to configure a CDN such as CloudFront to serve artifacts from this bucket, with a URL prefix given in `public_artifact_bucket_cdn`.

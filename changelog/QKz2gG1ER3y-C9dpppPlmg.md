@@ -1,4 +1,4 @@
 audience: users
 level: silent
-reference: issue 4594
 ---
+Fix a few doc typos

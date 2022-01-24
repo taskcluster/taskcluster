@@ -74,7 +74,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     // Create bucket instance
     const bucket = new Bucket({
       bucket: cfg.app.publicArtifactBucket,
-      credentials: cfg.aws,
+      awsOptions: cfg.aws,
       bucketCDN: 'https://example.com',
       monitor: await helper.load('monitor'),
     });

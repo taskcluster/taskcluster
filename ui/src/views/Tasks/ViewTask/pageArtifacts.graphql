@@ -3,9 +3,9 @@
 query PageArtifacts(
   $taskId: ID!,
   $runId: Int!,
-  $connection: PageConnection!
+  $artifactsConnection: PageConnection!
 ) {
-  artifacts(taskId: $taskId, runId: $runId, connection: $connection) {
+  artifacts(taskId: $taskId, runId: $runId, connection: $artifactsConnection) {
     ...Artifacts
   }
 }
