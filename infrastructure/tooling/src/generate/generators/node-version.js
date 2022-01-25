@@ -60,5 +60,11 @@ exports.tasks = [{
         contents.engines.node = nodeVersion;
         return contents;
       });
+
+    utils.status({ message: 'workers/docker-worker/Dockerfile' });
+    await modifyRepoFile('workers/docker-worker/Dockerfile',
+      contents => contents.replace(
+        /^FROM node:[0-9.]+(.*)$/gm,
+        `FROM node:${nodeVersion}$1`));
   },
 }];

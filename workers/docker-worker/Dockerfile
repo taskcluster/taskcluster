@@ -1,4 +1,4 @@
-FROM lightsofapollo/ubuntu-node:unstable
+FROM node:16.13.2
 
 RUN mkdir /worker
 COPY . /worker/
