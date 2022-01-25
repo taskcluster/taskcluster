@@ -1,3 +1,4 @@
+//go:build simple
 // +build simple
 
 package gwconfig
