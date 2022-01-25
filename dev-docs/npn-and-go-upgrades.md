@@ -11,7 +11,7 @@ additional steps are needed.
 
 To update the node version:
 
-* Install the new node version, such as `nvm install 16.13.2`
+* Install the new node version, such as `nvm install --lts`
 * Install yarn, such as `npm install -g yarn`
 * Update `package.json`
 * Run `yarn generate`
