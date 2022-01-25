@@ -25,6 +25,10 @@ To update the go version:
 * Install the new go version, such as `gvm install go1.17.6`
 * Update `.go-version`
 * Run `yarn generate`
+* Run `go fmt ./...`
+* Run `go mod tidy`
+* Run `go install golang.org/x/tools/cmd/goimports@latest`
+* Run `"$(go env GOPATH)/bin/goimports" -w .` (or non-bash equivalent)
 * Create a changelog file and commit
 * Update the package hashes in `workers/generic-worker/gw-decision-task/tasks.yml`
   with the hashes on the [go downloads page](https://go.dev/dl/)
