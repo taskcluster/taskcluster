@@ -358,21 +358,21 @@
   },
   {
     "element": "h1",
-    "id": "-catch-all",
+    "id": "---catch-all",
     "path": "/manual/deploying/object-service",
     "subtitle": null,
     "title": "Object Service"
   },
   {
     "element": "h1",
-    "id": "-logs-are-stored-in-a-special-reduced-redundancy-backend",
+    "id": "---logs-are-stored-in-a-special-reduced-redundancy-backend",
     "path": "/manual/deploying/object-service",
     "subtitle": null,
     "title": "Object Service"
   },
   {
     "element": "h1",
-    "id": "-project-lindys-builds-are-stored-in-a-dedicated-backend",
+    "id": "---project-lindys-builds-are-stored-in-a-dedicated-backend",
     "path": "/manual/deploying/object-service",
     "subtitle": null,
     "title": "Object Service"
