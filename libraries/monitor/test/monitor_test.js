@@ -287,8 +287,8 @@ suite(testing.suiteName(), function() {
       testExits(done, [
         '--shouldUnhandle',
       ], (done, code, output) => {
-        assert.equal(code, 0);
-        assert(output.match(/UnhandledPromiseRejectionWarning:.*whaaa/));
+        assert.equal(code, 1);
+        assert(output.includes("Promise.reject(new Error('whaaa'));"));
         assert.throws(() => JSON.parse(output));
         done();
       });
