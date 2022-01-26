@@ -1,3 +1,4 @@
+//go:build multiuser
 // +build multiuser
 
 package process
