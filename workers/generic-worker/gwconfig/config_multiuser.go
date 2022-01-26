@@ -1,5 +1,4 @@
 //go:build multiuser
-// +build multiuser
 
 package gwconfig
 

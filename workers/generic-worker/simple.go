@@ -1,5 +1,4 @@
 //go:build simple
-// +build simple
 
 package main
 

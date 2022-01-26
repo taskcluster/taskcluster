@@ -1,5 +1,4 @@
 //go:build (multiuser && darwin) || (multiuser && linux)
-// +build multiuser,darwin multiuser,linux
 
 package main
 

@@ -1,5 +1,4 @@
 //go:build multiuser || simple
-// +build multiuser simple
 
 package process
 
