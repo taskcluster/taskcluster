@@ -193,3 +193,22 @@ func TestUntilRenew(t *testing.T) {
 		require.Equal(t, time.Duration(0), renewBeforeExpire(0))
 	})
 }
+
+func TestUseCachedRun_Expired(t *testing.T) {
+	defer filet.CleanUp(t)
+	dir := filet.TmpDir(t, "")
+	cachePath := filepath.Join(dir, "cache.json")
+
+	runnercfg := cfg.RunnerConfig{
+		CacheOverRestarts: cachePath,
+	}
+	state := run.State{
+		// set the credentials to be expired
+		CredentialsExpire:  tcclient.Time(time.Now().Add(-1 * time.Hour)),
+		RegistrationSecret: "secret-from-reg",
+	}
+
+	reg := new(&runnercfg, &state, tc.FakeWorkerManagerClientFactory)
+	err := reg.UseCachedRun()
+	require.Error(t, err)
+}

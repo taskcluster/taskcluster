@@ -1,6 +1,7 @@
 package static
 
 import (
+	"errors"
 	"fmt"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
@@ -78,7 +79,7 @@ func (p *StaticProvider) GetWorkerIdentityProof() (map[string]interface{}, error
 }
 
 func (p *StaticProvider) UseCachedRun(run *run.State) error {
-	return nil
+	return errors.New("Do not use cacheOverRestarts with static provider")
 }
 
 func (p *StaticProvider) SetProtocol(proto *workerproto.Protocol) {
@@ -129,6 +130,10 @@ defined by this provider has the following fields:
 * cloud: static
 
 as well as any worker location values from the configuration.
+
+NOTE: do not use the 'cacheOverRestarts' configuration with the static
+provider.  The static provider can re-initialize itself "from scratch" on every
+startup, and does not need to cache anything.
 `
 }
 

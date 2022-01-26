@@ -740,7 +740,7 @@ builder.declare({
   if (status === null) {
     return res.reportError(
       'RequestConflict',
-      'Task `{{taskId}}` Can\'t be scheduled past its deadline at ' +
+      'Task `{{taskId}}` can\'t be scheduled past its deadline at ' +
       '{{deadline}}.', {
         taskId,
         deadline: task.deadline.toJSON(),
@@ -811,7 +811,7 @@ builder.declare({
   if (task.deadline.getTime() < new Date().getTime()) {
     return res.reportError(
       'RequestConflict',
-      'Task `{{taskId}}` Can\'t be rescheduled past it\'s deadline of ' +
+      'Task `{{taskId}}` can\'t be rescheduled past its deadline of ' +
       '{{deadline}}.', {
         taskId,
         deadline: task.deadline.toJSON(),
@@ -910,7 +910,7 @@ builder.declare({
   if (task.deadline.getTime() < new Date().getTime()) {
     return res.reportError(
       'RequestConflict',
-      'Task `{{taskId}}` Can\'t be canceled past it\'s deadline of ' +
+      'Task `{{taskId}}` can\'t be canceled past its deadline of ' +
       '{{deadline}}.', {
         taskId,
         deadline: task.deadline.toJSON(),
@@ -1102,7 +1102,7 @@ builder.declare({
   if (task.deadline.getTime() <= Date.now()) {
     return res.reportError(
       'RequestConflict',
-      'Task `{{taskId}}` Can\'t be claimed past its deadline of ' +
+      'Task `{{taskId}}` can\'t be claimed past its deadline of ' +
       '{{deadline}}.', {
         taskId,
         deadline: task.deadline.toJSON(),
@@ -1224,7 +1224,7 @@ builder.declare({
   if (task.deadline.getTime() <= Date.now()) {
     return res.reportError(
       'RequestConflict',
-      'Task `{{taskId}}` Can\'t be reclaimed past its deadline of ' +
+      'Task `{{taskId}}` can\'t be reclaimed past its deadline of ' +
       '{{deadline}}.', {
         taskId,
         deadline: task.deadline.toJSON(),

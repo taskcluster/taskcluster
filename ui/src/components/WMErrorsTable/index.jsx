@@ -14,7 +14,7 @@ import List from '@material-ui/core/List';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItem from '@material-ui/core/ListItem';
 import Typography from '@material-ui/core/Typography';
-import Code from '../Code';
+import JsonDisplay from '../JsonDisplay';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_WORKER_POOL_ERRORS_PAGE_SIZE } from '../../utils/constants';
@@ -261,9 +261,10 @@ export default class WorkerManagerErrorsTable extends Component {
                         component: 'div',
                       }}
                       secondary={
-                        <Code language="json">
-                          {JSON.stringify(drawerError.extra, null, 2)}
-                        </Code>
+                        <JsonDisplay
+                          syntax="json"
+                          objectContent={drawerError.extra}
+                        />
                       }
                     />
                   </ListItem>

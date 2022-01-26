@@ -22,7 +22,7 @@ def taskcluster_images(config, jobs):
     node_version, go_version, rust_version, pg_version = _dependency_versions()
     for job in jobs:
         image = job["worker"]["docker-image"]
-        if isinstance(image, dict) and image.keys()[0] == "taskcluster":
+        if isinstance(image, dict) and tuple(image.keys())[0] == "taskcluster":
             repo = image["taskcluster"]
             if (repo == "ci-image"):
                 image = "taskcluster/ci-image:node{node_version}-pg{pg_version}-{go_version}"

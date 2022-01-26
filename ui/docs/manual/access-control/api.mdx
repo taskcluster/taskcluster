@@ -21,7 +21,7 @@ A given set of scopes can "satisfy" a required set of scopes if every scope in t
 
 A scope in the given set that ends in `*` is treated as a pattern, and satisfies any scope of which it is a prefix.
 
-[Roles](/docs/manual/design/apis/hawk/roles) form a kind of "macro expansion" for roles.
+[Roles](/docs/manual/design/apis/hawk/roles) form a kind of "macro expansion" for scopes.
 Briefly, a scope `assume:<roleId>` expands to all of the scopes associated with role `roleId`.
 There are some interesting semantics to `*` for roles, described in the design documentation.
 

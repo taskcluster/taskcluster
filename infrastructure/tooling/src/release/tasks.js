@@ -152,7 +152,7 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         contents.replace(/VERSION = .*/, `VERSION = '${requirements['release-version']}'`));
       changed.push(pyclient);
 
-      for (const dir of ['client', 'upload', 'download']) {
+      for (const dir of ['client', 'upload', 'download', 'integration_tests']) {
         const rsclient = `clients/client-rust/${dir}/Cargo.toml`;
         utils.status({ message: `Update ${rsclient}` });
         await modifyRepoFile(rsclient, contents =>
@@ -161,6 +161,14 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
             .replace(/^taskcluster = .*$/m, `taskcluster = { version = "${requirements['release-version']}", path = "../client" }`));
         changed.push(rsclient);
       }
+
+      const rslock = `clients/client-rust/Cargo.lock`;
+      utils.status({ message: `Update ${rslock}` });
+      await modifyRepoFile(rslock, contents =>
+        contents.replace(
+          /^(name = "taskcluster[a-z-]*"\n)version = ".*"$/mg,
+          `$1version = "${requirements['release-version']}"`));
+      changed.push(rslock);
 
       const shellclient = 'clients/client-shell/cmds/version/version.go';
       utils.status({ message: `Update ${shellclient}` });

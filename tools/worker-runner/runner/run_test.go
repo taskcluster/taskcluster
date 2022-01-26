@@ -140,6 +140,9 @@ worker:
 
 	require.Equal(t, true, run.WorkerConfig.MustGet("fromFirstRun"))
 
+	cache, _ := ioutil.ReadFile(cachePath)
+	fmt.Printf("cache: %s", cache)
+
 	// slightly different config this time, omitting `fromFirstRun`:
 	err = ioutil.WriteFile(configPath, []byte(fmt.Sprintf(`
 provider:

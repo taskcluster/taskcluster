@@ -6,10 +6,10 @@ This service is the central process coordinating execution of tasks in the Taskc
 
 No special configuration is required for development.
 
-Run `yarn workspace taskcluster-queue test` to run the tess.
+Run `yarn workspace taskcluster-queue test` to run the tests.
 Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
 
-To run *all* tests, you will need appropriate Taskcluster credentials.
+To run _all_ tests, you will need appropriate Taskcluster credentials.
 Using [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli), run `eval $(taskcluster signin --scope assume:project:taskcluster:tests:taskcluster-queue)`, then run the tests again.
 
 To run even more tests you'll need a configuration file with access credentials for S3 and Azure Blob and Table Storage, as well as pulse credentials.

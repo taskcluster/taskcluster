@@ -37,8 +37,9 @@ func New(runnercfg *cfg.RunnerConfig) (worker.Worker, error) {
 
 func Usage() string {
 	rv := []string{strings.ReplaceAll(
-		`Information about the worker to run is given in the |worker| property of the runner configuration.
-The |implementation| property of this object defines the worker implemenatation.  Allowed values
+		`
+Information about the worker to run is given in the |worker| property of the runner configuration.
+The |implementation| property of this object defines the worker implemenatation. Allowed values
 are:
 `, "|", "`")}
 

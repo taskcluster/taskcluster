@@ -7184,7 +7184,7 @@
           "uniqueItems": false
         },
         "rdpInfo": {
-          "description": "Specifies an artifact name for publishing RDP connection information.\n\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as\n`login-identity/<login-identity>/rdpinfo.json` which is only readable for\nthe given login identity (for example\n`login-identity/mozilla-ldap/pmoore@mozilla.com/rdpinfo.json`). See the\n[artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information.\n\nUse of this feature requires scope\n`generic-worker:allow-rdp:<provisionerId>/<workerType>` which must be\ndeclared as a task scope.\n\nThe RDP connection data is published during task startup so that a user\nmay interact with the running task.\n\nThe task environment will be retained for 12 hours after the task\ncompletes, to enable an interactive user to perform investigative tasks.\nAfter these 12 hours, the worker will delete the task's Windows user\naccount, and then continue with other tasks.\n\nNo guarantees are given about the resolution status of the interactive\ntask, since the task is inherently non-reproducible and no automation\nshould rely on this value.\n\nSince: generic-worker 10.5.0",
+          "description": "Specifies an artifact name for publishing RDP connection information.\n\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as\n`login-identity/<login-identity>/rdpinfo.json` which is only readable for\nthe given login identity (for example\n`login-identity/mozilla-ldap/pmoore@mozilla.com/rdpinfo.json`). See the\n[artifact namespace guide](https://docs.taskcluster.net/docs/manual/using/namespaces#artifacts) for more information.\n\nUse of this feature requires scope\n`generic-worker:allow-rdp:<provisionerId>/<workerType>` which must be\ndeclared as a task scope.\n\nThe RDP connection data is published during task startup so that a user\nmay interact with the running task.\n\nThe task environment will be retained for 12 hours after the task\ncompletes, to enable an interactive user to perform investigative tasks.\nAfter these 12 hours, the worker will delete the task's Windows user\naccount, and then continue with other tasks.\n\nNo guarantees are given about the resolution status of the interactive\ntask, since the task is inherently non-reproducible and no automation\nshould rely on this value.\n\nSince: generic-worker 10.5.0",
           "title": "RDP Info",
           "type": "string"
         },
@@ -9272,6 +9272,9 @@
             "aws_access_key_id": {
               "type": "string"
             },
+            "aws_endpoint": {
+              "type": "string"
+            },
             "aws_secret_access_key": {
               "type": "string"
             },
@@ -9526,7 +9529,8 @@
             "pulse_password",
             "aws_access_key_id",
             "aws_secret_access_key",
-            "artifact_region"
+            "artifact_region",
+            "aws_endpoint"
           ],
           "title": "Configuration options for queue",
           "type": "object"
@@ -12390,7 +12394,10 @@
           "description": "Something has tried to register as a worker but failed. This could indicate either a bug\nor that somebody is trying to impersonate a worker.",
           "fields": {
             "error": "Error message from cloud that triggered this",
-            "message": "Description of this error from the taskcluster side"
+            "message": "Description of this error from the taskcluster side",
+            "providerId": "The provider that did the work for this worker pool.",
+            "workerId": "The worker that failed",
+            "workerPoolId": "The worker pool ID"
           },
           "level": "warning",
           "name": "registrationErrorWarning",

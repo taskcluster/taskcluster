@@ -13,4 +13,4 @@ def target_tasks_taskcluster_branches(full_task_graph, parameters, graph_config)
     def filter(task):
         return standard_filter(task, parameters) and task.attributes.get("only-on", "all") == only_on
 
-    return [label for label, t in full_task_graph.tasks.iteritems() if filter(t)]
+    return [label for label, t in full_task_graph.tasks.items() if filter(t)]

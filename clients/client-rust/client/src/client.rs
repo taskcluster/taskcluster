@@ -466,16 +466,28 @@ mod tests {
                 return false;
             }
             let auth_header: hawk::Header = auth_header[5..].parse().unwrap();
+            println!("header is {}", auth_header);
 
-            let host = format!("{}", self.1.ip());
+            // determine the host from the SocketAddr the same way that URL parsing
+            // does -- this picks up "special" things like [..] around ipv6 literals
+            let url = reqwest::Url::parse(format!("http://{}", self.1).as_ref()).unwrap();
+            let host = url.host_str().unwrap();
+            println!(
+                "building hawk request for {} {} {} {}",
+                input.method().as_str(),
+                host,
+                self.1.port(),
+                input.uri().path()
+            );
             let hawk_req = hawk::RequestBuilder::new(
                 input.method().as_str(),
-                &host,
+                host,
                 self.1.port(),
                 input.uri().path(),
             )
             .request();
 
+            println!("access token is {}", self.0.access_token);
             let key = hawk::Key::new(&self.0.access_token, hawk::SHA256).unwrap();
 
             // this ts_skew duration needs to be large -- in CI, somehow 1s can elapse between
@@ -590,6 +602,7 @@ mod tests {
             .respond_with(status_code(200)),
         );
         let root_url = format!("http://{}", server.addr());
+        println!("root_url: {}", root_url);
 
         let client = ClientBuilder::new(&root_url)
             .path_prefix("api/queue/v1/")

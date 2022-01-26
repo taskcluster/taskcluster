@@ -71,4 +71,3 @@ next-task-user.json
 
 # Rust ignores
 /clients/client-rust/target/
-/clients/client-rust/Cargo.lock

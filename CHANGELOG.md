@@ -3,6 +3,93 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.4.0
+
+### DEPLOYERS
+
+▶ [patch] [#5039](https://github.com/taskcluster/taskcluster/issues/5039)
+The new `queue.aws_endpoint` Helm configuration value allows setting the endpoint used to access S3 buckets.  This configuration enables use of non-AWS S3-compatible backends.
+
+### DEVELOPERS
+
+▶ [minor] [#4614](https://github.com/taskcluster/taskcluster/issues/4614)
+This version drops support for Python-2.7 in the Python client. Python-2.7's support window ended over one year ago.
+
+### OTHER
+
+▶ Additional change not described here: [#4594](https://github.com/taskcluster/taskcluster/issues/4594).
+
+## v44.3.1
+
+
+
+## v44.3.0
+
+### GENERAL
+
+▶ [patch] 
+In the Monitoring Services document, display the generated table of scheduled tasks.
+
+▶ [patch] [bug 1735159](http://bugzil.la/1735159)
+UI no longer visually emphasizes special characters of scopes (reverts #974 / #904).
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#4926](https://github.com/taskcluster/taskcluster/issues/4926)
+Adds release binary for generic-worker-simple on MacOS arm64.
+
+▶ [patch] [#5011](https://github.com/taskcluster/taskcluster/issues/5011)
+In worker-runner, the static provider is incompatible with cacheOverRestarts.  The tool now produces more useful error messages in this situaiton.
+
+Worker-runner also fails with a useful error message if its credentials are too old on startup, as might happen if a worker restart takes too long.
+
+▶ [patch] [bug 1635730](http://bugzil.la/1635730)
+generic-worker multiuser engine running on macOS will now attempt to cleanup /private/var/folders when deleting a task OS user account.
+
+### ADMINS
+
+▶ [patch] [#4999](https://github.com/taskcluster/taskcluster/issues/4999)
+The registration-error-warning, logged from the Azure provider's register()
+function in worker-manager, now includes workerPoolId, providerID, and
+workerID in its context.
+
+When register-error-warning is due to the state not being REQUESTED,
+the workerState is also in the context.
+
+### USERS
+
+▶ [minor] [#2679](https://github.com/taskcluster/taskcluster/issues/2679)
+Now after `taskcluster signin` the sign in dialog is shown instead of message if user is not logged in.
+
+▶ [patch] [#4962](https://github.com/taskcluster/taskcluster/issues/4962)
+Clicking on the role row now works outside of the text part as well
+
+### DEVELOPERS
+
+▶ [minor] [#5021](https://github.com/taskcluster/taskcluster/issues/5021)
+for `upload_artifact` from `client-py` let `contet` be `bytes` or `str`.
+
+▶ [patch] [#4242](https://github.com/taskcluster/taskcluster/issues/4242)
+Replacing the UI element for non-editable object display to allow yaml/json serialization
+
+### OTHER
+
+▶ Additional changes not described here: [#4939](https://github.com/taskcluster/taskcluster/issues/4939), [#4947](https://github.com/taskcluster/taskcluster/issues/4947), [#4997](https://github.com/taskcluster/taskcluster/issues/4997), [#5106](https://github.com/taskcluster/taskcluster/issues/5106).
+
+### Automated Package Updates
+
+<details>
+<summary>6 Renovate updates</summary>
+
+* Update dependency prismjs to v1.25.0 [SECURITY] (ba2350c98)
+* Update dependency react-router-dom to v5.2.1 (470a49616)
+* Update dependency marked to v3.0.2 (85607db2e)
+* Update dependency marked to v3.0.1 (2223cdcee)
+* Update dependency generate-password to v1.6.1 (038c1f6c6)
+* Update dependency marked to v3 (4a868be54)
+
+</details>
+
 ## v44.2.2
 
 ### DEPLOYERS

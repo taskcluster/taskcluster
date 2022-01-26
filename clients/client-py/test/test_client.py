@@ -2,7 +2,7 @@ from __future__ import division, print_function
 import types
 import time
 import datetime
-from six.moves import urllib
+import urllib
 import os
 import re
 import json

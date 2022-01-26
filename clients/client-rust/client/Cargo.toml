@@ -1,6 +1,6 @@
 [package]
 name = "taskcluster"
-version = "44.2.2"
+version = "44.4.0"
 authors = ["Wander Lairson Costa <wander.lairson@gmail.com>"]
 edition = "2018"
 license = "MPL-2.0"
@@ -22,5 +22,5 @@ tokio = { version = "1.2", features = ["macros", "time"] }
 chrono = { version = "0.4.11", features = ["serde"] }
 
 [dev-dependencies]
-httptest = "^0.15.1"
+httptest = "0.15.3"
 lazy_static = "1.4.0"

@@ -2,8 +2,6 @@ from __future__ import division, print_function
 import unittest
 import importlib
 
-import six
-
 
 class ImportTest(unittest.TestCase):
     """These tests are intended to ensure that existing means of importing modules within
@@ -37,12 +35,10 @@ class ImportTest(unittest.TestCase):
         queue = importlib.import_module("taskcluster.queue")
         queue.Queue
 
-    if six.PY3:
+    def taskcluster_aio(self):
+        aio = importlib.import_module("taskcluster.aio")
+        aio.Queue
 
-        def taskcluster_aio(self):
-            aio = importlib.import_module("taskcluster.aio")
-            aio.Queue
-
-        def test_taskcluster_aio_service(self):
-            queue = importlib.import_module("taskcluster.aio.queue")
-            queue.Queue
+    def test_taskcluster_aio_service(self):
+        queue = importlib.import_module("taskcluster.aio.queue")
+        queue.Queue

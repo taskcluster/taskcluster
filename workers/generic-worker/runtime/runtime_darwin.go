@@ -44,6 +44,10 @@ func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 }
 
 func DeleteUser(username string) (err error) {
+	err = host.Run("/usr/bin/find", "/private/var/folders", "-user", username, "-delete")
+	if err != nil {
+		log.Printf("WARNING: Error when trying to delete files under /private/var/folders belonging to %v: %v", username, err)
+	}
 	err = host.Run("/bin/bash", "-c", `/usr/bin/sudo dscl . -delete '/Users/`+username+`'`)
 	if err != nil {
 		return fmt.Errorf("Error when trying to delete user account %v: %v", username, err)
