@@ -71,7 +71,7 @@
     "lodash": "4.17.21",
     "loglevel": "^1.6.7",
     "marked": "^3.0.0",
-    "matrix-js-sdk": "^10.0.0",
+    "matrix-js-sdk": "^12.4.1",
     "memorystore": "^1.6.1",
     "mkdirp": "^1.0.0",
     "netmask": "^2.0.0",

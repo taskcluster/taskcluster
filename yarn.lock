@@ -4333,10 +4333,10 @@ math-interval-parser@^2.0.1:
   resolved "https://registry.yarnpkg.com/math-interval-parser/-/math-interval-parser-2.0.1.tgz#e22cd6d15a0a7f4c03aec560db76513da615bed4"
   integrity sha512-VmlAmb0UJwlvMyx8iPhXUDnVW1F9IrGEd9CIOmv+XL8AErCUUuozoDMrgImvnYt2A+53qVX/tPW6YJurMKYsvA==
 
-matrix-js-sdk@^10.0.0:
-  version "10.1.0"
-  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-10.1.0.tgz#11a78e0330530f78498847c52d390d2a599b029b"
-  integrity sha512-VR1bwSKOf7jZa9+0UoAsYvyvLsNGBhT/BdxHMgQKuwx34GwZucp3Tqg/Ng2oTK+0b991xkEk4nRvJoCKK++Ulg==
+matrix-js-sdk@^12.4.1:
+  version "12.4.1"
+  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-12.4.1.tgz#966f506b4146e4fafffa5bbe80f5c53515e1bc78"
+  integrity sha512-C9aSGX9e4GoCm0Rli+iGBXmcnRxnwETw7MvgNcSBfPaLHOMZi/wz4YOV7HEZK8R+OXuDrDYyglncWSJkkoDpAQ==
   dependencies:
     "@babel/runtime" "^7.12.5"
     another-json "^0.2.0"
@@ -4344,6 +4344,7 @@ matrix-js-sdk@^10.0.0:
     bs58 "^4.0.1"
     content-type "^1.0.4"
     loglevel "^1.7.1"
+    p-retry "^4.5.0"
     qs "^6.9.6"
     request "^2.88.2"
     unhomoglyph "^1.0.6"
@@ -4907,13 +4908,13 @@ p-queue@^6.1.1, p-queue@^6.6.1:
     eventemitter3 "^4.0.4"
     p-timeout "^3.2.0"
 
-p-retry@^4.0.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/p-retry/-/p-retry-4.5.0.tgz#6685336b3672f9ee8174d3769a660cb5e488521d"
-  integrity sha512-5Hwh4aVQSu6BEP+w2zKlVXtFAaYQe1qWuVADSgoeVlLjwe/Q/AMSoRR4MDeaAfu8llT+YNbEijWu/YF3m6avkg==
+p-retry@^4.0.0, p-retry@^4.5.0:
+  version "4.6.1"
+  resolved "https://registry.yarnpkg.com/p-retry/-/p-retry-4.6.1.tgz#8fcddd5cdf7a67a0911a9cf2ef0e5df7f602316c"
+  integrity sha512-e2xXGNhZOZ0lfgR9kL34iGlU8N/KO0xZnQxVEwdeOvpqNDQfdnxIYizvWtK8RglUa3bGqI8g0R/BdfzLMxRkiA==
   dependencies:
     "@types/retry" "^0.12.0"
-    retry "^0.12.0"
+    retry "^0.13.1"
 
 p-synchronize@^1.0.0:
   version "1.0.0"
@@ -5606,10 +5607,15 @@ restore-cursor@^3.1.0:
     onetime "^5.1.0"
     signal-exit "^3.0.2"
 
-retry@0.12.0, retry@^0.12.0:
+retry@0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/retry/-/retry-0.12.0.tgz#1b42a6266a21f07421d1b0b54b7dc167b01c013b"
   integrity sha1-G0KmJmoh8HQh0bC1S33BZ7AcATs=
+
+retry@^0.13.1:
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/retry/-/retry-0.13.1.tgz#185b1587acf67919d63b357349e03537b2484658"
+  integrity sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==
 
 rimraf@^3.0.0, rimraf@^3.0.2:
   version "3.0.2"
