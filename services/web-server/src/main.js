@@ -122,13 +122,14 @@ const load = loader(
 
     httpServer: {
       requires: ['app', 'schema', 'context', 'monitor'],
-      setup: ({ app, schema, context, monitor }) => {
+      setup: async ({ app, schema, context, monitor }) => {
         const server = new ApolloServer({
           schema,
           context,
           formatError,
           tracing: true,
         });
+        await server.start();
         const httpServer = createServer(app);
 
         server.applyMiddleware({
