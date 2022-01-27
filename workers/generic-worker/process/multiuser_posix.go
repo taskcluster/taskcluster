@@ -38,7 +38,7 @@ func TaskUserPlatformData() (pd *PlatformData, err error) {
 			return 0, fmt.Errorf("Failed to run command to determine %v of user %v: %v", description, user, err)
 		}
 		idString := strings.TrimSpace(out)
-		id, err := strconv.Atoi(idString)
+		id, err := strconv.ParseUint(idString, 10, 32)
 		if err != nil {
 			return 0, fmt.Errorf("Failed to convert %v %q from a string to an int: %v", description, idString, err)
 		}
