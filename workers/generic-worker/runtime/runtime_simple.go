@@ -1,4 +1,4 @@
-// +build simple
+//go:build simple
 
 package runtime
 

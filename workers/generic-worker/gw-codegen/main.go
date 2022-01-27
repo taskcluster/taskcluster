@@ -73,7 +73,7 @@ func generateTypes(input, output, constraint string) []byte {
 	}
 	source := result.SourceCode
 	if len(constraint) > 0 {
-		source = append([]byte("// +build "+constraint+"\n\n"), result.SourceCode...)
+		source = append([]byte("//go:build "+constraint+"\n\n"), result.SourceCode...)
 	}
 	return source
 }

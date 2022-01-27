@@ -1,4 +1,4 @@
-// +build simple docker
+//go:build simple || docker
 
 package main
 
