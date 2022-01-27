@@ -1,3 +1,3 @@
-const { makeExecutableSchema } = require('apollo-server-express');
+const { makeExecutableSchema } = require('@graphql-tools/schema');
 
 module.exports = options => makeExecutableSchema(options);
