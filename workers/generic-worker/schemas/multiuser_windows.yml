@@ -382,6 +382,8 @@ definitions:
         - rar
         - tar.bz2
         - tar.gz
+        - tar.xz
+        - tar.zst
         - zip
     additionalProperties: false
     required:
@@ -421,6 +423,8 @@ definitions:
         - rar
         - tar.bz2
         - tar.gz
+        - tar.xz
+        - tar.zst
         - zip
     additionalProperties: false
     required:
