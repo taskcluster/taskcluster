@@ -1,4 +1,4 @@
-// +build multiuser
+//go:build multiuser
 
 package main
 

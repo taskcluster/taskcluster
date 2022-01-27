@@ -1,4 +1,4 @@
-// +build darwin linux freebsd
+//go:build darwin || linux || freebsd
 
 package fileutil
 

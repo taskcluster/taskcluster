@@ -1,4 +1,4 @@
-// +build docker
+//go:build docker
 
 package main
 

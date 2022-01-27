@@ -1,4 +1,4 @@
-// +build darwin,!docker linux,!docker freebsd
+//go:build (darwin && !docker) || (linux && !docker) || freebsd
 
 package main
 
