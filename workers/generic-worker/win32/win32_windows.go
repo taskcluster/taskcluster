@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -805,6 +806,8 @@ func DeleteProfile(
 	lpProfilePath *uint16,
 	lpComputerName *uint16,
 ) (err error) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	r1, _, e1 := procDeleteProfileW.Call(
 		uintptr(unsafe.Pointer(lpSidString)),
 		uintptr(unsafe.Pointer(lpProfilePath)),
