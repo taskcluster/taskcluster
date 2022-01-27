@@ -1,4 +1,4 @@
-// +build darwin,simple linux,simple freebsd,simple
+//go:build (darwin && simple) || (linux && simple) || (freebsd && simple)
 
 package main
 
