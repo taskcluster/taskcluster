@@ -34,24 +34,7 @@ mkdir $DW_ROOT/node
 curl https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz | tar -C $DW_ROOT/node --strip-components=1 -xJf -
 
 # Install Yarn (later to be removed)
-# TODO: remove --insecure from command below once either the following command
-# runs successfully (implies issue fixed upstream in node:14.17.5 docker image):
-#
-#   docker run -ti --rm node:14.17.5 curl -LI https://yarnpkg.com/latest.tar.gz
-#
-# or once we have upgraded to node 14.18.2 or higher (where this issue is no
-# longer present).
-#
-# The above docker command currently fails with:
-#   "curl: (60) SSL certificate problem: certificate has expired"
-# which is why we added `--insecure` to the command. The issue is with the
-# certificate bundle in the node:14.17.5 docker image.
-#
-# Note, this is also reported in https://github.com/yarnpkg/yarn/issues/8700
-# but it is _not_ a problem with yarnpkg/yarn - instead it is a problem with
-# node:14.17.5 docker image, so the status of that issue might not reflect
-# the status of the required fix.
-curl --insecure -L https://yarnpkg.com/latest.tar.gz | tar --transform 's|yarn-[^/]*/|yarn/|' -C $DW_ROOT -zvxf -
+curl -L https://yarnpkg.com/latest.tar.gz | tar --transform 's|yarn-[^/]*/|yarn/|' -C $DW_ROOT -zvxf -
 
 # Install dependencies
 PATH=$DW_ROOT/node/bin:$DW_ROOT/node_modules/.bin:$PATH
