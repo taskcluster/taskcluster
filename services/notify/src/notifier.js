@@ -3,7 +3,7 @@ const _ = require('lodash');
 const path = require('path');
 const crypto = require('crypto');
 const sanitizeHtml = require('sanitize-html');
-const marked = require('marked');
+const { marked } = require('marked');
 const Email = require('email-templates');
 const nodemailer = require('nodemailer');
 
