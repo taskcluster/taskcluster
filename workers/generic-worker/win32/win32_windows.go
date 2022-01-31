@@ -813,6 +813,9 @@ func DeleteProfile(
 		uintptr(unsafe.Pointer(lpProfilePath)),
 		uintptr(unsafe.Pointer(lpComputerName)),
 	)
+	runtime.KeepAlive(lpSidString)
+	runtime.KeepAlive(lpProfilePath)
+	runtime.KeepAlive(lpComputerName)
 	if r1 == 0 {
 		err = os.NewSyscallError("DeleteProfileW", e1)
 	}
