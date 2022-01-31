@@ -20,13 +20,13 @@ import (
 )
 
 var (
-	advapi32 = NewLazyDLL("advapi32.dll")
-	kernel32 = NewLazyDLL("kernel32.dll")
-	ole32    = NewLazyDLL("ole32.dll")
-	shell32  = NewLazyDLL("shell32.dll")
-	userenv  = NewLazyDLL("userenv.dll")
-	wtsapi32 = NewLazyDLL("wtsapi32.dll")
-	user32   = NewLazyDLL("user32.dll")
+	advapi32 = syscall.NewLazyDLL("advapi32.dll")
+	kernel32 = syscall.NewLazyDLL("kernel32.dll")
+	ole32    = syscall.NewLazyDLL("ole32.dll")
+	shell32  = syscall.NewLazyDLL("shell32.dll")
+	userenv  = syscall.NewLazyDLL("userenv.dll")
+	wtsapi32 = syscall.NewLazyDLL("wtsapi32.dll")
+	user32   = syscall.NewLazyDLL("user32.dll")
 
 	procCreateEnvironmentBlock       = userenv.NewProc("CreateEnvironmentBlock")
 	procDestroyEnvironmentBlock      = userenv.NewProc("DestroyEnvironmentBlock")
