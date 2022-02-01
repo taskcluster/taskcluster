@@ -72,7 +72,7 @@
     "prismjs": "^1.24.0",
     "prop-types": "^15.6.2",
     "qs": "^6.6.0",
-    "ramda": "^0.27.0",
+    "ramda": "^0.28.0",
     "react": "^16.8.6",
     "react-apollo": "^3.0.0",
     "react-codemirror2": "^7.2.1",
