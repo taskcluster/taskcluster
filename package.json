@@ -70,7 +70,7 @@
     "jwks-rsa": "^2.0.0",
     "lodash": "4.17.21",
     "loglevel": "^1.6.7",
-    "marked": "^3.0.0",
+    "marked": "^4.0.10",
     "matrix-js-sdk": "^15.0.0",
     "memorystore": "^1.6.1",
     "mkdirp": "^1.0.0",
