@@ -3,6 +3,38 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.5.0
+
+### GENERAL
+
+▶ [patch] [#5082](https://github.com/taskcluster/taskcluster/issues/5082)
+Updated go from 1.16.7 to 1.17.6. This fixes an issue where the generic worker
+failed to build on M1 MacBooks (arm64).
+
+### USERS
+
+▶ [minor] 
+Fixed artifacts pagination
+
+### OTHER
+
+▶ Additional change not described here: [#5070](https://github.com/taskcluster/taskcluster/issues/5070).
+
+### Automated Package Updates
+
+<details>
+<summary>7 Renovate updates</summary>
+
+* Update dependency marked to v4.0.12 (0906dace1)
+* Update dependency commander to v9 (1f4311d02)
+* Update dependency node-forge to v1.2.1 (5c574d544)
+* Update dependency matrix-js-sdk to v15 (7cf55a467)
+* Update dependency node-fetch to v2.6.7 [SECURITY] (0cfcab9dd)
+* Update dependency apollo-server-express to v3 (181db987b)
+* Update dependency github-slugger to v1.4.0 (d44be4204)
+
+</details>
+
 ## v44.4.0
 
 ### DEPLOYERS
