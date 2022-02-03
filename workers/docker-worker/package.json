@@ -75,7 +75,7 @@
   "devDependencies": {
     "dev-null": "^0.1.0",
     "docker-exec-websocket-client": "^1.4.0",
-    "nock": "^13.0.0",
+    "nock": "^13.2.3",
     "taskcluster-lib-testing": "link:../../libraries/testing"
   }
 }
