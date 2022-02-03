@@ -26,7 +26,7 @@
   "homepage": "https://github.com/taskcluster/docker-worker",
   "dependencies": {
     "@sentry/node": "^6.0.0",
-    "ajv": "^7.2.1",
+    "ajv": "^8.9.0",
     "ajv-formats": "^1.5.1",
     "app-root-dir": "^1.0.2",
     "co": "^4.6.0",
