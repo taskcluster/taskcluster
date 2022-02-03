@@ -25,7 +25,7 @@
   "bugs": "https://github.com/taskcluster/docker-worker/issues",
   "homepage": "https://github.com/taskcluster/docker-worker",
   "dependencies": {
-    "@sentry/node": "^6.0.0",
+    "@sentry/node": "^6.17.4",
     "ajv": "^7.2.1",
     "ajv-formats": "^1.5.1",
     "app-root-dir": "^1.0.2",
