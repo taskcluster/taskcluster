@@ -10,34 +10,34 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
 
   # Maintain node dependencies for taskcluster-client
   - package-ecosystem: "npm"
     directory: "/clients/client"
     schedule:
-      interval: "daily"
+      interval: "monthly"
 
   # Maintain node dependencies for taskcluster-client-web
   - package-ecosystem: "npm"
     directory: "/clients/client-web"
     schedule:
-      interval: "daily"
+      interval: "monthly"
 
   # Maintain node dependencies for taskcluster-ui
   - package-ecosystem: "npm"
     directory: "/ui"
     schedule:
-      interval: "daily"
+      interval: "monthly"
       
   # Maintain node dependencies for docker-worker
   - package-ecosystem: "npm"
     directory: "/workers/docker-worker"
     schedule:
-      interval: "daily"
+      interval: "monthly"
 
   # Maintain go dependencies
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
