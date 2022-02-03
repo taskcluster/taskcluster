@@ -2,6 +2,7 @@ package win32
 
 import (
 	"os"
+	"syscall"
 	"unsafe"
 )
 
@@ -16,7 +17,16 @@ func packConditionMask(m1, m2 uintptr) uint64 {
 func VerSetConditionMask(lConditionMask uint64, typeBitMask uint32, conditionMask uint8) uint64 {
 	m1, m2 := unpackConditionMask(lConditionMask)
 
-	r1, r2, _ := procVerSetConditionMask.Call(m1, m2, uintptr(typeBitMask), uintptr(conditionMask))
+	r1, r2, _ := syscall.Syscall6(
+		procVerSetConditionMask.Addr(),
+		4,
+		m1,
+		m2,
+		uintptr(typeBitMask),
+		uintptr(conditionMask),
+		0,
+		0,
+	)
 	return packConditionMask(r1, r2)
 }
 
@@ -24,7 +34,16 @@ func VerifyWindowsInfoW(vi OSVersionInfoEx, typeMask uint32, conditionMask uint6
 	m1, m2 := unpackConditionMask(conditionMask)
 	vi.OSVersionInfoSize = uint32(unsafe.Sizeof(vi))
 
-	r1, _, e1 := procVerifyVersionInfoW.Call(uintptr(unsafe.Pointer(&vi)), uintptr(typeMask), m1, m2)
+	r1, _, e1 := syscall.Syscall6(
+		procVerifyVersionInfoW.Addr(),
+		4,
+		uintptr(unsafe.Pointer(&vi)),
+		uintptr(typeMask),
+		m1,
+		m2,
+		0,
+		0,
+	)
 	if r1 != 0 {
 		return true, nil
 	}

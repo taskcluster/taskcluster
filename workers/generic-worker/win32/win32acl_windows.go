@@ -132,7 +132,9 @@ func CreateNewAcl(length int) (*Acl, error) {
 }
 
 func SetUserObjectSecurity(obj syscall.Handle, sid uint32, desc []byte) error {
-	r1, _, e1 := procSetUserObjectSecurity.Call(
+	r1, _, e1 := syscall.Syscall(
+		procSetUserObjectSecurity.Addr(),
+		3,
 		uintptr(obj),
 		uintptr(unsafe.Pointer(&sid)),
 		uintptr(unsafe.Pointer(&desc[0])),
@@ -146,9 +148,12 @@ func SetUserObjectSecurity(obj syscall.Handle, sid uint32, desc []byte) error {
 type Acl struct{}
 
 func InitializeSecurityDescriptor(sd []byte) error {
-	r1, _, e1 := procInitializeSecurityDescriptor.Call(
+	r1, _, e1 := syscall.Syscall(
+		procInitializeSecurityDescriptor.Addr(),
+		2,
 		uintptr(unsafe.Pointer(&sd[0])),
 		SECURITY_DESCRIPTOR_REVISION,
+		0,
 	)
 	if int(r1) == 0 {
 		return os.NewSyscallError("InitializeSecurityDescriptor", e1)
@@ -157,7 +162,9 @@ func InitializeSecurityDescriptor(sd []byte) error {
 }
 
 func InitializeAcl(acl *Acl, length, revision uint32) error {
-	r1, _, e1 := procInitializeAcl.Call(
+	r1, _, e1 := syscall.Syscall(
+		procInitializeAcl.Addr(),
+		3,
 		uintptr(unsafe.Pointer(acl)),
 		uintptr(length),
 		uintptr(revision),
@@ -177,11 +184,15 @@ type AceHeader struct {
 type Ace struct{}
 
 func AddAccessAllowedAce(acl *Acl, revision, mask uint32, sid *syscall.SID) error {
-	r1, _, e1 := procAddAccessAllowedAce.Call(
+	r1, _, e1 := syscall.Syscall6(
+		procAddAccessAllowedAce.Addr(),
+		4,
 		uintptr(unsafe.Pointer(acl)),
 		uintptr(revision),
 		uintptr(mask),
 		uintptr(unsafe.Pointer(sid)),
+		0,
+		0,
 	)
 	if int(r1) == 0 {
 		return os.NewSyscallError("AddAccessAllowedAce", e1)
@@ -190,11 +201,15 @@ func AddAccessAllowedAce(acl *Acl, revision, mask uint32, sid *syscall.SID) erro
 }
 
 func SetSecurityDescriptorDacl(sd []byte, present bool, acl *Acl, defaulted bool) error {
-	r1, _, e1 := procSetSecurityDescriptorDacl.Call(
+	r1, _, e1 := syscall.Syscall6(
+		procSetSecurityDescriptorDacl.Addr(),
+		4,
 		uintptr(unsafe.Pointer(&sd[0])),
 		uintptr(boolToUint32(present)),
 		uintptr(unsafe.Pointer(acl)),
 		uintptr(boolToUint32(defaulted)),
+		0,
+		0,
 	)
 	if int(r1) == 0 {
 		return os.NewSyscallError("SetSecurityDescriptorDacl", e1)
@@ -203,12 +218,15 @@ func SetSecurityDescriptorDacl(sd []byte, present bool, acl *Acl, defaulted bool
 }
 
 func AddAccessAllowedAceEx(acl *Acl, revision, flags, mask uint32, sid *syscall.SID) error {
-	r1, _, e1 := procAddAccessAllowedAceEx.Call(
+	r1, _, e1 := syscall.Syscall6(
+		procAddAccessAllowedAceEx.Addr(),
+		5,
 		uintptr(unsafe.Pointer(acl)),
 		uintptr(revision),
 		uintptr(flags),
 		uintptr(mask),
 		uintptr(unsafe.Pointer(sid)),
+		0,
 	)
 	if int(r1) == 0 {
 		return os.NewSyscallError("AddAccessAllowedAceEx", e1)
