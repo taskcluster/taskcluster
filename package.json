@@ -133,7 +133,7 @@
     "c8": "^7.3.4",
     "commander": "^9.0.0",
     "console-taskgraph": "^1.7.2",
-    "cronstrue": "^1.101.0",
+    "cronstrue": "^1.123.0",
     "cross-env": "^7.0.2",
     "dockerode": "^3.0.0",
     "error-stack-parser": "^2.0.2",
