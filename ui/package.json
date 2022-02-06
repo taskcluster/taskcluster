@@ -116,7 +116,7 @@
     "babel-loader": "^8.0.5",
     "chai": "^4.3.6",
     "cross-env": "^7.0.0",
-    "dotenv-cli": "^4.0.0",
+    "dotenv-cli": "^5.0.0",
     "eslint": "^7.0.0",
     "graphql-tag": "^2.8.0",
     "karma": "^6.1.0",
