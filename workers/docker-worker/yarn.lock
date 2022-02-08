@@ -625,25 +625,25 @@ diveSync@^0.3.0:
   dependencies:
     append ">=0.1.0"
 
-docker-exec-websocket-client@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/docker-exec-websocket-client/-/docker-exec-websocket-client-1.4.0.tgz#d6e4ebb879c040ace5e99f7478fffa2c71d087b9"
-  integrity sha512-rle9HF49Uau9G04cDnqIC1Q8M9Q6hrX6BuwZV4jk1+ciWLzfUt8A7dr5ISyxt4jAexTX+C4x9y0X15x12O+JpQ==
+docker-exec-websocket-client@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/docker-exec-websocket-client/-/docker-exec-websocket-client-3.0.0.tgz#3baa64d98aa5a0d552f3337b6a3053ed6027d4d5"
+  integrity sha512-ZFTJjSWPCNI9wk7VmV0A9HNqZ4RQgJdZC+I4IlGFRWqeeI00I0HTWt8IzDMZVHnbsBvqAkFe3Aj09CPp4vfqsw==
   dependencies:
     debug "^4.1.1"
-    through2 "^3.0.1"
-    ws "^7.1.2"
+    through2 "^4.0.2"
+    ws "^8.4.2"
 
-docker-exec-websocket-server@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/docker-exec-websocket-server/-/docker-exec-websocket-server-2.0.0.tgz#c069727899180282a9f959558a969623228f3f62"
-  integrity sha512-ID2BuHBY9GKbBBXCdhq2MHIxarc2OY5OO9OCu+SfmanHW5pVuPOXmYflHe+NBHEAac3NcDAU8k3fB9AWOj4FEA==
+docker-exec-websocket-server@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/docker-exec-websocket-server/-/docker-exec-websocket-server-3.0.0.tgz#ceb2707b68989909be6a987a5dd12fdd4bd7a6e9"
+  integrity sha512-sVgZhs97cU/dg0GxH734NXERlD8oRJmJogu+PiQXBdNwRunrNXEifik/WzSNylxQNFBIV+cKReLdVPRvFEdt7A==
   dependencies:
     debug "^4.1.1"
     dockerode "^3.2.1"
-    lodash "^4.17.19"
-    through2 "^3.0.1"
-    ws "^7.1.2"
+    lodash "^4.17.21"
+    through2 "^4.0.2"
+    ws "^8.4.2"
 
 docker-image-parser@^1.0.0:
   version "1.0.0"
@@ -1289,7 +1289,7 @@ lodash.set@^4.3.2:
   resolved "https://registry.yarnpkg.com/lodash.set/-/lodash.set-4.3.2.tgz#d8757b1da807dde24816b0d6a84bea1a76230b23"
   integrity sha1-2HV7HagH3eJIFrDWqEvqGnYjCyM=
 
-lodash@^4.17.11, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.4:
+lodash@^4.17.11, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.21, lodash@^4.17.4:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
@@ -1680,7 +1680,7 @@ read-all-stream@^3.0.0:
     pinkie-promise "^2.0.0"
     readable-stream "^2.0.0"
 
-"readable-stream@2 || 3", readable-stream@^3.0.0, readable-stream@^3.1.1, readable-stream@^3.4.0, readable-stream@^3.5.0:
+readable-stream@3, readable-stream@^3.0.0, readable-stream@^3.1.1, readable-stream@^3.4.0, readable-stream@^3.5.0:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-3.6.0.tgz#337bbda3adc0706bd3e024426a286d4b4b2c9198"
   integrity sha512-BViHy7LKeTz4oNnkcLJ+lVSL6vpiFeX6/d3oSH8zCW7UxP2onchk+vTGB143xuFjHS3deTgkKoXXymXqymiIdA==
@@ -2042,7 +2042,8 @@ taskcluster-client@^43.0.0:
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-lib-testing@link:../../libraries/testing":
-  version "44.5.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -2073,13 +2074,12 @@ thirty-two@^0.0.2:
   resolved "https://registry.yarnpkg.com/thirty-two/-/thirty-two-0.0.2.tgz#4253e29d8cb058f0480267c5698c0e4927e54b6a"
   integrity sha1-QlPinYywWPBIAmfFaYwOSSflS2o=
 
-through2@^3.0.1:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/through2/-/through2-3.0.2.tgz#99f88931cfc761ec7678b41d5d7336b5b6a07bf4"
-  integrity sha512-enaDQ4MUyP2W6ZyT6EsMzqBPZaM/avg8iuo+l2d3QCs0J+6RaqkHV/2/lOwDTueBHeJ/2LG9lrLW3d5rWPucuQ==
+through2@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/through2/-/through2-4.0.2.tgz#a7ce3ac2a7a8b0b966c80e7c49f0484c3b239764"
+  integrity sha512-iOqSav00cVxEEICeD7TjLB1sueEL+81Wpzp2bY17uZjZN0pWZPuo4suZ/61VujxmqSGFfgOcNuTZ85QJwNZQpw==
   dependencies:
-    inherits "^2.0.4"
-    readable-stream "2 || 3"
+    readable-stream "3"
 
 timed-out@^2.0.0:
   version "2.0.0"
@@ -2241,10 +2241,10 @@ wrappy@1:
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
   integrity sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
 
-ws@^7.1.2:
-  version "7.4.6"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
-  integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
+ws@^8.4.2:
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.5.0.tgz#bfb4be96600757fe5382de12c670dab984a1ed4f"
+  integrity sha512-BWX0SWVgLPzYwF8lTzEy1egjhS4S4OEAHfsO8o65WOVsrnSRGaSiUaa9e0ggGlkMTtBlmOpEXiie9RUcBO86qg==
 
 y18n@^5.0.5:
   version "5.0.8"
