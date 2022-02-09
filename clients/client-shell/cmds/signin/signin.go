@@ -68,6 +68,8 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	// Set up server for the redirect page after a successful sign in
 	s := http.Server{}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	// Handle callback
 	s.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		qs := r.URL.Query()
@@ -97,9 +99,8 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 				</body>
 			</html>
 		`))
-		if err := s.Shutdown(context.Background()); err != nil {
-			log.Errorf("Error shutting down server: %s\n", err)
-		}
+
+		cancel()
 	})
 
 	// Start listening on localhost
@@ -153,10 +154,19 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to open browser, error: %s", err)
 	}
 
-	// Start serving
-	err = s.Serve(listener)
-	if err != nil {
-		return fmt.Errorf("failed to start localhost server, error: %s", err)
+	go func() {
+		// Start serving
+		if err := s.Serve(listener); err != http.ErrServerClosed {
+			// Error starting or closing listener:
+			log.Errorf("failed to start localhost server, error: %s", err)
+		}
+	}()
+
+	<-ctx.Done()
+
+	if err := s.Shutdown(context.Background()); err != nil {
+		// Error from closing listeners, or context timeout:
+		log.Errorf("Error shutting down server: %s\n", err)
 	}
 
 	return nil
