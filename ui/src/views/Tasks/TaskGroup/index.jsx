@@ -6,7 +6,7 @@ import { sum, isEmpty } from 'ramda';
 import { paramCase } from 'param-case';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { dump } from 'js-yaml';
-import { withStyles } from '@material-ui/core/styles';
+import { alpha, withStyles } from '@material-ui/core/styles';
 import Badge from '@material-ui/core/Badge';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -15,7 +15,6 @@ import Grid from '@material-ui/core/Grid';
 import FormGroup from '@material-ui/core/FormGroup';
 import HammerIcon from 'mdi-react/HammerIcon';
 import BellIcon from 'mdi-react/BellIcon';
-import { fade } from '@material-ui/core/styles/colorManipulator';
 import Spinner from '../../../components/Spinner';
 import Button from '../../../components/Button';
 import SpeedDial from '../../../components/SpeedDial';
@@ -90,19 +89,19 @@ const updateTaskGroupIdHistory = id => {
   taskNameFormSearch: {
     background: theme.palette.primary.main,
     '&:hover': {
-      background: fade(theme.palette.primary.main, 0.9),
+      background: alpha(theme.palette.primary.main, 0.9),
     },
     '& input': {
       transition: 'unset !important',
       width: 'unset !important',
-      color: fade(theme.palette.text.primary, 0.5),
+      color: alpha(theme.palette.text.primary, 0.5),
       '&:focus': {
         width: 'unset !important',
-        color: fade(theme.palette.text.primary, 0.9),
+        color: alpha(theme.palette.text.primary, 0.9),
       },
     },
     '& svg': {
-      fill: fade(theme.palette.text.primary, 0.5),
+      fill: alpha(theme.palette.text.primary, 0.5),
     },
   },
   notifyButton: {

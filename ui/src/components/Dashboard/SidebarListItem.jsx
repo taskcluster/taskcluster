@@ -2,8 +2,7 @@ import React, { Component, cloneElement } from 'react';
 import { node, string } from 'prop-types';
 import classNames from 'classnames';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { alpha, withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -23,9 +22,9 @@ import Link from '../../utils/Link';
       color: theme.palette.common.white,
     },
     '& $icon': {
-      fill: fade(theme.palette.common.white, 0.9),
+      fill: alpha(theme.palette.common.white, 0.9),
       '& svg': {
-        fill: fade(theme.palette.common.white, 0.9),
+        fill: alpha(theme.palette.common.white, 0.9),
       },
     },
   },

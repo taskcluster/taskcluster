@@ -1,4 +1,4 @@
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { alpha } from '@material-ui/core/styles';
 import GestureTapIcon from 'mdi-react/GestureTapIcon';
 import OneTwoThreeIcon from 'mdi-react/OneTwoThreeIcon';
 import BookOpenVariantIcon from 'mdi-react/BookOpenVariantIcon';
@@ -42,8 +42,8 @@ export const HOOKS_LAST_FIRE_TYPE = {
 export const THEME = {
   WHITE: '#fff',
   BLACK: '#000',
-  TEN_PERCENT_WHITE: fade('#fff', 0.1),
-  TEN_PERCENT_BLACK: fade('#000', 0.1),
+  TEN_PERCENT_WHITE: alpha('#fff', 0.1),
+  TEN_PERCENT_BLACK: alpha('#000', 0.1),
   DARK_THEME_BACKGROUND: '#12202c',
   PRIMARY_DARK: '#1b2a39',
   PRIMARY_LIGHT: '#fafafa',

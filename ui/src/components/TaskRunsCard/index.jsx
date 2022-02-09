@@ -2,8 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { func, number, string } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { alpha, withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -81,7 +80,7 @@ const DOTS_VARIANT_LIMIT = 5;
       textAlign: 'center',
     },
     boxVariantText: {
-      color: fade(theme.palette.text.primary, 0.4),
+      color: alpha(theme.palette.text.primary, 0.4),
     },
     artifactLink: {
       textDecoration: 'none',
