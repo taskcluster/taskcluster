@@ -1,10 +1,10 @@
 {
   "name": "taskcluster-ui",
-  "version": "44.4.0",
+  "version": "44.5.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "14.17.5",
+    "node": "16.13.2",
     "yarn": "^1.22.10"
   },
   "scripts": {
@@ -42,7 +42,7 @@
     "deep-sort-object": "^1.0.2",
     "deepmerge": "^4.0.0",
     "dexie": "^3.0.0",
-    "docker-exec-websocket-client": "^1.4.0",
+    "docker-exec-websocket-client": "^3.0.0",
     "dot-prop-immutable": "^2.0.0",
     "error-stack-parser": "^2.0.6",
     "escape-string-regexp": "^5.0.0",
@@ -50,7 +50,7 @@
     "graphql": "^15.0.0",
     "highlight.js": "^11.0.0",
     "hterm-umd": "^1.0.1",
-    "is-absolute-url": "^3.0.0",
+    "is-absolute-url": "^4.0.1",
     "js-yaml": "^4.0.0",
     "json-e": "^4.0.0",
     "json-loader": "^0.5.7",
@@ -78,7 +78,7 @@
     "react-codemirror2": "^7.2.1",
     "react-copy-to-clipboard": "^5.0.1",
     "react-dom": "^16.8.6",
-    "react-error-boundary": "^3.1.0",
+    "react-error-boundary": "^3.1.4",
     "react-ga": "^3.0.0",
     "react-gh-like-diff": "^2.0.0",
     "react-helmet": "^6.0.0",
@@ -114,7 +114,7 @@
     "@neutrinojs/karma": "^9.1.0",
     "@neutrinojs/react": "^9.1.0",
     "babel-loader": "^8.0.5",
-    "chai": "^4.2.0",
+    "chai": "^4.3.6",
     "cross-env": "^7.0.0",
     "dotenv-cli": "^4.0.0",
     "eslint": "^7.0.0",

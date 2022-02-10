@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "44.4.0",
+  "version": "44.5.0",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "14.17.5",
+    "node": "16.13.2",
     "yarn": "^1.22.10"
   },
   "workspaces": [
@@ -156,7 +156,7 @@
     "open-editor": "^3.0.0",
     "qlobber": "^5.0.3",
     "semver": "^7.3.2",
-    "sinon": "^10.0.0",
+    "sinon": "^13.0.0",
     "snake-case": "^3.0.3",
     "taskcluster-lib-testing": "link:libraries/testing",
     "temporary": "^1.0.0",

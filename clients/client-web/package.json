@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-client-web",
-  "version": "44.4.0",
+  "version": "44.5.0",
   "main": "src/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
@@ -14,12 +14,12 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
-    "chai": "^4.1.2",
+    "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
     "crypto-js": "^4.0.0",
     "dotenv": "^10.0.0",
     "eslint": "^7.0.0",
-    "karma": "^6.1.0",
+    "karma": "^6.3.13",
     "karma-cli": "^2.0.0",
     "karma-coverage": "^2.0.3",
     "karma-firefox-launcher": "^2.0.0",

@@ -1,10 +1,10 @@
 {
   "name": "docker-worker",
   "private": true,
-  "version": "44.4.0",
+  "version": "44.5.0",
   "engine-strict": true,
   "engines": {
-    "node": "14.17.5",
+    "node": "16.13.2",
     "yarn": "^1.22.10"
   },
   "description": "Docker task host for linux.",
@@ -34,7 +34,7 @@
     "debug": "*",
     "diskspace": "^2.0.0",
     "diveSync": "^0.3.0",
-    "docker-exec-websocket-server": "^2.0.0",
+    "docker-exec-websocket-server": "^3.0.0",
     "docker-image-parser": "^1.0.0",
     "dockerode": "^3.2.1",
     "dockerode-options": "^0.2.0",
@@ -70,11 +70,11 @@
     "tweetnacl": "^1.0.0",
     "typed-env-config": "^3.0.0",
     "uuid": "^8.0.0",
-    "walk": "^2.3.14"
+    "walk": "^2.3.15"
   },
   "devDependencies": {
     "dev-null": "^0.1.0",
-    "docker-exec-websocket-client": "^1.4.0",
+    "docker-exec-websocket-client": "^3.0.0",
     "nock": "^13.0.0",
     "taskcluster-lib-testing": "link:../../libraries/testing"
   }

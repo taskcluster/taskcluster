@@ -14,6 +14,7 @@ To update the node version:
 * Install the new node version, such as `nvm install --lts`
 * Install yarn, such as `npm install -g yarn`
 * Update `package.json`
+* Run `yarn install`
 * Run `yarn generate`
 * Create a changelog file and commit
 * Build and push new images (see below)

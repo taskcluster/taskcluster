@@ -258,7 +258,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     client.stdout.on('data', d => buffers.push(d));
     await new Promise(accept => client.stdout.on('end', accept));
     let data = Buffer.concat(buffers);
-    assert(data.compare(buf), 'buffer mismatch');
+    assert(data.equals(buf), 'buffer mismatch');
   });
 
   test('started hook fails gracefully on crash', async () => {
