@@ -2,7 +2,7 @@ const merge = require('deepmerge');
 const copy = require('@neutrinojs/copy');
 const reactLint = require('@mozilla-frontend-infra/react-lint');
 const react = require('@neutrinojs/react');
-const karma = require('@neutrinojs/karma');
+const jest = require('@neutrinojs/jest');
 const { join, resolve } = require('path');
 const fs = require('fs');
 const generateEnvJs = require('./generate-env-js');
@@ -160,15 +160,16 @@ module.exports = {
         ],
       }));
     },
-    karma({
-      plugins: [
-        'karma-firefox-launcher',
+    jest({
+      testEnvironment: 'jsdom',
+      testRegex: null,
+      testMatch: [
+        '<rootDir>/src/**/*.test.(js|jsx)',
+        '<rootDir>/tests/unit/**/*.test.(ts)'
       ],
-      client: {
-        mocha: {
-          ui: 'tdd',
-        },
-      },
+      setupFiles: [
+        './jest.setup.js',
+      ],
     }),
   ],
 };
