@@ -167,8 +167,16 @@ module.exports = {
         '<rootDir>/src/**/*.test.(js|jsx)',
         '<rootDir>/tests/unit/**/*.test.(ts)'
       ],
-      setupFiles: [
+      setupFilesAfterEnv: [
         './jest.setup.js',
+      ],
+      moduleFileExtensions: ['js', 'jsx'],
+      transform: {
+        '^.+\\.(js|jsx)$': 'babel-jest',
+        '\\.graphql$': 'jest-transform-graphql',
+      },
+      transformIgnorePatterns: [
+        "node_modules/(?!is-absolute-url)"
       ],
     }),
   ],

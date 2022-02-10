@@ -1,0 +1,470 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render Profile page 1`] = `
+<ContextProvider
+  value={
+    Object {
+      "history": Object {
+        "action": "POP",
+        "block": [Function],
+        "canGo": [Function],
+        "createHref": [Function],
+        "entries": Array [
+          Object {
+            "hash": "",
+            "key": "mm72u3",
+            "pathname": "/",
+            "search": "",
+            "state": undefined,
+          },
+        ],
+        "go": [Function],
+        "goBack": [Function],
+        "goForward": [Function],
+        "index": 0,
+        "length": 1,
+        "listen": [Function],
+        "location": Object {
+          "hash": "",
+          "key": "mm72u3",
+          "pathname": "/",
+          "search": "",
+          "state": undefined,
+        },
+        "push": [Function],
+        "replace": [Function],
+      },
+      "location": Object {
+        "hash": "",
+        "key": "mm72u3",
+        "pathname": "/",
+        "search": "",
+        "state": undefined,
+      },
+      "match": Object {
+        "isExact": true,
+        "params": Object {},
+        "path": "/",
+        "url": "/",
+      },
+      "staticContext": undefined,
+    }
+  }
+>
+  <ContextProvider
+    value={
+      Object {
+        "action": "POP",
+        "block": [Function],
+        "canGo": [Function],
+        "createHref": [Function],
+        "entries": Array [
+          Object {
+            "hash": "",
+            "key": "mm72u3",
+            "pathname": "/",
+            "search": "",
+            "state": undefined,
+          },
+        ],
+        "go": [Function],
+        "goBack": [Function],
+        "goForward": [Function],
+        "index": 0,
+        "length": 1,
+        "listen": [Function],
+        "location": Object {
+          "hash": "",
+          "key": "mm72u3",
+          "pathname": "/",
+          "search": "",
+          "state": undefined,
+        },
+        "push": [Function],
+        "replace": [Function],
+      }
+    }
+  >
+    <ApolloProvider
+      client={
+        ApolloClient {
+          "cache": InMemoryCache {
+            "addTypename": true,
+            "cacheKeyRoot": KeyTrie {
+              "weakness": true,
+            },
+            "config": Object {
+              "addTypename": true,
+              "dataIdFromObject": [Function],
+              "fragmentMatcher": HeuristicFragmentMatcher {},
+              "freezeResults": false,
+              "resultCaching": true,
+            },
+            "data": DepTrackingCache {
+              "data": Object {},
+              "depend": [Function],
+            },
+            "maybeBroadcastWatch": [Function],
+            "optimisticData": DepTrackingCache {
+              "data": Object {},
+              "depend": [Function],
+            },
+            "silenceBroadcast": false,
+            "storeReader": StoreReader {
+              "executeSelectionSet": [Function],
+              "executeStoreQuery": [Function],
+              "executeSubSelectedArray": [Function],
+              "freezeResults": false,
+            },
+            "storeWriter": StoreWriter {},
+            "typenameDocumentCache": Map {},
+            "watches": Set {},
+          },
+          "clearStoreCallbacks": Array [],
+          "defaultOptions": Object {},
+          "disableNetworkFetches": false,
+          "link": SchemaLink {
+            "context": undefined,
+            "rootValue": undefined,
+            "schema": GraphQLSchema {
+              "__allowedLegacyNames": undefined,
+              "_directives": Array [
+                GraphQLDirective {
+                  "args": Array [
+                    Object {
+                      "astNode": undefined,
+                      "defaultValue": undefined,
+                      "description": "Skipped when true.",
+                      "name": "if",
+                      "type": "Boolean!",
+                    },
+                  ],
+                  "astNode": undefined,
+                  "description": "Directs the executor to skip this field or fragment when the \`if\` argument is true.",
+                  "locations": Array [
+                    "FIELD",
+                    "FRAGMENT_SPREAD",
+                    "INLINE_FRAGMENT",
+                  ],
+                  "name": "skip",
+                },
+                GraphQLDirective {
+                  "args": Array [
+                    Object {
+                      "astNode": undefined,
+                      "defaultValue": undefined,
+                      "description": "Included when true.",
+                      "name": "if",
+                      "type": "Boolean!",
+                    },
+                  ],
+                  "astNode": undefined,
+                  "description": "Directs the executor to include this field or fragment only when the \`if\` argument is true.",
+                  "locations": Array [
+                    "FIELD",
+                    "FRAGMENT_SPREAD",
+                    "INLINE_FRAGMENT",
+                  ],
+                  "name": "include",
+                },
+                GraphQLDirective {
+                  "args": Array [
+                    Object {
+                      "astNode": undefined,
+                      "defaultValue": "No longer supported",
+                      "description": "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted in [Markdown](https://daringfireball.net/projects/markdown/).",
+                      "name": "reason",
+                      "type": "String",
+                    },
+                  ],
+                  "astNode": undefined,
+                  "description": "Marks an element of a GraphQL schema as no longer supported.",
+                  "locations": Array [
+                    "FIELD_DEFINITION",
+                    "ENUM_VALUE",
+                  ],
+                  "name": "deprecated",
+                },
+              ],
+              "_implementations": Object {},
+              "_mutationType": null,
+              "_queryType": null,
+              "_subscriptionType": null,
+              "_typeMap": Object {
+                "Boolean": "Boolean",
+                "ID": "ID",
+                "String": "String",
+                "User": "User",
+                "__Directive": "__Directive",
+                "__DirectiveLocation": "__DirectiveLocation",
+                "__EnumValue": "__EnumValue",
+                "__Field": "__Field",
+                "__InputValue": "__InputValue",
+                "__Schema": "__Schema",
+                "__Type": "__Type",
+                "__TypeKind": "__TypeKind",
+              },
+              "astNode": undefined,
+            },
+          },
+          "localState": LocalState {
+            "cache": InMemoryCache {
+              "addTypename": true,
+              "cacheKeyRoot": KeyTrie {
+                "weakness": true,
+              },
+              "config": Object {
+                "addTypename": true,
+                "dataIdFromObject": [Function],
+                "fragmentMatcher": HeuristicFragmentMatcher {},
+                "freezeResults": false,
+                "resultCaching": true,
+              },
+              "data": DepTrackingCache {
+                "data": Object {},
+                "depend": [Function],
+              },
+              "maybeBroadcastWatch": [Function],
+              "optimisticData": DepTrackingCache {
+                "data": Object {},
+                "depend": [Function],
+              },
+              "silenceBroadcast": false,
+              "storeReader": StoreReader {
+                "executeSelectionSet": [Function],
+                "executeStoreQuery": [Function],
+                "executeSubSelectedArray": [Function],
+                "freezeResults": false,
+              },
+              "storeWriter": StoreWriter {},
+              "typenameDocumentCache": Map {},
+              "watches": Set {},
+            },
+            "client": [Circular],
+          },
+          "mutate": [Function],
+          "query": [Function],
+          "queryDeduplication": true,
+          "queryManager": QueryManager {
+            "assumeImmutableResults": false,
+            "clientAwareness": Object {
+              "name": undefined,
+              "version": undefined,
+            },
+            "dataStore": DataStore {
+              "cache": InMemoryCache {
+                "addTypename": true,
+                "cacheKeyRoot": KeyTrie {
+                  "weakness": true,
+                },
+                "config": Object {
+                  "addTypename": true,
+                  "dataIdFromObject": [Function],
+                  "fragmentMatcher": HeuristicFragmentMatcher {},
+                  "freezeResults": false,
+                  "resultCaching": true,
+                },
+                "data": DepTrackingCache {
+                  "data": Object {},
+                  "depend": [Function],
+                },
+                "maybeBroadcastWatch": [Function],
+                "optimisticData": DepTrackingCache {
+                  "data": Object {},
+                  "depend": [Function],
+                },
+                "silenceBroadcast": false,
+                "storeReader": StoreReader {
+                  "executeSelectionSet": [Function],
+                  "executeStoreQuery": [Function],
+                  "executeSubSelectedArray": [Function],
+                  "freezeResults": false,
+                },
+                "storeWriter": StoreWriter {},
+                "typenameDocumentCache": Map {},
+                "watches": Set {},
+              },
+            },
+            "fetchQueryRejectFns": Map {},
+            "idCounter": 1,
+            "inFlightLinkObservables": Map {},
+            "link": SchemaLink {
+              "context": undefined,
+              "rootValue": undefined,
+              "schema": GraphQLSchema {
+                "__allowedLegacyNames": undefined,
+                "_directives": Array [
+                  GraphQLDirective {
+                    "args": Array [
+                      Object {
+                        "astNode": undefined,
+                        "defaultValue": undefined,
+                        "description": "Skipped when true.",
+                        "name": "if",
+                        "type": "Boolean!",
+                      },
+                    ],
+                    "astNode": undefined,
+                    "description": "Directs the executor to skip this field or fragment when the \`if\` argument is true.",
+                    "locations": Array [
+                      "FIELD",
+                      "FRAGMENT_SPREAD",
+                      "INLINE_FRAGMENT",
+                    ],
+                    "name": "skip",
+                  },
+                  GraphQLDirective {
+                    "args": Array [
+                      Object {
+                        "astNode": undefined,
+                        "defaultValue": undefined,
+                        "description": "Included when true.",
+                        "name": "if",
+                        "type": "Boolean!",
+                      },
+                    ],
+                    "astNode": undefined,
+                    "description": "Directs the executor to include this field or fragment only when the \`if\` argument is true.",
+                    "locations": Array [
+                      "FIELD",
+                      "FRAGMENT_SPREAD",
+                      "INLINE_FRAGMENT",
+                    ],
+                    "name": "include",
+                  },
+                  GraphQLDirective {
+                    "args": Array [
+                      Object {
+                        "astNode": undefined,
+                        "defaultValue": "No longer supported",
+                        "description": "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted in [Markdown](https://daringfireball.net/projects/markdown/).",
+                        "name": "reason",
+                        "type": "String",
+                      },
+                    ],
+                    "astNode": undefined,
+                    "description": "Marks an element of a GraphQL schema as no longer supported.",
+                    "locations": Array [
+                      "FIELD_DEFINITION",
+                      "ENUM_VALUE",
+                    ],
+                    "name": "deprecated",
+                  },
+                ],
+                "_implementations": Object {},
+                "_mutationType": null,
+                "_queryType": null,
+                "_subscriptionType": null,
+                "_typeMap": Object {
+                  "Boolean": "Boolean",
+                  "ID": "ID",
+                  "String": "String",
+                  "User": "User",
+                  "__Directive": "__Directive",
+                  "__DirectiveLocation": "__DirectiveLocation",
+                  "__EnumValue": "__EnumValue",
+                  "__Field": "__Field",
+                  "__InputValue": "__InputValue",
+                  "__Schema": "__Schema",
+                  "__Type": "__Type",
+                  "__TypeKind": "__TypeKind",
+                },
+                "astNode": undefined,
+              },
+            },
+            "localState": LocalState {
+              "cache": InMemoryCache {
+                "addTypename": true,
+                "cacheKeyRoot": KeyTrie {
+                  "weakness": true,
+                },
+                "config": Object {
+                  "addTypename": true,
+                  "dataIdFromObject": [Function],
+                  "fragmentMatcher": HeuristicFragmentMatcher {},
+                  "freezeResults": false,
+                  "resultCaching": true,
+                },
+                "data": DepTrackingCache {
+                  "data": Object {},
+                  "depend": [Function],
+                },
+                "maybeBroadcastWatch": [Function],
+                "optimisticData": DepTrackingCache {
+                  "data": Object {},
+                  "depend": [Function],
+                },
+                "silenceBroadcast": false,
+                "storeReader": StoreReader {
+                  "executeSelectionSet": [Function],
+                  "executeStoreQuery": [Function],
+                  "executeSubSelectedArray": [Function],
+                  "freezeResults": false,
+                },
+                "storeWriter": StoreWriter {},
+                "typenameDocumentCache": Map {},
+                "watches": Set {},
+              },
+              "client": [Circular],
+            },
+            "mutationStore": MutationStore {
+              "store": Object {},
+            },
+            "onBroadcast": [Function],
+            "pollingInfoByQueryId": Map {},
+            "queries": Map {},
+            "queryDeduplication": true,
+            "queryStore": QueryStore {
+              "store": Object {},
+            },
+            "ssrMode": false,
+            "transformCache": WeakMap {},
+          },
+          "reFetchObservableQueries": [Function],
+          "resetStore": [Function],
+          "resetStoreCallbacks": Array [],
+          "store": DataStore {
+            "cache": InMemoryCache {
+              "addTypename": true,
+              "cacheKeyRoot": KeyTrie {
+                "weakness": true,
+              },
+              "config": Object {
+                "addTypename": true,
+                "dataIdFromObject": [Function],
+                "fragmentMatcher": HeuristicFragmentMatcher {},
+                "freezeResults": false,
+                "resultCaching": true,
+              },
+              "data": DepTrackingCache {
+                "data": Object {},
+                "depend": [Function],
+              },
+              "maybeBroadcastWatch": [Function],
+              "optimisticData": DepTrackingCache {
+                "data": Object {},
+                "depend": [Function],
+              },
+              "silenceBroadcast": false,
+              "storeReader": StoreReader {
+                "executeSelectionSet": [Function],
+                "executeStoreQuery": [Function],
+                "executeSubSelectedArray": [Function],
+                "freezeResults": false,
+              },
+              "storeWriter": StoreWriter {},
+              "typenameDocumentCache": Map {},
+              "watches": Set {},
+            },
+          },
+          "typeDefs": undefined,
+          "version": "2.6.10",
+          "watchQuery": [Function],
+        }
+      }
+    >
+      <AuthorizableComponent />
+    </ApolloProvider>
+  </ContextProvider>
+</ContextProvider>
+`;
