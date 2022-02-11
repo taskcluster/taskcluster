@@ -20,6 +20,12 @@ Cypress.Commands.add('login', () => {
   cy.get('button[type=submit]').click()
 })
 
+Cypress.Commands.add('logout', () => {
+  cy.get('#user-menu-button').click()
+  cy.contains('Sign Out')
+  cy.get('#user-menu-sign-out').click()
+})
+
 
 //
 //

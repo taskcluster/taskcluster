@@ -23,6 +23,7 @@ export default class Button extends Component {
     variant: 'text',
     tooltip: null,
     spanProps: null,
+    id: null,
   };
 
   static propTypes = {
@@ -48,6 +49,7 @@ export default class Button extends Component {
      * be able to show tooltips on disabled buttons.
      * */
     spanProps: object,
+    id: String,
   };
 
   handleButtonClick = e => {
@@ -77,6 +79,7 @@ export default class Button extends Component {
       onUnauthorize,
       tooltipProps,
       spanProps,
+      id,
       ...props
     } = this.props;
     const lackingAuth = requiresAuth && !user;
@@ -88,6 +91,7 @@ export default class Button extends Component {
         onClick={this.handleButtonClick}
         disabled={isDisabled}
         variant={variant}
+        id={id}
         {...props}>
         {children}
       </MuiComponent>
