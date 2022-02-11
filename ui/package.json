@@ -121,7 +121,7 @@
     "graphql-tag": "^2.8.0",
     "karma": "^6.3.14",
     "karma-cli": "^2.0.0",
-    "karma-firefox-launcher": "^2.0.0",
+    "karma-firefox-launcher": "^2.1.2",
     "mocha": "^8.0.0",
     "neutrino": "^9.1.0",
     "node-fetch": "^2.6.7",
