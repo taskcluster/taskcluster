@@ -10,3 +10,4 @@ node_modules
 .eslintcache
 .netlify/
 src/static/env.js
+coverage

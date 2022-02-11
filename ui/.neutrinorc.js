@@ -94,6 +94,7 @@ module.exports = {
                   [require.resolve('@babel/plugin-proposal-class-properties'), { loose: false }],
                   [require.resolve('@babel/plugin-proposal-optional-chaining'), { loose: true }],
                   [require.resolve('@babel/plugin-proposal-nullish-coalescing-operator'), { loose: true }],
+                  [require.resolve('@babel/plugin-transform-modules-commonjs'), { loose: true }],
                 ]).filter(Boolean)
             }));
 
@@ -176,7 +177,7 @@ module.exports = {
         '\\.graphql$': 'jest-transform-graphql',
       },
       transformIgnorePatterns: [
-        "node_modules/(?!is-absolute-url)"
+        "node_modules/(?!is-absolute-url|taskcluster-client-web)"
       ],
     }),
   ],

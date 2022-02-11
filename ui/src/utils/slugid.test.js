@@ -1,4 +1,3 @@
-import { it } from 'date-fns/locale';
 import { nice, v4 } from './slugid';
 
 /**

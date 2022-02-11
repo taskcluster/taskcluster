@@ -1,107 +1,54 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`should render AuthConsent page 1`] = `
-<ContextProvider
-  value={
+<Router
+  history={
     Object {
-      "history": Object {
-        "action": "POP",
-        "block": [Function],
-        "canGo": [Function],
-        "createHref": [Function],
-        "entries": Array [
-          Object {
-            "hash": "",
-            "key": "gjgxjz",
-            "pathname": "/",
-            "search": "",
-            "state": undefined,
-          },
-        ],
-        "go": [Function],
-        "goBack": [Function],
-        "goForward": [Function],
-        "index": 0,
-        "length": 1,
-        "listen": [Function],
-        "location": Object {
+      "action": "POP",
+      "block": [Function],
+      "canGo": [Function],
+      "createHref": [Function],
+      "entries": Array [
+        Object {
           "hash": "",
-          "key": "gjgxjz",
           "pathname": "/",
           "search": "",
           "state": undefined,
         },
-        "push": [Function],
-        "replace": [Function],
-      },
+      ],
+      "go": [Function],
+      "goBack": [Function],
+      "goForward": [Function],
+      "index": 0,
+      "length": 1,
+      "listen": [Function],
       "location": Object {
         "hash": "",
-        "key": "gjgxjz",
         "pathname": "/",
         "search": "",
         "state": undefined,
       },
-      "match": Object {
-        "isExact": true,
-        "params": Object {},
-        "path": "/",
-        "url": "/",
-      },
-      "staticContext": undefined,
+      "push": [Function],
+      "replace": [Function],
     }
   }
 >
-  <ContextProvider
-    value={
+  <withRouter(WithStyles(AuthConsent))
+    clientId="clientId"
+    formData={
       Object {
-        "action": "POP",
-        "block": [Function],
-        "canGo": [Function],
-        "createHref": [Function],
-        "entries": Array [
-          Object {
-            "hash": "",
-            "key": "gjgxjz",
-            "pathname": "/",
-            "search": "",
-            "state": undefined,
-          },
+        "description": "description",
+        "expires": 2022-02-02T12:00:00.000Z,
+        "scopes": Array [
+          "scopes",
         ],
-        "go": [Function],
-        "goBack": [Function],
-        "goForward": [Function],
-        "index": 0,
-        "length": 1,
-        "listen": [Function],
-        "location": Object {
-          "hash": "",
-          "key": "gjgxjz",
-          "pathname": "/",
-          "search": "",
-          "state": undefined,
-        },
-        "push": [Function],
-        "replace": [Function],
       }
     }
-  >
-    <withRouter(WithStyles(AuthConsent))
-      clientId="clientId"
-      formData={
-        Object {
-          "description": "description",
-          "expires": 2022-02-02T12:00:00.000Z,
-          "scopes": Array [
-            "scopes",
-          ],
-        }
-      }
-      onExpirationChange={[MockFunction]}
-      onInputChange={[MockFunction]}
-      onScopesChange={[MockFunction]}
-      registeredClientId="registeredClientId"
-      transactionID="transactionID"
-    />
-  </ContextProvider>
-</ContextProvider>
+    onExpirationChange={[MockFunction]}
+    onInputChange={[MockFunction]}
+    onScopesChange={[MockFunction]}
+    registeredClientId="registeredClientId"
+    transactionID="transactionID"
+  />
+</Router>
 `;
