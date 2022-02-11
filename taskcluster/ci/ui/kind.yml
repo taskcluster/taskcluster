@@ -25,6 +25,4 @@ jobs:
          {{ yarn --frozen-lockfile || exit 99; }}
       command: >-
          yarn lint &&
-         {{ Xvfb :99 -screen 0 640x480x8 -nolisten tcp & }} &&
-         sleep 2 &&
-         CHROME_BIN=firefox DISPLAY=:99 yarn test
+         yarn test --coverage
