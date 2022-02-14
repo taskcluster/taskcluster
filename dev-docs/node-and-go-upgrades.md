@@ -42,6 +42,7 @@ To update the go version:
 When updating either npm or go, there are new Docker images that need to be
 built and deployed to pass CI.
 
+* Run `docker login` with credentials found on the [passwordstore](https://github.com/taskcluster/passwordstore-readme)
 * Change to the `infrastructure/docker-images` folder
 * (Optional) Run each builder:
   - `./build-browser-test.sh` - Uses node and Firefox ESR

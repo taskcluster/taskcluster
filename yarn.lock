@@ -2090,9 +2090,9 @@ cron-parser@3.5.0:
     luxon "^1.26.0"
 
 cronstrue@^1.101.0:
-  version "1.123.0"
-  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-1.123.0.tgz#de622dd8ea07981790f488d3f89a25e6e728ac8b"
-  integrity sha512-hVu9yNYRYr+jj5KET1p7FaBxFwtCHM1ByffP9lZ6yJ6p53u4VEmzH8117v9PUydxWNzc8Eq+sCZEzsKcB3ckiA==
+  version "1.125.0"
+  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-1.125.0.tgz#8030816d033d00caade9b2a9f9b71e69175bcf42"
+  integrity sha512-qkC5mVbVGuuyBVXmam5anaRtbLcgfBUKajoyZqCdf/XBdgF43PsLSEm8eEi2dsI3YbqDPbLSH2mWNzM1dVqHgQ==
 
 cross-env@^7.0.2:
   version "7.0.3"
@@ -2452,9 +2452,9 @@ env-editor@^0.4.1:
   integrity sha512-ObFo8v4rQJAE59M69QzwloxPZtd33TpYEIjtKD1rrFDcM1Gd7IkDxEBU+HriziN6HSHQnBJi8Dmy+JWkav5HKA==
 
 error-stack-parser@^2.0.2:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/error-stack-parser/-/error-stack-parser-2.0.6.tgz#5a99a707bd7a4c58a797902d48d82803ede6aad8"
-  integrity sha512-d51brTeqC+BHlwF0BhPtcYgF5nlzf9ZZ0ZIUQNZpc9ZB9qw5IJ2diTrBY9jlCJkTLITYPjmiX6OWCwH+fuyNgQ==
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/error-stack-parser/-/error-stack-parser-2.0.7.tgz#b0c6e2ce27d0495cf78ad98715e0cad1219abb57"
+  integrity sha512-chLOW0ZGRf4s8raLrDxa5sdkvPec5YdvwbFnqJme4rk0rFajP8mPtrDL1+I+CwrQDCjswDA5sREX7jYQDQs9vA==
   dependencies:
     stackframe "^1.1.1"
 
