@@ -107,12 +107,13 @@ export default class UserMenu extends Component {
           open={Boolean(anchorEl)}
           onClose={this.handleMenuClose}>
           <Link to="/profile">
-            <MenuItem title="Your Profile">
+            <MenuItem title="Your Profile" id="user-menu-profile">
               <AccountIcon className={classes.leftIcon} />
               Profile
             </MenuItem>
           </Link>
           <MenuItem
+            id="user-menu-sign-out"
             title={`Sign Out of ${window.env.APPLICATION_NAME}`}
             onClick={this.handleSignOutClick}>
             <LogoutVariantIcon className={classes.leftIcon} />

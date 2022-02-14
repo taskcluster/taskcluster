@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { nice, v4 } from '../src/utils/slugid';
+import { nice, v4 } from './slugid';
 
 /**
  * `spreader` runs a test against the `generator` function, to check that
@@ -81,7 +80,7 @@ const spreader = generator => {
   return actual;
 };
 
-suite('slugs', () => {
+describe('slugs', () => {
   test('should spread v4 slugs', () => {
     const charsAll = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
       .split('')
@@ -128,7 +127,7 @@ suite('slugs', () => {
     ];
     const actual = spreader(v4);
 
-    expect(expected).to.deep.equal(actual);
+    expect(expected).toEqual(actual);
   });
 
   test('should spread nice slugs', () => {
@@ -182,6 +181,6 @@ suite('slugs', () => {
     ];
     const actual = spreader(nice);
 
-    expect(expected).to.deep.equal(actual);
+    expect(expected).toEqual(actual);
   });
 });

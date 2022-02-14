@@ -10,3 +10,6 @@ node_modules
 .eslintcache
 .netlify/
 src/static/env.js
+coverage
+test/e2e/cypress/screenshots/
+test/e2e/cypress/videos/

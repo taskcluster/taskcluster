@@ -1,16 +1,15 @@
-import { expect } from 'chai';
-import fromNow from '../src/utils/fromNow';
+import fromNow from './fromNow';
 
-suite('fromNow', () => {
-  test('should generate current datetime', () => {
+describe('fromNow', () => {
+  it('should generate current datetime', () => {
     const date1 = new Date();
     const date2 = fromNow();
 
     // Allow for 10ms margin
-    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
+    expect(date2.getTime() - date1.getTime()).toBeLessThan(10);
   });
 
-  test('should generate with hour format', () => {
+  it('should generate with hour format', () => {
     const date1 = new Date();
 
     date1.setHours(date1.getHours() + 2);
@@ -18,10 +17,10 @@ suite('fromNow', () => {
     const date2 = fromNow('2 hours');
 
     // Allow for 10ms margin
-    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
+    expect(date2.getTime() - date1.getTime()).toBeLessThan(10);
   });
 
-  test('should generate with year+month format', () => {
+  it('should generate with year+month format', () => {
     const day = 24 * 60 * 60 * 1000;
     const date1 = new Date(
       new Date().getTime() + 2 * 365 * day + 55 * 30 * day
@@ -29,30 +28,30 @@ suite('fromNow', () => {
     const date2 = fromNow('2 years 55mo');
 
     // Allow for 10ms margin
-    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
+    expect(date2.getTime() - date1.getTime()).toBeLessThan(10);
   });
 
-  test('should generate with month format', () => {
+  it('should generate with month format', () => {
     const date1 = new Date(
       new Date().getTime() + 240 * 30 * 24 * 60 * 60 * 1000
     );
     const date2 = fromNow('240 months');
 
     // Allow for 10ms margin
-    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
+    expect(date2.getTime() - date1.getTime()).toBeLessThan(10);
   });
 
-  test('should generate with -month format', () => {
+  it('should generate with -month format', () => {
     const date1 = new Date(
       new Date().getTime() - 240 * 30 * 24 * 60 * 60 * 1000
     );
     const date2 = fromNow('-240 months');
 
     // Allow for 10ms margin
-    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
+    expect(date2.getTime() - date1.getTime()).toBeLessThan(10);
   });
 
-  test('should generate from object definitions', () => {
+  it('should generate from object definitions', () => {
     [
       {
         expr: '1 hour',
@@ -145,7 +144,7 @@ suite('fromNow', () => {
         result: '2018-01-19T16:27:20.974Z',
       },
     ].forEach(({ expr, from, result }) => {
-      expect(fromNow(expr, new Date(from)).toJSON()).to.equal(result);
+      expect(fromNow(expr, new Date(from)).toJSON()).toEqual(result);
     });
   });
 });

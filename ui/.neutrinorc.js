@@ -2,7 +2,7 @@ const merge = require('deepmerge');
 const copy = require('@neutrinojs/copy');
 const reactLint = require('@mozilla-frontend-infra/react-lint');
 const react = require('@neutrinojs/react');
-const karma = require('@neutrinojs/karma');
+const jest = require('@neutrinojs/jest');
 const { join, resolve } = require('path');
 const fs = require('fs');
 const generateEnvJs = require('./generate-env-js');
@@ -94,6 +94,7 @@ module.exports = {
                   [require.resolve('@babel/plugin-proposal-class-properties'), { loose: false }],
                   [require.resolve('@babel/plugin-proposal-optional-chaining'), { loose: true }],
                   [require.resolve('@babel/plugin-proposal-nullish-coalescing-operator'), { loose: true }],
+                  [require.resolve('@babel/plugin-transform-modules-commonjs'), { loose: true }],
                 ]).filter(Boolean)
             }));
 
@@ -160,15 +161,24 @@ module.exports = {
         ],
       }));
     },
-    karma({
-      plugins: [
-        'karma-firefox-launcher',
+    jest({
+      testEnvironment: 'jsdom',
+      testRegex: null,
+      testMatch: [
+        '<rootDir>/src/**/*.test.(js|jsx)',
+        '<rootDir>/tests/unit/**/*.test.(ts)'
       ],
-      client: {
-        mocha: {
-          ui: 'tdd',
-        },
+      setupFilesAfterEnv: [
+        './jest.setup.js',
+      ],
+      moduleFileExtensions: ['js', 'jsx'],
+      transform: {
+        '^.+\\.(js|jsx)$': 'babel-jest',
+        '\\.graphql$': 'jest-transform-graphql',
       },
+      transformIgnorePatterns: [
+        "node_modules/(?!is-absolute-url|taskcluster-client-web)"
+      ],
     }),
   ],
 };

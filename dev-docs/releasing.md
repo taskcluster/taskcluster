@@ -19,4 +19,4 @@ These are defined in `infrastructure/tooling/src/release` and `../publish`, resp
 If you are modifying the publish code, it can be very difficult to effectively test things locally.
 To run a "staging release", run `yarn staging-release`.
 This will push a specially-named branch to the `taskcluster/staging-releases` repository, where CI will create a draft release containing all of the expected artifacts.
-The process will build docker images and client packges, but not push or upload them.
+The process will build docker images and client packages, but not push or upload them.
