@@ -49,7 +49,7 @@
     "error-stack-parser": "^2.0.6",
     "escape-string-regexp": "^5.0.0",
     "fast-memoize": "^2.5.1",
-    "graphql": "^15.0.0",
+    "graphql": "^15.8.0",
     "highlight.js": "^11.0.0",
     "hterm-umd": "^1.0.1",
     "is-absolute-url": "^4.0.1",
