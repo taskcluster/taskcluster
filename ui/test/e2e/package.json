@@ -1,13 +1,11 @@
 {
   "name": "e2e",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "44.5.0",
+  "description": "E2E tests for the UI",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cypress run"
   },
-  "author": "Yaraslau Kurmyza <lotask@gmail.com>",
-  "license": "ISC",
+  "license": "MPL-2.0",
   "dependencies": {
     "cypress": "^9.4.1"
   }
