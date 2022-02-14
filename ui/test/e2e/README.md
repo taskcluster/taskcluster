@@ -8,7 +8,6 @@ export CYPRESS_TASKCLUSTER_ACCESS_TOKEN=^access-token%
 export CYPRESS_TASKCLUSTER_CLIENT_ID=static/taskcluster/root
 ```
 
-To run it interactively: `yarn cypress open`
+To run it interactively: `yarn cypress open` or `yarn test:open`
 
-To run it with headless browser: `yarn cypress run`
-
+To run it with headless browser: `yarn cypress run` or `yarn test`

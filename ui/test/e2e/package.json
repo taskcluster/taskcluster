@@ -3,7 +3,8 @@
   "version": "44.5.0",
   "description": "E2E tests for the UI",
   "scripts": {
-    "test": "cypress run"
+    "test": "cypress run",
+    "test:open": "cypress open"
   },
   "license": "MPL-2.0",
   "dependencies": {
