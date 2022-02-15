@@ -28,7 +28,7 @@ else
   #
   # DO NOT CHANGE HERE!
   ####################################################################
-  curl -o target/go.tar.gz -L https://storage.googleapis.com/golang/go1.17.6.darwin-amd64.tar.gz
+  curl -o target/go.tar.gz -L https://storage.googleapis.com/golang/go1.17.7.darwin-amd64.tar.gz
 fi
 
 tar -C "${GO_DOWNLOAD_DIR}" -xf target/go.tar.gz
