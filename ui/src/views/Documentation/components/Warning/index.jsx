@@ -1,14 +1,13 @@
 import React from 'react';
 import { string } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { alpha, withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Markdown from '../../../../components/Markdown';
 
 const styles = withStyles(theme => ({
   root: {
     borderLeft: `5px solid ${theme.palette.warning.dark}`,
-    backgroundColor: fade(theme.palette.warning.main, 0.2),
+    backgroundColor: alpha(theme.palette.warning.main, 0.2),
     padding: `${theme.spacing(1)}px ${theme.spacing(3)}px`,
     margin: `${theme.spacing(3)}px 0`,
     '& a': {
