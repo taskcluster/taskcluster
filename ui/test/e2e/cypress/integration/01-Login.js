@@ -2,7 +2,7 @@
 describe('Taskcluster smoke test', () => {
   it('should login', () => {
     cy.visit(Cypress.env('TASKCLUSTER_ROOT_URL'))
-    cy.contains('Stage-TC')
+    cy.contains('Stage-TC') // TODO: shouldn't be hardcoded
 
     cy.login()
     cy.contains(Cypress.env('TASKCLUSTER_CLIENT_ID'))
