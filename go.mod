@@ -9,12 +9,12 @@ require (
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
 	github.com/deckarep/golang-set v1.7.1
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/elastic/go-sysinfo v1.7.1
 	github.com/fatih/camelcase v1.0.0
 	github.com/getsentry/raven-go v0.2.0
 	github.com/ghodss/yaml v1.0.0
+	github.com/golang-jwt/jwt/v4 v4.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/iancoleman/strcase v0.2.0
