@@ -25,4 +25,5 @@ jobs:
          {{ yarn --frozen-lockfile || exit 99; }}
       command: >-
          yarn lint &&
-         yarn test --coverage
+         yarn test --coverage &&
+         yarn build
