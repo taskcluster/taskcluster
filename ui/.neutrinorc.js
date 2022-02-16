@@ -100,6 +100,14 @@ module.exports = {
             }));
 
       neutrino.config.module
+        .rule('js-modules')
+        .test(/\.mjs?$/)
+        .type('javascript/auto')
+        .include
+          .add(/node_modules/)
+          .end();
+
+      neutrino.config.module
         .rule('graphql')
           .test(/\.graphql$/)
           .include
