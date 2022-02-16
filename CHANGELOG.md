@@ -3,6 +3,15 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.6.1
+
+### DEVELOPERS
+
+▶ [patch] [#5193](https://github.com/taskcluster/taskcluster/issues/5193)
+Fix webpack loader to properly handle `.mjs` modules.
+
+Include `yarn build` in testing pipeline to avoid inconsistent dependencies.
+
 ## v44.6.0
 
 ### GENERAL
