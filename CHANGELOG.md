@@ -3,6 +3,62 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.6.0
+
+### GENERAL
+
+▶ [minor] 
+Node.js major update from 14.17.15 to 16.13.2, the latest LTS version.
+
+Update the worker-ci image from Ubuntu 14.04 to 20.04, the current LTS version.
+This image is used in Taskcluster CI testing. This includes Python 3.8 (as
+python3), needed to build with node-gyp, and no longer includes Python 2.7.
+It also updates the Docker engine from 18.06.3 to 20.10.12.
+
+▶ [minor] 
+Node.js minor update from 16.13.2 to 16.14.0, the latest LTS version.
+
+▶ [minor] 
+This release updates the `docker-worker-websocket-client` and
+`docker-worker-websocket-server` libraries, used by `docker-worker` to execute
+commands inside a running container. These updates fix a bug when reading and
+writing data to the process in the container, which may have been broken since
+2015, and be a part of why VNC was broken
+(see [issue 3542](https://github.com/taskcluster/taskcluster/issues/3542#issuecomment-746934147)).
+This change required for Node v16, and may affect tasks that use this library like the
+[interactive feature](https://docs.taskcluster.net/docs/reference/workers/docker-worker/features#feature-interactive).
+
+▶ [patch] 
+Go patch update from 1.17.6 to 1.17.7.
+
+▶ [patch] 
+Replaced `github.com/dgrijalva/jwt-go` with `github.com/golang-jwt/jwt/v4` as suggested in the *high* dependabot vulnerability listed [here](https://github.com/taskcluster/taskcluster/security/dependabot/19).
+
+▶ [patch] [#4940](https://github.com/taskcluster/taskcluster/issues/4940)
+Sets the content type of the json returned by the `__heartbeat__` and `__lbheartbeat__` endpoints.
+
+### USERS
+
+▶ [patch] [#5153](https://github.com/taskcluster/taskcluster/issues/5153)
+Fixes https://github.com/taskcluster/taskcluster/issues/5153. CLI signin now properly redirects to a success page.
+
+### DEVELOPERS
+
+▶ [patch] 
+Replacing ui test runner from `karma` to `jest` to allow snapshot testing.
+
+### Automated Package Updates
+
+<details>
+<summary>4 Renovate updates</summary>
+
+* Update dependency error-stack-parser to v2.0.7 (a5e2e2848)
+* Update dependency cronstrue to v1.125.0 (180be8ada)
+* Update dependency memorystore to v1.6.7 (dbae29c2a)
+* Update dependency sinon to v13 (aebe0f51b)
+
+</details>
+
 ## v44.5.0
 
 ### GENERAL
