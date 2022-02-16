@@ -8,7 +8,7 @@ require (
 	github.com/Microsoft/go-winio v0.5.1
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
-	github.com/deckarep/golang-set v1.7.1
+	github.com/deckarep/golang-set v1.8.0
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/elastic/go-sysinfo v1.7.1
 	github.com/fatih/camelcase v1.0.0
