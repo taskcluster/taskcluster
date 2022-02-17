@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.7.1
+
+### GENERAL
+
+▶ [patch] 
+Remove unneeded nginx config, `tcp_nopush` as it's already set in the default config by nginx.
+
 ## v44.7.0
 
 ### GENERAL
