@@ -2034,10 +2034,10 @@ tar-stream@^2.0.0, tar-stream@^2.1.3, tar-stream@^2.1.4:
     inherits "^2.0.3"
     readable-stream "^3.1.1"
 
-taskcluster-client@^43.0.0:
-  version "43.2.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-43.2.0.tgz#2eb4ea3ed9fd69e56000698d5d3ca6f634714028"
-  integrity sha512-labG5ueMpQENdTHygv/JnPp+rDgXtOwRQ3g7xr7GNR2S3fM80wkZAGm4D3/RBgS5jdumxPzNMHR1DW+3JxJG1A==
+taskcluster-client@^44.6.1:
+  version "44.6.1"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-44.6.1.tgz#d1d2e9b6bcfe9e2a482685a95457593834a9c9bf"
+  integrity sha512-VqEJwl2DVBCIkJkMtJUIpqsXoSPyQx9NVDwMbNlgqP02XYBItV0wqIYLOjULHmZ3RiS03zroOWM+iKZAGvBphg==
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
@@ -2047,8 +2047,7 @@ taskcluster-client@^43.0.0:
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-lib-testing@link:../../libraries/testing":
-  version "0.0.0"
-  uid ""
+  version "44.7.0"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
