@@ -364,6 +364,8 @@ type (
 		//   * "rar"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.xz"
+		//   * "tar.zst"
 		//   * "zip"
 		Format string `json:"format"`
 	}
@@ -416,6 +418,8 @@ type (
 		//   * "rar"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.xz"
+		//   * "tar.zst"
 		//   * "zip"
 		Format string `json:"format,omitempty"`
 	}
@@ -580,6 +584,8 @@ func taskPayloadSchema() string {
             "rar",
             "tar.bz2",
             "tar.gz",
+            "tar.xz",
+            "tar.zst",
             "zip"
           ],
           "title": "Format",
@@ -626,6 +632,8 @@ func taskPayloadSchema() string {
             "rar",
             "tar.bz2",
             "tar.gz",
+            "tar.xz",
+            "tar.zst",
             "zip"
           ],
           "title": "Format",
