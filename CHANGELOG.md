@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.7.0
+
+### GENERAL
+
+▶ [patch] [#4983](https://github.com/taskcluster/taskcluster/issues/4983)
+Improved snapshot testing with react-testing-library (instead of Enzyme).
+Fixes UI menu for the task actions: correct icon for tasks named `^(rerun|retrigger)`.
+Improves ViewTask page: show all details without "Show more/show less".
+Shows artifacts by default, if there's less than 10 of them.
+
+▶ [patch] 
+Updated nginx user config location due to node LTS upgrade changing paths from `/etc/nginx/conf.d/default.conf` to `/etc/nginx/http.d/default.conf`.
+Also, added `__heartbeat__` config back to `nginx.conf` to continue to serve 200s until work in https://github.com/taskcluster/taskcluster/issues/4597 is complete.
+
+### USERS
+
+▶ [minor] [#3540](https://github.com/taskcluster/taskcluster/issues/3540)
+`generic-worker` tasks can now use `tar.xz` and `tar.zst` formatted mounts.
+
 ## v44.6.1
 
 ### DEVELOPERS
