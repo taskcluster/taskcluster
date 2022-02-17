@@ -6609,6 +6609,8 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.xz",
+                "tar.zst",
                 "zip"
               ],
               "title": "Format",
@@ -6655,6 +6657,8 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.xz",
+                "tar.zst",
                 "zip"
               ],
               "title": "Format",
@@ -6975,6 +6979,8 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.xz",
+                "tar.zst",
                 "zip"
               ],
               "title": "Format",
@@ -7021,6 +7027,8 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.xz",
+                "tar.zst",
                 "zip"
               ],
               "title": "Format",
@@ -7350,6 +7358,8 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.xz",
+                "tar.zst",
                 "zip"
               ],
               "title": "Format",
@@ -7396,6 +7406,8 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.xz",
+                "tar.zst",
                 "zip"
               ],
               "title": "Format",
@@ -7721,6 +7733,8 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.xz",
+                "tar.zst",
                 "zip"
               ],
               "title": "Format",
@@ -7767,6 +7781,8 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.xz",
+                "tar.zst",
                 "zip"
               ],
               "title": "Format",
