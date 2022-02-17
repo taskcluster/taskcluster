@@ -40,11 +40,6 @@ import Link from '../../utils/Link';
       paddingBottom: theme.spacing(2),
     },
   },
-  collapsedCard: {
-    '&:last-child': {
-      paddingBottom: theme.spacing(0),
-    },
-  },
   sourceHeadline: {
     textOverflow: 'ellipsis',
     overflowX: 'hidden',
@@ -128,15 +123,10 @@ export default class TaskDetailsCard extends Component {
 
   state = {
     showPayload: false,
-    showMore: false,
   };
 
   handleTogglePayload = () => {
     this.setState({ showPayload: !this.state.showPayload });
-  };
-
-  handleToggleMore = () => {
-    this.setState({ showMore: !this.state.showMore });
   };
 
   render() {
@@ -147,7 +137,7 @@ export default class TaskDetailsCard extends Component {
       dependents,
       onDependentsPageChange,
     } = this.props;
-    const { showPayload, showMore } = this.state;
+    const { showPayload } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
     const payload = deepSortObject(task.payload);
     const { provisionerId, workerType } = splitTaskQueueId(task.taskQueueId);
@@ -157,9 +147,7 @@ export default class TaskDetailsCard extends Component {
         <div>
           <CardContent
             classes={{
-              root: classNames(classes.cardContent, {
-                [classes.collapsedCard]: !showMore,
-              }),
+              root: classNames(classes.cardContent),
             }}>
             <Typography variant="h5" className={classes.headline}>
               Task Details
@@ -220,276 +208,245 @@ export default class TaskDetailsCard extends Component {
                   <ListItemText primary="Full Task Definition" />
                 </ListItem>
               </Link>
+
               <ListItem
                 button
                 className={classes.listItemButton}
-                onClick={this.handleToggleMore}>
+                component="a"
+                href={task.metadata.source}
+                target="_blank"
+                rel="noopener noreferrer">
                 <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography
-                      variant="subtitle1"
-                      align="center"
-                      color="textSecondary">
-                      {showMore ? 'See Less' : 'See More'}
-                    </Typography>
+                  className={classes.sourceHeadlineText}
+                  classes={{ secondary: classes.sourceHeadline }}
+                  primary="Source"
+                  secondary={task.metadata.source}
+                  title={task.metadata.source}
+                />
+                {isExternal ? <OpenInNewIcon /> : <LinkIcon />}
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Retries Left"
+                  secondary={`${task.status.retriesLeft} of ${task.retries}`}
+                />
+              </ListItem>
+              <CopyToClipboardListItem
+                tooltipTitle={task.deadline}
+                textToCopy={task.deadline}
+                primary="Deadline"
+                secondary={
+                  <DateDistance from={task.deadline} offset={task.created} />
+                }
+              />
+              <CopyToClipboardListItem
+                tooltipTitle={task.expires}
+                textToCopy={task.expires}
+                primary="Expires"
+                secondary={<DateDistance from={task.expires} />}
+              />
+              <ListItem>
+                <ListItemText
+                  primary="Priority"
+                  secondary={
+                    <Label mini status="info">
+                      {task.priority}
+                    </Label>
                   }
                 />
               </ListItem>
-            </List>
-            <Collapse in={showMore} timeout="auto">
-              <List>
-                <ListItem
-                  button
-                  className={classes.listItemButton}
-                  component="a"
-                  href={task.metadata.source}
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  <ListItemText
-                    className={classes.sourceHeadlineText}
-                    classes={{ secondary: classes.sourceHeadline }}
-                    primary="Source"
-                    secondary={task.metadata.source}
-                    title={task.metadata.source}
-                  />
-                  {isExternal ? <OpenInNewIcon /> : <LinkIcon />}
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Retries Left"
-                    secondary={`${task.status.retriesLeft} of ${task.retries}`}
-                  />
-                </ListItem>
-                <CopyToClipboardListItem
-                  tooltipTitle={task.deadline}
-                  textToCopy={task.deadline}
-                  primary="Deadline"
-                  secondary={
-                    <DateDistance from={task.deadline} offset={task.created} />
-                  }
-                />
-                <CopyToClipboardListItem
-                  tooltipTitle={task.expires}
-                  textToCopy={task.expires}
-                  primary="Expires"
-                  secondary={<DateDistance from={task.expires} />}
-                />
-                <ListItem>
-                  <ListItemText
-                    primary="Priority"
-                    secondary={
-                      <Label mini status="info">
-                        {task.priority}
-                      </Label>
-                    }
-                  />
-                </ListItem>
-                {dependentTasks && dependentTasks.length ? (
-                  <Fragment>
-                    <ListItem>
-                      <ListItemText
-                        primary="Dependencies"
-                        secondary={
-                          <Fragment>
-                            This task will be scheduled when
-                            <strong>
-                              <em> dependencies </em>
-                            </strong>
-                            are
-                            {task.requires === 'ALL_COMPLETED' ? (
-                              <Fragment>
-                                &nbsp;
-                                <code>all-completed</code> successfully.
-                              </Fragment>
-                            ) : (
-                              <Fragment>
-                                &nbsp;
-                                <code>all-resolved</code> with any resolution.
-                              </Fragment>
-                            )}
-                          </Fragment>
-                        }
-                      />
-                    </ListItem>
-                    <List disablePadding>
-                      {dependentTasks.map(task => (
-                        // note that the task might not exist, if it has
-                        // expired
-                        <Link key={task.taskId} to={`/tasks/${task.taskId}`}>
-                          <ListItem
-                            button
-                            className={classes.listItemButton}
-                            title="View Task">
-                            <StatusLabel
-                              state={task.status?.state || 'EXPIRED'}
-                            />
-                            <ListItemText
-                              primaryTypographyProps={{ variant: 'body2' }}
-                              className={classes.listItemText}
-                              primary={task.metadata?.name || task.taskId}
-                            />
-                            <LinkIcon />
-                          </ListItem>
-                        </Link>
-                      ))}
-                    </List>
-                  </Fragment>
-                ) : (
+              {dependentTasks && dependentTasks.length ? (
+                <Fragment>
                   <ListItem>
                     <ListItemText
                       primary="Dependencies"
-                      secondary={<em>n/a</em>}
+                      secondary={
+                        <Fragment>
+                          This task will be scheduled when
+                          <strong>
+                            <em> dependencies </em>
+                          </strong>
+                          are
+                          {task.requires === 'ALL_COMPLETED' ? (
+                            <Fragment>
+                              &nbsp;
+                              <code>all-completed</code> successfully.
+                            </Fragment>
+                          ) : (
+                            <Fragment>
+                              &nbsp;
+                              <code>all-resolved</code> with any resolution.
+                            </Fragment>
+                          )}
+                        </Fragment>
+                      }
                     />
                   </ListItem>
-                )}
-                {dependents && dependents.edges && dependents.edges.length ? (
-                  <Fragment>
-                    <ListItem>
-                      <ListItemText
-                        primary="Dependents"
-                        secondary="This task blocks the following tasks from being scheduled."
-                      />
-                    </ListItem>
-                    <ConnectionDataTable
-                      withoutTopPagination
-                      connection={dependents}
-                      pageSize={DEPENDENTS_PAGE_SIZE}
-                      sortByHeader={null}
-                      sortDirection="desc"
-                      onPageChange={onDependentsPageChange}
-                      renderRow={({
-                        node: {
-                          taskId,
-                          metadata: { name },
-                          status: { state },
-                        },
-                      }) => (
-                        <TableRow
-                          hover
-                          className={classNames(
-                            classes.listItemButton,
-                            classes.dependentsTableRow
-                          )}
-                          key={taskId}>
-                          <TableCell title="View Task">
-                            <Link
-                              className={classes.dependentsLink}
-                              to={`/tasks/${encodeURIComponent(taskId)}`}>
-                              <div
-                                className={
-                                  classes.dependentsStatusAndNameContainer
-                                }>
-                                <div>
-                                  <StatusLabel
-                                    className={classes.dependentsStatus}
-                                    state={state}
-                                  />
-                                </div>
-                                <div className={classes.dependentsName}>
-                                  <Typography variant="body2" noWrap>
-                                    {name}
-                                  </Typography>
-                                </div>
-                              </div>
-                              <div>
-                                <LinkIcon
-                                  className={classes.dependentsLinkIcon}
-                                />
-                              </div>
-                            </Link>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    />
-                  </Fragment>
-                ) : (
+                  <List disablePadding>
+                    {dependentTasks.map(task => (
+                      // note that the task might not exist, if it has
+                      // expired
+                      <Link key={task.taskId} to={`/tasks/${task.taskId}`}>
+                        <ListItem
+                          button
+                          className={classes.listItemButton}
+                          title="View Task">
+                          <StatusLabel
+                            state={task.status?.state || 'EXPIRED'}
+                          />
+                          <ListItemText
+                            primaryTypographyProps={{ variant: 'body2' }}
+                            className={classes.listItemText}
+                            primary={task.metadata?.name || task.taskId}
+                          />
+                          <LinkIcon />
+                        </ListItem>
+                      </Link>
+                    ))}
+                  </List>
+                </Fragment>
+              ) : (
+                <ListItem>
+                  <ListItemText
+                    primary="Dependencies"
+                    secondary={<em>n/a</em>}
+                  />
+                </ListItem>
+              )}
+              {dependents && dependents.edges && dependents.edges.length ? (
+                <Fragment>
                   <ListItem>
                     <ListItemText
                       primary="Dependents"
-                      secondary={<em>n/a</em>}
+                      secondary="This task blocks the following tasks from being scheduled."
                     />
                   </ListItem>
-                )}
-                <ListItem>
-                  <ListItemText
-                    primary="Project ID"
-                    secondary={task.projectId}
+                  <ConnectionDataTable
+                    withoutTopPagination
+                    connection={dependents}
+                    pageSize={DEPENDENTS_PAGE_SIZE}
+                    sortByHeader={null}
+                    sortDirection="desc"
+                    onPageChange={onDependentsPageChange}
+                    renderRow={({
+                      node: {
+                        taskId,
+                        metadata: { name },
+                        status: { state },
+                      },
+                    }) => (
+                      <TableRow
+                        hover
+                        className={classNames(
+                          classes.listItemButton,
+                          classes.dependentsTableRow
+                        )}
+                        key={taskId}>
+                        <TableCell title="View Task">
+                          <Link
+                            className={classes.dependentsLink}
+                            to={`/tasks/${encodeURIComponent(taskId)}`}>
+                            <div
+                              className={
+                                classes.dependentsStatusAndNameContainer
+                              }>
+                              <div>
+                                <StatusLabel
+                                  className={classes.dependentsStatus}
+                                  state={state}
+                                />
+                              </div>
+                              <div className={classes.dependentsName}>
+                                <Typography variant="body2" noWrap>
+                                  {name}
+                                </Typography>
+                              </div>
+                            </div>
+                            <div>
+                              <LinkIcon
+                                className={classes.dependentsLinkIcon}
+                              />
+                            </div>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   />
-                </ListItem>
+                </Fragment>
+              ) : (
                 <ListItem>
-                  <ListItemText
-                    primary="Scheduler ID"
-                    secondary={task.schedulerId}
-                  />
+                  <ListItemText primary="Dependents" secondary={<em>n/a</em>} />
                 </ListItem>
+              )}
+              <ListItem>
+                <ListItemText primary="Project ID" secondary={task.projectId} />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Scheduler ID"
+                  secondary={task.schedulerId}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  disableTypography
+                  primary={<Typography variant="subtitle1">Scopes</Typography>}
+                  secondary={
+                    task.scopes.length ? (
+                      <ul className={classes.unorderedList}>
+                        {task.scopes.map(scope => (
+                          <li key={scope}>
+                            <Typography
+                              variant="body2"
+                              component="span"
+                              color="textSecondary">
+                              {scope}
+                            </Typography>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <em>n/a</em>
+                    )
+                  }
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  disableTypography
+                  primary={<Typography variant="subtitle1">Routes</Typography>}
+                  secondary={
+                    task.routes.length ? (
+                      <ul className={classes.unorderedList}>
+                        {task.routes.map(route => (
+                          <li key={route}>
+                            <Typography
+                              variant="body2"
+                              component="span"
+                              color="textSecondary">
+                              {route}
+                            </Typography>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <em>n/a</em>
+                    )
+                  }
+                />
+              </ListItem>
+              {Object.keys(task.extra).length !== 0 && (
                 <ListItem>
                   <ListItemText
                     disableTypography
-                    primary={
-                      <Typography variant="subtitle1">Scopes</Typography>
-                    }
+                    primary={<Typography variant="subtitle1">Extra</Typography>}
                     secondary={
-                      task.scopes.length ? (
-                        <ul className={classes.unorderedList}>
-                          {task.scopes.map(scope => (
-                            <li key={scope}>
-                              <Typography
-                                variant="body2"
-                                component="span"
-                                color="textSecondary">
-                                {scope}
-                              </Typography>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <em>n/a</em>
-                      )
+                      <JsonDisplay syntax="json" objectContent={task.extra} />
                     }
                   />
                 </ListItem>
-                <ListItem>
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography variant="subtitle1">Routes</Typography>
-                    }
-                    secondary={
-                      task.routes.length ? (
-                        <ul className={classes.unorderedList}>
-                          {task.routes.map(route => (
-                            <li key={route}>
-                              <Typography
-                                variant="body2"
-                                component="span"
-                                color="textSecondary">
-                                {route}
-                              </Typography>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <em>n/a</em>
-                      )
-                    }
-                  />
-                </ListItem>
-                {Object.keys(task.extra).length !== 0 && (
-                  <ListItem>
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Typography variant="subtitle1">Extra</Typography>
-                      }
-                      secondary={
-                        <JsonDisplay syntax="json" objectContent={task.extra} />
-                      }
-                    />
-                  </ListItem>
-                )}
-              </List>
-            </Collapse>
+              )}
+            </List>
           </CardContent>
         </div>
       </Card>

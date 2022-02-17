@@ -3,7 +3,7 @@ import ReactGA from 'react-ga';
 import MuiButton from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';
 import Tooltip from '@material-ui/core/Tooltip';
-import { object, node, bool, oneOf } from 'prop-types';
+import { object, node, bool, oneOf, string } from 'prop-types';
 import { withAuth } from '../../utils/Auth';
 import { gaEvent } from '../../utils/prop-types';
 
@@ -49,7 +49,7 @@ export default class Button extends Component {
      * be able to show tooltips on disabled buttons.
      * */
     spanProps: object,
-    id: String,
+    id: string,
   };
 
   handleButtonClick = e => {

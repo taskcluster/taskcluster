@@ -39,7 +39,7 @@ Set up an IP for your deployment:
    You can find the assigned IP in `gcloud compute addresses list`, and put it into DNS as an A record.
 1. Create a certificate: `certbot certonly --manual --preferred-challenges dns`.  This will ask you to add a TXT record to the DNS.
    Note that certbot is installed with `brew install letsencrypt` on macOS.
-1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <path-to-fullchain.pem> --private-key <path-to-key>`. When the time comes to renew the certificate, simply increment the name (e.g., <yourname>-ingress-1). 
+1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <path-to-fullchain.pem> --private-key <path-to-key>`. When the time comes to renew the certificate, simply increment the name (e.g., <yourname>-ingress-1).
 
 ### Minikube
 
@@ -77,6 +77,23 @@ Example configuration with SSL on the reverse proxy:
    SSLProxyCheckPeerCN off # Required when not using a trusted SSL cert (when not changing the ingress SSL cert)
    AllowEncodedSlashes on
 </VirtualHost>
+```
+
+### Deploying custom images to dev cluster
+
+In order to build experimental build that is not based on official `taskcluster/taskcluster` docker images, you can start with building your image locally.
+(Note: keep in mind what architecture is being used on the cluster)
+
+```sh
+# build and push custom image
+docker builder build --tag username/taskcluster-dev:${VERSION} --platform linux/amd64 .
+docker push username/taskcluster-dev:${VERSION}
+
+# Update value in dev-config.yml
+# dockerImage: username/taskcluster-dev:${VERSION}
+
+# run deployment
+yarn dev:apply
 ```
 
 #### Troubleshooting:
@@ -179,9 +196,9 @@ You will need:
 2. A github app created and installed for a testing repository.
 
 To set up a taskcluster-github app:
-0. In the settings of the github app that you created, at the very bottom of the General tab, you will find Generate Private Key button. 
+0. In the settings of the github app that you created, at the very bottom of the General tab, you will find Generate Private Key button.
 Press it to generate the private key.
-1. In your `dev-config.yml`, in the `github` section, add `github_private_pem` - you can copy-paste the contents of the 
+1. In your `dev-config.yml`, in the `github` section, add `github_private_pem` - you can copy-paste the contents of the
 PEM file you have obtained in the previous step. Be careful to remove any newlines from the encrypted part,
 and the necessary newlines after the header and before the footer should be replaced with `\n`, so the whole thing is a one-line string
 like this: `-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEblahblahblah==\n-----END RSA PRIVATE KEY-----`

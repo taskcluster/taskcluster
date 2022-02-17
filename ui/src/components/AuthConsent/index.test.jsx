@@ -1,10 +1,12 @@
 import React from 'react';
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import AuthConsent from './index';
 
+jest.useFakeTimers('modern').setSystemTime(new Date('2022-02-20').getTime());
+
 it('should render AuthConsent page', () => {
-  const cmp = shallow(
+  const { asFragment } = render(
     <MemoryRouter keyLength={0}>
       <AuthConsent
         transactionID="transactionID"
@@ -14,7 +16,7 @@ it('should render AuthConsent page', () => {
         onInputChange={jest.fn()}
         onScopesChange={jest.fn()}
         formData={{
-          expires: new Date('2022-02-02T12:00:00.000Z'),
+          expires: new Date('2022-02-02'),
           description: 'description',
           scopes: ['scopes'],
         }}
@@ -22,7 +24,5 @@ it('should render AuthConsent page', () => {
     </MemoryRouter>
   );
 
-  expect(cmp).toBeDefined();
-  expect(cmp.html()).toContain('input');
-  expect(cmp).toMatchSnapshot();
+  expect(asFragment()).toMatchSnapshot();
 });
