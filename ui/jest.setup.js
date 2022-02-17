@@ -1,12 +1,5 @@
-import 'jest-enzyme'
-
 import React from "react"
 React.useLayoutEffect = React.useEffect
-
-import { configure } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
-
-configure({ adapter: new Adapter() });
 
 const nodeCrypto = require('crypto');
 // required for slugid test
@@ -15,3 +8,7 @@ window.crypto = {
     return nodeCrypto.randomFillSync(buffer);
   }
 };
+
+window.env = Object.assign({}, window.env, {
+  TASKCLUSTER_ROOT_URL: 'https://taskcluster.net',
+});

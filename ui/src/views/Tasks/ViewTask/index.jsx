@@ -745,21 +745,17 @@ export default class ViewTask extends Component {
   };
 
   renderActionIcon = action => {
-    switch (action.name) {
-      case 'retrigger': {
-        return <RestartIcon />;
-      }
+    if (/^(rerun|retrigger)/.test(action.name)) {
+      return <RestartIcon />;
+    }
 
+    switch (action.name) {
       case 'create-interactive': {
         return <ConsoleLineIcon />;
       }
 
       case 'cancel': {
         return <CloseIcon />;
-      }
-
-      case 'rerun': {
-        return <RestartIcon />;
       }
 
       case 'purge-caches': {
