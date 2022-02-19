@@ -157,6 +157,24 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
   return statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
 }
 
+/***
+ Helper function that returns all checks on the latest ref of a repository
+ branch created by taskcluster's bot.
+***/
+async function findTCChecks(github, owner, repo, branch, configuration) {
+  let checks;
+
+  try {
+    checks = (await github.checks.listForRef({ owner, repo, ref: branch })).data.check_runs;
+  } catch (e) {
+    if (e.code === 404) {
+      return [];
+    }
+    throw e;
+  }
+  return checks.filter(checkObject => checkObject.app.id === configuration.github.credentials.appId);
+}
+
 /** API end-point for version v1/
  */
 let builder = new APIBuilder({
@@ -391,11 +409,43 @@ builder.declare({
 
   if (instGithub) {
     try {
-      let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
+      let state;
 
+      let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
       if (status) {
+        state = status.state;
+      }
+
+      let checks = await findTCChecks(instGithub, owner, repo, branch, this.cfg);
+      let hasAnyPendingCheck = false;
+
+      for (const check of checks) {
+        // If any check failed, mark the whole status as failed
+        if (check.conclusion === 'failure') {
+          state = 'failure';
+          break;
+        }
+
+        // If there's any check pending, set the state to pending after looping unless there was a failure
+        if (check.conclusion === 'pending') {
+          hasAnyPendingCheck = true;
+          continue;
+        }
+
+        // If the current state is success or pending and a check was successful, mark state as success.
+        // This might get reset after the loop if we find any other pending check.
+        if (state !== 'failure' && check.conclusion === 'success') {
+          state = 'success';
+        }
+      }
+
+      if (hasAnyPendingCheck && state !== 'failure') {
+        state = 'pending';
+      }
+
+      if (state) {
         // If we got a status, send a corresponding image.
-        return res.sendFile(status.state + '.svg', fileConfig);
+        return res.sendFile(state + '.svg', fileConfig);
       } else {
         // otherwise, it's a commit without a TC status, which probably means a new repo
         return res.sendFile('newrepo.svg', fileConfig);
