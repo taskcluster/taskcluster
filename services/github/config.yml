@@ -65,6 +65,10 @@ test:
     initialStatusQueue: 'checks-tasks'
     statusContext: 'Taskcluster-Test'
 
+  github:
+    credentials:
+      appId: 66666
+
   webhook:
     secret: ['abc123', 'def456']
 

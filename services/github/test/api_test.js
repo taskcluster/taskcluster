@@ -84,7 +84,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   setup(async function() {
     github = await helper.load('github');
-    github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo', 'nonTCGHRepo');
+    github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo', 'nonTCGHRepo', 'checksRepo');
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'coolRepo',
@@ -113,6 +113,70 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       info: { errorStatus: 499 },
     });
     github.inst(9090).setUser({ id: 55555, email: 'noreply@github.com', username: 'magicalTCspirit[bot]' });
+    github.inst(9090).setChecks({
+      owner: 'abc123',
+      repo: 'checksRepo',
+      ref: 'success',
+      info: [
+        { name: "check1", conclusion: 'success', app: { id: 66666 } },
+        { name: "check2", conclusion: 'success', app: { id: 66666 } },
+        { name: "check3", conclusion: 'failure', app: { id: 12345 } },
+      ],
+    });
+    github.inst(9090).setChecks({
+      owner: 'abc123',
+      repo: 'checksRepo',
+      ref: 'failure',
+      info: [
+        { name: "check1", conclusion: 'success', app: { id: 66666 } },
+        { name: "check2", conclusion: 'failure', app: { id: 66666 } },
+      ],
+    });
+    github.inst(9090).setChecks({
+      owner: 'abc123',
+      repo: 'checksRepo',
+      ref: 'pending',
+      info: [
+        { name: "check1", conclusion: 'success', app: { id: 66666 } },
+        { name: "check2", conclusion: 'pending', app: { id: 66666 } },
+        { name: "check3", conclusion: 'failure', app: { id: 12345 } },
+      ],
+    });
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'checksRepo',
+      ref: 'combined',
+      info: [
+        { creator: { id: 12345 }, state: 'success' },
+        { creator: { id: 55555 }, state: 'success', target_url: 'Wonderland' },
+      ],
+    });
+    github.inst(9090).setChecks({
+      owner: 'abc123',
+      repo: 'checksRepo',
+      ref: 'combined',
+      info: [
+        { name: "check1", conclusion: 'success', app: { id: 66666 } },
+        { name: "check2", conclusion: 'failure', app: { id: 66666 } },
+      ],
+    });
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'checksRepo',
+      ref: 'combined2',
+      info: [
+        { creator: { id: 12345 }, state: 'success' },
+        { creator: { id: 55555 }, state: 'failure', target_url: 'Wonderland' },
+      ],
+    });
+    github.inst(9090).setChecks({
+      owner: 'abc123',
+      repo: 'checksRepo',
+      ref: 'combined2',
+      info: [
+        { name: "check1", conclusion: 'success', app: { id: 66666 } },
+      ],
+    });
   });
 
   test('all builds', async function() {
@@ -198,10 +262,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
+  test('build badges - status:failure (checks API)', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'failure'));
+      assert.equal(res.headers['content-length'], 8615);
+    });
+  });
+
+  test('build badges - status:failure (combined status and checks)', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'combined'));
+      assert.equal(res.headers['content-length'], 8615);
+    });
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'combined2'));
+      assert.equal(res.headers['content-length'], 8615);
+    });
+  });
+
   test('build badges - status: success', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'awesomeRepo', 'master'));
       assert.equal(res.headers['content-length'], 9189);
+    });
+  });
+
+  test('build badges - status: success (checks API)', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'success'));
+      assert.equal(res.headers['content-length'], 9189);
+    });
+  });
+
+  test('build badges - status: pending (checks API)', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'pending'));
+      assert.equal(res.headers['content-length'], 11435);
     });
   });
 
