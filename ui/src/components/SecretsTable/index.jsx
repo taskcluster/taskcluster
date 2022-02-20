@@ -40,6 +40,9 @@ const iconSize = 16;
   secretIdContainer: {
     flexGrow: 1,
   },
+  nameLink: {
+    display: 'flex',
+  },
 }))
 /**
  * Display secrets in a table.
@@ -144,7 +147,9 @@ export default class SecretsTable extends Component {
               <TableCellItem dense button>
                 <Box className={classes.secretContainer}>
                   <Box className={classes.secretIdContainer}>
-                    <Link to={`/secrets/${encodeURIComponent(name)}`}>
+                    <Link
+                      className={classes.nameLink}
+                      to={`/secrets/${encodeURIComponent(name)}`}>
                       {name}
                     </Link>
                   </Box>
