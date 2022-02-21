@@ -3,6 +3,8 @@ import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import TaskDetailsCard from './index';
 
+jest.useFakeTimers('modern').setSystemTime(new Date('2022-02-17').getTime());
+
 it('should render TaskDetailsCard', () => {
   const { asFragment } = render(
     <MemoryRouter keyLength={0}>
