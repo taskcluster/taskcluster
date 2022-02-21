@@ -3,8 +3,6 @@ import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import AuthConsent from './index';
 
-jest.useFakeTimers('modern').setSystemTime(new Date('2022-02-20').getTime());
-
 it('should render AuthConsent page', () => {
   const { asFragment } = render(
     <MemoryRouter keyLength={0}>
