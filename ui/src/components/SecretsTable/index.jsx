@@ -140,6 +140,10 @@ export default class SecretsTable extends Component {
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
+        allowFilter
+        filterFunc={({ node: { name } }, filterValue) =>
+          String(name).includes(filterValue)
+        }
         headers={['Secret ID']}
         renderRow={({ node: { name } }) => (
           <TableRow key={name}>

@@ -61,9 +61,11 @@ module.exports = {
         proxy: {
           '/login': {
             target: 'http://localhost:3050',
+            changeOrigin: true,
           },
           '/graphql': {
             target: 'http://localhost:3050',
+            changeOrigin: true,
           },
           '/subscription': {
             ws: true,
