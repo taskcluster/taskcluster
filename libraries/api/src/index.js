@@ -6,9 +6,13 @@ const ScopeExpressionTemplate = require('./expressions');
 const API = require('./api');
 const { paginateResults } = require('./pagination');
 const { reportError } = require('./error-reply');
+const path = require('path');
+const fs = require('fs');
 
 exports.paginateResults = paginateResults;
 exports.reportError = reportError;
+
+const REPO_ROOT = path.join(__dirname, '../../../');
 
 /**
  * A ping method, added automatically to every service
@@ -29,6 +33,53 @@ const ping = {
       alive: true,
       uptime: process.uptime(),
     });
+  },
+};
+
+/**
+ * A load balancer heartbeat method, added automatically to every service
+ * Following Dockerflow standards https://github.com/mozilla-services/Dockerflow/#containerized-app-requirements
+ * Can likely remove the /ping endpoint but I left for backwards compatibility
+ */
+const lbHeartbeat = {
+  method: 'get',
+  route: '/__lbheartbeat__',
+  name: 'lbheartbeat',
+  stability: 'stable',
+  title: 'Load Balancer Heartbeat',
+  category: 'Load Balancer Heartbeat',
+  description: [
+    'Respond without doing anything.',
+    'This endpoint is used to check that the service is up.',
+  ].join('\n'),
+  handler: function(_req, res) {
+    res.status(200).json({});
+  },
+};
+
+/**
+ * A version method, added automatically to every service
+ * Following Dockerflow standards https://github.com/mozilla-services/Dockerflow/#containerized-app-requirements
+ */
+const version = {
+  method: 'get',
+  route: '/__version__',
+  name: 'version',
+  stability: 'stable',
+  title: 'Taskcluster Version',
+  category: 'Taskcluster Version',
+  description: [
+    'Respond with the JSON version object.',
+    'https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md',
+  ].join('\n'),
+  handler: function(_req, res) {
+    try {
+      const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
+      const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
+      res.json(taskclusterVersion);
+    } catch (err) {
+      res.status(500).json({ error: 'Not found' });
+    }
   },
 };
 
@@ -62,7 +113,7 @@ class APIBuilder {
     this.params = options.params;
     this.context = options.context;
     this.errorCodes = options.errorCodes;
-    this.entries = [ping];
+    this.entries = [ping, lbHeartbeat, version];
     this.hasSchemas = false;
   }
 
