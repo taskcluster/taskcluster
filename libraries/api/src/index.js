@@ -7,12 +7,14 @@ const API = require('./api');
 const { paginateResults } = require('./pagination');
 const { reportError } = require('./error-reply');
 const path = require('path');
-const fs = require('fs');
 
 exports.paginateResults = paginateResults;
 exports.reportError = reportError;
 
 const REPO_ROOT = path.join(__dirname, '../../../');
+
+const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
+const taskclusterVersion = require(taskclusterVersionFile);
 
 /**
  * A ping method, added automatically to every service
@@ -53,7 +55,7 @@ const lbHeartbeat = {
     'This endpoint is used to check that the service is up.',
   ].join('\n'),
   handler: function(_req, res) {
-    res.status(200).json({});
+    res.json({});
   },
 };
 
@@ -73,13 +75,7 @@ const version = {
     'https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md',
   ].join('\n'),
   handler: function(_req, res) {
-    try {
-      const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
-      const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
-      res.json(taskclusterVersion);
-    } catch (err) {
-      res.status(500).json({ error: 'Not found' });
-    }
+    res.json(taskclusterVersion);
   },
 };
 
