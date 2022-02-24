@@ -8,3 +8,5 @@ repos:
     -   id: trailing-whitespace
         # Makes sure files end in a newline and only a newline
     -   id: end-of-file-fixer
+        # Check for files that contain merge conflict strings
+    -   id: check-merge-conflict
