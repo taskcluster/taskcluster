@@ -39,6 +39,30 @@ class Index(BaseClient):
 
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
+    def lbheartbeat(self, *args, **kwargs):
+        """
+        Load Balancer Heartbeat
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["lbheartbeat"], *args, **kwargs)
+
+    def version(self, *args, **kwargs):
+        """
+        Taskcluster Version
+
+        Respond with the JSON version object.
+        https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["version"], *args, **kwargs)
+
     def findTask(self, *args, **kwargs):
         """
         Find Indexed Task
@@ -173,6 +197,13 @@ class Index(BaseClient):
             'route': '/task/<namespace>',
             'stability': 'stable',
         },
+        "lbheartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'lbheartbeat',
+            'route': '/__lbheartbeat__',
+            'stability': 'stable',
+        },
         "listNamespaces": {
             'args': ['namespace'],
             'method': 'get',
@@ -196,6 +227,13 @@ class Index(BaseClient):
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
+            'stability': 'stable',
+        },
+        "version": {
+            'args': [],
+            'method': 'get',
+            'name': 'version',
+            'route': '/__version__',
             'stability': 'stable',
         },
     }

@@ -144,6 +144,26 @@ func (queue *Queue) Ping() error {
 	return err
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See #lbheartbeat
+func (queue *Queue) Lbheartbeat() error {
+	cd := tcclient.Client(*queue)
+	_, _, err := (&cd).APICall(nil, "GET", "/__lbheartbeat__", nil, nil)
+	return err
+}
+
+// Respond with the JSON version object.
+// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+//
+// See #version
+func (queue *Queue) Version() error {
+	cd := tcclient.Client(*queue)
+	_, _, err := (&cd).APICall(nil, "GET", "/__version__", nil, nil)
+	return err
+}
+
 // This end-point will return the task-definition. Notice that the task
 // definition may have been modified by queue, if an optional property is
 // not specified the queue may provide a default value.

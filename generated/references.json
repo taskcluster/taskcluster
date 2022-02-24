@@ -12656,6 +12656,34 @@
         {
           "args": [
           ],
+          "category": "Load Balancer Heartbeat",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Taskcluster Version",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "category": "Providers",
           "description": "Retrieve a list of providers that are available for worker pools.",
           "method": "get",
@@ -13420,6 +13448,34 @@
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Load Balancer Heartbeat",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Taskcluster Version",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
           "type": "function"
         },
         {
@@ -14407,6 +14463,34 @@
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Load Balancer Heartbeat",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Taskcluster Version",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
           "type": "function"
         },
         {
@@ -15438,6 +15522,34 @@
         },
         {
           "args": [
+          ],
+          "category": "Load Balancer Heartbeat",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Taskcluster Version",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "category": "Purge-Cache Service",
@@ -15703,6 +15815,34 @@
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Load Balancer Heartbeat",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Taskcluster Version",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
           "type": "function"
         },
         {
@@ -16145,6 +16285,34 @@
         {
           "args": [
           ],
+          "category": "Load Balancer Heartbeat",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Taskcluster Version",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "category": "Notifications",
           "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email",
           "input": "v1/email-request.json#",
@@ -16538,6 +16706,34 @@
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Load Balancer Heartbeat",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Taskcluster Version",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
           "type": "function"
         },
         {
@@ -16968,6 +17164,34 @@
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Load Balancer Heartbeat",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Taskcluster Version",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
           "type": "function"
         },
         {
@@ -17613,6 +17837,34 @@
         {
           "args": [
           ],
+          "category": "Load Balancer Heartbeat",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Taskcluster Version",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "category": "Github Service",
           "description": "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease or pull request.",
           "method": "post",
@@ -18234,6 +18486,34 @@
           "route": "/ping",
           "stability": "stable",
           "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Load Balancer Heartbeat",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Taskcluster Version",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
           "type": "function"
         },
         {

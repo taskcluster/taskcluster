@@ -107,6 +107,26 @@ func (github *Github) Ping() error {
 	return err
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See #lbheartbeat
+func (github *Github) Lbheartbeat() error {
+	cd := tcclient.Client(*github)
+	_, _, err := (&cd).APICall(nil, "GET", "/__lbheartbeat__", nil, nil)
+	return err
+}
+
+// Respond with the JSON version object.
+// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+//
+// See #version
+func (github *Github) Version() error {
+	cd := tcclient.Client(*github)
+	_, _, err := (&cd).APICall(nil, "GET", "/__version__", nil, nil)
+	return err
+}
+
 // Capture a GitHub event and publish it via pulse, if it's a push,
 // release or pull request.
 //

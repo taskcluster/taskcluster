@@ -11,6 +11,8 @@ export default class Object extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Load Balancer Heartbeat","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Taskcluster Version","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.createUpload.entry = {"args":["name"],"category":"Upload","input":true,"method":"put","name":"createUpload","output":true,"query":[],"route":"/upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"stable","type":"function"}; // eslint-disable-line
     this.finishUpload.entry = {"args":["name"],"category":"Upload","input":true,"method":"post","name":"finishUpload","query":[],"route":"/finish-upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"stable","type":"function"}; // eslint-disable-line
     this.startDownload.entry = {"args":["name"],"category":"Download","input":true,"method":"put","name":"startDownload","output":true,"query":[],"route":"/start-download/<name>","scopes":"object:download:<name>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -25,6 +27,24 @@ export default class Object extends Client {
     this.validate(this.ping.entry, args);
 
     return this.request(this.ping.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  lbheartbeat(...args) {
+    this.validate(this.lbheartbeat.entry, args);
+
+    return this.request(this.lbheartbeat.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with the JSON version object.
+  // https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+  /* eslint-enable max-len */
+  version(...args) {
+    this.validate(this.version.entry, args);
+
+    return this.request(this.version.entry, args);
   }
   /* eslint-disable max-len */
   // Create a new object by initiating upload of its data.

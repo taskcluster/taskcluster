@@ -11,6 +11,8 @@ export default class Notify extends Client {
       ...options,
     });
     this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Load Balancer Heartbeat","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Taskcluster Version","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.email.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"email","query":[],"route":"/email","scopes":"notify:email:<address>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.pulse.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"pulse","query":[],"route":"/pulse","scopes":"notify:pulse:<routingKey>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.matrix.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"matrix","query":[],"route":"/matrix","scopes":"notify:matrix-room:<roomId>","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -27,6 +29,24 @@ export default class Notify extends Client {
     this.validate(this.ping.entry, args);
 
     return this.request(this.ping.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  lbheartbeat(...args) {
+    this.validate(this.lbheartbeat.entry, args);
+
+    return this.request(this.lbheartbeat.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with the JSON version object.
+  // https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+  /* eslint-enable max-len */
+  version(...args) {
+    this.validate(this.version.entry, args);
+
+    return this.request(this.version.entry, args);
   }
   /* eslint-disable max-len */
   // Send an email to `address`. The content is markdown and will be rendered

@@ -106,6 +106,26 @@ func (secrets *Secrets) Ping() error {
 	return err
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See #lbheartbeat
+func (secrets *Secrets) Lbheartbeat() error {
+	cd := tcclient.Client(*secrets)
+	_, _, err := (&cd).APICall(nil, "GET", "/__lbheartbeat__", nil, nil)
+	return err
+}
+
+// Respond with the JSON version object.
+// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+//
+// See #version
+func (secrets *Secrets) Version() error {
+	cd := tcclient.Client(*secrets)
+	_, _, err := (&cd).APICall(nil, "GET", "/__version__", nil, nil)
+	return err
+}
+
 // Set the secret associated with some key.  If the secret already exists, it is
 // updated instead.
 //

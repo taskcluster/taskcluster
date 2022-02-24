@@ -34,6 +34,30 @@ class Hooks(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
+    async def lbheartbeat(self, *args, **kwargs):
+        """
+        Load Balancer Heartbeat
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["lbheartbeat"], *args, **kwargs)
+
+    async def version(self, *args, **kwargs):
+        """
+        Taskcluster Version
+
+        Respond with the JSON version object.
+        https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["version"], *args, **kwargs)
+
     async def listHookGroups(self, *args, **kwargs):
         """
         List hook groups
@@ -221,6 +245,13 @@ class Hooks(AsyncBaseClient):
             'route': '/hooks/<hookGroupId>/<hookId>',
             'stability': 'stable',
         },
+        "lbheartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'lbheartbeat',
+            'route': '/__lbheartbeat__',
+            'stability': 'stable',
+        },
         "listHookGroups": {
             'args': [],
             'method': 'get',
@@ -292,6 +323,13 @@ class Hooks(AsyncBaseClient):
             'name': 'updateHook',
             'output': 'v1/hook-definition.json#',
             'route': '/hooks/<hookGroupId>/<hookId>',
+            'stability': 'stable',
+        },
+        "version": {
+            'args': [],
+            'method': 'get',
+            'name': 'version',
+            'route': '/__version__',
             'stability': 'stable',
         },
     }
