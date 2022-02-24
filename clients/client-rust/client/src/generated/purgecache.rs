@@ -32,7 +32,7 @@ impl PurgeCache {
     }
 
     /// Ping Server
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn ping(&self) -> Result<(), Error> {
@@ -131,10 +131,10 @@ impl PurgeCache {
     }
 
     /// Purge Worker Cache
-    /// 
+    ///
     /// Publish a request to purge caches named `cacheName` with
     /// on `workerPoolId` workers.
-    /// 
+    ///
     /// If such a request already exists, its `before` timestamp is updated to
     /// the current time.
     pub async fn purgeCache(&self, workerPoolId: &str, payload: &Value) -> Result<(), Error> {
@@ -155,9 +155,9 @@ impl PurgeCache {
     }
 
     /// All Open Purge Requests
-    /// 
+    ///
     /// View all active purge requests.
-    /// 
+    ///
     /// This is useful mostly for administors to view
     /// the set of open purge requests. It should not
     /// be used by workers. They should use the purgeRequests
@@ -198,10 +198,10 @@ impl PurgeCache {
     }
 
     /// Open Purge Requests for a worker pool
-    /// 
+    ///
     /// List the caches for this `workerPoolId` that should to be
     /// purged if they are from before the time given in the response.
-    /// 
+    ///
     /// This is intended to be used by workers to determine which caches to purge.
     pub async fn purgeRequests(&self, workerPoolId: &str, since: Option<&str>) -> Result<Value, Error> {
         let method = "GET";

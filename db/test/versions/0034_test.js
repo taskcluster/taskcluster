@@ -25,7 +25,7 @@ suite(testing.suiteName(), function() {
   const mkContainer = async (properties) => {
     return await helper.withDbClient(async client => {
       const t = await client.query(`
-          select entity_to_crypto_container_v0($1, 'val') as container 
+          select entity_to_crypto_container_v0($1, 'val') as container
         `, [properties]);
 
       return t.rows[0].container;

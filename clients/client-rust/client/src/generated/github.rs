@@ -35,7 +35,7 @@ impl Github {
     }
 
     /// Ping Server
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn ping(&self) -> Result<(), Error> {
@@ -134,7 +134,7 @@ impl Github {
     }
 
     /// Consume GitHub WebHook
-    /// 
+    ///
     /// Capture a GitHub event and publish it via pulse, if it's a push,
     /// release or pull request.
     pub async fn githubWebHookConsumer(&self) -> Result<(), Error> {
@@ -155,7 +155,7 @@ impl Github {
     }
 
     /// List of Builds
-    /// 
+    ///
     /// A paginated list of builds that have been run in
     /// Taskcluster. Can be filtered on various git-specific
     /// fields.
@@ -203,7 +203,7 @@ impl Github {
     }
 
     /// Latest Build Status Badge
-    /// 
+    ///
     /// Checks the status of the latest build of a given branch
     /// and returns corresponding badge svg.
     pub async fn badge(&self, owner: &str, repo: &str, branch: &str) -> Result<(), Error> {
@@ -236,7 +236,7 @@ impl Github {
     }
 
     /// Get Repository Info
-    /// 
+    ///
     /// Returns any repository metadata that is
     /// useful within Taskcluster related services.
     pub async fn repository(&self, owner: &str, repo: &str) -> Result<Value, Error> {
@@ -268,11 +268,11 @@ impl Github {
     }
 
     /// Latest Status for Branch
-    /// 
+    ///
     /// For a given branch of a repository, this will always point
     /// to a status page for the most recent task triggered by that
     /// branch.
-    /// 
+    ///
     /// Note: This is a redirect rather than a direct link.
     pub async fn latest(&self, owner: &str, repo: &str, branch: &str) -> Result<(), Error> {
         let method = "GET";
@@ -304,10 +304,10 @@ impl Github {
     }
 
     /// Post a status against a given changeset
-    /// 
+    ///
     /// For a given changeset (SHA) of a repository, this will attach a "commit status"
     /// on github. These statuses are links displayed next to each revision.
-    /// The status is either OK (green check) or FAILURE (red cross), 
+    /// The status is either OK (green check) or FAILURE (red cross),
     /// made of a custom title and link.
     pub async fn createStatus(&self, owner: &str, repo: &str, sha: &str, payload: &Value) -> Result<(), Error> {
         let method = "POST";
@@ -327,7 +327,7 @@ impl Github {
     }
 
     /// Post a comment on a given GitHub Issue or Pull Request
-    /// 
+    ///
     /// For a given Issue or Pull Request of a repository, this will write a new message.
     pub async fn createComment(&self, owner: &str, repo: &str, number: &str, payload: &Value) -> Result<(), Error> {
         let method = "POST";

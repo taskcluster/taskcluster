@@ -236,7 +236,7 @@ methods:
       end
   get_github_builds:
     description: |-
-      Get github builds. 
+      Get github builds.
     mode: read
     serviceName: github
     args: page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text

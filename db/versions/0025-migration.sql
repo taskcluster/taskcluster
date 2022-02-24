@@ -19,7 +19,7 @@ begin
   raise log 'TIMING start roles create table .. as select';
   create table roles
   as
-    select 
+    select
       (expanded.role ->> 'roleId') as role_id,
       (expanded.role ->> 'scopes')::jsonb as scopes,
       (expanded.role ->> 'created')::timestamptz as created,
@@ -54,4 +54,3 @@ begin
 
   grant select, insert, update, delete on roles to $db_user_prefix$_auth;
 end
-

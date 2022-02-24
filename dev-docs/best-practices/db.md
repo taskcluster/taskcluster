@@ -1,4 +1,4 @@
-# DB 
+# DB
 
 The Taskcluster DB is implemented in the `db/` directory of this repository.
 When we have a good reason to not follow the best practices in the db, we document why.
@@ -56,7 +56,7 @@ taskcluster-lib-postgres uses to store binary values.
 string and a slugid.  While some entities tables stored slugIds in UUID format,
 we prefer to store them in their 22-character string format in new tables.
 
-## Redefining DB Functions 
+## Redefining DB Functions
 
 To redefine a DB function, append `_{2, N}` to the method. For example, redefining `get_widgets` will involve creating
 `get_widgets_2`. Note that sometimes it's ok to rename the function instead of appending `_{2, N}`.

@@ -466,7 +466,7 @@ class Database {
         if (res.rows.length > 0) {
           const res = await client.query(`
             SELECT datcollate AS collation
-            FROM pg_database 
+            FROM pg_database
             WHERE datname = current_database()`);
           const collation = res.rows[0].collation;
           throw new Error([

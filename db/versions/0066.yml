@@ -44,7 +44,7 @@ methods:
           queue_workers.quarantine_until
         from
           workers
-          left join queue_workers on 
+          left join queue_workers on
             workers.worker_pool_id = queue_workers.task_queue_id and
             workers.worker_id = queue_workers.worker_id and
             workers.worker_group = queue_workers.worker_group

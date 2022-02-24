@@ -89,4 +89,3 @@ methods:
         from objects
         where name = name_in;
       end
-

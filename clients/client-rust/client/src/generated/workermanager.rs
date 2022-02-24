@@ -32,7 +32,7 @@ impl WorkerManager {
     }
 
     /// Ping Server
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn ping(&self) -> Result<(), Error> {
@@ -131,7 +131,7 @@ impl WorkerManager {
     }
 
     /// List Providers
-    /// 
+    ///
     /// Retrieve a list of providers that are available for worker pools.
     pub async fn listProviders(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
@@ -168,7 +168,7 @@ impl WorkerManager {
     }
 
     /// Create Worker Pool
-    /// 
+    ///
     /// Create a new worker pool. If the worker pool already exists, this will throw an error.
     pub async fn createWorkerPool(&self, workerPoolId: &str, payload: &Value) -> Result<Value, Error> {
         let method = "PUT";
@@ -187,10 +187,10 @@ impl WorkerManager {
     }
 
     /// Update Worker Pool
-    /// 
+    ///
     /// Given an existing worker pool definition, this will modify it and return
     /// the new definition.
-    /// 
+    ///
     /// To delete a worker pool, set its `providerId` to `"null-provider"`.
     /// After any existing workers have exited, a cleanup job will remove the
     /// worker pool.  During that time, the worker pool can be updated again, such
@@ -212,7 +212,7 @@ impl WorkerManager {
     }
 
     /// Delete Worker Pool
-    /// 
+    ///
     /// Mark a worker pool for deletion.  This is the same as updating the pool to
     /// set its providerId to `"null-provider"`, but does not require scope
     /// `worker-manager:provider:null-provider`.
@@ -233,7 +233,7 @@ impl WorkerManager {
     }
 
     /// Get Worker Pool
-    /// 
+    ///
     /// Fetch an existing worker pool defition.
     pub async fn workerPool(&self, workerPoolId: &str) -> Result<Value, Error> {
         let method = "GET";
@@ -264,7 +264,7 @@ impl WorkerManager {
     }
 
     /// List All Worker Pools
-    /// 
+    ///
     /// Get the list of all the existing worker pools.
     pub async fn listWorkerPools(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
@@ -301,14 +301,14 @@ impl WorkerManager {
     }
 
     /// Report an error from a worker
-    /// 
+    ///
     /// Report an error that occurred on a worker.  This error will be included
     /// with the other errors in `listWorkerPoolErrors(workerPoolId)`.
-    /// 
+    ///
     /// Workers can use this endpoint to report startup or configuration errors
     /// that might be associated with the worker pool configuration and thus of
     /// interest to a worker-pool administrator.
-    /// 
+    ///
     /// NOTE: errors are publicly visible.  Ensure that none of the content
     /// contains secrets or other sensitive information.
     pub async fn reportWorkerError(&self, workerPoolId: &str, payload: &Value) -> Result<Value, Error> {
@@ -328,7 +328,7 @@ impl WorkerManager {
     }
 
     /// List Worker Pool Errors
-    /// 
+    ///
     /// Get the list of worker pool errors.
     pub async fn listWorkerPoolErrors(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
@@ -365,7 +365,7 @@ impl WorkerManager {
     }
 
     /// Workers in a specific Worker Group in a Worker Pool
-    /// 
+    ///
     /// Get the list of all the existing workers in a given group in a given worker pool.
     pub async fn listWorkersForWorkerGroup(&self, workerPoolId: &str, workerGroup: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
@@ -402,7 +402,7 @@ impl WorkerManager {
     }
 
     /// Get a Worker
-    /// 
+    ///
     /// Get a single worker.
     pub async fn worker(&self, workerPoolId: &str, workerGroup: &str, workerId: &str) -> Result<Value, Error> {
         let method = "GET";
@@ -433,7 +433,7 @@ impl WorkerManager {
     }
 
     /// Create a Worker
-    /// 
+    ///
     /// Create a new worker.  This is only useful for worker pools where the provider
     /// does not create workers automatically, such as those with a `static` provider
     /// type.  Providers that do not support creating workers will return a 400 error.
@@ -457,7 +457,7 @@ impl WorkerManager {
     }
 
     /// Update an existing Worker
-    /// 
+    ///
     /// Update an existing worker in-place.  Like `createWorker`, this is only useful for
     /// worker pools where the provider does not create workers automatically.
     /// This method allows updating all fields in the schema unless otherwise indicated
@@ -482,7 +482,7 @@ impl WorkerManager {
     }
 
     /// Remove a Worker
-    /// 
+    ///
     /// Remove an existing worker.  The precise behavior of this method depends
     /// on the provider implementing the given worker.  Some providers
     /// do not support removing workers at all, and will return a 400 error.
@@ -506,7 +506,7 @@ impl WorkerManager {
     }
 
     /// Workers in a Worker Pool
-    /// 
+    ///
     /// Get the list of all the existing workers in a given worker pool.
     pub async fn listWorkersForWorkerPool(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
@@ -543,9 +543,9 @@ impl WorkerManager {
     }
 
     /// Register a running worker
-    /// 
+    ///
     /// Register a running worker.  Workers call this method on worker start-up.
-    /// 
+    ///
     /// This call both marks the worker as running and returns the credentials
     /// the worker will require to perform its work.  The worker must provide
     /// some proof of its identity, and that proof varies by provider type.
@@ -566,9 +566,9 @@ impl WorkerManager {
     }
 
     /// Reregister a Worker
-    /// 
+    ///
     /// Reregister a running worker.
-    /// 
+    ///
     /// This will generate and return new Taskcluster credentials for the worker
     /// on that instance to use. The credentials will not live longer the
     /// `registrationTimeout` for that worker. The endpoint will update `terminateAfter`

@@ -26,7 +26,7 @@ contains() {
 # - absolute path to the git directory.
 change_git_target() {
   # Note that we require an absolute path here so we try to resolve it first
-  # with greadlink then readlink (readlink on OSX does not do what you want) 
+  # with greadlink then readlink (readlink on OSX does not do what you want)
   readlink=$(which greadlink || which readlink)
 
   local path=$($readlink -m $1)

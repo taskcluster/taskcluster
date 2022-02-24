@@ -102,9 +102,9 @@ To run the Taskcluster UI:
     ```
   * Change to the `services/web-server` directory and run `yarn start`.
     This will start a web server on port 3050.
-    
+
     > *Note 1*: It will warn "No Pulse namespace defined". <br />
-              Unless you are working on parts of the UI that require Pulse support (and most do not), this is OK. <br />      
+              Unless you are working on parts of the UI that require Pulse support (and most do not), this is OK. <br />
     > *Note 2*: If you get an error like `readDbUrl is required`, ensure you've set all the above mentioned environment variables in the same shell session.
 
 * In another shell window for taskcluster-ui:

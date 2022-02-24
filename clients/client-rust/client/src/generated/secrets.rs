@@ -34,7 +34,7 @@ impl Secrets {
     }
 
     /// Ping Server
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn ping(&self) -> Result<(), Error> {
@@ -133,7 +133,7 @@ impl Secrets {
     }
 
     /// Set Secret
-    /// 
+    ///
     /// Set the secret associated with some key.  If the secret already exists, it is
     /// updated instead.
     pub async fn set(&self, name: &str, payload: &Value) -> Result<(), Error> {
@@ -154,7 +154,7 @@ impl Secrets {
     }
 
     /// Delete Secret
-    /// 
+    ///
     /// Delete the secret associated with some key. It will succeed whether or not the secret exists
     pub async fn remove(&self, name: &str) -> Result<(), Error> {
         let method = "DELETE";
@@ -174,7 +174,7 @@ impl Secrets {
     }
 
     /// Read Secret
-    /// 
+    ///
     /// Read the secret associated with some key.  If the secret has recently
     /// expired, the response code 410 is returned.  If the caller lacks the
     /// scope necessary to get the secret, the call will fail with a 403 code
@@ -208,16 +208,16 @@ impl Secrets {
     }
 
     /// List Secrets
-    /// 
+    ///
     /// List the names of all secrets.
-    /// 
+    ///
     /// By default this end-point will try to return up to 1000 secret names in one
     /// request. But it **may return less**, even if more tasks are available.
     /// It may also return a `continuationToken` even though there are no more
     /// results. However, you can only be sure to have seen all results if you
     /// keep calling `listTaskGroup` with the last `continuationToken` until you
     /// get a result without a `continuationToken`.
-    /// 
+    ///
     /// If you are not interested in listing all the members at once, you may
     /// use the query-string option `limit` to return fewer.
     pub async fn list(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {

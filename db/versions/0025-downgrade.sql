@@ -44,4 +44,3 @@ begin
 
   drop function to_js_iso8601(ts_in text);
 end
-

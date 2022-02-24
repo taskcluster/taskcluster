@@ -62,4 +62,3 @@ begin
   grant select, insert, update, delete on queue_task_dependency_entities to $db_user_prefix$_queue;
   grant select, insert, update, delete on queue_task_requirement_entities to $db_user_prefix$_queue;
 end
-

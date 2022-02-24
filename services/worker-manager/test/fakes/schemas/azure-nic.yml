@@ -31,4 +31,3 @@ properties:
     uniqueItems: false
 additionalProperties: false
 required: [location, ipConfigurations]
-

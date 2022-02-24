@@ -38,4 +38,3 @@ job-overrides:
       command: >-
         service rabbitmq-server start &&
         yarn workspace taskcluster-lib-pulse coverage:report
-

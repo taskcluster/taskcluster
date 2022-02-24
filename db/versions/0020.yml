@@ -433,7 +433,7 @@ methods:
         -- DependencyTracker uses this to mark a task as ever_resolved
         update tasks
         set ever_resolved = true
-        where 
+        where
           tasks.task_group_id = partition_key and
           tasks.task_id = row_key;
         return query select public.gen_random_uuid() as etag;

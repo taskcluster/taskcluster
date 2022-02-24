@@ -29,7 +29,7 @@ methods:
         end if;
 
         return query
-        select 
+        select
           'role',
           'role',
           entity_buf_encode(
@@ -70,7 +70,7 @@ methods:
         end if;
 
         insert into roles
-        select 
+        select
           (role ->> 'roleId') as role_id,
           (role ->> 'scopes')::jsonb as scopes,
           (role ->> 'created')::timestamptz as created,
@@ -120,7 +120,7 @@ methods:
         end if;
 
         insert into roles
-        select 
+        select
           (role ->> 'roleId') as role_id,
           (role ->> 'scopes')::jsonb as scopes,
           (role ->> 'created')::timestamptz as created,
@@ -154,7 +154,7 @@ methods:
     body: |-
       begin
         return query
-        select 
+        select
           roles.role_id,
           roles.scopes,
           roles.created,
@@ -166,7 +166,7 @@ methods:
       end
   modify_roles:
     description: |-
-      Replace the current set of roles entirely with the given set of roles, if the current etag matches the existing etag. 
+      Replace the current set of roles entirely with the given set of roles, if the current etag matches the existing etag.
       The role objects are specified with underscore spelling (`role_id`).
       If the etag has changed, this returns P0004 signalling that the caller should fetch a fresh set of roles and try again.
       If there are no existing roles, then the old etag is not used.
@@ -194,7 +194,7 @@ methods:
         end if;
 
         insert into roles
-        select 
+        select
           (role ->> 'role_id') as role_id,
           (role ->> 'scopes')::jsonb as scopes,
           (role ->> 'created')::timestamptz as created,

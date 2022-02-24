@@ -29,7 +29,7 @@ impl Notify {
     }
 
     /// Ping Server
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn ping(&self) -> Result<(), Error> {
@@ -128,7 +128,7 @@ impl Notify {
     }
 
     /// Send an Email
-    /// 
+    ///
     /// Send an email to `address`. The content is markdown and will be rendered
     /// to HTML, but both the HTML and raw markdown text will be sent in the
     /// email. If a link is included, it will be rendered to a nice button in the
@@ -151,7 +151,7 @@ impl Notify {
     }
 
     /// Publish a Pulse Message
-    /// 
+    ///
     /// Publish a message on pulse with the given `routingKey`.
     pub async fn pulse(&self, payload: &Value) -> Result<(), Error> {
         let method = "POST";
@@ -171,12 +171,12 @@ impl Notify {
     }
 
     /// Post Matrix Message
-    /// 
+    ///
     /// Post a message to a room in Matrix. Optionally includes formatted message.
-    /// 
+    ///
     /// The `roomId` in the scopes is a fully formed `roomId` with leading `!` such
     /// as `!foo:bar.com`.
-    /// 
+    ///
     /// Note that the matrix client used by taskcluster must be invited to a room before
     /// it can post there!
     pub async fn matrix(&self, payload: &Value) -> Result<(), Error> {
@@ -197,11 +197,11 @@ impl Notify {
     }
 
     /// Post Slack Message
-    /// 
+    ///
     /// Post a message to a Slack channel.
-    /// 
+    ///
     /// The `channelId` in the scopes is a Slack channel ID, starting with a capital C.
-    /// 
+    ///
     /// The Slack app can post into public channels by default but will need to be added
     /// to private channels before it can post messages there.
     pub async fn slack(&self, payload: &Value) -> Result<(), Error> {
@@ -222,7 +222,7 @@ impl Notify {
     }
 
     /// Denylist Given Address
-    /// 
+    ///
     /// Add the given address to the notification denylist. Addresses in the denylist will be ignored
     /// by the notification service.
     pub async fn addDenylistAddress(&self, payload: &Value) -> Result<(), Error> {
@@ -243,7 +243,7 @@ impl Notify {
     }
 
     /// Delete Denylisted Address
-    /// 
+    ///
     /// Delete the specified address from the notification denylist.
     pub async fn deleteDenylistAddress(&self, payload: &Value) -> Result<(), Error> {
         let method = "DELETE";
@@ -263,16 +263,16 @@ impl Notify {
     }
 
     /// List Denylisted Notifications
-    /// 
+    ///
     /// Lists all the denylisted addresses.
-    /// 
+    ///
     /// By default this end-point will try to return up to 1000 addresses in one
     /// request. But it **may return less**, even if more tasks are available.
     /// It may also return a `continuationToken` even though there are no more
     /// results. However, you can only be sure to have seen all results if you
     /// keep calling `list` with the last `continuationToken` until you
     /// get a result without a `continuationToken`.
-    /// 
+    ///
     /// If you are not interested in listing all the members at once, you may
     /// use the query-string option `limit` to return fewer.
     pub async fn listDenylist(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {

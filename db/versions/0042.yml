@@ -172,7 +172,7 @@ methods:
           secrets.expires >= now()
         order by secrets.name
         limit get_page_limit(page_size_in)
-        offset get_page_offset(page_offset_in); 
+        offset get_page_offset(page_offset_in);
       end
   delete_secret:
     serviceName: secrets
@@ -202,4 +202,4 @@ methods:
           return count;
         end if;
         return 0;
-      end 
+      end
