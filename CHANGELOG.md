@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.7.2
+
+### USERS
+
+▶ [patch] [#5181](https://github.com/taskcluster/taskcluster/issues/5181)
+Added "Copy URL" to the artifacts table.
+
+Added filter row functionality for big tables.
+
+▶ [patch] [#5027](https://github.com/taskcluster/taskcluster/issues/5027)
+Clicking on a secret row now works outside of the text part as well
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update golang.org/x/sys commit hash to f242548 (f92231483)
+
+</details>
+
 ## v44.7.1
 
 ### GENERAL
