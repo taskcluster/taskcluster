@@ -1,4 +1,4 @@
-dockerImage: taskcluster/taskcluster:v44.7.2
+dockerImage: taskcluster/taskcluster:v44.8.0
 trustProxy: true
 forceSSL: false
 nodeEnv: production

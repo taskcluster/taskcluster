@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.8.0
+
+### DEPLOYERS
+
+▶ [patch] 
+Added `__version__` and `__lbheartbeat__` endpoints to all services. Can be reached at `/api/<service name>/v1/{__version__, __lbheartbeat__}`.
+These were added to comply with the [Dockerflow standard](https://github.com/mozilla-services/Dockerflow/#containerized-app-requirements).
+
+### USERS
+
+▶ [minor] [#5139](https://github.com/taskcluster/taskcluster/issues/5139)
+Added support for `reporting: checks-v1` in generated github badges
+
 ## v44.7.2
 
 ### USERS
