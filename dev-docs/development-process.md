@@ -74,6 +74,16 @@ To set this up, in the root directory, run
 export PATH=$PWD/node_modules/.bin:$PATH
 ```
 
+### Pre-Commit (*Optional*)
+
+We recommend installing [pre-commit](https://pre-commit.com/index.html) for small checks that run before each commit, such as trailing whitespace, making sure files end in a newline, checking for merge conflict strings, etc.
+
+* Install [pre-commit](https://pre-commit.com/index.html#install)
+* Install the git hook scripts with `pre-commit install`
+* Done! `pre-commit` will now run automatically on `git commit`!
+
+These checks will help keep the code clean and will potentially save CI resources if issues are caught pre-commit.
+
 ## Hacking on the UI
 
 Taskcluster requires a Linux-like environment for development.
