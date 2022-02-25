@@ -101,6 +101,26 @@ func (notify *Notify) Ping() error {
 	return err
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See #lbheartbeat
+func (notify *Notify) Lbheartbeat() error {
+	cd := tcclient.Client(*notify)
+	_, _, err := (&cd).APICall(nil, "GET", "/__lbheartbeat__", nil, nil)
+	return err
+}
+
+// Respond with the JSON version object.
+// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+//
+// See #version
+func (notify *Notify) Version() error {
+	cd := tcclient.Client(*notify)
+	_, _, err := (&cd).APICall(nil, "GET", "/__version__", nil, nil)
+	return err
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Send an email to `address`. The content is markdown and will be rendered

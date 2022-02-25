@@ -37,6 +37,30 @@ class PurgeCache(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
+    async def lbheartbeat(self, *args, **kwargs):
+        """
+        Load Balancer Heartbeat
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["lbheartbeat"], *args, **kwargs)
+
+    async def version(self, *args, **kwargs):
+        """
+        Taskcluster Version
+
+        Respond with the JSON version object.
+        https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["version"], *args, **kwargs)
+
     async def purgeCache(self, *args, **kwargs):
         """
         Purge Worker Cache
@@ -93,6 +117,13 @@ class PurgeCache(AsyncBaseClient):
             'route': '/purge-cache/list',
             'stability': 'stable',
         },
+        "lbheartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'lbheartbeat',
+            'route': '/__lbheartbeat__',
+            'stability': 'stable',
+        },
         "ping": {
             'args': [],
             'method': 'get',
@@ -115,6 +146,13 @@ class PurgeCache(AsyncBaseClient):
             'output': 'v1/purge-cache-request-list.json#',
             'query': ['since'],
             'route': '/purge-cache/<workerPoolId>',
+            'stability': 'stable',
+        },
+        "version": {
+            'args': [],
+            'method': 'get',
+            'name': 'version',
+            'route': '/__version__',
             'stability': 'stable',
         },
     }

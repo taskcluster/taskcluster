@@ -104,6 +104,26 @@ func (object *Object) Ping() error {
 	return err
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See #lbheartbeat
+func (object *Object) Lbheartbeat() error {
+	cd := tcclient.Client(*object)
+	_, _, err := (&cd).APICall(nil, "GET", "/__lbheartbeat__", nil, nil)
+	return err
+}
+
+// Respond with the JSON version object.
+// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+//
+// See #version
+func (object *Object) Version() error {
+	cd := tcclient.Client(*object)
+	_, _, err := (&cd).APICall(nil, "GET", "/__version__", nil, nil)
+	return err
+}
+
 // Create a new object by initiating upload of its data.
 //
 // This endpoint implements negotiation of upload methods.  It can be called

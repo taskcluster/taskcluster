@@ -106,6 +106,26 @@ func (index *Index) Ping() error {
 	return err
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See #lbheartbeat
+func (index *Index) Lbheartbeat() error {
+	cd := tcclient.Client(*index)
+	_, _, err := (&cd).APICall(nil, "GET", "/__lbheartbeat__", nil, nil)
+	return err
+}
+
+// Respond with the JSON version object.
+// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+//
+// See #version
+func (index *Index) Version() error {
+	cd := tcclient.Client(*index)
+	_, _, err := (&cd).APICall(nil, "GET", "/__version__", nil, nil)
+	return err
+}
+
 // Find a task by index path, returning the highest-rank task with that path. If no
 // task exists for the given path, this API end-point will respond with a 404 status.
 //
