@@ -10,3 +10,16 @@ repos:
     -   id: end-of-file-fixer
         # Check for files that contain merge conflict strings
     -   id: check-merge-conflict
+
+-   repo: https://github.com/marco-c/taskcluster_yml_validator
+    rev: v0.0.8
+    hooks:
+        # Validates .taskcluster.yml file against possible GitHub events
+    -   id: taskcluster_yml
+
+exclude: |
+    (?x)(
+        ^generated/|
+        ^infrastructure/k8s/values.schema.json|
+        ^services/auth/src/static-scopes.json
+    )

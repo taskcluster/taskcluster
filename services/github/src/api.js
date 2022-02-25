@@ -540,7 +540,7 @@ builder.declare({
   description: [
     'For a given changeset (SHA) of a repository, this will attach a "commit status"',
     'on github. These statuses are links displayed next to each revision.',
-    'The status is either OK (green check) or FAILURE (red cross), ',
+    'The status is either OK (green check) or FAILURE (red cross),',
     'made of a custom title and link.',
   ].join('\n'),
   stability: 'experimental',

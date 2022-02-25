@@ -190,7 +190,7 @@ const generateServiceClient = (className, reference) => {
         ds.unshift('');
         ds.unshift(entry.title);
       }
-      t.doc = ds.map(l => `/// ${l}`).join('\n') + '\n';
+      t.doc = ds.map(l => l ? `/// ${l}` : '///').join('\n') + '\n';
     } else {
       t.doc = '';
     }
