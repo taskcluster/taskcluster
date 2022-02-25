@@ -20,6 +20,9 @@ import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronRightIcon from 'mdi-react/ChevronRightIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
+import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
+import CheckIcon from 'mdi-react/CheckIcon';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Label from '../Label';
 import Button from '../Button';
 import ConnectionDataTable from '../ConnectionDataTable';
@@ -118,6 +121,9 @@ const DOTS_VARIANT_LIMIT = 5;
     iconDiv: {
       marginRight: theme.spacing(2),
     },
+    copyButton: {
+      width: 30,
+    },
   }),
   { withTheme: true }
 )
@@ -144,6 +150,10 @@ export default class TaskRunsCard extends Component {
      * Execute a function to load new artifacts when paging through them.
      */
     onArtifactsPageChange: func.isRequired,
+  };
+
+  state = {
+    isCopy: {},
   };
 
   getCurrentRun() {
@@ -252,8 +262,24 @@ export default class TaskRunsCard extends Component {
     };
   }
 
+  onCopyClick(url) {
+    this.setState({
+      isCopy: {
+        [url]: true,
+      },
+    });
+    setTimeout(() => {
+      this.setState({
+        isCopy: {
+          [url]: false,
+        },
+      });
+    }, 3000);
+  }
+
   renderArtifactRow({ artifact }) {
     const { classes } = this.props;
+    const { isCopy } = this.state;
     const { name } = artifact;
     const {
       icon: Icon,
@@ -261,6 +287,10 @@ export default class TaskRunsCard extends Component {
       url,
       handleArtifactClick,
     } = this.getArtifactInfo(artifact);
+    // Remove authentication parameter
+    const artifactUrl = new URL(`${window.location.origin}${url}`);
+
+    artifactUrl.searchParams.delete('bewit');
 
     return (
       <TableRow
@@ -290,6 +320,14 @@ export default class TaskRunsCard extends Component {
             <div>{isLogFile ? <LinkIcon /> : <OpenInNewIcon />}</div>
           </Link>
         </TableCell>
+        <TableCell className={classNames(classes.copyButton)}>
+          <CopyToClipboard
+            onCopy={() => this.onCopyClick(url)}
+            title={`Artifact URL (${isCopy ? 'Copied!' : 'Copy'})`}
+            text={artifactUrl.toString()}>
+            {isCopy[url] ? <CheckIcon /> : <ContentCopyIcon />}
+          </CopyToClipboard>
+        </TableCell>
       </TableRow>
     );
   }
@@ -306,6 +344,10 @@ export default class TaskRunsCard extends Component {
         columnsSize={3}
         onPageChange={onArtifactsPageChange}
         withoutTopPagination
+        allowFilter
+        filterFunc={({ node: { name } }, filterValue) =>
+          String(name).includes(filterValue)
+        }
         renderRow={({ node: artifact }) => this.renderArtifactRow({ artifact })}
       />
     );
