@@ -21,5 +21,9 @@ exclude: |
     (?x)(
         ^generated/|
         ^infrastructure/k8s/values.schema.json|
-        ^services/auth/src/static-scopes.json
+        ^services/auth/src/static-scopes.json|
+        ^clients/client-rust/integration_tests/src/lib.rs|
+        ^ui/src/components/AuthConsent/__snapshots__/|
+        ^ui/src/components/TaskDetailsCard/__snapshots__/|
+        ^services/worker-manager/test/fixtures/
     )

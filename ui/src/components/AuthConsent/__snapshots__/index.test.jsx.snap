@@ -46,7 +46,7 @@ exports[`should render AuthConsent page 1`] = `
             class="MuiTypography-root MuiCardHeader-subheader MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
           >
             <span>
-              is requesting access to client ID
+              is requesting access to client ID 
               <code>
                 clientId
               </code>

@@ -230,8 +230,8 @@ exports[`should render TaskDetailsCard 1`] = `
                           >
                             {
                           </span>
-
-
+                          
+  
                           <span
                             class="hljs-attr"
                           >
@@ -242,14 +242,14 @@ exports[`should render TaskDetailsCard 1`] = `
                           >
                             :
                           </span>
-
+                           
                           <span
                             class="hljs-punctuation"
                           >
                             [
                           </span>
-
-
+                          
+    
                           <span
                             class="hljs-string"
                           >
@@ -260,8 +260,8 @@ exports[`should render TaskDetailsCard 1`] = `
                           >
                             ,
                           </span>
-
-
+                          
+    
                           <span
                             class="hljs-string"
                           >
@@ -272,15 +272,15 @@ exports[`should render TaskDetailsCard 1`] = `
                           >
                             ,
                           </span>
-
-
+                          
+    
                           <span
                             class="hljs-string"
                           >
                             "for ((i=1;i&lt;=600;i++)); do echo $i; sleep 1; done"
                           </span>
-
-
+                          
+  
                           <span
                             class="hljs-punctuation"
                           >
@@ -291,8 +291,8 @@ exports[`should render TaskDetailsCard 1`] = `
                           >
                             ,
                           </span>
-
-
+                          
+  
                           <span
                             class="hljs-attr"
                           >
@@ -303,7 +303,7 @@ exports[`should render TaskDetailsCard 1`] = `
                           >
                             :
                           </span>
-
+                           
                           <span
                             class="hljs-string"
                           >
@@ -314,8 +314,8 @@ exports[`should render TaskDetailsCard 1`] = `
                           >
                             ,
                           </span>
-
-
+                          
+  
                           <span
                             class="hljs-attr"
                           >
@@ -326,13 +326,13 @@ exports[`should render TaskDetailsCard 1`] = `
                           >
                             :
                           </span>
-
+                           
                           <span
                             class="hljs-number"
                           >
                             630
                           </span>
-
+                          
 
                           <span
                             class="hljs-punctuation"
