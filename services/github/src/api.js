@@ -172,7 +172,7 @@ async function findTCChecks(github, owner, repo, branch, configuration) {
     }
     throw e;
   }
-  return checks.filter(checkObject => checkObject.app.id === configuration.github.credentials.appId);
+  return checks.filter(checkObject => checkObject.app.id === parseInt(configuration.github.credentials.appId, 10));
 }
 
 /** API end-point for version v1/
