@@ -7,7 +7,7 @@ const inquirer = require('inquirer');
 const commonPrompts = require('./common');
 const { rabbitPrompts, rabbitResources } = require('./rabbit');
 const { azureResources } = require('./azure');
-const { postgresPrompts, postgresResources } = require('./postgres');
+const { postgresPrompts, postgresResources, postgresEnsureDb } = require('./postgres');
 const { k8sResources } = require('./k8s');
 const awsResources = require('./aws');
 const taskclusterResources = require('./taskcluster');
@@ -104,8 +104,13 @@ const verify = async (options) => {
   await helm('verify');
 };
 
+const ensureDb = async (options) => {
+  const userConfig = await readUserConfig();
+  await postgresEnsureDb({ userConfig });
+};
+
 const delete_ = async (options) => {
   await helm('delete');
 };
 
-module.exports = { init, apply, verify, delete_, dbUpgrade, dbDowngrade };
+module.exports = { init, apply, verify, ensureDb, delete_, dbUpgrade, dbDowngrade };

@@ -173,6 +173,13 @@ program.command('dev:verify')
     run(verify, options);
   }));
 
+program.command('dev:ensure:db')
+  .description('Verify that database permissions are properly set')
+  .action(actFn(({ options }) => {
+    const { ensureDb } = require('./dev');
+    run(ensureDb, options);
+  }));
+
 program.command('test:meta')
   .action(actFn(({ options }) => {
     const { main } = require('./meta');
