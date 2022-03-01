@@ -125,7 +125,7 @@ This should give you back something like the following:
 > Host: localhost:8080
 > User-Agent: curl/7.54.0
 > Accept: */*
-> 
+>
 < HTTP/1.1 200 OK
 < Accept-Ranges: bytes
 < Content-Length: 14
@@ -140,7 +140,7 @@ This should give you back something like the following:
 < X-Taskcluster-Proxy-Perm-Clientid: mozilla-ldap/pmoore@mozilla.com/dev
 < X-Taskcluster-Proxy-Revision: 14b76112fdc3298668bc5d21caf4ee7f5bfa6a59
 < X-Taskcluster-Proxy-Version: 4.0.5
-< 
+<
 test artifact
 * Connection #0 to host localhost left intact
 ```

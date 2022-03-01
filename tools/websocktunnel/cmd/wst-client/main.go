@@ -19,14 +19,14 @@ import (
 )
 
 const usage = `Websocketunnel Client is a command line utility which establishes a connection
-to the websocktunnel service and allows serving http without exposing ports to 
+to the websocktunnel service and allows serving http without exposing ports to
 the internet.
 
 [Firewall/NAT [User] <--]---> [websocktunnel] <--- [Web]
 
 Usage:
     wst-client <wstServer> <wstClientID> <targetPort> [--token <jwtToken>] [--out-file=<outFile>]
-	           [--verbose] [--json] 
+	           [--verbose] [--json]
     wst-client -h | --help
 
 The wstClientID is the ID to register with the websocktunnel server.  The JWT

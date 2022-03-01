@@ -60,4 +60,3 @@ Developer documentation can be found at:
 * [`/dev-docs`](../) - higher-level developer documentation that crosses boundaries between services and libraries
 
 * [`/dev-docs/best-practices`](./) - guidelines we've agreed on for Taskcluster development, in an effort to keep the codebase consistent and permit developers to move easily throughout the codebase.
-

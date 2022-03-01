@@ -208,7 +208,7 @@ secrets.mockSuite('Floobits', ['taskcluster'], function(mock, skipping) {
       // to the a Azure table
       helper.load.cfg('azure.accountName', 'inMemory');
     }
-    
+
     if (!skipping()) {
       Floobits = await helper.load('Floobits');
       await Floobits.ensureTable();

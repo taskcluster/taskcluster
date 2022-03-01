@@ -86,4 +86,3 @@ properties:
     required: [name, labels, description, machineType, networkInterfaces, disks, serviceAccounts, scheduling, metadata]
 additionalProperties: false
 required: [project, zone, requestId, requestBody]
-

@@ -322,8 +322,8 @@ with timing and error handling support.
       return monitor.oneShot('expire-info', () => {
         // do the expiration stuff
       });
-    },  
-  },  
+    },
+  },
 ```
 
 This function will:

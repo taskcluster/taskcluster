@@ -112,7 +112,7 @@ methods:
       end
   upsert_github_integration:
     serviceName: github
-    description: Create a single integration. 
+    description: Create a single integration.
     mode: write
     args: owner_in text, installation_id_in integer
     returns: void

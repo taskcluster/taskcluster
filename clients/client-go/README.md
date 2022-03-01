@@ -101,7 +101,7 @@ import (
     "github.com/taskcluster/slugid-go"
 )
 task := tcqueue.TaskDefinitionRequest{..};
-taskId: = slugid.Nice() 
+taskId: = slugid.Nice()
 status := queue.CreateTask(taskId, &task)
 ```
 

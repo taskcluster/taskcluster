@@ -22,7 +22,7 @@ definitions:
           giving both a name (a category of document) and a version (to allow
           several versions of the same category).  Consumers of the documents can
           consult the schema metadata to determine how to process the document.
-    
+
           Any changes to a schema that require changes to consumers of the described
           documents should be accompanied by a version increase.
         type: object

@@ -42,4 +42,3 @@ begin
   drop table clients;
   grant select, insert, update, delete on clients_entities to $db_user_prefix$_auth;
 end
-

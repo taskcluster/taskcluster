@@ -8,7 +8,7 @@ VERSION = '44.8.0'
 
 tests_require = [
     'pytest',
-    'pytest-cov',   
+    'pytest-cov',
     'pytest-mock',
     'pytest-asyncio',
     'httmock',

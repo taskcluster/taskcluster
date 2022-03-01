@@ -2,7 +2,7 @@
 
 We welcome pull requests from everyone. We do expect everyone to adhere to the [Mozilla Community Participation Guidelines][participation].
 
-If you're trying to figure out what to work on, here are some places to find suitable projects: 
+If you're trying to figure out what to work on, here are some places to find suitable projects:
 * [Good first bugs][goodfirstbug]: these are scoped to make it easy for first-time contributors to get their feet wet with Taskcluster code.
 * [Mentored bugs][bugsahoy]: these are slightly more involved projects that may require insight or guidance from someone on the Taskcluster team.
 * [Full list of open issues][issues]: everything else
@@ -25,4 +25,3 @@ Welcome to the team!
 [bestpractices]: https://docs.taskcluster.net/docs/manual/design/devel/best-practices
 [testing]: https://docs.taskcluster.net/docs/manual/design/devel/best-practices/testing
 [commit]: https://docs.taskcluster.net/docs/manual/design/devel/best-practices/commits
-

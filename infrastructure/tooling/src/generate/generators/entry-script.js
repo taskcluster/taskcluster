@@ -52,7 +52,7 @@ exports.tasks.push({
       .concat([
         // catch-all to run whatever command the user specified
         '*) exec "${@}";;',
-        'esac',
+        'esac\n',
       ]).join('\n');
 
     await writeRepoFile('entrypoint', entrypointScript);

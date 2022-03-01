@@ -83,7 +83,7 @@ If you are only looking to deploy the docs site, configure `DOCS_ONLY` to be `tr
 If you are looking to inform users with a message (e.g., "Taskcluster will be down for maintenance on 11/9")
 then configure your message in `BANNER_MESSAGE`. The message will be displayed on page load and will require user
 interaction to close the banner. The message frequency is set to 1 day. In other words, after a user closes the banner,
-the message will show up a day later. Banners are mainly used to inform users of downtime maintenance.  
+the message will show up a day later. Banners are mainly used to inform users of downtime maintenance.
 
 ### Login Strategies
 

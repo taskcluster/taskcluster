@@ -52,7 +52,7 @@ query Sample {
     status {
       state
     }
-    
+
     metadata {
       name
     }

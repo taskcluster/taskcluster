@@ -27,7 +27,7 @@ methods:
   create_object_for_upload:
     description: |-
       Create an object record ready for upload.
-      
+
       This method is idempotent, and will succeed if called multiple times with
       the same parameters, as long as `upload_id` is still set (that is, until
       the upload is completed).  Otherwise it will raise a UNIQUE_VIOLATION
@@ -73,7 +73,7 @@ methods:
   object_upload_complete:
     description: |-
       Mark an object as uploaded and ready for download.
-      
+
       This method is idempotent, and will succeed if the object is already ready
       for download.
     mode: write

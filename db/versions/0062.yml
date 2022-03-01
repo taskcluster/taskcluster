@@ -50,4 +50,3 @@ methods:
           raise exception 'no such row' using errcode = 'P0002';
         end if;
       end
-
