@@ -105,7 +105,7 @@ impl Queue {
     }
 
     /// Load Balancer Heartbeat
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn lbheartbeat(&self) -> Result<(), Error> {
@@ -138,7 +138,7 @@ impl Queue {
     }
 
     /// Taskcluster Version
-    /// 
+    ///
     /// Respond with the JSON version object.
     /// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
     pub async fn version(&self) -> Result<(), Error> {
