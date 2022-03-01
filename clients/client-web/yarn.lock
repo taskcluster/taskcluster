@@ -192,6 +192,11 @@
     "@babel/helper-validator-identifier" "^7.16.7"
     to-fast-properties "^2.0.0"
 
+"@colors/colors@1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
+  integrity sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==
+
 "@discoveryjs/json-ext@^0.5.0":
   version "0.5.6"
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.6.tgz#d5e0706cf8c6acd8c6032f8d54070af261bbbb2f"
@@ -1050,11 +1055,6 @@ colorette@^2.0.14:
   version "2.0.16"
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-2.0.16.tgz#713b9af84fdb000139f04546bd4a93f62a5085da"
   integrity sha512-hUewv7oMjCp+wkBv5Rm0v87eJhq4woh5rSR+42YSQJKecCqgIqNkZ6lAlQms/BwHPJA5NKMRlpxPRv0n8HQW6g==
-
-colors@1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/colors/-/colors-1.4.0.tgz#c50491479d4c1bdaed2c9ced32cf7c7dc2360f78"
-  integrity sha512-a+UqTh4kgZg/SlGvfbzDHpgRu7AAQOmmqRHJnxhRZICKFUT91brVhNNt58CMWU9PsBbv3PDCZUHbVxuDiH2mtA==
 
 commander@^2.20.0:
   version "2.20.3"
@@ -2463,15 +2463,15 @@ karma-webpack@^4.0.2:
     source-map "^0.7.3"
     webpack-dev-middleware "^3.7.0"
 
-karma@^6.3.13:
-  version "6.3.15"
-  resolved "https://registry.yarnpkg.com/karma/-/karma-6.3.15.tgz#6c3beedb2440b05589a502462140afed724481e7"
-  integrity sha512-4O5X6zVFdmwo/fgjRN84fPG3IvaiOxOjIeZBwBrQYz4nIyGqlF8Wm7C1Hr7idQ9NHgnvJM+LSjZwS1C+qALMGw==
+karma@^6.3.17:
+  version "6.3.17"
+  resolved "https://registry.yarnpkg.com/karma/-/karma-6.3.17.tgz#5d963fb52463b73e1b5892ecb54c8f21bb04ba1d"
+  integrity sha512-2TfjHwrRExC8yHoWlPBULyaLwAFmXmxQrcuFImt/JsAsSZu1uOWTZ1ZsWjqQtWpHLiatJOHL5jFjXSJIgCd01g==
   dependencies:
+    "@colors/colors" "1.5.0"
     body-parser "^1.19.0"
     braces "^3.0.2"
     chokidar "^3.5.1"
-    colors "1.4.0"
     connect "^3.7.0"
     di "^0.0.1"
     dom-serialize "^2.2.1"
