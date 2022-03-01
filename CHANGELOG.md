@@ -16,12 +16,12 @@ These were added to comply with the [Dockerflow standard](https://github.com/moz
 ▶ [patch] [#5247](https://github.com/taskcluster/taskcluster/issues/5247)
 Pagination and filters shown conditionally
 
-▶ [patch] 
+▶ [patch]
 Fix the badge generation when using the badge API. It now works when deployed through helm too
 
 ### DEVELOPERS
 
-▶ [patch] 
+▶ [patch]
 Introduces `dev:ensure:db` and `dev:ensure:rabbit` commands to ensure postgres and rabbit have necessary user accounts and permissions.
 Updated `dev-deployment.md` with instructions how to set up own rabbitmq/posgres for testing/dev puropses.
 
