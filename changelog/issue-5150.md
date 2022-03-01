@@ -3,4 +3,4 @@ level: silent
 reference: issue 5150
 ---
 
-Mark `aws_endpoint` as optional. 
+Mark `aws_endpoint` as optional.
