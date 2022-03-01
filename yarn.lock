@@ -1036,10 +1036,10 @@ ajv@^8.0.1:
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
-amqplib@^0.7.0:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/amqplib/-/amqplib-0.7.1.tgz#1ac60934cbddb445bdc9c648310a0d232a53b3af"
-  integrity sha512-KePK3tTOLGU4emTo+PwSDMbc123jrxo13FpRpim1LzJoSlQrIBB2/kMeCC40jK/Zb0olHGaABjLqXDsdK46iLA==
+amqplib@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/amqplib/-/amqplib-0.8.0.tgz#088d10bc61cc5ac5a49ac72033c7ac66c23aeb61"
+  integrity sha512-icU+a4kkq4Y1PS4NNi+YPDMwdlbFcZ1EZTQT2nigW3fvOb6AOgUQ9+Mk4ue0Zu5cBg/XpDzB40oH10ysrk2dmA==
   dependencies:
     bitsyntax "~0.1.0"
     bluebird "^3.7.2"

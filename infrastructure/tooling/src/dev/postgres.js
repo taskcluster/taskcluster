@@ -2,6 +2,7 @@ const slugid = require('slugid');
 const crypto = require('crypto');
 const { Client } = require('pg');
 const { makePgUrl } = require('./util');
+const URL = require('url');
 
 const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
   prompts.push({
@@ -146,7 +147,37 @@ const postgresResources = async ({ userConfig, answer, configTmpl }) => {
   return userConfig;
 };
 
+const postgresEnsureDb = async ({ userConfig }) => {
+  const { dbAdminUsername, dbAdminPassword, dbName, dbPublicIp } = userConfig.meta;
+
+  const client = new Client({
+    host: dbPublicIp,
+    user: dbAdminUsername,
+    password: dbAdminPassword,
+    database: dbName,
+    // Cloud SQL servers support TLS but not cert validation, so don't
+    // try to validate it.
+    ssl: { rejectUnauthorized: false },
+  });
+  await client.connect();
+
+  try {
+    for (const cfg of Object.values(userConfig)) {
+      if (cfg.read_db_url) {
+        const parts = URL.parse(cfg.read_db_url);
+        const [username, password] = parts.auth.split(':');
+        console.log(`(Re)creating DB user ${username}`);
+        await client.query(`drop user if exists ${username}`);
+        await client.query(`create user ${username} password '${password}'`);
+      }
+    }
+  } finally {
+    await client.end();
+  }
+};
+
 module.exports = {
   postgresPrompts,
   postgresResources,
+  postgresEnsureDb,
 };
