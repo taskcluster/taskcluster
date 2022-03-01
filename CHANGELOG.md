@@ -3,6 +3,32 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.8.1
+
+### DEPLOYERS
+
+▶ [patch] [#5235](https://github.com/taskcluster/taskcluster/issues/5235)
+Added ingress to the web-server service to access the `__version__` and `__lbheartbeat__` endpoints. Can be reached at `/api/web-server/v1/{__version__, __lbheartbeat__}`.
+These were added to comply with the [Dockerflow standard](https://github.com/mozilla-services/Dockerflow/#containerized-app-requirements).
+
+### USERS
+
+▶ [patch] [#5247](https://github.com/taskcluster/taskcluster/issues/5247)
+Pagination and filters shown conditionally
+
+▶ [patch] 
+Fix the badge generation when using the badge API. It now works when deployed through helm too
+
+### DEVELOPERS
+
+▶ [patch] 
+Introduces `dev:ensure:db` and `dev:ensure:rabbit` commands to ensure postgres and rabbit have necessary user accounts and permissions.
+Updated `dev-deployment.md` with instructions how to set up own rabbitmq/posgres for testing/dev puropses.
+
+### OTHER
+
+▶ Additional change not described here: [#5150](https://github.com/taskcluster/taskcluster/issues/5150).
+
 ## v44.8.0
 
 ### DEPLOYERS
