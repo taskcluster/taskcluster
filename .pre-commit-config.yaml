@@ -27,3 +27,6 @@ exclude: |
         ^ui/src/components/TaskDetailsCard/__snapshots__/|
         ^services/worker-manager/test/fixtures/
     )
+
+ci:
+    skip: [taskcluster_yml]
