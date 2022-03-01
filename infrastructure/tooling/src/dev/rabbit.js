@@ -111,7 +111,44 @@ const rabbitResources = async ({ userConfig, answer, configTmpl }) => {
   return userConfig;
 };
 
+const rabbitAdminPasswordPrompt = ({ userConfig, prompts }) => {
+  prompts.push({
+    type: 'password',
+    name: 'rabbitAdminPassword',
+    message: 'RabbitMq admin password.',
+  });
+};
+
+const rabbitEnsureResources = async ({ userConfig, answer }) => {
+  const apiUrl = `${userConfig.meta?.rabbitAdminManagementOrigin}/api`;
+  const agent = request.agent().auth(userConfig.meta?.rabbitAdminUser, answer.rabbitAdminPassword).type('json');
+  const vhost = userConfig.pulseVhost;
+
+  console.log(`(Re-)creating RabbitMQ vhost ${vhost}`);
+  await agent.put(`${apiUrl}/vhosts/${encodeURIComponent(vhost)}`);
+
+  for (const [name, cfg] of Object.entries(userConfig)) {
+    if (!cfg.pulse_username || !cfg.pulse_password) {
+      continue;
+    }
+
+    console.log(`Creating RabbitMQ user ${cfg.pulse_username}`);
+    await agent.put(`${apiUrl}/users/${encodeURIComponent(cfg.pulse_username)}`).send({
+      password: cfg.pulse_password,
+      tags: '',
+    });
+    const regexName = `taskcluster\\-${name.replace(/_/g, '\\-')}`;
+    await agent.put(`${apiUrl}/permissions/${encodeURIComponent(vhost)}/${encodeURIComponent(cfg.pulse_username)}`).send({
+      configure: `^(queue/${regexName}/.*|exchange/${regexName}/.*)`,
+      write: `^(queue/${regexName}/.*|exchange/${regexName}/.*)`,
+      read: `^(queue/${regexName}/.*|exchange/.*)`,
+    });
+  }
+};
+
 module.exports = {
   rabbitPrompts,
   rabbitResources,
+  rabbitAdminPasswordPrompt,
+  rabbitEnsureResources,
 };

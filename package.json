@@ -192,6 +192,7 @@
     "dev:delete": "node infrastructure/tooling/src/main.js dev:delete",
     "dev:verify": "node infrastructure/tooling/src/main.js dev:verify",
     "dev:ensure:db": "node infrastructure/tooling/src/main.js dev:ensure:db",
+    "dev:ensure:rabbit": "node infrastructure/tooling/src/main.js dev:ensure:rabbit",
     "smoketest": "node infrastructure/tooling/src/main.js smoketest",
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
     "db:upgrade": "node db/src/main.js upgrade",

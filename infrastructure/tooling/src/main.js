@@ -180,6 +180,13 @@ program.command('dev:ensure:db')
     run(ensureDb, options);
   }));
 
+program.command('dev:ensure:rabbit')
+  .description('Verify that rabbitmq users and vhost are properly set')
+  .action(actFn(({ options }) => {
+    const { ensureRabbit } = require('./dev');
+    run(ensureRabbit, options);
+  }));
+
 program.command('test:meta')
   .action(actFn(({ options }) => {
     const { main } = require('./meta');

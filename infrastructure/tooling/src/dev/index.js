@@ -5,7 +5,7 @@ const _ = require('lodash');
 const { readRepoYAML, writeRepoYAML } = require('../utils');
 const inquirer = require('inquirer');
 const commonPrompts = require('./common');
-const { rabbitPrompts, rabbitResources } = require('./rabbit');
+const { rabbitPrompts, rabbitResources, rabbitAdminPasswordPrompt, rabbitEnsureResources } = require('./rabbit');
 const { azureResources } = require('./azure');
 const { postgresPrompts, postgresResources, postgresEnsureDb } = require('./postgres');
 const { k8sResources } = require('./k8s');
@@ -109,8 +109,18 @@ const ensureDb = async (options) => {
   await postgresEnsureDb({ userConfig });
 };
 
+const ensureRabbit = async (options) => {
+  const userConfig = await readUserConfig();
+  const prompts = [];
+
+  await rabbitAdminPasswordPrompt({ userConfig, prompts });
+  const answer = await inquirer.prompt(prompts);
+
+  await rabbitEnsureResources({ userConfig, answer });
+};
+
 const delete_ = async (options) => {
   await helm('delete');
 };
 
-module.exports = { init, apply, verify, ensureDb, delete_, dbUpgrade, dbDowngrade };
+module.exports = { init, apply, verify, ensureDb, ensureRabbit, delete_, dbUpgrade, dbDowngrade };
