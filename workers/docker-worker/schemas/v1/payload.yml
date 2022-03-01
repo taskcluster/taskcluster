@@ -108,7 +108,7 @@ properties:
         title: Devices to be attached to task containers
         description: >-
           Allows devices from the host system to be attached to a task container
-          similar to using `--device` in docker. 
+          similar to using `--device` in docker.
         type: object
         properties:
           loopbackVideo:
@@ -143,8 +143,8 @@ properties:
     description: |-
       Example: ```
       {
-        "PATH": '/borked/path' 
-        "ENV_NAME": "VALUE" 
+        "PATH": '/borked/path'
+        "ENV_NAME": "VALUE"
       }
       ```
     type: object
@@ -251,7 +251,7 @@ properties:
         title: Allow ptrace within the container
         description: >-
           This allows you to use the Linux ptrace functionality inside the
-          container; it is otherwise disallowed by Docker's security policy. 
+          container; it is otherwise disallowed by Docker's security policy.
       chainOfTrust:
         type: boolean
         title: Enable generation of ed25519-signed Chain of Trust artifacts

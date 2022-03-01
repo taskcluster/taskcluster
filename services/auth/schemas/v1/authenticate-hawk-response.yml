@@ -8,7 +8,7 @@ oneOf:
     properties:
       status:
         description: |
-          If `auth-success`, the request has successfully authenticated. 
+          If `auth-success`, the request has successfully authenticated.
           This does not imply authorization (i.e. scope satisfaction not guaranteed).
         type:                 string
         enum:

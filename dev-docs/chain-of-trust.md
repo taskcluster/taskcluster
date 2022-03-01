@@ -54,9 +54,9 @@ Details:
         3. [content addressable ids](https://windsock.io/explaining-docker-image-ids/), which hash up the contents of the image. We can get this via
 
             `docker inspect --format='{{.RepoDigests}}' $IMAGE`
-            
+
             or
-            
+
             `docker images --digests`
 
         We currently use the third option, the content addressable id / digest, as the `imageHash`.

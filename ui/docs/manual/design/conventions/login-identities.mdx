@@ -19,7 +19,7 @@ The configuration is to create a role `login-identity:*` is configured with scop
 * `auth:reset-access-token:<..>/*`
 * `auth:update-client:<..>/*`
 
-When a user signs in via the Taskcluster UI, the [web-server services](/docs/reference/core/web-server) associates the session with the 
+When a user signs in via the Taskcluster UI, the [web-server services](/docs/reference/core/web-server) associates the session with the
 One of those scopes is `assume:login-identity:<identityProviderId>/<identity>`.
 The magic of [parameterized roles](/docs/reference/platform/taskcluster-auth/docs/roles#parameterized-roles) means that expands to
 

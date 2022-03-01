@@ -1,5 +1,4 @@
-{ 
+{
   "scopes": ["test2", "\nabcd", "test"],
   "description": "Simple"
 }
-

@@ -147,7 +147,7 @@ oneOf:
       # (contentType is not required)
   - title:          "Error Artifact Request"
     description: |
-      Request the queue to reply `424` (Failed Dependency) with `reason` and 
+      Request the queue to reply `424` (Failed Dependency) with `reason` and
       `message` to any `GET` request for this artifact. This is mainly useful
       as a way for a task to declare that it failed to provide an artifact it
       wanted to upload.

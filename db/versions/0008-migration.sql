@@ -73,7 +73,7 @@ begin
           case
             when ch = E'\x5C' then '!5C'
             when ch = '~' then '!7e'
-            when ol>1 or ch !~ '[-''()*.0-9A-Z_a-z]' 
+            when ol>1 or ch !~ '[-''()*.0-9A-Z_a-z]'
                 then regexp_replace(upper(substring(ch::bytea::text, 3)), '(..)', E'!\\1', 'g')
             else ch
           end,
@@ -101,12 +101,12 @@ begin
       if in_str = '!' then
         return '';
       end if;
-      
+
       with str as (
         select
           -- `plain` is an array of all non-encoded substrings, including a blank first string
           -- if necessary so that we can assume the first component is blank
-          case when in_str ~ '^![0-9a-fA-F][0-9a-fA-F]' 
+          case when in_str ~ '^![0-9a-fA-F][0-9a-fA-F]'
             then '{}'|| regexp_split_to_array (in_str,'(![0-9a-fA-F][0-9a-fA-F])+', 'i')
             else regexp_split_to_array (in_str,'(![0-9a-fA-F][0-9a-fA-F])+', 'i')
            end plain,
@@ -116,7 +116,7 @@ begin
       )
       -- concatentate pairs of `plain` and decoded `encoded`
       select string_agg(plain[i] || coalesce( convert_from(decode(replace(encoded[i], '!',''), 'hex'), 'utf8'),''),'')
-          from str, 
+          from str,
                 (select  generate_series(1, greatest(0, array_upper(encoded,1))+2) i FROM str) as i
       into ret;
       return ret;

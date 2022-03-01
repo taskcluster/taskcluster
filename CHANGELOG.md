@@ -7,7 +7,7 @@
 
 ### DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 Added `__version__` and `__lbheartbeat__` endpoints to all services. Can be reached at `/api/<service name>/v1/{__version__, __lbheartbeat__}`.
 These were added to comply with the [Dockerflow standard](https://github.com/mozilla-services/Dockerflow/#containerized-app-requirements).
 
@@ -41,7 +41,7 @@ Clicking on a secret row now works outside of the text part as well
 
 ### GENERAL
 
-▶ [patch] 
+▶ [patch]
 Remove unneeded nginx config, `tcp_nopush` as it's already set in the default config by nginx.
 
 ## v44.7.0
@@ -54,7 +54,7 @@ Fixes UI menu for the task actions: correct icon for tasks named `^(rerun|retrig
 Improves ViewTask page: show all details without "Show more/show less".
 Shows artifacts by default, if there's less than 10 of them.
 
-▶ [patch] 
+▶ [patch]
 Updated nginx user config location due to node LTS upgrade changing paths from `/etc/nginx/conf.d/default.conf` to `/etc/nginx/http.d/default.conf`.
 Also, added `__heartbeat__` config back to `nginx.conf` to continue to serve 200s until work in https://github.com/taskcluster/taskcluster/issues/4597 is complete.
 
@@ -76,7 +76,7 @@ Include `yarn build` in testing pipeline to avoid inconsistent dependencies.
 
 ### GENERAL
 
-▶ [minor] 
+▶ [minor]
 Node.js major update from 14.17.15 to 16.13.2, the latest LTS version.
 
 Update the worker-ci image from Ubuntu 14.04 to 20.04, the current LTS version.
@@ -84,10 +84,10 @@ This image is used in Taskcluster CI testing. This includes Python 3.8 (as
 python3), needed to build with node-gyp, and no longer includes Python 2.7.
 It also updates the Docker engine from 18.06.3 to 20.10.12.
 
-▶ [minor] 
+▶ [minor]
 Node.js minor update from 16.13.2 to 16.14.0, the latest LTS version.
 
-▶ [minor] 
+▶ [minor]
 This release updates the `docker-worker-websocket-client` and
 `docker-worker-websocket-server` libraries, used by `docker-worker` to execute
 commands inside a running container. These updates fix a bug when reading and
@@ -97,10 +97,10 @@ writing data to the process in the container, which may have been broken since
 This change required for Node v16, and may affect tasks that use this library like the
 [interactive feature](https://docs.taskcluster.net/docs/reference/workers/docker-worker/features#feature-interactive).
 
-▶ [patch] 
+▶ [patch]
 Go patch update from 1.17.6 to 1.17.7.
 
-▶ [patch] 
+▶ [patch]
 Replaced `github.com/dgrijalva/jwt-go` with `github.com/golang-jwt/jwt/v4` as suggested in the *high* dependabot vulnerability listed [here](https://github.com/taskcluster/taskcluster/security/dependabot/19).
 
 ▶ [patch] [#4940](https://github.com/taskcluster/taskcluster/issues/4940)
@@ -113,7 +113,7 @@ Fixes https://github.com/taskcluster/taskcluster/issues/5153. CLI signin now pro
 
 ### DEVELOPERS
 
-▶ [patch] 
+▶ [patch]
 Replacing ui test runner from `karma` to `jest` to allow snapshot testing.
 
 ### Automated Package Updates
@@ -138,7 +138,7 @@ failed to build on M1 MacBooks (arm64).
 
 ### USERS
 
-▶ [minor] 
+▶ [minor]
 Fixed artifacts pagination
 
 ### OTHER
@@ -184,7 +184,7 @@ This version drops support for Python-2.7 in the Python client. Python-2.7's sup
 
 ### GENERAL
 
-▶ [patch] 
+▶ [patch]
 In the Monitoring Services document, display the generated table of scheduled tasks.
 
 ▶ [patch] [bug 1735159](http://bugzil.la/1735159)
@@ -251,21 +251,21 @@ Replacing the UI element for non-editable object display to allow yaml/json seri
 
 ### DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 No changes. Deployment failed for 44.2.1 as well.
 
 ## v44.2.1
 
 ### DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 No changes. Deployment failed on 44.2.0 due to intermittent network issue.
 
 ## v44.2.0
 
 ### GENERAL
 
-▶ [minor] 
+▶ [minor]
 Upgrade from node 14.16.1 to 14.17.5, and from go 1.16.3 to 1.16.7.
 
 ### ADMINS
@@ -416,7 +416,7 @@ As of this version, we recommended setting `procs: 1` for the object service if 
 ▶ [patch] [#4648](https://github.com/taskcluster/taskcluster/issues/4648)
 All services now have a `<service>.pulse_amqps` Helm configuration that controls whether to use amqps (with TLS) to communicate with the Pulse server.  The value defaults to true, matching current behavior, but can be set to false in cases where the AMQP server is local and encryption is unnecessary.
 
-▶ [patch] 
+▶ [patch]
 The object service now defaults to 1 replica, not 0.  The service will not start if it is not properly configured, and we recommend setting the service up at this time, as in the next major release workers will begin uploading objects to the queue.
 
 ### WORKER-DEPLOYERS
@@ -485,7 +485,7 @@ The worker-manager service now ships with the latest CA certs, avoiding the need
 ▶ [patch] [#4696](https://github.com/taskcluster/taskcluster/issues/4696)
 The `github.com/taskcluster/taskcluster/vNN/workers/generic-worker/mocktc` library is no longer publicly exposed.
 
-▶ [patch] 
+▶ [patch]
 Upgrade from node 14.16.0 to 14.16.1 across services and docker-worker.
 
 ### DEPLOYERS
@@ -495,7 +495,7 @@ The object service now serves `text/html` content with `Content-Disposition: att
 
 ### WORKER-DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 Go major version upgrade for generic-worker and worker-runner (go 1.15.6 -> go 1.16.3). Prerequisite step for providing native darwin/arm64 binaries for both (native Apple Silicon builds).
 
 ### USERS
@@ -600,7 +600,7 @@ The worker manager no longer considers quarantined users in its definition of ex
 ▶ [patch] [#2393](https://github.com/taskcluster/taskcluster/issues/2393)
 On the Secrets and Roles pages, a delete button now appears on each row.
 
-▶ [patch] 
+▶ [patch]
 The client libraries (Go, Python, Rust, and JS) now provide convenience methods for uploading/downloading objects to/from the Object Service.
 
 ▶ [patch] [#3964](https://github.com/taskcluster/taskcluster/issues/3964)
@@ -935,7 +935,7 @@ The default `projectId` is `none`.  To avoid permissions errors on upgrade, _we 
 ▶ [minor] [#4270](https://github.com/taskcluster/taskcluster/issues/4270)
 Task manipulation (rerun, cancel, schedule) is now controlled by scopes related to the task's `projectId`, completing implementation of [RFC#163](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0163-project-id.md).  With this change, and with the inclusion of `projectId` in task definitions, administrators can control task manipulation by granting `queue:<verb>-task-in-project:<projectId>` scopes to the appropriate entities.
 
-▶ [patch] 
+▶ [patch]
 Upgrade to Sentry v6, but disable the new
 [session tracking feature](https://docs.sentry.io/product/releases/health/)
 with ``autoSessionTracking: false``, to avoid collecting more data than is
@@ -944,7 +944,7 @@ needed.
 ### USERS
 
 ▶ [MAJOR] [#3581](https://github.com/taskcluster/taskcluster/issues/3581)
-Client methods that took two separate provisionerId and taskQueueId parameters take now a 
+Client methods that took two separate provisionerId and taskQueueId parameters take now a
 single parameter (workerPoolId or taskQueueId depending on the service involved).
 Affected methods are `queue.claimWork`, `queue.pendingTasks`, `purgeCache.purgeCache` and `purgeCache.purgeRequests`.
 The API maintains compatibility at the URL level.
@@ -979,7 +979,7 @@ Client libraries no longer treat redirects as errors.  The methods that return r
 ▶ [minor] [#2393](https://github.com/taskcluster/taskcluster/issues/2393)
 On the page where all roles are listed, added Delete icon beside each role. This helps to delete role faster without going to the Role page.
 
-▶ [minor] 
+▶ [minor]
 Taskcluster now sports a [Rust client](https://crates.io/crates/taskcluster)!
 
 ▶ [patch] [#3789](https://github.com/taskcluster/taskcluster/issues/3789)
@@ -1122,7 +1122,7 @@ The `yarn generate` command no longer combines redundant lines in `yarn.lock` fi
 
 ### DEPLOYERS
 
-▶ [minor] 
+▶ [minor]
 This version removes the unused deployment configuration variable `queue.use_cloud_mirror` and `queue.public_artifact_ec2_proxies`.  Neither served any useful purpose, and it is unlikely that either value appears in any deployment configuration.
 
 ### WORKER-DEPLOYERS
@@ -1246,7 +1246,7 @@ Postgres errors now include a Sentry fingerprint to help distinguish them in err
 
 ### WORKER-DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 This version fixes an error where a worker pool with an invalid providerId would cause all worker provisioning to cease.
 
 ### USERS
@@ -1254,7 +1254,7 @@ This version fixes an error where a worker pool with an invalid providerId would
 ▶ [minor] [#3542](https://github.com/taskcluster/taskcluster/issues/3542)
 Docker-worker no longer supports VNC access to interactive tasks.  This support has been broken for ages and unused.
 
-▶ [patch] 
+▶ [patch]
 The `taskcluster-client-web` library client classes now have a `buildSignedUrlSync` method.
 
 ▶ [patch] [#4056](https://github.com/taskcluster/taskcluster/issues/4056)
@@ -1287,7 +1287,7 @@ This change is applied through an online migration process.
 
 ### USERS
 
-▶ [patch] 
+▶ [patch]
 The octokit throttling plugin has been removed in this release.
 We did not appear to understand its assumptions. It will probably
 come back later once we understand it better.
@@ -1341,7 +1341,7 @@ This presented as unexpected 'Failed to get your artifact.' errors.
 The `takscluster-client-web` library is no longer installable from a `<script>` tag.
 Instead, it should be incorporated into the build process of the consuming application, like any other library.
 
-▶ [patch] 
+▶ [patch]
 Improved error messages related to fetching artifacts for GitHub checks.
 
 ▶ [patch] [#4061](https://github.com/taskcluster/taskcluster/issues/4061)
@@ -1481,7 +1481,7 @@ The `/provisioners/<worker-type>` view now works correctly, fixing the error abo
 
 ### DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 Setting a node `DEBUG` env var via the `debug` field of service configs is supported again.
 If left unset it will default to `''`. Example:
 
@@ -1506,14 +1506,14 @@ This version fixes an issue introduced in v38.0.0 which would cause the log view
 
 ### DEVELOPERS
 
-▶ [patch] 
+▶ [patch]
 Config types of `env:list` now generate the correct type in helm schemas.
 
 ## v38.0.3
 
 ### DEVELOPERS
 
-▶ [patch] 
+▶ [patch]
 Fix one usage of Octokit in release machinery to fix releases
 
 ## v38.0.2
@@ -1538,7 +1538,7 @@ As of this version, the DB upgrade process correctly checks access rights and ta
 ▶ [patch] [#3839](https://github.com/taskcluster/taskcluster/issues/3839)
 This version fixes an error ("e.artifacts is undefined") in the UI when viewing a task without credentials.  It also improves error reporting from the UI in general.
 
-▶ [patch] 
+▶ [patch]
 This version includes an explicit scope to allow the github service to list task groups.  Without this, GitHub projects using the older status API will appear "running" forever.
 
 ### DEVELOPERS
@@ -1554,7 +1554,7 @@ The database abstraction layer now supports "online" migrations, iterating over 
 
 ### DEVELOPERS
 
-▶ [patch] 
+▶ [patch]
 This version fixes an error in docker-worker's release script that caused the 38.0.0 release to fail.
 
 ### OTHER
@@ -1625,7 +1625,7 @@ Notify routes can now include `on-defined`, `on-pending` and `on-running`.
 - `on-transition` for any state transition.
 - `on-resolved` for terminal states (completed, failed and exception).
 
-▶ [patch] 
+▶ [patch]
 taskcluster-web-server is now equipped with the anonymous role. This will allow
 it to assign the anonymous role to users who successfuly login.
 
@@ -1671,7 +1671,7 @@ The `tools/workerproto` Go package is now available for external use, and its AP
 
 ### DEPLOYERS
 
-▶ [minor] 
+▶ [minor]
 A new queue deployment configuration variable `sign_public_artifact_urls` has been added which enables AWS URL signing for all S3 artifacts when true.
 
 ▶ [minor] [#3606](https://github.com/taskcluster/taskcluster/issues/3606)
@@ -1683,7 +1683,7 @@ API endpoint.
 ▶ [patch] [#3588](https://github.com/taskcluster/taskcluster/issues/3588)
 Database URLs can now be specified in the configuration with `ssl=authorized`, in which case Taskcluster will validate the Postgres server's SSL/TLS certificate against trusted root CAs.  It is unusual for databases to be deployed with such certificates.  See [the documentation](https://docs.taskcluster.net/docs/manual/deploying/database#configuration) for details.
 
-▶ [patch] 
+▶ [patch]
 The tutorial in the documentation has been updated and modified to offer better guidance for different deployments of Taskcluster.  The `ui.site_specific` configuration has a new, optional `tutorial_worker_pool_id` property (documented [here](http://docs.taskcluster.net/docs/manual/deploying/ui)) defining a worker pool for use by readers of the tutorial.
 
 ### WORKER-DEPLOYERS
@@ -1743,7 +1743,7 @@ The worker-manager's Azure provider now more accurately tracks the state of work
 ▶ [patch] [#3175](https://github.com/taskcluster/taskcluster/issues/3175)
 Taskcluster's Github integration has been updated to the new standard for webhooks detailed in [this post](https://developer.github.com/changes/2020-04-15-replacing-the-installation-and-installation-repositories-events/)
 
-▶ [patch] 
+▶ [patch]
 The taskcluster-hooks-scheduler will no longer crash while trying to report errors firing hooks.
 
 ### WORKER-DEPLOYERS
@@ -1880,7 +1880,7 @@ The `taskcluster/websocktunnel` and `taskcluster/livelog` docker images now incl
 
 ### WORKER-DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 A worker pool with no launch configs will no longer cause errors (although it will also not create any workers!)
 
 ▶ [patch] [#3169](https://github.com/taskcluster/taskcluster/issues/3169)
@@ -1925,7 +1925,7 @@ Generic-worker now supports reporting runtime errors to worker-manager via worke
 ▶ [MAJOR] [#3148](https://github.com/taskcluster/taskcluster/issues/3148)
 The web-server service now stores Github access tokens in a dedicated table and accesses them directly, rather than via taskcluster-lib-entities.  This upgrade drops existing tokens, meaning that users will need to sign in again after the upgrade is applied.  This migration is very fast.
 
-▶ [MAJOR] 
+▶ [MAJOR]
 With this version, the auth, hooks, and secrets services no longer verify signatures on rows read from database tables.  This is in preparation for a future version where these tables will no longer contain signatures.
 
 ▶ [minor] [#2937](https://github.com/taskcluster/taskcluster/issues/2937)
@@ -1959,7 +1959,7 @@ The `task.extra.github.customCheckRun.annotationsArtifactName` property is now c
 
 ### DEVELOPERS
 
-▶ [patch] 
+▶ [patch]
 The taskcluster-lib-postgres library now allows any Postgres collation that sorts ASCII characters correctly.
 
 ### OTHER
@@ -1993,7 +1993,7 @@ The `namespaces_entities` and `indexed_tasks_entities` tables have now been
 migrated to use relational tables. For deployments with many (millions) of
 tasks, this migration will take too long to perform online, and should be performed in a scheduled downtime.  Note that the ["service migration"](https://github.com/taskcluster/taskcluster/blob/main/dev-docs/postgres-phase-2-guidelines.md#service-migration) portion of the process is not included here, and the index code still uses entities-related functions to acces its data.
 
-▶ [patch] 
+▶ [patch]
 The `db:upgrade` and `dev:db:upgrade` commands can now take an optional database version to upgrade to, defaulting to the most recent version.
 
 ### OTHER
@@ -2055,7 +2055,7 @@ Worker runner can now re-register a worker with worker-manager, refreshing its c
 
 ### USERS
 
-▶ [patch] 
+▶ [patch]
 Docker-worker now includes an error message in the task log when uploading an artifact fails
 
 ▶ [patch] [#2883](https://github.com/taskcluster/taskcluster/issues/2883)
@@ -2084,7 +2084,7 @@ By default it will read `public/github/customCheckRunAnnotations.json` but it ca
 
 ### GENERAL
 
-▶ [patch] 
+▶ [patch]
 Worker Manager now avoids scanning all the workers table in memory to avoid possible OOM issues.
 
 ### WORKER-DEPLOYERS
@@ -2109,7 +2109,7 @@ The new table is called `workers`. `wmworkers_entities` will get deleted.
 
 ### DEVELOPERS
 
-▶ [patch] 
+▶ [patch]
 Release tasks now have access to taskcluster-proxy
 
 ## v30.0.4
@@ -2129,10 +2129,10 @@ The worker-manager azure provider now properly tracks and deletes all disks when
 
 ### DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 A bug in the Azure provider which caused provisioning to fail when handling operations has been fixed.
 
-▶ [patch] 
+▶ [patch]
 Taskcluster services now include metadata at the top level of Fields for `generic.*` logging messages, rather than in `meta` or `fields` sub-properties.
 
 ### WORKER-DEPLOYERS
@@ -2161,10 +2161,10 @@ CI tasks are now generated in a decision task by https://hg.mozilla.org/ci/taskg
 
 ### USERS
 
-▶ [patch] 
+▶ [patch]
 An incorrect use of a relative path caused sign-ins to fail in v30.0.1.  This has been fixed.
 
-▶ [patch] 
+▶ [patch]
 Fix docker worker not working in the latest release of Taskcluster. It was
 previously throwing `taskVolumeBindings is not iterable`.
 
@@ -2179,7 +2179,7 @@ The purge cache UI view now allows filtering a search result by cache name.
 
 ### DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 A typo causing index service not to start up in 30.0.0 is now fixed.
 
 ## v30.0.0
@@ -2195,7 +2195,7 @@ compatible with both cjs and esm.
 
 ### DEPLOYERS
 
-▶ [minor] 
+▶ [minor]
 Database version 11 removes the `widgets` table that was used to test Postgres deployment.  It contains no useful data.
 The hidden `notify.updateWidgets` API method, but this method was never meant to be used so this removal is not considered a breaking change.
 
@@ -2213,10 +2213,10 @@ The unused and unmaintained docker-worker features balrogVPNProxy, balrogStaging
 ▶ [patch] [bug 1638370](http://bugzil.la/1638370)
 Azure provider no longer has a race condition between `registerWorker` and `checkWorker`.
 
-▶ [patch] 
+▶ [patch]
 Docker-worker will now fail early with a useful error message if the loopback audio or video devices are not available, but are configured.
 
-▶ [patch] 
+▶ [patch]
 The docker-worker version is now logged in the `serviceContext.version` property of its structured logs.
 
 ### ADMINS
@@ -2229,7 +2229,7 @@ Worker lifecycle defaults are now being properly applied.
 ▶ [patch] [#1061](https://github.com/taskcluster/taskcluster/issues/1061)
 In client-shell added flag --verbose/-v for getting log to stderr for all the commands.
 
-▶ [patch] 
+▶ [patch]
 The docker-worker payload format is now available in Taskcluster's online documentation.
 
 ### DEVELOPERS
@@ -2253,7 +2253,7 @@ The Azure, AWS, and Google worker provisioners now use an instance's region or l
 ▶ [minor] [#2811](https://github.com/taskcluster/taskcluster/issues/2811)
 The Queue schema now allows for ssh:// source urls.
 
-▶ [patch] 
+▶ [patch]
 An issue with building external urls with traceId'd clients has been fixed
 
 ### OTHER
@@ -2339,7 +2339,7 @@ The worker manager's worker pools are now stored in a normal database table.  Th
 
 ### DEVELOPERS
 
-▶ [patch] 
+▶ [patch]
 Fix missing db TypeError in purge-cache.
 
 ▶ [patch] [bug 1633897](http://bugzil.la/1633897)
@@ -2370,7 +2370,7 @@ taskcluster-client-web no longer shows the 'hawk is undefined' regression error.
 ▶ [patch] [bug 1630023](http://bugzil.la/1630023)
 DB version 8 introduces some utility functions that will be useful in migrating from (and downgrading to) tc-lib-entities-compatible tables.
 
-▶ [patch] 
+▶ [patch]
 The morgan-debug logging for web services has been removed in favor of continued support of our api logging and iprepd logging in production
 
 ### OTHER
@@ -2400,7 +2400,7 @@ The taskcluster-client-web package now contains the `build` directory as expecte
 
 ### GENERAL
 
-▶ [patch] 
+▶ [patch]
 A dependency that was mistakenly thought to be unused has been added back
 
 ▶ [patch] [bug 1627116](http://bugzil.la/1627116)
@@ -2464,7 +2464,7 @@ The Taskcluster livelog tool has been merged into the Taskcluster monorepo, and 
 ▶ [patch] [bug 1591476](http://bugzil.la/1591476)
 Worker-Runner now ignores any worker configuration in a cloud provider's user/meta/custom-data facility, instead using the configuration provided in response to the registerWorker REST API call.  This functionality requires that the service deployment run at least Taskcluster v26.0.0.
 
-▶ [patch] 
+▶ [patch]
 Worker-runner now gives better error messages when it does not have information such as the RootURL in its tagged data.
 
 ▶ [patch] [bug 1516575](http://bugzil.la/1516575)
@@ -2481,15 +2481,15 @@ Workerpools are now a paginated list in the web ui.
 Matrix integration now supports `m.text`, `m.emote`, and `m.notice` msgtypes. The default is
 `m.notice` which was the only value supported previously.
 
-▶ [patch] 
+▶ [patch]
 Make the error messages for custom checkrun text functionality clearer, so that the users don't have to read documentation.
 
 ### DEVELOPERS
 
-▶ [patch] 
+▶ [patch]
 The Go implementation of the runner / worker protocol is now an internal library and not accessible from outside the Taskcluster repository.
 
-▶ [patch] 
+▶ [patch]
 The `yarn dev:init` command since 28.2.3 would create `procs` entries for `write_docs` and `expireSentry` that would cause `yarn dev:apply` to fail.  That has been fixed, but such entries must be manually removed from `dev-config.yml` if they have already been added.
 
 ▶ [patch] [#2465](https://github.com/taskcluster/taskcluster/issues/2465)
@@ -2503,7 +2503,7 @@ The task for `yarn test:meta` was not failing properly in CI. This has been fixe
 
 ### DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 The `db:upgrade` and `db:downgrade` commands now correctly roll back on error.
 
 ### DEVELOPERS
@@ -2531,7 +2531,7 @@ Generic worker tasks on Windows can now define environment variables that contai
 
 ### DEVELOPERS
 
-▶ [patch] 
+▶ [patch]
 Development environments now default to a lower per-pod CPU request, which should help reduce the compute cost of idle development environments.  Run `yarn dev:init` to update these defaults for your dev environment.
 
 ## v28.2.2
@@ -2550,7 +2550,7 @@ Fixes the bug: https://sentry.prod.mozaws.net/operations/taskcluster-community/i
 
 ### DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 Fix error in notify service (monitor is required)
 
 ## v28.2.0
@@ -2562,7 +2562,7 @@ Changelog entries now are categorized by the audience that they are useful for
 
 ### WORKER-DEPLOYERS
 
-▶ [patch] 
+▶ [patch]
 Now, if the worker process running in aws/gcp exits, it will be requested to worker-manager to terminate the instance.
 
 ### ADMINS
@@ -2621,7 +2621,7 @@ Some schemas in the Taskcluster documentation were not displayed with a "Cannot 
 ▶ [patch] [#2486](https://github.com/taskcluster/taskcluster/issues/2486)
 Taskcluster UI now allows users to add matrix rooms to the denylist addresses.
 
-▶ [patch] 
+▶ [patch]
 Taskcluster deployments now support sending results to New Relic (optionally).  See the deployment documentation for details.
 
 ▶ [patch] [bug 1618991](http://bugzil.la/1618991)
@@ -2630,7 +2630,7 @@ The Go client now correctly returns an error when 500 responses are retried to e
 ▶ [patch] [#2498](https://github.com/taskcluster/taskcluster/issues/2498)
 The database upgrade command now checks roles and permissions attributes for database users.
 
-▶ [patch] 
+▶ [patch]
 The linux-arm builds of generic-worker are now considered [Tier-2](https://docs.taskcluster.net/docs/reference/workers/generic-worker/support-tiers), meaning that they are not tested in CI (but are still built).  Testing is also disabled on Windows 10 / amd64 due to lack of capacity, but continues for Windows 2012 / amd64 so Windows / amd64 remains a tier-1 platform.
 
 ▶ [patch] [#2536](https://github.com/taskcluster/taskcluster/issues/2536)
@@ -2648,13 +2648,13 @@ This version adds a temporary "widgets" API method to the notify service.  This 
 
 This new API requires that Helm properties `notify.read_db_url` and `notify.write_db_url` be set correctly as documented in the [deployment documentation](https://docs.taskcluster.net/docs/manual/deploying/database).
 
-▶ [minor] 
+▶ [minor]
 Add worker-runner binaries to the list of release artifacts
 
 ▶ [minor] [bug 1621630](http://bugzil.la/1621630)
 Support for short-circuiting of boolean logic in JSON-e templates such as `.taskcluster.yml` is restored.
 
-▶ [patch] 
+▶ [patch]
 AWS, GCP and Azure providers support the "shutdown" message, which requests
 the worker-manager to terminate the instance
 
@@ -2681,7 +2681,7 @@ The long-deprecated `queue.defineTask` API method has been removed.
 ▶ [minor] [bug 1573192](http://bugzil.la/1573192)
 A task's `metadata.owner` is no longer required to have the form of an email address, as discussed in [RFC#153](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0153-remove-email-validation-for-metadata-owner.md).
 
-▶ [patch] 
+▶ [patch]
 Fixed worker-manager's azure-provider to properly report worker pool errors when provisioning workers fails.
 
 ▶ [patch] [bug 1547731](http://bugzil.la/1547731)
@@ -2689,7 +2689,7 @@ The web-server service now includes structured logging for web-server requests.
 
 ## v26.0.1
 
-▶ [patch] 
+▶ [patch]
 Changes version imports for internal go libraries that weren't properly updated by the release script to v26.
 
 ## v26.0.0
@@ -2697,7 +2697,7 @@ Changes version imports for internal go libraries that weren't properly updated 
 ▶ [MAJOR] [bug 1596177](http://bugzil.la/1596177)
 Legacy create-task scopes without a priority, of the form `queue:create-task:<provisionerId>/<workerType>`, are no longer supported.
 
-▶ [minor] 
+▶ [minor]
 Add support for a simple generic FreeBSD worker
 
 ▶ [minor] [bug 1473155](http://bugzil.la/1473155)
@@ -2706,7 +2706,7 @@ Schemas are now displayed in a two-column viewer to provide a more comprehensive
 ▶ [minor] [bug 1618916](http://bugzil.la/1618916)
 The Azure worker-manager provider now provides bootstrapping information to the worker in tags in addition to the `customData` instance metadata field, and worker-runner now expects to find data in tags.  This avoids the use of the barely-functional customData.  Reading this information from customData is now deprecated, but will continue to work at least until the next major Taskcluster release.
 
-▶ [minor] 
+▶ [minor]
 The json-e library now supports short-circuiting in boolean logic, and so does Taskcluster for taskcluster.ymls now!
 
 ▶ [patch] [bug 1619925](http://bugzil.la/1619925)
@@ -2728,7 +2728,7 @@ The queue service will now start up even if the AWS IP-to-region mapping file is
 ▶ [patch] [bug 1618983](http://bugzil.la/1618983)
 The worker-manager's `static` provider type now supports worker lifecycles, and in particular `reregistrationTimeout`.
 
-▶ [patch] 
+▶ [patch]
 Update `registerWorker` API to grant scopes for workers to terminate themselves
 
 ▶ [patch] [bug 1591476](http://bugzil.la/1591476)
@@ -2815,7 +2815,7 @@ Fixes the version number reported by generic-worker. This was first attempted (u
 ▶ [patch] [bug 1606874](http://bugzil.la/1606874)
 The Taskcluster-GitHub service now checks that the person who *filed* a pull request is a collaborator and the repo from which the changes are being pulled belongs to a collaborator or is the usptream repository.
 
-▶ [patch] 
+▶ [patch]
 This version removes the undocumented, deprecated WebListener class from taskcluster-client-web.
 
 ▶ Additional changes not described here: [bug 1437193](http://bugzil.la/1437193), [#2371](https://github.com/taskcluster/taskcluster/issues/2371), [#2375](https://github.com/taskcluster/taskcluster/issues/2375).
@@ -2886,7 +2886,7 @@ The Taskcluster Python client now has an helper function to easily upload artifa
 The maximum "deadline" has been reverted to 5 days, after its change to 10 days in v24.1.3.  Values over 7 days caused internal server errors anyway, because the Azure queue backend cannot handle delays greater than that value.  Since this functionality never worked, the revert is considered minor.
 
 ▶ [patch] [bug 1606874](http://bugzil.la/1606874)
-Changes behavior of tc-github when checking the user permissions on PR: now tc-github always checks the permissions 
+Changes behavior of tc-github when checking the user permissions on PR: now tc-github always checks the permissions
 of the PR author (or the organization of the PR origin if the PR was made from a fork in an org)
 
 ▶ [patch] [bug 1611266](http://bugzil.la/1611266)
@@ -2898,7 +2898,7 @@ Taskcluster services now run with Node version 12.15.0.
 ▶ [patch] [bug 1584208](http://bugzil.la/1584208)
 The client libraries' documentation has been throughly refactored and is now more helpful and contains better links to the documentation site.
 
-▶ [patch] 
+▶ [patch]
 The deployment documentation now contains information on how Pulse users should be set up, as well as a complete schema for the Helm values file.
 
 ▶ [patch] [bug 1604649](http://bugzil.la/1604649)
@@ -2914,7 +2914,7 @@ This version includes the `taskcluster-lib-postgres` library, but does not use t
 ▶ [minor] [bug 1600966](http://bugzil.la/1600966)
 Adds a provider for azure vm instances to worker-manager.
 
-▶ [patch] 
+▶ [patch]
 The Python client now normalizes the root URL in `optionsFromEnvironment()`.
 
 ▶ [patch] [#2269](https://github.com/taskcluster/taskcluster/issues/2269)
@@ -2954,7 +2954,7 @@ Additional changes to the release process.
 
 ## v24.1.5
 
-▶ [patch] 
+▶ [patch]
 Changes only to the release process.
 
 ## v24.1.4
@@ -2992,10 +2992,10 @@ The notify service's irc process now logs a bit more contextual information abou
 
 ## v24.1.1
 
-▶ [patch] 
+▶ [patch]
 Fix regression in Taskcluster UI custom actions in the task view not being triggered.
 
-▶ [patch] 
+▶ [patch]
 Provisioning logic now counts workers correctly
 
 ▶ [patch] [#2155](https://github.com/taskcluster/taskcluster/issues/2155)
@@ -3062,7 +3062,7 @@ Workers in the UI are now displayed in a table instead of cards.
 ▶ [MAJOR] [bug 1598758](http://bugzil.la/1598758)
 Credentials for the `auth.awsS3Credentials` method are no longer specified in Helm properties `auth.aws_access_key_id`, `auth.aws_secret_access_key`, and `auth.aws_region`.  Instead this information is now configured in `auth.aws_credentials_allowed_buckets` as described in [the deployment docs](https://docs.taskcluster.net/docs/manual/deploying/cloud-credentials).  The region is no longer required, but the configuration must now include a list of supported buckets.  For a quick update, set `auth.aws_credentials_allowed_buckets` to `[{"accessKeyId": "<access_key_id>", "secretAccessKey": "<secret_access_key>", "buckets": ["<bucket_name>"]}]`.
 
-▶ [MAJOR] 
+▶ [MAJOR]
 Services that previously used hard-coded values despite advertising Helm parameters now honor those optional Helm parameters:
 * `notify.irc_port`
 * `github.provisioner_id`
@@ -3109,7 +3109,7 @@ Added logging around worker provisioning logic to keep better track of workers.
    reported to the taskcluster team if it occurs
 *  This state will also report an error to a configured error reporter if you have one.
 
-▶ [patch] 
+▶ [patch]
 Fix URL construction for signing in with multiple scopes.
 
 ▶ [patch] [bug 1597331](http://bugzil.la/1597331)
@@ -3154,7 +3154,7 @@ Taskcluster UI now properly aligns menu items in  action menu (speed dial).
 ▶ [patch] [#2076](https://github.com/taskcluster/taskcluster/issues/2076)
 Taskcluster UI speed dial component no longer toggles on hover.
 
-▶ [patch] 
+▶ [patch]
 Taskcluster login no longer throws a TypeError when a profile from the PersonAPI has no identities when logging in via auth0.
 
 ▶ [patch] [bug 1597922](http://bugzil.la/1597922)
@@ -3194,16 +3194,16 @@ getInstallations endpoint was renamed to listInstallations in octokit. This patc
 
 ## v23.0.0
 
-▶ [MAJOR] 
+▶ [MAJOR]
 Support for several deprecated services has been removed.
 * The login service has been removed from the codebase and from all client libraries.  It was retired on November 9, 2019 when the external services that depended on it migrated to third-party login support.  It was never part of the Helm deployment.
 * Support for the deprecated ec2-manager and aws-provisioner services has been removed from all client libraries.  These services are no longer running, so this should have minimal impact.
 * Support for the long-removed events service and the never-released gce-provisioner service has been removed from the Go client.
 
-▶ [MAJOR] 
+▶ [MAJOR]
 The Taskcluster Go client no longer uses the deprecated concept of BaseURL, instead requiring a RootURL.  Users of the `New` and `NewFromEnv` functions do not need to change anything.  However, any code that has manually constructed a client object, or set such an object's `BaseURL` property, must be updated to use `RootURL` instead.
 
-▶ [MAJOR] 
+▶ [MAJOR]
 The `auth.statsumToken` method has been removed.  The service for which this returns a token has not run for over a year, so the impact is minimal.
 
 ▶ [MAJOR] [bug 1577785](http://bugzil.la/1577785)
@@ -3211,7 +3211,7 @@ The artifact types `blob` and `azure` are no longer supported.  Neither of these
 
 The [Object Service](https://bugzilla.mozilla.org/show_bug.cgi?id=1471582) will implement much of the same functionality, but likely with subtle differences.  Removing these unused artifact types now will simplify migration to the Object Service once it is developed.
 
-▶ [MAJOR] 
+▶ [MAJOR]
 The auth service no longer accepts Helm configuration properties `auth.client_table_name` or `auth.role_container_name`.  These values are now assumed to be `Clients` and `auth-production-roles`, respectively.  No known deployments of Taskcluster use any other value.
 
 The auth service now honors `sentry_organization`, `sentry_host`, `sentry_team`, and `sentry_key_prefix`.  Previously, the values of these properties were ignored.
@@ -3272,7 +3272,7 @@ This release upgrades Hawk, the underlying authentication mechanism for REST API
 
 ## v22.1.1
 
-▶ [patch] 
+▶ [patch]
 Third-Party Logins now correctly intersect the requested scopes with the user's *expanded* scopes.
 Previous versions would result in a client with an empty set of scopes, when the required scopes were associated with a role given to the user.
 
@@ -3305,7 +3305,7 @@ through the normal right-click-copy-link.
 The taskcluster-github service now correctly uses the `github.bot_username` configuration to look up the latest status for a branch.
 Deployments of Taskcluster should double-check that this value is set correctly; see the [deployment docs](https://docs.taskcluster.net/docs/manual/deploying/github) for details.
 
-▶ [patch] 
+▶ [patch]
 The taskcluster-index service now responds with a 404 and "Indexed task not found" when a task is not found, instead of the misleading "Indexed task has expired".
 
 ▶ [patch] [bug 1593754](http://bugzil.la/1593754)
@@ -3408,7 +3408,7 @@ is a good idea.
 [MAJOR] ([bug 1578900](http://bugzil.la/1578900)) * Worker Manager AWS Provider now requires the `ec2:DescribeRegions` permission in addition to the previous permissions.
   The full permissions set is documented in the  deploying workers section of the manual.
 * Worker Manager AWS Provider now uses all the configs from the array of `launchConfigs` worker pools use, rather than a
-  single, randomly selected config. This allows per-region and per-zone resources to be specified. MinCapacity and 
+  single, randomly selected config. This allows per-region and per-zone resources to be specified. MinCapacity and
   MaxCapacity are now specified for the whole worker pool as opposed to for every individual config.
 
 ```diff
@@ -3501,7 +3501,7 @@ No changes
 [MAJOR] ([bug 1583935](http://bugzil.la/1583935)) Administrative scopes for worker pools are now `worker-manager:manage-worker-pool:<workerPoolId>`.
 Existing `worker-manager:{create,update}-worker-type:<workerPoolId>` scopes are no longer recognized.
 
-[minor] ([bug 1323871](http://bugzil.la/1323871)) Taskcluster now issues scopes based on repo access for Github logins. 
+[minor] ([bug 1323871](http://bugzil.la/1323871)) Taskcluster now issues scopes based on repo access for Github logins.
 Static clients need to be updated in deployments.
 
 ([bug 1582376](http://bugzil.la/1582376)) Taskcluster now uses the AMQP server's value for `frame_max`, rather than enforcing its own limit of 4k.

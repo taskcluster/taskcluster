@@ -5,7 +5,7 @@ methods:
     description: |-
       Get the un-expired tasks that depend on this one, limiting to only (un)satisfied
       dependencies if `satisfied_in` is not null.
-      
+
       Only dependencies with `dependent_task_id > tasks_after_in` are returned.
       This supports paginated queries that are not susceptible to rows being
       added or removed.  Typically only one of `page_offset_in` and
@@ -32,4 +32,3 @@ methods:
         limit get_page_limit(page_size_in)
         offset get_page_offset(page_offset_in);
       end
-

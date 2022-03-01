@@ -14,7 +14,7 @@ The deviations from OAuth2 are as follows:
 * The authorize request has a nonstandard, optional expires query parameter.
 
 ## OAuth2 Authorization Server
-   
+
 Taskcluster implements the OAuth2 protocol, supporting both the "Implicit" and "Authorization Code" flows.
 The "Resource Owner Password Credentials" and "Client Credentials" flows are not supported.
 Clients are [pre-defined](/docs/manual/deploying/third-party), and each pre-defined client indicates which flow it

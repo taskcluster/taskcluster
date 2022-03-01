@@ -86,7 +86,7 @@ suite(testing.suiteName(), function() {
       // provisioner_id and worker_type during a downgrade
       let res;
       try {
-        res = await client.query(`select task_id from tasks 
+        res = await client.query(`select task_id from tasks
                                 where worker_type is null or provisioner_id is null`);
       } catch (err) {
         if (err.code !== UNDEFINED_COLUMN) {
@@ -103,7 +103,7 @@ suite(testing.suiteName(), function() {
 
       // check that get_task_by_task_groups works during upgrade, downgrade
       res = await client.query(`
-        select task_id, provisioner_id, worker_type 
+        select task_id, provisioner_id, worker_type
           from get_tasks_by_task_group('tgid', 200, 0)`);
       const pps = res.rows.map(({ provisioner_id }) => provisioner_id);
       assert.deepEqual(new Set(pps), new Set(['pp']));

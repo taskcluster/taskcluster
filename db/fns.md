@@ -282,7 +282,7 @@ modification of the table.  Results are sorted by role_id.
 * *Returns*: `void`
 * *Last defined on version*: 25
 
-Replace the current set of roles entirely with the given set of roles, if the current etag matches the existing etag. 
+Replace the current set of roles entirely with the given set of roles, if the current etag matches the existing etag.
 The role objects are specified with underscore spelling (`role_id`).
 If the etag has changed, this returns P0004 signalling that the caller should fetch a fresh set of roles and try again.
 If there are no existing roles, then the old etag is not used.
@@ -1381,7 +1381,7 @@ status, or nothing if the current status was not as expected.
 
 Check the given task for a claim on the given run expiring at the given
 time.  If the run is still running, it is marked as claim-expired and
-a retry scheduled (if retries_left).  
+a retry scheduled (if retries_left).
 
 This returns the task's updated status, or nothing if the current status
 was not as expected.
@@ -2041,7 +2041,7 @@ as expected.
 * *Last defined on version*: 64
 
 Recognize that a task queue has been seen, creating it if necessary, updating
-its properties if not null, and in any case bumping its last seen time time. 
+its properties if not null, and in any case bumping its last seen time time.
 The expiration time is not allowed to move backward.
 
 This function always writes to the DB, so calls should be suitably rate-limited at the

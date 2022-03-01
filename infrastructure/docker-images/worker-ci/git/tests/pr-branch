@@ -16,5 +16,3 @@ test -f $STAGE_DIR/branch
 test -f $STAGE_DIR/pr
 # But have commits from master too.
 test -f $STAGE_DIR/master
-
-

@@ -29,7 +29,7 @@ updates:
     directory: "/ui"
     schedule:
       interval: "monthly"
-      
+
   # Maintain node dependencies for docker-worker
   - package-ecosystem: "npm"
     directory: "/workers/docker-worker"

@@ -7,6 +7,7 @@ web:
     - '/login/*'
     - '/subscription'
     - '/graphql'
+    - '/api/web-server/*'
 scanner:
   type: cron
   schedule: '0 0 * * *'

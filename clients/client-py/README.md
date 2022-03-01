@@ -443,7 +443,7 @@ For more details on Taskcluster environment variables, [here is the documentatio
 
 ### Loading secrets across multiple authentications
 
-Another available utility is `taskcluster.helper.load_secrets` which allows you to retrieve a secret using an authenticated `taskcluster.Secrets` instance (using `TaskclusterConfig.get_service` or the synchronous class directly). 
+Another available utility is `taskcluster.helper.load_secrets` which allows you to retrieve a secret using an authenticated `taskcluster.Secrets` instance (using `TaskclusterConfig.get_service` or the synchronous class directly).
 
 This utility loads a secret, but allows you to:
 1. share a secret across multiple projects, by using key prefixes inside the secret,
@@ -544,7 +544,3 @@ That is, a client with version x.y.z contains API methods corresponding to Taskc
 Taskcluster is careful to maintain API compatibility, and guarantees it within a major version.
 That means that any client with version x.* will work against any Taskcluster services at version x.*, and is very likely to work for many other major versions of the Taskcluster services.
 Any incompatibilities are noted in the [Changelog](https://github.com/taskcluster/taskcluster/blob/main/CHANGELOG.md).
-
-
-
-
