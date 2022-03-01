@@ -7,7 +7,7 @@ begin
       begin
         -- note that because this function is called in a restricted context during
         -- index analysis, it must explicitly reference the schema for the digest
-        -- function; see 
+        -- function; see
         -- https://www.postgresql.org/message-id/8572.1531922146%40sss.pgh.pa.us
         return encode(public.digest(t, 'sha512'), 'hex');
       end;

@@ -21,7 +21,7 @@ tasks:
         description: "description"
         owner: "test@test.com"
         source: "http://mrrrgn.com"
-  
+
   - $if: ' tasks_for == "github-pull-request" '
     then:
       taskId: {$eval: as_slugid('pull')}
@@ -38,7 +38,7 @@ tasks:
         description: "description2"
         owner: "test@test.com"
         source: "http://mrrrgn.com"
-  
+
   - $if: ' tasks_for == "github-release" '
     then:
       taskId: {$eval: as_slugid('release')}

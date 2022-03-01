@@ -43,7 +43,7 @@ downgradeScript: |-
     create function online_downgrade_v60_is_complete() returns boolean as $$
     begin
       perform * from tasks where worker_type is null or provisioner_id is null limit 1;
-      return not found; 
+      return not found;
     end
     $$ language plpgsql;
 

@@ -1,0 +1,29 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+        # Trims trailing whitespace
+    -   id: trailing-whitespace
+        # Makes sure files end in a newline and only a newline
+    -   id: end-of-file-fixer
+        # Check for files that contain merge conflict strings
+    -   id: check-merge-conflict
+
+-   repo: https://github.com/marco-c/taskcluster_yml_validator
+    rev: v0.0.8
+    hooks:
+        # Validates .taskcluster.yml file against possible GitHub events
+    -   id: taskcluster_yml
+
+exclude: |
+    (?x)(
+        ^generated/|
+        ^infrastructure/k8s/values.schema.json|
+        ^services/auth/src/static-scopes.json|
+        ^clients/client-rust/integration_tests/src/lib.rs|
+        ^ui/src/components/AuthConsent/__snapshots__/|
+        ^ui/src/components/TaskDetailsCard/__snapshots__/|
+        ^services/worker-manager/test/fixtures/
+    )

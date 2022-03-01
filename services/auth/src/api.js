@@ -1058,7 +1058,7 @@ builder.declare({
     '',
     'Rather than using real credentials, this endpoint accepts requests with',
     'clientId `tester` and accessToken `no-secret`. That client\'s scopes are',
-    '`[\'test:*\', \'auth:create-client:test:*\']`.  The call fails if the ',
+    '`[\'test:*\', \'auth:create-client:test:*\']`.  The call fails if the',
     '`test:authenticate-get` scope is not available.',
     '',
     'The request is validated, with any certificate, authorizedScopes, etc.',

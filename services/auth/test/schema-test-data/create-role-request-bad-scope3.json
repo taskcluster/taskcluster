@@ -1,5 +1,4 @@
-{ 
+{
   "scopes": ["ab\tcd", "good"],
   "description": "Simple"
 }
-

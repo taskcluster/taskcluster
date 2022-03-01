@@ -18,7 +18,7 @@ suite(testing.suiteName(), function() {
           select generate_series(1, 99) as i
         )
         insert into cache_purges (provisioner_id, worker_type, cache_name, before, expires)
-        select 
+        select
           'pp' as provisioner_id,
           'wt-' || gen.i as worker_type,
           'cc-' || gen.i as cache_name,

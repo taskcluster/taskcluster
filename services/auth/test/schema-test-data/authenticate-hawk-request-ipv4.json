@@ -1,4 +1,4 @@
-{ 
+{
   "method": "get",
   "resource": "/v1/client/authed-client/credentials?hello=world",
   "host": "127.0.0.1",

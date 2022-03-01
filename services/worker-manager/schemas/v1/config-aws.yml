@@ -87,5 +87,3 @@ required:
   - launchConfigs
   - minCapacity
   - maxCapacity
-
-  

@@ -11,11 +11,11 @@ properties:
     items:
       type: object
       properties:
-        hookGroupId:        {$const: hookGroupId}     
-        hookId:             {$const: hookId} 
+        hookGroupId:        {$const: hookGroupId}
+        hookId:             {$const: hookId}
         firedBy:
           type: string
-          enum: 
+          enum:
             - schedule
             - triggerHook
             - triggerHookWithToken

@@ -34,28 +34,28 @@ let request     = require('superagent');
 
 let task; // same as before..
 
-let runTask = async () => {    
+let runTask = async () => {
   let taskId = taskcluster.slugid();
-  let queue = new taskcluster.Queue();    
-  let result = await queue.createTask(taskId, task);    
-    
-  console.log("Created task:\n" + JSON.stringify(result.status, null, 2));    
-  console.log("Inspect it at:");    
+  let queue = new taskcluster.Queue();
+  let result = await queue.createTask(taskId, task);
+
+  console.log("Created task:\n" + JSON.stringify(result.status, null, 2));
+  console.log("Inspect it at:");
   console.log(`${process.env.TASKCLUSTER_ROOT_URL}/tasks/${taskId}`);
 
   while (1) {
     console.log("waiting for completion..");
-    let result = await queue.status(taskId);    
-    
-    if (['completed', 'failed', 'exception'].indexOf(result.status.state) !== -1) {    
-      console.log("Task is now resolved...");    
+    let result = await queue.status(taskId);
+
+    if (['completed', 'failed', 'exception'].indexOf(result.status.state) !== -1) {
+      console.log("Task is now resolved...");
       break;
-    }    
+    }
 
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
-  result = await queue.listLatestArtifacts(taskId);    
+  result = await queue.listLatestArtifacts(taskId);
   console.log("Artifacts:");
   for (let artifact of result.artifacts) {
     // Build URL for the artifact

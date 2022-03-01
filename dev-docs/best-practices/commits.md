@@ -1,7 +1,7 @@
 # Creating Good Commit Messages
 
 Having a well-crafted commit message will save you from using many tools to inspect changes
-in a project. Proper commit messages will make it easy to understand why a 
+in a project. Proper commit messages will make it easy to understand why a
 change was made at a particular time. This page explains the approach we recommend using in
 commit messages.
 
@@ -63,7 +63,7 @@ Message Footer
 Strip trailing and leading spaces from scope names
 
 Recorded scopes previously contained trailing and leading
-spaces. This caused scope validation to fail.   
+spaces. This caused scope validation to fail.
 
 Closes #112
 ```

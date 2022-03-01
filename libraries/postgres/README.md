@@ -268,7 +268,7 @@ These are specified in `migrationScript` and `downgradeScript` as described in t
 
 Each is run in a single transaction, in which the versions's updated stored functions are also defined.
 
-The `migrationScript` should perform all of the required schema changes, including adjusting permissions using `grant` and `revoke`. 
+The `migrationScript` should perform all of the required schema changes, including adjusting permissions using `grant` and `revoke`.
 All operations in the migration script should be "quick" as defined above: no table scans, no locks held for a long time.
 Note that Postgres locks are held until the end of the transaction, so it is wise to split up a migration that locks many tables into a sequence of independent versions.
 

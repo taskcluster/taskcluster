@@ -222,4 +222,3 @@ If you set up a taskcluster-github app, you probably want to test a variety of i
 2. Put together a body of your pulse message. Make sure you use the schemas. It should be in JSON format.
 3. Look up the routing key and exchange you need (most likely you are testing a handler - so look up the bindings for that handler in the code).
 3. Navigate to the management UI on the RabbitMQ server (the url from `pulseHostname`), login using the above credentials and go to the exchange of interest. You will see *Publish Message* section in the UI. Fill out the *Routing Key* and *Payload* fields (the result of the step 2 goes into the latter). Press *Publish Message* and you're done.
-
