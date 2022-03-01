@@ -9545,8 +9545,7 @@
             "pulse_password",
             "aws_access_key_id",
             "aws_secret_access_key",
-            "artifact_region",
-            "aws_endpoint"
+            "artifact_region"
           ],
           "title": "Configuration options for queue",
           "type": "object"
