@@ -213,8 +213,16 @@ export default class ConnectionDataTable extends Component {
   };
 
   renderTablePagination = (colSpan, count) => {
-    const { classes, pageSize } = this.props;
+    const { classes, connection, pageSize } = this.props;
     const { loading, page } = this.state;
+
+    if (
+      !connection?.pageInfo?.hasNextPage &&
+      !connection?.pageInfo?.hasPreviousPage
+    ) {
+      // no pagination needed
+      return null;
+    }
 
     if (loading) {
       return (
@@ -268,11 +276,12 @@ export default class ConnectionDataTable extends Component {
       allowFilter && filterFunc
         ? edges.filter(row => filterFunc(row, filterValue))
         : edges;
+    const showFilter = allowFilter && edges.length > 10;
 
     return (
       <Fragment>
         {!withoutTopPagination && this.renderTablePagination(colSpan, count)}
-        {allowFilter && (
+        {showFilter && (
           <TextField
             className={classes.filter}
             hiddenLabel
