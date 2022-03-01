@@ -326,7 +326,7 @@ Warning: by using this approach, you are responsible for maintenance and backups
       enabled: true
 
    image:
-      tag: 11  # TaskCluster currently supports version 11
+      tag: 11  # Taskcluster currently supports version 11
    ```
 
    More details at <https://github.com/bitnami/charts/tree/master/bitnami/postgresql>

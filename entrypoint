@@ -79,6 +79,8 @@ script/dev:db:downgrade) shift; exec yarn run dev:db:downgrade "${@}";;
 script/dev:apply) shift; exec yarn run dev:apply "${@}";;
 script/dev:delete) shift; exec yarn run dev:delete "${@}";;
 script/dev:verify) shift; exec yarn run dev:verify "${@}";;
+script/dev:ensure:db) shift; exec yarn run dev:ensure:db "${@}";;
+script/dev:ensure:rabbit) shift; exec yarn run dev:ensure:rabbit "${@}";;
 script/smoketest) shift; exec yarn run smoketest "${@}";;
 script/test:meta) shift; exec yarn run test:meta "${@}";;
 script/db:upgrade) shift; exec yarn run db:upgrade "${@}";;
