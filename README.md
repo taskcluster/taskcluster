@@ -22,6 +22,9 @@
   <a href="https://app.netlify.com/sites/taskcluster-web/deploys">
     <img src="https://api.netlify.com/api/v1/badges/bc284a9a-8986-4ba4-b91a-3ede1a56e5a4/deploy-status" alt="netlify" />
   </a>
+  <a href="https://results.pre-commit.ci/latest/github/taskcluster/taskcluster/main">
+    <img src="https://results.pre-commit.ci/badge/github/taskcluster/taskcluster/main.svg" alt="pre-commit" />
+  </a>
 </p>
 
 <hr/>
