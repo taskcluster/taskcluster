@@ -10,9 +10,9 @@ export default class Auth extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.lbheartbeat.entry = {"args":[],"category":"Load Balancer Heartbeat","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.version.entry = {"args":[],"category":"Taskcluster Version","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.listClients.entry = {"args":[],"category":"Clients","method":"get","name":"listClients","output":true,"query":["prefix","continuationToken","limit"],"route":"/clients/","scopes":"auth:list-clients","stability":"stable","type":"function"}; // eslint-disable-line
     this.client.entry = {"args":["clientId"],"category":"Clients","method":"get","name":"client","output":true,"query":[],"route":"/clients/<clientId>","scopes":"auth:get-client:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createClient.entry = {"args":["clientId"],"category":"Clients","input":true,"method":"put","name":"createClient","output":true,"query":[],"route":"/clients/<clientId>","scopes":{"AllOf":["auth:create-client:<clientId>",{"each":"<scope>","for":"scope","in":"scopes"}]},"stability":"stable","type":"function"}; // eslint-disable-line
@@ -42,6 +42,7 @@ export default class Auth extends Client {
     this.authenticateHawk.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"authenticateHawk","output":true,"query":[],"route":"/authenticate-hawk","stability":"stable","type":"function"}; // eslint-disable-line
     this.testAuthenticate.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"testAuthenticate","output":true,"query":[],"route":"/test-authenticate","stability":"stable","type":"function"}; // eslint-disable-line
     this.testAuthenticateGet.entry = {"args":[],"category":"Scopes and Auth","method":"get","name":"testAuthenticateGet","output":true,"query":[],"route":"/test-authenticate-get/","stability":"stable","type":"function"}; // eslint-disable-line
+    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -433,5 +434,15 @@ export default class Auth extends Client {
     this.validate(this.testAuthenticateGet.entry, args);
 
     return this.request(this.testAuthenticateGet.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with a service heartbeat.
+  // This endpoint is used to check on backing services this service
+  // depends on.
+  /* eslint-enable max-len */
+  heartbeat(...args) {
+    this.validate(this.heartbeat.entry, args);
+
+    return this.request(this.heartbeat.entry, args);
   }
 }

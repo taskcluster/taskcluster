@@ -305,3 +305,15 @@ func (index *Index) FindArtifactFromTask_SignedURL(indexPath, name string, durat
 	cd := tcclient.Client(*index)
 	return (&cd).SignedURL("/task/"+url.QueryEscape(indexPath)+"/artifacts/"+url.QueryEscape(name), nil, duration)
 }
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (index *Index) Heartbeat() error {
+	cd := tcclient.Client(*index)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
+}

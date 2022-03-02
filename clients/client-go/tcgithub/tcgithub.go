@@ -301,3 +301,15 @@ func (github *Github) CreateComment(owner, repo, number string, payload *CreateC
 	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/issues/"+url.QueryEscape(number)+"/comments", nil, nil)
 	return err
 }
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (github *Github) Heartbeat() error {
+	cd := tcclient.Client(*github)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
+}

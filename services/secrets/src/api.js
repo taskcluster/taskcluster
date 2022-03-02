@@ -134,3 +134,22 @@ builder.declare({
     continuationToken,
   });
 });
+
+builder.declare({
+  method: 'get',
+  route: '/__heartbeat__',
+  name: 'heartbeat',
+  scopes: null,
+  category: 'Monitoring',
+  stability: 'stable',
+  title: 'Heartbeat',
+  description: [
+    'Respond with a service heartbeat.',
+    '',
+    'This endpoint is used to check on backing services this service',
+    'depends on.',
+  ].join('\n'),
+}, function(_req, res) {
+  // TODO: add implementation
+  res.reply({});
+});

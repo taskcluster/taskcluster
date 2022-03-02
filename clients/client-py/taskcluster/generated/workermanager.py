@@ -277,6 +277,20 @@ class WorkerManager(BaseClient):
 
         return self._makeApiCall(self.funcinfo["reregisterWorker"], *args, **kwargs)
 
+    def heartbeat(self, *args, **kwargs):
+        """
+        Heartbeat
+
+        Respond with a service heartbeat.
+
+        This endpoint is used to check on backing services this service
+        depends on.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["heartbeat"], *args, **kwargs)
+
     funcinfo = {
         "createWorker": {
             'args': ['workerPoolId', 'workerGroup', 'workerId'],
@@ -302,6 +316,13 @@ class WorkerManager(BaseClient):
             'name': 'deleteWorkerPool',
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
+            'stability': 'stable',
+        },
+        "heartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'heartbeat',
+            'route': '/__heartbeat__',
             'stability': 'stable',
         },
         "lbheartbeat": {

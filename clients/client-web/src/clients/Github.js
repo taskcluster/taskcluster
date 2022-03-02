@@ -10,9 +10,9 @@ export default class Github extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.lbheartbeat.entry = {"args":[],"category":"Load Balancer Heartbeat","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.version.entry = {"args":[],"category":"Taskcluster Version","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.githubWebHookConsumer.entry = {"args":[],"category":"Github Service","method":"post","name":"githubWebHookConsumer","query":[],"route":"/github","stability":"stable","type":"function"}; // eslint-disable-line
     this.builds.entry = {"args":[],"category":"Github Service","method":"get","name":"builds","output":true,"query":["continuationToken","limit","organization","repository","sha"],"route":"/builds","scopes":"github:list-builds","stability":"stable","type":"function"}; // eslint-disable-line
     this.badge.entry = {"args":["owner","repo","branch"],"category":"Github Service","method":"get","name":"badge","query":[],"route":"/repository/<owner>/<repo>/<branch>/badge.svg","scopes":"github:get-badge:<owner>:<repo>:<branch>","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -20,6 +20,7 @@ export default class Github extends Client {
     this.latest.entry = {"args":["owner","repo","branch"],"category":"Github Service","method":"get","name":"latest","query":[],"route":"/repository/<owner>/<repo>/<branch>/latest","scopes":"github:latest-status:<owner>:<repo>:<branch>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createStatus.entry = {"args":["owner","repo","sha"],"category":"Github Service","input":true,"method":"post","name":"createStatus","query":[],"route":"/repository/<owner>/<repo>/statuses/<sha>","scopes":"github:create-status:<owner>/<repo>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.createComment.entry = {"args":["owner","repo","number"],"category":"Github Service","input":true,"method":"post","name":"createComment","query":[],"route":"/repository/<owner>/<repo>/issues/<number>/comments","scopes":"github:create-comment:<owner>/<repo>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -114,5 +115,15 @@ export default class Github extends Client {
     this.validate(this.createComment.entry, args);
 
     return this.request(this.createComment.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with a service heartbeat.
+  // This endpoint is used to check on backing services this service
+  // depends on.
+  /* eslint-enable max-len */
+  heartbeat(...args) {
+    this.validate(this.heartbeat.entry, args);
+
+    return this.request(this.heartbeat.entry, args);
   }
 }
