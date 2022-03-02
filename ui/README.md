@@ -87,7 +87,7 @@ the message will show up a day later. Banners are mainly used to inform users of
 
 ### Login Strategies
 
-Login strategies are specifed in `UI_LOGIN_STRATEGY_NAMES`, split on space. They are used to identify which
+Login strategies are specified in `UI_LOGIN_STRATEGY_NAMES`, split on space. They are used to identify which
 login widget(s) to display to the end user.
 
 Taskcluster supports the following strategies:
