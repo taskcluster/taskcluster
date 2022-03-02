@@ -161,9 +161,9 @@ class ChangeLog {
     }
 
     const levelLabels = {
-      'major': '[MAJOR] ',
-      'minor': '[minor] ',
-      'patch': '[patch] ',
+      'major': '[MAJOR]',
+      'minor': '[minor]',
+      'patch': '[patch]',
     };
 
     const silent = this.snippets.filter(sn => sn.level === 'silent' && sn.reference);
@@ -194,7 +194,7 @@ class ChangeLog {
         const snippets = categorizedSnippets[audience]
           .map(({ level, reference, body }) => (
             '▶ ' + levelLabels[level] +
-            (reference ? reference : '') + '\n' +
+            (reference ? ' ' + reference : '') + '\n' +
             body.trim()
           ))
           .join('\n\n');
