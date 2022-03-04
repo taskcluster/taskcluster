@@ -245,3 +245,15 @@ func (object *Object) Download_SignedURL(name string, duration time.Duration) (*
 	cd := tcclient.Client(*object)
 	return (&cd).SignedURL("/download/"+url.QueryEscape(name), nil, duration)
 }
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (object *Object) Heartbeat() error {
+	cd := tcclient.Client(*object)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
+}

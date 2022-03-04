@@ -10,13 +10,14 @@ export default class Secrets extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.lbheartbeat.entry = {"args":[],"category":"Load Balancer Heartbeat","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.version.entry = {"args":[],"category":"Taskcluster Version","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.set.entry = {"args":["name"],"category":"Secrets Service","input":true,"method":"put","name":"set","query":[],"route":"/secret/<name>","scopes":"secrets:set:<name>","stability":"stable","type":"function"}; // eslint-disable-line
     this.remove.entry = {"args":["name"],"category":"Secrets Service","method":"delete","name":"remove","query":[],"route":"/secret/<name>","scopes":"secrets:set:<name>","stability":"stable","type":"function"}; // eslint-disable-line
     this.get.entry = {"args":["name"],"category":"Secrets Service","method":"get","name":"get","output":true,"query":[],"route":"/secret/<name>","scopes":"secrets:get:<name>","stability":"stable","type":"function"}; // eslint-disable-line
     this.list.entry = {"args":[],"category":"Secrets Service","method":"get","name":"list","output":true,"query":["continuationToken","limit"],"route":"/secrets","scopes":"secrets:list-secrets","stability":"stable","type":"function"}; // eslint-disable-line
+    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -88,5 +89,15 @@ export default class Secrets extends Client {
     this.validate(this.list.entry, args);
 
     return this.request(this.list.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with a service heartbeat.
+  // This endpoint is used to check on backing services this service
+  // depends on.
+  /* eslint-enable max-len */
+  heartbeat(...args) {
+    this.validate(this.heartbeat.entry, args);
+
+    return this.request(this.heartbeat.entry, args);
   }
 }

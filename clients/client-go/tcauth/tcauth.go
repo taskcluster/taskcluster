@@ -911,3 +911,15 @@ func (auth *Auth) TestAuthenticateGet_SignedURL(duration time.Duration) (*url.UR
 	cd := tcclient.Client(*auth)
 	return (&cd).SignedURL("/test-authenticate-get/", nil, duration)
 }
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (auth *Auth) Heartbeat() error {
+	cd := tcclient.Client(*auth)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
+}

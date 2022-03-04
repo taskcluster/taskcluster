@@ -223,3 +223,15 @@ func (secrets *Secrets) List_SignedURL(continuationToken, limit string, duration
 	cd := tcclient.Client(*secrets)
 	return (&cd).SignedURL("/secrets", v, duration)
 }
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (secrets *Secrets) Heartbeat() error {
+	cd := tcclient.Client(*secrets)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
+}
