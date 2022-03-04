@@ -153,6 +153,20 @@ class Github(BaseClient):
 
         return self._makeApiCall(self.funcinfo["createComment"], *args, **kwargs)
 
+    def heartbeat(self, *args, **kwargs):
+        """
+        Heartbeat
+
+        Respond with a service heartbeat.
+
+        This endpoint is used to check on backing services this service
+        depends on.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["heartbeat"], *args, **kwargs)
+
     funcinfo = {
         "badge": {
             'args': ['owner', 'repo', 'branch'],
@@ -191,6 +205,13 @@ class Github(BaseClient):
             'method': 'post',
             'name': 'githubWebHookConsumer',
             'route': '/github',
+            'stability': 'stable',
+        },
+        "heartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'heartbeat',
+            'route': '/__heartbeat__',
             'stability': 'stable',
         },
         "latest": {

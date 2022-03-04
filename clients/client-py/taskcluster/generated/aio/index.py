@@ -165,6 +165,20 @@ class Index(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["findArtifactFromTask"], *args, **kwargs)
 
+    async def heartbeat(self, *args, **kwargs):
+        """
+        Heartbeat
+
+        Respond with a service heartbeat.
+
+        This endpoint is used to check on backing services this service
+        depends on.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["heartbeat"], *args, **kwargs)
+
     funcinfo = {
         "deleteTask": {
             'args': ['namespace'],
@@ -186,6 +200,13 @@ class Index(AsyncBaseClient):
             'name': 'findTask',
             'output': 'v1/indexed-task-response.json#',
             'route': '/task/<indexPath>',
+            'stability': 'stable',
+        },
+        "heartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'heartbeat',
+            'route': '/__heartbeat__',
             'stability': 'stable',
         },
         "insertTask": {

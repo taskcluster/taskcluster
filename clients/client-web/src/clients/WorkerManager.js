@@ -10,9 +10,9 @@ export default class WorkerManager extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.lbheartbeat.entry = {"args":[],"category":"Load Balancer Heartbeat","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.version.entry = {"args":[],"category":"Taskcluster Version","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.listProviders.entry = {"args":[],"category":"Providers","method":"get","name":"listProviders","output":true,"query":["continuationToken","limit"],"route":"/providers","scopes":"worker-manager:list-providers","stability":"stable","type":"function"}; // eslint-disable-line
     this.createWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Pools","input":true,"method":"put","name":"createWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:manage-worker-pool:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.updateWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Pools","input":true,"method":"post","name":"updateWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:manage-worker-pool:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
@@ -29,6 +29,7 @@ export default class WorkerManager extends Client {
     this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"category":"Workers","method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>","scopes":"worker-manager:list-workers:<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.registerWorker.entry = {"args":[],"category":"Worker Interface","input":true,"method":"post","name":"registerWorker","output":true,"query":[],"route":"/worker/register","stability":"stable","type":"function"}; // eslint-disable-line
     this.reregisterWorker.entry = {"args":[],"category":"Workers","input":true,"method":"post","name":"reregisterWorker","output":true,"query":[],"route":"/worker/reregister","scopes":"worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -219,5 +220,15 @@ export default class WorkerManager extends Client {
     this.validate(this.reregisterWorker.entry, args);
 
     return this.request(this.reregisterWorker.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with a service heartbeat.
+  // This endpoint is used to check on backing services this service
+  // depends on.
+  /* eslint-enable max-len */
+  heartbeat(...args) {
+    this.validate(this.heartbeat.entry, args);
+
+    return this.request(this.heartbeat.entry, args);
   }
 }

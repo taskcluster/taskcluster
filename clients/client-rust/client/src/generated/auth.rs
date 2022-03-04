@@ -1084,4 +1084,39 @@ impl Auth {
 
         (path, query)
     }
+
+    /// Heartbeat
+    ///
+    /// Respond with a service heartbeat.
+    ///
+    /// This endpoint is used to check on backing services this service
+    /// depends on.
+    pub async fn heartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::heartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the heartbeat endpoint
+    pub fn heartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the heartbeat endpoint
+    pub fn heartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for heartbeat
+    fn heartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__heartbeat__";
+        let query = None;
+
+        (path, query)
+    }
 }

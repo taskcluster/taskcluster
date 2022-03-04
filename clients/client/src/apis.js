@@ -9,7 +9,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Ping Server",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -23,7 +23,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Load Balancer Heartbeat",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "lbheartbeat",
@@ -37,7 +37,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Taskcluster Version",
+          "category": "Monitoring",
           "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
           "method": "get",
           "name": "version",
@@ -613,6 +613,20 @@ module.exports = {
           "stability": "stable",
           "title": "Test Authentication (GET)",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
+          "type": "function"
         }
       ],
       "serviceName": "auth",
@@ -738,7 +752,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Ping Server",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -752,7 +766,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Load Balancer Heartbeat",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "lbheartbeat",
@@ -766,7 +780,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Taskcluster Version",
+          "category": "Monitoring",
           "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
           "method": "get",
           "name": "version",
@@ -902,6 +916,20 @@ module.exports = {
           "scopes": "github:create-comment:<owner>/<repo>",
           "stability": "stable",
           "title": "Post a comment on a given GitHub Issue or Pull Request",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
           "type": "function"
         }
       ],
@@ -1054,7 +1082,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Ping Server",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -1068,7 +1096,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Load Balancer Heartbeat",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "lbheartbeat",
@@ -1082,7 +1110,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Taskcluster Version",
+          "category": "Monitoring",
           "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
           "method": "get",
           "name": "version",
@@ -1318,6 +1346,20 @@ module.exports = {
           "stability": "stable",
           "title": "Get information about recent hook fires",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
+          "type": "function"
         }
       ],
       "serviceName": "hooks",
@@ -1395,7 +1437,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Ping Server",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -1409,7 +1451,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Load Balancer Heartbeat",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "lbheartbeat",
@@ -1423,7 +1465,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Taskcluster Version",
+          "category": "Monitoring",
           "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
           "method": "get",
           "name": "version",
@@ -1539,6 +1581,20 @@ module.exports = {
           "stability": "stable",
           "title": "Get Artifact From Indexed Task",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
+          "type": "function"
         }
       ],
       "serviceName": "index",
@@ -1555,7 +1611,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Ping Server",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -1569,7 +1625,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Load Balancer Heartbeat",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "lbheartbeat",
@@ -1583,7 +1639,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Taskcluster Version",
+          "category": "Monitoring",
           "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
           "method": "get",
           "name": "version",
@@ -1707,6 +1763,20 @@ module.exports = {
           "stability": "experimental",
           "title": "List Denylisted Notifications",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
+          "type": "function"
         }
       ],
       "serviceName": "notify",
@@ -1759,7 +1829,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Ping Server",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -1773,7 +1843,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Load Balancer Heartbeat",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "lbheartbeat",
@@ -1787,7 +1857,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Taskcluster Version",
+          "category": "Monitoring",
           "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
           "method": "get",
           "name": "version",
@@ -1883,6 +1953,20 @@ module.exports = {
           "stability": "stable",
           "title": "Get an object's data",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
+          "type": "function"
         }
       ],
       "serviceName": "object",
@@ -1899,7 +1983,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Ping Server",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -1913,7 +1997,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Load Balancer Heartbeat",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "lbheartbeat",
@@ -1927,7 +2011,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Taskcluster Version",
+          "category": "Monitoring",
           "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
           "method": "get",
           "name": "version",
@@ -1990,6 +2074,20 @@ module.exports = {
           "stability": "stable",
           "title": "Open Purge Requests for a worker pool",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
+          "type": "function"
         }
       ],
       "serviceName": "purge-cache",
@@ -2006,7 +2104,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Ping Server",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -2020,7 +2118,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Load Balancer Heartbeat",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "lbheartbeat",
@@ -2034,7 +2132,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Taskcluster Version",
+          "category": "Monitoring",
           "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
           "method": "get",
           "name": "version",
@@ -2855,6 +2953,20 @@ module.exports = {
           "stability": "experimental",
           "title": "Declare a worker",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
+          "type": "function"
         }
       ],
       "serviceName": "queue",
@@ -3416,7 +3528,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Ping Server",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -3430,7 +3542,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Load Balancer Heartbeat",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "lbheartbeat",
@@ -3444,7 +3556,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Taskcluster Version",
+          "category": "Monitoring",
           "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
           "method": "get",
           "name": "version",
@@ -3522,6 +3634,20 @@ module.exports = {
           "stability": "stable",
           "title": "List Secrets",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
+          "type": "function"
         }
       ],
       "serviceName": "secrets",
@@ -3538,7 +3664,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Ping Server",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -3552,7 +3678,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Load Balancer Heartbeat",
+          "category": "Monitoring",
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "lbheartbeat",
@@ -3566,7 +3692,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Taskcluster Version",
+          "category": "Monitoring",
           "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
           "method": "get",
           "name": "version",
@@ -3882,6 +4008,20 @@ module.exports = {
           "scopes": "worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "experimental",
           "title": "Reregister a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
           "type": "function"
         }
       ],

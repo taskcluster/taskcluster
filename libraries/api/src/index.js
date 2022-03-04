@@ -25,7 +25,7 @@ const ping = {
   name: 'ping',
   stability: 'stable',
   title: 'Ping Server',
-  category: 'Ping Server',
+  category: 'Monitoring',
   description: [
     'Respond without doing anything.',
     'This endpoint is used to check that the service is up.',
@@ -49,7 +49,7 @@ const lbHeartbeat = {
   name: 'lbheartbeat',
   stability: 'stable',
   title: 'Load Balancer Heartbeat',
-  category: 'Load Balancer Heartbeat',
+  category: 'Monitoring',
   description: [
     'Respond without doing anything.',
     'This endpoint is used to check that the service is up.',
@@ -69,7 +69,7 @@ const version = {
   name: 'version',
   stability: 'stable',
   title: 'Taskcluster Version',
-  category: 'Taskcluster Version',
+  category: 'Monitoring',
   description: [
     'Respond with the JSON version object.',
     'https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md',

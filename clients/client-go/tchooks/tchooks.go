@@ -353,3 +353,15 @@ func (hooks *Hooks) ListLastFires_SignedURL(hookGroupId, hookId string, duration
 	cd := tcclient.Client(*hooks)
 	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", nil, duration)
 }
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (hooks *Hooks) Heartbeat() error {
+	cd := tcclient.Client(*hooks)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
+}
