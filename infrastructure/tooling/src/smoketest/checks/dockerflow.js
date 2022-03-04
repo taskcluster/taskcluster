@@ -16,7 +16,7 @@ SERVICES.filter((name) => name !== "web-server").forEach((name) => {
     provides: [`lbheartbeat-${name}`],
     run: async (requirements, utils) => {
       const procs = await readRepoYAML(
-        path.join("services", name, "procs.yml")
+        path.join("services", name, "procs.yml"),
       );
 
       let checked = false;
@@ -27,7 +27,7 @@ SERVICES.filter((name) => name !== "web-server").forEach((name) => {
             process.env.TASKCLUSTER_ROOT_URL,
             name,
             "v1",
-            "__lbheartbeat__"
+            "__lbheartbeat__",
           );
           const resp = await got.get(healthcheck);
 
@@ -54,7 +54,7 @@ SERVICES.filter((name) => name !== "web-server").forEach((name) => {
     provides: [`heartbeat-${name}`],
     run: async (requirements, utils) => {
       const procs = await readRepoYAML(
-        path.join("services", name, "procs.yml")
+        path.join("services", name, "procs.yml"),
       );
 
       let checked = false;
@@ -65,7 +65,7 @@ SERVICES.filter((name) => name !== "web-server").forEach((name) => {
             process.env.TASKCLUSTER_ROOT_URL,
             name,
             "v1",
-            "__heartbeat__"
+            "__heartbeat__",
           );
           const resp = await got.get(healthcheck);
 
@@ -92,7 +92,7 @@ SERVICES.filter((name) => name !== "web-server").forEach((name) => {
     provides: [`version-${name}`],
     run: async (requirements, utils) => {
       const procs = await readRepoYAML(
-        path.join("services", name, "procs.yml")
+        path.join("services", name, "procs.yml"),
       );
 
       let checked = false;
@@ -103,7 +103,7 @@ SERVICES.filter((name) => name !== "web-server").forEach((name) => {
             process.env.TASKCLUSTER_ROOT_URL,
             name,
             "v1",
-            "__version__"
+            "__version__",
           );
           const resp = await got(dunderVersion, { throwHttpErrors: true });
 
