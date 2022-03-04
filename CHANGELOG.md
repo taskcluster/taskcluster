@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.8.2
+
+### GENERAL
+
+▶ [patch]
+Go patch update from 1.17.7 to 1.17.8. Also upgrade golangci-lint from 1.39.0 to 1.44.2.
+
+### DEPLOYERS
+
+▶ [patch] [#5234](https://github.com/taskcluster/taskcluster/issues/5234)
+Added initial `/__heartbeat__` endpoint to all service APIs. Simply returning a 200 empty JSON object for now - implementation to follow in individual PRs per service.
+Addresses issues 5234, 5236, 5237, 5238, 5239, 5240, 5241, 5242
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency karma to v6.3.16 [SECURITY] (cf36b0cc8)
+
+</details>
+
 ## v44.8.1
 
 ### DEPLOYERS
