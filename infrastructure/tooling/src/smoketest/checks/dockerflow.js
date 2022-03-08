@@ -8,8 +8,7 @@ const SERVICES = listServices();
 exports.scopeExpression = { AllOf: [] };
 exports.tasks = [];
 
-// TODO: add for web-server once Dockerflow APIs are created for it
-SERVICES.filter((name) => name !== "web-server").forEach((name) => {
+SERVICES.forEach((name) => {
   exports.tasks.push({
     title: `__lbheartbeat__ endpoint for ${name}`,
     requires: [],
@@ -125,11 +124,10 @@ SERVICES.filter((name) => name !== "web-server").forEach((name) => {
   });
 });
 
-// TODO: add for web-server once Dockerflow APIs are created for it
 exports.tasks.push({
   title: `Dockerflow API endpoints succeed (--target dockerflow)`,
   requires: [
-    ...SERVICES.filter((name) => name !== "web-server").flatMap((name) => [
+    ...SERVICES.flatMap((name) => [
       `lbheartbeat-${name}`,
       `heartbeat-${name}`,
       `version-${name}`,
