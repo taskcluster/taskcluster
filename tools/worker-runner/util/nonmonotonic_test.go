@@ -16,7 +16,8 @@ func TestSleepUntilWallClockTime(t *testing.T) {
 
 func TestSleepUntilWallClockTimeCancel(t *testing.T) {
 	until := time.Now().Add(time.Second * 10)
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	ctx, cx := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cx()
 	require.False(t, SleepUntilWallClock(until, ctx))
 	require.Less(t, time.Now().UnixMilli(), until.UnixMilli())
 }
