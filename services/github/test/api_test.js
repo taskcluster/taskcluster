@@ -84,7 +84,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   setup(async function() {
     github = await helper.load('github');
-    github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo', 'nonTCGHRepo', 'checksRepo');
+    github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo', 'nonTCGHRepo', 'checksRepo',
+      'softStatusRepo');
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'coolRepo',
@@ -177,6 +178,90 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         { name: "check1", conclusion: 'success', app: { id: 66666 } },
       ],
     });
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'timedout',
+      info: [{ creator: { id: 123345 }, state: 'success' }],
+    });
+    github.inst(9090).setChecks({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'timedout',
+      info: [
+        { name: "check1", conclusion: 'timed_out', app: { id: 66666 } },
+      ],
+    });
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'cancelled',
+      info: [{ creator: { id: 123345 }, state: 'success' }],
+    });
+    github.inst(9090).setChecks({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'cancelled',
+      info: [
+        { name: "check1", conclusion: 'cancelled', app: { id: 66666 } },
+      ],
+    });
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'skipped',
+      info: [{ creator: { id: 123345 }, state: 'success' }],
+    });
+    github.inst(9090).setChecks({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'skipped',
+      info: [
+        { name: "check1", conclusion: 'skipped', app: { id: 66666 } },
+      ],
+    });
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'stale',
+      info: [{ creator: { id: 123345 }, state: 'success' }],
+    });
+    github.inst(9090).setChecks({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'stale',
+      info: [
+        { name: "check1", conclusion: 'stale', app: { id: 66666 } },
+      ],
+    });
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'actionRequired',
+      info: [{ creator: { id: 123345 }, state: 'success' }],
+    });
+    github.inst(9090).setChecks({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'actionRequired',
+      info: [
+        { name: "check1", conclusion: 'action_required', app: { id: 66666 } },
+      ],
+    });
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'neutral',
+      info: [{ creator: { id: 123345 }, state: 'success' }],
+    });
+    github.inst(9090).setChecks({
+      owner: 'abc123',
+      repo: 'softStatusRepo',
+      ref: 'neutral',
+      info: [
+        { name: "check1", conclusion: 'neutral', app: { id: 66666 } },
+      ],
+    });
   });
 
   test('all builds', async function() {
@@ -258,67 +343,120 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   test('build badges - status:failure', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'coolRepo', 'master'));
-      assert.equal(res.headers['content-length'], 8615);
+      assert.equal(res.headers['x-taskcluster-status'], 'failure');
+      assert.equal(res.headers['content-length'], 5572);
     });
   });
 
   test('build badges - status:failure (checks API)', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'failure'));
-      assert.equal(res.headers['content-length'], 8615);
+      assert.equal(res.headers['x-taskcluster-status'], 'failure');
+      assert.equal(res.headers['content-length'], 5572);
     });
   });
 
   test('build badges - status:failure (combined status and checks)', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'combined'));
-      assert.equal(res.headers['content-length'], 8615);
+      assert.equal(res.headers['x-taskcluster-status'], 'failure');
+      assert.equal(res.headers['content-length'], 5572);
     });
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'combined2'));
-      assert.equal(res.headers['content-length'], 8615);
+      assert.equal(res.headers['x-taskcluster-status'], 'failure');
+      assert.equal(res.headers['content-length'], 5572);
     });
   });
 
   test('build badges - status: success', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'awesomeRepo', 'master'));
-      assert.equal(res.headers['content-length'], 9189);
+      assert.equal(res.headers['x-taskcluster-status'], 'success');
+      assert.equal(res.headers['content-length'], 8030);
     });
   });
 
   test('build badges - status: success (checks API)', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'success'));
-      assert.equal(res.headers['content-length'], 9189);
+      assert.equal(res.headers['x-taskcluster-status'], 'success');
+      assert.equal(res.headers['content-length'], 8030);
     });
   });
 
   test('build badges - status: pending (checks API)', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'pending'));
-      assert.equal(res.headers['content-length'], 11435);
+      assert.equal(res.headers['x-taskcluster-status'], 'pending');
+      assert.equal(res.headers['content-length'], 7182);
     });
   });
 
   test('build badges - error', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'errorRepo', 'master'));
-      assert.equal(res.headers['content-length'], 4268);
+      assert.equal(res.headers['x-taskcluster-status'], 'error');
+      assert.equal(res.headers['content-length'], 5106);
     });
   });
 
   test('build badges - no such status', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'unknownRepo', 'master'));
-      assert.equal(res.headers['content-length'], 7873);
+      assert.equal(res.headers['x-taskcluster-status'], 'newrepo');
+      assert.equal(res.headers['content-length'], 6998);
     });
   });
 
   test('build badges - new repo (no info yet)', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'nonTCGHRepo', 'master'));
-      assert.equal(res.headers['content-length'], 7873);
+      assert.equal(res.headers['x-taskcluster-status'], 'newrepo');
+      assert.equal(res.headers['content-length'], 6998);
+    });
+  });
+
+  test('build badges - checks conclusion - timed out', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'timedout'));
+      assert.equal(res.headers['x-taskcluster-status'], 'timed_out');
+      assert.equal(res.headers['content-length'], 7159);
+    });
+  });
+  test('build badges - checks conclusion - action required', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'actionRequired'));
+      assert.equal(res.headers['x-taskcluster-status'], 'action_required');
+      assert.equal(res.headers['content-length'], 10864);
+    });
+  });
+  test('build badges - checks conclusion - skipped', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'skipped'));
+      assert.equal(res.headers['x-taskcluster-status'], 'skipped');
+      assert.equal(res.headers['content-length'], 7248);
+    });
+  });
+  test('build badges - checks conclusion - stale', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'stale'));
+      assert.equal(res.headers['x-taskcluster-status'], 'stale');
+      assert.equal(res.headers['content-length'], 5509);
+    });
+  });
+  test('build badges - checks conclusion - neutral', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'neutral'));
+      assert.equal(res.headers['x-taskcluster-status'], 'neutral');
+      assert.equal(res.headers['content-length'], 5775);
+    });
+  });
+  test('build badges - checks conclusion - cancelled', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
+      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'cancelled'));
+      assert.equal(res.headers['x-taskcluster-status'], 'cancelled');
+      assert.equal(res.headers['content-length'], 7836);
     });
   });
 
