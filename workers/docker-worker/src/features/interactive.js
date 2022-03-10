@@ -1,6 +1,7 @@
 const Debug = require('debug');
 const { DockerExecServer } = require('docker-exec-websocket-server');
-const fs = require('mz/fs');
+const fs = require('fs');
+const fsPromises = fs.promises;
 const http = require('http');
 const https = require('https');
 const path = require('path');
@@ -27,7 +28,7 @@ class WebsocketServer {
 
   async link(task) {
     //touches the lockfile so it can be bound properly
-    this.semaphore = new SharedFileLock(await fs.open(this.lock, 'w'));
+    this.semaphore = new SharedFileLock(await fsPromises.open(this.lock, 'w'));
 
     // Ensure sockets folder is created
 
@@ -160,7 +161,7 @@ class WebsocketServer {
     }
     try {
       //delete the lockfile, allowing the task to die if it hasn't already
-      await fs.unlink(this.lock);
+      await fsPromises.unlink(this.lock);
     } catch (err) {
       task.runtime.log('[alert-operator] lock file has disappeared!');
       debug(err);

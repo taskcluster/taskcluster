@@ -2,7 +2,8 @@
  * Download coverage from previous tasks
  */
 const taskcluster = require('taskcluster-client');
-const fs = require('mz/fs');
+const fs = require('fs');
+const fsPromises = fs.promises;
 const path = require('path');
 
 const COVERAGE_DIR = 'coverage';
@@ -25,13 +26,13 @@ const main = async () => {
   const queue = new taskcluster.Queue(configs);
   const { dependencies } = await queue.task(process.env.TASK_ID);
 
-  await fs.mkdir(COVERAGE_DIR);
+  await fsPromises.mkdir(COVERAGE_DIR);
   await Promise.all(dependencies.map(async taskId => {
     try {
       const coverage = await queue.getLatestArtifact(taskId, 'public/coverage-final.json');
       const filename = path.join(COVERAGE_DIR, `${taskId}-coverage.json`);
       console.log(`Writing ${filename}`);
-      await fs.writeFile(filename, JSON.stringify(coverage));
+      await fsPromises.writeFile(filename, JSON.stringify(coverage));
     } catch (err) {
       if (err.statusCode !== 404) {
         throw err;

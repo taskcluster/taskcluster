@@ -1,10 +1,15 @@
 const uploadToS3 = require('../src/upload_to_s3');
 const assert = require('assert');
-const temporary = require('temporary');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+const { sep } = require('path');
 const https = require('https');
 const { suiteName } = require('taskcluster-lib-testing');
+
+const tmpDir = fs.mkdtempSync(`${os.tmpdir()}${sep}`);
+const tmpFile = 'upload_to_s3_test';
+const tmpResultFile = 'upload_to_s3_test_result';
 
 suite(suiteName(), function () {
   async function getTemporaryStream(filename, data) {
@@ -21,8 +26,8 @@ suite(suiteName(), function () {
   test('upload retry', async function () {
     const DATA = 'Testing retry artifact upload';
 
-    let tempFile = new temporary.File();
-    let resultFile = new temporary.File();
+    let tempFile = path.join(tmpDir, tmpFile);
+    let resultFile = path.join(tmpDir, tmpResultFile);
 
     let server = https.createServer({
       key: fs.readFileSync(path.join(__dirname, 'fixtures', 'ssl_cert.key')),
@@ -44,7 +49,7 @@ suite(suiteName(), function () {
       } else {
         requestState++;
         new Promise(function(accept, reject) {
-          let resultStream = fs.createWriteStream(resultFile.path);
+          let resultStream = fs.createWriteStream(resultFile);
           resultStream.on('error', reject);
           resultStream.on('finish', accept);
           request.pipe(resultStream);
@@ -74,7 +79,7 @@ suite(suiteName(), function () {
         undefined, // since putUrl is supplied, this is unused
         1,
         0,
-        await getTemporaryStream(tempFile.path, DATA),
+        await getTemporaryStream(tempFile, DATA),
         'public/foo',
         expiry,
         httpHeader,
@@ -83,10 +88,9 @@ suite(suiteName(), function () {
       );
 
       assert.equal(requestState, 2);
-      assert.equal(DATA, fs.readFileSync(resultFile.path, 'utf8'));
+      assert.equal(DATA, fs.readFileSync(resultFile, 'utf8'));
     } finally {
-      tempFile.unlinkSync();
-      resultFile.unlinkSync();
+      fs.rmSync(tmpDir, { recursive: true });
     }
   });
 });

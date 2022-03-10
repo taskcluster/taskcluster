@@ -2,7 +2,8 @@ const assert = require('assert');
 const Docker = require('dockerode');
 const dockerOpts = require('dockerode-options');
 const DockerWorker = require('../dockerworker');
-const fs = require('mz/fs');
+const fs = require('fs');
+const fsPromises = fs.promises;
 const got = require('got');
 const tar = require('tar-fs');
 const TestWorker = require('../testworker');
@@ -93,7 +94,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       setTimeout(reject, 15000, new Error('timed out waiting for docker container'));
     });
     await sleep(100);
-    await Promise.all([container.remove(), fs.unlink('/tmp/dockerload.tar')]);
+    await Promise.all([container.remove(), fsPromises.unlink('/tmp/dockerload.tar')]);
     await removeImage(docker, imageName);
   });
 
@@ -129,11 +130,11 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     //so the tar actually finishes extracting; tarStream doesn't have an end event
     await sleep(1000);
 
-    let testStr = await fs.readFile('/tmp/cacheload/test.log', { encoding: 'utf-8' });
+    let testStr = await fsPromises.readFile('/tmp/cacheload/test.log', { encoding: 'utf-8' });
     assert.equal(testStr, 'testString\n');
 
     //cleanup temp folder
-    await fs.unlink('/tmp/cacheload/test.log');
-    await fs.rmdir('/tmp/cacheload');
+    await fsPromises.unlink('/tmp/cacheload/test.log');
+    await fsPromises.rmdir('/tmp/cacheload');
   });
 });

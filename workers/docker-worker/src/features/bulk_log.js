@@ -4,9 +4,12 @@ to s3 after the task has completed running.
 */
 
 const Debug = require('debug');
-const fs = require('mz/fs');
+const fs = require('fs');
+const fsPromises = fs.promises;
+const path = require('path');
+const os = require('os');
+const { sep } = require('path');
 const streamClosed = require('../stream_closed');
-const temporary = require('temporary');
 const uploadToS3 = require('../upload_to_s3');
 const zlib = require('zlib');
 
@@ -14,12 +17,15 @@ let debug = Debug('taskcluster-docker-worker:features:bulk_log');
 
 let ARTIFACT_NAME = 'public/logs/terminal_bulk.log.gz';
 
+const tmpDir = fs.mkdtempSync(`${os.tmpdir()}${sep}`);
+const tmpFile = 'bulk_log';
+
 class BulkLog {
   constructor(artifact) {
     this.featureName = 'bulkLogHandler';
     this.artifactName = artifact || ARTIFACT_NAME;
-    this.file = new temporary.File();
-    debug('Created BulkLog using tempfile: ' + this.file.path);
+    this.file = path.join(tmpDir, tmpFile);
+    debug('Created BulkLog using tempfile: ' + this.file);
   }
 
   async created(task) {
@@ -28,7 +34,7 @@ class BulkLog {
     let gzip = zlib.createGzip();
 
     // Pipe the task stream to a temp file on disk.
-    this.stream = fs.createWriteStream(this.file.path);
+    this.stream = fs.createWriteStream(this.file);
     task.stream.pipe(gzip).pipe(this.stream);
   }
 
@@ -40,7 +46,7 @@ class BulkLog {
 
     // Open a new stream to read the entire log from disk (this in theory could
     // be a huge file).
-    let diskStream = fs.createReadStream(this.file.path);
+    let diskStream = fs.createReadStream(this.file);
 
     // expire the log when the task expires
     let expiration = new Date(task.task.expires);
@@ -56,8 +62,8 @@ class BulkLog {
       throw err;
     }
 
-    // Unlink the temp file.
-    await fs.unlink(this.file.path);
+    // Remove the temp dir.
+    await fsPromises.rm(tmpDir, { recursive: true });
 
     return this.artifactName;
   }

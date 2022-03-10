@@ -1,5 +1,5 @@
 const Debug = require('debug');
-const fs = require('mz/fs');
+const fs = require('fs');
 const path = require('path');
 const tar = require('tar-fs');
 const taskcluster = require('taskcluster-client');

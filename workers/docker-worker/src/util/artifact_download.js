@@ -1,7 +1,8 @@
 const crypto = require('crypto');
 const Debug = require('debug');
 const request = require('request');
-const fs = require('mz/fs');
+const fs = require('fs');
+const fsPromises = fs.promises;
 const sleep = require('../util/sleep');
 const { fmtLog, fmtErrorLog } = require('../log');
 const pipe = require('promisepipe');
@@ -99,7 +100,7 @@ module.exports = async function(queue, stream, taskId, artifactPath, destination
       }
 
       // remove any partially downloaded file
-      await fs.unlink(destination);
+      await fsPromises.unlink(destination);
 
       let delay = Math.pow(2, attempts - 1) * delayFactor;
       let exponentialDelay = delay * (Math.random() * 2 * randomizationFactor + 1 - randomizationFactor);

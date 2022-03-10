@@ -1,6 +1,7 @@
 const { createHash } = require('crypto');
 const Debug = require('debug');
-const fs = require('mz/fs');
+const fs = require('fs');
+const fsPromises = fs.promises;
 const { spawn } = require('child_process');
 const slugid = require('slugid');
 const path = require('path');
@@ -167,7 +168,7 @@ class ArtifactImage {
     let newTarball = await this.renameImageInTarball(imageName, originalTarball);
 
     try {
-      await fs.unlink(originalTarball);
+      await fsPromises.unlink(originalTarball);
     } catch(e) {
       debug(`Error when attempting to remove downloaded image. ${e.stack}`);
     }

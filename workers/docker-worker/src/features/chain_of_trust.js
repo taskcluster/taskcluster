@@ -8,14 +8,20 @@ const crypto = require('crypto');
 const stream = require('stream');
 const tweetnacl = require('tweetnacl');
 const Debug = require('debug');
-const fs = require('mz/fs');
+const fs = require('fs');
+const fsPromises = fs.promises;
+const path = require('path');
+const os = require('os');
+const { sep } = require('path');
 const streamClosed = require('../stream_closed');
-const temporary = require('temporary');
 const uploadToS3 = require('../upload_to_s3');
 const zlib = require('zlib');
 const { fmtErrorLog } = require('../log');
 
 let debug = Debug('taskcluster-docker-worker:features:cot');
+
+const tmpDir = fs.mkdtempSync(`${os.tmpdir()}${sep}`);
+const tmpFile = 'chain_of_trust';
 
 class ChainOfTrust {
   constructor() {
@@ -27,11 +33,11 @@ class ChainOfTrust {
     this.ed25519Key = Buffer.from(await new Promise((accept, reject) =>
       fs.readFile(task.runtime.ed25519SigningKeyLocation, 'ascii', (err, data) => err ? reject(err) : accept(data))), 'base64');
 
-    this.file = new temporary.File();
-    debug(`created temporary file: ${this.file.path}`);
+    this.file = path.join(tmpDir, tmpFile);
+    debug(`created temporary file: ${this.file}`);
 
     // Pipe the task stream to a temp file on disk.
-    this.stream = fs.createWriteStream(this.file.path);
+    this.stream = fs.createWriteStream(this.file);
     task.stream.on('data', (d) => {
       this.hash.update(d);
     });
@@ -50,8 +56,8 @@ class ChainOfTrust {
 
     // Open a new stream to read the entire log from disk (this in theory could
     // be a huge file).
-    debug(`ensuring file ${this.file.path} exists and opening read stream`);
-    let logStream = fs.createReadStream(this.file.path);
+    debug(`ensuring file ${this.file} exists and opening read stream`);
+    let logStream = fs.createReadStream(this.file);
 
     try {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
@@ -59,10 +65,10 @@ class ChainOfTrust {
           'content-type': 'text/plain',
           'content-encoding': 'gzip',
         });
-      await fs.unlink(this.file.path);
+      await fsPromises.rm(tmpDir, { recursive: true });
     } catch (err) {
       task.stream.write(fmtErrorLog(err));
-      await fs.unlink(this.file.path);
+      await fsPromises.rm(tmpDir, { recursive: true });
       throw err;
     }
 
@@ -114,7 +120,6 @@ class ChainOfTrust {
       throw err;
     }
   }
-
 }
 
 module.exports = ChainOfTrust;
