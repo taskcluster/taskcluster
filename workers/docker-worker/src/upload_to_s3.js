@@ -50,7 +50,7 @@ module.exports = async function uploadToS3 (
     // write the source out to a temporary file so that it can be
     // re-read into the request repeatedly
     if (typeof source === 'string') {
-      await tmp.writeFile(source);
+      tmp.writeFileSync(source);
       hash.update(source);
     } else {
       let stream = fs.createWriteStream(tmp.path);
