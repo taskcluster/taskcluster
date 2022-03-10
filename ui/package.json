@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-ui",
-  "version": "44.8.2",
+  "version": "44.8.3",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
@@ -131,7 +131,7 @@
     "jest-transform-graphql": "^2.1.0",
     "mocha": "^8.0.0",
     "neutrino": "^9.1.0",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^3.2.2",
     "react-addons-test-utils": "^15.6.2",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.2.3",
