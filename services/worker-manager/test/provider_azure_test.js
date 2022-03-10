@@ -54,16 +54,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   // with; to figure out which this is, print the certificate in
   // `registerWorker`.  It will be one of the certs on on
   // https://www.microsoft.com/pki/mscorp/cps/default.htm
-  const intermediateCertFingerprint = 'B0:C2:D2:D1:3C:DD:56:CD:AA:6A:B6:E2:C0:44:40:BE:4A:42:9C:75';
-  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft RSA TLS CA 02';
+  const intermediateCertFingerprint = '70:3D:7A:8F:0E:BF:55:AA:A5:9F:98:EA:F4:A2:06:00:4E:B2:51:6A';
+  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft RSA TLS CA 01';
   const intermediateCertIssuer = '/C=IE,/O=Baltimore,/OU=CyberTrust,/CN=Baltimore CyberTrust Root';
   const intermediateCertPath = path.resolve(
-    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_rsa_tls_ca_2.pem');
-  const intermediateCertUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2002.crt';
+    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_rsa_tls_ca_1.pem');
+  const intermediateCertUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2001.crt';
 
   suite('helpers', function() {
     const testCertPath = path.resolve(
-      __dirname, '../src/providers/azure/azure-ca-certs/microsoft_rsa_tls_ca_2.pem');
+      __dirname, '../src/providers/azure/azure-ca-certs/microsoft_rsa_tls_ca_1.pem');
     const testCert = forge.pki.certificateFromPem(fs.readFileSync(testCertPath));
 
     test('dnToString of subject', async function() {
@@ -1066,7 +1066,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('registerWorker', function() {
     const workerGroup = 'westus';
-    const vmId = 'fd776641-6588-4bad-9aaf-6c1ff20358bc';
+    const vmId = 'eb16a6e7-c925-418d-9de8-9e4a3041a0e3';
     const baseWorker = {
       workerPoolId,
       workerGroup,
@@ -1089,7 +1089,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     setup('create vm', function() {
       fake.computeClient.virtualMachines.makeFakeResource('rgrp', 'some-vm', {
-        vmId: 'fd776641-6588-4bad-9aaf-6c1ff20358bc',
+        vmId: 'eb16a6e7-c925-418d-9de8-9e4a3041a0e3',
       });
     });
 
@@ -1200,7 +1200,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           // curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/attested/document?api-version=2020-09-01" | jq -r .signature
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = { document };
-          provider._now = () => new Date(2022, 1, 1); // in the future for this fixture
+          provider._now = () => new Date(new Date().getFullYear() + 1, 1, 1); // in the future for this fixture
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
