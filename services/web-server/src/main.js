@@ -9,6 +9,7 @@ const libReferences = require('taskcluster-lib-references');
 const { createServer } = require('http');
 const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
 const { ApolloServer } = require('apollo-server-express');
+const { ApolloServerPluginDrainHttpServer } = require('apollo-server-core');
 const taskcluster = require('taskcluster-client');
 const tcdb = require('taskcluster-db');
 const { Auth } = require('taskcluster-client');
@@ -123,14 +124,15 @@ const load = loader(
     httpServer: {
       requires: ['app', 'schema', 'context', 'monitor'],
       setup: async ({ app, schema, context, monitor }) => {
+        const httpServer = createServer(app);
         const server = new ApolloServer({
           schema,
           context,
           formatError,
           tracing: true,
+          plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
         });
         await server.start();
-        const httpServer = createServer(app);
 
         server.applyMiddleware({
           app,
