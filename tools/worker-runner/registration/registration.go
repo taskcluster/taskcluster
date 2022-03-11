@@ -1,6 +1,7 @@
 package registration
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/util"
 	"github.com/taskcluster/taskcluster/v44/tools/workerproto"
 )
 
@@ -26,9 +28,10 @@ type RegistrationManager struct {
 	// the protocol (set in SetProtocol)
 	proto *workerproto.Protocol
 
-	// a timer to handle sending a new-credentials or graceful-termination
-	// request before the credentials expire
-	credsExpireTimer *time.Timer
+	// calling credsExpireCancel cancels the timer handling sending a
+	// new-credentials or graceful-termination request before the credentials
+	// expire
+	credsExpireCancel context.CancelFunc
 
 	// for testing
 	credsExpireCond *sync.Cond
@@ -117,7 +120,18 @@ func (reg *RegistrationManager) setTimer() error {
 
 	untilExpire := time.Until(time.Time(reg.state.CredentialsExpire))
 	untilRenew := renewBeforeExpire(untilExpire)
-	reg.credsExpireTimer = time.AfterFunc(untilRenew, func() {
+
+	// we must jump through some obscure hoops to avoid using monotonic
+	// timers, which stop ticking during system hibernation.
+	renewAt := time.Now().Add(untilRenew)
+	renewAt = renewAt.Round(0) // remove monotonic clock value
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		if !util.SleepUntilWallClock(renewAt, ctx) {
+			return // cancelled
+		}
+
 		if reg.credsExpireCond != nil {
 			reg.credsExpireCond.L.Lock()
 		}
@@ -134,7 +148,8 @@ func (reg *RegistrationManager) setTimer() error {
 			reg.credsExpireCond.Broadcast()
 			reg.credsExpireCond.L.Unlock()
 		}
-	})
+	}()
+	reg.credsExpireCancel = cancel
 
 	return nil
 }
@@ -211,9 +226,9 @@ func (reg *RegistrationManager) terminateWorker() {
 func (reg *RegistrationManager) WorkerFinished() error {
 	// Note that this is only called when the worker process exits, but not if
 	// the worker halts or reboots out from under us!
-	if reg.credsExpireTimer != nil {
-		reg.credsExpireTimer.Stop()
-		reg.credsExpireTimer = nil
+	if reg.credsExpireCancel != nil {
+		reg.credsExpireCancel()
+		reg.credsExpireCancel = nil
 	}
 	return nil
 }

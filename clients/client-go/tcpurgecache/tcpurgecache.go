@@ -216,3 +216,15 @@ func (purgeCache *PurgeCache) PurgeRequests_SignedURL(workerPoolId, since string
 	cd := tcclient.Client(*purgeCache)
 	return (&cd).SignedURL("/purge-cache/"+url.QueryEscape(workerPoolId), v, duration)
 }
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (purgeCache *PurgeCache) Heartbeat() error {
+	cd := tcclient.Client(*purgeCache)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
+}

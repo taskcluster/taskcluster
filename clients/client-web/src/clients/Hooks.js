@@ -10,9 +10,9 @@ export default class Hooks extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.lbheartbeat.entry = {"args":[],"category":"Load Balancer Heartbeat","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.version.entry = {"args":[],"category":"Taskcluster Version","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.listHookGroups.entry = {"args":[],"category":"Hooks","method":"get","name":"listHookGroups","output":true,"query":[],"route":"/hooks","scopes":"hooks:list-hooks:","stability":"stable","type":"function"}; // eslint-disable-line
     this.listHooks.entry = {"args":["hookGroupId"],"category":"Hooks","method":"get","name":"listHooks","output":true,"query":[],"route":"/hooks/<hookGroupId>","scopes":"hooks:list-hooks:<hookGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.hook.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"get","name":"hook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>","scopes":"hooks:get:<hookGroupId>:<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -25,6 +25,7 @@ export default class Hooks extends Client {
     this.resetTriggerToken.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"post","name":"resetTriggerToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/token","scopes":"hooks:reset-trigger-token:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.triggerHookWithToken.entry = {"args":["hookGroupId","hookId","token"],"category":"Hooks","input":true,"method":"post","name":"triggerHookWithToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/trigger/<token>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listLastFires.entry = {"args":["hookGroupId","hookId"],"category":"Hook Status","method":"get","name":"listLastFires","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/last-fires","scopes":"hooks:list-last-fires:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -165,5 +166,15 @@ export default class Hooks extends Client {
     this.validate(this.listLastFires.entry, args);
 
     return this.request(this.listLastFires.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with a service heartbeat.
+  // This endpoint is used to check on backing services this service
+  // depends on.
+  /* eslint-enable max-len */
+  heartbeat(...args) {
+    this.validate(this.heartbeat.entry, args);
+
+    return this.request(this.heartbeat.entry, args);
   }
 }

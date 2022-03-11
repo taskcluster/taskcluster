@@ -548,6 +548,20 @@ class Auth(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["testAuthenticateGet"], *args, **kwargs)
 
+    async def heartbeat(self, *args, **kwargs):
+        """
+        Heartbeat
+
+        Respond with a service heartbeat.
+
+        This endpoint is used to check on backing services this service
+        depends on.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["heartbeat"], *args, **kwargs)
+
     funcinfo = {
         "authenticateHawk": {
             'args': [],
@@ -688,6 +702,13 @@ class Auth(AsyncBaseClient):
             'name': 'gcpCredentials',
             'output': 'v1/gcp-credentials-response.json#',
             'route': '/gcp/credentials/<projectId>/<serviceAccount>',
+            'stability': 'stable',
+        },
+        "heartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'heartbeat',
+            'route': '/__heartbeat__',
             'stability': 'stable',
         },
         "lbheartbeat": {

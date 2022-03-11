@@ -1,6 +1,6 @@
 {
   "name": "taskcluster",
-  "version": "44.8.1",
+  "version": "44.8.3",
   "private": true,
   "engine-strict": true,
   "engines": {
@@ -170,6 +170,7 @@
   },
   "scripts": {
     "lint": "eslint --cache --ext js --ignore-pattern clients/client-rust --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
+    "lint:fix": "eslint --fix --cache --ext js --ignore-pattern clients/client-rust --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
     "lint:go": "sh test/go-lint.sh",
     "lint:py": "sh test/py-lint.sh",
     "test": "yarn workspaces run test",

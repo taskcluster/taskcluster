@@ -10,14 +10,15 @@ export default class Object extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.lbheartbeat.entry = {"args":[],"category":"Load Balancer Heartbeat","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.version.entry = {"args":[],"category":"Taskcluster Version","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.createUpload.entry = {"args":["name"],"category":"Upload","input":true,"method":"put","name":"createUpload","output":true,"query":[],"route":"/upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"stable","type":"function"}; // eslint-disable-line
     this.finishUpload.entry = {"args":["name"],"category":"Upload","input":true,"method":"post","name":"finishUpload","query":[],"route":"/finish-upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"stable","type":"function"}; // eslint-disable-line
     this.startDownload.entry = {"args":["name"],"category":"Download","input":true,"method":"put","name":"startDownload","output":true,"query":[],"route":"/start-download/<name>","scopes":"object:download:<name>","stability":"stable","type":"function"}; // eslint-disable-line
     this.object.entry = {"args":["name"],"category":"Objects","method":"get","name":"object","output":true,"query":[],"route":"/metadata/<name>","scopes":"object:download:<name>","stability":"stable","type":"function"}; // eslint-disable-line
     this.download.entry = {"args":["name"],"category":"Download","method":"get","name":"download","query":[],"route":"/download/<name>","scopes":"object:download:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -116,5 +117,15 @@ export default class Object extends Client {
     this.validate(this.download.entry, args);
 
     return this.request(this.download.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with a service heartbeat.
+  // This endpoint is used to check on backing services this service
+  // depends on.
+  /* eslint-enable max-len */
+  heartbeat(...args) {
+    this.validate(this.heartbeat.entry, args);
+
+    return this.request(this.heartbeat.entry, args);
   }
 }

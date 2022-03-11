@@ -3,6 +3,63 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.8.3
+
+### DEPLOYERS
+
+▶ [patch] [#5235](https://github.com/taskcluster/taskcluster/issues/5235)
+Added `__version__`, `__lbheartbeat__`, and `__heartbeat__` endpoints to web-server service. Can be reached at `/api/<service name>/v1/{__version__, __lbheartbeat__, __heartbeat__}`. `__heartbeat__` is simply returning a 200 empty JSON object for now - implementation to follow in individual PRs per service.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#5269](https://github.com/taskcluster/taskcluster/issues/5269)
+Worker-runner now renews worker credentials at an appropriate time, even if the host hibernates before the credentials expire.
+
+### USERS
+
+▶ [patch] [#5277](https://github.com/taskcluster/taskcluster/issues/5277)
+Fix "can't access property length of undefined" that prevented showing missing permissions error.
+
+▶ [patch] [#5274](https://github.com/taskcluster/taskcluster/issues/5274)
+fix: `Follow Log` enabled by default to automatically load to bottom of log file.
+
+### DEVELOPERS
+
+▶ [patch] [#5271](https://github.com/taskcluster/taskcluster/issues/5271)
+Added missing badge statuses, changed badge colors to be more distinctive.
+
+▶ [patch] [bug 1651965](http://bugzil.la/1651965)
+Update get_queue_artifacts_paginated query to use index and speed up query.
+Details: https://bugzilla.mozilla.org/show_bug.cgi?id=1651965
+
+▶ [patch] [#5284](https://github.com/taskcluster/taskcluster/issues/5284)
+Updated azure test signature due to expiration of existing one.
+
+▶ [patch]
+Fix usage of `temporary.writeFile` in `uploadToS3` for docker-worker
+
+## v44.8.2
+
+### GENERAL
+
+▶ [patch]
+Go patch update from 1.17.7 to 1.17.8. Also upgrade golangci-lint from 1.39.0 to 1.44.2.
+
+### DEPLOYERS
+
+▶ [patch] [#5234](https://github.com/taskcluster/taskcluster/issues/5234)
+Added initial `/__heartbeat__` endpoint to all service APIs. Simply returning a 200 empty JSON object for now - implementation to follow in individual PRs per service.
+Addresses issues 5234, 5236, 5237, 5238, 5239, 5240, 5241, 5242
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency karma to v6.3.16 [SECURITY] (cf36b0cc8)
+
+</details>
+
 ## v44.8.1
 
 ### DEPLOYERS

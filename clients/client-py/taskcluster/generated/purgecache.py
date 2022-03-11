@@ -107,6 +107,20 @@ class PurgeCache(BaseClient):
 
         return self._makeApiCall(self.funcinfo["purgeRequests"], *args, **kwargs)
 
+    def heartbeat(self, *args, **kwargs):
+        """
+        Heartbeat
+
+        Respond with a service heartbeat.
+
+        This endpoint is used to check on backing services this service
+        depends on.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["heartbeat"], *args, **kwargs)
+
     funcinfo = {
         "allPurgeRequests": {
             'args': [],
@@ -115,6 +129,13 @@ class PurgeCache(BaseClient):
             'output': 'v1/all-purge-cache-request-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/purge-cache/list',
+            'stability': 'stable',
+        },
+        "heartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'heartbeat',
+            'route': '/__heartbeat__',
             'stability': 'stable',
         },
         "lbheartbeat": {

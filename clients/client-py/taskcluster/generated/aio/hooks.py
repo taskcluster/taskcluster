@@ -211,6 +211,20 @@ class Hooks(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["listLastFires"], *args, **kwargs)
 
+    async def heartbeat(self, *args, **kwargs):
+        """
+        Heartbeat
+
+        Respond with a service heartbeat.
+
+        This endpoint is used to check on backing services this service
+        depends on.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["heartbeat"], *args, **kwargs)
+
     funcinfo = {
         "createHook": {
             'args': ['hookGroupId', 'hookId'],
@@ -235,6 +249,13 @@ class Hooks(AsyncBaseClient):
             'name': 'getTriggerToken',
             'output': 'v1/trigger-token-response.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/token',
+            'stability': 'stable',
+        },
+        "heartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'heartbeat',
+            'route': '/__heartbeat__',
             'stability': 'stable',
         },
         "hook": {

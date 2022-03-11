@@ -1631,7 +1631,7 @@ Get a queue artifact. The returned table will have one or zero row.
   * `details jsonb`
   * `present boolean`
   * `expires timestamptz`
-* *Last defined on version*: 57
+* *Last defined on version*: 69
 
 Get existing queue artifacts, filtered by the optional arguments, ordered
 by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify

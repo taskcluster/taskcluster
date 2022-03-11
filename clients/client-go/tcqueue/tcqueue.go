@@ -1311,3 +1311,15 @@ func (queue *Queue) DeclareWorker(provisionerId, workerType, workerGroup, worker
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
 	return responseObject.(*WorkerResponse), err
 }
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (queue *Queue) Heartbeat() error {
+	cd := tcclient.Client(*queue)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
+}

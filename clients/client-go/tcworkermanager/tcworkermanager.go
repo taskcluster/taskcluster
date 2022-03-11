@@ -509,3 +509,15 @@ func (workerManager *WorkerManager) ReregisterWorker(payload *ReregisterWorkerRe
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker/reregister", new(ReregisterWorkerResponse), nil)
 	return responseObject.(*ReregisterWorkerResponse), err
 }
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (workerManager *WorkerManager) Heartbeat() error {
+	cd := tcclient.Client(*workerManager)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
+}

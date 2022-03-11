@@ -402,6 +402,7 @@ builder.declare({
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Content-Security-Policy': "default-source 'none'; style-source 'unsafe-inline'",
+      'X-Taskcluster-Status': '',
     },
   };
 
@@ -416,8 +417,11 @@ builder.declare({
         state = status.state;
       }
 
-      let checks = await findTCChecks(instGithub, owner, repo, branch, this.cfg);
-      let hasAnyPendingCheck = false;
+      const checks = await findTCChecks(instGithub, owner, repo, branch, this.cfg);
+
+      // List of conclusions: https://docs.github.com/en/rest/reference/checks#check-runs
+      const SOFT_STATES = ['pending', 'timed_out', 'cancelled', 'skipped', 'stale', 'timed_out', 'action_required', 'neutral'];
+      const checksSoftStates = [];
 
       for (const check of checks) {
         // If any check failed, mark the whole status as failed
@@ -427,8 +431,8 @@ builder.declare({
         }
 
         // If there's any check pending, set the state to pending after looping unless there was a failure
-        if (check.conclusion === 'pending') {
-          hasAnyPendingCheck = true;
+        if (SOFT_STATES.includes(check.conclusion)) {
+          checksSoftStates.push(check.conclusion);
           continue;
         }
 
@@ -439,24 +443,28 @@ builder.declare({
         }
       }
 
-      if (hasAnyPendingCheck && state !== 'failure') {
-        state = 'pending';
+      if (state !== 'failure' && checksSoftStates.length > 0) {
+        state = checksSoftStates[0];
       }
 
       if (state) {
         // If we got a status, send a corresponding image.
+        fileConfig.headers['X-Taskcluster-Status'] = state;
         return res.sendFile(state + '.svg', fileConfig);
       } else {
         // otherwise, it's a commit without a TC status, which probably means a new repo
+        fileConfig.headers['X-Taskcluster-Status'] = 'newrepo';
         return res.sendFile('newrepo.svg', fileConfig);
       }
     } catch (e) {
       if (e.code < 500) {
+        fileConfig.headers['X-Taskcluster-Status'] = 'error';
         return res.sendFile('error.svg', fileConfig);
       }
       throw e;
     }
   } else {
+    fileConfig.headers['X-Taskcluster-Status'] = 'nogithub';
     return res.sendFile('newrepo.svg', fileConfig);
   }
 });
@@ -635,4 +643,23 @@ builder.declare({
   }
 
   return res.status(404).send();
+});
+
+builder.declare({
+  method: 'get',
+  route: '/__heartbeat__',
+  name: 'heartbeat',
+  scopes: null,
+  category: 'Monitoring',
+  stability: 'stable',
+  title: 'Heartbeat',
+  description: [
+    'Respond with a service heartbeat.',
+    '',
+    'This endpoint is used to check on backing services this service',
+    'depends on.',
+  ].join('\n'),
+}, function(_req, res) {
+  // TODO: add implementation
+  res.reply({});
 });

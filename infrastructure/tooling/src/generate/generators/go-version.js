@@ -37,6 +37,16 @@ exports.tasks = [{
         /Go version go[0-9.]+/,
         `Go version ${goVersion}`));
 
+    utils.status({ message: 'dev-docs/node-and-go-upgrades.md' });
+    await modifyRepoFile('dev-docs/node-and-go-upgrades.md',
+      contents => contents.replace(
+        /install go[0-9.]+/,
+        `install ${goVersion}`,
+      ).replace(
+        /use go[0-9.]+/,
+        `use ${goVersion}`,
+      ));
+
     utils.status({ message: 'go.mod' });
     await modifyRepoFile('go.mod',
       contents => contents.replace(

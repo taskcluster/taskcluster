@@ -268,3 +268,15 @@ func (notify *Notify) ListDenylist_SignedURL(continuationToken, limit string, du
 	cd := tcclient.Client(*notify)
 	return (&cd).SignedURL("/denylist/list", v, duration)
 }
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (notify *Notify) Heartbeat() error {
+	cd := tcclient.Client(*notify)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
+}

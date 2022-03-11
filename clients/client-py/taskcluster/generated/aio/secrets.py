@@ -121,6 +121,20 @@ class Secrets(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["list"], *args, **kwargs)
 
+    async def heartbeat(self, *args, **kwargs):
+        """
+        Heartbeat
+
+        Respond with a service heartbeat.
+
+        This endpoint is used to check on backing services this service
+        depends on.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["heartbeat"], *args, **kwargs)
+
     funcinfo = {
         "get": {
             'args': ['name'],
@@ -128,6 +142,13 @@ class Secrets(AsyncBaseClient):
             'name': 'get',
             'output': 'v1/secret.json#',
             'route': '/secret/<name>',
+            'stability': 'stable',
+        },
+        "heartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'heartbeat',
+            'route': '/__heartbeat__',
             'stability': 'stable',
         },
         "lbheartbeat": {
