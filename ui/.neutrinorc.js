@@ -72,6 +72,10 @@ module.exports = {
             changeOrigin: true,
             target: 'ws://localhost:3050',
           },
+          '/api/web-server': {
+            target: 'http://localhost:3050',
+            changeOrigin: true,
+          },
         },
       },
     }),
