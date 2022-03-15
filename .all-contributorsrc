@@ -96,7 +96,7 @@
       "profile": "https://factorialfive.org/",
       "contributions": [
         "code",
-        "staff"
+        "former-staff"
       ]
     },
     {
@@ -176,7 +176,7 @@
       "profile": "https://blog.mathieu-leplatre.info/pages/about.html",
       "contributions": [
         "code",
-        "staff"
+        "former-staff"
       ]
     },
     {
@@ -873,6 +873,26 @@
       "profile": "https://github.com/mrsVelena",
       "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "matt-boris",
+      "name": "Matt Boris",
+      "avatar_url": "https://avatars.githubusercontent.com/u/92693437?v=4",
+      "profile": "https://github.com/matt-boris",
+      "contributions": [
+        "code",
+        "staff"
+      ]
+    },
+    {
+      "login": "lotas",
+      "name": "Yaraslau Kurmyza",
+      "avatar_url": "https://avatars.githubusercontent.com/u/83861?v=4",
+      "profile": "https://github.com/lotas",
+      "contributions": [
+        "code",
+        "staff"
       ]
     }
   ],
