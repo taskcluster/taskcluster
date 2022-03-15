@@ -894,6 +894,15 @@
         "code",
         "staff"
       ]
+    },
+    {
+      "login": "Eijebong",
+      "name": "Bastien Orivel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3650385?v=4",
+      "profile": "https://bananium.fr/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

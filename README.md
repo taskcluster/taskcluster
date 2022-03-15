@@ -243,6 +243,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/mrsVelena"><img src="https://avatars.githubusercontent.com/u/17745072?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Mrs. Velena</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=mrsVelena" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/matt-boris"><img src="https://avatars.githubusercontent.com/u/92693437?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Matt Boris</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=matt-boris" title="Code">💻</a> <a href="#staff-matt-boris" title="Current Mozilla employee on Taskcluster team">🔧</a></td>
     <td align="center"><a href="https://github.com/lotas"><img src="https://avatars.githubusercontent.com/u/83861?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Yaraslau Kurmyza</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=lotas" title="Code">💻</a> <a href="#staff-lotas" title="Current Mozilla employee on Taskcluster team">🔧</a></td>
+    <td align="center"><a href="https://bananium.fr/"><img src="https://avatars.githubusercontent.com/u/3650385?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Bastien Orivel</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Eijebong" title="Code">💻</a></td>
   </tr>
 </table>
 
