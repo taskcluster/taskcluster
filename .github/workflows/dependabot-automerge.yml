@@ -1,10 +1,6 @@
 name: Dependabot auto-merge
 on: pull_request
 
-permissions:
-  pull-requests: write
-  contents: write
-
 jobs:
   dependabot:
     runs-on: ubuntu-latest
@@ -14,4 +10,4 @@ jobs:
       - uses: ahmadnassri/action-dependabot-auto-merge@v2
         with:
           target: minor
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}
