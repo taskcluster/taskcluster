@@ -6,7 +6,7 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.17.8'
+      - 'go1.18'
       - 'git2.24.0.2'
       - 'jq1.6'
       - 'ci-creds'
@@ -21,7 +21,7 @@ Types:
       - Name: 'public/build/generic-worker-${OS}-${ARCH}${EXTENSION}'
         # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
         #   DO NOT CHANGE HERE!
-        Path: 'gopath1.17.8/bin/generic-worker${EXTENSION}'
+        Path: 'gopath1.18/bin/generic-worker${EXTENSION}'
         Type: 'file'
     MaxRunTime: 3600
 
@@ -38,7 +38,7 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.17.8'
+      - 'go1.18'
     Command: FormatSource
     MaxRunTime: 3600
 
@@ -117,7 +117,7 @@ WorkerPools:
     # The next comment is edited by infrastructure/tooling/src/generate/generators/go-version.js
     #   DO NOT CHANGE HERE!
 
-    # There is no arm release for go 1.17.8 on windows, but 386 release works
+    # There is no arm release for go 1.18 on windows, but 386 release works
     # through emulation provided by the host OS.
     Arch: '386'
   proj-taskcluster/gw-ci-windows2012r2-amd64:
@@ -138,7 +138,7 @@ Commands:
           export CGO_ENABLED=0
           # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.17.8/go"
+          export GOROOT="$(pwd)/go1.18/go"
           export PATH="${GOROOT}/bin:${PATH}"
           go version
           go env
@@ -159,9 +159,6 @@ Commands:
           git diff
           test $(git status --porcelain | wc -l) == 0
           go get golang.org/x/tools/cmd/goimports
-          # Run go mod tidy again since go get above will have messed it up.
-          # Should be fixed in go 1.14; see:
-          #   * https://github.com/golang/go/issues/30515#issuecomment-581984371
           "$(go env GOPATH)/bin/goimports" -w .
           git checkout -f go.mod go.sum
           git diff
@@ -191,8 +188,8 @@ Commands:
 
           # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.17.8/go"
-          export GOPATH="$(pwd)/gopath1.17.8"
+          export GOROOT="$(pwd)/go1.18/go"
+          export GOPATH="$(pwd)/gopath1.18"
 
           export PATH="${GOPATH}/bin:${GOROOT}/bin:$(pwd)/bin:${PATH}"
           git --version
@@ -211,12 +208,6 @@ Commands:
           git clean -fdx
           git checkout -B tmp -t "X${TASK_ID}"
           cd workers/generic-worker
-          # go.mod and go.sum will be affected by above go get commands, so
-          # tidy them before checking for changes. Not needed in go 1.14:
-          # https://github.com/golang/go/issues/30515#issuecomment-581984371
-          # TODO: use go get -modfile instead when running go 1.14, and remove
-          # go mod tidy command
-          go mod tidy
           git status
           # output of wc command can contain spaces on darwin, so no quotes around expression
           test $(git status --porcelain | wc -l) == 0
@@ -251,8 +242,8 @@ Commands:
 
       # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - set GOROOT=%CD%\go1.17.8\go
-      - set GOPATH=%CD%\gopath1.17.8
+      - set GOROOT=%CD%\go1.18\go
+      - set GOPATH=%CD%\gopath1.18
 
       - |
         :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
@@ -272,13 +263,6 @@ Commands:
       - 'git clean -fdx'
       - 'git checkout -B tmp -t "X%TASK_ID%"'
       - cd workers\generic-worker
-      - |
-        :: go.mod and go.sum will be affected by above go get commands, so
-        :: tidy them before checking for changes. Not needed in go 1.14:
-        :: https://github.com/golang/go/issues/30515#issuecomment-581984371
-        :: TODO: use go get -modfile instead when running go 1.14, and remove
-        :: go mod tidy command
-        go mod tidy
       - |
         :: this counts the number of lines returned by git status
         :: dump temp file outside of repo, otherwise git status reports the tmp1.txt file!
@@ -318,34 +302,34 @@ Mounts:
   #
   ################################################################################
 
-  go1.17.8:
-    directory: go1.17.8
+  go1.18:
+    directory: go1.18
     content:
       darwin:
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.17.8.darwin-amd64.tar.gz'
-          sha256: '345f530a6a4295a1bf0a25931c08bf31582ed83252580196bd643049dfef0563'
+          url: 'https://storage.googleapis.com/golang/go1.18.darwin-amd64.tar.gz'
+          sha256: '70bb4a066997535e346c8bfa3e0dfe250d61100b17ccc5676274642447834969'
           format: tar.gz
         arm64:
-          url: 'https://storage.googleapis.com/golang/go1.17.8.darwin-arm64.tar.gz'
-          sha256: '2827fb5d62453b30f0644382e22ab9d287c7bca868c374a15145b29e272443b1'
+          url: 'https://storage.googleapis.com/golang/go1.18.darwin-arm64.tar.gz'
+          sha256: '9cab6123af9ffade905525d79fc9ee76651e716c85f1f215872b5f2976782480'
       linux:
         armv6l:
-          url: 'https://storage.googleapis.com/golang/go1.17.8.linux-armv6l.tar.gz'
-          sha256: '3287ca2fe6819fa87af95182d5942bf4fa565aff8f145812c6c70c0466ce25ae'
+          url: 'https://storage.googleapis.com/golang/go1.18.linux-armv6l.tar.gz'
+          sha256: 'a80fa43d1f4575fb030adbfbaa94acd860c6847820764eecb06c63b7c103612b'
           format: tar.gz
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.17.8.linux-amd64.tar.gz'
-          sha256: '980e65a863377e69fd9b67df9d8395fd8e93858e7a24c9f55803421e453f4f99'
+          url: 'https://storage.googleapis.com/golang/go1.18.linux-amd64.tar.gz'
+          sha256: 'e85278e98f57cdb150fe8409e6e5df5343ecb13cebf03a5d5ff12bd55a80264f'
           format: tar.gz
       windows:
         386:
-          url: 'https://storage.googleapis.com/golang/go1.17.8.windows-386.zip'
-          sha256: '2f3889642d706d7a4dd395ec4e08c00d962c845aa2998ca36a4493b0d0f071d9'
+          url: 'https://storage.googleapis.com/golang/go1.18.windows-386.zip'
+          sha256: 'e23fd2a0509690fe7e63b2b1bcd4c39ed57b46ccde76f35dc0d16ca7fdbc5aaa'
           format: zip
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.17.8.windows-amd64.zip'
-          sha256: '85ccf2608dca6ea9a46b6538c9e75e7cf2aebdf502379843b248e26b8bb110be'
+          url: 'https://storage.googleapis.com/golang/go1.18.windows-amd64.zip'
+          sha256: '65c5c0c709a7ca1b357091b10b795b439d8b50e579d3893edab4c7e9b384f435'
           format: zip
   git2.24.0.2:
     directory: git

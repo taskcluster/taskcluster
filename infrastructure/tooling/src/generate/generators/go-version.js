@@ -11,9 +11,8 @@ exports.tasks = [{
   provides: ['target-go-version'],
   run: async (requirements, utils) => {
     const goVersion = (await readRepoFile('.go-version')).trim();
-    const goVersionMajor = goVersion.replace(/^go([0-9]+)\.[0-9]+\.[0-9]+$/, '$1');
-    const goVersionMinor = goVersion.replace(/^go[0-9]+\.([0-9]+)\.[0-9]+$/, '$1');
-    const goVersionBugfix = goVersion.replace(/^go[0-9]+\.[0-9]+\.([0-9]+)$/, '$1');
+    const goVersionMajor = goVersion.replace(/^go([0-9]+)\.[0-9]+\.?([0-9]+)?$/, '$1');
+    const goVersionMinor = goVersion.replace(/^go[0-9]+\.([0-9]+)\.?([0-9]+)?$/, '$1');
     utils.step({ title: 'Checking go version' });
 
     const errmsg = `'yarn generate' requires ${goVersion}.  Consider using https://github.com/moovweb/gvm.`;
@@ -68,19 +67,19 @@ exports.tasks = [{
     utils.status({ message: 'workers/generic-worker/clean-builds.sh' });
     await modifyRepoFile('workers/generic-worker/clean-builds.sh',
       contents => contents.replace(
-        /go[0-9]+\.[0-9]+\.[0-9]+/g,
+        /go[0-9]+\.[0-9]+(\.[0-9]+)?/g,
         `${goVersion}`));
 
     utils.status({ message: 'workers/generic-worker/gw-decision-task/tasks.yml' });
     await modifyRepoFile('workers/generic-worker/gw-decision-task/tasks.yml',
       contents => contents.replace(
-        /go [0-9]+\.[0-9]+\.[0-9]+/g,
-        `go ${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,
+        /go [0-9]+\.[0-9]+\.?([0-9]+)?/g,
+        `go ${goVersion.substring(2)}`,
       ).replace(
-        /gopath[0-9]+\.[0-9]+\.[0-9]+/g,
-        `gopath${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,
+        /gopath[0-9]+\.[0-9]+\.?([0-9]+)?/g,
+        `gopath${goVersion.substring(2)}`,
       ).replace(
-        /go[0-9]+\.[0-9]+\.[0-9]+/g,
+        /go[0-9]+\.[0-9]+(\.[0-9]+)?/g,
         `${goVersion}`));
   },
 }];
