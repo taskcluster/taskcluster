@@ -47,7 +47,7 @@ const ec2Method = (context, method) => {
  * A fake region-specific EC2 client.  This has the SDK methods (all with a `.promise()`
  * trailer).  It also has properties:
  *
- *  - runInstancesCalls: an array of the launch config passsed to each runInstances call
+ *  - runInstancesCalls: an array of the launch config passed to each runInstances call
  *  - terminatedInstances: instance IDs for which terminateInstances has been called
  *  - instanceStatuses: values returned from describeInstanceStatus, in the form {instanceId: state}
  */
