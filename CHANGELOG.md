@@ -3,6 +3,17 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.8.4
+
+### GENERAL
+
+▶ [patch] [#5003](https://github.com/taskcluster/taskcluster/issues/5003)
+Allow provisioner to exit instead of being stuck in delayed loop.
+
+### OTHER
+
+▶ Additional changes not described here: [#4999](https://github.com/taskcluster/taskcluster/issues/4999), [#5217](https://github.com/taskcluster/taskcluster/issues/5217).
+
 ## v44.8.3
 
 ### DEPLOYERS
