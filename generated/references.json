@@ -12533,6 +12533,7 @@
           "description": "A worker has been requested from a cloud api",
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
+            "terminateAfter": "Time after which worker should be terminated",
             "workerGroup": "The worker group for this worker",
             "workerId": "The worker that was created",
             "workerPoolId": "The worker pool ID"

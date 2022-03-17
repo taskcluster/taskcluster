@@ -415,6 +415,7 @@ class AzureProvider extends Provider {
         providerId: this.providerId,
         workerGroup,
         workerId: virtualMachineName,
+        terminateAfter,
       });
       const worker = Worker.fromApi({
         workerPoolId,
