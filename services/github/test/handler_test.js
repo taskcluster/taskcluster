@@ -6,7 +6,7 @@ const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
 const { LEVELS } = require('taskcluster-lib-monitor');
-const { CHECKRUN_TEXT } = require('../src/constants');
+const { CHECKLOGS_TEXT, CHECKRUN_TEXT } = require('../src/constants');
 const utils = require('../src/utils');
 
 /**
@@ -865,7 +865,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
-        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n${CUSTOM_CHECKRUN_TEXT}`
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/public/logs/live.log)\n${CUSTOM_CHECKRUN_TEXT}`
       );
       /* eslint-enable comma-dangle */
       sinon.restore();

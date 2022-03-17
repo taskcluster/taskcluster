@@ -7,7 +7,7 @@ const yaml = require('js-yaml');
 const assert = require('assert');
 const { consume } = require('taskcluster-lib-pulse');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const { CONCLUSIONS, CHECKRUN_TEXT, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME } = require('./constants');
+const { CONCLUSIONS, CHECKLOGS_TEXT, CHECKRUN_TEXT, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME } = require('./constants');
 const utils = require('./utils');
 
 /**
@@ -353,6 +353,8 @@ const taskUI = (rootUrl, taskGroupId, taskId) =>
   libUrls.ui(rootUrl, rootUrl === 'https://taskcluster.net' ? `/groups/${taskGroupId}/tasks/${taskId}/details` : `/tasks/${taskId}`);
 const taskGroupUI = (rootUrl, taskGroupId) =>
   libUrls.ui(rootUrl, `${rootUrl === 'https://taskcluster.net' ? '' : '/tasks'}/groups/${taskGroupId}`);
+const taskLogUI = (rootUrl, runId, taskId) =>
+  libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/logs/public/logs/live.log`);
 
 /**
  * Create or refine a debug function with the given attributes.  This eventually calls
@@ -620,7 +622,7 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
+          text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n[${CHECKLOGS_TEXT}](${taskLogUI(this.context.cfg.taskcluster.rootUrl, runId, taskId)})\n${customCheckRunText || ''}`,
           annotations: customCheckRunAnnotations,
         },
       });
@@ -634,7 +636,7 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n${customCheckRunText || ''}`,
+          text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n[${CHECKLOGS_TEXT}](${taskLogUI(this.context.cfg.taskcluster.rootUrl, runId, taskId)})\n${customCheckRunText || ''}`,
           annotations: customCheckRunAnnotations,
         },
         details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
@@ -983,7 +985,7 @@ async function taskDefinedHandler(message) {
       output: {
         title: `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
         summary: `${taskDefinition.metadata.description}`,
-        text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})`,
+        text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n[${CHECKLOGS_TEXT}](${taskLogUI(this.context.cfg.taskcluster.rootUrl, 0, taskId)})\n`,
       },
       details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
     }).catch(async (err) => {
