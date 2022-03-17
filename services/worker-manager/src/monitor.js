@@ -25,6 +25,7 @@ MonitorManager.register({
     providerId: 'The provider that did the work for this worker pool.',
     workerGroup: 'The worker group for this worker',
     workerId: 'The worker that was created',
+    terminateAfter: 'Time after which worker should be terminated',
   },
 });
 
