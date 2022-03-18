@@ -208,6 +208,7 @@ Commands:
           git clean -fdx
           git checkout -B tmp -t "X${TASK_ID}"
           cd workers/generic-worker
+          go get -modfile=../../go.mod
           git status
           # output of wc command can contain spaces on darwin, so no quotes around expression
           test $(git status --porcelain | wc -l) == 0
@@ -263,6 +264,7 @@ Commands:
       - 'git clean -fdx'
       - 'git checkout -B tmp -t "X%TASK_ID%"'
       - cd workers\generic-worker
+      - go get -modfile=..\..\go.mod
       - |
         :: this counts the number of lines returned by git status
         :: dump temp file outside of repo, otherwise git status reports the tmp1.txt file!
