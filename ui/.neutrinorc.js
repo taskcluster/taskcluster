@@ -2,7 +2,7 @@ const merge = require('deepmerge');
 const copy = require('@neutrinojs/copy');
 const reactLint = require('@mozilla-frontend-infra/react-lint');
 const react = require('@neutrinojs/react');
-const karma = require('@neutrinojs/karma');
+const jest = require('@neutrinojs/jest');
 const { join, resolve } = require('path');
 const fs = require('fs');
 const generateEnvJs = require('./generate-env-js');
@@ -43,6 +43,7 @@ module.exports = {
         'react/static-property-placement': 'off',
         // We use @babel/plugin-proposal-class-properties to allow those
         'react/state-in-constructor': 'off',
+        'react/jsx-no-bind': 'off',
       },
     }),
     react({
@@ -60,14 +61,20 @@ module.exports = {
         proxy: {
           '/login': {
             target: 'http://localhost:3050',
+            changeOrigin: true,
           },
           '/graphql': {
             target: 'http://localhost:3050',
+            changeOrigin: true,
           },
           '/subscription': {
             ws: true,
             changeOrigin: true,
             target: 'ws://localhost:3050',
+          },
+          '/api/web-server': {
+            target: 'http://localhost:3050',
+            changeOrigin: true,
           },
         },
       },
@@ -94,8 +101,17 @@ module.exports = {
                   [require.resolve('@babel/plugin-proposal-class-properties'), { loose: false }],
                   [require.resolve('@babel/plugin-proposal-optional-chaining'), { loose: true }],
                   [require.resolve('@babel/plugin-proposal-nullish-coalescing-operator'), { loose: true }],
+                  [require.resolve('@babel/plugin-transform-modules-commonjs'), { loose: true }],
                 ]).filter(Boolean)
             }));
+
+      neutrino.config.module
+        .rule('js-modules')
+        .test(/\.mjs?$/)
+        .type('javascript/auto')
+        .include
+          .add(/node_modules/)
+          .end();
 
       neutrino.config.module
         .rule('graphql')
@@ -160,15 +176,24 @@ module.exports = {
         ],
       }));
     },
-    karma({
-      plugins: [
-        'karma-firefox-launcher',
+    jest({
+      testEnvironment: 'jsdom',
+      testRegex: null,
+      testMatch: [
+        '<rootDir>/src/**/*.test.(js|jsx)',
+        '<rootDir>/tests/unit/**/*.test.(ts)'
       ],
-      client: {
-        mocha: {
-          ui: 'tdd',
-        },
+      setupFilesAfterEnv: [
+        './jest.setup.js',
+      ],
+      moduleFileExtensions: ['js', 'jsx'],
+      transform: {
+        '^.+\\.(js|jsx)$': 'babel-jest',
+        '\\.graphql$': 'jest-transform-graphql',
       },
+      transformIgnorePatterns: [
+        "node_modules/(?!is-absolute-url|taskcluster-client-web)"
+      ],
     }),
   ],
 };

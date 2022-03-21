@@ -6,7 +6,7 @@ set -e
 # NOTE: Superduperslow!
 
 while [ $# -ne 0 ] ; do
-  case "$1" in 
+  case "$1" in
     --flake8)
       flake8=$2
       shift 2;;

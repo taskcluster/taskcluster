@@ -100,6 +100,26 @@ func (hooks *Hooks) Ping() error {
 	return err
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See #lbheartbeat
+func (hooks *Hooks) Lbheartbeat() error {
+	cd := tcclient.Client(*hooks)
+	_, _, err := (&cd).APICall(nil, "GET", "/__lbheartbeat__", nil, nil)
+	return err
+}
+
+// Respond with the JSON version object.
+// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+//
+// See #version
+func (hooks *Hooks) Version() error {
+	cd := tcclient.Client(*hooks)
+	_, _, err := (&cd).APICall(nil, "GET", "/__version__", nil, nil)
+	return err
+}
+
 // This endpoint will return a list of all hook groups with at least one hook.
 //
 // Required scopes:
@@ -332,4 +352,16 @@ func (hooks *Hooks) ListLastFires(hookGroupId, hookId string) (*LastFiresList, e
 func (hooks *Hooks) ListLastFires_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*hooks)
 	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", nil, duration)
+}
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (hooks *Hooks) Heartbeat() error {
+	cd := tcclient.Client(*hooks)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
 }

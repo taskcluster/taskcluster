@@ -39,6 +39,30 @@ class Auth(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
+    async def lbheartbeat(self, *args, **kwargs):
+        """
+        Load Balancer Heartbeat
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["lbheartbeat"], *args, **kwargs)
+
+    async def version(self, *args, **kwargs):
+        """
+        Taskcluster Version
+
+        Respond with the JSON version object.
+        https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["version"], *args, **kwargs)
+
     async def listClients(self, *args, **kwargs):
         """
         List Clients
@@ -524,6 +548,20 @@ class Auth(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["testAuthenticateGet"], *args, **kwargs)
 
+    async def heartbeat(self, *args, **kwargs):
+        """
+        Heartbeat
+
+        Respond with a service heartbeat.
+
+        This endpoint is used to check on backing services this service
+        depends on.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["heartbeat"], *args, **kwargs)
+
     funcinfo = {
         "authenticateHawk": {
             'args': [],
@@ -666,6 +704,20 @@ class Auth(AsyncBaseClient):
             'route': '/gcp/credentials/<projectId>/<serviceAccount>',
             'stability': 'stable',
         },
+        "heartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'heartbeat',
+            'route': '/__heartbeat__',
+            'stability': 'stable',
+        },
+        "lbheartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'lbheartbeat',
+            'route': '/__lbheartbeat__',
+            'stability': 'stable',
+        },
         "listClients": {
             'args': [],
             'method': 'get',
@@ -765,6 +817,13 @@ class Auth(AsyncBaseClient):
             'name': 'updateRole',
             'output': 'v1/get-role-response.json#',
             'route': '/roles/<roleId>',
+            'stability': 'stable',
+        },
+        "version": {
+            'args': [],
+            'method': 'get',
+            'name': 'version',
+            'route': '/__version__',
             'stability': 'stable',
         },
         "websocktunnelToken": {

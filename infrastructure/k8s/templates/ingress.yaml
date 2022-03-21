@@ -87,6 +87,10 @@ spec:
             backend:
               servicePort: 80
               serviceName: taskcluster-web-server
+          - path: /api/web-server/*
+            backend:
+              servicePort: 80
+              serviceName: taskcluster-web-server
           - path: /api/worker-manager/*
             backend:
               servicePort: 80

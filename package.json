@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "44.4.0",
+  "version": "44.8.4",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "14.17.5",
+    "node": "16.14.0",
     "yarn": "^1.22.10"
   },
   "workspaces": [
@@ -27,8 +27,9 @@
     "@slack/web-api": "^6.0.0",
     "ajv": "^7.2.1",
     "ajv-formats": "^1.5.1",
-    "amqplib": "^0.7.0",
-    "apollo-server-express": "^3.0.0",
+    "amqplib": "^0.8.0",
+    "apollo-server-core": "^3.6.4",
+    "apollo-server-express": "^3.6.4",
     "aws-sdk": "^2.394.0",
     "body-parser": "1.19.0",
     "body-parser-graphql": "^1.0.0",
@@ -156,7 +157,7 @@
     "open-editor": "^3.0.0",
     "qlobber": "^5.0.3",
     "semver": "^7.3.2",
-    "sinon": "^10.0.0",
+    "sinon": "^13.0.0",
     "snake-case": "^3.0.3",
     "taskcluster-lib-testing": "link:libraries/testing",
     "temporary": "^1.0.0",
@@ -170,6 +171,7 @@
   },
   "scripts": {
     "lint": "eslint --cache --ext js --ignore-pattern clients/client-rust --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
+    "lint:fix": "eslint --fix --cache --ext js --ignore-pattern clients/client-rust --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
     "lint:go": "sh test/go-lint.sh",
     "lint:py": "sh test/py-lint.sh",
     "test": "yarn workspaces run test",
@@ -191,6 +193,8 @@
     "dev:apply": "node infrastructure/tooling/src/main.js dev:apply",
     "dev:delete": "node infrastructure/tooling/src/main.js dev:delete",
     "dev:verify": "node infrastructure/tooling/src/main.js dev:verify",
+    "dev:ensure:db": "node infrastructure/tooling/src/main.js dev:ensure:db",
+    "dev:ensure:rabbit": "node infrastructure/tooling/src/main.js dev:ensure:rabbit",
     "smoketest": "node infrastructure/tooling/src/main.js smoketest",
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
     "db:upgrade": "node db/src/main.js upgrade",

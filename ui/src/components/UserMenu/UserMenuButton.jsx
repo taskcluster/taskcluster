@@ -56,6 +56,7 @@ export default class UserMenuButton extends Component {
             variant="contained"
             color="primary"
             onClick={onSignInDialogOpen}
+            id="sign-in-button"
             {...buttonProps}
             {...props}>
             Sign in
@@ -71,6 +72,7 @@ export default class UserMenuButton extends Component {
         aria-haspopup="true"
         aria-controls="user-menu"
         aria-label="user menu"
+        id="user-menu-button"
         onClick={onMenuClick}
         {...props}>
         {avatarSrc ? (

@@ -32,7 +32,7 @@ impl Object {
     }
 
     /// Ping Server
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn ping(&self) -> Result<(), Error> {
@@ -64,14 +64,80 @@ impl Object {
         (path, query)
     }
 
+    /// Load Balancer Heartbeat
+    ///
+    /// Respond without doing anything.
+    /// This endpoint is used to check that the service is up.
+    pub async fn lbheartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::lbheartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for lbheartbeat
+    fn lbheartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__lbheartbeat__";
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Taskcluster Version
+    ///
+    /// Respond with the JSON version object.
+    /// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+    pub async fn version(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::version_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the version endpoint
+    pub fn version_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the version endpoint
+    pub fn version_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for version
+    fn version_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__version__";
+        let query = None;
+
+        (path, query)
+    }
+
     /// Begin upload of a new object
-    /// 
+    ///
     /// Create a new object by initiating upload of its data.
-    /// 
+    ///
     /// This endpoint implements negotiation of upload methods.  It can be called
     /// multiple times if necessary, either to propose new upload methods or to
     /// renew credentials for an already-agreed upload.
-    /// 
+    ///
     /// The `name` parameter can contain any printable ASCII character (0x20 - 0x7e).
     /// The `uploadId` must be supplied by the caller, and any attempts to upload
     /// an object with the same name but a different `uploadId` will fail.
@@ -82,7 +148,7 @@ impl Object {
     /// this method with no proposed upload methods, which has the effect of "locking
     /// in" the `expiration`, `projectId`, and `uploadId` properties and any
     /// supplied hashes.
-    /// 
+    ///
     /// Unfinished uploads expire after 1 day.
     pub async fn createUpload(&self, name: &str, payload: &Value) -> Result<Value, Error> {
         let method = "PUT";
@@ -101,12 +167,12 @@ impl Object {
     }
 
     /// Mark an upload as complete.
-    /// 
+    ///
     /// This endpoint marks an upload as complete.  This indicates that all data has been
     /// transmitted to the backend.  After this call, no further calls to `uploadObject` are
     /// allowed, and downloads of the object may begin.  This method is idempotent, but will
     /// fail if given an incorrect uploadId for an unfinished upload.
-    /// 
+    ///
     /// Note that, once `finishUpload` is complete, the object is considered immutable.
     pub async fn finishUpload(&self, name: &str, payload: &Value) -> Result<(), Error> {
         let method = "POST";
@@ -126,12 +192,12 @@ impl Object {
     }
 
     /// Download object data
-    /// 
+    ///
     /// Start the process of downloading an object's data.  Call this endpoint with a list of acceptable
     /// download methods, and the server will select a method and return the corresponding payload.
-    /// 
+    ///
     /// Returns a 406 error if none of the given download methods are available.
-    /// 
+    ///
     /// See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.
     pub async fn startDownload(&self, name: &str, payload: &Value) -> Result<Value, Error> {
         let method = "PUT";
@@ -150,7 +216,7 @@ impl Object {
     }
 
     /// Get an object's metadata
-    /// 
+    ///
     /// Get the metadata for the named object.  This metadata is not sufficient to
     /// get the object's content; for that use `startDownload`.
     pub async fn object(&self, name: &str) -> Result<Value, Error> {
@@ -182,19 +248,19 @@ impl Object {
     }
 
     /// Get an object's data
-    /// 
+    ///
     /// Get the data in an object directly.  This method does not return a JSON body, but
     /// redirects to a location that will serve the object content directly.
-    /// 
+    ///
     /// URLs for this endpoint, perhaps with attached authentication (`?bewit=..`),
     /// are typically used for downloads of objects by simple HTTP clients such as
     /// web browsers, curl, or wget.
-    /// 
+    ///
     /// This method is limited by the common capabilities of HTTP, so it may not be
     /// the most efficient, resilient, or featureful way to retrieve an artifact.
     /// Situations where such functionality is required should ues the
     /// `startDownload` API endpoint.
-    /// 
+    ///
     /// See [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.
     pub async fn download(&self, name: &str) -> Result<(), Error> {
         let method = "GET";
@@ -220,6 +286,41 @@ impl Object {
     /// Determine the HTTP request details for download
     fn download_details<'a>(name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("download/{}", urlencode(name));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Heartbeat
+    ///
+    /// Respond with a service heartbeat.
+    ///
+    /// This endpoint is used to check on backing services this service
+    /// depends on.
+    pub async fn heartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::heartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the heartbeat endpoint
+    pub fn heartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the heartbeat endpoint
+    pub fn heartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for heartbeat
+    fn heartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__heartbeat__";
         let query = None;
 
         (path, query)

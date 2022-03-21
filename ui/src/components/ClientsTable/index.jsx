@@ -103,6 +103,10 @@ export default class ClientsTable extends Component {
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
+        allowFilter
+        filterFunc={({ node: client }, filterValue) =>
+          String(client.clientId).includes(filterValue)
+        }
         renderRow={({ node: client }) => (
           <TableRow key={client.clientId}>
             <TableCell width="100%">

@@ -4,11 +4,11 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
 
-VERSION = '44.4.0'
+VERSION = '44.8.4'
 
 tests_require = [
     'pytest',
-    'pytest-cov',   
+    'pytest-cov',
     'pytest-mock',
     'pytest-asyncio',
     'httmock',

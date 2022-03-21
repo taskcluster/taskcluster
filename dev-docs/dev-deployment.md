@@ -13,10 +13,10 @@ You will need to have the following
 * A running kubernetes cluster with at least 2000 mCPU and 4GB RAM available.
   * Helm 3 installed
   * The latest version of kubectl installed, and credentials configured to talk to the cluster
-* A RabbitMQ cluster running the latest available version.
+* A RabbitMQ cluster running the latest available version. (see also [install RabbitMQ](#own-rabbitmq-in-cluster))
   The deployment process requires administrative access (the RabbitMQ management API) and creates multiple users.
   The free levels of CloudAMQP's service do not support this.
-* A Postgres server running Postgres 11.x (see below for Google Cloud SQL, or use another provider).
+* A Postgres server running Postgres 11.x (see below for Google Cloud SQL, or use another provider). (see also [install Postgres](#own-postgres-in-cluster))
   The Postgres server must be initialized with the `en_US.utf8` locale; see [the deployment docs](../ui/docs/manual/deploying/database.mdx).
 * An AWS account and an IAM user in that account
   Set up your `aws` command-line to use the IAM user (`aws configure`).
@@ -39,7 +39,7 @@ Set up an IP for your deployment:
    You can find the assigned IP in `gcloud compute addresses list`, and put it into DNS as an A record.
 1. Create a certificate: `certbot certonly --manual --preferred-challenges dns`.  This will ask you to add a TXT record to the DNS.
    Note that certbot is installed with `brew install letsencrypt` on macOS.
-1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <path-to-fullchain.pem> --private-key <path-to-key>`. When the time comes to renew the certificate, simply increment the name (e.g., <yourname>-ingress-1). 
+1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <path-to-fullchain.pem> --private-key <path-to-key>`. When the time comes to renew the certificate, simply increment the name (e.g., <yourname>-ingress-1).
 
 ### Minikube
 
@@ -77,6 +77,23 @@ Example configuration with SSL on the reverse proxy:
    SSLProxyCheckPeerCN off # Required when not using a trusted SSL cert (when not changing the ingress SSL cert)
    AllowEncodedSlashes on
 </VirtualHost>
+```
+
+### Deploying custom images to dev cluster
+
+In order to build experimental build that is not based on official `taskcluster/taskcluster` docker images, you can start with building your image locally.
+(Note: keep in mind what architecture is being used on the cluster)
+
+```sh
+# build and push custom image
+docker builder build --tag username/taskcluster-dev:${VERSION} --platform linux/amd64 .
+docker push username/taskcluster-dev:${VERSION}
+
+# Update value in dev-config.yml
+# dockerImage: username/taskcluster-dev:${VERSION}
+
+# run deployment
+yarn dev:apply
 ```
 
 #### Troubleshooting:
@@ -179,9 +196,9 @@ You will need:
 2. A github app created and installed for a testing repository.
 
 To set up a taskcluster-github app:
-0. In the settings of the github app that you created, at the very bottom of the General tab, you will find Generate Private Key button. 
+0. In the settings of the github app that you created, at the very bottom of the General tab, you will find Generate Private Key button.
 Press it to generate the private key.
-1. In your `dev-config.yml`, in the `github` section, add `github_private_pem` - you can copy-paste the contents of the 
+1. In your `dev-config.yml`, in the `github` section, add `github_private_pem` - you can copy-paste the contents of the
 PEM file you have obtained in the previous step. Be careful to remove any newlines from the encrypted part,
 and the necessary newlines after the header and before the footer should be replaced with `\n`, so the whole thing is a one-line string
 like this: `-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEblahblahblah==\n-----END RSA PRIVATE KEY-----`
@@ -206,3 +223,133 @@ If you set up a taskcluster-github app, you probably want to test a variety of i
 3. Look up the routing key and exchange you need (most likely you are testing a handler - so look up the bindings for that handler in the code).
 3. Navigate to the management UI on the RabbitMQ server (the url from `pulseHostname`), login using the above credentials and go to the exchange of interest. You will see *Publish Message* section in the UI. Fill out the *Routing Key* and *Payload* fields (the result of the step 2 goes into the latter). Press *Publish Message* and you're done.
 
+## Own RabbitMQ in cluster
+
+It is possible to run RabbitMQ directly in the same cluster for dev purposes.
+
+Warning: by using this approach, you are responsible for maintenance and backups.
+
+You can use one of the existing helm charts, steps listed below:
+
+1. Add helm repository:
+
+   `helm repo add bitnami https://charts.bitnami.com/bitnami`
+2. To enable TLS you need to create certificates according to [RabbitMQ Documentation](https://www.rabbitmq.com/ssl.html#automated-certificate-generation)
+   <details>
+   <summary>
+   Generate and upload rabbitmq-certificates
+   </summary>
+
+   ```sh
+   git clone https://github.com/michaelklishin/tls-gen tls-gen
+
+   cd tls-gen/basic
+   make && make verify && make info
+
+   cd result
+   cp ca_certificate.pem ca.crt && cp server_certificate.pem tls.crt && cp server_key.pem tls.key
+
+   kubectl -n $NAMESPACE create secret generic rabbitmq-certificates \
+      --from-file=./ca.crt \
+      --from-file=./tls.crt \
+      --from-file=./tls.key
+   ```
+   </details>
+3. Create config with chart values:
+   <details>
+   <summary><code>rabbitmq/values.yaml</code></summary>
+
+   ```yaml
+   auth:
+      username: admin
+      password: adminpassword      # set some strong management password
+      erlangCookie: secretcookie   # set some cookie secret
+
+   tls:
+      enabled: true
+      existingSecret: rabbitmq-certificates  # same name of the secret from the previous step
+   ```
+
+   More details at <https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq>
+   </details>
+4. Install chart:
+
+   `helm install tc-rabbitmq --namespace $NAMESPACE -f ./rabbitmq/values.yaml bitnami/rabbitmq`
+
+   This will create several resources. By default it will create Persisted Volume Claim for `8Gb` of disk that will be persisted by kubernetes cluster.
+5. Create proxy (port forwarding) to be able to access management panel:
+
+   `kubectl port-forward --namespace $NAMESPACE svc/tc-rabbitmq 15672:15672`
+
+   You are now able to access it via <http://localhost:15672> using username and password configured in `rabbitmq/values.yaml`.
+
+6. Ensure that vhost and users are created.
+
+   In your `dev-config.yml` (that is created with `yarn dev:init`) you should have `meta.rabbitAdminManagementOrigin = http://127.0.0.1:15672` to be able to properly access it
+
+   Run `yarn dev:ensure:rabbit` to create missing users and vhost. It will prompt for management password (see `rabbitmq/values.yaml`), and assumes that `dev-config.yml` was already generated.
+
+7. Update `dev-config.yml` to have:
+
+   `pulseHostname = tc-rabbitmq-headless` if running in the same namespace, or `pulseHostname: tc-rabbitmq-headless.$NAMESPACE.svc.cluster.local` otherwise
+
+   In case of connection issues, set non tls mode with `pulseAmqps = false`
+
+8. Run `yarn dev:apply` if needed, to recreate configs and secrets with new pulse values.
+
+## Own Postgres in cluster
+
+It is possible to run Postgres directly in the same cluster for dev purposes.
+
+Warning: by using this approach, you are responsible for maintenance and backups.
+
+1. Add helm repository:
+
+   `helm repo add bitnami https://charts.bitnami.com/bitnami`
+
+2. Create config with chart values:
+   <details>
+   <summary><code>postgres/values.yaml</code></summary>
+
+   ```yaml
+   auth:
+      postgresPassword: rootpassword  # set something strong
+      username: taskcluster
+      password: taskcluster  # set something strong
+      database: taskcluster
+
+   tls:
+      enabled: true
+      autoGenerated: true
+
+   volumePermissions:
+      enabled: true
+
+   image:
+      tag: 11  # Taskcluster currently supports version 11
+   ```
+
+   More details at <https://github.com/bitnami/charts/tree/master/bitnami/postgresql>
+   </details>
+3. Install chart:
+
+   `helm install tc-postgresql --namespace $NAMESPACE -f ./postgresql/values.yaml bitnami/postgresql`
+
+   This will create several resources. By default it will create Persisted Volume Claim for `8Gb` of disk that will be persisted by kubernetes cluster.
+4. Create proxy (port forwarding) to be able to access Postgres locally:
+
+   `kubectl port-forward --namespace $NAMESPACE svc/tc-postgresql 5432:5432`
+
+   You are now able to connect to it via <http://localhost:5432> using username and password configured in `postgres/values.yaml`.
+
+5. Ensure that users are created.
+
+   In your `dev-config.yml` (that is created with `yarn dev:init`) you should have `meta.dbPrivateIp = tc-postgresql.$NAMESPACE.svc.cluster.local` to be able to properly access it
+
+   `yarn dev:ensure:db` will create all necessary users for all services
+
+6. Migrate database
+
+   Once users are set, you can run `yarn dev:db:upgrade` (with running port-forward) to create db schema and stored functions
+
+Now it should be possible to use postgres for dev purposes inside the cluster. Make sure to make backups.

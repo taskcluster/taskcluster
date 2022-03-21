@@ -10,7 +10,9 @@ export default class Queue extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.task.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"task","output":true,"query":[],"route":"/task/<taskId>","scopes":"queue:get-task:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.status.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"status","output":true,"query":[],"route":"/task/<taskId>/status","scopes":"queue:status:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listTaskGroup.entry = {"args":["taskGroupId"],"category":"Tasks","method":"get","name":"listTaskGroup","output":true,"query":["continuationToken","limit"],"route":"/task-group/<taskGroupId>/list","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -48,6 +50,7 @@ export default class Queue extends Client {
     this.getWorker.entry = {"args":["provisionerId","workerType","workerGroup","workerId"],"category":"Worker Metadata","method":"get","name":"getWorker","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>","scopes":"queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.quarantineWorker.entry = {"args":["provisionerId","workerType","workerGroup","workerId"],"category":"Worker Metadata","input":true,"method":"put","name":"quarantineWorker","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>","scopes":{"AllOf":["queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.declareWorker.entry = {"args":["provisionerId","workerType","workerGroup","workerId"],"category":"Worker Metadata","input":true,"method":"put","name":"declareWorker","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>","scopes":{"AllOf":[{"each":"queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>","for":"property","in":"properties"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -57,6 +60,24 @@ export default class Queue extends Client {
     this.validate(this.ping.entry, args);
 
     return this.request(this.ping.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  lbheartbeat(...args) {
+    this.validate(this.lbheartbeat.entry, args);
+
+    return this.request(this.lbheartbeat.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with the JSON version object.
+  // https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+  /* eslint-enable max-len */
+  version(...args) {
+    this.validate(this.version.entry, args);
+
+    return this.request(this.version.entry, args);
   }
   /* eslint-disable max-len */
   // This end-point will return the task-definition. Notice that the task
@@ -604,5 +625,15 @@ export default class Queue extends Client {
     this.validate(this.declareWorker.entry, args);
 
     return this.request(this.declareWorker.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with a service heartbeat.
+  // This endpoint is used to check on backing services this service
+  // depends on.
+  /* eslint-enable max-len */
+  heartbeat(...args) {
+    this.validate(this.heartbeat.entry, args);
+
+    return this.request(this.heartbeat.entry, args);
   }
 }

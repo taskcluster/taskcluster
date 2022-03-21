@@ -4,6 +4,7 @@ const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
 const { LEVELS } = require('taskcluster-lib-monitor');
 const { WorkerPool, Worker } = require('../src/data');
+const { ApiError } = require('../src/providers/provider');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -357,6 +358,38 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           Fields: { message: 'Worker pool pp/ww has unknown previousProviderIds entry NO-SUCH (ignoring)' },
           Severity: LEVELS.info,
         });
+    });
+
+    test("provision loop is not running in parallel", async function() {
+      await WorkerPool.fromApi({
+        workerPoolId: 'pp/ww',
+        providerId: 'testing1',
+        previousProviderIds: ['NO-SUCH'],
+        description: '',
+        created: new Date(),
+        lastModified: new Date(),
+        config: {},
+        owner: 'me@example.com',
+        emailOnError: false,
+        providerData: {},
+      }).create(helper.db);
+      const provisioner = await helper.load('provisioner');
+
+      await assert.rejects(async () => {
+        await Promise.all([
+          provisioner.provision(),
+          provisioner.provision(),
+        ]);
+      }, new ApiError('provision loop interference'));
+
+      assert.deepEqual(
+        monitor.manager.messages.find(msg => msg.Type === 'loop-interference'), {
+          Fields: {},
+          Logger: 'taskcluster.test.provisioner',
+          Severity: 1,
+          Type: 'loop-interference',
+        });
+      monitor.manager.reset();
     });
   });
 

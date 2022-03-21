@@ -15,6 +15,11 @@ const oauth2 = require('./oauth2');
 const PostgresSessionStore = require('../login/PostgresSessionStore');
 const { traceMiddleware } = require('taskcluster-lib-app');
 
+const REPO_ROOT = path.join(__dirname, '../../../../');
+
+const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
+const taskclusterVersion = require(taskclusterVersionFile);
+
 module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
   const app = express();
 
@@ -139,6 +144,19 @@ module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
   // 4. Get Taskcluster credentials
   app.options('/login/oauth/credentials', cors(thirdPartyCorsOptions));
   app.get('/login/oauth/credentials', cors(thirdPartyCorsOptions), oauth2AccessToken(), getCredentials);
+
+  // Dockerflow endpoints
+  // https://github.com/mozilla-services/Dockerflow
+  app.get('/api/web-server/v1/__lbheartbeat__', (_req, res) => {
+    res.json({});
+  });
+  app.get('/api/web-server/v1/__version__', (_req, res) => {
+    res.json(taskclusterVersion);
+  });
+  // TODO: add implementation
+  app.get('/api/web-server/v1/__heartbeat__', (_req, res) => {
+    res.json({});
+  });
 
   // Error handling middleware
   app.use((err, req, res, next) => {

@@ -281,7 +281,7 @@ methods:
     body: |-
       begin
         return query
-        select 
+        select
           clients.client_id,
           clients.description,
           clients.encrypted_access_token,
@@ -322,7 +322,7 @@ methods:
     body: |-
       begin
         return query
-        select 
+        select
           clients.client_id,
           clients.description,
           clients.encrypted_access_token,

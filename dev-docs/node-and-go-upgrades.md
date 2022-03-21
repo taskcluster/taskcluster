@@ -14,6 +14,7 @@ To update the node version:
 * Install the new node version, such as `nvm install --lts`
 * Install yarn, such as `npm install -g yarn`
 * Update `package.json`
+* Run `yarn install`
 * Run `yarn generate`
 * Create a changelog file and commit
 * Build and push new images (see below)
@@ -22,8 +23,8 @@ To update the node version:
 
 To update the go version:
 
-* Install the new go version, such as `gvm install go1.17.6`
-* Use the new go version, such as `gvm use go1.17.6`
+* Install the new go version, such as `gvm install go1.17.8`
+* Use the new go version, such as `gvm use go1.17.8`
 * Download modules with `go mod download`
 * Update `.go-version`
 * Run `yarn generate`. Some `go` errors may occur, for example on major version updates.
@@ -41,6 +42,7 @@ To update the go version:
 When updating either npm or go, there are new Docker images that need to be
 built and deployed to pass CI.
 
+* Run `docker login` with credentials found on the [passwordstore](https://github.com/taskcluster/passwordstore-readme)
 * Change to the `infrastructure/docker-images` folder
 * (Optional) Run each builder:
   - `./build-browser-test.sh` - Uses node and Firefox ESR

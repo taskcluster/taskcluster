@@ -104,6 +104,26 @@ func (workerManager *WorkerManager) Ping() error {
 	return err
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See #lbheartbeat
+func (workerManager *WorkerManager) Lbheartbeat() error {
+	cd := tcclient.Client(*workerManager)
+	_, _, err := (&cd).APICall(nil, "GET", "/__lbheartbeat__", nil, nil)
+	return err
+}
+
+// Respond with the JSON version object.
+// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+//
+// See #version
+func (workerManager *WorkerManager) Version() error {
+	cd := tcclient.Client(*workerManager)
+	_, _, err := (&cd).APICall(nil, "GET", "/__version__", nil, nil)
+	return err
+}
+
 // Retrieve a list of providers that are available for worker pools.
 //
 // Required scopes:
@@ -488,4 +508,16 @@ func (workerManager *WorkerManager) ReregisterWorker(payload *ReregisterWorkerRe
 	cd := tcclient.Client(*workerManager)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker/reregister", new(ReregisterWorkerResponse), nil)
 	return responseObject.(*ReregisterWorkerResponse), err
+}
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (workerManager *WorkerManager) Heartbeat() error {
+	cd := tcclient.Client(*workerManager)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
 }

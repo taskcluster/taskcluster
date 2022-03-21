@@ -104,6 +104,26 @@ func (purgeCache *PurgeCache) Ping() error {
 	return err
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See #lbheartbeat
+func (purgeCache *PurgeCache) Lbheartbeat() error {
+	cd := tcclient.Client(*purgeCache)
+	_, _, err := (&cd).APICall(nil, "GET", "/__lbheartbeat__", nil, nil)
+	return err
+}
+
+// Respond with the JSON version object.
+// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+//
+// See #version
+func (purgeCache *PurgeCache) Version() error {
+	cd := tcclient.Client(*purgeCache)
+	_, _, err := (&cd).APICall(nil, "GET", "/__version__", nil, nil)
+	return err
+}
+
 // Publish a request to purge caches named `cacheName` with
 // on `workerPoolId` workers.
 //
@@ -195,4 +215,16 @@ func (purgeCache *PurgeCache) PurgeRequests_SignedURL(workerPoolId, since string
 	}
 	cd := tcclient.Client(*purgeCache)
 	return (&cd).SignedURL("/purge-cache/"+url.QueryEscape(workerPoolId), v, duration)
+}
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (purgeCache *PurgeCache) Heartbeat() error {
+	cd := tcclient.Client(*purgeCache)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
 }

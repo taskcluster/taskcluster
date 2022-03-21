@@ -1,14 +1,22 @@
-FROM ubuntu:14.04
+FROM ubuntu:20.04
 
 ARG NODE_VERSION
-ENV DOCKER_VERSION=18.06.3~ce~3-0~ubuntu
+ENV DOCKER_VERSION=5:20.10.12~3-0~ubuntu-focal
 
-RUN apt-get update && apt-get install -y apt-transport-https
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    gnupg \
+    lsb-release
 
 # Add key for docker apt repository
 COPY download.docker.com.gpg /tmp/download.docker.com.gpg
-RUN apt-key add /tmp/download.docker.com.gpg && \
-    echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu trusty stable" > /etc/apt/sources.list.d/docker.list
+RUN gpg --dearmor \
+        -o /usr/share/keyrings/docker-archive-keyring.gpg \
+        /tmp/download.docker.com.gpg && \
+    echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+        | tee /etc/apt/sources.list.d/docker.list
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
@@ -17,11 +25,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     iptables \
     lxc \
-    python \
+    python3 \
     jq
 
-RUN curl -SL "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" | \
-    tar xz -C /usr/local --strip-components=1 && \
+RUN curl -SL "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" | \
+    tar --xz --extract --directory /usr/local --strip-components=1 && \
     npm install -g yarn@1.0.2 && \
     yarn global add babel-cli
 

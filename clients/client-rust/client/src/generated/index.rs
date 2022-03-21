@@ -34,7 +34,7 @@ impl Index {
     }
 
     /// Ping Server
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn ping(&self) -> Result<(), Error> {
@@ -66,8 +66,74 @@ impl Index {
         (path, query)
     }
 
+    /// Load Balancer Heartbeat
+    ///
+    /// Respond without doing anything.
+    /// This endpoint is used to check that the service is up.
+    pub async fn lbheartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::lbheartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for lbheartbeat
+    fn lbheartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__lbheartbeat__";
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Taskcluster Version
+    ///
+    /// Respond with the JSON version object.
+    /// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+    pub async fn version(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::version_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the version endpoint
+    pub fn version_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the version endpoint
+    pub fn version_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for version
+    fn version_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__version__";
+        let query = None;
+
+        (path, query)
+    }
+
     /// Find Indexed Task
-    /// 
+    ///
     /// Find a task by index path, returning the highest-rank task with that path. If no
     /// task exists for the given path, this API end-point will respond with a 404 status.
     pub async fn findTask(&self, indexPath: &str) -> Result<Value, Error> {
@@ -99,9 +165,9 @@ impl Index {
     }
 
     /// List Namespaces
-    /// 
+    ///
     /// List the namespaces immediately under a given namespace.
-    /// 
+    ///
     /// This endpoint
     /// lists up to 1000 namespaces. If more namespaces are present, a
     /// `continuationToken` will be returned, which can be given in the next
@@ -142,15 +208,15 @@ impl Index {
     }
 
     /// List Tasks
-    /// 
+    ///
     /// List the tasks immediately under a given namespace.
-    /// 
+    ///
     /// This endpoint
     /// lists up to 1000 tasks. If more tasks are present, a
     /// `continuationToken` will be returned, which can be given in the next
     /// request. For the initial request, the payload should be an empty JSON
     /// object.
-    /// 
+    ///
     /// **Remark**, this end-point is designed for humans browsing for tasks, not
     /// services, as that makes little sense.
     pub async fn listTasks(&self, namespace: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
@@ -188,10 +254,10 @@ impl Index {
     }
 
     /// Insert Task into Index
-    /// 
+    ///
     /// Insert a task into the index.  If the new rank is less than the existing rank
     /// at the given index path, the task is not indexed but the response is still 200 OK.
-    /// 
+    ///
     /// Please see the introduction above for information
     /// about indexing successfully completed tasks automatically using custom routes.
     pub async fn insertTask(&self, namespace: &str, payload: &Value) -> Result<Value, Error> {
@@ -211,7 +277,7 @@ impl Index {
     }
 
     /// Remove Task from Index
-    /// 
+    ///
     /// Remove a task from the index.  This is intended for administrative use,
     /// where an index entry is no longer appropriate.  The parent namespace is
     /// not automatically deleted.  Index entries with lower rank that were
@@ -234,20 +300,20 @@ impl Index {
     }
 
     /// Get Artifact From Indexed Task
-    /// 
+    ///
     /// Find a task by index path and redirect to the artifact on the most recent
     /// run with the given `name`.
-    /// 
+    ///
     /// Note that multiple calls to this endpoint may return artifacts from differen tasks
     /// if a new task is inserted into the index between calls. Avoid using this method as
     /// a stable link to multiple, connected files if the index path does not contain a
     /// unique identifier.  For example, the following two links may return unrelated files:
     /// * https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/installer.exe`
     /// * https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`
-    /// 
+    ///
     /// This problem be remedied by including the revision in the index path or by bundling both
     /// installer and debug symbols into a single artifact.
-    /// 
+    ///
     /// If no task exists for the given index path, this API end-point responds with 404.
     pub async fn findArtifactFromTask(&self, indexPath: &str, name: &str) -> Result<(), Error> {
         let method = "GET";
@@ -273,6 +339,41 @@ impl Index {
     /// Determine the HTTP request details for findArtifactFromTask
     fn findArtifactFromTask_details<'a>(indexPath: &'a str, name: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("task/{}/artifacts/{}", urlencode(indexPath), urlencode(name));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Heartbeat
+    ///
+    /// Respond with a service heartbeat.
+    ///
+    /// This endpoint is used to check on backing services this service
+    /// depends on.
+    pub async fn heartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::heartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the heartbeat endpoint
+    pub fn heartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the heartbeat endpoint
+    pub fn heartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for heartbeat
+    fn heartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__heartbeat__";
         let query = None;
 
         (path, query)

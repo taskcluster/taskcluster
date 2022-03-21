@@ -35,7 +35,7 @@ impl Github {
     }
 
     /// Ping Server
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn ping(&self) -> Result<(), Error> {
@@ -67,8 +67,74 @@ impl Github {
         (path, query)
     }
 
+    /// Load Balancer Heartbeat
+    ///
+    /// Respond without doing anything.
+    /// This endpoint is used to check that the service is up.
+    pub async fn lbheartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::lbheartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for lbheartbeat
+    fn lbheartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__lbheartbeat__";
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Taskcluster Version
+    ///
+    /// Respond with the JSON version object.
+    /// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+    pub async fn version(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::version_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the version endpoint
+    pub fn version_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the version endpoint
+    pub fn version_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for version
+    fn version_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__version__";
+        let query = None;
+
+        (path, query)
+    }
+
     /// Consume GitHub WebHook
-    /// 
+    ///
     /// Capture a GitHub event and publish it via pulse, if it's a push,
     /// release or pull request.
     pub async fn githubWebHookConsumer(&self) -> Result<(), Error> {
@@ -89,7 +155,7 @@ impl Github {
     }
 
     /// List of Builds
-    /// 
+    ///
     /// A paginated list of builds that have been run in
     /// Taskcluster. Can be filtered on various git-specific
     /// fields.
@@ -137,7 +203,7 @@ impl Github {
     }
 
     /// Latest Build Status Badge
-    /// 
+    ///
     /// Checks the status of the latest build of a given branch
     /// and returns corresponding badge svg.
     pub async fn badge(&self, owner: &str, repo: &str, branch: &str) -> Result<(), Error> {
@@ -170,7 +236,7 @@ impl Github {
     }
 
     /// Get Repository Info
-    /// 
+    ///
     /// Returns any repository metadata that is
     /// useful within Taskcluster related services.
     pub async fn repository(&self, owner: &str, repo: &str) -> Result<Value, Error> {
@@ -202,11 +268,11 @@ impl Github {
     }
 
     /// Latest Status for Branch
-    /// 
+    ///
     /// For a given branch of a repository, this will always point
     /// to a status page for the most recent task triggered by that
     /// branch.
-    /// 
+    ///
     /// Note: This is a redirect rather than a direct link.
     pub async fn latest(&self, owner: &str, repo: &str, branch: &str) -> Result<(), Error> {
         let method = "GET";
@@ -238,10 +304,10 @@ impl Github {
     }
 
     /// Post a status against a given changeset
-    /// 
+    ///
     /// For a given changeset (SHA) of a repository, this will attach a "commit status"
     /// on github. These statuses are links displayed next to each revision.
-    /// The status is either OK (green check) or FAILURE (red cross), 
+    /// The status is either OK (green check) or FAILURE (red cross),
     /// made of a custom title and link.
     pub async fn createStatus(&self, owner: &str, repo: &str, sha: &str, payload: &Value) -> Result<(), Error> {
         let method = "POST";
@@ -261,7 +327,7 @@ impl Github {
     }
 
     /// Post a comment on a given GitHub Issue or Pull Request
-    /// 
+    ///
     /// For a given Issue or Pull Request of a repository, this will write a new message.
     pub async fn createComment(&self, owner: &str, repo: &str, number: &str, payload: &Value) -> Result<(), Error> {
         let method = "POST";
@@ -275,6 +341,41 @@ impl Github {
     /// Determine the HTTP request details for createComment
     fn createComment_details<'a>(owner: &'a str, repo: &'a str, number: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("repository/{}/{}/issues/{}/comments", urlencode(owner), urlencode(repo), urlencode(number));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Heartbeat
+    ///
+    /// Respond with a service heartbeat.
+    ///
+    /// This endpoint is used to check on backing services this service
+    /// depends on.
+    pub async fn heartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::heartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the heartbeat endpoint
+    pub fn heartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the heartbeat endpoint
+    pub fn heartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for heartbeat
+    fn heartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__heartbeat__";
         let query = None;
 
         (path, query)

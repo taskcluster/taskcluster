@@ -117,7 +117,7 @@ Then click on the `interactive.html` in the UI to enter the container.
 
 References:
 
-* [docker-worker integration](https://github.com/taskcluster/taskcluster/blob/main/workers/docker-worker/src/lib/features/interactive.js)
+* [docker-worker integration](https://github.com/taskcluster/taskcluster/blob/main/workers/docker-worker/src/features/interactive.js)
 * [implementation](https://github.com/taskcluster/docker-exec-websocket-server)
 
 ## Feature: `allowPtrace`
@@ -131,4 +131,3 @@ The feature accomplishes its magic by creating a task-specific AppArmor profile 
 While this should be safe, assuming that all processes in the task container are at an equal privilege level, it is a deviation from the Docker security model and thus should be used with caution.
 
 The task needs `docker-worker:feature:allowPtrace` scope to run with this feature enabled.
-

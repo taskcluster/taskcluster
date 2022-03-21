@@ -13,6 +13,3 @@ git-ci-checkout-pr \
 
 test -f $STAGE_DIR/pr-remote
 test -f $STAGE_DIR/master
-
-
-

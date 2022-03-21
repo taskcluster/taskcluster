@@ -19,12 +19,25 @@ const styles = withStyles(theme => ({
 function SpeedDial(props) {
   const { classes, children, className, ...rest } = props;
   const [open, setOpen] = useState(false);
+  let timeout;
 
-  function handleClose() {
-    setOpen(false);
+  function handleClose(evt) {
+    if (evt.type === 'click') {
+      setOpen(false);
+    } else {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
+      timeout = setTimeout(() => setOpen(false), 2000);
+    }
   }
 
   function handleOpen() {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
     setOpen(true);
   }
 

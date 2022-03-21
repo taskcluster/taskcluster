@@ -537,9 +537,9 @@ builder.declare({
     'task\'s expiration.',
     '',
     '**Task specific routing-keys**: using the `task.routes` property you may',
-    'define task specific routing-keys. If a task has a task specific ',
+    'define task specific routing-keys. If a task has a task specific',
     'routing-key: `<route>`, then when the AMQP message about the task is',
-    'published, the message will be CC\'ed with the routing-key: ',
+    'published, the message will be CC\'ed with the routing-key:',
     '`route.<route>`. This is useful if you want another component to listen',
     'for completed tasks you have posted.  The caller must have scope',
     '`queue:route:<route>` for each route.',
@@ -2160,4 +2160,23 @@ builder.declare({
 
   const actions = [];
   return res.reply(Object.assign({}, workerResult, { actions }));
+});
+
+builder.declare({
+  method: 'get',
+  route: '/__heartbeat__',
+  name: 'heartbeat',
+  scopes: null,
+  category: 'Monitoring',
+  stability: 'stable',
+  title: 'Heartbeat',
+  description: [
+    'Respond with a service heartbeat.',
+    '',
+    'This endpoint is used to check on backing services this service',
+    'depends on.',
+  ].join('\n'),
+}, function(_req, res) {
+  // TODO: add implementation
+  res.reply({});
 });

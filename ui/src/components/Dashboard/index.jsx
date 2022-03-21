@@ -284,7 +284,7 @@ export default class Dashboard extends Component {
     );
     const drawer = (
       <nav className={classes.nav}>
-        <div>
+        <div id="sidebar-menu">
           {window.env.DOCS_ONLY ? (
             <Link to="/">{logoWithApplicationName}</Link>
           ) : (
@@ -326,6 +326,7 @@ export default class Dashboard extends Component {
                     color="inherit"
                     aria-label="toggle drawer"
                     onClick={this.handleDrawerToggle}
+                    id="toggle-drawer"
                     className={classes.navIconHide}>
                     <MenuIcon className={classes.appIcon} />
                   </IconButton>

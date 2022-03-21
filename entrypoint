@@ -58,6 +58,7 @@ worker-manager/expire-worker-pools) exec node services/worker-manager/src/main.j
 worker-manager/expire-errors) exec node services/worker-manager/src/main.js expireErrors;;
 worker-manager/write-docs) exec node services/worker-manager/src/main.js writeDocs;;
 script/lint) shift; exec yarn run lint "${@}";;
+script/lint:fix) shift; exec yarn run lint:fix "${@}";;
 script/lint:go) shift; exec yarn run lint:go "${@}";;
 script/lint:py) shift; exec yarn run lint:py "${@}";;
 script/test) shift; exec yarn run test "${@}";;
@@ -79,6 +80,8 @@ script/dev:db:downgrade) shift; exec yarn run dev:db:downgrade "${@}";;
 script/dev:apply) shift; exec yarn run dev:apply "${@}";;
 script/dev:delete) shift; exec yarn run dev:delete "${@}";;
 script/dev:verify) shift; exec yarn run dev:verify "${@}";;
+script/dev:ensure:db) shift; exec yarn run dev:ensure:db "${@}";;
+script/dev:ensure:rabbit) shift; exec yarn run dev:ensure:rabbit "${@}";;
 script/smoketest) shift; exec yarn run smoketest "${@}";;
 script/test:meta) shift; exec yarn run test:meta "${@}";;
 script/db:upgrade) shift; exec yarn run db:upgrade "${@}";;

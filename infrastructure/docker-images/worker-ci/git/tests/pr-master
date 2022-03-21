@@ -19,4 +19,3 @@ test_commands() {
 # Ensure we are idempotent
 test_commands
 test_commands
-

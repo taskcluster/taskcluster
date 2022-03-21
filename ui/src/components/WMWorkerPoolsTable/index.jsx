@@ -296,6 +296,12 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           onPageChange={onPageChange}
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderRow}
+          allowFilter
+          filterFunc={({ node: workerPool }, filterValue) =>
+            String(workerPool.workerPoolId).includes(filterValue) ||
+            String(workerPool.providerId).includes(filterValue) ||
+            String(workerPool.owner).includes(filterValue)
+          }
         />
         <DialogAction
           open={open}

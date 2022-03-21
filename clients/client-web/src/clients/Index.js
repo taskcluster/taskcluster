@@ -10,13 +10,16 @@ export default class Index extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Ping Server","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.findTask.entry = {"args":["indexPath"],"category":"Index Service","method":"get","name":"findTask","output":true,"query":[],"route":"/task/<indexPath>","scopes":"index:find-task:<indexPath>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listNamespaces.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listNamespaces","output":true,"query":["continuationToken","limit"],"route":"/namespaces/<namespace>","scopes":"index:list-namespaces:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listTasks.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listTasks","output":true,"query":["continuationToken","limit"],"route":"/tasks/<namespace>","scopes":"index:list-tasks:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
     this.insertTask.entry = {"args":["namespace"],"category":"Index Service","input":true,"method":"put","name":"insertTask","output":true,"query":[],"route":"/task/<namespace>","scopes":"index:insert-task:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
     this.deleteTask.entry = {"args":["namespace"],"category":"Index Service","method":"delete","name":"deleteTask","query":[],"route":"/task/<namespace>","scopes":"index:delete-task:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
     this.findArtifactFromTask.entry = {"args":["indexPath","name"],"category":"Index Service","method":"get","name":"findArtifactFromTask","query":[],"route":"/task/<indexPath>/artifacts/<name>","scopes":"queue:get-artifact:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -26,6 +29,24 @@ export default class Index extends Client {
     this.validate(this.ping.entry, args);
 
     return this.request(this.ping.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  lbheartbeat(...args) {
+    this.validate(this.lbheartbeat.entry, args);
+
+    return this.request(this.lbheartbeat.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with the JSON version object.
+  // https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+  /* eslint-enable max-len */
+  version(...args) {
+    this.validate(this.version.entry, args);
+
+    return this.request(this.version.entry, args);
   }
   /* eslint-disable max-len */
   // Find a task by index path, returning the highest-rank task with that path. If no
@@ -103,5 +124,15 @@ export default class Index extends Client {
     this.validate(this.findArtifactFromTask.entry, args);
 
     return this.request(this.findArtifactFromTask.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Respond with a service heartbeat.
+  // This endpoint is used to check on backing services this service
+  // depends on.
+  /* eslint-enable max-len */
+  heartbeat(...args) {
+    this.validate(this.heartbeat.entry, args);
+
+    return this.request(this.heartbeat.entry, args);
   }
 }

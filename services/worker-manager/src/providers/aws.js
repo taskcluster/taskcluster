@@ -228,6 +228,7 @@ class AwsProvider extends Provider {
           providerId: this.providerId,
           workerGroup: config.region,
           workerId: i.InstanceId,
+          terminateAfter,
         });
         const worker = Worker.fromApi({
           workerPoolId,

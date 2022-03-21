@@ -34,7 +34,7 @@ impl Secrets {
     }
 
     /// Ping Server
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn ping(&self) -> Result<(), Error> {
@@ -66,8 +66,74 @@ impl Secrets {
         (path, query)
     }
 
+    /// Load Balancer Heartbeat
+    ///
+    /// Respond without doing anything.
+    /// This endpoint is used to check that the service is up.
+    pub async fn lbheartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::lbheartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for lbheartbeat
+    fn lbheartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__lbheartbeat__";
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Taskcluster Version
+    ///
+    /// Respond with the JSON version object.
+    /// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+    pub async fn version(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::version_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the version endpoint
+    pub fn version_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the version endpoint
+    pub fn version_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for version
+    fn version_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__version__";
+        let query = None;
+
+        (path, query)
+    }
+
     /// Set Secret
-    /// 
+    ///
     /// Set the secret associated with some key.  If the secret already exists, it is
     /// updated instead.
     pub async fn set(&self, name: &str, payload: &Value) -> Result<(), Error> {
@@ -88,7 +154,7 @@ impl Secrets {
     }
 
     /// Delete Secret
-    /// 
+    ///
     /// Delete the secret associated with some key. It will succeed whether or not the secret exists
     pub async fn remove(&self, name: &str) -> Result<(), Error> {
         let method = "DELETE";
@@ -108,7 +174,7 @@ impl Secrets {
     }
 
     /// Read Secret
-    /// 
+    ///
     /// Read the secret associated with some key.  If the secret has recently
     /// expired, the response code 410 is returned.  If the caller lacks the
     /// scope necessary to get the secret, the call will fail with a 403 code
@@ -142,16 +208,16 @@ impl Secrets {
     }
 
     /// List Secrets
-    /// 
+    ///
     /// List the names of all secrets.
-    /// 
+    ///
     /// By default this end-point will try to return up to 1000 secret names in one
     /// request. But it **may return less**, even if more tasks are available.
     /// It may also return a `continuationToken` even though there are no more
     /// results. However, you can only be sure to have seen all results if you
     /// keep calling `listTaskGroup` with the last `continuationToken` until you
     /// get a result without a `continuationToken`.
-    /// 
+    ///
     /// If you are not interested in listing all the members at once, you may
     /// use the query-string option `limit` to return fewer.
     pub async fn list(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
@@ -184,6 +250,41 @@ impl Secrets {
         if let Some(q) = limit {
             query.get_or_insert_with(Vec::new).push(("limit", q));
         }
+
+        (path, query)
+    }
+
+    /// Heartbeat
+    ///
+    /// Respond with a service heartbeat.
+    ///
+    /// This endpoint is used to check on backing services this service
+    /// depends on.
+    pub async fn heartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::heartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the heartbeat endpoint
+    pub fn heartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the heartbeat endpoint
+    pub fn heartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for heartbeat
+    fn heartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__heartbeat__";
+        let query = None;
 
         (path, query)
     }

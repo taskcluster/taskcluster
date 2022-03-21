@@ -105,6 +105,26 @@ func (auth *Auth) Ping() error {
 	return err
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See #lbheartbeat
+func (auth *Auth) Lbheartbeat() error {
+	cd := tcclient.Client(*auth)
+	_, _, err := (&cd).APICall(nil, "GET", "/__lbheartbeat__", nil, nil)
+	return err
+}
+
+// Respond with the JSON version object.
+// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+//
+// See #version
+func (auth *Auth) Version() error {
+	cd := tcclient.Client(*auth)
+	_, _, err := (&cd).APICall(nil, "GET", "/__version__", nil, nil)
+	return err
+}
+
 // Get a list of all clients.  With `prefix`, only clients for which
 // it is a prefix of the clientId are returned.
 //
@@ -890,4 +910,16 @@ func (auth *Auth) TestAuthenticateGet() (*TestAuthenticateResponse, error) {
 func (auth *Auth) TestAuthenticateGet_SignedURL(duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
 	return (&cd).SignedURL("/test-authenticate-get/", nil, duration)
+}
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (auth *Auth) Heartbeat() error {
+	cd := tcclient.Client(*auth)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
+	return err
 }

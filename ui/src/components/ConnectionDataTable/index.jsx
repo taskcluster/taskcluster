@@ -18,6 +18,9 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import TextField from '@material-ui/core/TextField';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import FilterIcon from 'mdi-react/FilterIcon';
 import Spinner from '../Spinner';
 import { pageInfo } from '../../utils/prop-types';
 
@@ -41,6 +44,13 @@ import { pageInfo } from '../../utils/prop-types';
   },
   sortHeader: {
     color: theme.palette.text.secondary,
+  },
+  filter: {
+    marginTop: theme.spacing(-1),
+    marginBottom: theme.spacing(1),
+    marginLeft: theme.spacing(2),
+    marginRight: theme.spacing(2),
+    width: '96%',
   },
 }))
 /**
@@ -110,6 +120,14 @@ export default class ConnectionDataTable extends Component {
      * Allows TableCells to inherit size of the Table.
      */
     size: oneOf(['small', 'medium']),
+    /**
+     * Allow custom filtering of rows
+     */
+    allowFilter: bool,
+    /**
+     * Function to filter rows
+     */
+    filterFunc: func,
   };
 
   static defaultProps = {
@@ -122,11 +140,14 @@ export default class ConnectionDataTable extends Component {
     size: 'small',
     noItemsMessage: 'No items for this page.',
     searchTerm: null,
+    allowFilter: false,
+    filterFunc: null,
   };
 
   state = {
     loading: false,
     page: 0,
+    filterValue: '',
   };
 
   pages = new Map();
@@ -187,9 +208,21 @@ export default class ConnectionDataTable extends Component {
     });
   };
 
+  handleFilterValueChange = e => {
+    this.setState({ filterValue: e.target.value });
+  };
+
   renderTablePagination = (colSpan, count) => {
-    const { classes, pageSize } = this.props;
+    const { classes, connection, pageSize } = this.props;
     const { loading, page } = this.state;
+
+    if (
+      !connection?.pageInfo?.hasNextPage &&
+      !connection?.pageInfo?.hasPreviousPage
+    ) {
+      // no pagination needed
+      return null;
+    }
 
     if (loading) {
       return (
@@ -232,13 +265,41 @@ export default class ConnectionDataTable extends Component {
       noItemsMessage,
       searchTerm,
       size,
+      allowFilter,
+      filterFunc,
     } = this.props;
     const { count } = this.getPaginationMetadata();
     const colSpan = columnsSize || (headers && headers.length) || 1;
+    const { filterValue } = this.state;
+    const { edges } = connection;
+    const rows =
+      allowFilter && filterFunc
+        ? edges.filter(row => filterFunc(row, filterValue))
+        : edges;
+    const showFilter = allowFilter && edges.length > 10;
 
     return (
       <Fragment>
         {!withoutTopPagination && this.renderTablePagination(colSpan, count)}
+        {showFilter && (
+          <TextField
+            className={classes.filter}
+            hiddenLabel
+            size="small"
+            name="filter"
+            variant="outlined"
+            placeholder={`Filter ${edges.length} rows..`}
+            onChange={this.handleFilterValueChange}
+            value={filterValue}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <FilterIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        )}
         <div className={classes.tableWrapper}>
           <Table size={size}>
             {headers && (
@@ -265,7 +326,7 @@ export default class ConnectionDataTable extends Component {
               </TableHead>
             )}
             <TableBody>
-              {connection.edges.length === 0 ? (
+              {edges.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={colSpan}>
                     <em>
@@ -276,7 +337,7 @@ export default class ConnectionDataTable extends Component {
                   </TableCell>
                 </TableRow>
               ) : (
-                connection.edges.map(renderRow)
+                rows.map(renderRow)
               )}
             </TableBody>
           </Table>

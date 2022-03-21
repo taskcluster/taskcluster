@@ -10,7 +10,7 @@ You will probably be working on only one of these pieces, so read carefully belo
 ### Node
 
 <!-- the next line is automatically edited; do not change -->
-You will need Node version 14.17.5 installed.
+You will need Node version 16.14.0 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
 We use `yarn` to run most development commands, so [install that as well](https://classic.yarnpkg.com/en/docs/install/#debian-stable).
@@ -18,7 +18,7 @@ We use `yarn` to run most development commands, so [install that as well](https:
 ### Go
 
 <!-- the next line is automatically edited; do not change -->
-Go version go1.17.6 is required for some development tasks, in particular to run `yarn generate`.
+Go version go1.17.8 is required for some development tasks, in particular to run `yarn generate`.
 For new contributors not familiar with Go, it's probably safe to skip installing Go for now -- you will see a helpful error if and when it is needed.
 We recommend using https://github.com/moovweb/gvm to support installing multiple Go versions.
 
@@ -74,6 +74,16 @@ To set this up, in the root directory, run
 export PATH=$PWD/node_modules/.bin:$PATH
 ```
 
+### Pre-Commit (*Optional*)
+
+We recommend installing [pre-commit](https://pre-commit.com/index.html) for small checks that run before each commit, such as trailing whitespace, making sure files end in a newline, checking for merge conflict strings, etc.
+
+* Install [pre-commit](https://pre-commit.com/index.html#install)
+* Install the git hook scripts with `pre-commit install`
+* Done! `pre-commit` will now run automatically on `git commit`!
+
+These checks will help keep the code clean and will potentially save CI resources if issues are caught pre-commit.
+
 ## Hacking on the UI
 
 Taskcluster requires a Linux-like environment for development.
@@ -102,9 +112,9 @@ To run the Taskcluster UI:
     ```
   * Change to the `services/web-server` directory and run `yarn start`.
     This will start a web server on port 3050.
-    
+
     > *Note 1*: It will warn "No Pulse namespace defined". <br />
-              Unless you are working on parts of the UI that require Pulse support (and most do not), this is OK. <br />      
+              Unless you are working on parts of the UI that require Pulse support (and most do not), this is OK. <br />
     > *Note 2*: If you get an error like `readDbUrl is required`, ensure you've set all the above mentioned environment variables in the same shell session.
 
 * In another shell window for taskcluster-ui:

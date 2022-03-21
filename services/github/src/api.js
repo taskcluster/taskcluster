@@ -157,6 +157,24 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
   return statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
 }
 
+/***
+ Helper function that returns all checks on the latest ref of a repository
+ branch created by taskcluster's bot.
+***/
+async function findTCChecks(github, owner, repo, branch, configuration) {
+  let checks;
+
+  try {
+    checks = (await github.checks.listForRef({ owner, repo, ref: branch })).data.check_runs;
+  } catch (e) {
+    if (e.code === 404) {
+      return [];
+    }
+    throw e;
+  }
+  return checks.filter(checkObject => checkObject.app.id === parseInt(configuration.github.credentials.appId, 10));
+}
+
 /** API end-point for version v1/
  */
 let builder = new APIBuilder({
@@ -384,6 +402,7 @@ builder.declare({
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Content-Security-Policy': "default-source 'none'; style-source 'unsafe-inline'",
+      'X-Taskcluster-Status': '',
     },
   };
 
@@ -391,22 +410,61 @@ builder.declare({
 
   if (instGithub) {
     try {
-      let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
+      let state;
 
+      let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
       if (status) {
+        state = status.state;
+      }
+
+      const checks = await findTCChecks(instGithub, owner, repo, branch, this.cfg);
+
+      // List of conclusions: https://docs.github.com/en/rest/reference/checks#check-runs
+      const SOFT_STATES = ['pending', 'timed_out', 'cancelled', 'skipped', 'stale', 'timed_out', 'action_required', 'neutral'];
+      const checksSoftStates = [];
+
+      for (const check of checks) {
+        // If any check failed, mark the whole status as failed
+        if (check.conclusion === 'failure') {
+          state = 'failure';
+          break;
+        }
+
+        // If there's any check pending, set the state to pending after looping unless there was a failure
+        if (SOFT_STATES.includes(check.conclusion)) {
+          checksSoftStates.push(check.conclusion);
+          continue;
+        }
+
+        // If the current state is success or pending and a check was successful, mark state as success.
+        // This might get reset after the loop if we find any other pending check.
+        if (state !== 'failure' && check.conclusion === 'success') {
+          state = 'success';
+        }
+      }
+
+      if (state !== 'failure' && checksSoftStates.length > 0) {
+        state = checksSoftStates[0];
+      }
+
+      if (state) {
         // If we got a status, send a corresponding image.
-        return res.sendFile(status.state + '.svg', fileConfig);
+        fileConfig.headers['X-Taskcluster-Status'] = state;
+        return res.sendFile(state + '.svg', fileConfig);
       } else {
         // otherwise, it's a commit without a TC status, which probably means a new repo
+        fileConfig.headers['X-Taskcluster-Status'] = 'newrepo';
         return res.sendFile('newrepo.svg', fileConfig);
       }
     } catch (e) {
       if (e.code < 500) {
+        fileConfig.headers['X-Taskcluster-Status'] = 'error';
         return res.sendFile('error.svg', fileConfig);
       }
       throw e;
     }
   } else {
+    fileConfig.headers['X-Taskcluster-Status'] = 'nogithub';
     return res.sendFile('newrepo.svg', fileConfig);
   }
 });
@@ -490,7 +548,7 @@ builder.declare({
   description: [
     'For a given changeset (SHA) of a repository, this will attach a "commit status"',
     'on github. These statuses are links displayed next to each revision.',
-    'The status is either OK (green check) or FAILURE (red cross), ',
+    'The status is either OK (green check) or FAILURE (red cross),',
     'made of a custom title and link.',
   ].join('\n'),
   stability: 'experimental',
@@ -585,4 +643,23 @@ builder.declare({
   }
 
   return res.status(404).send();
+});
+
+builder.declare({
+  method: 'get',
+  route: '/__heartbeat__',
+  name: 'heartbeat',
+  scopes: null,
+  category: 'Monitoring',
+  stability: 'stable',
+  title: 'Heartbeat',
+  description: [
+    'Respond with a service heartbeat.',
+    '',
+    'This endpoint is used to check on backing services this service',
+    'depends on.',
+  ].join('\n'),
+}, function(_req, res) {
+  // TODO: add implementation
+  res.reply({});
 });

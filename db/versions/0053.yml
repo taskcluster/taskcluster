@@ -59,7 +59,7 @@ downgradeScript: |-
     as
       select
         provisioner_id,
-        max(expires) as expires, 
+        max(expires) as expires,
         max(last_date_active) as last_date_active,
         '' as description,
         'experimental' as stability,
@@ -75,7 +75,7 @@ downgradeScript: |-
       alter column description set not null,
       alter column stability set not null,
       alter column actions set not null;
-    
+
     grant select, insert, update, delete on queue_provisioners to $db_user_prefix$_queue;
   end
 methods:

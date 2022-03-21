@@ -132,6 +132,10 @@ export default class RolesTable extends Component {
         headers={tableHeaders}
         sortByHeader={sortBy}
         sortDirection={sortDirection}
+        allowFilter
+        filterFunc={({ node: role }, filterValue) =>
+          String(role.roleId).includes(filterValue)
+        }
         renderRow={({ node: role }) => (
           <TableRow key={role.roleId}>
             <TableCell>

@@ -313,6 +313,7 @@ class GoogleProvider extends Provider {
         providerId: this.providerId,
         workerGroup,
         workerId: op.targetId,
+        terminateAfter,
       });
       const worker = Worker.fromApi({
         workerPoolId,

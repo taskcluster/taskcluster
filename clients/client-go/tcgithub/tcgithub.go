@@ -107,6 +107,26 @@ func (github *Github) Ping() error {
 	return err
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See #lbheartbeat
+func (github *Github) Lbheartbeat() error {
+	cd := tcclient.Client(*github)
+	_, _, err := (&cd).APICall(nil, "GET", "/__lbheartbeat__", nil, nil)
+	return err
+}
+
+// Respond with the JSON version object.
+// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+//
+// See #version
+func (github *Github) Version() error {
+	cd := tcclient.Client(*github)
+	_, _, err := (&cd).APICall(nil, "GET", "/__version__", nil, nil)
+	return err
+}
+
 // Capture a GitHub event and publish it via pulse, if it's a push,
 // release or pull request.
 //
@@ -279,5 +299,17 @@ func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatu
 func (github *Github) CreateComment(owner, repo, number string, payload *CreateCommentRequest) error {
 	cd := tcclient.Client(*github)
 	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/issues/"+url.QueryEscape(number)+"/comments", nil, nil)
+	return err
+}
+
+// Respond with a service heartbeat.
+//
+// This endpoint is used to check on backing services this service
+// depends on.
+//
+// See #heartbeat
+func (github *Github) Heartbeat() error {
+	cd := tcclient.Client(*github)
+	_, _, err := (&cd).APICall(nil, "GET", "/__heartbeat__", nil, nil)
 	return err
 }

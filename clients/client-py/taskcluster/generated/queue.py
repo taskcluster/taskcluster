@@ -77,6 +77,30 @@ class Queue(BaseClient):
 
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
+    def lbheartbeat(self, *args, **kwargs):
+        """
+        Load Balancer Heartbeat
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["lbheartbeat"], *args, **kwargs)
+
+    def version(self, *args, **kwargs):
+        """
+        Taskcluster Version
+
+        Respond with the JSON version object.
+        https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["version"], *args, **kwargs)
+
     def task(self, *args, **kwargs):
         """
         Get Task Definition
@@ -793,6 +817,20 @@ class Queue(BaseClient):
 
         return self._makeApiCall(self.funcinfo["declareWorker"], *args, **kwargs)
 
+    def heartbeat(self, *args, **kwargs):
+        """
+        Heartbeat
+
+        Respond with a service heartbeat.
+
+        This endpoint is used to check on backing services this service
+        depends on.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["heartbeat"], *args, **kwargs)
+
     funcinfo = {
         "artifact": {
             'args': ['taskId', 'runId', 'name'],
@@ -937,6 +975,13 @@ class Queue(BaseClient):
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
             'stability': 'deprecated',
         },
+        "heartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'heartbeat',
+            'route': '/__heartbeat__',
+            'stability': 'stable',
+        },
         "latestArtifact": {
             'args': ['taskId', 'name'],
             'method': 'get',
@@ -951,6 +996,13 @@ class Queue(BaseClient):
             'name': 'latestArtifactInfo',
             'output': 'v1/artifact-response.json#',
             'route': '/task/<taskId>/artifact-info/<name>',
+            'stability': 'stable',
+        },
+        "lbheartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'lbheartbeat',
+            'route': '/__lbheartbeat__',
             'stability': 'stable',
         },
         "listArtifacts": {
@@ -1112,6 +1164,13 @@ class Queue(BaseClient):
             'name': 'task',
             'output': 'v1/task.json#',
             'route': '/task/<taskId>',
+            'stability': 'stable',
+        },
+        "version": {
+            'args': [],
+            'method': 'get',
+            'name': 'version',
+            'route': '/__version__',
             'stability': 'stable',
         },
     }

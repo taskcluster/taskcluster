@@ -32,7 +32,7 @@ impl PurgeCache {
     }
 
     /// Ping Server
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn ping(&self) -> Result<(), Error> {
@@ -64,11 +64,77 @@ impl PurgeCache {
         (path, query)
     }
 
+    /// Load Balancer Heartbeat
+    ///
+    /// Respond without doing anything.
+    /// This endpoint is used to check that the service is up.
+    pub async fn lbheartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::lbheartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for lbheartbeat
+    fn lbheartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__lbheartbeat__";
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Taskcluster Version
+    ///
+    /// Respond with the JSON version object.
+    /// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+    pub async fn version(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::version_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the version endpoint
+    pub fn version_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the version endpoint
+    pub fn version_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for version
+    fn version_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__version__";
+        let query = None;
+
+        (path, query)
+    }
+
     /// Purge Worker Cache
-    /// 
+    ///
     /// Publish a request to purge caches named `cacheName` with
     /// on `workerPoolId` workers.
-    /// 
+    ///
     /// If such a request already exists, its `before` timestamp is updated to
     /// the current time.
     pub async fn purgeCache(&self, workerPoolId: &str, payload: &Value) -> Result<(), Error> {
@@ -89,9 +155,9 @@ impl PurgeCache {
     }
 
     /// All Open Purge Requests
-    /// 
+    ///
     /// View all active purge requests.
-    /// 
+    ///
     /// This is useful mostly for administors to view
     /// the set of open purge requests. It should not
     /// be used by workers. They should use the purgeRequests
@@ -132,10 +198,10 @@ impl PurgeCache {
     }
 
     /// Open Purge Requests for a worker pool
-    /// 
+    ///
     /// List the caches for this `workerPoolId` that should to be
     /// purged if they are from before the time given in the response.
-    /// 
+    ///
     /// This is intended to be used by workers to determine which caches to purge.
     pub async fn purgeRequests(&self, workerPoolId: &str, since: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
@@ -164,6 +230,41 @@ impl PurgeCache {
         if let Some(q) = since {
             query.get_or_insert_with(Vec::new).push(("since", q));
         }
+
+        (path, query)
+    }
+
+    /// Heartbeat
+    ///
+    /// Respond with a service heartbeat.
+    ///
+    /// This endpoint is used to check on backing services this service
+    /// depends on.
+    pub async fn heartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::heartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the heartbeat endpoint
+    pub fn heartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the heartbeat endpoint
+    pub fn heartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for heartbeat
+    fn heartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__heartbeat__";
+        let query = None;
 
         (path, query)
     }

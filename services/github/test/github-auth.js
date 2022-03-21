@@ -16,6 +16,7 @@ class FakeGithub {
     this._repo_info = {};
     this._repositories = {};
     this._statuses = {};
+    this._checks = {};
     this._comments = {};
     this._commits = {};
 
@@ -136,6 +137,19 @@ class FakeGithub {
           throwError(403);
         }
 
+        const key = `${owner}/${repo}@${head_sha}`;
+        if (!this._checks[key]) {
+          this._checks[key] = [];
+        }
+
+        const check = {
+          name,
+          status,
+          conclusion,
+        };
+
+        this._checks[key].push(check);
+
         const check_run_id = Math.floor(Math.random() * (9999 - 1000)) + 1000;
 
         return {
@@ -150,6 +164,15 @@ class FakeGithub {
           throwError(403);
         }
         return {};
+      },
+      'checks.listForRef': async ({ owner, repo, ref }) => {
+        if (repo === 'no-permission') {
+          throwError(403);
+        }
+        const key = `${owner}/${repo}@${ref}`;
+        const info = this._checks[key] || [];
+
+        return { data: { check_runs: info } };
       },
     };
 
@@ -231,6 +254,11 @@ class FakeGithub {
   setStatuses({ owner, repo, ref, info }) {
     const key = `${owner}/${repo}@${ref}`;
     this._statuses[key] = info;
+  }
+
+  setChecks({ owner, repo, ref, info }) {
+    const key = `${owner}/${repo}@${ref}`;
+    this._checks[key] = info;
   }
 
   listCommitStatusesForRef({ owner, repo, ref }) {

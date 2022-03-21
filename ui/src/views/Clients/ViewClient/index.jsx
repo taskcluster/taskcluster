@@ -3,8 +3,7 @@ import { graphql, withApollo } from 'react-apollo';
 import { parse } from 'qs';
 import memoize from 'fast-memoize';
 import { omit } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { alpha, withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
@@ -59,7 +58,7 @@ import SignInDialog from '../../../components/SignInDialog';
     },
     '& svg': {
       transition: theme.transitions.create('fill'),
-      fill: fade(THEME.PRIMARY_TEXT_LIGHT, 0.4),
+      fill: alpha(THEME.PRIMARY_TEXT_LIGHT, 0.4),
     },
     '&:hover svg': {
       fill: THEME.PRIMARY_TEXT_LIGHT,

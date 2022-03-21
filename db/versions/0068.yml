@@ -28,4 +28,3 @@ methods:
           queue_artifacts.present,
           queue_artifacts.expires;
       end
-

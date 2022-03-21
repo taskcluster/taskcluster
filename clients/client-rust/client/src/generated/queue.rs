@@ -72,7 +72,7 @@ impl Queue {
     }
 
     /// Ping Server
-    /// 
+    ///
     /// Respond without doing anything.
     /// This endpoint is used to check that the service is up.
     pub async fn ping(&self) -> Result<(), Error> {
@@ -104,8 +104,74 @@ impl Queue {
         (path, query)
     }
 
+    /// Load Balancer Heartbeat
+    ///
+    /// Respond without doing anything.
+    /// This endpoint is used to check that the service is up.
+    pub async fn lbheartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::lbheartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the lbheartbeat endpoint
+    pub fn lbheartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::lbheartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for lbheartbeat
+    fn lbheartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__lbheartbeat__";
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Taskcluster Version
+    ///
+    /// Respond with the JSON version object.
+    /// https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+    pub async fn version(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::version_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the version endpoint
+    pub fn version_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the version endpoint
+    pub fn version_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::version_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for version
+    fn version_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__version__";
+        let query = None;
+
+        (path, query)
+    }
+
     /// Get Task Definition
-    /// 
+    ///
     /// This end-point will return the task-definition. Notice that the task
     /// definition may have been modified by queue, if an optional property is
     /// not specified the queue may provide a default value.
@@ -138,7 +204,7 @@ impl Queue {
     }
 
     /// Get task status
-    /// 
+    ///
     /// Get task status structure from `taskId`
     pub async fn status(&self, taskId: &str) -> Result<Value, Error> {
         let method = "GET";
@@ -169,21 +235,21 @@ impl Queue {
     }
 
     /// List Task Group
-    /// 
+    ///
     /// List tasks sharing the same `taskGroupId`.
-    /// 
+    ///
     /// As a task-group may contain an unbounded number of tasks, this end-point
     /// may return a `continuationToken`. To continue listing tasks you must call
     /// the `listTaskGroup` again with the `continuationToken` as the
     /// query-string option `continuationToken`.
-    /// 
+    ///
     /// By default this end-point will try to return up to 1000 members in one
     /// request. But it **may return less**, even if more tasks are available.
     /// It may also return a `continuationToken` even though there are no more
     /// results. However, you can only be sure to have seen all results if you
     /// keep calling `listTaskGroup` with the last `continuationToken` until you
     /// get a result without a `continuationToken`.
-    /// 
+    ///
     /// If you are not interested in listing all the members at once, you may
     /// use the query-string option `limit` to return fewer.
     pub async fn listTaskGroup(&self, taskGroupId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
@@ -221,21 +287,21 @@ impl Queue {
     }
 
     /// List Dependent Tasks
-    /// 
+    ///
     /// List tasks that depend on the given `taskId`.
-    /// 
+    ///
     /// As many tasks from different task-groups may dependent on a single tasks,
     /// this end-point may return a `continuationToken`. To continue listing
     /// tasks you must call `listDependentTasks` again with the
     /// `continuationToken` as the query-string option `continuationToken`.
-    /// 
+    ///
     /// By default this end-point will try to return up to 1000 tasks in one
     /// request. But it **may return less**, even if more tasks are available.
     /// It may also return a `continuationToken` even though there are no more
     /// results. However, you can only be sure to have seen all results if you
     /// keep calling `listDependentTasks` with the last `continuationToken` until
     /// you get a result without a `continuationToken`.
-    /// 
+    ///
     /// If you are not interested in listing all the tasks at once, you may
     /// use the query-string option `limit` to return fewer.
     pub async fn listDependentTasks(&self, taskId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
@@ -273,30 +339,30 @@ impl Queue {
     }
 
     /// Create New Task
-    /// 
+    ///
     /// Create a new task, this is an **idempotent** operation, so repeat it if
     /// you get an internal server error or network connection is dropped.
-    /// 
+    ///
     /// **Task `deadline`**: the deadline property can be no more than 5 days
     /// into the future. This is to limit the amount of pending tasks not being
     /// taken care of. Ideally, you should use a much shorter deadline.
-    /// 
+    ///
     /// **Task expiration**: the `expires` property must be greater than the
     /// task `deadline`. If not provided it will default to `deadline` + one
     /// year. Notice that artifacts created by a task must expire before the
     /// task's expiration.
-    /// 
+    ///
     /// **Task specific routing-keys**: using the `task.routes` property you may
-    /// define task specific routing-keys. If a task has a task specific 
+    /// define task specific routing-keys. If a task has a task specific
     /// routing-key: `<route>`, then when the AMQP message about the task is
-    /// published, the message will be CC'ed with the routing-key: 
+    /// published, the message will be CC'ed with the routing-key:
     /// `route.<route>`. This is useful if you want another component to listen
     /// for completed tasks you have posted.  The caller must have scope
     /// `queue:route:<route>` for each route.
-    /// 
+    ///
     /// **Dependencies**: any tasks referenced in `task.dependencies` must have
     /// already been created at the time of this call.
-    /// 
+    ///
     /// **Scopes**: Note that the scopes required to complete this API call depend
     /// on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
     /// `provisionerId`, and `workerType` properties of the task definition.
@@ -317,18 +383,18 @@ impl Queue {
     }
 
     /// Schedule Defined Task
-    /// 
+    ///
     /// scheduleTask will schedule a task to be executed, even if it has
     /// unresolved dependencies. A task would otherwise only be scheduled if
     /// its dependencies were resolved.
-    /// 
+    ///
     /// This is useful if you have defined a task that depends on itself or on
     /// some other task that has not been resolved, but you wish the task to be
     /// scheduled immediately.
-    /// 
+    ///
     /// This will announce the task as pending and workers will be allowed to
     /// claim it and resolve the task.
-    /// 
+    ///
     /// **Note** this operation is **idempotent** and will not fail or complain
     /// if called with a `taskId` that is already scheduled, or even resolved.
     /// To reschedule a task previously resolved, use `rerunTask`.
@@ -349,20 +415,20 @@ impl Queue {
     }
 
     /// Rerun a Resolved Task
-    /// 
+    ///
     /// This method _reruns_ a previously resolved task, even if it was
     /// _completed_. This is useful if your task completes unsuccessfully, and
     /// you just want to run it from scratch again. This will also reset the
     /// number of `retries` allowed. It will schedule a task that is _unscheduled_
     /// regardless of the state of its dependencies.
-    /// 
+    ///
     /// This method is deprecated in favour of creating a new task with the same
     /// task definition (but with a new taskId).
-    /// 
+    ///
     /// Remember that `retries` in the task status counts the number of runs that
     /// the queue have started because the worker stopped responding, for example
     /// because a spot node died.
-    /// 
+    ///
     /// **Remark** this operation is idempotent: if it is invoked for a task that
     /// is `pending` or `running`, it will just return the current task status.
     pub async fn rerunTask(&self, taskId: &str) -> Result<Value, Error> {
@@ -382,7 +448,7 @@ impl Queue {
     }
 
     /// Cancel Task
-    /// 
+    ///
     /// This method will cancel a task that is either `unscheduled`, `pending` or
     /// `running`. It will resolve the current run as `exception` with
     /// `reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.
@@ -391,7 +457,7 @@ impl Queue {
     /// with `queue.scheduleTask`, but a new run can be created with
     /// `queue.rerun`. These semantics is equivalent to calling
     /// `queue.scheduleTask` immediately followed by `queue.cancelTask`.
-    /// 
+    ///
     /// **Remark** this operation is idempotent, if you try to cancel a task that
     /// isn't `unscheduled`, `pending` or `running`, this operation will just
     /// return the current task status.
@@ -412,9 +478,9 @@ impl Queue {
     }
 
     /// Claim Work
-    /// 
+    ///
     /// Claim pending task(s) for the given task queue.
-    /// 
+    ///
     /// If any work is available (even if fewer than the requested number of
     /// tasks, this will return immediately. Otherwise, it will block for tens of
     /// seconds waiting for work.  If no work appears, it will return an emtpy
@@ -438,7 +504,7 @@ impl Queue {
     }
 
     /// Claim Task
-    /// 
+    ///
     /// claim a task - never documented
     pub async fn claimTask(&self, taskId: &str, runId: &str, payload: &Value) -> Result<Value, Error> {
         let method = "POST";
@@ -457,23 +523,23 @@ impl Queue {
     }
 
     /// Reclaim task
-    /// 
+    ///
     /// Refresh the claim for a specific `runId` for given `taskId`. This updates
     /// the `takenUntil` property and returns a new set of temporary credentials
     /// for performing requests on behalf of the task. These credentials should
     /// be used in-place of the credentials returned by `claimWork`.
-    /// 
+    ///
     /// The `reclaimTask` requests serves to:
     ///  * Postpone `takenUntil` preventing the queue from resolving
     ///    `claim-expired`,
     ///  * Refresh temporary credentials used for processing the task, and
     ///  * Abort execution if the task/run have been resolved.
-    /// 
+    ///
     /// If the `takenUntil` timestamp is exceeded the queue will resolve the run
     /// as _exception_ with reason `claim-expired`, and proceeded to retry to the
     /// task. This ensures that tasks are retried, even if workers disappear
     /// without warning.
-    /// 
+    ///
     /// If the task is resolved, this end-point will return `409` reporting
     /// `RequestConflict`. This typically happens if the task have been canceled
     /// or the `task.deadline` have been exceeded. If reclaiming fails, workers
@@ -496,7 +562,7 @@ impl Queue {
     }
 
     /// Report Run Completed
-    /// 
+    ///
     /// Report a task completed, resolving the run as `completed`.
     pub async fn reportCompleted(&self, taskId: &str, runId: &str) -> Result<Value, Error> {
         let method = "POST";
@@ -515,11 +581,11 @@ impl Queue {
     }
 
     /// Report Run Failed
-    /// 
+    ///
     /// Report a run failed, resolving the run as `failed`. Use this to resolve
     /// a run that failed because the task specific code behaved unexpectedly.
     /// For example the task exited non-zero, or didn't produce expected output.
-    /// 
+    ///
     /// Do not use this if the task couldn't be run because if malformed
     /// payload, or other unexpected condition. In these cases we have a task
     /// exception, which should be reported with `reportException`.
@@ -540,17 +606,17 @@ impl Queue {
     }
 
     /// Report Task Exception
-    /// 
+    ///
     /// Resolve a run as _exception_. Generally, you will want to report tasks as
     /// failed instead of exception. You should `reportException` if,
-    /// 
+    ///
     ///   * The `task.payload` is invalid,
     ///   * Non-existent resources are referenced,
     ///   * Declared actions cannot be executed due to unavailable resources,
     ///   * The worker had to shutdown prematurely,
     ///   * The worker experienced an unknown error, or,
     ///   * The task explicitly requested a retry.
-    /// 
+    ///
     /// Do not use this to signal that some user-specified code crashed for any
     /// reason specific to this code. If user-specific code hits a resource that
     /// is temporarily unavailable worker should report task _failed_.
@@ -571,11 +637,11 @@ impl Queue {
     }
 
     /// Create Artifact
-    /// 
+    ///
     /// This API end-point creates an artifact for a specific run of a task. This
     /// should **only** be used by a worker currently operating on this task, or
     /// from a process running within the task (ie. on the worker).
-    /// 
+    ///
     /// All artifacts must specify when they expire. The queue will
     /// automatically take care of deleting artifacts past their
     /// expiration point. This feature makes it feasible to upload large
@@ -598,10 +664,10 @@ impl Queue {
     }
 
     /// Finish Artifact
-    /// 
+    ///
     /// This endpoint marks an artifact as present for the given task, and
     /// should be called when the artifact data is fully uploaded.
-    /// 
+    ///
     /// The storage types `reference`, `link`, and `error` do not need to
     /// be finished, as they are finished immediately by `createArtifact`.
     /// The storage type `s3` does not support this functionality and cannot
@@ -625,25 +691,25 @@ impl Queue {
     }
 
     /// Get Artifact Data from Run
-    /// 
+    ///
     /// Get artifact by `<name>` from a specific run.
-    /// 
+    ///
     /// **Artifact Access**, in order to get an artifact you need the scope
     /// `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
     /// To allow access to fetch artifacts with a client like `curl` or a web
     /// browser, without using Taskcluster credentials, include a scope in the
     /// `anonymous` role.  The convention is to include
     /// `queue:get-artifact:public/*`.
-    /// 
+    ///
     /// **Response**: the HTTP response to this method is a 303 redirect to the
     /// URL from which the artifact can be downloaded.  The body of that response
     /// contains the data described in the output schema, contianing the same URL.
     /// Callers are encouraged to use whichever method of gathering the URL is
     /// most convenient.  Standard HTTP clients will follow the redirect, while
     /// API client libraries will return the JSON body.
-    /// 
+    ///
     /// In order to download an artifact the following must be done:
-    /// 
+    ///
     /// 1. Obtain queue url.  Building a signed url with a taskcluster client is
     /// recommended
     /// 1. Make a GET request which does not follow redirects
@@ -668,10 +734,10 @@ impl Queue {
     /// artifact must also be validated against the values specified in the original queue response
     /// 1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`
     /// must not occur
-    /// 
+    ///
     /// **Headers**
     /// The following important headers are set on the response to this method:
-    /// 
+    ///
     /// * location: the url of the artifact if a redirect is to be performed
     /// * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
     pub async fn getArtifact(&self, taskId: &str, runId: &str, name: &str) -> Result<Value, Error> {
@@ -703,21 +769,21 @@ impl Queue {
     }
 
     /// Get Artifact Data from Latest Run
-    /// 
+    ///
     /// Get artifact by `<name>` from the last run of a task.
-    /// 
+    ///
     /// **Artifact Access**, in order to get an artifact you need the scope
     /// `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
     /// To allow access to fetch artifacts with a client like `curl` or a web
     /// browser, without using Taskcluster credentials, include a scope in the
     /// `anonymous` role.  The convention is to include
     /// `queue:get-artifact:public/*`.
-    /// 
+    ///
     /// **API Clients**, this method will redirect you to the artifact, if it is
     /// stored externally. Either way, the response may not be JSON. So API
     /// client users might want to generate a signed URL for this end-point and
     /// use that URL with a normal HTTP client.
-    /// 
+    ///
     /// **Remark**, this end-point is slightly slower than
     /// `queue.getArtifact`, so consider that if you already know the `runId` of
     /// the latest run. Otherwise, just us the most convenient API end-point.
@@ -750,14 +816,14 @@ impl Queue {
     }
 
     /// Get Artifacts from Run
-    /// 
+    ///
     /// Returns a list of artifacts and associated meta-data for a given run.
-    /// 
+    ///
     /// As a task may have many artifacts paging may be necessary. If this
     /// end-point returns a `continuationToken`, you should call the end-point
     /// again with the `continuationToken` as the query-string option:
     /// `continuationToken`.
-    /// 
+    ///
     /// By default this end-point will list up-to 1000 artifacts in a single page
     /// you may limit this with the query-string parameter `limit`.
     pub async fn listArtifacts(&self, taskId: &str, runId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
@@ -795,15 +861,15 @@ impl Queue {
     }
 
     /// Get Artifacts from Latest Run
-    /// 
+    ///
     /// Returns a list of artifacts and associated meta-data for the latest run
     /// from the given task.
-    /// 
+    ///
     /// As a task may have many artifacts paging may be necessary. If this
     /// end-point returns a `continuationToken`, you should call the end-point
     /// again with the `continuationToken` as the query-string option:
     /// `continuationToken`.
-    /// 
+    ///
     /// By default this end-point will list up-to 1000 artifacts in a single page
     /// you may limit this with the query-string parameter `limit`.
     pub async fn listLatestArtifacts(&self, taskId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
@@ -841,11 +907,11 @@ impl Queue {
     }
 
     /// Get Artifact Information From Run
-    /// 
+    ///
     /// Returns associated metadata for a given artifact, in the given task run.
     /// The metadata is the same as that returned from `listArtifacts`, and does
     /// not grant access to the artifact data.
-    /// 
+    ///
     /// Note that this method does *not* automatically follow link artifacts.
     pub async fn artifactInfo(&self, taskId: &str, runId: &str, name: &str) -> Result<Value, Error> {
         let method = "GET";
@@ -876,11 +942,11 @@ impl Queue {
     }
 
     /// Get Artifact Information From Latest Run
-    /// 
+    ///
     /// Returns associated metadata for a given artifact, in the latest run of the
     /// task.  The metadata is the same as that returned from `listArtifacts`,
     /// and does not grant access to the artifact data.
-    /// 
+    ///
     /// Note that this method does *not* automatically follow link artifacts.
     pub async fn latestArtifactInfo(&self, taskId: &str, name: &str) -> Result<Value, Error> {
         let method = "GET";
@@ -911,12 +977,12 @@ impl Queue {
     }
 
     /// Get Artifact Content From Run
-    /// 
+    ///
     /// Returns information about the content of the artifact, in the given task run.
-    /// 
+    ///
     /// Depending on the storage type, the endpoint returns the content of the artifact
     /// or enough information to access that content.
-    /// 
+    ///
     /// This method follows link artifacts, so it will not return content
     /// for a link artifact.
     pub async fn artifact(&self, taskId: &str, runId: &str, name: &str) -> Result<Value, Error> {
@@ -948,12 +1014,12 @@ impl Queue {
     }
 
     /// Get Artifact Content From Latest Run
-    /// 
+    ///
     /// Returns information about the content of the artifact, in the latest task run.
-    /// 
+    ///
     /// Depending on the storage type, the endpoint returns the content of the artifact
     /// or enough information to access that content.
-    /// 
+    ///
     /// This method follows link artifacts, so it will not return content
     /// for a link artifact.
     pub async fn latestArtifact(&self, taskId: &str, name: &str) -> Result<Value, Error> {
@@ -985,13 +1051,13 @@ impl Queue {
     }
 
     /// Get a list of all active provisioners
-    /// 
+    ///
     /// Get all active provisioners.
-    /// 
+    ///
     /// The term "provisioner" is taken broadly to mean anything with a provisionerId.
     /// This does not necessarily mean there is an associated service performing any
     /// provisioning activity.
-    /// 
+    ///
     /// The response is paged. If this end-point returns a `continuationToken`, you
     /// should call the end-point again with the `continuationToken` as a query-string
     /// option. By default this end-point will list up to 1000 provisioners in a single
@@ -1031,9 +1097,9 @@ impl Queue {
     }
 
     /// Get an active provisioner
-    /// 
+    ///
     /// Get an active provisioner.
-    /// 
+    ///
     /// The term "provisioner" is taken broadly to mean anything with a provisionerId.
     /// This does not necessarily mean there is an associated service performing any
     /// provisioning activity.
@@ -1066,14 +1132,14 @@ impl Queue {
     }
 
     /// Update a provisioner
-    /// 
+    ///
     /// Declare a provisioner, supplying some details about it.
-    /// 
+    ///
     /// `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
     /// possessed. For example, a request to update the `my-provisioner`
     /// provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
     /// `queue:declare-provisioner:my-provisioner#description`.
-    /// 
+    ///
     /// The term "provisioner" is taken broadly to mean anything with a provisionerId.
     /// This does not necessarily mean there is an associated service performing any
     /// provisioning activity.
@@ -1094,9 +1160,9 @@ impl Queue {
     }
 
     /// Get Number of Pending Tasks
-    /// 
+    ///
     /// Get an approximate number of pending tasks for the given `taskQueueId`.
-    /// 
+    ///
     /// The underlying Azure Storage Queues only promises to give us an estimate.
     /// Furthermore, we cache the result in memory for 20 seconds. So consumers
     /// should be no means expect this to be an accurate number.
@@ -1130,9 +1196,9 @@ impl Queue {
     }
 
     /// Get a list of all active worker-types
-    /// 
+    ///
     /// Get all active worker-types for the given provisioner.
-    /// 
+    ///
     /// The response is paged. If this end-point returns a `continuationToken`, you
     /// should call the end-point again with the `continuationToken` as a query-string
     /// option. By default this end-point will list up to 1000 worker-types in a single
@@ -1172,7 +1238,7 @@ impl Queue {
     }
 
     /// Get a worker-type
-    /// 
+    ///
     /// Get a worker-type from a provisioner.
     pub async fn getWorkerType(&self, provisionerId: &str, workerType: &str) -> Result<Value, Error> {
         let method = "GET";
@@ -1203,9 +1269,9 @@ impl Queue {
     }
 
     /// Update a worker-type
-    /// 
+    ///
     /// Declare a workerType, supplying some details about it.
-    /// 
+    ///
     /// `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
     /// possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`
     /// provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
@@ -1227,9 +1293,9 @@ impl Queue {
     }
 
     /// Get a list of all active task queues
-    /// 
+    ///
     /// Get all active task queues.
-    /// 
+    ///
     /// The response is paged. If this end-point returns a `continuationToken`, you
     /// should call the end-point again with the `continuationToken` as a query-string
     /// option. By default this end-point will list up to 1000 task queues in a single
@@ -1269,7 +1335,7 @@ impl Queue {
     }
 
     /// Get a task queue
-    /// 
+    ///
     /// Get a task queue.
     pub async fn getTaskQueue(&self, taskQueueId: &str) -> Result<Value, Error> {
         let method = "GET";
@@ -1300,13 +1366,13 @@ impl Queue {
     }
 
     /// Get a list of all active workers of a workerType
-    /// 
+    ///
     /// Get a list of all active workers of a workerType.
-    /// 
+    ///
     /// `listWorkers` allows a response to be filtered by quarantined and non quarantined workers.
     /// To filter the query, you should call the end-point with `quarantined` as a query-string option with a
     /// true or false value.
-    /// 
+    ///
     /// The response is paged. If this end-point returns a `continuationToken`, you
     /// should call the end-point again with the `continuationToken` as a query-string
     /// option. By default this end-point will list up to 1000 workers in a single
@@ -1349,7 +1415,7 @@ impl Queue {
     }
 
     /// Get a worker-type
-    /// 
+    ///
     /// Get a worker from a worker-type.
     pub async fn getWorker(&self, provisionerId: &str, workerType: &str, workerGroup: &str, workerId: &str) -> Result<Value, Error> {
         let method = "GET";
@@ -1380,7 +1446,7 @@ impl Queue {
     }
 
     /// Quarantine a worker
-    /// 
+    ///
     /// Quarantine a worker
     pub async fn quarantineWorker(&self, provisionerId: &str, workerType: &str, workerGroup: &str, workerId: &str, payload: &Value) -> Result<Value, Error> {
         let method = "PUT";
@@ -1399,9 +1465,9 @@ impl Queue {
     }
 
     /// Declare a worker
-    /// 
+    ///
     /// Declare a worker, supplying some details about it.
-    /// 
+    ///
     /// `declareWorker` allows updating one or more properties of a worker as long as the required scopes are
     /// possessed.
     pub async fn declareWorker(&self, provisionerId: &str, workerType: &str, workerGroup: &str, workerId: &str, payload: &Value) -> Result<Value, Error> {
@@ -1415,6 +1481,41 @@ impl Queue {
     /// Determine the HTTP request details for declareWorker
     fn declareWorker_details<'a>(provisionerId: &'a str, workerType: &'a str, workerGroup: &'a str, workerId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("provisioners/{}/worker-types/{}/{}/{}", urlencode(provisionerId), urlencode(workerType), urlencode(workerGroup), urlencode(workerId));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Heartbeat
+    ///
+    /// Respond with a service heartbeat.
+    ///
+    /// This endpoint is used to check on backing services this service
+    /// depends on.
+    pub async fn heartbeat(&self) -> Result<(), Error> {
+        let method = "GET";
+        let (path, query) = Self::heartbeat_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        resp.bytes().await?;
+        Ok(())
+    }
+
+    /// Generate an unsigned URL for the heartbeat endpoint
+    pub fn heartbeat_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the heartbeat endpoint
+    pub fn heartbeat_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::heartbeat_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for heartbeat
+    fn heartbeat_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "__heartbeat__";
         let query = None;
 
         (path, query)

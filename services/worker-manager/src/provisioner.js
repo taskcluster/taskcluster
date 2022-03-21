@@ -1,6 +1,7 @@
 const Iterate = require('taskcluster-lib-iterate');
 const { paginatedIterator } = require('taskcluster-lib-postgres');
 const { WorkerPool, Worker } = require('./data');
+const { ApiError } = require('./providers/provider');
 
 /**
  * Run all provisioning logic
@@ -64,8 +65,10 @@ class Provisioner {
    */
   async provision() {
     if (this.provisioningLoopAlive) {
-      this.monitor.notice('loop-interference', {});
-      return;
+      this.monitor.alert('loop-interference', {});
+      // should be treated as terminal error
+      // to let the pod to restart and avoid getting stuck in a loop
+      throw new ApiError('provision loop interference');
     }
     try {
       this.provisioningLoopAlive = true;

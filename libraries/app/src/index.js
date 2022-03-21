@@ -152,6 +152,8 @@ const app = async (options) => {
     });
   }
 
+  // TODO: heartbeat endpoint should verify all dependent taskcluster services
+  // captured in https://github.com/taskcluster/taskcluster/issues/4597
   app.use('/__heartbeat__', (req, res) => {
     res.header('Content-Type', 'application/json');
     res.status(200).send({});

@@ -42,4 +42,3 @@ begin
   drop table hooks;
   grant select, insert, update, delete on hooks_entities to $db_user_prefix$_hooks;
 end
-

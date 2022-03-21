@@ -1,6 +1,6 @@
 # Security
 
-## Microservice Isolation 
+## Microservice Isolation
 
 Each microservice should have the fewest secrets and minimal access that it requires.
 This provides a "barrier" to prevent a compromise of a single service from affecting the entire platform.

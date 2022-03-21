@@ -36,7 +36,7 @@ class FakeAzure extends FakeCloud {
   }
 
   _reset() {
-    // managers indexed by resoruceType
+    // managers indexed by resourceType
     this._managers = {
       vm: new VMResourceManager(this, 'vm', 'azure-vm.yml'),
       // (no schema for disks as provider does not create them directly)

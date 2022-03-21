@@ -27,4 +27,3 @@ definitions:
       Indication that the data has been uploaded.
     type: boolean
     const: true
-

@@ -11,4 +11,3 @@ properties:
 additionalProperties: false
 required:
   - tags
-
