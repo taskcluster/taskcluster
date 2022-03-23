@@ -40,7 +40,7 @@
     "camel-case": "^4.1.1",
     "catch-links": "^2.0.1",
     "classnames": "^2.2.6",
-    "codemirror": "^5.39.0",
+    "codemirror": "^5.65.2",
     "date-fns": "^2.0.1",
     "deep-sort-object": "^1.0.2",
     "deepmerge": "^4.0.0",
