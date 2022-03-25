@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.8.5
+
+### GENERAL
+
+▶ [patch]
+Upgrade Node.js version from v16.14.0 to v16.14.2 for OpenSSL security patch.
+
+▶ [patch]
+Upgrade to latest `minimist` version to address https://github.com/taskcluster/taskcluster/security/dependabot/73.
+
+▶ [patch]
+Upgrade to latest `mocha` version to address https://github.com/taskcluster/taskcluster/security/dependabot/70, https://github.com/taskcluster/taskcluster/security/dependabot/71, and https://github.com/taskcluster/taskcluster/security/dependabot/72.
+
+### USERS
+
+▶ [patch] [#5282](https://github.com/taskcluster/taskcluster/issues/5282)
+Fix issue with unicode characters in user profile.
+
+Using Github as oauth provider encodes user profile using base64 encoding,
+which, if contains unicode characters, is not decoded properly by `atob()`.
+
 ## v44.8.4
 
 ### GENERAL
