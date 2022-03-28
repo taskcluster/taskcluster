@@ -1149,7 +1149,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
-          assert(monitor.manager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
+          assert(monitor.manager.messages[0].Fields.message.includes('Error extracting PKCS#7 message'));
         });
 
         test('malformed signature', async function() {
@@ -1183,10 +1183,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
           const log = monitor.manager.messages[0].Fields;
-          assert.equal(log.message, 'Wrong PKCS#7 message signature subject');
+          assert.equal(log.message, 'Error extracting PKCS#7 message');
           assert.equal(
             log.error,
-            'Expected "/CN=metadata.azure.com", got "/CN=metadata.azure.org"');
+            'Error: Unparsed DER bytes remain after ASN.1 parsing.');
         });
 
         test('expired message', async function() {
