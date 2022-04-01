@@ -380,6 +380,8 @@ class AzureProvider extends Provider {
         location: cfg.location,
         resourceGroupName: this.providerConfig.resourceGroupName,
         workerConfig: cfg.workerConfig,
+        // #4987: Generic worker instances do not need public IP/NIC
+        skipPublicNetwork: typeof cfg?.workerConfig?.genericWorker !== 'undefined',
         tags: {
           ...cfg.tags || {},
           'created-by': `taskcluster-wm-${this.providerId}`,
@@ -899,6 +901,16 @@ class AzureProvider extends Provider {
 
     let titleString = "";
 
+    // #4987: generic workers do not need Public IP and NIC,
+    // so we can skip creating those resources
+    const skipPublicNetwork = worker.providerData.skipPublicNetwork === true;
+    if (skipPublicNetwork) {
+      monitor.debug({
+        message: 'skipping public IP and NIC',
+        workerId: worker.workerId,
+      });
+    }
+
     try {
       // IP
       let ipConfig = {
@@ -908,17 +920,19 @@ class AzureProvider extends Provider {
 
       titleString = "IP Creation Error";
 
-      worker = await this.provisionResource({
-        worker,
-        client: this.networkClient.publicIPAddresses,
-        resourceType: 'ip',
-        resourceConfig: ipConfig,
-        modifyFn: () => {},
-        monitor,
-      });
+      if (!skipPublicNetwork) {
+        worker = await this.provisionResource({
+          worker,
+          client: this.networkClient.publicIPAddresses,
+          resourceType: 'ip',
+          resourceConfig: ipConfig,
+          modifyFn: () => {},
+          monitor,
+        });
 
-      if (!worker.providerData.ip.id) {
-        return;
+        if (!worker.providerData.ip.id) {
+          return;
+        }
       }
 
       // NIC
@@ -949,17 +963,19 @@ class AzureProvider extends Provider {
 
       titleString = "NIC Creation Error";
 
-      worker = await this.provisionResource({
-        worker,
-        client: this.networkClient.networkInterfaces,
-        resourceType: 'nic',
-        resourceConfig: nicConfig,
-        modifyFn: nicModifyFunc,
-        monitor,
-      });
+      if (!skipPublicNetwork) {
+        worker = await this.provisionResource({
+          worker,
+          client: this.networkClient.networkInterfaces,
+          resourceType: 'nic',
+          resourceConfig: nicConfig,
+          modifyFn: nicModifyFunc,
+          monitor,
+        });
 
-      if (!worker.providerData.nic.id) {
-        return;
+        if (!worker.providerData.nic.id) {
+          return;
+        }
       }
 
       // VM
