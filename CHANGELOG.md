@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.9.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Change azure nic payload.
+
 ## v44.9.1
 
 ### WORKER-DEPLOYERS
