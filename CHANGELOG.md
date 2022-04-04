@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.9.0
+
+### GENERAL
+
+▶ [patch]
+The existing pulse messages for worker-manager are now documented.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#4987](https://github.com/taskcluster/taskcluster/issues/4987)
+Skip public network creation for Azure workers that only have generic worker config.
+
+### OTHER
+
+▶ Additional change not described here: [#5323](https://github.com/taskcluster/taskcluster/issues/5323).
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency node-forge to v1.3.0 [SECURITY] (d53f7ce2a)
+
+</details>
+
 ## v44.8.5
 
 ### GENERAL
