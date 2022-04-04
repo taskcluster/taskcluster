@@ -381,7 +381,7 @@ class AzureProvider extends Provider {
         resourceGroupName: this.providerConfig.resourceGroupName,
         workerConfig: cfg.workerConfig,
         // #4987: Generic worker instances do not need public IP/NIC
-        skipPublicNetwork: typeof cfg?.workerConfig?.genericWorker !== 'undefined',
+        skipPublicIp: typeof cfg?.workerConfig?.genericWorker !== 'undefined',
         tags: {
           ...cfg.tags || {},
           'created-by': `taskcluster-wm-${this.providerId}`,
@@ -901,12 +901,12 @@ class AzureProvider extends Provider {
 
     let titleString = "";
 
-    // #4987: generic workers do not need Public IP and NIC,
+    // #4987: generic workers do not need Public IP,
     // so we can skip creating those resources
-    const skipPublicNetwork = worker.providerData.skipPublicNetwork === true;
-    if (skipPublicNetwork) {
+    const skipPublicIp = worker.providerData.skipPublicIp === true;
+    if (skipPublicIp) {
       monitor.debug({
-        message: 'skipping public IP and NIC',
+        message: 'skipping public IP',
         workerId: worker.workerId,
       });
     }
@@ -920,7 +920,7 @@ class AzureProvider extends Provider {
 
       titleString = "IP Creation Error";
 
-      if (!skipPublicNetwork) {
+      if (!skipPublicIp) {
         worker = await this.provisionResource({
           worker,
           client: this.networkClient.publicIPAddresses,
@@ -963,19 +963,17 @@ class AzureProvider extends Provider {
 
       titleString = "NIC Creation Error";
 
-      if (!skipPublicNetwork) {
-        worker = await this.provisionResource({
-          worker,
-          client: this.networkClient.networkInterfaces,
-          resourceType: 'nic',
-          resourceConfig: nicConfig,
-          modifyFn: nicModifyFunc,
-          monitor,
-        });
+      worker = await this.provisionResource({
+        worker,
+        client: this.networkClient.networkInterfaces,
+        resourceType: 'nic',
+        resourceConfig: nicConfig,
+        modifyFn: nicModifyFunc,
+        monitor,
+      });
 
-        if (!worker.providerData.nic.id) {
-          return;
-        }
+      if (!worker.providerData.nic.id) {
+        return;
       }
 
       // VM
