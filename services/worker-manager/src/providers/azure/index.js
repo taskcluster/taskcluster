@@ -945,9 +945,9 @@ class AzureProvider extends Provider {
             subnet: {
               id: worker.providerData.subnet.id,
             },
-            publicIPAddress: {
-              id: worker.providerData.ip.id,
-            },
+            ...(skipPublicIp ? {} : {
+              publicIPAddress: { id: worker.providerData.ip.id },
+            }),
           },
         ],
       };
