@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.9.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#4987](https://github.com/taskcluster/taskcluster/issues/4987)
+Azure cannot create VMs without with Network interface. We create network interface always, but skip provisioning of public IP when it's not needed.
+There might be a case where public IP is needed for RDP though.
+
 ## v44.9.0
 
 ### GENERAL
