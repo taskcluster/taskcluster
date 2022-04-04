@@ -23,7 +23,10 @@ properties:
         publicIPAddress:
           type: object
           properties:
-            id: {type: string}
+            id:
+              oneOf:
+                - {type: string}
+                - {enum: [false]}
           additionalProperties: false
           required: [id]
       additionalProperties: false

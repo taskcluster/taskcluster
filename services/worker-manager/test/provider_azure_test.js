@@ -635,16 +635,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.removeWorker.called);
     });
 
-    test('successful provisioning of VM without public network', async function() {
+    test('successful provisioning of VM without public ip', async function() {
       await assertProvisioningState({ ip: 'none', nic: 'none', vm: 'none' });
 
-      worker.providerData.skipPublicNetwork = true;
+      worker.providerData.skipPublicIp = true;
       await provider.provisionResources({ worker, monitor });
-      await assertProvisioningState({ vm: 'inprogress' });
+      await assertProvisioningState({ nic: 'inprogress' });
+
+      debug('NIC creation succeeds');
+      fake.networkClient.networkInterfaces.fakeFinishRequest('rgrp', nicName);
+      await provider.provisionResources({ worker, monitor });
+      await assertProvisioningState({ nic: 'allocated' });
 
       fake.computeClient.virtualMachines.fakeFinishRequest('rgrp', vmName);
       await provider.provisionResources({ worker, monitor });
-      await assertProvisioningState({ vm: 'allocated', ip: 'none', nic: 'none' });
+      await assertProvisioningState({ vm: 'allocated', ip: 'none', nic: 'allocated' });
 
       assert(!provider.removeWorker.called);
     });
