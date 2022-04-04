@@ -6139,6 +6139,48 @@
         }
       },
       "version": 69
+    },
+    {
+      "description": "add `get_worker_pool_with_capacity_and_counts_by_state`, `get_worker_pools_with_capacity_and_counts_by_state`, and `update_worker_pool_with_capacity_and_counts_by_state` functions to get worker counts and capacity by state for worker pools",
+      "methods": {
+        "get_worker_pool_with_capacity": {
+          "deprecated": true
+        },
+        "get_worker_pool_with_capacity_and_counts_by_state": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  return query\n  select\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    worker_pools.provider_data,\n    coalesce(sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,\n    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,\n    coalesce(sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer\n  from worker_pools\n  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  group by worker_pools.worker_pool_id\n  order by worker_pools.worker_pool_id;\nend",
+          "deprecated": false,
+          "description": "Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb, current_capacity integer, requested_count integer, running_count integer, stopping_count integer, stopped_count integer, requested_capacity integer, running_capacity integer, stopping_capacity integer, stopped_capacity integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pools_with_capacity": {
+          "deprecated": true
+        },
+        "get_worker_pools_with_capacity_and_counts_by_state": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    worker_pools.provider_data,\n    coalesce(sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,\n    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,\n    coalesce(sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer\n  from worker_pools\n  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id\n  group by worker_pools.worker_pool_id\n  order by worker_pools.worker_pool_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb, current_capacity integer, requested_count integer, running_count integer, stopping_count integer, stopped_count integer, requested_capacity integer, running_capacity integer, stopping_capacity integer, stopped_capacity integer)",
+          "serviceName": "worker_manager"
+        },
+        "update_worker_pool_with_capacity": {
+          "deprecated": true
+        },
+        "update_worker_pool_with_capacity_and_counts_by_state": {
+          "args": "worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean",
+          "body": "declare\n  existing record;\nbegin\n  select\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids\n  from worker_pools\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  -- lock this row for the duration of this transaction..\n  for update\n  into existing;\n\n  -- update previous_provider_ids, if the provider_id has changed\n  if existing.provider_id <> provider_id_in then\n    -- remove both provider IDs to avoid duplicates, then re-add existing.provider_id\n    existing.previous_provider_ids = (existing.previous_provider_ids - provider_id_in - existing.provider_id) || jsonb_build_array(existing.provider_id);\n  end if;\n\n  return query update worker_pools\n  set\n    provider_id = provider_id_in,\n    description = description_in,\n    config = config_in,\n    last_modified = last_modified_in,\n    owner = owner_in,\n    email_on_error = email_on_error_in,\n    previous_provider_ids = existing.previous_provider_ids\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  returning\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    existing.provider_id as previous_provider_id,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state != 'stopped'),\n      0)::integer,\n    coalesce((\n      select count(*) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'requested'),\n      0)::integer,\n    coalesce((\n      select count(*) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'running'),\n      0)::integer,\n    coalesce((\n      select count(*) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'stopping'),\n      0)::integer,\n    coalesce((\n      select count(*) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'stopped'),\n      0)::integer,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'requested'),\n      0)::integer,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'running'),\n      0)::integer,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'stopping'),\n      0)::integer,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'stopped'),\n      0)::integer;\nend",
+          "deprecated": false,
+          "description": "Update API-accessible columns on an existig worker pool.  All fields are\noverridden, but if the provider_id changes, then the existing provider_id\nis added to previous_provider_ids.  The return value contains values\nrequired for an API response and previous_provider_id (singular) containing\nthe provider_id found before the update.  If no such worker pool exists,\nthe return value is an empty set.",
+          "mode": "write",
+          "returns": "table(worker_pool_id text, provider_id text, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, previous_provider_id text, current_capacity integer, requested_count integer, running_count integer, stopping_count integer, stopped_count integer, requested_capacity integer, running_capacity integer, stopping_capacity integer, stopped_capacity integer)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 70
     }
   ]
 }

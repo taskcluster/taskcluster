@@ -179,7 +179,7 @@ builder.declare({
     return res.reportError('InputError', 'Incorrect workerPoolId in request body', {});
   }
 
-  const [row] = await this.db.fns.update_worker_pool_with_capacity(
+  const [row] = await this.db.fns.update_worker_pool_with_capacity_and_counts_by_state(
     workerPoolId,
     input.providerId,
     input.description,
@@ -226,7 +226,7 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const [row] = await this.db.fns.update_worker_pool_with_capacity(
+  const [row] = await this.db.fns.update_worker_pool_with_capacity_and_counts_by_state(
     workerPoolId,
     providerId,
     workerPool.description,
@@ -285,7 +285,7 @@ builder.declare({
 }, async function(req, res) {
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_pools_with_capacity(size, offset),
+    fetch: (size, offset) => this.db.fns.get_worker_pools_with_capacity_and_counts_by_state(size, offset),
   });
   const result = {
     workerPools: rows.map(r => WorkerPool.fromDb(r).serializable()),
