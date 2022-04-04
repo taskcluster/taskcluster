@@ -53,6 +53,7 @@ class Provisioner {
    */
   async terminate() {
     if (this.pq) {
+      // TODO: is it defined anywhere at all?
       await this.pq.stop();
       this.pq = null;
     }
