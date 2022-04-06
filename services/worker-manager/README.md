@@ -136,6 +136,25 @@ end
   updateExpires -.-> cleanupProviders[Cleanup providers]
 ```
 
+#### Sequence of calls
+
+```mermaid
+sequenceDiagram
+  participant WMP as W-M Provisioner
+  participant DB
+  participant Estimator
+  participant Queue as Queue Service
+
+  WMP-->>DB: get worker pool capacity
+  DB-->>WMP: worker pool A capacity
+  WMP-->>Estimator: How many to start for pool A?
+  Estimator-->>Queue: Get pending tasks count for pool A?
+  Queue-->>Estimator: pendingTasks: 5
+  Estimator-->>WMP: Please spawn: 5 more
+
+  WMP-->>DB: Create new worker with config (x5)
+```
+
 #### Azure specific checks
 
 ```mermaid
@@ -166,15 +185,43 @@ graph TD;
     markStopped --> azureCheckEnd
 
     subgraph Provisioning
-      provisionResources --> provisionIp([Provision IP])
-      provisionIp --> provisionNic([Provision NIC])
-      provisionNic --> provisionVm([Provision VM])
+      provisionResources -- if public IP needed --> provisionIp[/Provision IP async/]
+      provisionResources -- if public ip not needed --> provisionNic
+      provisionIp -- if ip ready --> provisionNic[/Provision NIC/]
+      provisionNic -- if nic ready --> provisionVm[/Provision VM/]
       provisionVm -- success --> provisionComplete[(provisioningComplete = true)]
     end
     provisionVm -- failure --> removeWorker
     provisionVm --> azureCheckEnd
 
     removeWorker --> azureCheckEnd[end of check]
+  end
+```
+
+#### Sequence of provisioning
+
+```mermaid
+sequenceDiagram
+  participant DB
+  participant WMS as W-M Scanner
+  participant Azure
+
+  loop Loop all workers
+    WMS-->>DB: get worker state
+    DB-->>WMS: state: 'requested'
+
+    Note over WMS,Azure: Res is one of: <br> IP, NIC, VM
+
+    WMS-->>Azure: Query state of Res
+    Azure-->>WMS: Res state
+
+    WMS-->>DB: Update Res ID if changed,<br> remove operation id
+
+    Note over WMS,Azure: Request one per loop
+
+    WMS-->>Azure: provision Res
+    Azure-->>WMS: operation ID
+    WMS-->>DB: update worker: set Res operation ID
   end
 ```
 
