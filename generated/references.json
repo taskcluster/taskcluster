@@ -90,7 +90,7 @@
           "type": "integer"
         },
         "requestedCount": {
-          "description": "Total woker count in \"requested\" state for this worker pool",
+          "description": "Total worker count in \"requested\" state for this worker pool",
           "minimum": 0,
           "title": "Requested Worker Count",
           "type": "integer"

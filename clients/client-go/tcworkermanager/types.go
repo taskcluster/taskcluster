@@ -568,7 +568,7 @@ type (
 		// Mininum:    0
 		RequestedCapacity int64 `json:"requestedCapacity"`
 
-		// Total woker count in "requested" state for this worker pool
+		// Total worker count in "requested" state for this worker pool
 		//
 		// Mininum:    0
 		RequestedCount int64 `json:"requestedCount"`
