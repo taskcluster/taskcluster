@@ -45,14 +45,14 @@ suite(testing.suiteName(), function() {
     ];
     const with_cap = await db.fns.update_worker_pool_with_capacity_and_counts_by_state(...input);
     for (const wp of with_cap) {
-      assert(wp.requested_count !== undefined);
-      assert(wp.running_count !== undefined);
-      assert(wp.stopping_count !== undefined);
-      assert(wp.stopped_count !== undefined);
-      assert(wp.requested_capacity !== undefined);
-      assert(wp.running_capacity !== undefined);
-      assert(wp.stopping_capacity !== undefined);
-      assert(wp.stopped_capacity !== undefined);
+      assert(wp.requested_count === 0);
+      assert(wp.running_count === 0);
+      assert(wp.stopping_count === 0);
+      assert(wp.stopped_count === 0);
+      assert(wp.requested_capacity === 0);
+      assert(wp.running_capacity === 0);
+      assert(wp.stopping_capacity === 0);
+      assert(wp.stopped_capacity === 0);
       delete wp.requested_count;
       delete wp.running_count;
       delete wp.stopping_count;
@@ -131,14 +131,14 @@ suite(testing.suiteName(), function() {
   const get_worker_pool = async (db, worker_pool_id) => {
     const with_cap = await db.fns.get_worker_pool_with_capacity_and_counts_by_state(worker_pool_id);
     for (const wp of with_cap) {
-      assert(wp.requested_count !== undefined);
-      assert(wp.running_count !== undefined);
-      assert(wp.stopping_count !== undefined);
-      assert(wp.stopped_count !== undefined);
-      assert(wp.requested_capacity !== undefined);
-      assert(wp.running_capacity !== undefined);
-      assert(wp.stopping_capacity !== undefined);
-      assert(wp.stopped_capacity !== undefined);
+      assert(wp.requested_count === 0);
+      assert(wp.running_count === 0);
+      assert(wp.stopping_count === 0);
+      assert(wp.stopped_count === 0);
+      assert(wp.requested_capacity === 0);
+      assert(wp.running_capacity === 0);
+      assert(wp.stopping_capacity === 0);
+      assert(wp.stopped_capacity === 0);
       delete wp.requested_count;
       delete wp.running_count;
       delete wp.stopping_count;
@@ -156,14 +156,14 @@ suite(testing.suiteName(), function() {
   const get_worker_pools = async (db, page_size, page_offset) => {
     const with_cap = await db.fns.get_worker_pools_with_capacity_and_counts_by_state(page_size, page_offset);
     for (const wp of with_cap) {
-      assert(wp.requested_count !== undefined);
-      assert(wp.running_count !== undefined);
-      assert(wp.stopping_count !== undefined);
-      assert(wp.stopped_count !== undefined);
-      assert(wp.requested_capacity !== undefined);
-      assert(wp.running_capacity !== undefined);
-      assert(wp.stopping_capacity !== undefined);
-      assert(wp.stopped_capacity !== undefined);
+      assert(wp.requested_count === 0);
+      assert(wp.running_count === 0);
+      assert(wp.stopping_count === 0);
+      assert(wp.stopped_count === 0);
+      assert(wp.requested_capacity === 0);
+      assert(wp.running_capacity === 0);
+      assert(wp.stopping_capacity === 0);
+      assert(wp.stopped_capacity === 0);
       delete wp.requested_count;
       delete wp.running_count;
       delete wp.stopping_count;
