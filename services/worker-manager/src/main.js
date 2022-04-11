@@ -187,6 +187,7 @@ let load = loader({
   workerScanner: {
     requires: ['cfg', 'monitor', 'providers', 'db'],
     setup: async ({ cfg, monitor, providers, db }, ownName) => {
+      console.log(providers);
       const workerScanner = new WorkerScanner({
         ownName,
         providers,

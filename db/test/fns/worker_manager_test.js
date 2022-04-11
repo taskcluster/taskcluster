@@ -584,7 +584,7 @@ suite(testing.suiteName(), function() {
         }
       });
 
-      const rows = await db.fns.get_non_stopped_workers_quntil(null, null, null, null, null);
+      const rows = await db.fns.get_non_stopped_workers_quntil_providers(null, null, null, null, null, null, null);
 
       assert.equal(rows.length, 6);
 
@@ -606,6 +606,41 @@ suite(testing.suiteName(), function() {
         assert(row.etag !== undefined);
         assert.deepEqual(row.quarantine_until, nonStoppedIds[i] === 4 ? quarantineUntil : null);
         i++;
+      }
+    });
+
+    helper.dbTest('get non-stopped workers by provider', async function(db) {
+      const now = new Date();
+
+      let i = 0;
+      for (const provider_id of ["azure", "static", "aws", "gcp"]) {
+        await create_worker(db, {
+          worker_id: `id${i++}`,
+          state: 'running',
+          provider_id,
+          created: now,
+          last_modified: now,
+          last_checked: now,
+          expires: now,
+        });
+      }
+
+      const testRuns = [
+        { providers_filter_cond: null, providers_filter_value: null, expected_count: 4 },
+        { providers_filter_cond: '=', providers_filter_value: null, expected_count: 4 }, // ignoring partial condition
+        { providers_filter_cond: null, providers_filter_value: 'a', expected_count: 4 }, // ignoring partial condition
+        { providers_filter_cond: '=', providers_filter_value: 'aws', expected_count: 1 },
+        { providers_filter_cond: '<>', providers_filter_value: 'aws', expected_count: 3 },
+        { providers_filter_cond: '=', providers_filter_value: 'static', expected_count: 1 },
+        { providers_filter_cond: '<>', providers_filter_value: 'non-existent', expected_count: 4 },
+        { providers_filter_cond: '=', providers_filter_value: 'non-existent', expected_count: 0 },
+      ];
+
+      for (const run of testRuns) {
+        const rows = await db.fns.get_non_stopped_workers_quntil_providers(
+          null, null, null, run.providers_filter_cond, run.providers_filter_value, null, null);
+
+        assert.equal(rows.length, run.expected_count);
       }
     });
 
