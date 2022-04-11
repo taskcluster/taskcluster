@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: taskcluster-worker-manager-workerscannerazure
+  name: taskcluster-worker-manager-workerscanner-azure
   labels: &ref_0
     app.kubernetes.io/name: taskcluster-worker-manager
     app.kubernetes.io/instance: '{{ .Release.Name }}'
-    app.kubernetes.io/component: taskcluster-worker-manager-workerscannerazure
+    app.kubernetes.io/component: taskcluster-worker-manager-workerscanner-azure
     app.kubernetes.io/part-of: taskcluster
 spec:
-  replicas: {{ int (.Values.worker_manager.procs.workerscannerAzure.replicas) }}
+  replicas: {{ int (.Values.worker_manager.procs.workerscanner_azure.replicas) }}
   selector:
     matchLabels: *ref_0
   template:
@@ -19,15 +19,15 @@ spec:
     spec:
       serviceAccountName: taskcluster-worker-manager
       containers:
-        - name: taskcluster-worker-manager-workerscannerazure
+        - name: taskcluster-worker-manager-workerscanner-azure
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
-            - worker-manager/workerscannerAzure
+            - worker-manager/workerscanner-azure
           resources:
             requests:
-              cpu: '{{ .Values.worker_manager.procs.workerscannerAzure.cpu }}'
-              memory: '{{ .Values.worker_manager.procs.workerscannerAzure.memory }}'
+              cpu: '{{ .Values.worker_manager.procs.workerscanner_azure.cpu }}'
+              memory: '{{ .Values.worker_manager.procs.workerscanner_azure.memory }}'
           env:
             - name: TASKCLUSTER_ROOT_URL
               value: '{{ .Values.rootUrl }}'

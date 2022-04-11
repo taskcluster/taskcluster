@@ -56,8 +56,10 @@ methods:
           (workers.state <> 'stopped') and
           (providers_filter_cond is null or providers_filter_value is null or
             case
-              when providers_filter_cond = '=' then workers.provider_id = providers_filter_value
-              when providers_filter_cond = '<>' then workers.provider_id <> providers_filter_value
+              when providers_filter_cond = '='
+                then workers.provider_id = ANY(string_to_array(providers_filter_value, ','))
+              when providers_filter_cond = '<>'
+                then workers.provider_id <> ALL(string_to_array(providers_filter_value, ','))
             end
             )
         order by worker_pool_id, worker_group, worker_id

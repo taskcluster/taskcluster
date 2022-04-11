@@ -631,9 +631,12 @@ suite(testing.suiteName(), function() {
         { providers_filter_cond: null, providers_filter_value: 'a', expected_count: 4 }, // ignoring partial condition
         { providers_filter_cond: '=', providers_filter_value: 'aws', expected_count: 1 },
         { providers_filter_cond: '<>', providers_filter_value: 'aws', expected_count: 3 },
+        { providers_filter_cond: '=', providers_filter_value: 'aws,static', expected_count: 2 },
+        { providers_filter_cond: '<>', providers_filter_value: 'aws,static', expected_count: 2 },
         { providers_filter_cond: '=', providers_filter_value: 'static', expected_count: 1 },
         { providers_filter_cond: '<>', providers_filter_value: 'non-existent', expected_count: 4 },
         { providers_filter_cond: '=', providers_filter_value: 'non-existent', expected_count: 0 },
+        { providers_filter_cond: '=', providers_filter_value: 'azure,static,aws,gcp', expected_count: 4 },
       ];
 
       for (const run of testRuns) {

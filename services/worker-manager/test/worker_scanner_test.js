@@ -242,4 +242,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(worker.providerData.checked);
     },
   }));
+
+  test('default providers filter applied', async () => {
+    const azureScanner = await helper.load('workerScannerAzure');
+    assert.deepEqual(azureScanner.providersFilter, { cond: '=', value: 'azure' });
+    await azureScanner.terminate();
+
+    const scanner = await helper.load('workerScanner');
+    assert.deepEqual(scanner.providersFilter, { cond: '<>', value: 'azure' });
+    await scanner.terminate();
+  });
 });

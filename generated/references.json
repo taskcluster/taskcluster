@@ -10131,7 +10131,7 @@
                   ],
                   "type": "object"
                 },
-                "workerscannerAzure": {
+                "workerscanner_azure": {
                   "additionalProperties": false,
                   "properties": {
                     "cpu": {
@@ -10156,7 +10156,7 @@
                 "web",
                 "provisioner",
                 "workerscanner",
-                "workerscannerAzure",
+                "workerscanner_azure",
                 "expire_workers",
                 "expire_worker_pools",
                 "expire_errors"

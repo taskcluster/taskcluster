@@ -245,7 +245,7 @@ worker_manager:
       cpu: 10m
     workerscanner:
       cpu: 10m
-    workerscannerAzure:
+    workerscanner_azure:
       cpu: 10m
     expire_workers:
       cpu: 10m
