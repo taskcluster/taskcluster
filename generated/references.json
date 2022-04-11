@@ -83,6 +83,54 @@
           "title": "Provider",
           "type": "string"
         },
+        "requestedCapacity": {
+          "description": "Total capacity available across all workers for this worker pool with state \"requested\"",
+          "minimum": 0,
+          "title": "Requested Worker Capacity",
+          "type": "integer"
+        },
+        "requestedCount": {
+          "description": "Total worker count in \"requested\" state for this worker pool",
+          "minimum": 0,
+          "title": "Requested Worker Count",
+          "type": "integer"
+        },
+        "runningCapacity": {
+          "description": "Total capacity available across all workers for this worker pool with state \"running\"",
+          "minimum": 0,
+          "title": "Running Worker Capacity",
+          "type": "integer"
+        },
+        "runningCount": {
+          "description": "Total worker count in \"running\" state for this worker pool",
+          "minimum": 0,
+          "title": "Running Worker Count",
+          "type": "integer"
+        },
+        "stoppedCapacity": {
+          "description": "Total capacity available across all workers for this worker pool with state \"stopped\"",
+          "minimum": 0,
+          "title": "Stopped Worker Capacity",
+          "type": "integer"
+        },
+        "stoppedCount": {
+          "description": "Total worker count in \"stopped\" state for this worker pool",
+          "minimum": 0,
+          "title": "Stopped Worker Count",
+          "type": "integer"
+        },
+        "stoppingCapacity": {
+          "description": "Total capacity available across all workers for this worker pool with state \"stopping\"",
+          "minimum": 0,
+          "title": "Stopping Worker Capacity",
+          "type": "integer"
+        },
+        "stoppingCount": {
+          "description": "Total worker count in \"stopping\" state for this worker pool",
+          "minimum": 0,
+          "title": "Stopping Worker Count",
+          "type": "integer"
+        },
         "workerPoolId": {
           "description": "The ID of this worker pool (of the form `providerId/workerType` for compatibility)\n",
           "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
@@ -98,7 +146,15 @@
         "config",
         "owner",
         "emailOnError",
-        "currentCapacity"
+        "currentCapacity",
+        "requestedCount",
+        "runningCount",
+        "stoppingCount",
+        "stoppedCount",
+        "requestedCapacity",
+        "runningCapacity",
+        "stoppingCapacity",
+        "stoppedCapacity"
       ],
       "title": "Worker Pool Full Definition",
       "type": "object"

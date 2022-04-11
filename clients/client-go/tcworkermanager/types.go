@@ -563,6 +563,46 @@ type (
 		// Max length: 38
 		ProviderID string `json:"providerId"`
 
+		// Total capacity available across all workers for this worker pool with state "requested"
+		//
+		// Mininum:    0
+		RequestedCapacity int64 `json:"requestedCapacity"`
+
+		// Total worker count in "requested" state for this worker pool
+		//
+		// Mininum:    0
+		RequestedCount int64 `json:"requestedCount"`
+
+		// Total capacity available across all workers for this worker pool with state "running"
+		//
+		// Mininum:    0
+		RunningCapacity int64 `json:"runningCapacity"`
+
+		// Total worker count in "running" state for this worker pool
+		//
+		// Mininum:    0
+		RunningCount int64 `json:"runningCount"`
+
+		// Total capacity available across all workers for this worker pool with state "stopped"
+		//
+		// Mininum:    0
+		StoppedCapacity int64 `json:"stoppedCapacity"`
+
+		// Total worker count in "stopped" state for this worker pool
+		//
+		// Mininum:    0
+		StoppedCount int64 `json:"stoppedCount"`
+
+		// Total capacity available across all workers for this worker pool with state "stopping"
+		//
+		// Mininum:    0
+		StoppingCapacity int64 `json:"stoppingCapacity"`
+
+		// Total worker count in "stopping" state for this worker pool
+		//
+		// Mininum:    0
+		StoppingCount int64 `json:"stoppingCount"`
+
 		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$

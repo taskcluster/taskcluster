@@ -150,13 +150,13 @@
    * [`get_worker_2`](#get_worker_2)
    * [`get_worker_pool_error`](#get_worker_pool_error)
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
-   * [`get_worker_pool_with_capacity`](#get_worker_pool_with_capacity)
-   * [`get_worker_pools_with_capacity`](#get_worker_pools_with_capacity)
+   * [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
+   * [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
    * [`get_workers_without_provider_data`](#get_workers_without_provider_data)
    * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
    * [`update_worker_2`](#update_worker_2)
    * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
-   * [`update_worker_pool_with_capacity`](#update_worker_pool_with_capacity)
+   * [`update_worker_pool_with_capacity_and_counts_by_state`](#update_worker_pool_with_capacity_and_counts_by_state)
 
 ## auth
 
@@ -2363,13 +2363,13 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`get_worker_2`](#get_worker_2)
 * [`get_worker_pool_error`](#get_worker_pool_error)
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
-* [`get_worker_pool_with_capacity`](#get_worker_pool_with_capacity)
-* [`get_worker_pools_with_capacity`](#get_worker_pools_with_capacity)
+* [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
+* [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
 * [`get_workers_without_provider_data`](#get_workers_without_provider_data)
 * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
 * [`update_worker_2`](#update_worker_2)
 * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
-* [`update_worker_pool_with_capacity`](#update_worker_pool_with_capacity)
+* [`update_worker_pool_with_capacity_and_counts_by_state`](#update_worker_pool_with_capacity_and_counts_by_state)
 
 ### create_worker
 
@@ -2593,7 +2593,7 @@ ordered by `reported`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
-### get_worker_pool_with_capacity
+### get_worker_pool_with_capacity_and_counts_by_state
 
 * *Mode*: read
 * *Arguments*:
@@ -2610,11 +2610,19 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `email_on_error boolean`
   * `provider_data jsonb`
   * `current_capacity integer`
-* *Last defined on version*: 13
+  * `requested_count integer`
+  * `running_count integer`
+  * `stopping_count integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `running_capacity integer`
+  * `stopping_capacity integer`
+  * `stopped_capacity integer`
+* *Last defined on version*: 70
 
 Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.
 
-### get_worker_pools_with_capacity
+### get_worker_pools_with_capacity_and_counts_by_state
 
 * *Mode*: read
 * *Arguments*:
@@ -2632,7 +2640,15 @@ Get an existing worker pool.  The returned table will have one or (if no such wo
   * `email_on_error boolean`
   * `provider_data jsonb`
   * `current_capacity integer`
-* *Last defined on version*: 13
+  * `requested_count integer`
+  * `running_count integer`
+  * `stopping_count integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `running_capacity integer`
+  * `stopping_capacity integer`
+  * `stopped_capacity integer`
+* *Last defined on version*: 70
 
 Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
@@ -2731,7 +2747,7 @@ this sets the provider_data property unconditionally, and it is up to the servic
 to ensure that concurrent modifications do not occur.  It is not an error if the
 worker pool does not exist.
 
-### update_worker_pool_with_capacity
+### update_worker_pool_with_capacity_and_counts_by_state
 
 * *Mode*: write
 * *Arguments*:
@@ -2753,7 +2769,15 @@ worker pool does not exist.
   * `email_on_error boolean`
   * `previous_provider_id text`
   * `current_capacity integer`
-* *Last defined on version*: 13
+  * `requested_count integer`
+  * `running_count integer`
+  * `stopping_count integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `running_capacity integer`
+  * `stopping_capacity integer`
+  * `stopped_capacity integer`
+* *Last defined on version*: 70
 
 Update API-accessible columns on an existig worker pool.  All fields are
 overridden, but if the provider_id changes, then the existing provider_id
@@ -2761,3 +2785,9 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
+
+### deprecated methods
+
+* `get_worker_pool_with_capacity(worker_pool_id_in text)` (compatibility guaranteed until v46.0.0)
+* `get_worker_pools_with_capacity(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
+* `update_worker_pool_with_capacity(worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean)` (compatibility guaranteed until v46.0.0)

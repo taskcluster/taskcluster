@@ -62,6 +62,46 @@ properties:
     type: integer
     minimum: 0
     description: Total capacity available across all workers for this worker pool that are currently not "stopped"
+  requestedCount:
+    title: Requested Worker Count
+    type: integer
+    minimum: 0
+    description: Total worker count in "requested" state for this worker pool
+  runningCount:
+    title: Running Worker Count
+    type: integer
+    minimum: 0
+    description: Total worker count in "running" state for this worker pool
+  stoppingCount:
+    title: Stopping Worker Count
+    type: integer
+    minimum: 0
+    description: Total worker count in "stopping" state for this worker pool
+  stoppedCount:
+    title: Stopped Worker Count
+    type: integer
+    minimum: 0
+    description: Total worker count in "stopped" state for this worker pool
+  requestedCapacity:
+    title: Requested Worker Capacity
+    type: integer
+    minimum: 0
+    description: Total capacity available across all workers for this worker pool with state "requested"
+  runningCapacity:
+    title: Running Worker Capacity
+    type: integer
+    minimum: 0
+    description: Total capacity available across all workers for this worker pool with state "running"
+  stoppingCapacity:
+    title: Stopping Worker Capacity
+    type: integer
+    minimum: 0
+    description: Total capacity available across all workers for this worker pool with state "stopping"
+  stoppedCapacity:
+    title: Stopped Worker Capacity
+    type: integer
+    minimum: 0
+    description: Total capacity available across all workers for this worker pool with state "stopped"
 additionalProperties: false
 required:
   - providerId
@@ -72,3 +112,11 @@ required:
   - owner
   - emailOnError
   - currentCapacity
+  - requestedCount
+  - runningCount
+  - stoppingCount
+  - stoppedCount
+  - requestedCapacity
+  - runningCapacity
+  - stoppingCapacity
+  - stoppedCapacity
