@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.11.1
+
+### GENERAL
+
+▶ [patch]
+Add new counts/capacities to graphql schema.
+
 ## v44.11.0
 
 ### WORKER-DEPLOYERS
