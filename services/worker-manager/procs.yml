@@ -9,6 +9,10 @@ workerscanner:
   type: background
   subType: 'iterate'
   command: node services/worker-manager/src/main.js workerScanner
+workerscanner-azure:
+  type: background
+  subType: 'iterate'
+  command: node services/worker-manager/src/main.js workerScannerAzure
 expire-workers:
   type: cron
   schedule: '0 0 * * *'
