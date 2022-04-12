@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.11.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#4987](https://github.com/taskcluster/taskcluster/issues/4987)
+Worker manager scanner split in two: non-azure providers and azure.
+
+### USERS
+
+▶ [minor] [#4942](https://github.com/taskcluster/taskcluster/issues/4942)
+Addresses #4942. Add worker capacities by state for worker pools to UI.
+
 ## v44.10.0
 
 ### DEVELOPERS
