@@ -197,8 +197,8 @@ worker_manager:
       memory: 200Mi
     workerscanner_azure:
       replicas: 1
-      cpu: 50m
-      memory: 100Mi
+      cpu: 200m
+      memory: 200Mi
     expire_workers:
       cpu: 200m
       memory: 200Mi
