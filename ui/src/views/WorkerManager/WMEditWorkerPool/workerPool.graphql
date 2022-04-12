@@ -7,6 +7,14 @@ query WorkerPool($workerPoolId: String!) {
         providerId,
         config,
         currentCapacity,
+        requestedCount,
+        runningCount,
+        stoppingCount,
+        stoppedCount,
+        requestedCapacity,
+        runningCapacity,
+        stoppingCapacity,
+        stoppedCapacity,
         pendingTasks
     }
 }

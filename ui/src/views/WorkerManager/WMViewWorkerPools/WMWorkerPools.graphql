@@ -16,6 +16,14 @@ query workerPools($connection: PageConnection, $filter: JSON) {
         config
         emailOnError
         currentCapacity
+        requestedCount
+        runningCount
+        stoppingCount
+        stoppedCount
+        requestedCapacity
+        runningCapacity
+        stoppingCapacity
+        stoppedCapacity
         pendingTasks #this value comes from a separate request to queue
       }
     }
