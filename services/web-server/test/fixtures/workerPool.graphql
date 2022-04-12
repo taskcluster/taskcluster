@@ -4,5 +4,13 @@ query WorkerPool($workerPoolId: String!){
     owner
     pendingTasks
     currentCapacity
+    requestedCount
+    runningCount
+    stoppingCount
+    stoppedCount
+    requestedCapacity
+    runningCapacity
+    stoppingCapacity
+    stoppedCapacity
   }
 }

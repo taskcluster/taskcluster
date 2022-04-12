@@ -6,6 +6,14 @@ query ListWorkerPools($connection: PageConnection, $filter: JSON){
         providerId
         pendingTasks
         currentCapacity
+        requestedCount
+        runningCount
+        stoppingCount
+        stoppedCount
+        requestedCapacity
+        runningCapacity
+        stoppingCapacity
+        stoppedCapacity
       }
     }
   }
