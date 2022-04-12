@@ -329,8 +329,10 @@ export default class TaskDetailsCard extends Component {
                     sortDirection="desc"
                     onPageChange={onDependentsPageChange}
                     allowFilter
-                    filterFunc={({ node: metadata }, filterValue) =>
-                      String(metadata.name).includes(filterValue)
+                    filterFunc={({ node }, filterValue) =>
+                      String(node?.metadata?.name)
+                        .toLowerCase()
+                        .includes(filterValue.toLowerCase())
                     }
                     renderRow={({
                       node: {
