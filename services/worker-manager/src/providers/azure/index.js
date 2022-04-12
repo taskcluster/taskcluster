@@ -381,7 +381,8 @@ class AzureProvider extends Provider {
         resourceGroupName: this.providerConfig.resourceGroupName,
         workerConfig: cfg.workerConfig,
         // #4987: Generic worker instances do not need public IP/NIC
-        skipPublicIp: typeof cfg?.workerConfig?.genericWorker !== 'undefined',
+        // Temporarily provision always IPs
+        skipPublicIp: false, // typeof cfg?.workerConfig?.genericWorker !== 'undefined',
         tags: {
           ...cfg.tags || {},
           'created-by': `taskcluster-wm-${this.providerId}`,
