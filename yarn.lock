@@ -1550,21 +1550,23 @@ body-parser@1.19.0:
     raw-body "2.4.0"
     type-is "~1.6.17"
 
-body-parser@1.19.2, body-parser@^1.18.2, body-parser@^1.19.0:
-  version "1.19.2"
-  resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.19.2.tgz#4714ccd9c157d44797b8b5607d72c0b89952f26e"
-  integrity sha512-SAAwOxgoCKMGs9uUAUFHygfLAyaniaoun6I8mFY9pRAJL9+Kec34aU+oIjDhTycub1jozEfEwx1W1IuOYxVSFw==
+body-parser@1.20.0, body-parser@^1.18.2, body-parser@^1.19.0:
+  version "1.20.0"
+  resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.20.0.tgz#3de69bd89011c11573d7bfee6a64f11b6bd27cc5"
+  integrity sha512-DfJ+q6EPcGKZD1QWUjSpqp+Q7bDQTsQIF4zfUAtZ6qk+H/3/QRhg9CEp39ss+/T2vw0+HaidC0ecJj/DRLIaKg==
   dependencies:
     bytes "3.1.2"
     content-type "~1.0.4"
     debug "2.6.9"
-    depd "~1.1.2"
-    http-errors "1.8.1"
+    depd "2.0.0"
+    destroy "1.2.0"
+    http-errors "2.0.0"
     iconv-lite "0.4.24"
-    on-finished "~2.3.0"
-    qs "6.9.7"
-    raw-body "2.4.3"
+    on-finished "2.4.1"
+    qs "6.10.3"
+    raw-body "2.5.1"
     type-is "~1.6.18"
+    unpipe "1.0.0"
 
 boolbase@^1.0.0:
   version "1.0.0"
@@ -2252,6 +2254,11 @@ deprecation@^2.0.0, deprecation@^2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/deprecation/-/deprecation-2.3.1.tgz#6368cbdb40abf3373b525ac87e4a260c3a700919"
   integrity sha512-xmHIy4F3scKVwMsQ4WnVaS8bHOx0DmVwRywosKhaILI0ywMDWPtBSku2HNxRvF7jtwDRsoEwYQSfbxj8b7RlJQ==
+
+destroy@1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/destroy/-/destroy-1.2.0.tgz#4803735509ad8be552934c67df614f94e66fa015"
+  integrity sha512-2sJGJTaXIIaR1w4iJSNoN0hnMY7Gpc/n8D4qSCJw8QqFWXf7cuAgnEHxBpweaVcPevC2l3KpjYCx3NypQQgaJg==
 
 destroy@~1.0.4:
   version "1.0.4"
@@ -3389,15 +3396,15 @@ http-errors@1.7.2:
     statuses ">= 1.5.0 < 2"
     toidentifier "1.0.0"
 
-http-errors@1.8.1:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/http-errors/-/http-errors-1.8.1.tgz#7c3f28577cbc8a207388455dbd62295ed07bd68c"
-  integrity sha512-Kpk9Sm7NmI+RHhnj6OIWDI1d6fIoFAtFt9RLaTMRlg/8w49juAStsrBgp0Dp4OdxdVbRIeKhtCUvoi/RuAhO4g==
+http-errors@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/http-errors/-/http-errors-2.0.0.tgz#b7774a1486ef73cf7667ac9ae0858c012c57b9d3"
+  integrity sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==
   dependencies:
-    depd "~1.1.2"
+    depd "2.0.0"
     inherits "2.0.4"
     setprototypeof "1.2.0"
-    statuses ">= 1.5.0 < 2"
+    statuses "2.0.1"
     toidentifier "1.0.1"
 
 http-errors@~1.7.2:
@@ -4762,6 +4769,13 @@ object-keys@^1.0.12:
   resolved "https://registry.yarnpkg.com/object-keys/-/object-keys-1.1.1.tgz#1c47f272df277f3b1daf061677d9c82e2322c60e"
   integrity sha512-NuAESUOUMrlIXOfHKzD6bpPu3tYt3xvjNdRIQ+FeT0lNb4K8WR70CaDxhuNguS2XG+GjkyMwOzsN5ZktImfhLA==
 
+on-finished@2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/on-finished/-/on-finished-2.4.1.tgz#58c8c44116e54845ad57f14ab10b03533184ac3f"
+  integrity sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==
+  dependencies:
+    ee-first "1.1.1"
+
 on-finished@~2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/on-finished/-/on-finished-2.3.0.tgz#20f1336481b083cd75337992a16971aa2d906947"
@@ -5380,22 +5394,17 @@ qlobber@^5.0.3:
   resolved "https://registry.yarnpkg.com/qlobber/-/qlobber-5.0.3.tgz#24728d6ba5382d502c7e09f6860b95a9c71615cd"
   integrity sha512-wW4GTZPePyh0RgOsM18oDyOUlXfurVRgoNyJfS+y7VWPyd0GYhQp5T2tycZFZjonH+hngxIfklGJhTP/ghidgQ==
 
-qs@6.7.0:
-  version "6.7.0"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.7.0.tgz#41dc1a015e3d581f1621776be31afb2876a9b1bc"
-  integrity sha512-VCdBRNFTX1fyE7Nb6FYoURo/SPe62QCaAyzJvUjwRaIsc+NePBEniHlvxFmmX56+HZphIGtV0XeCirBtpDrTyQ==
-
-qs@6.9.7:
-  version "6.9.7"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.7.tgz#4610846871485e1e048f44ae3b94033f0e675afe"
-  integrity sha512-IhMFgUmuNpyRfxA90umL7ByLlgRXu6tIfKPpF5TmcfRLlLCckfP/g3IQmju6jjpu+Hh8rA+2p6A27ZSPOOHdKw==
-
-qs@^6.10.1, qs@^6.10.3, qs@^6.7.0, qs@^6.9.4, qs@^6.9.6:
+qs@6.10.3, qs@^6.10.1, qs@^6.10.3, qs@^6.7.0, qs@^6.9.4, qs@^6.9.6:
   version "6.10.3"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.10.3.tgz#d6cde1b2ffca87b5aa57889816c5f81535e22e8e"
   integrity sha512-wr7M2E0OFRfIfJZjKGieI8lBKb7fRCH4Fv5KNPEs7gJ8jadvotdsS08PzOKR7opXhZ/Xkjtt3WF9g38drmyRqQ==
   dependencies:
     side-channel "^1.0.4"
+
+qs@6.7.0:
+  version "6.7.0"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.7.0.tgz#41dc1a015e3d581f1621776be31afb2876a9b1bc"
+  integrity sha512-VCdBRNFTX1fyE7Nb6FYoURo/SPe62QCaAyzJvUjwRaIsc+NePBEniHlvxFmmX56+HZphIGtV0XeCirBtpDrTyQ==
 
 qs@~6.5.2:
   version "6.5.3"
@@ -5457,13 +5466,13 @@ raw-body@2.4.0:
     iconv-lite "0.4.24"
     unpipe "1.0.0"
 
-raw-body@2.4.3:
-  version "2.4.3"
-  resolved "https://registry.yarnpkg.com/raw-body/-/raw-body-2.4.3.tgz#8f80305d11c2a0a545c2d9d89d7a0286fcead43c"
-  integrity sha512-UlTNLIcu0uzb4D2f4WltY6cVjLi+/jEN4lgEUj3E04tpMDpUlkBo/eSn6zou9hum2VMNpCCUone0O0WeJim07g==
+raw-body@2.5.1:
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/raw-body/-/raw-body-2.5.1.tgz#fe1b1628b181b700215e5fd42389f98b71392857"
+  integrity sha512-qqJBtEyVgS0ZmPGdCFPWJ3FreoqvG4MVQln/kCgF7Olq95IbOp0/BWyMwbdtn4VTvkM8Y7khCQ2Xgk/tcrCXig==
   dependencies:
     bytes "3.1.2"
-    http-errors "1.8.1"
+    http-errors "2.0.0"
     iconv-lite "0.4.24"
     unpipe "1.0.0"
 
@@ -5993,6 +6002,11 @@ static-module@^3.0.0, static-module@^3.0.3:
     static-eval "^2.0.5"
     through2 "~2.0.3"
 
+statuses@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/statuses/-/statuses-2.0.1.tgz#55cb000ccf1d48728bd23c685a063998cf1a1b63"
+  integrity sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==
+
 "statuses@>= 1.5.0 < 2", statuses@~1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
@@ -6163,37 +6177,37 @@ tar-stream@^2.0.0:
   version "0.0.0"
 
 "taskcluster-db@link:db":
-  version "44.9.2"
+  version "44.11.1"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "44.9.2"
+  version "44.11.1"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "44.9.2"
+  version "44.11.1"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "44.9.2"
+  version "44.11.1"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "44.9.2"
+  version "44.11.1"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "44.9.2"
+  version "44.11.1"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "44.9.2"
+  version "44.11.1"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "44.9.2"
+  version "44.11.1"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "44.9.2"
+  version "44.11.1"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "44.9.2"
+  version "44.11.1"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "44.9.2"
+  version "44.11.1"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6203,7 +6217,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "44.9.2"
+  version "44.11.1"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6211,7 +6225,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "44.9.2"
+  version "44.11.1"
 
 temporary@^1.0.0:
   version "1.1.0"
