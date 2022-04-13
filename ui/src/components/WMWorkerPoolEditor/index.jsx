@@ -6,7 +6,15 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Chip from '@material-ui/core/Chip';
-import Avatar from '@material-ui/core/Avatar';
+import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
+import RunIcon from 'mdi-react/RunIcon';
+import TimerSandIcon from 'mdi-react/TimerSandIcon';
+import CloseIcon from 'mdi-react/CloseIcon';
+import grey from '@material-ui/core/colors/grey';
+import green from '@material-ui/core/colors/green';
+import purple from '@material-ui/core/colors/purple';
+import { titleCase } from 'title-case';
+import classNames from 'classnames';
 import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import WorkerIcon from 'mdi-react/WorkerIcon';
@@ -14,6 +22,7 @@ import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormGroup from '@material-ui/core/FormGroup';
 import Paper from '@material-ui/core/Paper';
+import ButtonBase from '@material-ui/core/ButtonBase';
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
@@ -39,6 +48,7 @@ import formatError from '../../utils/formatError';
 import {
   NULL_WORKER_POOL,
   PROVIDER_DEFAULT_CONFIGS,
+  THEME,
 } from '../../utils/constants';
 import SpeedDialAction from '../SpeedDialAction';
 import SpeedDial from '../SpeedDial';
@@ -82,6 +92,7 @@ import SpeedDial from '../SpeedDial';
     marginRight: theme.spacing(1),
   },
   overviewList: {
+    alignItems: 'center',
     padding: theme.spacing(2),
     paddingBottom: theme.spacing(1),
     margin: `0 0 ${theme.spacing(1)}px 0`,
@@ -90,6 +101,54 @@ import SpeedDial from '../SpeedDial';
     listStyle: 'none',
     '& li': {
       marginBottom: theme.spacing(1),
+    },
+  },
+  statusButton: {
+    display: 'flex',
+    flexGrow: 1,
+    flexBasis: 0,
+    padding: `${theme.spacing(1)}px ${theme.spacing(1)}px`,
+    justifyContent: 'space-around',
+    cursor: 'pointer',
+    margin: theme.spacing(1),
+    '& > div': {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+    },
+    borderRadius: theme.spacing(0.25),
+  },
+  statusButtonTypography: {
+    color: THEME.PRIMARY_TEXT_DARK,
+  },
+  statusTitle: {
+    textAlign: 'right',
+  },
+  statusIcon: {
+    fill: THEME.PRIMARY_TEXT_DARK,
+  },
+  runningCapacity: {
+    backgroundColor: theme.palette.success.dark,
+    '&:hover': {
+      backgroundColor: green[900],
+    },
+  },
+  stoppingCapacity: {
+    backgroundColor: theme.palette.error.main,
+    '&:hover': {
+      backgroundColor: theme.palette.error.dark,
+    },
+  },
+  pendingTasks: {
+    backgroundColor: grey[600],
+    '&:hover': {
+      backgroundColor: grey[800],
+    },
+  },
+  requestedCapacity: {
+    backgroundColor: purple[400],
+    '&:hover': {
+      backgroundColor: purple[600],
     },
   },
 }))
@@ -325,7 +384,9 @@ export default class WMWorkerPoolEditor extends Component {
       providerId,
       workerPoolId,
       config,
-      currentCapacity,
+      requestedCapacity,
+      runningCapacity,
+      stoppingCapacity,
       pendingTasks,
     } = this.props.workerPool;
     const isWorkerPoolDirty =
@@ -338,57 +399,104 @@ export default class WMWorkerPoolEditor extends Component {
       joinWorkerPoolId(workerPool.workerPoolId1, workerPool.workerPoolId2) !==
         workerPoolId;
     const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);
+    const workerPoolStats = [
+      {
+        label: 'Pending Tasks',
+        value: pendingTasks,
+        className: 'pendingTasks',
+        Icon: ClockOutlineIcon,
+      },
+      {
+        label: 'Requested Capacity',
+        value: requestedCapacity,
+        className: 'requestedCapacity',
+        Icon: TimerSandIcon,
+      },
+      {
+        label: 'Running Capacity',
+        value: runningCapacity,
+        className: 'runningCapacity',
+        Icon: RunIcon,
+      },
+      {
+        label: 'Stopping Capacity',
+        value: stoppingCapacity,
+        className: 'stoppingCapacity',
+        Icon: CloseIcon,
+      },
+    ];
 
     return (
       <Fragment>
         <ErrorPanel fixed error={error} />
         {!isNewWorkerPool && (
-          <Paper component="ul" className={classes.overviewList}>
-            <li>
-              <Chip
-                variant="outlined"
-                size="small"
-                className={classes.metadata}
-                avatar={<Avatar>{currentCapacity || 0}</Avatar>}
-                label="Current Capacity"
-              />
-            </li>
-            <li>
-              <Chip
-                variant="outlined"
-                size="small"
-                className={classes.metadata}
-                avatar={<Avatar>{pendingTasks || 0}</Avatar>}
-                label="Pending Tasks"
-              />
-            </li>
-            <li>
-              <Chip
-                size="small"
-                className={classes.metadata}
-                icon={<WorkerIcon />}
-                label="Workers (Queue View)"
-                component={Link}
-                clickable
-                to={`/provisioners/${encodeURIComponent(
-                  provisionerId
-                )}/worker-types/${encodeURIComponent(workerType)}`}
-              />
-            </li>
-            <li>
-              <Chip
-                size="small"
-                className={classes.metadata}
-                icon={<MessageAlertIcon />}
-                label="Worker Pool Errors"
-                component={Link}
-                clickable
-                to={`/worker-manager/${encodeURIComponent(
-                  workerPoolId
-                )}/errors`}
-              />
-            </li>
-          </Paper>
+          <Fragment>
+            <Paper component="ul" className={classes.overviewList}>
+              {workerPoolStats.map(({ label, value, className, Icon }) => {
+                return (
+                  <ButtonBase
+                    focusRipple
+                    key={className}
+                    name={className}
+                    variant="contained"
+                    className={classNames(
+                      classes[className],
+                      classes.statusButton
+                    )}>
+                    <div>
+                      <Icon
+                        color="white"
+                        className={classes.statusIcon}
+                        size={32}
+                      />
+                    </div>
+                    <div>
+                      <Typography
+                        align="right"
+                        className={classes.statusButtonTypography}
+                        variant="h4">
+                        {value || 0}
+                      </Typography>
+                      <Typography
+                        className={classNames(
+                          classes.statusTitle,
+                          classes.statusButtonTypography
+                        )}
+                        variant="caption">
+                        {titleCase(label)}
+                      </Typography>
+                    </div>
+                  </ButtonBase>
+                );
+              })}
+              <li>
+                <Chip
+                  size="medium"
+                  className={classes.metadata}
+                  icon={<WorkerIcon />}
+                  label="Workers (Queue View)"
+                  component={Link}
+                  clickable
+                  to={`/provisioners/${encodeURIComponent(
+                    provisionerId
+                  )}/worker-types/${encodeURIComponent(workerType)}`}
+                />
+              </li>
+              <li>
+                <Chip
+                  size="medium"
+                  className={classes.metadata}
+                  icon={<MessageAlertIcon />}
+                  label="Worker Pool Errors"
+                  component={Link}
+                  clickable
+                  to={`/worker-manager/${encodeURIComponent(
+                    workerPoolId
+                  )}/errors`}
+                />
+              </li>
+            </Paper>
+          </Fragment>
         )}
         <List>
           <div>
