@@ -318,7 +318,7 @@ export default class TaskDetailsCard extends Component {
                   <ListItem>
                     <ListItemText
                       primary="Dependents"
-                      secondary="This task blocks the following tasks from being scheduled."
+                      secondary="The following tasks depend on this task resolving successfully."
                     />
                   </ListItem>
                   <ConnectionDataTable
