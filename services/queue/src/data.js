@@ -447,6 +447,7 @@ class Worker {
       expires: row.expires,
       firstClaim: row.first_claim,
       recentTasks: row.recent_tasks,
+      lastDateActive: row.last_date_active,
     });
   }
 
@@ -463,6 +464,7 @@ class Worker {
     assert(input.quarantineUntil);
     assert(input.expires);
     assert(input.firstClaim);
+    assert(input.lastDateActive);
     return new Worker({
       workerId,
       ...input,
@@ -471,37 +473,37 @@ class Worker {
       expires: new Date(input.expires),
       firstClaim: new Date(input.firstClaim),
       recentTasks: input.recentTasks || [],
+      lastDateActive: new Date(input.lastDateActive),
     });
   }
 
   // Get a worker from the DB, or undefined
   static async get(db, taskQueueId, workerGroup, workerId, expires) {
-    return Worker.fromDbRows(await db.fns.get_queue_worker_tqid(taskQueueId, workerGroup, workerId, expires));
+    return Worker.fromDbRows(
+      await db.fns.get_queue_worker_tqid_with_last_date_active(
+        taskQueueId,
+        workerGroup,
+        workerId,
+        expires,
+      ),
+    );
   }
 
-  // Call db.get_queue_workers_tqid.
+  // Call db.get_queue_workers_tqid_with_last_date_active.
   // The response will be of the form { rows, continationToken }.
   // If there are no workers to show, the response will have the
   // `rows` field set to an empty array.
-  static async getWorkers(
-    db,
-    {
-      taskQueueId,
-      expires,
-    },
-    {
-      query,
-    } = {},
-  ) {
+  static async getWorkers(db, { taskQueueId, expires }, { query } = {}) {
     const fetchResults = async (query) => {
       const { continuationToken, rows } = await paginateResults({
         query,
-        fetch: (size, offset) => db.fns.get_queue_workers_tqid(
-          taskQueueId || null,
-          expires || null,
-          size,
-          offset,
-        ),
+        fetch: (size, offset) =>
+          db.fns.get_queue_workers_tqid_with_last_date_active(
+            taskQueueId || null,
+            expires || null,
+            size,
+            offset,
+          ),
       });
 
       const entries = rows.map(Worker.fromDb);
@@ -523,6 +525,7 @@ class Worker {
       expires: this.expires.toJSON(),
       firstClaim: this.firstClaim.toJSON(),
       recentTasks: _.cloneDeep(this.recentTasks),
+      lastDateActive: this.lastDateActive.toJSON(),
     };
   }
 

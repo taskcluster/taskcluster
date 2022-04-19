@@ -220,6 +220,7 @@
     "queue_workers": {
       "expires": "timestamp with time zone not null",
       "first_claim": "timestamp with time zone not null",
+      "last_date_active": "timestamp with time zone not null",
       "quarantine_until": "timestamp with time zone not null",
       "recent_tasks": "jsonb not null",
       "task_queue_id": "text not null",
@@ -6201,6 +6202,68 @@
       },
       "migrationScript": "begin\n  grant select on queue_workers to $db_user_prefix$_worker_manager;\nend\n",
       "version": 71
+    },
+    {
+      "description": "add last_date_active to queue_workers",
+      "downgradeScript": "begin\n  alter table queue_workers drop column last_date_active;\nend\n",
+      "methods": {
+        "get_queue_worker_tqid": {
+          "deprecated": true
+        },
+        "get_queue_worker_tqid_with_last_date_active": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active,\n    public.gen_random_uuid()\n  from queue_workers\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in and\n    (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);\n  end",
+          "deprecated": false,
+          "description": "Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.",
+          "mode": "read",
+          "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_workers_tqid": {
+          "deprecated": true
+        },
+        "get_queue_workers_tqid_with_last_date_active": {
+          "args": "task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active,\n    public.gen_random_uuid()\n  from queue_workers\n  where\n    (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_tqid_with_last_date_active.task_queue_id_in is null) and\n    ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers_tqid_with_last_date_active.expires_in is null)\n  order by task_queue_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get non-expired queue workers ordered by task_queue_id, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, etag uuid)",
+          "serviceName": "queue"
+        },
+        "quarantine_queue_worker": {
+          "deprecated": true
+        },
+        "quarantine_queue_worker_with_last_date_active": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz",
+          "body": "begin\n  return query update queue_workers\n  set\n    quarantine_until = quarantine_until_in,\n    expires = greatest(queue_workers.expires, now() + interval '1 day')\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in\n  returning\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active;\nend",
+          "deprecated": false,
+          "description": "Update the quarantine_until date for a worker.  The Queue service interprets a date in the past\nas \"not quarantined\".  This function also \"bumps\" the expiration of the worker so that un-quarantined\nworkers do not immediately expire.  Returns the worker row just as get_queue_worker would, or no rows if\nno such worker exists.",
+          "mode": "write",
+          "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz)",
+          "serviceName": "queue"
+        },
+        "queue_worker_seen": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
+          "body": "begin\n  insert\n    into queue_workers (task_queue_id, worker_group, worker_id, quarantine_until, expires, first_claim, recent_tasks, last_date_active)\n    values (\n      task_queue_id_in,\n      worker_group_in,\n      worker_id_in,\n      now() - interval '10 years',\n      expires_in,\n      now(),\n      jsonb_build_array(),\n      now()\n    )\n    on conflict (task_queue_id, worker_group, worker_id) do update\n    set\n      expires = greatest(coalesce(expires_in, queue_workers.expires), queue_workers.expires),\n      last_date_active = now()\n    where\n      queue_workers.task_queue_id = task_queue_id_in and\n      queue_workers.worker_group = worker_group_in and\n      queue_workers.worker_id = worker_id_in;\nend",
+          "deprecated": true,
+          "description": "Recognize that a worker has been seen by the queue, creating it if necessary.  This is called\nwhen workers claim or re-claim work.  The expiration time is not allowed to move backward.\n\nThis function always writes to the DB, so calls should be suitably rate-limited at the\nclient side.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "queue_worker_seen_with_last_date_active": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
+          "body": "begin\n  insert\n    into queue_workers (task_queue_id, worker_group, worker_id, quarantine_until, expires, first_claim, recent_tasks, last_date_active)\n    values (\n      task_queue_id_in,\n      worker_group_in,\n      worker_id_in,\n      now() - interval '10 years',\n      expires_in,\n      now(),\n      jsonb_build_array(),\n      now()\n    )\n    on conflict (task_queue_id, worker_group, worker_id) do update\n    set\n      expires = greatest(coalesce(expires_in, queue_workers.expires), queue_workers.expires),\n      last_date_active = now()\n    where\n      queue_workers.task_queue_id = task_queue_id_in and\n      queue_workers.worker_group = worker_group_in and\n      queue_workers.worker_id = worker_id_in;\nend",
+          "deprecated": false,
+          "description": "Recognize that a worker has been seen by the queue, creating it if necessary.  This is called\nwhen workers claim or re-claim work.  The expiration time is not allowed to move backward.\nWill also always bump its last date active time.\n\nThis function always writes to the DB, so calls should be suitably rate-limited at the\nclient side.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  alter table queue_workers add column last_date_active timestamp with time zone not null;\nend\n",
+      "version": 72
     }
   ]
 }

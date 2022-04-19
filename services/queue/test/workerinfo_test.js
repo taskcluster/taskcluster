@@ -36,10 +36,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // emulate "creation" by seeing the worker, quarantining if necessary, and seeing tasks
     const db = await helper.load('db');
-    await db.fns.queue_worker_seen({ task_queue_id_in, worker_group_in, worker_id_in, expires_in });
+    await db.fns.queue_worker_seen_with_last_date_active({
+      task_queue_id_in,
+      worker_group_in,
+      worker_id_in,
+      expires_in,
+    });
 
     if (opts.quarantineUntil) {
-      // quarantine_queue_worker would bump the expires column, so we set it manually
+      // quarantine_queue_worker_with_last_date_active would bump the expires column, so we set it manually
       await helper.withDbClient(async client => {
         await client.query(`
           update queue_workers

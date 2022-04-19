@@ -318,7 +318,8 @@ CREATE TABLE queue_workers (
     quarantine_until timestamp with time zone NOT NULL,
     expires timestamp with time zone NOT NULL,
     first_claim timestamp with time zone NOT NULL,
-    task_queue_id text NOT NULL
+    task_queue_id text NOT NULL,
+    last_date_active timestamp with time zone NOT NULL
 );
 ALTER TABLE queue_workers
     ADD CONSTRAINT queue_workers_pkey PRIMARY KEY (task_queue_id, worker_group, worker_id);

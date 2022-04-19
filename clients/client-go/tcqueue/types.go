@@ -664,8 +664,8 @@ type (
 		// deleted by the queue.
 		Expires tcclient.Time `json:"expires"`
 
-		// Date of the last time this provisioner was seen active. `lastDateActive` is updated every 6 hours
-		// but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+		// Date of the last time this provisioner was seen active. `lastDateActive` is updated every half hour
+		// but may be off by up-to half an hour. Nonetheless, `lastDateActive` is a good indicator
 		// of when the provisioner was last seen active.
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
@@ -1552,8 +1552,8 @@ type (
 		// deleted by the queue.
 		Expires tcclient.Time `json:"expires"`
 
-		// Date of the last time this task queue was seen active. `lastDateActive` is updated every 6 hours
-		// but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+		// Date of the last time this task queue was seen active. `lastDateActive` is updated every half hour
+		// but may be off by up-to half an hour. Nonetheless, `lastDateActive` is a good indicator
 		// of when the task queue was last seen active.
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
@@ -1864,6 +1864,11 @@ type (
 		// Date of the first time this worker claimed a task.
 		FirstClaim tcclient.Time `json:"firstClaim"`
 
+		// Date of the last time this worker was seen active. `lastDateActive` is updated every half hour
+		// but may be off by up-to half an hour. Nonetheless, `lastDateActive` is a good indicator
+		// of when the worker was last seen active.
+		LastDateActive tcclient.Time `json:"lastDateActive"`
+
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
 		// will be replaced, together with `workerType`, by the new
@@ -2057,8 +2062,8 @@ type (
 		// deleted by the queue.
 		Expires tcclient.Time `json:"expires"`
 
-		// Date of the last time this worker-type was seen active. `lastDateActive` is updated every 6 hours
-		// but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+		// Date of the last time this worker-type was seen active. `lastDateActive` is updated every half hour
+		// but may be off by up-to half an hour. Nonetheless, `lastDateActive` is a good indicator
 		// of when the worker-type was last seen active.
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 

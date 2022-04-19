@@ -200,6 +200,7 @@ queue_workers:
   quarantine_until: timestamp with time zone not null
   expires: timestamp with time zone not null
   first_claim: timestamp with time zone not null
+  last_date_active: timestamp with time zone not null
 task_queues:
   task_queue_id: text not null
   expires: timestamp with time zone not null

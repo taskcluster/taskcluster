@@ -92,8 +92,8 @@
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
-   * [`get_queue_worker_tqid`](#get_queue_worker_tqid)
-   * [`get_queue_workers_tqid`](#get_queue_workers_tqid)
+   * [`get_queue_worker_tqid_with_last_date_active`](#get_queue_worker_tqid_with_last_date_active)
+   * [`get_queue_workers_tqid_with_last_date_active`](#get_queue_workers_tqid_with_last_date_active)
    * [`get_task_group`](#get_task_group)
    * [`get_task_projid`](#get_task_projid)
    * [`get_task_queue`](#get_task_queue)
@@ -102,9 +102,9 @@
    * [`is_task_blocked`](#is_task_blocked)
    * [`is_task_group_active`](#is_task_group_active)
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
-   * [`quarantine_queue_worker`](#quarantine_queue_worker)
+   * [`quarantine_queue_worker_with_last_date_active`](#quarantine_queue_worker_with_last_date_active)
    * [`queue_artifact_present`](#queue_artifact_present)
-   * [`queue_worker_seen`](#queue_worker_seen)
+   * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
    * [`reclaim_task`](#reclaim_task)
    * [`remove_task`](#remove_task)
@@ -1222,8 +1222,8 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
-* [`get_queue_worker_tqid`](#get_queue_worker_tqid)
-* [`get_queue_workers_tqid`](#get_queue_workers_tqid)
+* [`get_queue_worker_tqid_with_last_date_active`](#get_queue_worker_tqid_with_last_date_active)
+* [`get_queue_workers_tqid_with_last_date_active`](#get_queue_workers_tqid_with_last_date_active)
 * [`get_task_group`](#get_task_group)
 * [`get_task_projid`](#get_task_projid)
 * [`get_task_queue`](#get_task_queue)
@@ -1232,9 +1232,9 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`is_task_blocked`](#is_task_blocked)
 * [`is_task_group_active`](#is_task_group_active)
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
-* [`quarantine_queue_worker`](#quarantine_queue_worker)
+* [`quarantine_queue_worker_with_last_date_active`](#quarantine_queue_worker_with_last_date_active)
 * [`queue_artifact_present`](#queue_artifact_present)
-* [`queue_worker_seen`](#queue_worker_seen)
+* [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
 * [`reclaim_task`](#reclaim_task)
 * [`remove_task`](#remove_task)
@@ -1639,7 +1639,7 @@ where the page of results should begin, and must all be specified if any
 are specified.  Typically these values would be drawn from the last item
 in the previous page.
 
-### get_queue_worker_tqid
+### get_queue_worker_tqid_with_last_date_active
 
 * *Mode*: read
 * *Arguments*:
@@ -1655,13 +1655,14 @@ in the previous page.
   * `expires timestamptz`
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
+  * `last_date_active timestamptz`
   * `etag uuid`
-* *Last defined on version*: 53
+* *Last defined on version*: 72
 
 Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
 
-### get_queue_workers_tqid
+### get_queue_workers_tqid_with_last_date_active
 
 * *Mode*: read
 * *Arguments*:
@@ -1677,8 +1678,9 @@ Workers are not considered expired until after their quarantine date expires.
   * `expires timestamptz`
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
+  * `last_date_active timestamptz`
   * `etag uuid`
-* *Last defined on version*: 53
+* *Last defined on version*: 72
 
 Get non-expired queue workers ordered by task_queue_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
@@ -1831,7 +1833,7 @@ temp, removed in next commit
 
 temp, removed in next commit
 
-### quarantine_queue_worker
+### quarantine_queue_worker_with_last_date_active
 
 * *Mode*: write
 * *Arguments*:
@@ -1847,7 +1849,8 @@ temp, removed in next commit
   * `expires timestamptz`
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
-* *Last defined on version*: 64
+  * `last_date_active timestamptz`
+* *Last defined on version*: 72
 
 Update the quarantine_until date for a worker.  The Queue service interprets a date in the past
 as "not quarantined".  This function also "bumps" the expiration of the worker so that un-quarantined
@@ -1875,7 +1878,7 @@ no such worker exists.
 Mark the given queue artifact as present, returning the updated artifact.  Returns
 nothing if no such artifact exists.
 
-### queue_worker_seen
+### queue_worker_seen_with_last_date_active
 
 * *Mode*: write
 * *Arguments*:
@@ -1884,10 +1887,11 @@ nothing if no such artifact exists.
   * `worker_id_in text`
   * `expires_in timestamptz`
 * *Returns*: `void`
-* *Last defined on version*: 64
+* *Last defined on version*: 72
 
 Recognize that a worker has been seen by the queue, creating it if necessary.  This is called
 when workers claim or re-claim work.  The expiration time is not allowed to move backward.
+Will also always bump its last date active time.
 
 This function always writes to the DB, so calls should be suitably rate-limited at the
 client side.
@@ -2070,6 +2074,13 @@ client side.
 
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
+
+### deprecated methods
+
+* `get_queue_worker_tqid(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v46.0.0)
+* `get_queue_workers_tqid(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
+* `quarantine_queue_worker(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz)` (compatibility guaranteed until v46.0.0)
+* `queue_worker_seen(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v46.0.0)
 
 ## secrets
 

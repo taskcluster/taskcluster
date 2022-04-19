@@ -1243,6 +1243,8 @@ builder.declare({
   task.updateStatusWith(
     await this.db.fns.reclaim_task(taskId, runId, takenUntil));
 
+  await this.workerInfo.seen(task.taskQueueId, run.workerGroup, run.workerId);
+
   // Find the run that we (may) have modified
   run = task.runs[runId];
 
@@ -2077,7 +2079,7 @@ builder.declare({
   const { quarantineUntil } = req.body;
   const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
-  const [result] = await this.db.fns.quarantine_queue_worker({
+  const [result] = await this.db.fns.quarantine_queue_worker_with_last_date_active({
     task_queue_id_in: taskQueueId,
     worker_group_in: workerGroup,
     worker_id_in: workerId,
@@ -2146,7 +2148,7 @@ builder.declare({
     description_in: null,
     stability_in: null,
   });
-  await this.db.fns.queue_worker_seen({
+  await this.db.fns.queue_worker_seen_with_last_date_active({
     task_queue_id_in: taskQueueId,
     worker_group_in: workerGroup,
     worker_id_in: workerId,

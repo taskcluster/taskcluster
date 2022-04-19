@@ -30,8 +30,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await helper.withAdminDbClient(async client => {
             await client.query(`insert
               into queue_workers
-              (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim) values
-              ($1, $2, $3, jsonb_build_array(), $4, now() + interval '1 hour', now() - interval '1 hour')`,
+              (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim, last_date_active) values
+              ($1, $2, $3, jsonb_build_array(), $4, now() + interval '1 hour', now() - interval '1 hour', now())`,
             [w.workerPoolId, w.workerGroup, w.workerId, w.quarantineUntil]);
           });
         }
