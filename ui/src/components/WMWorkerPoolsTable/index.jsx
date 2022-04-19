@@ -305,6 +305,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
             String(workerPool.providerId).includes(filterValue) ||
             String(workerPool.owner).includes(filterValue)
           }
+          {...this.props}
         />
         <DialogAction
           open={open}

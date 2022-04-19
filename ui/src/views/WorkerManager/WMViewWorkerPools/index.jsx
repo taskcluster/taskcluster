@@ -149,6 +149,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
                 onPageChange={this.handlePageChange}
                 workerPoolsConnection={WorkerManagerWorkerPoolSummaries}
                 deleteRequest={this.deleteRequest}
+                {...this.props}
               />
             </Fragment>
           )}

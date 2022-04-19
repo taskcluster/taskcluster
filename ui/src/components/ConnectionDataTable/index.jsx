@@ -152,6 +152,12 @@ export default class ConnectionDataTable extends Component {
 
   pages = new Map();
 
+  componentDidMount() {
+    this.setState({
+      filterValue: this.props.history.location.state || this.state.filterValue,
+    });
+  }
+
   componentDidUpdate(prevProps) {
     if (
       !this.props.connection.pageInfo.previousCursor &&
@@ -209,6 +215,9 @@ export default class ConnectionDataTable extends Component {
   };
 
   handleFilterValueChange = e => {
+    const { history } = this.props;
+
+    history.replace(this.state, e.target.value);
     this.setState({ filterValue: e.target.value });
   };
 
