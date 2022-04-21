@@ -1181,7 +1181,7 @@ suite(testing.suiteName(), function() {
       assert(res[0].quarantine_until < new Date()); // defaults to in the past
       assert.deepEqual(res[0].expires, expires);
       helper.assertDateApproximately(res[0].first_claim, new Date());
-      helper.assertDateApproximately(res[0].last_date_active, new Date());
+      assert.equal(res[0].last_date_active, null);
       assert.deepEqual(res[0].recent_tasks, []);
     });
 
