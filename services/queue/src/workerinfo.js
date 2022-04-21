@@ -6,11 +6,12 @@ class WorkerInfo {
   constructor(options) {
     assert(options);
     assert(options.db);
+    assert(options.workerInfoUpdateFrequency);
     this.db = options.db;
 
-    // update `expires` values in postgres at this frequency; larger values give less accurate
-    // expires times, but reduce database traffic.
-    this.updateFrequency = '30 min';
+    // update `expires`, `last_date_active` values in postgres at this frequency;
+    // larger values give less accurate expires times, but reduce database traffic.
+    this.updateFrequency = options.workerInfoUpdateFrequency;
     this.nextUpdateAt = {};
   }
 

@@ -26,6 +26,9 @@ const { artifactUtils } = require('./utils');
 // default claim timeout to 20 minutes (in seconds)
 const DEFAULT_CLAIM_TIMEOUT = 1200;
 
+// default `expires`, `last_date_active` update frequency
+const DEFAULT_UPDATE_FREQUENCY = '30 minutes';
+
 require('./monitor');
 
 // Create component loader
@@ -150,8 +153,11 @@ let load = loader({
 
   // Create workerInfo
   workerInfo: {
-    requires: ['db'],
-    setup: ({ db }) => new WorkerInfo({ db }),
+    requires: ['cfg', 'db'],
+    setup: ({ cfg, db }) => new WorkerInfo({
+      db,
+      workerInfoUpdateFrequency: cfg.app.workerInfoUpdateFrequency || DEFAULT_UPDATE_FREQUENCY,
+    }),
   },
 
   // Create dependencyTracker
