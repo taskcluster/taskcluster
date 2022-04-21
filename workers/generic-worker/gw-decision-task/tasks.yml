@@ -10,6 +10,8 @@ Types:
       - 'git2.24.0.2'
       - 'jq1.6'
       - 'ci-creds'
+      # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
+      #   DO NOT CHANGE HERE!
       - 'golangci-lint-1.45.2'
     Command: BuildAndTest
     Features:
@@ -231,7 +233,11 @@ Commands:
             GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v44/workers/generic-worker.revision=${GITHUB_SHA}" -v ${RACE} ${VET}
           fi
           GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v44/workers/generic-worker.revision=${GITHUB_SHA}" -v ${RACE} ${VET} ./...
+
+          # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
+          #   DO NOT CHANGE HERE!
           ../../../golangci-lint/golangci-lint-1.45.2-*/golangci-lint run --build-tags "${ENGINE}" --timeout=15m
+
     Windows:
       - |
         :: go test: -race and -msan are only supported on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64
@@ -299,6 +305,14 @@ Commands:
       - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v44/workers/generic-worker.revision=%GITHUB_SHA%" -v %RACE% %VET% ./...'
       - set GW_TESTS_RUN_AS_CURRENT_USER=true
       - 'go test -tags "%ENGINE%" -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v44/workers/generic-worker.revision=%GITHUB_SHA%" -v %RACE% %VET%'
+
+      ################################################################################
+      # This entire section is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js to update the golangci-lint version number.
+      #
+      #      DO NOT MODIFY HERE!!!
+      #
+      ################################################################################
+
       - |
         :: assumption here is that if something inside the if fails, we'll get a non zero exit code
         :: i've also made it an if/else so that one of them has to run, as there should always be a
@@ -375,6 +389,14 @@ Mounts:
       windows:
         all:
           url: 'http://localhost/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds'
+
+  ################################################################################
+  # This entire section is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js to update the golangci-lint version number.
+  #
+  #      DO NOT MODIFY HERE!!!
+  #
+  ################################################################################
+
   golangci-lint-1.45.2:
     # Note - we can't extract to directory '.' since after generic-worker
     # extracts the files as the root user (since generic-worker runs as root),

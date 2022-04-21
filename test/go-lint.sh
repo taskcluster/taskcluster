@@ -9,4 +9,4 @@ if [ -n "${unformatted_files}" ]; then
 fi
 
 echo "Running golangci-lint.."
-golangci-lint run --build-tags simple
+golangci-lint run --build-tags multiuser
