@@ -60,20 +60,20 @@ module.exports = {
         },
         proxy: {
           '/login': {
-            target: 'https://community-tc.services.mozilla.com/',
+            target: 'http://localhost:3050',
             changeOrigin: true,
           },
           '/graphql': {
-            target: 'https://community-tc.services.mozilla.com/',
+            target: 'http://localhost:3050',
             changeOrigin: true,
           },
           '/subscription': {
             ws: true,
             changeOrigin: true,
-            target: 'https://community-tc.services.mozilla.com/',
+            target: 'ws://localhost:3050',
           },
           '/api/web-server': {
-            target: 'https://community-tc.services.mozilla.com/',
+            target: 'http://localhost:3050',
             changeOrigin: true,
           },
         },
