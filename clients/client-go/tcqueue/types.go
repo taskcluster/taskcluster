@@ -1552,9 +1552,10 @@ type (
 		// deleted by the queue.
 		Expires tcclient.Time `json:"expires"`
 
-		// Date of the last time this task queue was seen active. `lastDateActive` is updated every half hour
-		// but may be off by up-to half an hour. Nonetheless, `lastDateActive` is a good indicator
-		// of when the task queue was last seen active.
+		// Date of the last time this task queue was seen active. Updated each time a worker calls
+		// `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
+		// `lastDateActive` is updated every half hour but may be off by up-to half an hour.
+		// Nonetheless, `lastDateActive` is a good indicator of when the task queue was last seen active.
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// This is the stability of the task queue. Accepted values:
@@ -1864,9 +1865,12 @@ type (
 		// Date of the first time this worker claimed a task.
 		FirstClaim tcclient.Time `json:"firstClaim"`
 
-		// Date of the last time this worker was seen active. `lastDateActive` is updated every half hour
-		// but may be off by up-to half an hour. Nonetheless, `lastDateActive` is a good indicator
-		// of when the worker was last seen active.
+		// Date of the last time this worker was seen active. Updated each time a worker calls
+		// `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
+		// `lastDateActive` is updated every half hour but may be off by up-to half an hour.
+		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
+		// This defaults to null in the database, and is set to the current time when the worker
+		// is first seen.
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Unique identifier for a provisioner, that can supply specified
