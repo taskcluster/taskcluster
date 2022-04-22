@@ -3,6 +3,30 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.12.0
+
+### GENERAL
+
+▶ [minor]
+Go update from 1.17.8 to 1.18.1. Also upgrade golangci-lint from 1.44.2 to 1.45.2.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#3163](https://github.com/taskcluster/taskcluster/issues/3163)
+Add extra debug information for worker manager provisioner and scanner.
+
+### USERS
+
+▶ [minor] [#4366](https://github.com/taskcluster/taskcluster/issues/4366)
+Display the last date active in the queue workers view.
+
+### DEVELOPERS
+
+▶ [minor] [#4366](https://github.com/taskcluster/taskcluster/issues/4366)
+Add `last_date_active` column to `queue_workers` table. Add `queue_worker_seen_with_last_date_active`, `quarantine_queue_worker_with_last_date_active`, `get_queue_worker_tqid_with_last_date_active`, and `get_queue_workers_tqid_with_last_date_active` functions for this new column.
+
+Deprecates `quarantine_queue_worker`, `get_queue_worker_tqid`, `get_queue_workers_tqid`, and `queue_worker_seen`.
+
 ## v44.11.2
 
 
