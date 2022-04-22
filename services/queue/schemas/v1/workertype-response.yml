@@ -31,8 +31,8 @@ properties:
   lastDateActive:
     title:        "Worker-type Last Date Active"
     description: |
-      Date of the last time this worker-type was seen active. `lastDateActive` is updated every 6 hours
-      but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+      Date of the last time this worker-type was seen active. `lastDateActive` is updated every half hour
+      but may be off by up-to half an hour. Nonetheless, `lastDateActive` is a good indicator
       of when the worker-type was last seen active.
     type:         string
     format:       date-time

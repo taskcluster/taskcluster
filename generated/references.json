@@ -1539,7 +1539,7 @@
           "type": "string"
         },
         "lastDateActive": {
-          "description": "Date of the last time this worker-type was seen active. `lastDateActive` is updated every 6 hours\nbut may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator\nof when the worker-type was last seen active.\n",
+          "description": "Date of the last time this worker-type was seen active. `lastDateActive` is updated every half hour\nbut may be off by up-to half an hour. Nonetheless, `lastDateActive` is a good indicator\nof when the worker-type was last seen active.\n",
           "format": "date-time",
           "title": "Worker-type Last Date Active",
           "type": "string"
@@ -1657,6 +1657,12 @@
           "title": "First task claimed",
           "type": "string"
         },
+        "lastDateActive": {
+          "description": "Date of the last time this worker was seen active. Updated each time a worker calls\n`queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.\n`lastDateActive` is updated every half hour but may be off by up-to half an hour.\nNonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.\nThis defaults to null in the database, and is set to the current time when the worker\nis first seen.\n",
+          "format": "date-time",
+          "title": "Worker Last Date Active",
+          "type": "string"
+        },
         "provisionerId": {
           "$ref": "task.json#/properties/provisionerId"
         },
@@ -1706,7 +1712,8 @@
         "recentTasks",
         "expires",
         "firstClaim",
-        "actions"
+        "actions",
+        "lastDateActive"
       ],
       "title": "Worker Response",
       "type": "object"
@@ -1828,7 +1835,7 @@
           "type": "string"
         },
         "lastDateActive": {
-          "description": "Date of the last time this task queue was seen active. `lastDateActive` is updated every 6 hours\nbut may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator\nof when the task queue was last seen active.\n",
+          "description": "Date of the last time this task queue was seen active. Updated each time a worker calls\n`queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.\n`lastDateActive` is updated every half hour but may be off by up-to half an hour.\nNonetheless, `lastDateActive` is a good indicator of when the task queue was last seen active.\n",
           "format": "date-time",
           "title": "Task queue Last Date Active",
           "type": "string"
@@ -2953,7 +2960,7 @@
           "type": "string"
         },
         "lastDateActive": {
-          "description": "Date of the last time this provisioner was seen active. `lastDateActive` is updated every 6 hours\nbut may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator\nof when the provisioner was last seen active.\n",
+          "description": "Date of the last time this provisioner was seen active. `lastDateActive` is updated every half hour\nbut may be off by up-to half an hour. Nonetheless, `lastDateActive` is a good indicator\nof when the provisioner was last seen active.\n",
           "format": "date-time",
           "title": "Provisioner Last Date Active",
           "type": "string"
@@ -9585,6 +9592,9 @@
             "taskcluster_client_id": {
               "type": "string"
             },
+            "worker_info_update_frequency": {
+              "type": "string"
+            },
             "write_db_url": {
               "type": "string"
             }
@@ -9593,6 +9603,7 @@
             "procs",
             "public_artifact_bucket",
             "private_artifact_bucket",
+            "worker_info_update_frequency",
             "taskcluster_client_id",
             "taskcluster_access_token",
             "read_db_url",
