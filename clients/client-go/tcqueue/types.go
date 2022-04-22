@@ -1754,6 +1754,14 @@ type (
 		// Date of the first time this worker claimed a task.
 		FirstClaim tcclient.Time `json:"firstClaim"`
 
+		// Date of the last time this worker was seen active. Updated each time a worker calls
+		// `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
+		// `lastDateActive` is updated every half hour but may be off by up-to half an hour.
+		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
+		// This defaults to null in the database, and is set to the current time when the worker
+		// is first seen.
+		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+
 		// A run of a task.
 		LatestTask TaskRun `json:"latestTask,omitempty"`
 
@@ -1871,7 +1879,7 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it

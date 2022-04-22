@@ -1712,8 +1712,7 @@
         "recentTasks",
         "expires",
         "firstClaim",
-        "actions",
-        "lastDateActive"
+        "actions"
       ],
       "title": "Worker Response",
       "type": "object"
@@ -3544,6 +3543,12 @@
                 "description": "Date of the first time this worker claimed a task.\n",
                 "format": "date-time",
                 "title": "First task claimed",
+                "type": "string"
+              },
+              "lastDateActive": {
+                "description": "Date of the last time this worker was seen active. Updated each time a worker calls\n`queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.\n`lastDateActive` is updated every half hour but may be off by up-to half an hour.\nNonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.\nThis defaults to null in the database, and is set to the current time when the worker\nis first seen.\n",
+                "format": "date-time",
+                "title": "Worker Last Date Active",
                 "type": "string"
               },
               "latestTask": {
