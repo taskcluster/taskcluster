@@ -98,12 +98,13 @@ MonitorManager.register({
   name: 'scanSeen',
   title: 'Scan Seen',
   type: 'scan-seen',
-  version: 2,
+  version: 3,
   level: 'notice',
   description: 'The results of a worker-scanner run',
   fields: {
     providerId: 'The provider that has completed this scan',
     seen: 'A map of workerPoolId that were seen to how much capacity was seen',
+    total: 'Total number of workers seen',
   },
 });
 

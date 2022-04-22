@@ -426,7 +426,11 @@ class GoogleProvider extends Provider {
    * Called after an iteration of the worker scanner
    */
   async scanCleanup() {
-    this.monitor.log.scanSeen({ providerId: this.providerId, seen: this.seen });
+    this.monitor.log.scanSeen({
+      providerId: this.providerId,
+      seen: this.seen,
+      total: Provider.calcSeenTotal(this.seen),
+    });
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await WorkerPool.get(this.db, workerPoolId);
       if (!workerPool) {
