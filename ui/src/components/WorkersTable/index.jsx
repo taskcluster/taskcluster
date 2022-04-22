@@ -106,6 +106,7 @@ export default class WorkersTable extends Component {
     const mapping = {
       'Worker Group': node.workerGroup,
       'Worker ID': node.workerId,
+      'Last Active': node.lastDateActive,
       'First Claim': node.firstClaim,
       'Most Recent Task': node.latestTask?.run?.taskId,
       'Task State': node.latestTask?.run?.state,
@@ -152,6 +153,7 @@ export default class WorkersTable extends Component {
             latestTask,
             firstClaim,
             quarantineUntil,
+            lastDateActive,
           },
         }) => (
           <TableRow key={workerId}>
@@ -165,6 +167,17 @@ export default class WorkersTable extends Component {
                 </TableCellItem>
               </Link>
             </TableCell>
+            {lastDateActive ? (
+              <CopyToClipboardTableCell
+                tooltipTitle={lastDateActive}
+                textToCopy={lastDateActive}
+                text={<DateDistance from={lastDateActive} />}
+              />
+            ) : (
+              <TableCell>
+                <em>n/a</em>
+              </TableCell>
+            )}
             <CopyToClipboardTableCell
               tooltipTitle={firstClaim}
               textToCopy={firstClaim}
@@ -222,6 +235,7 @@ export default class WorkersTable extends Component {
         headers={[
           'Worker Group',
           'Worker ID',
+          'Last Active',
           'First Claim',
           'Most Recent Task',
           'Task State',
