@@ -14,7 +14,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       await execCommand({
         dir: artifactsDir,
-        command: ['go', 'get', '-u', 'github.com/mitchellh/gox'],
+        command: ['go', 'install', 'github.com/mitchellh/gox@latest'],
         utils,
       });
 
