@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.12.1
+
+### GENERAL
+
+▶ [patch]
+`go get` no longer builds or installs packages in module-aware mode, so replacing with `go install`.
+
 ## v44.12.0
 
 ### GENERAL
