@@ -414,7 +414,11 @@ class AwsProvider extends Provider {
   }
 
   async scanCleanup() {
-    this.monitor.log.scanSeen({ providerId: this.providerId, seen: this.seen });
+    this.monitor.log.scanSeen({
+      providerId: this.providerId,
+      seen: this.seen,
+      total: Provider.calcSeenTotal(this.seen),
+    });
   }
 
   /**

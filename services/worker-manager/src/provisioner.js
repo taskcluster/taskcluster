@@ -1,3 +1,4 @@
+const process = require('process');
 const Iterate = require('taskcluster-lib-iterate');
 const { paginatedIterator } = require('taskcluster-lib-postgres');
 const { WorkerPool, Worker } = require('./data');
@@ -128,6 +129,7 @@ class Provisioner {
       const workerPools = (await this.db.fns.get_worker_pools_with_capacity_and_counts_by_state(null, null))
         .map(row => WorkerPool.fromDb(row));
       for (const workerPool of workerPools) {
+        const start = process.hrtime.bigint();
         const { providerId, previousProviderIds, workerPoolId } = workerPool;
         const provider = this.providers.get(providerId);
         if (!provider) {
@@ -186,9 +188,12 @@ class Provisioner {
 
         }));
 
+        const duration = Number(process.hrtime.bigint() - start) / 1e9;
+
         this.monitor.log.workerPoolProvisioned({
           workerPoolId: workerPool.workerPoolId,
           providerId: workerPool.providerId,
+          duration,
         });
       }
 

@@ -169,6 +169,9 @@ class Provider {
     });
   }
 
+  static calcSeenTotal(seen = {}) {
+    return Object.values(seen).reduce((sum, seen) => sum + seen, 0);
+  }
 }
 
 /**
