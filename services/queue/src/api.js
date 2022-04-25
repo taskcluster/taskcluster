@@ -1994,6 +1994,7 @@ builder.declare({
         workerGroup: worker.workerGroup,
         workerId: worker.workerId,
         firstClaim: worker.firstClaim.toJSON(),
+        lastDateActive: worker.lastDateActive.toJSON(),
       };
       if (worker.recentTasks.length > 0) {
         entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];
