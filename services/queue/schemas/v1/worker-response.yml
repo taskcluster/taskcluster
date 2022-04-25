@@ -123,4 +123,3 @@ required:
   - expires
   - firstClaim
   - actions
-  - lastDateActive
