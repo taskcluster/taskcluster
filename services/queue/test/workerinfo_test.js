@@ -262,6 +262,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(
       new Date(result.workers[0].firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`,
     );
+    assert(
+      new Date(result.workers[0].lastDateActive).getTime() === worker.lastDateActive.getTime(), `expected ${worker.lastDateActive}`,
+    );
   });
 
   test('queue.listWorkers returns quarantined workers even after expiration', async () => {
@@ -609,6 +612,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(result.workerId === worker.workerId, `expected ${worker.workerId}`);
     assert(new Date(result.expires).getTime() === worker.expires.getTime(), `expected ${worker.expires}`);
     assert(new Date(result.firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`);
+    assert(new Date(result.lastDateActive).getTime() === worker.lastDateActive.getTime(), `expected ${worker.lastDateActive}`);
     assert(result.recentTasks[0].taskId === taskId, `expected ${taskId}`);
     assert(result.recentTasks[0].runId === 0, 'expected 0');
     assert(result.recentTasks[1].taskId === taskId, `expected ${taskId}`);
