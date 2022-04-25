@@ -3,6 +3,22 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.12.2
+
+### GENERAL
+
+▶ [patch]
+Update `ViewWorkers` query to get `lastDateActive`. Update some schemas too.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency @azure/ms-rest-js to v2.6.1 (02b72bc2e)
+
+</details>
+
 ## v44.12.1
 
 ### GENERAL
