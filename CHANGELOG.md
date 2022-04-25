@@ -3,6 +3,22 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.12.3
+
+### GENERAL
+
+▶ [patch]
+Return `lastDateActive` from `queue.listWorkers()`.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency eslint to v8.14.0 (3d31a1b0b)
+
+</details>
+
 ## v44.12.2
 
 ### GENERAL
