@@ -172,6 +172,9 @@ class AzureProvider extends Provider {
     this.configSchema = 'config-azure';
     this.providerConfig = providerConfig;
     this.downloadTimeout = 5000; // 5 seconds
+
+    this.seen = {};
+    this.errors = {};
   }
 
   // Add a PEM-encoded root certificate rootCertPem
@@ -437,6 +440,10 @@ class AzureProvider extends Provider {
         },
       });
       await worker.create(this.db);
+
+      // Start requesting resources immediately
+      // it will only provision at most one resource, as they are done async
+      await this.checkWorker({ worker });
     }));
   }
 

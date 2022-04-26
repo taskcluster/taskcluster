@@ -94,8 +94,9 @@ subgraph provision loop
     poolIterateStart[Iterate worker pools] --> takeWorkerPool
     takeWorkerPool[Get next worker pool] --> estimator
     estimator[Estimate number of workers to spawn] --> hasToSpawn{To spawn > 0 ?}
-    hasToSpawn -- Yes, Azure --> requestAzure[Request azure: create DB record only<br>Rest handled by worker scanner]
-    requestAzure --> requestWorker[(Create worker with config <br>state: Requested)]
+    hasToSpawn -- Yes, Azure --> requestAzure[Request azure: create DB record]
+    requestAzure --> checkWorker[(Create worker with config <br>state: Requested)]
+    checkWorker --> requestWorker([Start provisioning<br>See Azure checkWorker below])
     hasToSpawn -- Yes, Google --> requestGoogle([Create instance: compute.instances.insert])
     requestGoogle --> createWorker1[(new workers)]
     hasToSpawn -- Yes, AWS --> requestAWS([Create instance: ec2.runInstances])
