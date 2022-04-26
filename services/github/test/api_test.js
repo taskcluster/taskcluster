@@ -119,7 +119,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       repo: 'checksRepo',
       ref: 'success',
       info: [
-        { name: "check1", conclusion: 'success', app: { id: 66666 } },
+        { id: 123, name: "check1", conclusion: 'success', app: { id: 66666 }, repository: { html_url: "https://github.com/abc123/checksRepo" } },
         { name: "check2", conclusion: 'success', app: { id: 66666 } },
         { name: "check3", conclusion: 'failure', app: { id: 12345 } },
       ],
@@ -467,7 +467,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       err => err.code === 'InsufficientScopes');
   });
 
-  test('link for clickable badges', async function() {
+  test('link for clickable badges with status', async function() {
     let res;
 
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
@@ -480,6 +480,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
       }
       assert.equal(res.body, 'Found. Redirecting to Wonderland');
+    });
+  });
+
+  test('link for clickable badges with checks', async function() {
+    let res;
+
+    await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
+      // check if the function returns a correct link
+      try {
+        res = await got(
+          helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'checksRepo', 'success'),
+          { followRedirect: false });
+      } catch (e) {
+        console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
+      }
+      assert.equal(res.body, 'Found. Redirecting to https://github.com/abc123/checksRepo/runs/123');
     });
   });
 
