@@ -19,6 +19,15 @@ http://localhost:3050, but otherwise need not be publicly accessible. The
 development server for this repo will proxy requests as necessary to
 http://localhost:3050.
 
+### Using existing Taskcluster server
+
+Instead of running web-server locally you can use existing Taskcluster installation.
+To point proxy endpoints, you need to set `TASKCLUSTER_ROOT_URL` environment variable:
+
+```bash
+TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com/ yarn start
+```
+
 ## Development
 
 To get started local development, just:
