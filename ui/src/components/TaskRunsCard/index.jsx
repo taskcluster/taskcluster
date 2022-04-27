@@ -288,7 +288,9 @@ export default class TaskRunsCard extends Component {
       handleArtifactClick,
     } = this.getArtifactInfo(artifact);
     // Remove authentication parameter
-    const artifactUrl = new URL(`${window.location.origin}${url}`);
+    const artifactUrl = new URL(
+      `${url.startsWith('http') ? '' : window.location.origin}${url}`
+    );
 
     artifactUrl.searchParams.delete('bewit');
 
