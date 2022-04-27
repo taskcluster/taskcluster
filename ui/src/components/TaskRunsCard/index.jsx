@@ -37,6 +37,7 @@ import { withAuth } from '../../utils/Auth';
 import { getArtifactUrl } from '../../utils/getArtifactUrl';
 import splitTaskQueueId from '../../utils/splitTaskQueueId';
 import Link from '../../utils/Link';
+import { sortArtifacts } from './sort';
 
 const DOTS_VARIANT_LIMIT = 5;
 
@@ -252,13 +253,7 @@ export default class TaskRunsCard extends Component {
 
     return {
       ...artifacts,
-      edges: [...artifacts.edges].sort((a, b) => {
-        if (a.node.isPublic === b.node.isPublic) {
-          return 0;
-        }
-
-        return a.node.isPublic ? -1 : 1;
-      }),
+      edges: sortArtifacts([...artifacts.edges]),
     };
   }
 
