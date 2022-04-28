@@ -97,10 +97,10 @@ what Vagrant would produce.
    so it contains `NOPASSWD:ALL` instead of just `ALL`. This allows you
    to `sudo` without typing a password.
 8. `apt-get install git`
-9. `git clone https://github.com/taskcluster/docker-worker ~/docker-worker`
-10. `sudo ln -s /home/vagrant/docker-worker /vagrant`
-11. `sudo ln -s /home/vagrant/docker-worker /worker`
-12. `cd docker-worker`
+9. `git clone https://github.com/taskcluster/taskcluster ~/taskcluster`
+10. `sudo ln -s /home/vagrant/taskcluster/workers/docker-worker /vagrant`
+11. `sudo ln -s /home/vagrant/taskcluster/workers/docker-worker /worker`
+12. `cd taskcluster/workers/docker-worker`
 13. `./vagrant.sh` -- this will provision the VM by installing a bunch of
     packages and dependencies.
 14. `sudo reboot` -- this is necessary to activate the updated kernel.
@@ -116,7 +116,7 @@ To obtain Taskcluster client credentials, run
 `eval $(cat scopes.txt | xargs taskcluster signin)`. This will open a web
 browser and you'll be prompted to log into Taskcluster. This command requires
 the `taskcluster-cli` Go application. Find one at
-https://github.com/taskcluster/taskcluster-cli/releases.
+https://github.com/taskcluster/taskcluster/releases.
 
 If using Vagrant, setting these environment variables in the shell used
 to run `vagrant ssh` will cause the variables to get inherited inside the

@@ -8,7 +8,9 @@
 # exit in case of bad exit code
 set -e
 
-OFFICIAL_GIT_REPO='git@github.com:taskcluster/generic-worker'
+# TODO: is this scrpit used at all?
+
+OFFICIAL_GIT_REPO='git@github.com:taskcluster/taskcluster'
 
 # step into directory containing this script
 cd "$(dirname "${0}")"

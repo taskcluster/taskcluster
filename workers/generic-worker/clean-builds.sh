@@ -41,8 +41,8 @@ go env
 export GOPATH="$(mktemp -d -t generic-worker.XXXXXXXXXX)"
 export PATH="${GOPATH}/bin:${PATH}"
 rm -rf "${GOPATH}"
-go get -d -v 'github.com/taskcluster/generic-worker'
-"${GOPATH}/src/github.com/taskcluster/generic-worker/build.sh" -a -t
+go get -d -v 'github.com/taskcluster/taskcluster/v44/workers/generic-worker'
+"${GOPATH}/src/github.com/taskcluster/taskcluster/v44/workers/generic-worker/build.sh" -a -t
 
 mv "${GOPATH}/bin/darwin_arm64/generic-worker" target/generic-worker-darwin-arm64
 mv "${GOPATH}/bin/darwin_386/generic-worker" target/generic-worker-darwin-386

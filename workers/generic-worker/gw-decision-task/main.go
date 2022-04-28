@@ -303,7 +303,7 @@ func (dt *DecisionTask) TaskDefinition(workerPool string, name string, descripti
 			Description: description,
 			Name:        name,
 			Owner:       "taskcluster-internal@mozilla.com",
-			Source:      "https://github.com/taskcluster/generic-worker",
+			Source:      "https://github.com/taskcluster/taskcluster",
 		},
 		Payload:       json.RawMessage(payloadBytes),
 		ProvisionerID: provisionerID,
