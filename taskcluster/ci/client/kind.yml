@@ -113,10 +113,10 @@ jobs:
   rust:
     description: rust client tests
     worker:
-      docker-image: rust:1.49.0
+      docker-image: rust:1.60.0
     run:
       install: >-
-        eval $(python test/client-library-secrets.py) &&
+        eval $(python3 test/client-library-secrets.py) &&
         cd clients/client-rust
       command: >-
         cargo test &&
