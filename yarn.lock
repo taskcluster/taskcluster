@@ -770,9 +770,9 @@
     "@types/range-parser" "*"
 
 "@types/express-unless@*":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@types/express-unless/-/express-unless-0.5.2.tgz#07e29883d280778588644b03563d8796f870f20e"
-  integrity sha512-Q74UyYRX/zIgl1HSp9tUX2PlG8glkVm+59r7aK4KGKzC5jqKIOX6rrVLRQrzpZUQ84VukHtRoeAuon2nIssHPQ==
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/@types/express-unless/-/express-unless-0.5.3.tgz#271f8603617445568ed0d6efe25a7d2f338544c1"
+  integrity sha512-TyPLQaF6w8UlWdv4gj8i46B+INBVzURBNRahCozCSXfsK2VTlL1wNyTlMKw817VHygBtlcl5jfnPadlydr06Yw==
   dependencies:
     "@types/express" "*"
 
@@ -837,7 +837,12 @@
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.5.tgz#1001cc5e6a3704b83c236027e77f2f58ea010f40"
   integrity sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==
 
-"@types/node@*", "@types/node@>=12.0.0", "@types/node@>=12.12.47", "@types/node@>=13.7.0", "@types/node@>=6":
+"@types/node@*":
+  version "17.0.27"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.27.tgz#f4df3981ae8268c066e8f49995639f855469081e"
+  integrity sha512-4/Ke7bbWOasuT3kceBZFGakP1dYN2XFd8v2l9bqF2LNWrmeU07JLpp56aEeG6+Q3olqO5TvXpW0yaiYnZJ5CXg==
+
+"@types/node@>=12.0.0", "@types/node@>=12.12.47", "@types/node@>=13.7.0", "@types/node@>=6":
   version "17.0.16"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.16.tgz#e3733f46797b9df9e853ca9f719c8a6f7b84cd26"
   integrity sha512-ydLaGVfQOQ6hI1xK2A5nVh8bl0OGoIfYMxPWHqqYe9bTkWCfqiVvZoh2I/QF2sNSkZzZyROBoTefIEI+PB6iIA==
@@ -2184,6 +2189,13 @@ debug@4, debug@4.3.3, debug@^4.0.1, debug@^4.1.0, debug@^4.1.1, debug@^4.3.0, de
   version "4.3.3"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.3.tgz#04266e0b70a98d4462e6e288e38259213332b664"
   integrity sha512-/zxw5+vh1Tfv+4Qn7a5nsbcJKPaSvCDhojn6FEl9vupwK2VCSDtEiEtqr8DFtzYFOdz63LBkxec7DYuc2jon6Q==
+  dependencies:
+    ms "2.1.2"
+
+debug@^4.3.4:
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
+  integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
   dependencies:
     ms "2.1.2"
 
@@ -3975,12 +3987,12 @@ jwa@^2.0.0:
     safe-buffer "^5.0.1"
 
 jwks-rsa@^2.0.0:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-2.0.5.tgz#5dc911cdade803a149b7d4d41404a7c1bf2c221a"
-  integrity sha512-fliHfsiBRzEU0nXzSvwnh0hynzGB0WihF+CinKbSRlaqRxbqqKf2xbBPgwc8mzf18/WgwlG8e5eTpfSTBcU4DQ==
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-2.1.0.tgz#00e4c5eecc40ba41de199b71ab7e489807a1727f"
+  integrity sha512-GKOSDBWWBCiQTzawei6mEdRQvji5gecj8F9JwMt0ZOPnBPSmTjo5CKFvvbhE7jGPkU159Cpi0+OTLuABFcNOQQ==
   dependencies:
     "@types/express-jwt" "0.0.42"
-    debug "^4.3.2"
+    debug "^4.3.4"
     jose "^2.0.5"
     limiter "^1.1.5"
     lru-memoizer "^2.1.4"
@@ -6186,7 +6198,7 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "44.12.1"
+  version "44.12.3"
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
@@ -6196,37 +6208,37 @@ tar-stream@^2.0.0:
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-db@link:db":
-  version "44.12.1"
+  version "44.12.3"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "44.12.1"
+  version "44.12.3"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "44.12.1"
+  version "44.12.3"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "44.12.1"
+  version "44.12.3"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "44.12.1"
+  version "44.12.3"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "44.12.1"
+  version "44.12.3"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "44.12.1"
+  version "44.12.3"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "44.12.1"
+  version "44.12.3"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "44.12.1"
+  version "44.12.3"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "44.12.1"
+  version "44.12.3"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "44.12.1"
+  version "44.12.3"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6236,7 +6248,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "44.12.1"
+  version "44.12.3"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6244,7 +6256,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "44.12.1"
+  version "44.12.3"
 
 temporary@^1.0.0:
   version "1.1.0"
