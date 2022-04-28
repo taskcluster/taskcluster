@@ -303,6 +303,9 @@ class GoogleProvider extends Provider {
             kind: 'creation-error',
             title: 'Instance Creation Error',
             description: error.message,
+            extra: {
+              config: cfg,
+            },
           });
         }
         return;
