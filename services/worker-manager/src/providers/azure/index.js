@@ -1015,6 +1015,10 @@ class AzureProvider extends Provider {
           kind: 'creation-error',
           title: titleString,
           description: err.message,
+          extra: {
+            workerId: worker.workerId,
+            config: worker.providerData,
+          },
         });
       }
       await this.removeWorker({ worker, reason: titleString + `: ${err.message}` });
