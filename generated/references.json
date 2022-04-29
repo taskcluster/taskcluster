@@ -9608,7 +9608,6 @@
             "procs",
             "public_artifact_bucket",
             "private_artifact_bucket",
-            "worker_info_update_frequency",
             "taskcluster_client_id",
             "taskcluster_access_token",
             "read_db_url",
