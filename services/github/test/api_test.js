@@ -119,9 +119,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       repo: 'checksRepo',
       ref: 'success',
       info: [
-        { id: 123, name: "check1", conclusion: 'success', app: { id: 66666 }, repository: { html_url: "https://github.com/abc123/checksRepo" } },
-        { name: "check2", conclusion: 'success', app: { id: 66666 } },
-        { name: "check3", conclusion: 'failure', app: { id: 12345 } },
+        { id: 1, name: "check1", conclusion: 'failure', app: { id: 12345 }, html_url: "https://example.com/abc123/checksRepo/runs/1" },
+        { id: 3, name: "check3", conclusion: 'success', app: { id: 66666 }, html_url: "https://example.com/abc123/checksRepo/runs/3" },
+        { id: 2, name: "check2", conclusion: 'success', app: { id: 66666 }, html_url: "https://example.com/abc123/checksRepo/runs/2" },
       ],
     });
     github.inst(9090).setChecks({
@@ -495,7 +495,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       } catch (e) {
         console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
       }
-      assert.equal(res.body, 'Found. Redirecting to https://github.com/abc123/checksRepo/runs/123');
+      assert.equal(res.body, 'Found. Redirecting to https://example.com/abc123/checksRepo/runs/2');
     });
   });
 
