@@ -541,13 +541,13 @@ builder.declare({
 
     // Next inspect the checks API. This will be set if consumer repos have
     // opted into the checks-v2 reporting.
-    const checks = await findTCChecks(instGithub, owner, repo, branch, this.cfg);
+    const checkRuns = await findTCChecks(instGithub, owner, repo, branch, this.cfg);
 
-    if (checks.length > 0) {
-      // If there are multiple checks we can't redirect to all of them, so just
-      // pick the first one in the array.
-      let check = checks[0];
-      return res.redirect(check.repository.html_url + "/runs/" + check.id);
+    if (checkRuns.length > 0) {
+      // Sort the array of runs from smallest to largest id, this should yield
+      // the Decision task.
+      let run = checkRuns.sort((a, b) => a.id - b.id)[0];
+      return res.redirect(run.html_url);
     }
 
     // Otherwise there is no status available for the given branch.
