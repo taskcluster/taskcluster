@@ -13,8 +13,8 @@ func Example_scopes() {
 
 	myAuth := tcauth.New(nil, "https://community-tc.services.mozilla.com")
 
-	// Look up client details for client id "project/taskcluster/docker-worker/taskcluster-ci"...
-	resp, err := myAuth.Client("project/taskcluster/docker-worker/taskcluster-ci")
+	// Look up client details for client id "project/taskcluster/generic-worker/taskcluster-ci"...
+	resp, err := myAuth.Client("project/taskcluster/generic-worker/taskcluster-ci")
 
 	// Handle any errors...
 	if err != nil {
@@ -29,7 +29,7 @@ func Example_scopes() {
 	//   fmt.Printf("Expanded Scopes:  %v\n", resp.ExpandedScopes)
 
 	// Output:
-	// Client ID:  project/taskcluster/docker-worker/taskcluster-ci
+	// Client ID:  project/taskcluster/generic-worker/taskcluster-ci
 	// Expires:    3000-01-01T00:00:00.000Z
 }
 

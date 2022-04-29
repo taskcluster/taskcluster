@@ -16709,7 +16709,7 @@
   },
   {
     "clientId": "mozilla-auth0/ad|Mozilla-LDAP|pmoore/fetch-worker-type-definitions",
-    "description": "This client is used by pmoore's local cron job that fetches worker type definitions, and keeps a git repository of their history.\n\nSee [script](https://github.com/petemoore/myscrapbook/blob/master/sync-worker-type-definitions.sh) and [code](https://github.com/taskcluster/taskcluster/blob/master/worker_types/all-worker-types/main.go).",
+    "description": "This client is used by pmoore's local cron job that fetches worker type definitions, and keeps a git repository of their history.\n\nSee [script](https://github.com/petemoore/myscrapbook/blob/master/sync-worker-type-definitions.sh) and [code](https://github.com/taskcluster/generic-worker/blob/master/worker_types/all-worker-types/main.go).",
     "expires": "3017-01-31T23:00:00.000Z",
     "created": "2018-05-08T08:50:36.357Z",
     "lastModified": "2018-05-08T12:07:59.696Z",
@@ -33670,7 +33670,7 @@
     "disabled": false
   },
   {
-    "clientId": "project/taskcluster/taskcluster/ci",
+    "clientId": "project/taskcluster/docker-worker/ci",
     "description": "Created by garndt\n\nused for the heroku worker-ci app (think taskcluster-github but for the docker-worker repo)\n",
     "expires": "3017-02-01T06:00:00.000Z",
     "created": "2016-04-04T17:20:06.254Z",
@@ -33679,13 +33679,13 @@
     "lastRotated": "2017-08-16T00:04:30.194Z",
     "deleteOnExpiration": false,
     "scopes": [
-      "assume:repo:github.com/taskcluster/taskcluster:*"
+      "assume:repo:github.com/taskcluster/docker-worker:*"
     ],
     "expandedScopes": [
-      "assume:assume:repo:github.com/taskcluster/taskcluster:pr",
+      "assume:assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:project:taskcluster:mozilla-github-repository",
       "assume:project:taskcluster:worker-test-scopes",
-      "assume:repo:github.com/taskcluster/taskcluster:*",
+      "assume:repo:github.com/taskcluster/docker-worker:*",
       "assume:scheduler-id:docker-worker-tests/*",
       "assume:worker-id:docker-worker/docker-worker",
       "assume:worker-id:random-local-worker/*",
@@ -33746,9 +33746,9 @@
       "scheduler:extend-task-graph:*",
       "secrets:get:garbage/*",
       "secrets:get:project/taskcluster/taskcluster-worker/stateless-dns",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:aws-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:ci-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:aws-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds",
       "secrets:set:garbage/*",
       "worker:cache:dummy-cache-*"
     ],
@@ -33795,7 +33795,7 @@
     "disabled": false
   },
   {
-    "clientId": "project/taskcluster/taskcluster/appveyor-ci",
+    "clientId": "project/taskcluster/generic-worker/appveyor-ci",
     "description": "Client used by appveyor.com CI service that runs generic worker integration tests on Windows.",
     "expires": "3017-01-31T23:00:00.000Z",
     "created": "2016-09-20T16:54:19.477Z",
@@ -33881,7 +33881,7 @@
     "disabled": false
   },
   {
-    "clientId": "project/taskcluster/taskcluster/travis-ci",
+    "clientId": "project/taskcluster/generic-worker/travis-ci",
     "description": "The client used by travis ci to run generic worker integration tests.",
     "expires": "3017-01-31T23:00:00.000Z",
     "created": "2016-09-20T16:52:55.792Z",
@@ -38303,7 +38303,7 @@
       "scheduler:route:taskcluster-github.*"
     ],
     "expandedScopes": [
-      "assume:assume:repo:github.com/taskcluster/taskcluster:pr",
+      "assume:assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:hook-id:project-releng/services-master-*",
       "assume:hook-id:project-releng/services-production-*",
       "assume:hook-id:project-releng/services-staging-*",
@@ -38608,10 +38608,10 @@
       "secrets:get:repo:github.com/mozilla/balrog:dockerhub",
       "secrets:get:repo:github.com/mozilla/example-addon-repo:*",
       "secrets:get:repo:github.com/ochameau/ff-dt:branch:master",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:aws-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:ci-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:pulse-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:aws-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/generic-worker",
       "secrets:get:repo:github.com/taskcluster/json-e",
       "secrets:get:repo:github.com/taskcluster/taskcluster-hooks",
       "secrets:get:repo:github.com/taskcluster/taskcluster-lib-artifact-go",

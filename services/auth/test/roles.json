@@ -11855,7 +11855,7 @@
   },
   {
     "expandedScopes": [
-      "assume:assume:repo:github.com/taskcluster/taskcluster:pr",
+      "assume:assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:everybody",
       "assume:github-admin:*",
       "assume:hook-id:*",
@@ -12535,7 +12535,7 @@
       "secrets:get:repo:github.com/mozilla/balrog:*",
       "secrets:get:repo:github.com/mozilla/example-addon-repo:*",
       "secrets:get:repo:github.com/ochameau/ff-dt:branch:master",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:*",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:*",
       "secrets:get:repo:github.com/testbhearsum/balrog:*",
       "secrets:set:garbage/*",
       "secrets:set:project/deepspeech/*",
@@ -13239,7 +13239,7 @@
       "queue:route:notify.email.*",
       "secrets:get:garbage/*",
       "secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:*",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:*",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:*",
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:gszorc@mozilla.com",
@@ -13247,7 +13247,7 @@
       "aws-provisioner:manage-worker-type:*",
       "aws-provisioner:view-worker-type:*",
       "secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:*",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:*"
+      "secrets:get:repo:github.com/taskcluster/docker-worker:*"
     ],
     "description": "* Allowing to gps to view workerTypes... We should probably grant this to everybody once secrets are removed from provisioner and in workers... But for now we just grant to gps, so he can get things done.\n* `secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:*` added per grenade 2017-01-26",
     "lastModified": "2017-12-19T18:32:08.897Z",
@@ -17393,7 +17393,7 @@
   },
   {
     "expandedScopes": [
-      "assume:assume:repo:github.com/taskcluster/taskcluster:pr",
+      "assume:assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:hook-id:project-releng/services-master-*",
       "assume:hook-id:project-releng/services-production-*",
       "assume:hook-id:project-releng/services-staging-*",
@@ -18607,9 +18607,10 @@
       "secrets:get:repo:github.com/mozilla/balrog:dockerhub",
       "secrets:get:repo:github.com/mozilla/example-addon-repo:*",
       "secrets:get:repo:github.com/ochameau/ff-dt:branch:master",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:aws-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:ci-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:aws-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/generic-worker",
       "secrets:get:repo:github.com/taskcluster/taskcluster",
       "secrets:get:repo:github.com/taskcluster/json-e",
       "secrets:get:repo:github.com/taskcluster/taskcluster-hooks",
@@ -18645,7 +18646,7 @@
   },
   {
     "expandedScopes": [
-      "assume:assume:repo:github.com/taskcluster/taskcluster:pr",
+      "assume:assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:hook-id:project-releng/services-master-*",
       "assume:hook-id:project-releng/services-production-*",
       "assume:hook-id:project-releng/services-staging-*",
@@ -18941,9 +18942,10 @@
       "secrets:get:repo:github.com/mozilla/balrog:dockerhub",
       "secrets:get:repo:github.com/mozilla/example-addon-repo:*",
       "secrets:get:repo:github.com/ochameau/ff-dt:branch:master",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:aws-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:ci-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:aws-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/generic-worker",
       "secrets:get:repo:github.com/taskcluster/taskcluster",
       "secrets:get:repo:github.com/taskcluster/json-e",
       "secrets:get:repo:github.com/taskcluster/taskcluster-hooks",
@@ -20749,7 +20751,7 @@
   },
   {
     "expandedScopes": [
-      "assume:assume:repo:github.com/taskcluster/taskcluster:pr",
+      "assume:assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:project:taskcluster:mozilla-github-repository",
       "assume:project:taskcluster:taskcluster-lib-artifact-go-tester",
       "assume:project:taskcluster:worker-test-scopes",
@@ -20885,9 +20887,10 @@
       "secrets:get:project/taskcluster/testing/taskcluster-pulse",
       "secrets:get:project/taskcluster/testing/taskcluster-queue",
       "secrets:get:project/taskcluster/testing/taskcluster-secrets",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:aws-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:ci-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:aws-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/generic-worker",
       "secrets:get:repo:github.com/taskcluster/taskcluster",
       "secrets:get:repo:github.com/taskcluster/json-e",
       "secrets:get:repo:github.com/taskcluster/taskcluster-lib-artifact-go",
@@ -21045,10 +21048,10 @@
   },
   {
     "expandedScopes": [
-      "assume:assume:repo:github.com/taskcluster/taskcluster:pr",
+      "assume:assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:project:taskcluster:mozilla-github-repository",
       "assume:project:taskcluster:worker-test-scopes",
-      "assume:repo:github.com/taskcluster/taskcluster:*",
+      "assume:repo:github.com/taskcluster/docker-worker:*",
       "assume:scheduler-id:docker-worker-tests/*",
       "assume:worker-id:docker-worker/docker-worker",
       "assume:worker-id:random-local-worker/*",
@@ -21109,13 +21112,13 @@
       "scheduler:extend-task-graph:*",
       "secrets:get:garbage/*",
       "secrets:get:project/taskcluster/taskcluster-worker/stateless-dns",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:aws-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:ci-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:aws-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds",
       "secrets:set:garbage/*",
       "worker:cache:dummy-cache-*"
     ],
-    "roleId": "repo:github.com/taskcluster/taskcluster:*",
+    "roleId": "repo:github.com/taskcluster/docker-worker:*",
     "scopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "assume:scheduler-id:docker-worker-tests/*",
@@ -21146,9 +21149,9 @@
       "queue:worker-id:random-local-worker/*",
       "scheduler:create-task-graph",
       "scheduler:extend-task-graph:*",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:aws-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:ci-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:pulse-creds"
+      "secrets:get:repo:github.com/taskcluster/docker-worker:aws-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds"
     ],
     "description": "Scope given to the docker-worker CI setup.",
     "lastModified": "2017-09-07T20:44:55.587Z",
@@ -21158,7 +21161,7 @@
     "expandedScopes": [
       "assume:project:taskcluster:mozilla-github-repository",
       "assume:project:taskcluster:worker-test-scopes",
-      "assume:repo:github.com/taskcluster/taskcluster:branch:master",
+      "assume:repo:github.com/taskcluster/docker-worker:branch:master",
       "assume:scheduler-id:docker-worker-tests/*",
       "assume:worker-id:random-local-worker/*",
       "assume:worker-id:worker-ci-test/*",
@@ -21213,13 +21216,13 @@
       "scheduler:extend-task-graph:*",
       "secrets:get:garbage/*",
       "secrets:get:project/taskcluster/taskcluster-worker/stateless-dns",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:aws-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:ci-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:aws-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds",
       "secrets:set:garbage/*",
       "worker:cache:dummy-cache-*"
     ],
-    "roleId": "repo:github.com/taskcluster/taskcluster:branch:master",
+    "roleId": "repo:github.com/taskcluster/docker-worker:branch:master",
     "scopes": [
       "auth:aws-s3:read-write:taskcluster-raw-docs/docker-worker/"
     ],
@@ -21229,10 +21232,10 @@
   },
   {
     "expandedScopes": [
-      "assume:assume:repo:github.com/taskcluster/taskcluster:pr",
+      "assume:assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:project:taskcluster:mozilla-github-repository",
       "assume:project:taskcluster:worker-test-scopes",
-      "assume:repo:github.com/taskcluster/taskcluster:pr",
+      "assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:scheduler-id:docker-worker-tests/*",
       "assume:worker-id:docker-worker/docker-worker",
       "assume:worker-id:random-local-worker/*",
@@ -21292,15 +21295,15 @@
       "scheduler:extend-task-graph:*",
       "secrets:get:garbage/*",
       "secrets:get:project/taskcluster/taskcluster-worker/stateless-dns",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:aws-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:ci-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:aws-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds",
       "secrets:set:garbage/*",
       "worker:cache:dummy-cache-*"
     ],
-    "roleId": "repo:github.com/taskcluster/taskcluster:pr",
+    "roleId": "repo:github.com/taskcluster/docker-worker:pr",
     "scopes": [
-      "assume:assume:repo:github.com/taskcluster/taskcluster:pr",
+      "assume:assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:worker-id:docker-worker/docker-worker",
       "docker-worker:cache:docker-worker-garbage-caches-*",
       "queue:claim-task:null-provisioner/*",
@@ -21318,7 +21321,7 @@
     "expandedScopes": [
       "assume:project:taskcluster:mozilla-github-repository",
       "assume:project:taskcluster:worker-test-scopes",
-      "assume:repo:github.com/taskcluster/taskcluster:pull-request",
+      "assume:repo:github.com/taskcluster/docker-worker:pull-request",
       "assume:scheduler-id:docker-worker-tests/*",
       "assume:worker-id:random-local-worker/*",
       "assume:worker-id:worker-ci-test/*",
@@ -21372,13 +21375,13 @@
       "scheduler:extend-task-graph:*",
       "secrets:get:garbage/*",
       "secrets:get:project/taskcluster/taskcluster-worker/stateless-dns",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:aws-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:ci-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:aws-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds",
       "secrets:set:garbage/*",
       "worker:cache:dummy-cache-*"
     ],
-    "roleId": "repo:github.com/taskcluster/taskcluster:pull-request",
+    "roleId": "repo:github.com/taskcluster/docker-worker:pull-request",
     "scopes": [
       "docker-worker:cache:docker-worker-garbage-caches-*"
     ],
@@ -21413,6 +21416,58 @@
     "description": "",
     "lastModified": "2017-03-28T16:59:39.003Z",
     "created": "2017-03-28T16:59:39.003Z"
+  },
+  {
+    "expandedScopes": [
+      "assume:project:taskcluster:mozilla-github-repository",
+      "assume:repo:github.com/taskcluster/generic-worker:*",
+      "assume:repo:github.com/taskcluster/taskcluster:*",
+      "auth:aws-s3:read-write:taskcluster-raw-docs/generic-worker/",
+      "docker-worker:cache:generic-worker-checkout",
+      "generic-worker:cache:generic-worker-checkout",
+      "notify:email:*",
+      "notify:irc-channel:*",
+      "notify:irc-user:*",
+      "queue:create-task:aws-provisioner-v1/gecko-1-b-win*",
+      "queue:create-task:aws-provisioner-v1/gecko-2-b-win*",
+      "queue:create-task:aws-provisioner-v1/gecko-3-b-win*",
+      "queue:create-task:aws-provisioner-v1/gecko-t-win*",
+      "queue:create-task:aws-provisioner-v1/github-worker",
+      "queue:create-task:aws-provisioner-v1/github-worker-windows",
+      "queue:create-task:aws-provisioner-v1/nss-win*",
+      "queue:create-task:aws-provisioner-v1/win*",
+      "queue:create-task:pmoore-manual/linux-amd64",
+      "queue:create-task:pmoore-manual/mac-os-x",
+      "queue:create-task:pmoore-manual/raspberry-pi-3b",
+      "queue:route:garbage.*",
+      "queue:route:index.garbage.*",
+      "queue:route:notify.email.*",
+      "queue:route:notify.irc-channel.*",
+      "queue:route:notify.irc-user.*",
+      "queue:scheduler-id:taskcluster-github",
+      "secrets:get:garbage/*",
+      "secrets:get:repo:github.com/taskcluster/generic-worker",
+      "secrets:get:repo:github.com/taskcluster/taskcluster",
+      "secrets:set:garbage/*"
+    ],
+    "roleId": "repo:github.com/taskcluster/generic-worker:*",
+    "scopes": [
+      "docker-worker:cache:generic-worker-checkout",
+      "generic-worker:cache:generic-worker-checkout",
+      "queue:create-task:aws-provisioner-v1/gecko-1-b-win*",
+      "queue:create-task:aws-provisioner-v1/gecko-2-b-win*",
+      "queue:create-task:aws-provisioner-v1/gecko-3-b-win*",
+      "queue:create-task:aws-provisioner-v1/gecko-t-win*",
+      "queue:create-task:aws-provisioner-v1/nss-win*",
+      "queue:create-task:aws-provisioner-v1/win*",
+      "queue:create-task:pmoore-manual/mac-os-x",
+      "queue:create-task:pmoore-manual/raspberry-pi-3b",
+      "queue:create-task:pmoore-manual/linux-amd64",
+      "secrets:get:repo:github.com/taskcluster/generic-worker"
+    ],
+    "description": "Scopes required for taskcluster CI for generic worker.",
+    "lastModified": "2018-04-30T11:04:32.998Z",
+    "created": "2017-01-31T10:35:52.919Z"
   },
   {
     "expandedScopes": [
@@ -21467,7 +21522,7 @@
   {
     "expandedScopes": [
       "assume:project:taskcluster:mozilla-github-repository",
-      "assume:repo:github.com/taskcluster/taskcluster:branch:master",
+      "assume:repo:github.com/taskcluster/generic-worker:branch:master",
       "auth:aws-s3:read-write:taskcluster-raw-docs/generic-worker/",
       "docker-worker:cache:generic-worker-checkout",
       "generic-worker:cache:generic-worker-checkout",
@@ -21492,10 +21547,10 @@
       "queue:route:notify.irc-user.*",
       "queue:scheduler-id:taskcluster-github",
       "secrets:get:garbage/*",
-      "secrets:get:repo:github.com/taskcluster/taskcluster",
+      "secrets:get:repo:github.com/taskcluster/generic-worker",
       "secrets:set:garbage/*"
     ],
-    "roleId": "repo:github.com/taskcluster/taskcluster:branch:master",
+    "roleId": "repo:github.com/taskcluster/generic-worker:branch:master",
     "scopes": [
       "auth:aws-s3:read-write:taskcluster-raw-docs/generic-worker/"
     ],
@@ -37431,7 +37486,7 @@
   },
   {
     "expandedScopes": [
-      "assume:assume:repo:github.com/taskcluster/taskcluster:pr",
+      "assume:assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:github-admin:*",
       "assume:hook-id:project-releng/services-master-*",
       "assume:hook-id:project-releng/services-production-*",
@@ -37731,10 +37786,10 @@
       "secrets:get:repo:github.com/mozilla/balrog:dockerhub",
       "secrets:get:repo:github.com/mozilla/example-addon-repo:*",
       "secrets:get:repo:github.com/ochameau/ff-dt:branch:master",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:aws-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:ci-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:pulse-creds",
-      "secrets:get:repo:github.com/taskcluster/taskcluster",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:aws-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds",
+      "secrets:get:repo:github.com/taskcluster/generic-worker",
       "secrets:get:repo:github.com/taskcluster/json-e",
       "secrets:get:repo:github.com/taskcluster/taskcluster-hooks",
       "secrets:get:repo:github.com/taskcluster/taskcluster-lib-artifact-go",
@@ -45293,7 +45348,7 @@
       "secrets:get:repo:github.com/mozilla/balrog:*",
       "secrets:get:repo:github.com/mozilla/example-addon-repo:*",
       "secrets:get:repo:github.com/ochameau/ff-dt:branch:master",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:*",
+      "secrets:get:repo:github.com/taskcluster/docker-worker:*",
       "secrets:get:repo:github.com/testbhearsum/balrog:*",
       "secrets:set:garbage/*",
       "secrets:set:project/comm/*",
@@ -46253,7 +46308,7 @@
       "aws-provisioner:view-worker-type:*",
       "queue:get-artifact:login-identity/mozilla-auth0/ad|Mozilla-LDAP|gszorc/*",
       "secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:*",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:*"
+      "secrets:get:repo:github.com/taskcluster/docker-worker:*"
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|gszorc",
     "description": "* Allowing to gps to view workerTypes... We should probably grant this to everybody once secrets are removed from provisioner and in workers... But for now we just grant to gps, so he can get things done.\n* `secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:*` added per grenade 2017-01-26",
@@ -46261,7 +46316,7 @@
       "aws-provisioner:manage-worker-type:*",
       "aws-provisioner:view-worker-type:*",
       "secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:*",
-      "secrets:get:repo:github.com/taskcluster/taskcluster:*"
+      "secrets:get:repo:github.com/taskcluster/docker-worker:*"
     ],
     "lastModified": "2018-03-09T13:49:43.086Z",
     "created": "2018-03-09T13:49:43.086Z"
