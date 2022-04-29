@@ -115,7 +115,8 @@ define credentials used to connect to external services.
 To obtain Taskcluster client credentials, run
 `eval $(cat scopes.txt | xargs taskcluster signin)`. This will open a web
 browser and you'll be prompted to log into Taskcluster. This command requires
-the `taskcluster-cli` Go application. Find one at
+the `taskcluster` cli. This can be downloaded for your OS/architecture (name `taskcluster-<OS>-<ARCH>`) from the following page. Be sure to rename the download to `taskcluster` (linux/darwin) or `taskcluster.exe` (windows):
+
 https://github.com/taskcluster/taskcluster/releases.
 
 If using Vagrant, setting these environment variables in the shell used
