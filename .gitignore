@@ -71,3 +71,6 @@ next-task-user.json
 
 # Rust ignores
 /clients/client-rust/target/
+
+# output from taskgraph cli
+__pycache__

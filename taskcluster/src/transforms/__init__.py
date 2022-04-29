@@ -1,3 +1,4 @@
+import copy
 import os
 import json
 
@@ -105,3 +106,20 @@ def parameterize_mounts(config, jobs):
                             rust_version=rust_version,
                             node_version=node_version)
         yield job
+
+
+@transforms.add
+def docker_worker_chunk(config, jobs):
+    total_chunks = 5
+    for job in jobs:
+        for chunk in range(1, total_chunks + 1):
+            c_task = copy.deepcopy(job)
+            c_task["name"] += f"-{chunk}"
+            c_task["description"] += f" #{chunk}"
+            c_task["run"]["command"] += f" --this-chunk {chunk} --total-chunks {total_chunks}"
+
+            # include release-publish dependency in the case of a release
+            if config.params["tasks_for"] == "github-push":
+                c_task["dependencies"] = dict(release="release-publish")
+
+            yield c_task
