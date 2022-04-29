@@ -3,6 +3,50 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.13.0
+
+### GENERAL
+
+▶ [patch] [#5373](https://github.com/taskcluster/taskcluster/issues/5373)
+Allow local UI to run against existing taskcluster installation using `TASKCLUSTER_ROOT_URL`.
+
+▶ [patch] [#5362](https://github.com/taskcluster/taskcluster/issues/5362)
+Display task artifacts sorted by importance
+
+▶ [patch] [#5348](https://github.com/taskcluster/taskcluster/issues/5348)
+Fix artifact copy functionality.
+
+▶ [patch]
+Fix null check error from #5380
+
+▶ [patch]
+Upgrades some vulnerable rust deps and rust toolchain from 1.49.0 to 1.60.0.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#4999](https://github.com/taskcluster/taskcluster/issues/4999)
+Trigger immediate resource provisioning for Azure.
+
+Since operations are already async, this shouldn't slow down provisioning loop.
+It is done in attempt to prevent azure workers stay in 'Requested' state until the next `workerScannerAzure` loop picks it up.
+
+▶ [patch] [bug 1613593](http://bugzil.la/1613593)
+Adding extra information about failed worker provisioning
+
+### USERS
+
+▶ [patch] [#5364](https://github.com/taskcluster/taskcluster/issues/5364)
+The `github/v1/repository/<owner>/<repo>/<branch>/latest` endpoint now supports projects using `checks-v2` reporting.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency jwks-rsa to v2.1.0 (ea3902996)
+
+</details>
+
 ## v44.12.3
 
 ### GENERAL
