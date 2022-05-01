@@ -1220,7 +1220,7 @@ version = "44.14.0"
 dependencies = [
  "anyhow",
  "backoff",
- "base64 0.12.3",
+ "base64 0.13.0",
  "chrono",
  "hawk",
  "httptest",
@@ -1274,7 +1274,7 @@ version = "44.14.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "base64 0.12.3",
+ "base64 0.13.0",
  "httptest",
  "reqwest",
  "ring",
