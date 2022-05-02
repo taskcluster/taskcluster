@@ -19,11 +19,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/taskcluster/docker-worker.git"
+    "url": "git://github.com/taskcluster/taskcluster.git"
   },
   "license": "ISC",
-  "bugs": "https://github.com/taskcluster/docker-worker/issues",
-  "homepage": "https://github.com/taskcluster/docker-worker",
+  "bugs": "https://github.com/taskcluster/taskcluster/issues",
+  "homepage": "https://github.com/taskcluster/taskcluster",
   "dependencies": {
     "@sentry/node": "^6.0.0",
     "ajv": "^7.2.1",

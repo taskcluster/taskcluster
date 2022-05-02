@@ -125,7 +125,7 @@ func testTask(t *testing.T) *tcqueue.TaskDefinitionRequest {
 			Description: "Test task",
 			Name:        "[TC] Generic Worker CI - " + globalTestName,
 			Owner:       "generic-worker-ci@mozilla.com",
-			Source:      "https://github.com/taskcluster/generic-worker",
+			Source:      "https://github.com/taskcluster/taskcluster",
 		},
 		Payload:       nil,
 		ProvisionerID: config.ProvisionerID,
