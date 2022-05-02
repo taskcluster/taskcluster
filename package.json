@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "44.12.3",
+  "version": "44.13.0",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "16.14.2",
+    "node": "16.15.0",
     "yarn": "^1.22.10"
   },
   "workspaces": [
@@ -42,7 +42,7 @@
     "dataloader": "^2.0.0",
     "debug": "^4.1.1",
     "deepmerge": "^4.0.0",
-    "ejs": "^3.0.0",
+    "ejs": "^3.1.7",
     "email-templates": "^8.0.0",
     "express": "4.17.1",
     "express-session": "^1.16.2",
