@@ -1,6 +1,6 @@
 {
   "name": "taskcluster",
-  "version": "44.13.0",
+  "version": "44.13.4",
   "private": true,
   "engine-strict": true,
   "engines": {
@@ -24,7 +24,7 @@
     "@octokit/plugin-retry": "^3.0.4",
     "@octokit/rest": "^18.0.0",
     "@sentry/node": "^6.0.0",
-    "@slack/web-api": "^6.0.0",
+    "@slack/web-api": "^6.7.1",
     "ajv": "^7.2.1",
     "ajv-formats": "^1.5.1",
     "amqplib": "^0.8.0",
@@ -60,7 +60,7 @@
     "graphql-type-json": "^0.3.0",
     "graphql-validation-complexity": "^0.4.0",
     "hashids": "^2.0.0",
-    "hawk": "9.0.0",
+    "hawk": "9.0.1",
     "hsts": "^2.1.0",
     "immutable": "^3.8.2",
     "iterall": "^1.2.2",

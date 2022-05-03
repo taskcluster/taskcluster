@@ -3,6 +3,46 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.13.4
+
+No changes
+
+## v44.13.3
+
+### GENERAL
+
+▶ [patch] [bug 1767244](http://bugzil.la/1767244)
+Upgrade `hawk` to v9.0.1 to fix a vuln.
+
+## v44.13.2
+
+### DEVELOPERS
+
+▶ [patch]
+Fix build.sh
+
+## v44.13.1
+
+### GENERAL
+
+▶ [patch]
+Upgrade Node.js version from v16.14.2 to v16.15.0.
+
+### DEPLOYERS
+
+▶ [patch] [#5393](https://github.com/taskcluster/taskcluster/issues/5393)
+Make `worker_info_update_frequency` optional.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#5336](https://github.com/taskcluster/taskcluster/issues/5336)
+Fix scroll to bottom link
+
+### USERS
+
+▶ [patch] [#5395](https://github.com/taskcluster/taskcluster/issues/5395)
+Fixed exception in Github service's latest endpoint when using checks reporting
+
 ## v44.13.0
 
 ### GENERAL
