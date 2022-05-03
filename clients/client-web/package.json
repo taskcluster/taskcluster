@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "crypto-js": "^4.0.0",
-    "hawk": "^9.0.0",
+    "hawk": "^9.0.1",
     "query-string": "^7.0.0",
     "taskcluster-lib-urls": "^13.0.0"
   }
