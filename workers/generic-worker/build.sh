@@ -122,12 +122,12 @@ fi
 
 ls -1 "$OUTPUT_DIR"/generic-worker-*
 
-CGO_ENABLED=0 go get \
 ####################################################################
 # The version number in these lines is automatically updated by
 #   infrastructure/tooling/src/release/tasks.js
 # when a new major release is made.
 ####################################################################
+CGO_ENABLED=0 go get \
   github.com/taskcluster/taskcluster/v44/tools/livelog \
   github.com/taskcluster/taskcluster/v44/tools/taskcluster-proxy \
   golang.org/x/lint/golint \
