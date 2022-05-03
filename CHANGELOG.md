@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.13.3
+
+### GENERAL
+
+▶ [patch] [bug 1767244](http://bugzil.la/1767244)
+Upgrade `hawk` to v9.0.1 to fix a vuln.
+
 ## v44.13.2
 
 ### DEVELOPERS
