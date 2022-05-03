@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.13.2
+
+### DEVELOPERS
+
+▶ [patch]
+Fix build.sh
+
 ## v44.13.1
 
 ### GENERAL
