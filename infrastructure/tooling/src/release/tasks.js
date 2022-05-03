@@ -207,6 +207,7 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         'workers/generic-worker/**.go',
         'workers/generic-worker/**.yml',
         'workers/generic-worker/**.sh',
+        'workers/generic-worker/**.cmd',
       ];
       for (let file of await gitLsFiles({ patterns: goFiles })) {
         await modifyRepoFile(file, contents =>
