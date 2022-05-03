@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.1.0
+    rev: v4.2.0
     hooks:
         # Trims trailing whitespace
     -   id: trailing-whitespace
@@ -12,7 +12,7 @@ repos:
     -   id: check-merge-conflict
 
 -   repo: https://github.com/marco-c/taskcluster_yml_validator
-    rev: v0.0.8
+    rev: v0.0.9
     hooks:
         # Validates .taskcluster.yml file against possible GitHub events
     -   id: taskcluster_yml

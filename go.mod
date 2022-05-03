@@ -1,7 +1,7 @@
 module github.com/taskcluster/taskcluster/v44
 
 // DO NOT MODIFY THIS LINE - automatically updated by infrastructure/tooling/src/generate/generators/go-version.js
-go 1.17
+go 1.18
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
@@ -14,7 +14,7 @@ require (
 	github.com/fatih/camelcase v1.0.0
 	github.com/getsentry/raven-go v0.2.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/golang-jwt/jwt/v4 v4.3.0
+	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/iancoleman/strcase v0.2.0
@@ -29,10 +29,10 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/cobra v1.3.0
+	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
 	github.com/streadway/amqp v1.0.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/taskcluster/go-got v0.0.0-20190401132811-c63e3293a290
 	github.com/taskcluster/httpbackoff/v3 v3.1.0
 	github.com/taskcluster/pulse-go v1.0.0
@@ -44,7 +44,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
 	golang.org/x/sys v0.0.0-20220222200937-f2425489ef4c
-	golang.org/x/tools v0.1.9
+	golang.org/x/tools v0.1.10
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
@@ -70,7 +70,7 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	golang.org/x/mod v0.5.1 // indirect
+	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	howett.net/plist v1.0.0 // indirect

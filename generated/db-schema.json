@@ -220,6 +220,7 @@
     "queue_workers": {
       "expires": "timestamp with time zone not null",
       "first_claim": "timestamp with time zone not null",
+      "last_date_active": "timestamp with time zone",
       "quarantine_until": "timestamp with time zone not null",
       "recent_tasks": "jsonb not null",
       "task_queue_id": "text not null",
@@ -6139,6 +6140,124 @@
         }
       },
       "version": 69
+    },
+    {
+      "description": "add `get_worker_pool_with_capacity_and_counts_by_state`, `get_worker_pools_with_capacity_and_counts_by_state`, and `update_worker_pool_with_capacity_and_counts_by_state` functions to get worker counts and capacity by state for worker pools",
+      "methods": {
+        "get_worker_pool_with_capacity": {
+          "deprecated": true
+        },
+        "get_worker_pool_with_capacity_and_counts_by_state": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  return query\n  select\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    worker_pools.provider_data,\n    coalesce(sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,\n    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,\n    coalesce(sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer\n  from worker_pools\n  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  group by worker_pools.worker_pool_id\n  order by worker_pools.worker_pool_id;\nend",
+          "deprecated": false,
+          "description": "Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb, current_capacity integer, requested_count integer, running_count integer, stopping_count integer, stopped_count integer, requested_capacity integer, running_capacity integer, stopping_capacity integer, stopped_capacity integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pools_with_capacity": {
+          "deprecated": true
+        },
+        "get_worker_pools_with_capacity_and_counts_by_state": {
+          "args": "page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    worker_pools.provider_data,\n    coalesce(sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,\n    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer,\n    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,\n    coalesce(sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,\n    coalesce(sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer\n  from worker_pools\n  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id\n  group by worker_pools.worker_pool_id\n  order by worker_pools.worker_pool_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb, current_capacity integer, requested_count integer, running_count integer, stopping_count integer, stopped_count integer, requested_capacity integer, running_capacity integer, stopping_capacity integer, stopped_capacity integer)",
+          "serviceName": "worker_manager"
+        },
+        "update_worker_pool_with_capacity": {
+          "deprecated": true
+        },
+        "update_worker_pool_with_capacity_and_counts_by_state": {
+          "args": "worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean",
+          "body": "declare\n  existing record;\nbegin\n  select\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids\n  from worker_pools\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  -- lock this row for the duration of this transaction..\n  for update\n  into existing;\n\n  -- update previous_provider_ids, if the provider_id has changed\n  if existing.provider_id <> provider_id_in then\n    -- remove both provider IDs to avoid duplicates, then re-add existing.provider_id\n    existing.previous_provider_ids = (existing.previous_provider_ids - provider_id_in - existing.provider_id) || jsonb_build_array(existing.provider_id);\n  end if;\n\n  return query update worker_pools\n  set\n    provider_id = provider_id_in,\n    description = description_in,\n    config = config_in,\n    last_modified = last_modified_in,\n    owner = owner_in,\n    email_on_error = email_on_error_in,\n    previous_provider_ids = existing.previous_provider_ids\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  returning\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    existing.provider_id as previous_provider_id,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state != 'stopped'),\n      0)::integer,\n    coalesce((\n      select count(*) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'requested'),\n      0)::integer,\n    coalesce((\n      select count(*) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'running'),\n      0)::integer,\n    coalesce((\n      select count(*) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'stopping'),\n      0)::integer,\n    coalesce((\n      select count(*) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'stopped'),\n      0)::integer,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'requested'),\n      0)::integer,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'running'),\n      0)::integer,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'stopping'),\n      0)::integer,\n    coalesce((\n      select sum(workers.capacity) from workers where\n        workers.worker_pool_id = worker_pool_id_in and\n        workers.state = 'stopped'),\n      0)::integer;\nend",
+          "deprecated": false,
+          "description": "Update API-accessible columns on an existig worker pool.  All fields are\noverridden, but if the provider_id changes, then the existing provider_id\nis added to previous_provider_ids.  The return value contains values\nrequired for an API response and previous_provider_id (singular) containing\nthe provider_id found before the update.  If no such worker pool exists,\nthe return value is an empty set.",
+          "mode": "write",
+          "returns": "table(worker_pool_id text, provider_id text, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, previous_provider_id text, current_capacity integer, requested_count integer, running_count integer, stopping_count integer, stopped_count integer, requested_capacity integer, running_capacity integer, stopping_capacity integer, stopped_capacity integer)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 70
+    },
+    {
+      "description": "add provider filter to get_non_stopped_workers_quntil",
+      "downgradeScript": "begin\n  revoke select on queue_workers from $db_user_prefix$_worker_manager;\nend\n",
+      "methods": {
+        "get_non_stopped_workers_quntil": {
+          "deprecated": true
+        },
+        "get_non_stopped_workers_quntil_providers": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.secret,\n    workers.etag,\n    queue_workers.quarantine_until\n  from\n    workers\n    left join queue_workers on\n      workers.worker_pool_id = queue_workers.task_queue_id and\n      workers.worker_id = queue_workers.worker_id and\n      workers.worker_group = queue_workers.worker_group\n  where\n    (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and\n    (workers.worker_group = worker_group_in or worker_group_in is null) and\n    (workers.worker_id = worker_id_in or worker_id_in is null) and\n    (workers.state <> 'stopped') and\n    (providers_filter_cond is null or providers_filter_value is null or\n      case\n        when providers_filter_cond = '='\n          then workers.provider_id = ANY(string_to_array(providers_filter_value, ','))\n        when providers_filter_cond = '<>'\n          then workers.provider_id <> ALL(string_to_array(providers_filter_value, ','))\n      end\n      )\n  order by worker_pool_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get non-stopped workers filtered by the optional arguments,\nordered by `worker_pool_id`, `worker_group`, and  `worker_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset `page_offset`.\nThe `quaratine_until` contains NULL or a date in the past if the\nworker is not quarantined, otherwise the date until which it is\nquaratined. `providers_filter_cond` and `providers_filter_value` used to\nfilter `=` or `<>` provider by value.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid, quarantine_until timestamptz)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "migrationScript": "begin\n  grant select on queue_workers to $db_user_prefix$_worker_manager;\nend\n",
+      "version": 71
+    },
+    {
+      "description": "add last_date_active to queue_workers",
+      "downgradeScript": "begin\n  alter table queue_workers drop column last_date_active;\nend\n",
+      "methods": {
+        "get_queue_worker_tqid": {
+          "deprecated": true
+        },
+        "get_queue_worker_tqid_with_last_date_active": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active,\n    public.gen_random_uuid()\n  from queue_workers\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in and\n    (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);\n  end",
+          "deprecated": false,
+          "description": "Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.",
+          "mode": "read",
+          "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, etag uuid)",
+          "serviceName": "queue"
+        },
+        "get_queue_workers_tqid": {
+          "deprecated": true
+        },
+        "get_queue_workers_tqid_with_last_date_active": {
+          "args": "task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active,\n    public.gen_random_uuid()\n  from queue_workers\n  where\n    (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_tqid_with_last_date_active.task_queue_id_in is null) and\n    ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers_tqid_with_last_date_active.expires_in is null)\n  order by task_queue_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get non-expired queue workers ordered by task_queue_id, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, etag uuid)",
+          "serviceName": "queue"
+        },
+        "quarantine_queue_worker": {
+          "deprecated": true
+        },
+        "quarantine_queue_worker_with_last_date_active": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz",
+          "body": "begin\n  return query update queue_workers\n  set\n    quarantine_until = quarantine_until_in,\n    expires = greatest(queue_workers.expires, now() + interval '1 day')\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in\n  returning\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active;\nend",
+          "deprecated": false,
+          "description": "Update the quarantine_until date for a worker.  The Queue service interprets a date in the past\nas \"not quarantined\".  This function also \"bumps\" the expiration of the worker so that un-quarantined\nworkers do not immediately expire.  Returns the worker row just as get_queue_worker would, or no rows if\nno such worker exists.",
+          "mode": "write",
+          "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz)",
+          "serviceName": "queue"
+        },
+        "queue_worker_seen": {
+          "deprecated": true
+        },
+        "queue_worker_seen_with_last_date_active": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
+          "body": "begin\n  insert\n    into queue_workers (task_queue_id, worker_group, worker_id, quarantine_until, expires, first_claim, recent_tasks, last_date_active)\n    values (\n      task_queue_id_in,\n      worker_group_in,\n      worker_id_in,\n      now() - interval '10 years',\n      expires_in,\n      now(),\n      jsonb_build_array(),\n      now()\n    )\n    on conflict (task_queue_id, worker_group, worker_id) do update\n    set\n      expires = greatest(coalesce(expires_in, queue_workers.expires), queue_workers.expires),\n      last_date_active = now()\n    where\n      queue_workers.task_queue_id = task_queue_id_in and\n      queue_workers.worker_group = worker_group_in and\n      queue_workers.worker_id = worker_id_in;\nend",
+          "deprecated": false,
+          "description": "Recognize that a worker has been seen by the queue, creating it if necessary.  This is called\nwhen workers claim or re-claim work.  The expiration time is not allowed to move backward.\nWill also always bump its last date active time.\n\nThis function always writes to the DB, so calls should be suitably rate-limited at the\nclient side.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  alter table queue_workers add column last_date_active timestamp with time zone;\nend\n",
+      "version": 72
     }
   ]
 }

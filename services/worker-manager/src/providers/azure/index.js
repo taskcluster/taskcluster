@@ -21,14 +21,19 @@ const { ApiError, Provider } = require('../provider');
 const { CloudAPI } = require('../cloudapi');
 
 // Azure provisioning and VM power states
-// see here: https://docs.microsoft.com/en-us/azure/virtual-machines/windows/states-lifecycle
-// same for linux: https://docs.microsoft.com/en-us/azure/virtual-machines/linux/states-lifecycle
+// see here: https://docs.microsoft.com/en-us/azure/virtual-machines/states-billing
 const failPowerStates = new Set([
   'PowerState/stopping',
   'PowerState/stopped',
   'PowerState/deallocating',
   'PowerState/deallocated',
 ]);
+
+const InstanceStates = {
+  OK: 'ok',
+  FAILED: 'failed',
+  MISSING: 'missing',
+};
 
 // Provisioning states for any resource type.  See, for example,
 // https://docs.microsoft.com/en-us/rest/api/virtualnetwork/networkinterfaces/createorupdate#provisioningstate
@@ -167,6 +172,9 @@ class AzureProvider extends Provider {
     this.configSchema = 'config-azure';
     this.providerConfig = providerConfig;
     this.downloadTimeout = 5000; // 5 seconds
+
+    this.seen = {};
+    this.errors = {};
   }
 
   // Add a PEM-encoded root certificate rootCertPem
@@ -375,6 +383,8 @@ class AzureProvider extends Provider {
         location: cfg.location,
         resourceGroupName: this.providerConfig.resourceGroupName,
         workerConfig: cfg.workerConfig,
+        // #4987: Generic worker instances do not need public IP/NIC
+        skipPublicIp: typeof cfg?.workerConfig?.genericWorker !== 'undefined',
         tags: {
           ...cfg.tags || {},
           'created-by': `taskcluster-wm-${this.providerId}`,
@@ -430,6 +440,10 @@ class AzureProvider extends Provider {
         },
       });
       await worker.create(this.db);
+
+      // Start requesting resources immediately
+      // it will only provision at most one resource, as they are done async
+      await this.checkWorker({ worker });
     }));
   }
 
@@ -894,6 +908,16 @@ class AzureProvider extends Provider {
 
     let titleString = "";
 
+    // #4987: generic workers do not need Public IP,
+    // so we can skip creating those resources
+    const skipPublicIp = worker.providerData.skipPublicIp === true;
+    if (skipPublicIp) {
+      monitor.debug({
+        message: 'skipping public IP',
+        workerId: worker.workerId,
+      });
+    }
+
     try {
       // IP
       let ipConfig = {
@@ -903,17 +927,19 @@ class AzureProvider extends Provider {
 
       titleString = "IP Creation Error";
 
-      worker = await this.provisionResource({
-        worker,
-        client: this.networkClient.publicIPAddresses,
-        resourceType: 'ip',
-        resourceConfig: ipConfig,
-        modifyFn: () => {},
-        monitor,
-      });
+      if (!skipPublicIp) {
+        worker = await this.provisionResource({
+          worker,
+          client: this.networkClient.publicIPAddresses,
+          resourceType: 'ip',
+          resourceConfig: ipConfig,
+          modifyFn: () => {},
+          monitor,
+        });
 
-      if (!worker.providerData.ip.id) {
-        return;
+        if (!worker.providerData.ip.id) {
+          return;
+        }
       }
 
       // NIC
@@ -926,9 +952,9 @@ class AzureProvider extends Provider {
             subnet: {
               id: worker.providerData.subnet.id,
             },
-            publicIPAddress: {
-              id: worker.providerData.ip.id,
-            },
+            ...(skipPublicIp ? {} : {
+              publicIPAddress: { id: worker.providerData.ip.id },
+            }),
           },
         ],
       };
@@ -989,6 +1015,10 @@ class AzureProvider extends Provider {
           kind: 'creation-error',
           title: titleString,
           description: err.message,
+          extra: {
+            workerId: worker.workerId,
+            config: worker.providerData,
+          },
         });
       }
       await this.removeWorker({ worker, reason: titleString + `: ${err.message}` });
@@ -1036,7 +1066,7 @@ class AzureProvider extends Provider {
       const { instanceState, instanceStateReason } = await this.queryInstance({ worker, monitor });
 
       switch (instanceState) {
-        case 'ok': {
+        case InstanceStates.OK: {
           // count this worker as having been seen for later logging
           this.seen[worker.workerPoolId] += worker.capacity || 1;
 
@@ -1054,13 +1084,13 @@ class AzureProvider extends Provider {
           break;
         }
 
-        case 'failed': {
+        case InstanceStates.FAILED: {
           // On failure, call `removeWorker`, which logs and marks the worker as STOPPING
           await this.removeWorker({ worker, reason: instanceStateReason });
           break;
         }
 
-        case 'missing': {
+        case InstanceStates.MISSING: {
           // VM has not been found, so it is either...
           if (worker.state === states.REQUESTED && !worker.providerData.provisioningComplete) {
             // ...still being created, in which case we should continue to provision...
@@ -1114,7 +1144,7 @@ class AzureProvider extends Provider {
         // manually terminated (e.g., in the web UI), or by being halted from within the VM.  In this
         // case, we consider the worker failed.
         return {
-          instanceState: 'failed',
+          instanceState: InstanceStates.FAILED,
           instanceStateReason: `failed power state; powerStates=${powerStates.join(', ')}`,
         };
       }
@@ -1133,19 +1163,19 @@ class AzureProvider extends Provider {
         // any failed-provisioning code is treated as a failure
         if (failedProvisioningCodes.length > 0) {
           return {
-            instanceState: 'failed',
+            instanceState: InstanceStates.FAILED,
             instanceStateReason: `failed provisioning power state; powerStates=${powerStates.join(', ')}`,
           };
         }
       }
 
-      return { instanceState: 'ok', instanceStateReason: 'instance exists and has not failed' };
+      return { instanceState: InstanceStates.OK, instanceStateReason: 'instance exists and has not failed' };
     } catch (err) {
       if (err.statusCode !== 404) {
         throw err;
       }
       monitor.debug({ message: `vm instance view not found, in state ${worker.state}` });
-      return { instanceState: 'missing', instanceStateReason: `vm not found in state ${worker.state}` };
+      return { instanceState: InstanceStates.MISSING, instanceStateReason: `vm not found in state ${worker.state}` };
     }
   }
 
@@ -1153,7 +1183,11 @@ class AzureProvider extends Provider {
    * Called after an iteration of the worker scanner
    */
   async scanCleanup() {
-    this.monitor.log.scanSeen({ providerId: this.providerId, seen: this.seen });
+    this.monitor.log.scanSeen({
+      providerId: this.providerId,
+      seen: this.seen,
+      total: Provider.calcSeenTotal(this.seen),
+    });
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await WorkerPool.get(this.db, workerPoolId);
 

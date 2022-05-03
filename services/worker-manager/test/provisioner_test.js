@@ -20,6 +20,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   suiteSetup(async function() {
     monitor = await helper.load('monitor');
   });
+  const makeDurationPredictable = (msg) => {
+    if (msg?.Fields?.duration) {
+      msg.Fields.duration = 1;
+    }
+    return msg;
+  };
 
   suite('provisioning loop', function() {
     const testCase = async ({ workers = [], workerPools = [], assertion, expectErrors = false }) => {
@@ -30,8 +36,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await helper.withAdminDbClient(async client => {
             await client.query(`insert
               into queue_workers
-              (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim) values
-              ($1, $2, $3, jsonb_build_array(), $4, now() + interval '1 hour', now() - interval '1 hour')`,
+              (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim, last_date_active) values
+              ($1, $2, $3, jsonb_build_array(), $4, now() + interval '1 hour', now() - interval '1 hour', now())`,
             [w.workerPoolId, w.workerGroup, w.workerId, w.quarantineUntil]);
           });
         }
@@ -54,14 +60,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         }
         await Promise.all(workerPools.map(async wp => {
           const pId = wp.providerId || wp.input.providerId;
-          assert.deepEqual(
-            monitor.manager.messages.find(
-              msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === wp.workerPoolId), {
-              Logger: 'taskcluster.test.provisioner',
-              Type: 'worker-pool-provisioned',
-              Fields: { workerPoolId: wp.workerPoolId, providerId: pId, v: 1 },
-              Severity: LEVELS.info,
-            });
+          assert.deepEqual(makeDurationPredictable(monitor.manager.messages.find(
+            msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === wp.workerPoolId)), {
+            Logger: 'taskcluster.test.provisioner',
+            Type: 'worker-pool-provisioned',
+            Fields: { workerPoolId: wp.workerPoolId, providerId: pId, v: 2, duration: 1 },
+            Severity: LEVELS.info,
+          });
           const msg = monitor.manager.messages.find(
             msg => msg.Type === 'test-provision' && msg.Fields.workerPoolId === wp.workerPoolId);
           assert.deepEqual(msg, {
@@ -290,14 +295,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }).create(helper.db);
       const provisioner = await helper.load('provisioner');
       await provisioner.provision();
-      assert.deepEqual(
-        monitor.manager.messages.find(
-          msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === 'pp/ww'), {
-          Logger: 'taskcluster.test.provisioner',
-          Type: 'worker-pool-provisioned',
-          Fields: { workerPoolId: 'pp/ww', providerId: 'testing1', v: 1 },
-          Severity: LEVELS.info,
-        });
+      assert.deepEqual(makeDurationPredictable(monitor.manager.messages.find(
+        msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === 'pp/ww')), {
+        Logger: 'taskcluster.test.provisioner',
+        Type: 'worker-pool-provisioned',
+        Fields: { workerPoolId: 'pp/ww', providerId: 'testing1', v: 2, duration: 1 },
+        Severity: LEVELS.info,
+      });
     });
 
     test('provision scan skips worker pools with unknown providerId', async function() {
@@ -343,14 +347,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }).create(helper.db);
       const provisioner = await helper.load('provisioner');
       await provisioner.provision();
-      assert.deepEqual(
-        monitor.manager.messages.find(
-          msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === 'pp/ww'), {
-          Logger: 'taskcluster.test.provisioner',
-          Type: 'worker-pool-provisioned',
-          Fields: { workerPoolId: 'pp/ww', providerId: 'testing1', v: 1 },
-          Severity: LEVELS.info,
-        });
+      assert.deepEqual(makeDurationPredictable(monitor.manager.messages.find(
+        msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === 'pp/ww')), {
+        Logger: 'taskcluster.test.provisioner',
+        Type: 'worker-pool-provisioned',
+        Fields: { workerPoolId: 'pp/ww', providerId: 'testing1', v: 2, duration: 1 },
+        Severity: LEVELS.info,
+      });
       assert.deepEqual(
         monitor.manager.messages.find(msg => msg.Type === 'monitor.generic'), {
           Logger: 'taskcluster.test.provisioner',

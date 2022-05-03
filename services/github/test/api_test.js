@@ -119,9 +119,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       repo: 'checksRepo',
       ref: 'success',
       info: [
-        { name: "check1", conclusion: 'success', app: { id: 66666 } },
-        { name: "check2", conclusion: 'success', app: { id: 66666 } },
-        { name: "check3", conclusion: 'failure', app: { id: 12345 } },
+        { id: 1, name: "check1", conclusion: 'failure', app: { id: 12345 }, html_url: "https://example.com/abc123/checksRepo/runs/1" },
+        { id: 3, name: "check3", conclusion: 'success', app: { id: 66666 }, html_url: "https://example.com/abc123/checksRepo/runs/3" },
+        { id: 2, name: "check2", conclusion: 'success', app: { id: 66666 }, html_url: "https://example.com/abc123/checksRepo/runs/2" },
       ],
     });
     github.inst(9090).setChecks({
@@ -467,7 +467,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       err => err.code === 'InsufficientScopes');
   });
 
-  test('link for clickable badges', async function() {
+  test('link for clickable badges with status', async function() {
     let res;
 
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
@@ -480,6 +480,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
       }
       assert.equal(res.body, 'Found. Redirecting to Wonderland');
+    });
+  });
+
+  test('link for clickable badges with checks', async function() {
+    let res;
+
+    await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
+      // check if the function returns a correct link
+      try {
+        res = await got(
+          helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'checksRepo', 'success'),
+          { followRedirect: false });
+      } catch (e) {
+        console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
+      }
+      assert.equal(res.body, 'Found. Redirecting to https://example.com/abc123/checksRepo/runs/2');
     });
   });
 

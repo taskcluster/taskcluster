@@ -184,14 +184,52 @@ let load = loader({
       }),
   },
 
+  azureProviderIds: {
+    requires: ['providers'],
+    setup: async ({ providers }) => {
+      const azureIds = [];
+      providers.forAll((provider) => {
+        if (provider.providerType === 'azure') {
+          azureIds.push(provider.providerId);
+        }
+      });
+      return azureIds.join(',');
+    },
+  },
+
   workerScanner: {
-    requires: ['cfg', 'monitor', 'providers', 'db'],
-    setup: async ({ cfg, monitor, providers, db }, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds'],
+    setup: async ({ cfg, monitor, providers, db, azureProviderIds }, ownName) => {
       const workerScanner = new WorkerScanner({
         ownName,
         providers,
         monitor: monitor.childMonitor('worker-scanner'),
         iterateConf: cfg.app.workerScannerIterateConfig || {},
+        providersFilter: {
+          cond: '<>', // only run for providers that are not Azure
+          value: azureProviderIds,
+        },
+        db,
+      });
+      await workerScanner.initiate();
+      return workerScanner;
+    },
+  },
+
+  workerScannerAzure: {
+    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds'],
+    setup: async ({ cfg, monitor, providers, db, azureProviderIds }, ownName) => {
+      const workerScanner = new WorkerScanner({
+        ownName,
+        providers,
+        monitor: monitor.childMonitor('worker-scanner'),
+        iterateConf: cfg.app.workerScannerIterateConfig || {
+          maxIterationTime: 9000000,
+        },
+        providersFilter: {
+          cond: '=', // only run for providers that are Azure
+          value: azureProviderIds,
+        },
         db,
       });
       await workerScanner.initiate();

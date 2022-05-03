@@ -1,10 +1,10 @@
 {
   "name": "docker-worker",
   "private": true,
-  "version": "44.8.4",
+  "version": "44.13.0",
   "engine-strict": true,
   "engines": {
-    "node": "16.14.0",
+    "node": "16.15.0",
     "yarn": "^1.22.10"
   },
   "description": "Docker task host for linux.",
@@ -19,11 +19,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/taskcluster/docker-worker.git"
+    "url": "git://github.com/taskcluster/taskcluster.git"
   },
   "license": "ISC",
-  "bugs": "https://github.com/taskcluster/docker-worker/issues",
-  "homepage": "https://github.com/taskcluster/docker-worker",
+  "bugs": "https://github.com/taskcluster/taskcluster/issues",
+  "homepage": "https://github.com/taskcluster/taskcluster",
   "dependencies": {
     "@sentry/node": "^6.0.0",
     "ajv": "^7.2.1",
@@ -48,7 +48,7 @@
     "lodash": "^4.17.15",
     "mime": "^2.0.0",
     "mkdirp": "^1.0.3",
-    "mocha": "^8.0.0",
+    "mocha": "^9.2.2",
     "mz": "^2.0.0",
     "object-factory": "^0.1.2",
     "promise-retry": "^2.0.0",

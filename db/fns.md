@@ -92,8 +92,8 @@
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
-   * [`get_queue_worker_tqid`](#get_queue_worker_tqid)
-   * [`get_queue_workers_tqid`](#get_queue_workers_tqid)
+   * [`get_queue_worker_tqid_with_last_date_active`](#get_queue_worker_tqid_with_last_date_active)
+   * [`get_queue_workers_tqid_with_last_date_active`](#get_queue_workers_tqid_with_last_date_active)
    * [`get_task_group`](#get_task_group)
    * [`get_task_projid`](#get_task_projid)
    * [`get_task_queue`](#get_task_queue)
@@ -102,9 +102,9 @@
    * [`is_task_blocked`](#is_task_blocked)
    * [`is_task_group_active`](#is_task_group_active)
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
-   * [`quarantine_queue_worker`](#quarantine_queue_worker)
+   * [`quarantine_queue_worker_with_last_date_active`](#quarantine_queue_worker_with_last_date_active)
    * [`queue_artifact_present`](#queue_artifact_present)
-   * [`queue_worker_seen`](#queue_worker_seen)
+   * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
    * [`reclaim_task`](#reclaim_task)
    * [`remove_task`](#remove_task)
@@ -146,17 +146,17 @@
    * [`expire_worker_pool_errors`](#expire_worker_pool_errors)
    * [`expire_worker_pools`](#expire_worker_pools)
    * [`expire_workers`](#expire_workers)
-   * [`get_non_stopped_workers_quntil`](#get_non_stopped_workers_quntil)
+   * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
    * [`get_worker_2`](#get_worker_2)
    * [`get_worker_pool_error`](#get_worker_pool_error)
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
-   * [`get_worker_pool_with_capacity`](#get_worker_pool_with_capacity)
-   * [`get_worker_pools_with_capacity`](#get_worker_pools_with_capacity)
+   * [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
+   * [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
    * [`get_workers_without_provider_data`](#get_workers_without_provider_data)
    * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
    * [`update_worker_2`](#update_worker_2)
    * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
-   * [`update_worker_pool_with_capacity`](#update_worker_pool_with_capacity)
+   * [`update_worker_pool_with_capacity_and_counts_by_state`](#update_worker_pool_with_capacity_and_counts_by_state)
 
 ## auth
 
@@ -1222,8 +1222,8 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
-* [`get_queue_worker_tqid`](#get_queue_worker_tqid)
-* [`get_queue_workers_tqid`](#get_queue_workers_tqid)
+* [`get_queue_worker_tqid_with_last_date_active`](#get_queue_worker_tqid_with_last_date_active)
+* [`get_queue_workers_tqid_with_last_date_active`](#get_queue_workers_tqid_with_last_date_active)
 * [`get_task_group`](#get_task_group)
 * [`get_task_projid`](#get_task_projid)
 * [`get_task_queue`](#get_task_queue)
@@ -1232,9 +1232,9 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`is_task_blocked`](#is_task_blocked)
 * [`is_task_group_active`](#is_task_group_active)
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
-* [`quarantine_queue_worker`](#quarantine_queue_worker)
+* [`quarantine_queue_worker_with_last_date_active`](#quarantine_queue_worker_with_last_date_active)
 * [`queue_artifact_present`](#queue_artifact_present)
-* [`queue_worker_seen`](#queue_worker_seen)
+* [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
 * [`reclaim_task`](#reclaim_task)
 * [`remove_task`](#remove_task)
@@ -1639,7 +1639,7 @@ where the page of results should begin, and must all be specified if any
 are specified.  Typically these values would be drawn from the last item
 in the previous page.
 
-### get_queue_worker_tqid
+### get_queue_worker_tqid_with_last_date_active
 
 * *Mode*: read
 * *Arguments*:
@@ -1655,13 +1655,14 @@ in the previous page.
   * `expires timestamptz`
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
+  * `last_date_active timestamptz`
   * `etag uuid`
-* *Last defined on version*: 53
+* *Last defined on version*: 72
 
 Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
 
-### get_queue_workers_tqid
+### get_queue_workers_tqid_with_last_date_active
 
 * *Mode*: read
 * *Arguments*:
@@ -1677,8 +1678,9 @@ Workers are not considered expired until after their quarantine date expires.
   * `expires timestamptz`
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
+  * `last_date_active timestamptz`
   * `etag uuid`
-* *Last defined on version*: 53
+* *Last defined on version*: 72
 
 Get non-expired queue workers ordered by task_queue_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
@@ -1831,7 +1833,7 @@ temp, removed in next commit
 
 temp, removed in next commit
 
-### quarantine_queue_worker
+### quarantine_queue_worker_with_last_date_active
 
 * *Mode*: write
 * *Arguments*:
@@ -1847,7 +1849,8 @@ temp, removed in next commit
   * `expires timestamptz`
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
-* *Last defined on version*: 64
+  * `last_date_active timestamptz`
+* *Last defined on version*: 72
 
 Update the quarantine_until date for a worker.  The Queue service interprets a date in the past
 as "not quarantined".  This function also "bumps" the expiration of the worker so that un-quarantined
@@ -1875,7 +1878,7 @@ no such worker exists.
 Mark the given queue artifact as present, returning the updated artifact.  Returns
 nothing if no such artifact exists.
 
-### queue_worker_seen
+### queue_worker_seen_with_last_date_active
 
 * *Mode*: write
 * *Arguments*:
@@ -1884,10 +1887,11 @@ nothing if no such artifact exists.
   * `worker_id_in text`
   * `expires_in timestamptz`
 * *Returns*: `void`
-* *Last defined on version*: 64
+* *Last defined on version*: 72
 
 Recognize that a worker has been seen by the queue, creating it if necessary.  This is called
 when workers claim or re-claim work.  The expiration time is not allowed to move backward.
+Will also always bump its last date active time.
 
 This function always writes to the DB, so calls should be suitably rate-limited at the
 client side.
@@ -2070,6 +2074,13 @@ client side.
 
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
+
+### deprecated methods
+
+* `get_queue_worker_tqid(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v46.0.0)
+* `get_queue_workers_tqid(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
+* `quarantine_queue_worker(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz)` (compatibility guaranteed until v46.0.0)
+* `queue_worker_seen(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v46.0.0)
 
 ## secrets
 
@@ -2359,17 +2370,17 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`expire_worker_pool_errors`](#expire_worker_pool_errors)
 * [`expire_worker_pools`](#expire_worker_pools)
 * [`expire_workers`](#expire_workers)
-* [`get_non_stopped_workers_quntil`](#get_non_stopped_workers_quntil)
+* [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
 * [`get_worker_2`](#get_worker_2)
 * [`get_worker_pool_error`](#get_worker_pool_error)
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
-* [`get_worker_pool_with_capacity`](#get_worker_pool_with_capacity)
-* [`get_worker_pools_with_capacity`](#get_worker_pools_with_capacity)
+* [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
+* [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
 * [`get_workers_without_provider_data`](#get_workers_without_provider_data)
 * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
 * [`update_worker_2`](#update_worker_2)
 * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
-* [`update_worker_pool_with_capacity`](#update_worker_pool_with_capacity)
+* [`update_worker_pool_with_capacity_and_counts_by_state`](#update_worker_pool_with_capacity_and_counts_by_state)
 
 ### create_worker
 
@@ -2493,13 +2504,15 @@ no previous_provider_ids.  Returns the worker pool ids that it deletes.
 Expire workers that come before `expires_in`.
 Returns a count of rows that have been deleted.
 
-### get_non_stopped_workers_quntil
+### get_non_stopped_workers_quntil_providers
 
 * *Mode*: read
 * *Arguments*:
   * `worker_pool_id_in text`
   * `worker_group_in text`
   * `worker_id_in text`
+  * `providers_filter_cond text`
+  * `providers_filter_value text`
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
@@ -2517,7 +2530,7 @@ Returns a count of rows that have been deleted.
   * `secret jsonb`
   * `etag uuid`
   * `quarantine_until timestamptz`
-* *Last defined on version*: 66
+* *Last defined on version*: 71
 
 Get non-stopped workers filtered by the optional arguments,
 ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
@@ -2525,7 +2538,8 @@ If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset `page_offset`.
 The `quaratine_until` contains NULL or a date in the past if the
 worker is not quarantined, otherwise the date until which it is
-quaratined.
+quaratined. `providers_filter_cond` and `providers_filter_value` used to
+filter `=` or `<>` provider by value.
 
 ### get_worker_2
 
@@ -2593,7 +2607,7 @@ ordered by `reported`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
-### get_worker_pool_with_capacity
+### get_worker_pool_with_capacity_and_counts_by_state
 
 * *Mode*: read
 * *Arguments*:
@@ -2610,11 +2624,19 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `email_on_error boolean`
   * `provider_data jsonb`
   * `current_capacity integer`
-* *Last defined on version*: 13
+  * `requested_count integer`
+  * `running_count integer`
+  * `stopping_count integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `running_capacity integer`
+  * `stopping_capacity integer`
+  * `stopped_capacity integer`
+* *Last defined on version*: 70
 
 Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.
 
-### get_worker_pools_with_capacity
+### get_worker_pools_with_capacity_and_counts_by_state
 
 * *Mode*: read
 * *Arguments*:
@@ -2632,7 +2654,15 @@ Get an existing worker pool.  The returned table will have one or (if no such wo
   * `email_on_error boolean`
   * `provider_data jsonb`
   * `current_capacity integer`
-* *Last defined on version*: 13
+  * `requested_count integer`
+  * `running_count integer`
+  * `stopping_count integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `running_capacity integer`
+  * `stopping_capacity integer`
+  * `stopped_capacity integer`
+* *Last defined on version*: 70
 
 Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
@@ -2731,7 +2761,7 @@ this sets the provider_data property unconditionally, and it is up to the servic
 to ensure that concurrent modifications do not occur.  It is not an error if the
 worker pool does not exist.
 
-### update_worker_pool_with_capacity
+### update_worker_pool_with_capacity_and_counts_by_state
 
 * *Mode*: write
 * *Arguments*:
@@ -2753,7 +2783,15 @@ worker pool does not exist.
   * `email_on_error boolean`
   * `previous_provider_id text`
   * `current_capacity integer`
-* *Last defined on version*: 13
+  * `requested_count integer`
+  * `running_count integer`
+  * `stopping_count integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `running_capacity integer`
+  * `stopping_capacity integer`
+  * `stopped_capacity integer`
+* *Last defined on version*: 70
 
 Update API-accessible columns on an existig worker pool.  All fields are
 overridden, but if the provider_id changes, then the existing provider_id
@@ -2761,3 +2799,10 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
+
+### deprecated methods
+
+* `get_non_stopped_workers_quntil(worker_pool_id_in text, worker_group_in text, worker_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
+* `get_worker_pool_with_capacity(worker_pool_id_in text)` (compatibility guaranteed until v46.0.0)
+* `get_worker_pools_with_capacity(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
+* `update_worker_pool_with_capacity(worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean)` (compatibility guaranteed until v46.0.0)

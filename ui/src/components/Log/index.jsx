@@ -162,16 +162,25 @@ export default class Log extends Component {
 
   state = {
     lineNumber: null,
-    follow: true,
+    follow: null,
     followPref: null,
   };
 
+  isMounted = false;
+
   async componentDidMount() {
+    this.isMounted = true;
     const followPref = await storage.getItem(FOLLOW_STORAGE_KEY);
 
-    this.setState({
-      followPref: Boolean(followPref),
-    });
+    if (this.isMounted) {
+      this.setState({
+        followPref: Boolean(followPref),
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    this.isMounted = false;
   }
 
   getHighlightFromHash() {
@@ -257,7 +266,7 @@ export default class Log extends Component {
       return true;
     }
 
-    return false;
+    return true; // default - scroll to bottom
   }
 
   render() {

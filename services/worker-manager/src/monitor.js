@@ -4,12 +4,13 @@ MonitorManager.register({
   name: 'workerPoolProvisioned',
   title: 'Worker Pool Provisioned',
   type: 'worker-pool-provisioned',
-  version: 1,
+  version: 2,
   level: 'info',
   description: 'A worker pool\'s provisioning run has completed',
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
+    duration: 'Time taken to provision the worker pool in ms',
   },
 });
 
@@ -98,12 +99,13 @@ MonitorManager.register({
   name: 'scanSeen',
   title: 'Scan Seen',
   type: 'scan-seen',
-  version: 2,
+  version: 3,
   level: 'notice',
   description: 'The results of a worker-scanner run',
   fields: {
     providerId: 'The provider that has completed this scan',
     seen: 'A map of workerPoolId that were seen to how much capacity was seen',
+    total: 'Total number of workers seen',
   },
 });
 

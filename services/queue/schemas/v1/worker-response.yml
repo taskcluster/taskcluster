@@ -55,6 +55,17 @@ properties:
       Date of the first time this worker claimed a task.
     type:         string
     format:       date-time
+  lastDateActive:
+    title:        "Worker Last Date Active"
+    description: |
+      Date of the last time this worker was seen active. Updated each time a worker calls
+      `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
+      `lastDateActive` is updated every half hour but may be off by up-to half an hour.
+      Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
+      This defaults to null in the database, and is set to the current time when the worker
+      is first seen.
+    type:         string
+    format:       date-time
   actions:
     title:        "Worker Actions"
     type:         array

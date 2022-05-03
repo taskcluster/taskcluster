@@ -15,10 +15,12 @@ class WorkerScanner {
     monitor,
     iterateConf = {},
     db,
+    providersFilter = {},
   }) {
     this.WorkerPool = WorkerPool;
     this.providers = providers;
     this.monitor = monitor;
+    this.providersFilter = providersFilter;
     this.iterate = new Iterate({
       maxFailures: 10,
       watchdogTime: 0,
@@ -49,8 +51,11 @@ class WorkerScanner {
   async scan() {
     await this.providers.forAll(p => p.scanPrepare());
 
+    this.monitor.info(`WorkerScanner providers filter: ${this.providersFilter.cond} ${this.providersFilter.value}`);
+
     const fetch =
-      async (size, offset) => await this.db.fns.get_non_stopped_workers_quntil(null, null, null, size, offset);
+      async (size, offset) => await this.db.fns.get_non_stopped_workers_quntil_providers(
+        null, null, null, this.providersFilter.cond, this.providersFilter.value, size, offset);
     for await (let row of paginatedIterator({ fetch })) {
       const worker = Worker.fromDb(row);
       const provider = this.providers.get(worker.providerId);

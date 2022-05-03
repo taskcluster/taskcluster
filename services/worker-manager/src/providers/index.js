@@ -55,6 +55,7 @@ class Providers {
         WorkerPoolError,
         validator,
         providerConfig,
+        providerType: providerConfig.providerType,
       });
       this._providers[providerId] = provider;
 

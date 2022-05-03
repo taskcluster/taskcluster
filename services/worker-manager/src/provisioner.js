@@ -1,3 +1,4 @@
+const process = require('process');
 const Iterate = require('taskcluster-lib-iterate');
 const { paginatedIterator } = require('taskcluster-lib-postgres');
 const { WorkerPool, Worker } = require('./data');
@@ -53,6 +54,7 @@ class Provisioner {
    */
   async terminate() {
     if (this.pq) {
+      // TODO: is it defined anywhere at all?
       await this.pq.stop();
       this.pq = null;
     }
@@ -110,7 +112,8 @@ class Provisioner {
 
       // Check the state of workers (state is updated by worker-scanner)
       const fetch =
-        async (size, offset) => await this.db.fns.get_non_stopped_workers_quntil(null, null, null, size, offset);
+        async (size, offset) => await this.db.fns.get_non_stopped_workers_quntil_providers(
+          null, null, null, null, null, size, offset);
       for await (let row of paginatedIterator({ fetch })) {
         const worker = Worker.fromDb(row);
         seen(worker);
@@ -123,9 +126,10 @@ class Provisioner {
       const poolsByProvider = new Map();
 
       // Now for each worker pool we ask the providers to do stuff
-      const workerPools = (await this.db.fns.get_worker_pools_with_capacity(null, null))
+      const workerPools = (await this.db.fns.get_worker_pools_with_capacity_and_counts_by_state(null, null))
         .map(row => WorkerPool.fromDb(row));
       for (const workerPool of workerPools) {
+        const start = process.hrtime.bigint();
         const { providerId, previousProviderIds, workerPoolId } = workerPool;
         const provider = this.providers.get(providerId);
         if (!provider) {
@@ -184,9 +188,12 @@ class Provisioner {
 
         }));
 
+        const duration = Number(process.hrtime.bigint() - start) / 1e9;
+
         this.monitor.log.workerPoolProvisioned({
           workerPoolId: workerPool.workerPoolId,
           providerId: workerPool.providerId,
+          duration,
         });
       }
 

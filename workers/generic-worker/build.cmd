@@ -23,5 +23,12 @@ git rev-parse HEAD > revision.txt
 set /p REVISION=< revision.txt
 del revision.txt
 set GORACE=history_size=7
-go test -ldflags "-X github.com/taskcluster/taskcluster/workers/generic-worker.revision=%REVISION%" ./... || exit /b %ERRORLEVEL%
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: The version number in this line is automatically updated by
+:: infrastructure/tooling/src/release/tasks.js
+:: when a new major release is made.
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+go test -ldflags "-X github.com/taskcluster/taskcluster/v44/workers/generic-worker.revision=%REVISION%" ./... || exit /b %ERRORLEVEL%
+
 ineffassign . || exit /b %ERRORLEVEL%

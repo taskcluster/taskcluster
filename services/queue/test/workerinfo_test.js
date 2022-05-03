@@ -36,10 +36,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // emulate "creation" by seeing the worker, quarantining if necessary, and seeing tasks
     const db = await helper.load('db');
-    await db.fns.queue_worker_seen({ task_queue_id_in, worker_group_in, worker_id_in, expires_in });
+    await db.fns.queue_worker_seen_with_last_date_active({
+      task_queue_id_in,
+      worker_group_in,
+      worker_id_in,
+      expires_in,
+    });
 
     if (opts.quarantineUntil) {
-      // quarantine_queue_worker would bump the expires column, so we set it manually
+      // quarantine_queue_worker_with_last_date_active would bump the expires column, so we set it manually
       await helper.withDbClient(async client => {
         await client.query(`
           update queue_workers
@@ -256,6 +261,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(result.workers[0].latestTask.taskId === taskId2, `expected ${taskId2}`);
     assert(
       new Date(result.workers[0].firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`,
+    );
+    assert(
+      new Date(result.workers[0].lastDateActive).getTime() === worker.lastDateActive.getTime(), `expected ${worker.lastDateActive}`,
     );
   });
 
@@ -604,6 +612,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(result.workerId === worker.workerId, `expected ${worker.workerId}`);
     assert(new Date(result.expires).getTime() === worker.expires.getTime(), `expected ${worker.expires}`);
     assert(new Date(result.firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`);
+    assert(new Date(result.lastDateActive).getTime() === worker.lastDateActive.getTime(), `expected ${worker.lastDateActive}`);
     assert(result.recentTasks[0].taskId === taskId, `expected ${taskId}`);
     assert(result.recentTasks[0].runId === 0, 'expected 0');
     assert(result.recentTasks[1].taskId === taskId, `expected ${taskId}`);

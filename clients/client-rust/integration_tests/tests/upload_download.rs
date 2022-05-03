@@ -28,6 +28,7 @@ fn get_client() -> Option<ClientBuilder> {
     } else {
         match env::var("NO_TEST_SKIP") {
             Ok(_) => panic!(
+                "{}",
                 "NO_TEST_SKIP is set but TASKCLUSTER_{ROOT_URL,CLIENT_ID,ACCESS_TOKEN} are not!"
             ),
             Err(_) => return None,

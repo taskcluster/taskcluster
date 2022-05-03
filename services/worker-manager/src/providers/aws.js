@@ -144,6 +144,9 @@ class AwsProvider extends Provider {
           kind: 'creation-error',
           title: 'User Data is too long',
           description: 'Try removing some workerConfiguration and consider putting it in a secret',
+          extra: {
+            config: config.launchConfig,
+          },
         });
       }
 
@@ -215,6 +218,9 @@ class AwsProvider extends Provider {
           kind: 'creation-error',
           title: 'Instance Creation Error',
           description: `Error calling AWS API: ${e.message}`,
+          extra: {
+            config: config.launchConfig,
+          },
         });
       }
 
@@ -414,7 +420,11 @@ class AwsProvider extends Provider {
   }
 
   async scanCleanup() {
-    this.monitor.log.scanSeen({ providerId: this.providerId, seen: this.seen });
+    this.monitor.log.scanSeen({
+      providerId: this.providerId,
+      seen: this.seen,
+      total: Provider.calcSeenTotal(this.seen),
+    });
   }
 
   /**

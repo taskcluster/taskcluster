@@ -27,7 +27,7 @@ properties:
           additionalProperties: false
           required: [id]
       additionalProperties: false
-      required: [name, privateIPAllocationMethod, subnet, publicIPAddress]
+      required: [name, privateIPAllocationMethod, subnet]
     uniqueItems: false
 additionalProperties: false
 required: [location, ipConfigurations]

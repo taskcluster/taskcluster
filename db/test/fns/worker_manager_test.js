@@ -43,12 +43,26 @@ suite(testing.suiteName(), function() {
       wp.owner || 'me@me.com',
       wp.email_on_error || false,
     ];
-    const with_cap = await db.fns.update_worker_pool_with_capacity(...input);
+    const with_cap = await db.fns.update_worker_pool_with_capacity_and_counts_by_state(...input);
     for (const wp of with_cap) {
-      assert(wp.current_capacity !== undefined);
-      delete wp.current_capacity;
+      assert(wp.requested_count === 0);
+      assert(wp.running_count === 0);
+      assert(wp.stopping_count === 0);
+      assert(wp.stopped_count === 0);
+      assert(wp.requested_capacity === 0);
+      assert(wp.running_capacity === 0);
+      assert(wp.stopping_capacity === 0);
+      assert(wp.stopped_capacity === 0);
+      delete wp.requested_count;
+      delete wp.running_count;
+      delete wp.stopping_count;
+      delete wp.stopped_count;
+      delete wp.requested_capacity;
+      delete wp.running_capacity;
+      delete wp.stopping_capacity;
+      delete wp.stopped_capacity;
     }
-    const old = await db.deprecatedFns.update_worker_pool(...input);
+    const old = await db.deprecatedFns.update_worker_pool_with_capacity(...input);
     // We override previous_provider_id in this comparison because a side-effect
     // of calling this function is updating that value so we can't compare here
     assert.deepEqual({ ...with_cap[0], previous_provider_id: '' }, { ...old[0], previous_provider_id: '' });
@@ -115,23 +129,51 @@ suite(testing.suiteName(), function() {
   };
 
   const get_worker_pool = async (db, worker_pool_id) => {
-    const with_cap = await db.fns.get_worker_pool_with_capacity(worker_pool_id);
+    const with_cap = await db.fns.get_worker_pool_with_capacity_and_counts_by_state(worker_pool_id);
     for (const wp of with_cap) {
-      assert(wp.current_capacity !== undefined);
-      delete wp.current_capacity;
+      assert(wp.requested_count === 0);
+      assert(wp.running_count === 0);
+      assert(wp.stopping_count === 0);
+      assert(wp.stopped_count === 0);
+      assert(wp.requested_capacity === 0);
+      assert(wp.running_capacity === 0);
+      assert(wp.stopping_capacity === 0);
+      assert(wp.stopped_capacity === 0);
+      delete wp.requested_count;
+      delete wp.running_count;
+      delete wp.stopping_count;
+      delete wp.stopped_count;
+      delete wp.requested_capacity;
+      delete wp.running_capacity;
+      delete wp.stopping_capacity;
+      delete wp.stopped_capacity;
     }
-    const old = await db.deprecatedFns.get_worker_pool(worker_pool_id);
+    const old = await db.deprecatedFns.get_worker_pool_with_capacity(worker_pool_id);
     assert.deepEqual(with_cap, old);
     return with_cap;
   };
 
   const get_worker_pools = async (db, page_size, page_offset) => {
-    const with_cap = await db.fns.get_worker_pools_with_capacity(page_size, page_offset);
+    const with_cap = await db.fns.get_worker_pools_with_capacity_and_counts_by_state(page_size, page_offset);
     for (const wp of with_cap) {
-      assert(wp.current_capacity !== undefined);
-      delete wp.current_capacity;
+      assert(wp.requested_count === 0);
+      assert(wp.running_count === 0);
+      assert(wp.stopping_count === 0);
+      assert(wp.stopped_count === 0);
+      assert(wp.requested_capacity === 0);
+      assert(wp.running_capacity === 0);
+      assert(wp.stopping_capacity === 0);
+      assert(wp.stopped_capacity === 0);
+      delete wp.requested_count;
+      delete wp.running_count;
+      delete wp.stopping_count;
+      delete wp.stopped_count;
+      delete wp.requested_capacity;
+      delete wp.running_capacity;
+      delete wp.stopping_capacity;
+      delete wp.stopped_capacity;
     }
-    const old = await db.deprecatedFns.get_worker_pools(page_size, page_offset);
+    const old = await db.deprecatedFns.get_worker_pools_with_capacity(page_size, page_offset);
     assert.deepEqual(with_cap, old);
     return with_cap;
   };
@@ -536,13 +578,13 @@ suite(testing.suiteName(), function() {
           await client.query(`
             insert
             into queue_workers
-            (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim) values
-            ($1, $2, $3, jsonb_build_array(), $4, now() + interval '1 hour', now() - interval '1 hour')
+            (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim, last_date_active) values
+            ($1, $2, $3, jsonb_build_array(), $4, now() + interval '1 hour', now() - interval '1 hour', now())
           `, [workerPoolId, workerGroup, workerId, quarantineUntil]);
         }
       });
 
-      const rows = await db.fns.get_non_stopped_workers_quntil(null, null, null, null, null);
+      const rows = await db.fns.get_non_stopped_workers_quntil_providers(null, null, null, null, null, null, null);
 
       assert.equal(rows.length, 6);
 
@@ -564,6 +606,44 @@ suite(testing.suiteName(), function() {
         assert(row.etag !== undefined);
         assert.deepEqual(row.quarantine_until, nonStoppedIds[i] === 4 ? quarantineUntil : null);
         i++;
+      }
+    });
+
+    helper.dbTest('get non-stopped workers by provider', async function(db) {
+      const now = new Date();
+
+      let i = 0;
+      for (const provider_id of ["azure", "static", "aws", "gcp"]) {
+        await create_worker(db, {
+          worker_id: `id${i++}`,
+          state: 'running',
+          provider_id,
+          created: now,
+          last_modified: now,
+          last_checked: now,
+          expires: now,
+        });
+      }
+
+      const testRuns = [
+        { providers_filter_cond: null, providers_filter_value: null, expected_count: 4 },
+        { providers_filter_cond: '=', providers_filter_value: null, expected_count: 4 }, // ignoring partial condition
+        { providers_filter_cond: null, providers_filter_value: 'a', expected_count: 4 }, // ignoring partial condition
+        { providers_filter_cond: '=', providers_filter_value: 'aws', expected_count: 1 },
+        { providers_filter_cond: '<>', providers_filter_value: 'aws', expected_count: 3 },
+        { providers_filter_cond: '=', providers_filter_value: 'aws,static', expected_count: 2 },
+        { providers_filter_cond: '<>', providers_filter_value: 'aws,static', expected_count: 2 },
+        { providers_filter_cond: '=', providers_filter_value: 'static', expected_count: 1 },
+        { providers_filter_cond: '<>', providers_filter_value: 'non-existent', expected_count: 4 },
+        { providers_filter_cond: '=', providers_filter_value: 'non-existent', expected_count: 0 },
+        { providers_filter_cond: '=', providers_filter_value: 'azure,static,aws,gcp', expected_count: 4 },
+      ];
+
+      for (const run of testRuns) {
+        const rows = await db.fns.get_non_stopped_workers_quntil_providers(
+          null, null, null, run.providers_filter_cond, run.providers_filter_value, null, null);
+
+        assert.equal(rows.length, run.expected_count);
       }
     });
 
@@ -901,17 +981,44 @@ suite(testing.suiteName(), function() {
   suite('existing capacity', function() {
     helper.dbTest('no workers', async function(db) {
       await create_worker_pool(db);
-      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 0);
+      const row = (await db.fns.get_worker_pool_with_capacity_and_counts_by_state('wp/id'))[0];
+      assert.equal(row.current_capacity, 0);
+      assert.equal(row.requested_count, 0);
+      assert.equal(row.running_count, 0);
+      assert.equal(row.stopping_count, 0);
+      assert.equal(row.stopped_count, 0);
+      assert.equal(row.requested_capacity, 0);
+      assert.equal(row.running_capacity, 0);
+      assert.equal(row.stopping_capacity, 0);
+      assert.equal(row.stopped_capacity, 0);
     });
     helper.dbTest('single worker, capacity 1', async function(db) {
       await create_worker_pool(db);
       await create_worker(db, { capacity: 1, state: 'running' });
-      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 1);
+      const row = (await db.fns.get_worker_pool_with_capacity_and_counts_by_state('wp/id'))[0];
+      assert.equal(row.current_capacity, 1);
+      assert.equal(row.requested_count, 0);
+      assert.equal(row.running_count, 1);
+      assert.equal(row.stopping_count, 0);
+      assert.equal(row.stopped_count, 0);
+      assert.equal(row.requested_capacity, 0);
+      assert.equal(row.running_capacity, 1);
+      assert.equal(row.stopping_capacity, 0);
+      assert.equal(row.stopped_capacity, 0);
     });
     helper.dbTest('single worker, capacity > 1', async function(db) {
       await create_worker_pool(db);
       await create_worker(db, { capacity: 64, state: 'running' });
-      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 64);
+      const row = (await db.fns.get_worker_pool_with_capacity_and_counts_by_state('wp/id'))[0];
+      assert.equal(row.current_capacity, 64);
+      assert.equal(row.requested_count, 0);
+      assert.equal(row.running_count, 1);
+      assert.equal(row.stopping_count, 0);
+      assert.equal(row.stopped_count, 0);
+      assert.equal(row.requested_capacity, 0);
+      assert.equal(row.running_capacity, 64);
+      assert.equal(row.stopping_capacity, 0);
+      assert.equal(row.stopped_capacity, 0);
     });
     helper.dbTest('multiple workers, capacity 1', async function(db) {
       await create_worker_pool(db);
@@ -919,7 +1026,16 @@ suite(testing.suiteName(), function() {
       await create_worker(db, { worker_id: 'foo2', capacity: 1, state: 'running' });
       await create_worker(db, { worker_id: 'foo3', capacity: 1, state: 'running' });
       await create_worker(db, { worker_id: 'foo4', capacity: 1, state: 'running' });
-      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 4);
+      const row = (await db.fns.get_worker_pool_with_capacity_and_counts_by_state('wp/id'))[0];
+      assert.equal(row.current_capacity, 4);
+      assert.equal(row.requested_count, 0);
+      assert.equal(row.running_count, 4);
+      assert.equal(row.stopping_count, 0);
+      assert.equal(row.stopped_count, 0);
+      assert.equal(row.requested_capacity, 0);
+      assert.equal(row.running_capacity, 4);
+      assert.equal(row.stopping_capacity, 0);
+      assert.equal(row.stopped_capacity, 0);
     });
     helper.dbTest('multiple workers, capacity > 1', async function(db) {
       await create_worker_pool(db);
@@ -927,7 +1043,16 @@ suite(testing.suiteName(), function() {
       await create_worker(db, { worker_id: 'foo2', capacity: 64, state: 'running' });
       await create_worker(db, { worker_id: 'foo3', capacity: 64, state: 'running' });
       await create_worker(db, { worker_id: 'foo4', capacity: 1, state: 'running' });
-      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 161);
+      const row = (await db.fns.get_worker_pool_with_capacity_and_counts_by_state('wp/id'))[0];
+      assert.equal(row.current_capacity, 161);
+      assert.equal(row.requested_count, 0);
+      assert.equal(row.running_count, 4);
+      assert.equal(row.stopping_count, 0);
+      assert.equal(row.stopped_count, 0);
+      assert.equal(row.requested_capacity, 0);
+      assert.equal(row.running_capacity, 161);
+      assert.equal(row.stopping_capacity, 0);
+      assert.equal(row.stopped_capacity, 0);
     });
     helper.dbTest('multiple workers, multiple states', async function(db) {
       await create_worker_pool(db);
@@ -935,12 +1060,21 @@ suite(testing.suiteName(), function() {
       await create_worker(db, { worker_id: 'foo2', capacity: 64, state: 'stopped' });
       await create_worker(db, { worker_id: 'foo3', capacity: 64, state: 'running' });
       await create_worker(db, { worker_id: 'foo4', capacity: 1, state: 'requested' });
-      assert.equal((await db.fns.get_worker_pool_with_capacity('wp/id'))[0].current_capacity, 97);
+      const row = (await db.fns.get_worker_pool_with_capacity_and_counts_by_state('wp/id'))[0];
+      assert.equal(row.current_capacity, 97);
+      assert.equal(row.requested_count, 1);
+      assert.equal(row.running_count, 2);
+      assert.equal(row.stopping_count, 0);
+      assert.equal(row.stopped_count, 1);
+      assert.equal(row.requested_capacity, 1);
+      assert.equal(row.running_capacity, 96);
+      assert.equal(row.stopping_capacity, 0);
+      assert.equal(row.stopped_capacity, 64);
     });
     helper.dbTest('no workers (multiple pools)', async function(db) {
       await create_worker_pool(db);
       await create_worker_pool(db, { worker_pool_id: 'ff/tt' });
-      const pools = (await db.fns.get_worker_pools_with_capacity(null, null)).sort();
+      const pools = (await db.fns.get_worker_pools_with_capacity_and_counts_by_state(null, null)).sort();
       assert.equal(pools[0].current_capacity, 0);
       assert.equal(pools[1].current_capacity, 0);
     });
@@ -948,7 +1082,7 @@ suite(testing.suiteName(), function() {
       await create_worker_pool(db);
       await create_worker_pool(db, { worker_pool_id: 'ff/tt' });
       await create_worker(db, { capacity: 4, state: 'running' });
-      const pools = (await db.fns.get_worker_pools_with_capacity(null, null)).sort();
+      const pools = (await db.fns.get_worker_pools_with_capacity_and_counts_by_state(null, null)).sort();
       assert.equal(pools[0].worker_pool_id, 'ff/tt');
       assert.equal(pools[1].worker_pool_id, 'wp/id');
       assert.equal(pools[0].current_capacity, 0);
@@ -962,7 +1096,7 @@ suite(testing.suiteName(), function() {
       await create_worker(db, { worker_id: 'foo3', capacity: 10, state: 'running', worker_pool_id: 'ff/tt' });
       await create_worker(db, { worker_id: 'foo4', capacity: 3, state: 'stopped' });
       await create_worker(db, { worker_id: 'foo5', capacity: 7, state: 'stopped', worker_pool_id: 'ff/tt' });
-      const pools = (await db.fns.get_worker_pools_with_capacity(null, null)).sort();
+      const pools = (await db.fns.get_worker_pools_with_capacity_and_counts_by_state(null, null)).sort();
       assert.equal(pools[0].worker_pool_id, 'ff/tt');
       assert.equal(pools[1].worker_pool_id, 'wp/id');
       assert.equal(pools[0].current_capacity, 10);

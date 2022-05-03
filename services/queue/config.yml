@@ -21,6 +21,11 @@ defaults:
     # Time delay before expiring worker info; notice this should be negative!
     workerInfoExpirationDelay:    '- 30 minutes'
 
+    # update `expires`, `last_date_active` values in postgres at this frequency;
+    # larger values give less accurate expires times, but reduce database traffic.
+    # In readable format, see: taskcluster.fromNow. Defaulting to 30 minutes
+    workerInfoUpdateFrequency:    !env:optional WORKER_INFO_UPDATE_FREQUENCY
+
     # Time extension of the expires property for task-group definitions.
     # This is entities holding the schedulerId for a task-group, hence, we
     # expire them later to avoid people creating tasks with a different

@@ -19,6 +19,7 @@ class Provider {
     estimator,
     validator,
     providerConfig,
+    providerType,
   }) {
     this.providerId = providerId;
     this.monitor = monitor;
@@ -29,6 +30,7 @@ class Provider {
     this.estimator = estimator;
     this.Worker = Worker;
     this.WorkerPoolError = WorkerPoolError;
+    this.providerType = providerType;
   }
 
   async setup() {
@@ -167,6 +169,9 @@ class Provider {
     });
   }
 
+  static calcSeenTotal(seen = {}) {
+    return Object.values(seen).reduce((sum, seen) => sum + seen, 0);
+  }
 }
 
 /**

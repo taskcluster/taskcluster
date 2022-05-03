@@ -53,6 +53,7 @@ web-server/write-docs) exec node services/web-server/src/main.js writeDocs;;
 worker-manager/web) exec node services/worker-manager/src/main.js server;;
 worker-manager/provisioner) exec node services/worker-manager/src/main.js runProvisioner;;
 worker-manager/workerscanner) exec node services/worker-manager/src/main.js workerScanner;;
+worker-manager/workerscanner-azure) exec node services/worker-manager/src/main.js workerScannerAzure;;
 worker-manager/expire-workers) exec node services/worker-manager/src/main.js expireWorkers;;
 worker-manager/expire-worker-pools) exec node services/worker-manager/src/main.js expireWorkerPools;;
 worker-manager/expire-errors) exec node services/worker-manager/src/main.js expireErrors;;

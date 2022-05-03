@@ -87,6 +87,7 @@ const DEFAULT_RESOURCES = {
   'worker_manager.web': ['100m', '100Mi'],
   'worker_manager.provisioner': ['50m', '200Mi'],
   'worker_manager.workerscanner': ['200m', '200Mi'],
+  'worker_manager.workerscanner_azure': ['200m', '200Mi'],
   'worker_manager.expire_workers': ['200m', '200Mi'],
   'worker_manager.expire_worker_pools': ['800m', '500Mi'],
   'worker_manager.expire_errors': ['800m', '500Mi'],

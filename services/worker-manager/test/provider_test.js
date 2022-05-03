@@ -176,5 +176,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         Severity: LEVELS.notice,
       });
     });
+
+    test('calc seen total', () => {
+      assert.equal(0, Provider.calcSeenTotal());
+      assert.equal(1, Provider.calcSeenTotal({
+        'gecko-t/cpu': 1,
+      }));
+      assert.equal(55, Provider.calcSeenTotal({
+        'gecko-t/win95-sp2': 33,
+        'gecko-t/win98-x64': 20,
+        'gecko-t/win7-gpu': 1,
+        'gecko-t/win7-x64': 1,
+      }));
+    });
   });
 });

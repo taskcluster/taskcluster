@@ -11,6 +11,8 @@ const DEFAULT_PORT = 5080;
 const STATIC_DIR = join(__dirname, 'src/static');
 const port = process.env.PORT || DEFAULT_PORT;
 
+const proxyTarget = process.env.TASKCLUSTER_ROOT_URL || 'http://localhost:3050';
+
 require('@babel/register')({
   presets: [require.resolve('@babel/preset-env')],
   cache: false,
@@ -60,20 +62,20 @@ module.exports = {
         },
         proxy: {
           '/login': {
-            target: 'http://localhost:3050',
+            target: proxyTarget,
             changeOrigin: true,
           },
           '/graphql': {
-            target: 'http://localhost:3050',
+            target: proxyTarget,
             changeOrigin: true,
           },
           '/subscription': {
             ws: true,
             changeOrigin: true,
-            target: 'ws://localhost:3050',
+            target: proxyTarget.replace(/^http(s)?:/, 'ws$1:'),
           },
           '/api/web-server': {
-            target: 'http://localhost:3050',
+            target: proxyTarget,
             changeOrigin: true,
           },
         },

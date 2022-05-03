@@ -1,3 +1,5 @@
+import { b64DecodeUnicode } from '../utils/base64';
+
 /**
  * UserSessions are immutable -- when anything about the session changes,
  * a new instance should replace the old.
@@ -20,7 +22,7 @@ export default class UserSession {
     let { encodedProfile } = options;
 
     if (encodedProfile) {
-      encodedProfile = JSON.parse(atob(encodedProfile));
+      encodedProfile = JSON.parse(b64DecodeUnicode(encodedProfile));
 
       return new UserSession({ ...options, profile: encodedProfile });
     }
