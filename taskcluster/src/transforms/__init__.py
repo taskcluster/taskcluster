@@ -1,3 +1,4 @@
+import copy
 import os
 import json
 
@@ -105,3 +106,22 @@ def parameterize_mounts(config, jobs):
                             rust_version=rust_version,
                             node_version=node_version)
         yield job
+
+
+@transforms.add
+def docker_worker_chunk(config, tasks):
+    for task in tasks:
+        total_chunks = task.pop("chunks", 5)
+        for chunk in range(1, total_chunks + 1):
+            c_task = copy.deepcopy(task)
+            c_task["name"] += f"-{chunk}"
+            c_task["description"] += f" #{chunk}"
+            c_task["run"]["command"] += f" --this-chunk {chunk} --total-chunks {total_chunks}"
+
+            # TODO: uncomment this block to add dependency to the release-publish
+            # task once we combine the two task graphs into one during release.
+            # # include release-publish dependency in the case of a release
+            # if config.params["tasks_for"] == "github-push":
+            #     c_task["dependencies"] = dict(release="release-publish")
+
+            yield c_task
