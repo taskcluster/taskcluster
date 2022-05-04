@@ -38,5 +38,6 @@ job-defaults:
 jobs:
   chunk:
     description: 'docker-worker test chunk'
+    chunks: 5
     run:
       command: ./test/docker-worker-test
