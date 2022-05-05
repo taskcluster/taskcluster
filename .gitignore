@@ -74,3 +74,6 @@ next-task-user.json
 
 # output from taskgraph cli
 __pycache__
+
+# docker-compose artifacts
+/docker/buckets
