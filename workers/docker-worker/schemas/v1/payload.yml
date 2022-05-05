@@ -20,7 +20,7 @@ definitions:
         title: Date when artifact should expire must be in the future.
         type: string
         format: date-time
-    additionalProperties: true
+    additionalProperties: false
     required:
       - type
       - path
@@ -47,7 +47,7 @@ properties:
               - docker-image
           name:
             type: string
-        additionalProperties: true
+        additionalProperties: false
         required:
           - type
           - name
@@ -62,7 +62,7 @@ properties:
             type: string
           path:
             type: string
-        additionalProperties: true
+        additionalProperties: false
         required:
           - type
           - namespace
@@ -78,7 +78,7 @@ properties:
             type: string
           path:
             type: string
-        additionalProperties: true
+        additionalProperties: false
         required:
           - type
           - taskId
@@ -128,9 +128,9 @@ properties:
             description: Mount /dev/kvm from the host in the container.
             type: boolean
         required: []
-        additionalProperties: true
+        additionalProperties: false
     required: []
-    additionalProperties: true
+    additionalProperties: false
   command:
     title: Docker command to run (see docker api).
     type: array
@@ -184,7 +184,7 @@ properties:
           title: Exit statuses
           type: number
     required: []
-    additionalProperties: true
+    additionalProperties: false
   artifacts:
     type: object
     title: Artifacts
@@ -261,8 +261,8 @@ properties:
           build a level of trust for the artifacts produced by the task and the
           environment it ran in.
     required: []
-    additionalProperties: true
-additionalProperties: true
+    additionalProperties: false
+additionalProperties: false
 required:
   - image
   - maxRunTime
