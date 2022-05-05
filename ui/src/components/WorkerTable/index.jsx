@@ -95,12 +95,22 @@ export default class WorkerTable extends Component {
     });
   };
 
+  componentDidMount() {
+    let query = parse(this.props.location.search.slice(1));
+
+    query = query.sortBy ? query : { sortBy: 'started', sortDirection: 'desc' };
+
+    this.props.history.replace({
+      search: stringify(query, { addQueryPrefix: true }),
+    });
+  }
+
   render() {
     const { classes, worker } = this.props;
     const query = parse(this.props.location.search.slice(1));
     const { sortBy, sortDirection } = query.sortBy
       ? query
-      : { sortBy: null, sortDirection: null };
+      : { sortBy: 'started', sortDirection: 'desc' };
     const iconSize = 16;
     const items = this.getTableData({ sortBy, sortDirection, worker });
     const headers = [
@@ -148,7 +158,14 @@ export default class WorkerTable extends Component {
                 <em>n/a</em>
               )}
             </TableCell>
-            <TableCell>{task.taskId}</TableCell>
+            <TableCell>
+              <Link to={`/tasks/${task.taskId}/runs/${task.runId}`}>
+                <TableCellItem button>
+                  {task.taskId}
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
+            </TableCell>
             {task.started ? (
               <CopyToClipboardTableCell
                 tooltipTitle={task.started}
