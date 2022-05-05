@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.13.5
+
+### GENERAL
+
+▶ [patch]
+Add null check to `lastDateActive` in queue workers serialize() func.
+
 ## v44.13.4
 
 No changes

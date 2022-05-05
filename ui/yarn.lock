@@ -6020,10 +6020,10 @@ hastscript@^6.0.0:
     property-information "^5.0.0"
     space-separated-tokens "^1.0.0"
 
-hawk@^9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/hawk/-/hawk-9.0.0.tgz#406a1f2f92dd6948a50620e5cafd5491007764de"
-  integrity sha512-xTkUIwwAI6d5//1ofvWCDM7YYAEAo/mFqhEW7S/m9+nLZqkOzSz8lTLKk6cHvJGax3UrbljfP8P+PFPybGcxZA==
+hawk@^9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/hawk/-/hawk-9.0.1.tgz#0be51769103e76fe97a97ae7fa356c313bb93160"
+  integrity sha512-H2E+5ATFEXmorgVzYl3NzG3PCo2e+euYrHDnRpLLdOtJrQHGRXrJT9/joWnrkHCtzDZkaNoLXg/+TsSkD06eNg==
   dependencies:
     "@hapi/b64" "5.x.x"
     "@hapi/boom" "9.x.x"
@@ -11015,13 +11015,13 @@ tapable@^1.0.0, tapable@^1.1.3:
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-1.1.3.tgz#a1fccc06b58db61fd7a45da2da44f5f3a3e67ba2"
   integrity sha512-4WK/bYZmj8xLr+HUCODHGF1ZFzsYffasLUgEiMBY4fgtltdO6B4WJtlSbPaDTLpYTcGVwM2qLnFTICEcNxs3kA==
 
-taskcluster-client-web@^43.0.0:
-  version "43.2.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-client-web/-/taskcluster-client-web-43.2.0.tgz#d051df26299fb54d0c597ebf5fe48826e19e819a"
-  integrity sha512-vL6c3tMtMFCeBe0ZP70M1LbRDEU+aowbwSwsv7B518MABFNvl3bql646nirdbVqAIRWxQcVpT4cTbw9A6zXGQw==
+taskcluster-client-web@^44.13.5:
+  version "44.13.5"
+  resolved "https://registry.yarnpkg.com/taskcluster-client-web/-/taskcluster-client-web-44.13.5.tgz#fb18577131db02d7d4dceb0e6abc54d444cad18d"
+  integrity sha512-Nq2gylWhfltSgvOcKveW5onrGTYcLoZvAPSU5UM3HjcJADJ9FQzw1oXxIAEPDUI693fnJhidfAwO+0TDw9bJFg==
   dependencies:
     crypto-js "^4.0.0"
-    hawk "^9.0.0"
+    hawk "^9.0.1"
     query-string "^7.0.0"
     taskcluster-lib-urls "^13.0.0"
 

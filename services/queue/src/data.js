@@ -525,7 +525,7 @@ class Worker {
       expires: this.expires.toJSON(),
       firstClaim: this.firstClaim.toJSON(),
       recentTasks: _.cloneDeep(this.recentTasks),
-      lastDateActive: this.lastDateActive.toJSON(),
+      lastDateActive: this.lastDateActive?.toJSON(),
     };
   }
 
