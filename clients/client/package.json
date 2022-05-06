@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-client",
-  "version": "44.8.3",
+  "version": "44.13.5",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Client for interfacing taskcluster components",
   "license": "MPL-2.0",
@@ -12,14 +12,14 @@
   "dependencies": {
     "debug": "^4.1.1",
     "got": "^11.8.1",
-    "hawk": "^9.0.0",
+    "hawk": "^9.0.1",
     "lodash": "^4.17.4",
     "slugid": "^2.0.0",
     "taskcluster-lib-urls": "^13.0.0"
   },
   "devDependencies": {
     "http-proxy": "^1.18.0",
-    "mocha": "^9.2.0",
+    "mocha": "^9.2.2",
     "nock": "^13.0.0",
     "stream-buffers": "^3.0.2"
   },

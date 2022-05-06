@@ -1266,6 +1266,9 @@
         "taskcluster_client_id": {
           "type": "string"
         },
+        "worker_info_update_frequency": {
+          "type": "string"
+        },
         "write_db_url": {
           "type": "string"
         }
@@ -1811,12 +1814,33 @@
                 "cpu"
               ],
               "type": "object"
+            },
+            "workerscanner_azure": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                },
+                "replicas": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
+              "type": "object"
             }
           },
           "required": [
             "web",
             "provisioner",
             "workerscanner",
+            "workerscanner_azure",
             "expire_workers",
             "expire_worker_pools",
             "expire_errors"

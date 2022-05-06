@@ -3155,13 +3155,36 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/worker-manager/logs",
-                  "title": "logs"
+                  "path": "reference/core/worker-manager/exchanges",
+                  "title": "exchanges"
                 },
                 "path": "reference/core/worker-manager/api",
                 "prev": {
                   "path": "reference/core/worker-manager/README",
                   "title": "worker-manager"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 2,
+                  "title": "exchanges"
+                },
+                "name": "exchanges",
+                "next": {
+                  "path": "reference/core/worker-manager/logs",
+                  "title": "logs"
+                },
+                "path": "reference/core/worker-manager/exchanges",
+                "prev": {
+                  "path": "reference/core/worker-manager/api",
+                  "title": "api"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -3183,8 +3206,8 @@
                 },
                 "path": "reference/core/worker-manager/logs",
                 "prev": {
-                  "path": "reference/core/worker-manager/api",
-                  "title": "api"
+                  "path": "reference/core/worker-manager/exchanges",
+                  "title": "exchanges"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",

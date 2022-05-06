@@ -1,4 +1,4 @@
-dockerImage: taskcluster/taskcluster:v44.8.3
+dockerImage: taskcluster/taskcluster:v44.13.5
 trustProxy: true
 forceSSL: false
 nodeEnv: production
@@ -192,6 +192,10 @@ worker_manager:
       cpu: 50m
       memory: 200Mi
     workerscanner:
+      replicas: 1
+      cpu: 200m
+      memory: 200Mi
+    workerscanner_azure:
       replicas: 1
       cpu: 200m
       memory: 200Mi

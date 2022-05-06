@@ -9,6 +9,7 @@ fi
 
 go_version=$(<${repo_root}/.go-version)
 go_version=${go_version#go}
+golangci_lint_version=$(<${repo_root}/.golangci-lint-version)
 if [ -z "${go_version}" ]; then
     echo "Could not determine go version from top-level .go-version"
     exit 1
@@ -53,7 +54,7 @@ COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=golang /go /go
 ENV GOPATH /go
 ENV PATH \$GOPATH/bin:/usr/local/go/bin:\$PATH
-RUN curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b \$GOPATH/bin v1.27.0
+RUN curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b \$GOPATH/bin v${golangci_lint_version}
 COPY pginstall /pginstall
 RUN bash /pginstall && rm /pginstall
 ENV TEST_DB_URL=postgresql://postgres@localhost/postgres

@@ -8,9 +8,9 @@ cd "$(dirname "${0}")"
 #
 # DO NOT CHANGE HERE!
 ####################################################################
-# Support go 1.17 or higher.
+# Support go 1.18 or higher.
 GO_MAJOR_VERSION=1
-MIN_GO_MINOR_VERSION=17
+MIN_GO_MINOR_VERSION=18
 
 unset CGO_ENABLED
 unset GOOS
@@ -122,6 +122,11 @@ fi
 
 ls -1 "$OUTPUT_DIR"/generic-worker-*
 
+####################################################################
+# The version number in these lines is automatically updated by
+#   infrastructure/tooling/src/release/tasks.js
+# when a new major release is made.
+####################################################################
 CGO_ENABLED=0 go get \
   github.com/taskcluster/taskcluster/v44/tools/livelog \
   github.com/taskcluster/taskcluster/v44/tools/taskcluster-proxy \
@@ -133,9 +138,19 @@ CGO_ENABLED=0 go get \
 go mod tidy
 
 if $TEST; then
+####################################################################
+# The version number in this line is automatically updated by
+#   infrastructure/tooling/src/release/tasks.js
+# when a new major release is made.
+####################################################################
   CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags simple -ldflags "-X github.com/taskcluster/taskcluster/v44/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   MYGOHOSTOS="$(go env GOHOSTOS)"
   if [ "${MYGOHOSTOS}" == "linux" ] || [ "${MYGOHOSTOS}" == "darwin" ]; then
+####################################################################
+# The version number in this line is automatically updated by
+#   infrastructure/tooling/src/release/tasks.js
+# when a new major release is made.
+####################################################################
     CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags docker -ldflags "-X github.com/taskcluster/taskcluster/v44/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   fi
   golint $(go list ./...) | sed "s*${PWD}/**"

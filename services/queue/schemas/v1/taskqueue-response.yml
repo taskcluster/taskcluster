@@ -29,9 +29,10 @@ properties:
   lastDateActive:
     title:        "Task queue Last Date Active"
     description: |
-      Date of the last time this task queue was seen active. `lastDateActive` is updated every 6 hours
-      but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
-      of when the task queue was last seen active.
+      Date of the last time this task queue was seen active. Updated each time a worker calls
+      `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
+      `lastDateActive` is updated every half hour but may be off by up-to half an hour.
+      Nonetheless, `lastDateActive` is a good indicator of when the task queue was last seen active.
     type:         string
     format:       date-time
 additionalProperties: false

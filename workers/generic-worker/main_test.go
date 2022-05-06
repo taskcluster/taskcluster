@@ -47,9 +47,12 @@ func TestIdleWithoutCrash(t *testing.T) {
 // number in build.sh.
 func TestRevisionNumberStored(t *testing.T) {
 	if !regexp.MustCompile("^[0-9a-f]{40}$").MatchString(revision) {
+
+		// The version number in this error message is automatically updated on release by infrastructure/tooling/src/release/tasks.js
+
 		t.Fatalf("Git revision could not be determined - got '%v' but expected to match regular expression '^[0-9a-f](40)$'\n"+
-			"Did you specify `-ldflags \"-X github.com/taskcluster/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
-			"Try using build.sh / build.cmd in root directory of generic-worker source code repository.", revision)
+			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v44/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
+			"Try building generic-worker using the /workers/generic-worker/build.(sh|cmd) script in the taskcluster monorepo.", revision)
 	}
 	t.Logf("Git revision successfully retrieved: %v", revision)
 }

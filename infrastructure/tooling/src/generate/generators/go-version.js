@@ -65,12 +65,6 @@ exports.tasks = [{
         /MIN_GO_MINOR_VERSION=[0-9]+/,
         `MIN_GO_MINOR_VERSION=${goVersionMinor}`));
 
-    utils.status({ message: 'workers/generic-worker/clean-builds.sh' });
-    await modifyRepoFile('workers/generic-worker/clean-builds.sh',
-      contents => contents.replace(
-        /go[0-9]+\.[0-9]+\.[0-9]+/g,
-        `${goVersion}`));
-
     utils.status({ message: 'workers/generic-worker/gw-decision-task/tasks.yml' });
     await modifyRepoFile('workers/generic-worker/gw-decision-task/tasks.yml',
       contents => contents.replace(

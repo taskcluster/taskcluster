@@ -3,6 +3,264 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.13.5
+
+### GENERAL
+
+▶ [patch]
+Add null check to `lastDateActive` in queue workers serialize() func.
+
+## v44.13.4
+
+No changes
+
+## v44.13.3
+
+### GENERAL
+
+▶ [patch] [bug 1767244](http://bugzil.la/1767244)
+Upgrade `hawk` to v9.0.1 to fix a vuln.
+
+## v44.13.2
+
+### DEVELOPERS
+
+▶ [patch]
+Fix build.sh
+
+## v44.13.1
+
+### GENERAL
+
+▶ [patch]
+Upgrade Node.js version from v16.14.2 to v16.15.0.
+
+### DEPLOYERS
+
+▶ [patch] [#5393](https://github.com/taskcluster/taskcluster/issues/5393)
+Make `worker_info_update_frequency` optional.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#5336](https://github.com/taskcluster/taskcluster/issues/5336)
+Fix scroll to bottom link
+
+### USERS
+
+▶ [patch] [#5395](https://github.com/taskcluster/taskcluster/issues/5395)
+Fixed exception in Github service's latest endpoint when using checks reporting
+
+## v44.13.0
+
+### GENERAL
+
+▶ [patch] [#5373](https://github.com/taskcluster/taskcluster/issues/5373)
+Allow local UI to run against existing taskcluster installation using `TASKCLUSTER_ROOT_URL`.
+
+▶ [patch] [#5362](https://github.com/taskcluster/taskcluster/issues/5362)
+Display task artifacts sorted by importance
+
+▶ [patch] [#5348](https://github.com/taskcluster/taskcluster/issues/5348)
+Fix artifact copy functionality.
+
+▶ [patch]
+Fix null check error from #5380
+
+▶ [patch]
+Upgrades some vulnerable rust deps and rust toolchain from 1.49.0 to 1.60.0.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#4999](https://github.com/taskcluster/taskcluster/issues/4999)
+Trigger immediate resource provisioning for Azure.
+
+Since operations are already async, this shouldn't slow down provisioning loop.
+It is done in attempt to prevent azure workers stay in 'Requested' state until the next `workerScannerAzure` loop picks it up.
+
+▶ [patch] [bug 1613593](http://bugzil.la/1613593)
+Adding extra information about failed worker provisioning
+
+### USERS
+
+▶ [patch] [#5364](https://github.com/taskcluster/taskcluster/issues/5364)
+The `github/v1/repository/<owner>/<repo>/<branch>/latest` endpoint now supports projects using `checks-v2` reporting.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency jwks-rsa to v2.1.0 (ea3902996)
+
+</details>
+
+## v44.12.3
+
+### GENERAL
+
+▶ [patch]
+Return `lastDateActive` from `queue.listWorkers()`.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency eslint to v8.14.0 (3d31a1b0b)
+
+</details>
+
+## v44.12.2
+
+### GENERAL
+
+▶ [patch]
+Update `ViewWorkers` query to get `lastDateActive`. Update some schemas too.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency @azure/ms-rest-js to v2.6.1 (02b72bc2e)
+
+</details>
+
+## v44.12.1
+
+### GENERAL
+
+▶ [patch]
+`go get` no longer builds or installs packages in module-aware mode, so replacing with `go install`.
+
+## v44.12.0
+
+### GENERAL
+
+▶ [minor]
+Go update from 1.17.8 to 1.18.1. Also upgrade golangci-lint from 1.44.2 to 1.45.2.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#3163](https://github.com/taskcluster/taskcluster/issues/3163)
+Add extra debug information for worker manager provisioner and scanner.
+
+### USERS
+
+▶ [minor] [#4366](https://github.com/taskcluster/taskcluster/issues/4366)
+Display the last date active in the queue workers view.
+
+### DEVELOPERS
+
+▶ [minor] [#4366](https://github.com/taskcluster/taskcluster/issues/4366)
+Add `last_date_active` column to `queue_workers` table. Add `queue_worker_seen_with_last_date_active`, `quarantine_queue_worker_with_last_date_active`, `get_queue_worker_tqid_with_last_date_active`, and `get_queue_workers_tqid_with_last_date_active` functions for this new column.
+
+Deprecates `quarantine_queue_worker`, `get_queue_worker_tqid`, `get_queue_workers_tqid`, and `queue_worker_seen`.
+
+## v44.11.2
+
+
+
+## v44.11.1
+
+### GENERAL
+
+▶ [patch]
+Add new counts/capacities to graphql schema.
+
+## v44.11.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#4987](https://github.com/taskcluster/taskcluster/issues/4987)
+Worker manager scanner split in two: non-azure providers and azure.
+
+### USERS
+
+▶ [minor] [#4942](https://github.com/taskcluster/taskcluster/issues/4942)
+Addresses #4942. Add worker capacities by state for worker pools to UI.
+
+## v44.10.0
+
+### DEVELOPERS
+
+▶ [minor] [#4942](https://github.com/taskcluster/taskcluster/issues/4942)
+Addresses #4942. Add `get_worker_pool_with_capacity_and_counts_by_state`, `get_worker_pools_with_capacity_and_counts_by_state`, and `update_worker_pool_with_capacity_and_counts_by_state` functions to get worker counts and capacity by state for worker pools.
+
+Deprecates `get_worker_pool_with_capacity`, `get_worker_pools_with_capacity`, and `update_worker_pool_with_capacity`.
+
+## v44.9.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Change azure nic payload.
+
+## v44.9.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#4987](https://github.com/taskcluster/taskcluster/issues/4987)
+Azure cannot create VMs without with Network interface. We create network interface always, but skip provisioning of public IP when it's not needed.
+There might be a case where public IP is needed for RDP though.
+
+## v44.9.0
+
+### GENERAL
+
+▶ [patch]
+The existing pulse messages for worker-manager are now documented.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#4987](https://github.com/taskcluster/taskcluster/issues/4987)
+Skip public network creation for Azure workers that only have generic worker config.
+
+### OTHER
+
+▶ Additional change not described here: [#5323](https://github.com/taskcluster/taskcluster/issues/5323).
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update dependency node-forge to v1.3.0 [SECURITY] (d53f7ce2a)
+
+</details>
+
+## v44.8.5
+
+### GENERAL
+
+▶ [patch]
+Upgrade Node.js version from v16.14.0 to v16.14.2 for OpenSSL security patch.
+
+▶ [patch]
+Upgrade to latest `minimist` version to address https://github.com/taskcluster/taskcluster/security/dependabot/73.
+
+▶ [patch]
+Upgrade to latest `mocha` version to address https://github.com/taskcluster/taskcluster/security/dependabot/70, https://github.com/taskcluster/taskcluster/security/dependabot/71, and https://github.com/taskcluster/taskcluster/security/dependabot/72.
+
+### USERS
+
+▶ [patch] [#5282](https://github.com/taskcluster/taskcluster/issues/5282)
+Fix issue with unicode characters in user profile.
+
+Using Github as oauth provider encodes user profile using base64 encoding,
+which, if contains unicode characters, is not decoded properly by `atob()`.
+
+## v44.8.4
+
+### GENERAL
+
+▶ [patch] [#5003](https://github.com/taskcluster/taskcluster/issues/5003)
+Allow provisioner to exit instead of being stuck in delayed loop.
+
+### OTHER
+
+▶ Additional changes not described here: [#4999](https://github.com/taskcluster/taskcluster/issues/4999), [#5217](https://github.com/taskcluster/taskcluster/issues/5217).
+
 ## v44.8.3
 
 ### DEPLOYERS

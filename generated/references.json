@@ -83,6 +83,54 @@
           "title": "Provider",
           "type": "string"
         },
+        "requestedCapacity": {
+          "description": "Total capacity available across all workers for this worker pool with state \"requested\"",
+          "minimum": 0,
+          "title": "Requested Worker Capacity",
+          "type": "integer"
+        },
+        "requestedCount": {
+          "description": "Total worker count in \"requested\" state for this worker pool",
+          "minimum": 0,
+          "title": "Requested Worker Count",
+          "type": "integer"
+        },
+        "runningCapacity": {
+          "description": "Total capacity available across all workers for this worker pool with state \"running\"",
+          "minimum": 0,
+          "title": "Running Worker Capacity",
+          "type": "integer"
+        },
+        "runningCount": {
+          "description": "Total worker count in \"running\" state for this worker pool",
+          "minimum": 0,
+          "title": "Running Worker Count",
+          "type": "integer"
+        },
+        "stoppedCapacity": {
+          "description": "Total capacity available across all workers for this worker pool with state \"stopped\"",
+          "minimum": 0,
+          "title": "Stopped Worker Capacity",
+          "type": "integer"
+        },
+        "stoppedCount": {
+          "description": "Total worker count in \"stopped\" state for this worker pool",
+          "minimum": 0,
+          "title": "Stopped Worker Count",
+          "type": "integer"
+        },
+        "stoppingCapacity": {
+          "description": "Total capacity available across all workers for this worker pool with state \"stopping\"",
+          "minimum": 0,
+          "title": "Stopping Worker Capacity",
+          "type": "integer"
+        },
+        "stoppingCount": {
+          "description": "Total worker count in \"stopping\" state for this worker pool",
+          "minimum": 0,
+          "title": "Stopping Worker Count",
+          "type": "integer"
+        },
         "workerPoolId": {
           "description": "The ID of this worker pool (of the form `providerId/workerType` for compatibility)\n",
           "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
@@ -98,7 +146,15 @@
         "config",
         "owner",
         "emailOnError",
-        "currentCapacity"
+        "currentCapacity",
+        "requestedCount",
+        "runningCount",
+        "stoppingCount",
+        "stoppedCount",
+        "requestedCapacity",
+        "runningCapacity",
+        "stoppingCapacity",
+        "stoppedCapacity"
       ],
       "title": "Worker Pool Full Definition",
       "type": "object"
@@ -1483,7 +1539,7 @@
           "type": "string"
         },
         "lastDateActive": {
-          "description": "Date of the last time this worker-type was seen active. `lastDateActive` is updated every 6 hours\nbut may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator\nof when the worker-type was last seen active.\n",
+          "description": "Date of the last time this worker-type was seen active. `lastDateActive` is updated every half hour\nbut may be off by up-to half an hour. Nonetheless, `lastDateActive` is a good indicator\nof when the worker-type was last seen active.\n",
           "format": "date-time",
           "title": "Worker-type Last Date Active",
           "type": "string"
@@ -1599,6 +1655,12 @@
           "description": "Date of the first time this worker claimed a task.\n",
           "format": "date-time",
           "title": "First task claimed",
+          "type": "string"
+        },
+        "lastDateActive": {
+          "description": "Date of the last time this worker was seen active. Updated each time a worker calls\n`queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.\n`lastDateActive` is updated every half hour but may be off by up-to half an hour.\nNonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.\nThis defaults to null in the database, and is set to the current time when the worker\nis first seen.\n",
+          "format": "date-time",
+          "title": "Worker Last Date Active",
           "type": "string"
         },
         "provisionerId": {
@@ -1772,7 +1834,7 @@
           "type": "string"
         },
         "lastDateActive": {
-          "description": "Date of the last time this task queue was seen active. `lastDateActive` is updated every 6 hours\nbut may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator\nof when the task queue was last seen active.\n",
+          "description": "Date of the last time this task queue was seen active. Updated each time a worker calls\n`queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.\n`lastDateActive` is updated every half hour but may be off by up-to half an hour.\nNonetheless, `lastDateActive` is a good indicator of when the task queue was last seen active.\n",
           "format": "date-time",
           "title": "Task queue Last Date Active",
           "type": "string"
@@ -2897,7 +2959,7 @@
           "type": "string"
         },
         "lastDateActive": {
-          "description": "Date of the last time this provisioner was seen active. `lastDateActive` is updated every 6 hours\nbut may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator\nof when the provisioner was last seen active.\n",
+          "description": "Date of the last time this provisioner was seen active. `lastDateActive` is updated every half hour\nbut may be off by up-to half an hour. Nonetheless, `lastDateActive` is a good indicator\nof when the provisioner was last seen active.\n",
           "format": "date-time",
           "title": "Provisioner Last Date Active",
           "type": "string"
@@ -3481,6 +3543,12 @@
                 "description": "Date of the first time this worker claimed a task.\n",
                 "format": "date-time",
                 "title": "First task claimed",
+                "type": "string"
+              },
+              "lastDateActive": {
+                "description": "Date of the last time this worker was seen active. Updated each time a worker calls\n`queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.\n`lastDateActive` is updated every half hour but may be off by up-to half an hour.\nNonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.\nThis defaults to null in the database, and is set to the current time when the worker\nis first seen.\n",
+                "format": "date-time",
+                "title": "Worker Last Date Active",
                 "type": "string"
               },
               "latestTask": {
@@ -7965,10 +8033,10 @@
     "content": {
       "$id": "/schemas/docker-worker/v1/payload.json#",
       "$schema": "http://json-schema.org/draft-06/schema#",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "definitions": {
         "artifact": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "expires": {
               "format": "date-time",
@@ -8011,11 +8079,11 @@
           "type": "object"
         },
         "capabilities": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "description": "Set of capabilities that must be enabled or made available to the task container Example: ```{ \"capabilities\": { \"privileged\": true }```",
           "properties": {
             "devices": {
-              "additionalProperties": true,
+              "additionalProperties": false,
               "description": "Allows devices from the host system to be attached to a task container similar to using `--device` in docker.",
               "properties": {
                 "hostSharedMemory": {
@@ -8072,7 +8140,7 @@
           "type": "object"
         },
         "features": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "description": "Used to enable additional functionality.",
           "properties": {
             "allowPtrace": {
@@ -8134,7 +8202,7 @@
               "type": "string"
             },
             {
-              "additionalProperties": true,
+              "additionalProperties": false,
               "properties": {
                 "name": {
                   "type": "string"
@@ -8154,7 +8222,7 @@
               "type": "object"
             },
             {
-              "additionalProperties": true,
+              "additionalProperties": false,
               "properties": {
                 "namespace": {
                   "type": "string"
@@ -8178,7 +8246,7 @@
               "type": "object"
             },
             {
-              "additionalProperties": true,
+              "additionalProperties": false,
               "properties": {
                 "path": {
                   "type": "string"
@@ -8218,7 +8286,7 @@
           "type": "number"
         },
         "onExitStatus": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "description": "By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.",
           "properties": {
             "purgeCaches": {
@@ -9529,6 +9597,9 @@
             "taskcluster_client_id": {
               "type": "string"
             },
+            "worker_info_update_frequency": {
+              "type": "string"
+            },
             "write_db_url": {
               "type": "string"
             }
@@ -10074,12 +10145,33 @@
                     "cpu"
                   ],
                   "type": "object"
+                },
+                "workerscanner_azure": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
                 }
               },
               "required": [
                 "web",
                 "provisioner",
                 "workerscanner",
+                "workerscanner_azure",
                 "expire_workers",
                 "expire_worker_pools",
                 "expire_errors"
@@ -12450,13 +12542,14 @@
           "description": "The results of a worker-scanner run",
           "fields": {
             "providerId": "The provider that has completed this scan",
-            "seen": "A map of workerPoolId that were seen to how much capacity was seen"
+            "seen": "A map of workerPoolId that were seen to how much capacity was seen",
+            "total": "Total number of workers seen"
           },
           "level": "notice",
           "name": "scanSeen",
           "title": "Scan Seen",
           "type": "scan-seen",
-          "version": 2
+          "version": 3
         },
         {
           "description": "The simple estimator has decided that we need some number of instances.",
@@ -12506,6 +12599,7 @@
         {
           "description": "A worker pool's provisioning run has completed",
           "fields": {
+            "duration": "Time taken to provision the worker pool in ms",
             "providerId": "The provider that did the work for this worker pool.",
             "workerPoolId": "The worker pool ID"
           },
@@ -12513,7 +12607,7 @@
           "name": "workerPoolProvisioned",
           "title": "Worker Pool Provisioned",
           "type": "worker-pool-provisioned",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A request has been made to stop a worker.  This operation can sometimes\ntake some time.",
@@ -12533,6 +12627,7 @@
           "description": "A worker has been requested from a cloud api",
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
+            "terminateAfter": "Time after which worker should be terminated",
             "workerGroup": "The worker group for this worker",
             "workerId": "The worker that was created",
             "workerPoolId": "The worker pool ID"

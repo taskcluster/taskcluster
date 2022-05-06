@@ -532,13 +532,26 @@ builder.declare({
 
   // Get task group ID
   if (instGithub) {
-    let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
-
-    if (!status) {
-      return res.reportError('ResourceNotFound', 'Status not found', {});
+    // First inspect the status API. This will be set if consumer repos are
+    // using status reporting (the default).
+    const status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
+    if (status) {
+      return res.redirect(status.target_url);
     }
 
-    return res.redirect(status.target_url);
+    // Next inspect the checks API. This will be set if consumer repos have
+    // opted into the checks-v2 reporting.
+    const checkRuns = await findTCChecks(instGithub, owner, repo, branch, this.cfg);
+
+    if (checkRuns.length > 0) {
+      // Sort the array of runs from smallest to largest id, this should yield
+      // the Decision task.
+      let run = checkRuns.sort((a, b) => a.id - b.id)[0];
+      return res.redirect(run.html_url);
+    }
+
+    // Otherwise there is no status available for the given branch.
+    return res.reportError('ResourceNotFound', 'Status not found', {});
   }
 });
 

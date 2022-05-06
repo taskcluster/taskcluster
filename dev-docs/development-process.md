@@ -10,7 +10,7 @@ You will probably be working on only one of these pieces, so read carefully belo
 ### Node
 
 <!-- the next line is automatically edited; do not change -->
-You will need Node version 16.14.0 installed.
+You will need Node version 16.15.0 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
 We use `yarn` to run most development commands, so [install that as well](https://classic.yarnpkg.com/en/docs/install/#debian-stable).
@@ -18,7 +18,7 @@ We use `yarn` to run most development commands, so [install that as well](https:
 ### Go
 
 <!-- the next line is automatically edited; do not change -->
-Go version go1.17.8 is required for some development tasks, in particular to run `yarn generate`.
+Go version go1.18.1 is required for some development tasks, in particular to run `yarn generate`.
 For new contributors not familiar with Go, it's probably safe to skip installing Go for now -- you will see a helpful error if and when it is needed.
 We recommend using https://github.com/moovweb/gvm to support installing multiple Go versions.
 

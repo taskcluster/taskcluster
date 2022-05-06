@@ -50,6 +50,35 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     monitor = await helper.load('monitor');
   });
 
+  const assertProvisioningState = async (expectations) => {
+    // re-fetch the worker, since it should have been updated
+    const workers = await helper.getWorkers();
+    assert.equal(workers.length, 1);
+    const worker = workers[0];
+
+    for (let resourceType of ['ip', 'vm', 'nic']) {
+      const name = worker.providerData[resourceType].name;
+      switch (expectations[resourceType]) {
+        case 'none':
+          assert(!worker.providerData[resourceType].operation);
+          assert(!worker.providerData[resourceType].id);
+          break;
+        case 'inprogress':
+          assert.equal(worker.providerData[resourceType].operation, `op/${resourceType}/rgrp/${name}`);
+          assert(!worker.providerData[resourceType].id);
+          break;
+        case 'allocated':
+          assert(!worker.providerData[resourceType].operation);
+          assert.equal(worker.providerData[resourceType].id, `id/${name}`);
+          break;
+        case undefined: // caller doesn't care about state of this resource
+          break;
+        default:
+          assert(false, `invalid expectation ${resourceType}: ${expectations[resourceType]}`);
+      }
+    }
+  };
+
   // This is the intermediate certificate that azure_signature_good is signed
   // with; to figure out which this is, print the certificate in
   // `registerWorker`.  It will be one of the certs on on
@@ -118,7 +147,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await provider.setup();
   });
 
-  const makeWorkerPool = async (overrides = {}) => {
+  const makeWorkerPool = async (overrides = {}, launchConfigOverrides = {}) => {
     let workerPool = WorkerPool.fromApi({
       workerPoolId,
       providerId,
@@ -145,6 +174,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
               osDisk: {},
               dataDisks: [{}],
             },
+            ...launchConfigOverrides,
           },
         ],
       },
@@ -430,37 +460,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       sandbox.restore();
     });
 
-    const assertProvisioningState = async (expectations) => {
-      // re-fetch the worker, since it should have been updated
-      const workers = await helper.getWorkers();
-      assert.equal(workers.length, 1);
-      worker = workers[0];
-
-      for (let resourceType of ['ip', 'vm', 'nic']) {
-        const name = worker.providerData[resourceType].name;
-        switch (expectations[resourceType]) {
-          case 'none':
-            assert(!worker.providerData[resourceType].operation);
-            assert(!worker.providerData[resourceType].id);
-            break;
-          case 'inprogress':
-            assert.equal(worker.providerData[resourceType].operation, `op/${resourceType}/rgrp/${name}`);
-            assert(!worker.providerData[resourceType].id);
-            break;
-          case 'allocated':
-            assert(!worker.providerData[resourceType].operation);
-            assert.equal(worker.providerData[resourceType].id, `id/${name}`);
-            break;
-          case undefined: // caller doesn't care about state of this resource
-            break;
-          default:
-            assert(false, `invalid expectation ${resourceType}: ${expectations[resourceType]}`);
-        }
-      }
-    };
-
     test('successful provisioning process', async function() {
-      await assertProvisioningState({ ip: 'none' });
+      // Ip provisioning should have already started inside the provision() call
+      await assertProvisioningState({ ip: 'inprogress' });
       const ipName = worker.providerData.ip.name;
       const nicName = worker.providerData.nic.name;
       const vmName = worker.providerData.vm.name;
@@ -548,8 +550,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('provisioning process fails creating IP', async function() {
-      await assertProvisioningState({ ip: 'none' });
-
       debug('first call');
       await provider.provisionResources({ worker, monitor });
       await assertProvisioningState({ ip: 'inprogress' });
@@ -564,8 +564,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('provisioning process fails creating IP with provisioningState=Failed', async function() {
-      await assertProvisioningState({ ip: 'none' });
-
       debug('first call');
       await provider.provisionResources({ worker, monitor });
       await assertProvisioningState({ ip: 'inprogress' });
@@ -583,8 +581,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('provisioning process fails creating NIC', async function() {
-      await assertProvisioningState({ ip: 'none' });
-
       debug('first call');
       await provider.provisionResources({ worker, monitor });
       await assertProvisioningState({ ip: 'inprogress' });
@@ -606,8 +602,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('provisioning process fails creating VM', async function() {
-      await assertProvisioningState({ ip: 'none' });
-
       debug('first call');
       await provider.provisionResources({ worker, monitor });
       await assertProvisioningState({ ip: 'inprogress' });
@@ -636,15 +630,78 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
+  suite('provisionResources without public IP', function() {
+    let worker, nicName, vmName;
+    const sandbox = sinon.createSandbox({});
+
+    setup('create un-provisioned worker', async function() {
+      const workerPool = await makeWorkerPool({}, {
+        workerConfig: {
+          genericWorker: {
+            description: 'this should skip IP provisioning',
+          },
+        },
+      });
+      const workerInfo = {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+      };
+      await provider.provision({ workerPool, workerInfo });
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      worker = workers[0];
+
+      nicName = worker.providerData.nic.name;
+      vmName = worker.providerData.vm.name;
+
+      // stub for removeWorker, for failure cases
+      sandbox.stub(provider, 'removeWorker').returns('stopped');
+
+      // reset the state of the provisioner such that we can call its
+      // scanning-related methods
+      await provider.scanPrepare();
+      provider.errors[workerPoolId] = [];
+    });
+
+    teardown(function() {
+      sandbox.restore();
+    });
+
+    test('successful provisioning of VM without public ip', async function() {
+      await provider.provisionResources({ worker, monitor });
+      await assertProvisioningState({ nic: 'inprogress' });
+
+      debug('NIC creation succeeds');
+      fake.networkClient.networkInterfaces.fakeFinishRequest('rgrp', nicName);
+      await provider.provisionResources({ worker, monitor });
+      await assertProvisioningState({ nic: 'allocated' });
+
+      fake.computeClient.virtualMachines.fakeFinishRequest('rgrp', vmName);
+      await provider.provisionResources({ worker, monitor });
+      await assertProvisioningState({ vm: 'allocated', ip: 'none', nic: 'allocated' });
+
+      assert(!provider.removeWorker.called);
+    });
+  });
+
   suite('removeWorker', function() {
     let worker, ipName, nicName, vmName;
+    const sandbox = sinon.createSandbox({});
+
     setup('create un-provisioned worker', async function() {
       const workerPool = await makeWorkerPool();
       const workerInfo = {
         existingCapacity: 0,
         requestedCapacity: 0,
       };
+
+      // prevent the worker from being immediately provisioned
+      sandbox.stub(provider, 'checkWorker').returns('ok');
+
       await provider.provision({ workerPool, workerInfo });
+
+      sandbox.restore();
+
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
       worker = workers[0];
@@ -1149,7 +1206,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
-          assert(monitor.manager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
+          assert(monitor.manager.messages[0].Fields.message.includes('Error extracting PKCS#7 message'));
         });
 
         test('malformed signature', async function() {
@@ -1183,10 +1240,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
           const log = monitor.manager.messages[0].Fields;
-          assert.equal(log.message, 'Wrong PKCS#7 message signature subject');
+          assert.equal(log.message, 'Error extracting PKCS#7 message');
           assert.equal(
             log.error,
-            'Expected "/CN=metadata.azure.com", got "/CN=metadata.azure.org"');
+            'Error: Unparsed DER bytes remain after ASN.1 parsing.');
         });
 
         test('expired message', async function() {

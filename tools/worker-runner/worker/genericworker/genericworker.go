@@ -74,7 +74,7 @@ func (d *genericworker) ConfigureRun(state *run.State) error {
 	splitWorkerPoolID := strings.SplitAfterN(state.WorkerPoolID, "/", 2)
 
 	// required settings
-	// see https://github.com/taskcluster/generic-worker#set-up-your-env
+	// see https://docs.taskcluster.net/docs/reference/workers/generic-worker/installing#set-up-your-env
 	set("rootURL", state.RootURL)
 	set("clientId", state.Credentials.ClientID)
 	set("accessToken", state.Credentials.AccessToken)
@@ -144,7 +144,7 @@ func Usage() string {
 	return strings.ReplaceAll(`
 
 The "generic-worker" worker implementation starts generic-worker
-(https://github.com/taskcluster/generic-worker). It takes the following
+(https://github.com/taskcluster/taskcluster/workers/generic-worker). It takes the following
 values in the 'worker' section of the runner configuration:
 
 `+"```yaml"+`

@@ -6,11 +6,12 @@ class WorkerInfo {
   constructor(options) {
     assert(options);
     assert(options.db);
+    assert(options.workerInfoUpdateFrequency);
     this.db = options.db;
 
-    // update `expires` values in postgres at this frequency; larger values give less accurate
-    // expires times, but reduce database traffic.
-    this.updateFrequency = '6 hours';
+    // update `expires`, `last_date_active` values in postgres at this frequency;
+    // larger values give less accurate expires times, but reduce database traffic.
+    this.updateFrequency = options.workerInfoUpdateFrequency;
     this.nextUpdateAt = {};
   }
 
@@ -53,7 +54,7 @@ class WorkerInfo {
     // worker seen
     if (taskQueueId && workerGroup && workerId) {
       promises.push(this.valueSeen(`${taskQueueId}/${workerGroup}/${workerId}`, async () => {
-        await this.db.fns.queue_worker_seen({
+        await this.db.fns.queue_worker_seen_with_last_date_active({
           task_queue_id_in: taskQueueId,
           worker_group_in: workerGroup,
           worker_id_in: workerId,

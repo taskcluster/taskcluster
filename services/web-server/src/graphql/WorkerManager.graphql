@@ -6,6 +6,14 @@ type WorkerManagerWorkerPoolSummary {
     config: JSON
     emailOnError: Boolean!
     currentCapacity: Int!
+    requestedCount: Int!
+    runningCount: Int!
+    stoppingCount: Int!
+    stoppedCount: Int!
+    requestedCapacity: Int!
+    runningCapacity: Int!
+    stoppingCapacity: Int!
+    stoppedCapacity: Int!
     pendingTasks: Int #this value comes from a separate request to queue
 }
 

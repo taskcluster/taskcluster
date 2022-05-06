@@ -7,6 +7,7 @@ type LatestTask {
 type WorkerCompact {
   workerId: ID!
   workerGroup: String!
+  lastDateActive: DateTime
   firstClaim: DateTime!
   latestTask: LatestTask
   quarantineUntil: DateTime
@@ -48,6 +49,14 @@ type Worker {
 
   # A list of most recent tasks claimed by the worker.
   latestTasks: [Task]!
+
+  # Date of the last time this worker was seen active. Updated each time a worker calls
+  # `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
+  # `lastDateActive` is updated every half hour but may be off by up-to half an hour.
+  # Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
+  # This defaults to null in the database, and is set to the current time when the worker
+  # is first seen.
+  lastDateActive: DateTime
 }
 
 input WorkerQuarantine {

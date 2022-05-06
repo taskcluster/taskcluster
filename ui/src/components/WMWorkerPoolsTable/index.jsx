@@ -213,6 +213,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
         <TableCell>{workerPool.currentCapacity}</TableCell>
 
+        <TableCell>{workerPool.runningCapacity}</TableCell>
+
         <TableCell>{workerPool.pendingTasks}</TableCell>
 
         <TableCell>{workerPool.owner}</TableCell>
@@ -279,6 +281,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       'Worker Pool ID',
       'Provider ID',
       'Current Capacity',
+      'Running Capacity',
       'Pending Tasks',
       'Owner',
       '',

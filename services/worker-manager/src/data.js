@@ -33,6 +33,14 @@ class WorkerPool {
       previousProviderIds: row.previous_provider_ids,
       providerData: row.provider_data,
       currentCapacity: row.current_capacity,
+      requestedCount: row.requested_count,
+      runningCount: row.running_count,
+      stoppingCount: row.stopping_count,
+      stoppedCount: row.stopped_count,
+      requestedCapacity: row.requested_capacity,
+      runningCapacity: row.running_capacity,
+      stoppingCapacity: row.stopping_capacity,
+      stoppedCapacity: row.stopped_capacity,
     });
   }
 
@@ -53,13 +61,21 @@ class WorkerPool {
       lastModified: now,
       created: now,
       currentCapacity: 0,
+      requestedCount: 0,
+      runningCount: 0,
+      stoppingCount: 0,
+      stoppedCount: 0,
+      requestedCapacity: 0,
+      runningCapacity: 0,
+      stoppingCapacity: 0,
+      stoppedCapacity: 0,
       ...input,
     });
   }
 
   // Get a worker pool from the DB, or undefined if it does not exist.
   static async get(db, workerPoolId) {
-    return WorkerPool.fromDbRows(await db.fns.get_worker_pool_with_capacity(workerPoolId));
+    return WorkerPool.fromDbRows(await db.fns.get_worker_pool_with_capacity_and_counts_by_state(workerPoolId));
   }
 
   // Expire worker pools with null-provider that no longer have any workers,
@@ -92,7 +108,7 @@ class WorkerPool {
         throw err;
       }
       const existing = WorkerPool.fromDbRows(
-        await db.fns.get_worker_pool_with_capacity(this.workerPoolId));
+        await db.fns.get_worker_pool_with_capacity_and_counts_by_state(this.workerPoolId));
 
       if (!this.equals(existing)) {
         // new worker pool does not match, so this is a "real" conflict
@@ -114,6 +130,14 @@ class WorkerPool {
       owner: this.owner,
       emailOnError: this.emailOnError,
       currentCapacity: this.currentCapacity,
+      requestedCount: this.requestedCount,
+      runningCount: this.runningCount,
+      stoppingCount: this.stoppingCount,
+      stoppedCount: this.stoppedCount,
+      requestedCapacity: this.requestedCapacity,
+      runningCapacity: this.runningCapacity,
+      stoppingCapacity: this.stoppingCapacity,
+      stoppedCapacity: this.stoppedCapacity,
     };
   }
 
