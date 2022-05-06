@@ -96,12 +96,15 @@ export default class WorkerTable extends Component {
   };
 
   componentDidMount() {
-    let query = parse(this.props.location.search.slice(1));
+    const query = parse(this.props.location.search.slice(1));
 
-    query = query.sortBy ? query : { sortBy: 'started', sortDirection: 'desc' };
+    if (query.sortBy) return;
 
     this.props.history.replace({
-      search: stringify(query, { addQueryPrefix: true }),
+      search: stringify(
+        { sortBy: 'started', sortDirection: 'desc' },
+        { addQueryPrefix: true }
+      ),
     });
   }
 
