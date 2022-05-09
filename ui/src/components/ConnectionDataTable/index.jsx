@@ -247,7 +247,7 @@ export default class ConnectionDataTable extends Component {
         nextIconButtonProps={{
           'aria-label': 'Next Page',
         }}
-        onChangePage={this.handlePageChange}
+        onPageChange={this.handlePageChange}
       />
     );
   };
