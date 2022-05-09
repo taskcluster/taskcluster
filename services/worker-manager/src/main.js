@@ -223,9 +223,7 @@ let load = loader({
         ownName,
         providers,
         monitor: monitor.childMonitor('worker-scanner'),
-        iterateConf: cfg.app.workerScannerIterateConfig || {
-          maxIterationTime: 9000000,
-        },
+        iterateConf: cfg.app.workerScannerIterateConfig || {},
         providersFilter: {
           cond: '=', // only run for providers that are Azure
           value: azureProviderIds,
