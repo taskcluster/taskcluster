@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-auth",
-  "version": "44.13.5",
+  "version": "44.13.6",
   "private": true,
   "main": "node src/server production",
   "scripts": {

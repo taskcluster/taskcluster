@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.13.6
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#4999](https://github.com/taskcluster/taskcluster/issues/4999)
+Introduce queue timeout to avoid some cloud calls to be stuck and fail whole scan process.
+
+### USERS
+
+▶ [patch] [#4366](https://github.com/taskcluster/taskcluster/issues/4366)
+Display last date active in the worker detail view.
+
+▶ [patch] [#5412](https://github.com/taskcluster/taskcluster/issues/5412)
+Docker-worker no longer accepts and ignores arbitrary properties in task payloads. It now only accepts properties defined in its payload schema.
+
+▶ [patch] [#2776](https://github.com/taskcluster/taskcluster/issues/2776)
+Show worker tasks from most recent to least recent. Also, link the `taskId` field to the task page.
+
+▶ [patch] [#5433](https://github.com/taskcluster/taskcluster/issues/5433)
+Show workers from last recently active. Also, removed the deprecated prop `onChangePage` and replaced with `onPageChange`.
+
 ## v44.13.5
 
 ### GENERAL
