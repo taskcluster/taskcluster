@@ -14,6 +14,9 @@ const { default: PQueue } = require('p-queue');
  * p-queue documentation. For each of these you can also specify a default for if you
  * have not set a value for a type.
  *
+ * To avoid calls being stuck for a long period of time, we can also pass `timeout` and
+ * `throwOnTimeout`.
+ *
  * You must provide a taskcluster-lib-monitor logger to this class.
  *
  * Finally, it takes an `errorHandler` which is a function that takes an error and `tries` counter
@@ -35,6 +38,8 @@ class CloudAPI {
     monitor,
     errorHandler,
     providerId,
+    timeout = undefined,
+    throwOnTimeout = false,
   }) {
     this.queues = {};
     this.providerId = providerId;
@@ -45,6 +50,8 @@ class CloudAPI {
       this.queues[type] = new PQueue({
         interval: interval || intervalDefault,
         intervalCap: intervalCap || intervalCapDefault,
+        timeout,
+        throwOnTimeout,
       });
     }
   }

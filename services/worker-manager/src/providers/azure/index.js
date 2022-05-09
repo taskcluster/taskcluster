@@ -239,6 +239,8 @@ class AzureProvider extends Provider {
       apiRateLimits,
       intervalDefault: 100 * 1000, // Intervals are enforced every 100 seconds
       intervalCapDefault: 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
+      timeout: 10 * 60 * 1000, // each cloud call should not take longer than 10 minutes
+      throwOnTimeout: true,
       monitor: this.monitor,
       providerId: this.providerId,
       errorHandler: ({ err, tries }) => {
