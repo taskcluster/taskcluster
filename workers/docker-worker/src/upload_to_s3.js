@@ -4,7 +4,9 @@ const crypto = require('crypto');
 const https = require('https');
 const url = require('url');
 const fs = require('mz/fs');
-const temporary = require('temporary');
+const { tmpdir } = require('os');
+const { mkdtempSync, rmSync, writeFileSync } = require('fs');
+const { join, sep } = require('path');
 const promiseRetry = require('promise-retry');
 const { createLogger } = require('./log');
 const _ = require('lodash');
@@ -28,8 +30,10 @@ module.exports = async function uploadToS3 (
   httpOptions,
   compress)
 {
-  let tmp = new temporary.File();
-  debug(`created temporary file $${tmp.path} for ${artifactName}`);
+  const tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
+  const tmpFile = 'upload_to_s3';
+  const tmpFilePath = join(tmpDir, tmpFile);
+  debug(`created temporary file ${tmpFilePath} for ${artifactName}`);
 
   let logDetails = { taskId, runId, artifactName };
   let digest;
@@ -50,24 +54,24 @@ module.exports = async function uploadToS3 (
     // write the source out to a temporary file so that it can be
     // re-read into the request repeatedly
     if (typeof source === 'string') {
-      tmp.writeFileSync(source);
+      writeFileSync(tmpFilePath, source);
       hash.update(source);
     } else {
-      let stream = fs.createWriteStream(tmp.path);
+      let stream = fs.createWriteStream(tmpFilePath);
       if (compress) {
         let gzip = zlib.createGzip();
-        debug(`compressing to ${artifactName} to ${tmp.path}`);
+        debug(`compressing to ${artifactName} to ${tmpFilePath}`);
         await pipe(source, hashingTransform, gzip, stream);
         debug(`compressed ${gzip.bytesWritten} bytes`);
       } else {
         await pipe(source, hashingTransform, stream);
       }
     }
-    let stat = await fs.stat(tmp.path);
+    let stat = await fs.stat(tmpFilePath);
     size = stat.size;
     httpsHeaders['content-length'] = size;
 
-    debug(`wrote ${size} bytes of source file to ${tmp.path} for ${artifactName}`);
+    debug(`wrote ${size} bytes of source file to ${tmpFilePath} for ${artifactName}`);
 
     if (!putUrl) {
       let artifact = await queue.createArtifact(
@@ -130,7 +134,7 @@ module.exports = async function uploadToS3 (
 
         req.setTimeout(5 * 60 * 1000, reject);
 
-        const readStream = fs.createReadStream(tmp.path);
+        const readStream = fs.createReadStream(tmpFilePath);
         readStream.on('error', err => {
           log(`Error reading temp file while uploading ${artifactName}`, _.defaults({ err }, logDetails));
           reject(err);
@@ -155,7 +159,7 @@ module.exports = async function uploadToS3 (
     // Solving the equation for factor gives factor=1.311
     }, { maxTimeout: 30000, factor: 1.311, randomize: true });
   } finally {
-    tmp.unlinkSync();
+    rmSync(tmpDir, { recursive: true });
   }
 
   return { digest, size };

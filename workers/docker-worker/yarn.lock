@@ -2001,17 +2001,13 @@ taskcluster-client@^44.13.5:
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-lib-testing@link:../../libraries/testing":
-  version "44.13.5"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
   resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-13.0.1.tgz#773da8bb9937a52f77ad128961b8d501dfdd042a"
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
-
-temporary@^1.0.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/temporary/-/temporary-1.1.0.tgz#76df5cab744623dd9c0b8b71f1c5a7dd5602bf9e"
-  integrity sha512-geB3U/E75RLr++koy9EBw4mZ1BCfxg72SYJQdQld1iRvka+fyijfbiXrVpWQB9bJKNsgAB4lIHOeJtVSvyiJiQ==
 
 thenify-all@^1.0.0:
   version "1.6.0"
