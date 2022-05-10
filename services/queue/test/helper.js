@@ -4,7 +4,9 @@ const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const builder = require('../src/api');
 const load = require('../src/main');
-const temporary = require('temporary');
+const { tmpdir } = require('os');
+const { mkdtempSync, rmSync } = require('fs');
+const { sep } = require('path');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
 const { fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
@@ -54,8 +56,8 @@ exports.withS3 = (mock, skipping) => {
     }
 
     if (mock) {
-      tmpDir = new temporary.Dir();
-      mockAwsS3.config.basePath = tmpDir.path;
+      tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
+      mockAwsS3.config.basePath = tmpDir;
 
       await exports.load('cfg');
       exports.load.cfg('aws.accessKeyId', undefined);
@@ -82,8 +84,7 @@ exports.withS3 = (mock, skipping) => {
 
   suiteTeardown('cleanup withS3', function() {
     if (tmpDir) {
-      tmpDir.rmdirSync();
-
+      rmSync(tmpDir, { recursive: true });
     }
   });
 };

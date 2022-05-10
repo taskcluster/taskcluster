@@ -6246,11 +6246,6 @@ taskcluster-lib-urls@^13.0.0:
 "taskcluster-lib-validate@link:libraries/validate":
   version "44.13.6"
 
-temporary@^1.0.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/temporary/-/temporary-1.1.0.tgz#76df5cab744623dd9c0b8b71f1c5a7dd5602bf9e"
-  integrity sha512-geB3U/E75RLr++koy9EBw4mZ1BCfxg72SYJQdQld1iRvka+fyijfbiXrVpWQB9bJKNsgAB4lIHOeJtVSvyiJiQ==
-
 test-exclude@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/test-exclude/-/test-exclude-6.0.0.tgz#04a8698661d805ea6fa293b6cb9e63ac044ef15e"

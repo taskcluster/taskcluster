@@ -1,6 +1,8 @@
 const uploadToS3 = require('../src/upload_to_s3');
 const assert = require('assert');
-const temporary = require('temporary');
+const { tmpdir } = require('os');
+const { mkdtempSync, rmSync } = require('fs');
+const { join, sep } = require('path');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
@@ -21,8 +23,11 @@ suite(suiteName(), function () {
   test('upload retry', async function () {
     const DATA = 'Testing retry artifact upload';
 
-    let tempFile = new temporary.File();
-    let resultFile = new temporary.File();
+    const tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
+    const tempFileName = 'temp_file';
+    const resultFileName = 'result_file';
+    const tempFile = join(tmpDir, tempFileName);
+    const resultFile = join(tmpDir, resultFileName);
 
     let server = https.createServer({
       key: fs.readFileSync(path.join(__dirname, 'fixtures', 'ssl_cert.key')),
@@ -44,7 +49,7 @@ suite(suiteName(), function () {
       } else {
         requestState++;
         new Promise(function(accept, reject) {
-          let resultStream = fs.createWriteStream(resultFile.path);
+          let resultStream = fs.createWriteStream(resultFile);
           resultStream.on('error', reject);
           resultStream.on('finish', accept);
           request.pipe(resultStream);
@@ -74,7 +79,7 @@ suite(suiteName(), function () {
         undefined, // since putUrl is supplied, this is unused
         1,
         0,
-        await getTemporaryStream(tempFile.path, DATA),
+        await getTemporaryStream(tempFile, DATA),
         'public/foo',
         expiry,
         httpHeader,
@@ -83,10 +88,9 @@ suite(suiteName(), function () {
       );
 
       assert.equal(requestState, 2);
-      assert.equal(DATA, fs.readFileSync(resultFile.path, 'utf8'));
+      assert.equal(DATA, fs.readFileSync(resultFile, 'utf8'));
     } finally {
-      tempFile.unlinkSync();
-      resultFile.unlinkSync();
+      rmSync(tmpDir, { recursive: true });
     }
   });
 });
