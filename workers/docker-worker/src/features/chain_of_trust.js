@@ -11,8 +11,7 @@ const Debug = require('debug');
 const fs = require('mz/fs');
 const streamClosed = require('../stream_closed');
 const { tmpdir } = require('os');
-const { mkdtempSync } = require('fs');
-const { rm } = require('fs').promises;
+const { mkdtemp, rm } = require('fs/promises');
 const { join, sep } = require('path');
 const uploadToS3 = require('../upload_to_s3');
 const zlib = require('zlib');
@@ -30,7 +29,7 @@ class ChainOfTrust {
     this.ed25519Key = Buffer.from(await new Promise((accept, reject) =>
       fs.readFile(task.runtime.ed25519SigningKeyLocation, 'ascii', (err, data) => err ? reject(err) : accept(data))), 'base64');
 
-    this.tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
+    this.tmpDir = await mkdtemp(`${tmpdir()}${sep}`);
     this.tmpFile = 'chain_of_trust';
     this.filePath = join(this.tmpDir, this.tmpFile);
     debug(`created temporary file: ${this.filePath}`);

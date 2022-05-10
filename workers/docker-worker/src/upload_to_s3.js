@@ -5,7 +5,7 @@ const https = require('https');
 const url = require('url');
 const fs = require('mz/fs');
 const { tmpdir } = require('os');
-const { mkdtempSync, rmSync, writeFileSync } = require('fs');
+const { mkdtemp, rm, writeFile } = require('fs/promises');
 const { join, sep } = require('path');
 const promiseRetry = require('promise-retry');
 const { createLogger } = require('./log');
@@ -30,7 +30,7 @@ module.exports = async function uploadToS3 (
   httpOptions,
   compress)
 {
-  const tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
+  const tmpDir = await mkdtemp(`${tmpdir()}${sep}`);
   const tmpFile = 'upload_to_s3';
   const tmpFilePath = join(tmpDir, tmpFile);
   debug(`created temporary file ${tmpFilePath} for ${artifactName}`);
@@ -54,7 +54,7 @@ module.exports = async function uploadToS3 (
     // write the source out to a temporary file so that it can be
     // re-read into the request repeatedly
     if (typeof source === 'string') {
-      writeFileSync(tmpFilePath, source);
+      await writeFile(tmpFilePath, source);
       hash.update(source);
     } else {
       let stream = fs.createWriteStream(tmpFilePath);
@@ -159,7 +159,7 @@ module.exports = async function uploadToS3 (
     // Solving the equation for factor gives factor=1.311
     }, { maxTimeout: 30000, factor: 1.311, randomize: true });
   } finally {
-    rmSync(tmpDir, { recursive: true });
+    await rm(tmpDir, { recursive: true });
   }
 
   return { digest, size };

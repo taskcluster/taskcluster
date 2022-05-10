@@ -7,8 +7,7 @@ const Debug = require('debug');
 const fs = require('mz/fs');
 const streamClosed = require('../stream_closed');
 const { tmpdir } = require('os');
-const { mkdtempSync } = require('fs');
-const { rm } = require('fs').promises;
+const { mkdtemp, rm } = require('fs/promises');
 const { join, sep } = require('path');
 const uploadToS3 = require('../upload_to_s3');
 const zlib = require('zlib');
@@ -24,7 +23,7 @@ class BulkLog {
   }
 
   async created(task) {
-    this.tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
+    this.tmpDir = await mkdtemp(`${tmpdir()}${sep}`);
     this.tmpFile = 'bulk_log';
     this.filePath = join(this.tmpDir, this.tmpFile);
     debug('Created BulkLog using tempfile: ' + this.filePath);
