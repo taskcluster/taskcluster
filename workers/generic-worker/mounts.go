@@ -144,7 +144,18 @@ func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
 		panic(err)
 	}
 	for i := range *cm {
-		(*cm)[i].Owner = *cm
+		// Github Issues: #5363, #5396
+		// Bugzilla Bug: https://bugzilla.mozilla.org/show_bug.cgi?id=1595217
+		// Loop through cache entries, and remove any that refer to files/dirs that do not exist.
+		// Log a warning in worker log, and don't raise an exception.
+		if _, err = os.Stat((*cm)[i].Location); err != nil {
+			log.Printf("WARNING: Cache %#v missing on worker - corrupt internal state, ignoring!", (*cm)[i])
+			// note, this should be safe, despite looking scary:
+			// https://stackoverflow.com/questions/23229975/is-it-safe-to-remove-selected-keys-from-map-within-a-range-loop
+			delete(*cm, i)
+		} else {
+			(*cm)[i].Owner = *cm
+		}
 	}
 }
 
