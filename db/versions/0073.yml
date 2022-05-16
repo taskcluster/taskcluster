@@ -1,0 +1,84 @@
+version: 73
+description: include worker manager data to in queue worker responses
+migrationScript: |
+  begin
+    grant select on workers to $db_user_prefix$_queue;
+  end
+downgradeScript: |
+  begin
+    revoke select on queue_workers from $db_user_prefix$_queue;
+  end
+methods:
+  get_queue_worker_tqid_with_last_date_active:
+    deprecated: true
+  get_queue_workers_tqid_with_last_date_active:
+    deprecated: true
+  get_queue_worker_with_wm_join:
+    description: |-
+      Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.
+      Workers are not considered expired until after their quarantine date expires.
+      This also performs an outer join with the worker_manager.worker table for more data.
+    mode: read
+    serviceName: worker_manager
+    args: task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz
+    returns: table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, state text, capacity int4, provider_id text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          queue_workers.task_queue_id,
+          queue_workers.worker_group,
+          queue_workers.worker_id,
+          queue_workers.quarantine_until,
+          queue_workers.expires,
+          queue_workers.first_claim,
+          queue_workers.recent_tasks,
+          queue_workers.last_date_active,
+          workers.state,
+          workers.capacity,
+          workers.provider_id,
+          public.gen_random_uuid()
+        from queue_workers
+        full outer join workers on workers.worker_id = queue_workers.worker_id
+        where
+          queue_workers.task_queue_id = task_queue_id_in and
+          queue_workers.worker_group = worker_group_in and
+          queue_workers.worker_id = worker_id_in and
+          (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);
+        end
+  get_queue_workers_with_wm_join:
+    description: |-
+      Get non-expired queue workers ordered by task_queue_id, worker_group, and worker_id.
+      Workers are not considered expired until after their quarantine date expires.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+      This also performs an outer join with the worker_manager.worker table for more data.
+    mode: read
+    serviceName: worker_manager
+    args: task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer
+    returns: table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, state text, capacity int4, provider_id text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          queue_workers.task_queue_id,
+          queue_workers.worker_group,
+          queue_workers.worker_id,
+          queue_workers.quarantine_until,
+          queue_workers.expires,
+          queue_workers.first_claim,
+          queue_workers.recent_tasks,
+          queue_workers.last_date_active,
+          workers.state,
+          workers.capacity,
+          workers.provider_id,
+          public.gen_random_uuid()
+        from queue_workers
+        full outer join workers on workers.worker_id = queue_workers.worker_id
+        where
+          (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_with_wm_join.task_queue_id_in is null) and
+          ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers_with_wm_join.expires_in is null)
+        order by task_queue_id, worker_group, worker_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end

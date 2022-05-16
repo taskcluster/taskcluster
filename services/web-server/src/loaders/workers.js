@@ -3,12 +3,12 @@ const sift = require('../utils/sift');
 const ConnectionLoader = require('../ConnectionLoader');
 const WorkerCompact = require('../entities/WorkerCompact');
 
-module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+module.exports = ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const worker = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ provisionerId, workerType, workerGroup, workerId }) => {
         try {
-          return await queue.getWorker(provisionerId, workerType, workerGroup, workerId);
+          return await workerManager.getWorker(provisionerId, workerType, workerGroup, workerId);
         } catch (err) {
           return err;
         }
@@ -17,13 +17,37 @@ module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, r
     ),
   );
   const workers = new ConnectionLoader(
-    async ({ provisionerId, workerType, options, filter, isQuarantined }) => {
-      const raw = await queue.listWorkers(
+    async ({
+      provisionerId,
+      workerType,
+      options,
+      filter,
+      isQuarantined,
+      isRequested,
+      isRunning,
+      isStopping,
+      isStopped,
+    }) => {
+      let opts = { ...options };
+      if (typeof isQuarantined === 'boolean') {
+        opts.isQuarantined = isQuarantined;
+      }
+      if (typeof isRequested === 'boolean') {
+        opts.isRequested = isRequested;
+      }
+      if (typeof isRunning === 'boolean') {
+        opts.isRunning = isRunning;
+      }
+      if (typeof isStopping === 'boolean') {
+        opts.isStopping = isStopping;
+      }
+      if (typeof isStopped === 'boolean') {
+        opts.isStopped = isStopped;
+      }
+      const raw = await workerManager.listWorkers(
         provisionerId,
         workerType,
-        typeof isQuarantined === 'boolean'
-          ? { ...options, quarantined: isQuarantined }
-          : options,
+        opts,
       );
       const workers = sift(filter, raw.workers);
 

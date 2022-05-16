@@ -683,9 +683,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerGroup: input.workerGroup,
       workerId: input.workerId,
     });
+    const expected = worker.serializable();
+    // remove properties that come from queue_workers table
+    delete expected.taskQueueId;
+    delete expected.firstClaim;
+    delete expected.recentTasks;
+    delete expected.lastDateActive;
 
     assert(!('secret' in data));
-    assert.deepStrictEqual(data, worker.serializable());
+    assert.deepStrictEqual(data, expected);
   });
 
   test('get a specific worker that does not exist', async function () {

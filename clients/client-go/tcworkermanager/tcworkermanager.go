@@ -510,6 +510,110 @@ func (workerManager *WorkerManager) ReregisterWorker(payload *ReregisterWorkerRe
 	return responseObject.(*ReregisterWorkerResponse), err
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// Get a list of all active workers of a workerType.
+//
+// `listWorkers` allows a response to be filtered by quarantined and non quarantined workers,
+// as well as the current state of the worker.
+// To filter the query, you should call the end-point with one of [`quarantined`, `requested`, `running`,
+// `stopping`, `stopped`] as a query-string option with a true or false value.
+//
+// The response is paged. If this end-point returns a `continuationToken`, you
+// should call the end-point again with the `continuationToken` as a query-string
+// option. By default this end-point will list up to 1000 workers in a single
+// page. You may limit this with the query-string parameter `limit`.
+//
+// Required scopes:
+//   worker-manager:list-workers:<provisionerId>/<workerType>
+//
+// See #listWorkers
+func (workerManager *WorkerManager) ListWorkers(provisionerId, workerType, continuationToken, limit, quarantined, requested, running, stopped, stopping string) (*ListWorkersResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	if quarantined != "" {
+		v.Add("quarantined", quarantined)
+	}
+	if requested != "" {
+		v.Add("requested", requested)
+	}
+	if running != "" {
+		v.Add("running", running)
+	}
+	if stopped != "" {
+		v.Add("stopped", stopped)
+	}
+	if stopping != "" {
+		v.Add("stopping", stopping)
+	}
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", new(ListWorkersResponse), v)
+	return responseObject.(*ListWorkersResponse), err
+}
+
+// Returns a signed URL for ListWorkers, valid for the specified duration.
+//
+// Required scopes:
+//   worker-manager:list-workers:<provisionerId>/<workerType>
+//
+// See ListWorkers for more details.
+func (workerManager *WorkerManager) ListWorkers_SignedURL(provisionerId, workerType, continuationToken, limit, quarantined, requested, running, stopped, stopping string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	if quarantined != "" {
+		v.Add("quarantined", quarantined)
+	}
+	if requested != "" {
+		v.Add("requested", requested)
+	}
+	if running != "" {
+		v.Add("running", running)
+	}
+	if stopped != "" {
+		v.Add("stopped", stopped)
+	}
+	if stopping != "" {
+		v.Add("stopping", stopping)
+	}
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", v, duration)
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get a worker from a worker-type.
+//
+// Required scopes:
+//   worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
+//
+// See #getWorker
+func (workerManager *WorkerManager) GetWorker(provisionerId, workerType, workerGroup, workerId string) (*WorkerResponse, error) {
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
+	return responseObject.(*WorkerResponse), err
+}
+
+// Returns a signed URL for GetWorker, valid for the specified duration.
+//
+// Required scopes:
+//   worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
+//
+// See GetWorker for more details.
+func (workerManager *WorkerManager) GetWorker_SignedURL(provisionerId, workerType, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, duration)
+}
+
 // Respond with a service heartbeat.
 //
 // This endpoint is used to check on backing services this service

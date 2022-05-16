@@ -38,13 +38,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     // we do an initial comparison to ensure they make sense up to this point
     const fetched = Worker.fromDbRows(await helper.db.fns.get_non_stopped_workers_quntil_providers(
       null, null, null, null, null, 10, 0));
+
+    // remove properties that come from queue_workers table
+    delete fetched.taskQueueId;
+    delete fetched.firstClaim;
+    delete fetched.recentTasks;
+    delete fetched.lastDateActive;
+    delete fetched._properties.taskQueueId;
+    delete fetched._properties.firstClaim;
+    delete fetched._properties.recentTasks;
+    delete fetched._properties.lastDateActive;
     assert.deepEqual(fetched, w);
 
     // now we update the worker as if registerWorker happened
     const now = new Date();
     await w.update(helper.db, worker => {
       worker.providerData.terminateAfter = now.getTime() + 50000000;
-      worker.state = Worker.states.RUNNING,
+      worker.state = Worker.states.RUNNING;
       worker.lastModified = now;
     });
     await w.reload(helper.db);

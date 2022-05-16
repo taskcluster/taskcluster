@@ -4,6 +4,7 @@ package tcworkermanager
 
 import (
 	"encoding/json"
+	"errors"
 
 	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
 )
@@ -72,6 +73,22 @@ type (
 
 		// A JWT token as defined in [this google documentation](https://cloud.google.com/compute/docs/instances/verifying-instance-identity)
 		Token string `json:"token"`
+	}
+
+	// Response from a `listWorkers` request.
+	ListWorkersResponse struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of workers in the worker-type.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listWorkerTypes` with `continuationToken`
+		// until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of workers in this worker-type.
+		Workers []Worker `json:"workers"`
 	}
 
 	// A list of providers
@@ -243,6 +260,54 @@ type (
 		StaticSecret string `json:"staticSecret"`
 	}
 
+	// Required task metadata
+	TaskMetadata struct {
+
+		// Human readable description of the task, please **explain** what the
+		// task does. A few lines of documentation is not going to hurt you.
+		//
+		// Max length: 32768
+		Description string `json:"description"`
+
+		// Human readable name of task, used to very briefly given an idea about
+		// what the task does.
+		//
+		// Max length: 255
+		Name string `json:"name"`
+
+		// Entity who caused this task, not necessarily a person with email who did
+		// `hg push` as it could be automation bots as well. The entity we should
+		// contact to ask why this task is here.
+		//
+		// Max length: 255
+		Owner string `json:"owner"`
+
+		// Link to source of this task, should specify a file, revision and
+		// repository. This should be place someone can go an do a git/hg blame
+		// to who came up with recipe for this task.
+		//
+		// Syntax:     ^(https?|ssh)://
+		// Max length: 4096
+		Source string `json:"source"`
+	}
+
+	// A run of a task.
+	TaskRun struct {
+
+		// Id of this task run, `run-id`s always starts from `0`
+		//
+		// Mininum:    0
+		// Maximum:    1000
+		RunID int64 `json:"runId"`
+
+		// Unique task identifier, this is UUID encoded as
+		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+		// stripped of `=` padding.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskID string `json:"taskId"`
+	}
+
 	Var struct {
 
 		// The id of this provider
@@ -250,6 +315,139 @@ type (
 
 		// The provider implementation underlying this provider
 		ProviderType string `json:"providerType"`
+	}
+
+	Worker struct {
+
+		// Number of tasks this worker can handle at once
+		//
+		// Mininum:    1
+		Capacity int64 `json:"capacity"`
+
+		// Date of the first time this worker claimed a task.
+		FirstClaim tcclient.Time `json:"firstClaim"`
+
+		// Date of the last time this worker was seen active. Updated each time a worker calls
+		// `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
+		// `lastDateActive` is updated every half hour but may be off by up-to half an hour.
+		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
+		// This defaults to null in the database, and is set to the current time when the worker
+		// is first seen.
+		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+
+		// A run of a task.
+		LatestTask TaskRun `json:"latestTask,omitempty"`
+
+		// The provider that had started the worker and responsible for managing it.
+		// Can be different from the provider that's currently in the worker pool config.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		ProviderID string `json:"providerId"`
+
+		// Quarantining a worker allows the machine to remain alive but not accept jobs.
+		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
+		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
+		// somewhere in the past).
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+
+		// A string specifying the state this worker is in so far as worker-manager knows.
+		// A "requested" worker is in the process of starting up, and if successful will enter
+		// the "running" state once it has registered with the `registerWorker` API method.  A
+		// "stopping" worker is in the process of shutting down and deleting resources, while
+		// a "stopped" worker is completely stopped.  Stopped workers are kept for historical
+		// purposes and are purged when they expire.  Note that some providers transition workers
+		// directly from "running" to "stopped".
+		//
+		// Possible values:
+		//   * "requested"
+		//   * "running"
+		//   * "stopping"
+		//   * "stopped"
+		State string `json:"state"`
+
+		// Identifier for the worker group containing this worker.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerGroup string `json:"workerGroup"`
+
+		// Identifier for this worker (unique within this worker group).
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerID string `json:"workerId"`
+	}
+
+	// Actions provide a generic mechanism to expose additional features of a
+	// provisioner, worker type, or worker to Taskcluster clients.
+	//
+	// An action is comprised of metadata describing the feature it exposes,
+	// together with a webhook for triggering it.
+	//
+	// The Taskcluster tools site, for example, retrieves actions when displaying
+	// provisioners, worker types and workers. It presents the provisioner/worker
+	// type/worker specific actions to the user. When the user triggers an action,
+	// the web client takes the registered webhook, substitutes parameters into the
+	// URL (see `url`), signs the requests with the Taskcluster credentials of the
+	// user operating the web interface, and issues the HTTP request.
+	//
+	// The level to which the action relates (provisioner, worker type, worker) is
+	// called the action context. All actions, regardless of the action contexts,
+	// are registered against the provisioner when calling
+	// `queue.declareProvisioner`.
+	//
+	// The action context is used by the web client to determine where in the web
+	// interface to present the action to the user as follows:
+	//
+	// | `context`   | Tool where action is displayed |
+	// |-------------|--------------------------------|
+	// | provisioner | Provisioner Explorer           |
+	// | worker-type | Workers Explorer               |
+	// | worker      | Worker Explorer                |
+	//
+	// See [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)
+	// for more information.
+	WorkerAction struct {
+
+		// Only actions with the context `worker` are included.
+		//
+		// Possible values:
+		//   * "worker"
+		Context string `json:"context"`
+
+		// Description of the provisioner.
+		Description string `json:"description"`
+
+		// Method to indicate the desired action to be performed for a given resource.
+		//
+		// Possible values:
+		//   * "POST"
+		//   * "PUT"
+		//   * "DELETE"
+		//   * "PATCH"
+		Method string `json:"method"`
+
+		// Short names for things like logging/error messages.
+		Name string `json:"name"`
+
+		// Appropriate title for any sort of Modal prompt.
+		Title json.RawMessage `json:"title"`
+
+		// When an action is triggered, a request is made using the `url` and `method`.
+		// Depending on the `context`, the following parameters will be substituted in the url:
+		//
+		// | `context`   | Path parameters                                          |
+		// |-------------|----------------------------------------------------------|
+		// | provisioner | <provisionerId>                                          |
+		// | worker-type | <provisionerId>, <workerType>                            |
+		// | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
+		//
+		// _Note: The request needs to be signed with the user's Taskcluster credentials._
+		URL string `json:"url"`
 	}
 
 	// Request to create or update a worker. Capacity will default to 1 if not specified.
@@ -313,69 +511,85 @@ type (
 	}
 
 	// A complete worker definition.
-	WorkerFullDefinition struct {
-
-		// Number of tasks this worker can handle at once
-		//
-		// Mininum:    1
-		Capacity int64 `json:"capacity"`
-
-		// Date and time when this worker was created
-		Created tcclient.Time `json:"created"`
-
-		// Date and time when this worker will be deleted from the DB
-		Expires tcclient.Time `json:"expires"`
-
-		// Date and time when the state of this worker was verified with a cloud api.
-		// For providers with nothing to check, this will just be permanently set to the
-		// time the worker was created.
-		LastChecked tcclient.Time `json:"lastChecked"`
-
-		// Date and time when this worker last changed state
-		LastModified tcclient.Time `json:"lastModified"`
-
-		// The provider that had started the worker and responsible for managing it.
-		// Can be different from the provider that's currently in the worker pool config.
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
-		ProviderID string `json:"providerId"`
-
-		// A string specifying the state this worker is in so far as worker-manager knows.
-		// A "requested" worker is in the process of starting up, and if successful will enter
-		// the "running" state once it has registered with the `registerWorker` API method.  A
-		// "stopping" worker is in the process of shutting down and deleting resources, while
-		// a "stopped" worker is completely stopped.  Stopped workers are kept for historical
-		// purposes and are purged when they expire.  Note that some providers transition workers
-		// directly from "running" to "stopped".
-		//
-		// Possible values:
-		//   * "requested"
-		//   * "running"
-		//   * "stopping"
-		//   * "stopped"
-		State string `json:"state"`
-
-		// Worker group to which this worker belongs
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
-		WorkerGroup string `json:"workerGroup"`
-
-		// Worker ID
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 38
-		WorkerID string `json:"workerId"`
-
-		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
-		//
-		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		WorkerPoolID string `json:"workerPoolId"`
-	}
+	//
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Number of tasks this worker can handle at once
+	//  	//
+	//  	// Mininum:    1
+	//  	//
+	//	//  	Capacity int64 `json:"capacity"`
+	//
+	//  	// Date and time when this worker was created
+	//  	//
+	//	//  	Created tcclient.Time `json:"created"`
+	//
+	//  	// Date and time when this worker will be deleted from the DB
+	//  	//
+	//	//  	Expires tcclient.Time `json:"expires"`
+	//
+	//  	// Date and time when the state of this worker was verified with a cloud api.
+	//  	// For providers with nothing to check, this will just be permanently set to the
+	//  	// time the worker was created.
+	//  	//
+	//	//  	LastChecked tcclient.Time `json:"lastChecked"`
+	//
+	//  	// Date and time when this worker last changed state
+	//  	//
+	//	//  	LastModified tcclient.Time `json:"lastModified"`
+	//
+	//  	// The provider that had started the worker and responsible for managing it.
+	//  	// Can be different from the provider that's currently in the worker pool config.
+	//  	//
+	//  	// Syntax:     ^([a-zA-Z0-9-_]*)$
+	//  	// Min length: 1
+	//  	// Max length: 38
+	//  	//
+	//	//  	ProviderID string `json:"providerId"`
+	//
+	//  	// A string specifying the state this worker is in so far as worker-manager knows.
+	//  	// A "requested" worker is in the process of starting up, and if successful will enter
+	//  	// the "running" state once it has registered with the `registerWorker` API method.  A
+	//  	// "stopping" worker is in the process of shutting down and deleting resources, while
+	//  	// a "stopped" worker is completely stopped.  Stopped workers are kept for historical
+	//  	// purposes and are purged when they expire.  Note that some providers transition workers
+	//  	// directly from "running" to "stopped".
+	//  	//
+	//  	// Possible values:
+	//  	//   * "requested"
+	//  	//   * "running"
+	//  	//   * "stopping"
+	//  	//   * "stopped"
+	//  	//
+	//	//  	State string `json:"state"`
+	//
+	//  	// Worker group to which this worker belongs
+	//  	//
+	//  	// Syntax:     ^([a-zA-Z0-9-_]*)$
+	//  	// Min length: 1
+	//  	// Max length: 38
+	//  	//
+	//	//  	WorkerGroup string `json:"workerGroup"`
+	//
+	//  	// Worker ID
+	//  	//
+	//  	// Syntax:     ^([a-zA-Z0-9-_]*)$
+	//  	// Min length: 1
+	//  	// Max length: 38
+	//  	//
+	//	//  	WorkerID string `json:"workerId"`
+	//
+	//  	// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+	//  	//
+	//  	// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+	//  	//
+	//	//  	WorkerPoolID string `json:"workerPoolId"`
+	//  }
+	//
+	// Additional properties allowed
+	WorkerFullDefinition json.RawMessage
 
 	// A list of workers in a given worker pool
 	WorkerListInAGivenWorkerPool struct {
@@ -390,7 +604,7 @@ type (
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// List of all workers in a given worker pool
-		Workers []WorkerFullDefinition `json:"workers"`
+		Workers []json.RawMessage `json:"workers"`
 	}
 
 	// Fields that are defined by a user for a worker pool.
@@ -624,4 +838,114 @@ type (
 		// List of all worker pools
 		WorkerPools []WorkerPoolFullDefinition `json:"workerPools"`
 	}
+
+	// Response containing information about a worker.
+	WorkerResponse struct {
+		Actions []WorkerAction `json:"actions"`
+
+		// Number of tasks this worker can handle at once
+		//
+		// Mininum:    1
+		Capacity int64 `json:"capacity"`
+
+		// Date and time after which the worker will be automatically
+		// deleted by the queue.
+		Expires tcclient.Time `json:"expires"`
+
+		// Date of the first time this worker claimed a task.
+		FirstClaim tcclient.Time `json:"firstClaim"`
+
+		// Date of the last time this worker was seen active. Updated each time a worker calls
+		// `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
+		// `lastDateActive` is updated every half hour but may be off by up-to half an hour.
+		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
+		// This defaults to null in the database, and is set to the current time when the worker
+		// is first seen.
+		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+
+		// The provider that had started the worker and responsible for managing it.
+		// Can be different from the provider that's currently in the worker pool config.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		ProviderID string `json:"providerId"`
+
+		// Unique identifier for a provisioner, that can supply specified
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
+		ProvisionerID string `json:"provisionerId"`
+
+		// Quarantining a worker allows the machine to remain alive but not accept jobs.
+		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
+		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
+		// somewhere in the past).
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+
+		// List of 20 most recent tasks claimed by the worker.
+		RecentTasks []TaskRun `json:"recentTasks"`
+
+		// A string specifying the state this worker is in so far as worker-manager knows.
+		// A "requested" worker is in the process of starting up, and if successful will enter
+		// the "running" state once it has registered with the `registerWorker` API method.  A
+		// "stopping" worker is in the process of shutting down and deleting resources, while
+		// a "stopped" worker is completely stopped.  Stopped workers are kept for historical
+		// purposes and are purged when they expire.  Note that some providers transition workers
+		// directly from "running" to "stopped".
+		//
+		// Possible values:
+		//   * "requested"
+		//   * "running"
+		//   * "stopping"
+		//   * "stopped"
+		State string `json:"state"`
+
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId,omitempty"`
+
+		// Identifier for group that worker who executes this run is a part of,
+		// this identifier is mainly used for efficient routing.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerGroup string `json:"workerGroup"`
+
+		// Identifier for worker evaluating this run within given
+		// `workerGroup`.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerID string `json:"workerId"`
+
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
+		//
+		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerType string `json:"workerType"`
+	}
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// WorkerFullDefinition is of type json.RawMessage...
+func (this *WorkerFullDefinition) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *WorkerFullDefinition) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("WorkerFullDefinition: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}

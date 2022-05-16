@@ -2876,7 +2876,7 @@ module.exports = {
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
           "scopes": "queue:list-workers:<provisionerId>/<workerType>",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get a list of all active workers of a workerType",
           "type": "function"
         },
@@ -2896,7 +2896,7 @@ module.exports = {
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
           "scopes": "queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get a worker-type",
           "type": "function"
         },
@@ -4008,6 +4008,51 @@ module.exports = {
           "scopes": "worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "experimental",
           "title": "Reregister a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "category": "Worker Metadata",
+          "description": "Get a list of all active workers of a workerType.\n\n`listWorkers` allows a response to be filtered by quarantined and non quarantined workers,\nas well as the current state of the worker.\nTo filter the query, you should call the end-point with one of [`quarantined`, `requested`, `running`,\n`stopping`, `stopped`] as a query-string option with a true or false value.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "method": "get",
+          "name": "listWorkers",
+          "output": "v1/list-workers-response.json#",
+          "query": [
+            "continuationToken",
+            "limit",
+            "quarantined",
+            "requested",
+            "running",
+            "stopping",
+            "stopped"
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
+          "scopes": "worker-manager:list-workers:<provisionerId>/<workerType>",
+          "stability": "experimental",
+          "title": "Get a list of all active workers of a workerType",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType",
+            "workerGroup",
+            "workerId"
+          ],
+          "category": "Worker Metadata",
+          "description": "Get a worker from a worker-type.",
+          "method": "get",
+          "name": "getWorker",
+          "output": "v1/worker-response.json#",
+          "query": [
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Get a worker-type",
           "type": "function"
         },
         {

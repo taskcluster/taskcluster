@@ -1,0 +1,261 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Task Definition Response"
+description: |
+  Definition of a task that can be scheduled
+type:               object
+properties:
+  provisionerId:
+    title:          "Provisioner Id"
+    description: |
+      Unique identifier for a provisioner, that can supply specified
+      `workerType`. Deprecation is planned for this property as it
+      will be replaced, together with `workerType`, by the new
+      identifier `taskQueueId`.
+    type:           string
+    pattern:        {$const: provisionerid-pattern}
+  workerType:
+    title:          "Worker Type"
+    description: |
+      Unique identifier for a worker-type within a specific
+      provisioner. Deprecation is planned for this property as it will
+      be replaced, together with `provisionerId`, by the new
+      identifier `taskQueueId`.
+    type:           string
+    pattern:        {$const: workertype-pattern}
+  taskQueueId:
+    title:          "Task Queue Id"
+    description: |
+      Unique identifier for a task queue
+    type:           string
+    pattern:        {$const: taskqueueid-pattern}
+  schedulerId:
+    title:          "Scheduler Identifier"
+    description: |
+        All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
+
+        * it can represent the entity that created the task;
+        * it can limit addition of new tasks to a task group: the caller of
+            `createTask` must have a scope related to the `schedulerId` of the task
+            group;
+        * it controls who can manipulate tasks, again by requiring
+            `schedulerId`-related scopes; and
+        * it appears in the routing key for Pulse messages about the task.
+    type:           string
+    default:        '-'
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+  projectId:
+    title:          "Project Identifier"
+    description: |
+      The name for the "project" with which this task is associated.  This
+      value can be used to control permission to manipulate tasks as well as
+      for usage reporting.  Project ids are typically simple identifiers,
+      optionally in a hierarchical namespace separated by `/` characters.
+      This value defaults to `none`.
+    type:           string
+    default:        'none'
+    minLength:      {$const: projectId-min-length}
+    maxLength:      {$const: projectId-max-length}
+    pattern:        {$const: projectId-pattern}
+  taskGroupId:
+    title:          "Task-Group Identifier"
+    description: |
+      Identifier for a group of tasks scheduled together with this task.
+      Generally, all tasks related to a single event such as a version-control
+      push or a nightly build have the same `taskGroupId`.  This property
+      defaults to `taskId` if it isn't specified.  Tasks with `taskId` equal to
+      the `taskGroupId` are, [by convention](/docs/manual/using/task-graph),
+      decision tasks.
+    type:           string
+    pattern:        {$const: slugid-pattern}
+  dependencies:
+    title:          "Task Dependencies"
+    description: |
+      List of dependent tasks. These must either be _completed_ or _resolved_
+      before this task is scheduled. See `requires` for semantics.
+    type:           array
+    default:        []
+    items:
+      title:        "Task Dependency"
+      description: |
+        The `taskId` of a task that must be resolved before this task is
+        scheduled.
+      type:         string
+      pattern:      {$const: slugid-pattern}
+    maxItems:       {$const: max-task-dependencies}
+    uniqueItems:    true
+  requires:
+    title:          "Dependency Requirement Semantics"
+    description: |
+      The tasks relation to its dependencies. This property specifies the
+      semantics of the `task.dependencies` property.
+      If `all-completed` is given the task will be scheduled when all
+      dependencies are resolved _completed_ (successful resolution).
+      If `all-resolved` is given the task will be scheduled when all dependencies
+      have been resolved, regardless of what their resolution is.
+    type:           string
+    enum:           {$const: dependency-relation}
+    default:        'all-completed'
+  routes:
+    title:          "Task Specific Routes"
+    description: |
+      List of task-specific routes. Pulse messages about the task will be CC'ed to
+      `route.<value>` for each `<value>` in this array.
+
+      This array has a maximum size due to a limitation of the AMQP protocol,
+      over which Pulse runs.  All routes must fit in the same "frame" of this
+      protocol, and the frames have a fixed maximum size (typically 128k).
+    type:           array
+    default:        []
+    items:
+      title:        "Task Specific Route"
+      description: |
+        A task specific route.
+      type:         string
+      maxLength:    249
+      minLength:    1
+    maxItems:       64
+    uniqueItems:    true
+  priority:
+    title:          "Task Priority"
+    description: |
+      Priority of task. This defaults to `lowest` and the scope
+      `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
+      to define a task with `<priority>`. The `normal` priority is treated as
+      `lowest`.
+    type:           string
+    default: 'lowest'
+    enum:
+      - highest
+      - very-high
+      - high
+      - medium
+      - low
+      - very-low
+      - lowest
+      - normal
+  retries:
+    title:          "Retries"
+    description: |
+      Number of times to retry the task in case of infrastructure issues.
+      An _infrastructure issue_ is a worker node that crashes or is shutdown,
+      these events are to be expected.
+    type:           integer
+    minimum:        0
+    maximum:        49
+    default:        5
+  created:          {$const: created}
+  deadline:         {$const: deadline}
+  expires:
+    title:          "Expiration"
+    description: |
+      Task expiration, time at which task definition and status is deleted.
+      Notice that all artifacts for the task must have an expiration that is no
+      later than this. If this property isn't it will be set to `deadline`
+      plus one year (this default may change).
+    type:           string
+    format:         date-time
+  scopes:
+    title:          "Scopes"
+    description: |
+      List of scopes that the task is authorized to use during its execution.
+    type:           array
+    uniqueItems: false
+    items: {$const: scope}
+  payload:
+    title:          "Task Payload"
+    description: |
+      Task-specific payload following worker-specific format.
+      Refer to the documentation for the worker implementing
+      `<provisionerId>/<workerType>` for details.
+    type:           object
+  metadata:
+    title:          "Task Metadata"
+    description: |
+      Required task metadata
+    type:           object
+    properties:
+      name:
+        title:          "Name"
+        description: |
+          Human readable name of task, used to very briefly given an idea about
+          what the task does.
+        type:           string
+        maxLength:      255
+      description:
+        title:          "Description"
+        description: |
+          Human readable description of the task, please **explain** what the
+          task does. A few lines of documentation is not going to hurt you.
+        type:           string
+        maxLength:      32768
+      owner:
+        title:          "Owner"
+        description: |
+          Entity who caused this task, not necessarily a person with email who did
+          `hg push` as it could be automation bots as well. The entity we should
+          contact to ask why this task is here.
+        type:           string
+        maxLength:      255
+      source:
+        title:          "Source"
+        description: |
+          Link to source of this task, should specify a file, revision and
+          repository. This should be place someone can go an do a git/hg blame
+          to who came up with recipe for this task.
+        type:           string
+        format:         uri
+        pattern:        {$const: source-pattern}
+        maxLength:      4096
+    additionalProperties: false
+    required:
+      - name
+      - description
+      - owner
+      - source
+  tags:
+    title:            "Tags"
+    description: |
+      Arbitrary key-value tags (only strings limited to 4k). These can be used
+      to attach informal metadata to a task. Use this for informal tags that
+      tasks can be classified by. You can also think of strings here as
+      candidates for formal metadata. Something like
+      `purpose: 'build' || 'test'` is a good example.
+    type:             object
+    default:          {}
+    additionalProperties:
+      type:           string
+      maxLength:      4096
+  extra:
+    title:            "Extra Data"
+    description: |
+      Object with properties that can hold any kind of extra data that should be
+      associated with the task. This can be data for the task which doesn't
+      fit into `payload`, or it can supplementary data for use in services
+      listening for events from this task. For example this could be details to
+      display on dashboard, or information for indexing the task. Please, try
+      to put all related information under one property, so `extra` data keys
+      don't conflict.  **Warning**, do not stuff large data-sets in here --
+      task definitions should not take-up multiple MiBs.
+    type:             object
+    default:          {}
+additionalProperties: false
+required:
+  - provisionerId
+  - workerType
+  - taskQueueId
+  - schedulerId
+  - taskGroupId
+  - dependencies
+  - requires
+  - routes
+  - priority
+  - retries
+  - created
+  - deadline
+  - scopes
+  - payload
+  - metadata
+  - tags
+  - extra

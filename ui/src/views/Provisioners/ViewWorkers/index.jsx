@@ -36,6 +36,14 @@ import workersQuery from './workers.graphql';
         parse(location.search.slice(1)).filterBy === 'quarantined'
           ? true
           : null,
+      requested:
+        parse(location.search.slice(1)).filterBy === 'requested' ? true : null,
+      running:
+        parse(location.search.slice(1)).filterBy === 'running' ? true : null,
+      stopping:
+        parse(location.search.slice(1)).filterBy === 'stopping' ? true : null,
+      stopped:
+        parse(location.search.slice(1)).filterBy === 'stopped' ? true : null,
     },
   }),
 })
@@ -128,6 +136,10 @@ export default class ViewWorkers extends Component {
         limit: VIEW_WORKERS_PAGE_SIZE,
       },
       quarantined: target.value === 'Quarantined' ? true : null,
+      requested: target.value === 'Requested' ? true : null,
+      running: target.value === 'Running' ? true : null,
+      stopping: target.value === 'Stopping' ? true : null,
+      stopped: target.value === 'Stopped' ? true : null,
     });
   };
 
@@ -151,6 +163,10 @@ export default class ViewWorkers extends Component {
           previousCursor,
         },
         quarantined: filterBy === 'quarantined' ? true : null,
+        requested: filterBy === 'requested' ? true : null,
+        running: filterBy === 'running' ? true : null,
+        stopping: filterBy === 'stopping' ? true : null,
+        stopped: filterBy === 'stopped' ? true : null,
       },
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.workers;
@@ -243,6 +259,10 @@ export default class ViewWorkers extends Component {
                 <em>None</em>
               </MenuItem>
               <MenuItem value="quarantined">Quarantined</MenuItem>
+              <MenuItem value="requested">Requested</MenuItem>
+              <MenuItem value="running">Running</MenuItem>
+              <MenuItem value="stopping">Stopping</MenuItem>
+              <MenuItem value="stopped">Stopped</MenuItem>
             </TextField>
           </div>
           <br />

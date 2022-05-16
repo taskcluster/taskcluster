@@ -589,6 +589,99 @@ impl WorkerManager {
         (path, query)
     }
 
+    /// Get a list of all active workers of a workerType
+    ///
+    /// Get a list of all active workers of a workerType.
+    ///
+    /// `listWorkers` allows a response to be filtered by quarantined and non quarantined workers,
+    /// as well as the current state of the worker.
+    /// To filter the query, you should call the end-point with one of [`quarantined`, `requested`, `running`,
+    /// `stopping`, `stopped`] as a query-string option with a true or false value.
+    ///
+    /// The response is paged. If this end-point returns a `continuationToken`, you
+    /// should call the end-point again with the `continuationToken` as a query-string
+    /// option. By default this end-point will list up to 1000 workers in a single
+    /// page. You may limit this with the query-string parameter `limit`.
+    pub async fn listWorkers(&self, provisionerId: &str, workerType: &str, continuationToken: Option<&str>, limit: Option<&str>, quarantined: Option<&str>, requested: Option<&str>, running: Option<&str>, stopping: Option<&str>, stopped: Option<&str>) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, quarantined, requested, running, stopping, stopped);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the listWorkers endpoint
+    pub fn listWorkers_url(&self, provisionerId: &str, workerType: &str, continuationToken: Option<&str>, limit: Option<&str>, quarantined: Option<&str>, requested: Option<&str>, running: Option<&str>, stopping: Option<&str>, stopped: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, quarantined, requested, running, stopping, stopped);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the listWorkers endpoint
+    pub fn listWorkers_signed_url(&self, provisionerId: &str, workerType: &str, continuationToken: Option<&str>, limit: Option<&str>, quarantined: Option<&str>, requested: Option<&str>, running: Option<&str>, stopping: Option<&str>, stopped: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, quarantined, requested, running, stopping, stopped);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for listWorkers
+    fn listWorkers_details<'a>(provisionerId: &'a str, workerType: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>, quarantined: Option<&'a str>, requested: Option<&'a str>, running: Option<&'a str>, stopping: Option<&'a str>, stopped: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("provisioners/{}/worker-types/{}/workers", urlencode(provisionerId), urlencode(workerType));
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+        if let Some(q) = quarantined {
+            query.get_or_insert_with(Vec::new).push(("quarantined", q));
+        }
+        if let Some(q) = requested {
+            query.get_or_insert_with(Vec::new).push(("requested", q));
+        }
+        if let Some(q) = running {
+            query.get_or_insert_with(Vec::new).push(("running", q));
+        }
+        if let Some(q) = stopping {
+            query.get_or_insert_with(Vec::new).push(("stopping", q));
+        }
+        if let Some(q) = stopped {
+            query.get_or_insert_with(Vec::new).push(("stopped", q));
+        }
+
+        (path, query)
+    }
+
+    /// Get a worker-type
+    ///
+    /// Get a worker from a worker-type.
+    pub async fn getWorker(&self, provisionerId: &str, workerType: &str, workerGroup: &str, workerId: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::getWorker_details(provisionerId, workerType, workerGroup, workerId);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the getWorker endpoint
+    pub fn getWorker_url(&self, provisionerId: &str, workerType: &str, workerGroup: &str, workerId: &str) -> Result<String, Error> {
+        let (path, query) = Self::getWorker_details(provisionerId, workerType, workerGroup, workerId);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the getWorker endpoint
+    pub fn getWorker_signed_url(&self, provisionerId: &str, workerType: &str, workerGroup: &str, workerId: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::getWorker_details(provisionerId, workerType, workerGroup, workerId);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for getWorker
+    fn getWorker_details<'a>(provisionerId: &'a str, workerType: &'a str, workerGroup: &'a str, workerId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("provisioners/{}/worker-types/{}/workers/{}/{}", urlencode(provisionerId), urlencode(workerType), urlencode(workerGroup), urlencode(workerId));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Heartbeat
     ///
     /// Respond with a service heartbeat.

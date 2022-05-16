@@ -57,6 +57,16 @@ type Worker {
   # This defaults to null in the database, and is set to the current time when the worker
   # is first seen.
   lastDateActive: DateTime
+
+  # The current state of the worker.
+  # One of [`requested`, `running`, `stopping`, `stopped`].
+  state: String
+
+  # The current capacity of the worker.
+  capacity: Int
+
+  # The worker's provider-specific ID.
+  providerId: String
 }
 
 input WorkerQuarantine {
@@ -85,7 +95,7 @@ type WorkersConnection implements Connection {
 
 extend type Query {
   worker(provisionerId: String!, workerType: String!, workerGroup: String!, workerId: ID!): Worker
-  workers(provisionerId: String!, workerType: String!, connection: PageConnection, filter: JSON, isQuarantined: Boolean): WorkersCompactConnection
+  workers(provisionerId: String!, workerType: String!, connection: PageConnection, filter: JSON, isQuarantined: Boolean, isRequested: Boolean, isRunning: Boolean, isStopping: Boolean, isStopped: Boolean): WorkersCompactConnection
 }
 
 extend type Mutation {

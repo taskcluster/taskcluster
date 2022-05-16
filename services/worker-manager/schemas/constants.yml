@@ -13,3 +13,161 @@ slugid-pattern: "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9
 # Note that this pattern corresponds to queue's provisionerid-pattern + `/` + workertype-pattern
 # most cloud providers
 workerpoolid-pattern: '^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$'
+
+# Run State
+state:
+  description: |
+    Run state, this enum is **frozen** new values will
+    **not** be added. Please, note, that `completed` does
+    not imply task-specfic success, and `failed` means that
+    we were unable to execute the run to completion on
+    available infrastructure. See `reasonResolved` for
+    explanation.
+  enum:
+  - pending
+  - running
+  - completed
+  - failed
+
+taskId:
+  title:            "Task Identifier"
+  description: |
+    Unique task identifier, this is UUID encoded as
+    [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+    stripped of `=` padding.
+  type:             string
+  pattern:          {$const: slugid-pattern}
+
+# provisionerId and workerType together form a workerPoolId, so these are
+# components of worker-manager's workerpoolid-pattern.  Note that both of these
+# enforce character length limits, so no `..-{min,max}-length` constants are
+# required.
+provisionerid-pattern: '^[a-zA-Z0-9-_]{1,38}$'
+workertype-pattern: '^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$'
+# taskQueueId that will replace provisionerId / workerType in new hierarchy
+taskqueueid-pattern: '^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$'
+
+# ProjectIds can be embedded in scopes, bounded by `:`, so they cannot contain
+# that character.  The maximum length is defined only to dissuade silly things
+# like embedding huge pieces of data.
+projectId-pattern:     ^([a-zA-Z0-9._/-]*)$
+projectId-min-length:  1
+projectId-max-length:  500
+
+# Run identifier limitations, these are also somewhat founded in RabbitMQ
+# routing key limitations
+min-run-id:     0
+max-run-id:     1000
+
+# Task-specific routing key
+routing:
+  title:        Routing Key
+  description: |
+    Task specific routing key, may contain dots (`.`) for arbitrary sub-routes
+  type:         string
+  maxLength:    128
+
+
+# Maximum number of retries allowed by the format, if we allow it grow higher
+# we need to consider RabbitMQ routing key limitations. We might not have
+# used all bytes yet, but keep this in mind!
+max-retries:    999
+
+# Deadline of task
+deadline:
+  title:        Deadline
+  description: |
+    Deadline of the task, by which this task must be complete. `pending` and
+    `running` runs are resolved as **exception** if not resolved by other means
+    before the deadline. After the deadline, a task is immutable. Note,
+    deadline cannot be more than 5 days into the future
+  type:         string
+  format:       date-time
+
+# Expiration of task
+expires:
+  title:        Expiration
+  description: |
+    Task expiration, time at which task definition and
+    status is deleted. Notice that all artifacts for the task
+    must have an expiration that is no later than this.
+  type:         string
+  format:       date-time
+
+# Creation time of tasks
+created:
+  title:        Created
+  description:  Creation time of task
+  type:         string
+  format:       date-time
+
+# Message version numbers
+message-version:
+  description:  Message version
+  type:         integer
+  enum:         [1]
+
+scope:
+    type: string
+    title: Scope
+    description: |
+      A single scope. A scope must be composed of
+      printable ASCII characters and spaces.  Scopes ending in more than
+      one `*` character are forbidden.
+    pattern: "^[\x20-\x7e]*$"
+
+# Pattern for source URLs; this rules out insecure URLs like data: or javascript:
+source-pattern: "^(https?|ssh)://"
+
+# Maximum number of dependencies a single task can have
+max-task-dependencies: 100
+
+# Possible dependencies relations for task.requires
+dependency-relation:
+  - all-completed
+  - all-resolved
+
+# Description of actions. They are defined on the provisioner
+action-description: |
+  Actions provide a generic mechanism to expose additional features of a
+  provisioner, worker type, or worker to Taskcluster clients.
+
+  An action is comprised of metadata describing the feature it exposes,
+  together with a webhook for triggering it.
+
+  The Taskcluster tools site, for example, retrieves actions when displaying
+  provisioners, worker types and workers. It presents the provisioner/worker
+  type/worker specific actions to the user. When the user triggers an action,
+  the web client takes the registered webhook, substitutes parameters into the
+  URL (see `url`), signs the requests with the Taskcluster credentials of the
+  user operating the web interface, and issues the HTTP request.
+
+  The level to which the action relates (provisioner, worker type, worker) is
+  called the action context. All actions, regardless of the action contexts,
+  are registered against the provisioner when calling
+  `queue.declareProvisioner`.
+
+  The action context is used by the web client to determine where in the web
+  interface to present the action to the user as follows:
+
+  | `context`   | Tool where action is displayed |
+  |-------------|--------------------------------|
+  | provisioner | Provisioner Explorer           |
+  | worker-type | Workers Explorer               |
+  | worker      | Worker Explorer                |
+
+  See [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)
+  for more information.
+
+# Description of the url property in an action.
+action-url-description: |
+  When an action is triggered, a request is made using the `url` and `method`.
+  Depending on the `context`, the following parameters will be substituted in the url:
+
+  | `context`   | Path parameters                                          |
+  |-------------|----------------------------------------------------------|
+  | provisioner | <provisionerId>                                          |
+  | worker-type | <provisionerId>, <workerType>                            |
+  | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
+
+  _Note: The request needs to be signed with the user's Taskcluster credentials._

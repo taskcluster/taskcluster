@@ -32,13 +32,27 @@ module.exports = {
     },
     workers(
       parent,
-      { provisionerId, workerType, isQuarantined, connection, filter },
+      {
+        provisionerId,
+        workerType,
+        isQuarantined,
+        isRequested,
+        isRunning,
+        isStopping,
+        isStopped,
+        connection,
+        filter,
+      },
       { loaders },
     ) {
       return loaders.workers.load({
         provisionerId,
         workerType,
         isQuarantined,
+        isRequested,
+        isRunning,
+        isStopping,
+        isStopped,
         connection,
         filter,
       });

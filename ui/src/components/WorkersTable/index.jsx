@@ -1,21 +1,25 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { func, string } from 'prop-types';
 import { parse, stringify } from 'qs';
 import { withRouter } from 'react-router-dom';
 import { formatDistanceStrict, parseISO } from 'date-fns';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
 import { withStyles } from '@material-ui/core/styles';
+import { IconButton, TableCell, TableRow, Typography } from '@material-ui/core';
 import LinkIcon from 'mdi-react/LinkIcon';
+import DeleteIcon from 'mdi-react/DeleteIcon';
+import { WorkerManager } from 'taskcluster-client-web';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
 import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
-import { VIEW_WORKERS_PAGE_SIZE } from '../../utils/constants';
+import Label from '../Label';
+import DialogAction from '../DialogAction';
+import { NULL_PROVIDER, VIEW_WORKERS_PAGE_SIZE } from '../../utils/constants';
 import { workers } from '../../utils/prop-types';
+import { withAuth } from '../../utils/Auth';
 import Link from '../../utils/Link';
 import sort from '../../utils/sort';
 
@@ -28,10 +32,16 @@ const sorted = pipe(
   )
 );
 
+@withAuth
 @withRouter
 @withStyles(theme => ({
   linksIcon: {
     marginLeft: theme.spacing(1),
+  },
+  button: {
+    marginLeft: -theme.spacing(2),
+    marginRight: theme.spacing(1),
+    borderRadius: 4,
   },
 }))
 /**
@@ -54,6 +64,19 @@ export default class WorkersTable extends Component {
     workersConnection: {
       edges: [],
       pageInfo: {},
+    },
+  };
+
+  state = {
+    dialogState: {
+      error: null,
+      open: false,
+      title: '',
+      body: '',
+      confirmText: '',
+      taskQueueId: '',
+      workerGroup: '',
+      workerId: '',
     },
   };
 
@@ -88,6 +111,75 @@ export default class WorkersTable extends Component {
     }
   );
 
+  handleDialogActionOpen = (taskQueueId, workerGroup, workerId) => () => {
+    this.setState({
+      dialogState: {
+        open: true,
+        title: 'Terminate Worker?',
+        body: `This will terminate the worker with id ${workerId} in group ${workerGroup} within worker pool ${taskQueueId}.`,
+        confirmText: 'Terminate Worker',
+        taskQueueId,
+        workerGroup,
+        workerId,
+      },
+    });
+  };
+
+  handleDeleteClick = async () => {
+    const { taskQueueId, workerGroup, workerId } = this.state.dialogState;
+    const { user } = this.props;
+
+    this.setState({
+      dialogState: {
+        ...this.state.dialogState,
+        error: null,
+      },
+    });
+
+    try {
+      if (typeof user?.credentials === 'undefined') {
+        throw new Error('User credentials not found. Please log in.');
+      }
+
+      const wm = new WorkerManager({
+        rootUrl: window.env.TASKCLUSTER_ROOT_URL,
+        credentials: user.credentials,
+        authorizedScopes: [
+          `worker-manager:remove-worker:${taskQueueId}/${workerGroup}/${workerId}`,
+        ],
+      });
+
+      await wm.removeWorker(taskQueueId, workerGroup, workerId);
+      this.setState({
+        dialogState: {
+          ...this.state.dialogState,
+          open: false,
+        },
+      });
+    } catch (error) {
+      this.handleDialogActionError(error);
+    }
+  };
+
+  handleDialogActionError = error => {
+    this.setState({
+      dialogState: {
+        ...this.state.dialogState,
+        error,
+      },
+    });
+  };
+
+  handleDialogActionClose = () => {
+    this.setState({
+      dialogState: {
+        ...this.state.dialogState,
+        error: null,
+        open: false,
+      },
+    });
+  };
+
   handleHeaderClick = sortByHeader => {
     const query = parse(this.props.location.search.slice(1));
     const sortBy = sortByHeader;
@@ -106,6 +198,8 @@ export default class WorkersTable extends Component {
     const mapping = {
       'Worker Group': node.workerGroup,
       'Worker ID': node.workerId,
+      'Worker State': node.state,
+      'Worker Capacity': node.capacity,
       'Last Active': node.lastDateActive,
       'First Claim': node.firstClaim,
       'Most Recent Task': node.latestTask?.run?.taskId,
@@ -144,6 +238,9 @@ export default class WorkersTable extends Component {
       classes,
       ...props
     } = this.props;
+    const {
+      dialogState: { open, error, title, confirmText, body },
+    } = this.state;
     const iconSize = 16;
     const connection = this.createSortedWorkersConnection(
       workersConnection,
@@ -152,112 +249,158 @@ export default class WorkersTable extends Component {
     );
 
     return (
-      <ConnectionDataTable
-        connection={connection}
-        pageSize={VIEW_WORKERS_PAGE_SIZE}
-        sortByHeader={sortBy}
-        sortDirection={sortDirection}
-        onHeaderClick={this.handleHeaderClick}
-        onPageChange={onPageChange}
-        renderRow={({
-          node: {
-            workerId,
-            workerGroup,
-            latestTask,
-            firstClaim,
-            quarantineUntil,
-            lastDateActive,
-          },
-        }) => (
-          <TableRow key={workerId}>
-            <TableCell>{workerGroup}</TableCell>
-            <TableCell>
-              <Link
-                to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
-                <TableCellItem button>
-                  {workerId}
-                  <LinkIcon className={classes.linksIcon} size={iconSize} />
-                </TableCellItem>
-              </Link>
-            </TableCell>
-            {lastDateActive ? (
-              <CopyToClipboardTableCell
-                tooltipTitle={lastDateActive}
-                textToCopy={lastDateActive}
-                text={<DateDistance from={lastDateActive} />}
-              />
-            ) : (
+      <Fragment>
+        <ConnectionDataTable
+          connection={connection}
+          pageSize={VIEW_WORKERS_PAGE_SIZE}
+          sortByHeader={sortBy}
+          sortDirection={sortDirection}
+          onHeaderClick={this.handleHeaderClick}
+          onPageChange={onPageChange}
+          renderRow={({
+            node: {
+              workerId,
+              workerGroup,
+              latestTask,
+              firstClaim,
+              quarantineUntil,
+              lastDateActive,
+              state,
+              capacity,
+              providerId,
+              taskQueueId,
+            },
+          }) => (
+            <TableRow key={workerId}>
+              <TableCell>{workerGroup}</TableCell>
               <TableCell>
-                <em>n/a</em>
-              </TableCell>
-            )}
-            <CopyToClipboardTableCell
-              tooltipTitle={firstClaim}
-              textToCopy={firstClaim}
-              text={<DateDistance from={firstClaim} />}
-            />
-            <TableCell>
-              {latestTask?.run ? (
                 <Link
-                  to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
+                  to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
                   <TableCellItem button>
-                    {latestTask.run.taskId}
+                    {workerId}
                     <LinkIcon className={classes.linksIcon} size={iconSize} />
                   </TableCellItem>
                 </Link>
+              </TableCell>
+              <TableCell>
+                {state ? (
+                  <StatusLabel state={state.toUpperCase()} />
+                ) : (
+                  <em>n/a</em>
+                )}
+              </TableCell>
+              <TableCell> {capacity || 0} </TableCell>
+              {lastDateActive ? (
+                <CopyToClipboardTableCell
+                  tooltipTitle={lastDateActive}
+                  textToCopy={lastDateActive}
+                  text={<DateDistance from={lastDateActive} />}
+                />
               ) : (
-                <em>n/a</em>
+                <TableCell>
+                  <em>n/a</em>
+                </TableCell>
               )}
-            </TableCell>
-            <TableCell>
+              <CopyToClipboardTableCell
+                tooltipTitle={firstClaim}
+                textToCopy={firstClaim}
+                text={<DateDistance from={firstClaim} />}
+              />
+              <TableCell>
+                {latestTask?.run ? (
+                  <Link
+                    to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
+                    <TableCellItem button>
+                      {latestTask.run.taskId}
+                      <LinkIcon className={classes.linksIcon} size={iconSize} />
+                    </TableCellItem>
+                  </Link>
+                ) : (
+                  <em>n/a</em>
+                )}
+              </TableCell>
+              <TableCell>
+                {latestTask?.run ? (
+                  <StatusLabel state={latestTask.run.state} />
+                ) : (
+                  <em>n/a</em>
+                )}
+              </TableCell>
               {latestTask?.run ? (
-                <StatusLabel state={latestTask.run.state} />
+                <CopyToClipboardTableCell
+                  tooltipTitle={latestTask.run.started}
+                  textToCopy={latestTask.run.started}
+                  text={<DateDistance from={latestTask.run.started} />}
+                />
               ) : (
-                <em>n/a</em>
+                <TableCell>n/a</TableCell>
               )}
-            </TableCell>
-            {latestTask?.run ? (
-              <CopyToClipboardTableCell
-                tooltipTitle={latestTask.run.started}
-                textToCopy={latestTask.run.started}
-                text={<DateDistance from={latestTask.run.started} />}
-              />
-            ) : (
-              <TableCell>n/a</TableCell>
-            )}
-            {latestTask?.run?.resolved ? (
-              <CopyToClipboardTableCell
-                tooltipTitle={latestTask.run.resolved}
-                textToCopy={latestTask.run.resolved}
-                text={<DateDistance from={latestTask.run.resolved} />}
-              />
-            ) : (
-              <TableCell>n/a</TableCell>
-            )}
-            <TableCell>
-              {quarantineUntil ? (
-                formatDistanceStrict(new Date(), parseISO(quarantineUntil), {
-                  unit: 'day',
-                })
+              {latestTask?.run?.resolved ? (
+                <CopyToClipboardTableCell
+                  tooltipTitle={latestTask.run.resolved}
+                  textToCopy={latestTask.run.resolved}
+                  text={<DateDistance from={latestTask.run.resolved} />}
+                />
               ) : (
-                <em>n/a</em>
+                <TableCell>n/a</TableCell>
               )}
-            </TableCell>
-          </TableRow>
-        )}
-        headers={[
-          'Worker Group',
-          'Worker ID',
-          'Last Active',
-          'First Claim',
-          'Most Recent Task',
-          'Task State',
-          'Task Started',
-          'Task Resolved',
-          'Quarantined',
-        ]}
-        {...props}
-      />
+              <TableCell>
+                {quarantineUntil ? (
+                  formatDistanceStrict(new Date(), parseISO(quarantineUntil), {
+                    unit: 'day',
+                  })
+                ) : (
+                  <em>n/a</em>
+                )}
+              </TableCell>
+              <TableCell>
+                {providerId !== NULL_PROVIDER ? (
+                  <IconButton
+                    title="Terminate Worker"
+                    className={classes.button}
+                    name={`${taskQueueId}`}
+                    onClick={this.handleDialogActionOpen(
+                      taskQueueId,
+                      workerGroup,
+                      workerId
+                    )}>
+                    <DeleteIcon size={iconSize} />
+                  </IconButton>
+                ) : (
+                  <Label mini status="warning" className={classes.button}>
+                    Scheduled for termination
+                  </Label>
+                )}
+              </TableCell>
+            </TableRow>
+          )}
+          headers={[
+            'Worker Group',
+            'Worker ID',
+            'Worker State',
+            'Worker Capacity',
+            'Last Active',
+            'First Claim',
+            'Most Recent Task',
+            'Task State',
+            'Task Started',
+            'Task Resolved',
+            'Quarantined',
+            '',
+          ]}
+          {...props}
+        />
+        <DialogAction
+          open={open}
+          onSubmit={this.handleDeleteClick}
+          onClose={this.handleDialogActionClose}
+          onError={this.handleDialogActionError}
+          error={error}
+          title={title}
+          body={<Typography>{body}</Typography>}
+          confirmText={confirmText}
+        />
+      </Fragment>
     );
   }
 }

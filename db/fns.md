@@ -92,8 +92,6 @@
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
-   * [`get_queue_worker_tqid_with_last_date_active`](#get_queue_worker_tqid_with_last_date_active)
-   * [`get_queue_workers_tqid_with_last_date_active`](#get_queue_workers_tqid_with_last_date_active)
    * [`get_task_group`](#get_task_group)
    * [`get_task_projid`](#get_task_projid)
    * [`get_task_queue`](#get_task_queue)
@@ -147,6 +145,8 @@
    * [`expire_worker_pools`](#expire_worker_pools)
    * [`expire_workers`](#expire_workers)
    * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
+   * [`get_queue_worker_with_wm_join`](#get_queue_worker_with_wm_join)
+   * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
    * [`get_worker_2`](#get_worker_2)
    * [`get_worker_pool_error`](#get_worker_pool_error)
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
@@ -1222,8 +1222,6 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
-* [`get_queue_worker_tqid_with_last_date_active`](#get_queue_worker_tqid_with_last_date_active)
-* [`get_queue_workers_tqid_with_last_date_active`](#get_queue_workers_tqid_with_last_date_active)
 * [`get_task_group`](#get_task_group)
 * [`get_task_projid`](#get_task_projid)
 * [`get_task_queue`](#get_task_queue)
@@ -1639,54 +1637,6 @@ where the page of results should begin, and must all be specified if any
 are specified.  Typically these values would be drawn from the last item
 in the previous page.
 
-### get_queue_worker_tqid_with_last_date_active
-
-* *Mode*: read
-* *Arguments*:
-  * `task_queue_id_in text`
-  * `worker_group_in text`
-  * `worker_id_in text`
-  * `expires_in timestamptz`
-* *Returns*: `table`
-  * `task_queue_id text`
-  * `worker_group text`
-  * `worker_id text`
-  * `quarantine_until timestamptz`
-  * `expires timestamptz`
-  * `first_claim timestamptz`
-  * `recent_tasks jsonb`
-  * `last_date_active timestamptz`
-  * `etag uuid`
-* *Last defined on version*: 72
-
-Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.
-Workers are not considered expired until after their quarantine date expires.
-
-### get_queue_workers_tqid_with_last_date_active
-
-* *Mode*: read
-* *Arguments*:
-  * `task_queue_id_in text`
-  * `expires_in timestamptz`
-  * `page_size_in integer`
-  * `page_offset_in integer`
-* *Returns*: `table`
-  * `task_queue_id text`
-  * `worker_group text`
-  * `worker_id text`
-  * `quarantine_until timestamptz`
-  * `expires timestamptz`
-  * `first_claim timestamptz`
-  * `recent_tasks jsonb`
-  * `last_date_active timestamptz`
-  * `etag uuid`
-* *Last defined on version*: 72
-
-Get non-expired queue workers ordered by task_queue_id, worker_group, and worker_id.
-Workers are not considered expired until after their quarantine date expires.
-If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset page_offset.
-
 ### get_task_group
 
 * *Mode*: read
@@ -2078,7 +2028,9 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
 ### deprecated methods
 
 * `get_queue_worker_tqid(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v46.0.0)
+* `get_queue_worker_tqid_with_last_date_active(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v46.0.0)
 * `get_queue_workers_tqid(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
+* `get_queue_workers_tqid_with_last_date_active(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
 * `quarantine_queue_worker(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz)` (compatibility guaranteed until v46.0.0)
 * `queue_worker_seen(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v46.0.0)
 
@@ -2371,6 +2323,8 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`expire_worker_pools`](#expire_worker_pools)
 * [`expire_workers`](#expire_workers)
 * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
+* [`get_queue_worker_with_wm_join`](#get_queue_worker_with_wm_join)
+* [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
 * [`get_worker_2`](#get_worker_2)
 * [`get_worker_pool_error`](#get_worker_pool_error)
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
@@ -2540,6 +2494,62 @@ The `quaratine_until` contains NULL or a date in the past if the
 worker is not quarantined, otherwise the date until which it is
 quaratined. `providers_filter_cond` and `providers_filter_value` used to
 filter `=` or `<>` provider by value.
+
+### get_queue_worker_with_wm_join
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+  * `expires_in timestamptz`
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `worker_group text`
+  * `worker_id text`
+  * `quarantine_until timestamptz`
+  * `expires timestamptz`
+  * `first_claim timestamptz`
+  * `recent_tasks jsonb`
+  * `last_date_active timestamptz`
+  * `state text`
+  * `capacity int4`
+  * `provider_id text`
+  * `etag uuid`
+* *Last defined on version*: 73
+
+Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.
+Workers are not considered expired until after their quarantine date expires.
+This also performs an outer join with the worker_manager.worker table for more data.
+
+### get_queue_workers_with_wm_join
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `expires_in timestamptz`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `worker_group text`
+  * `worker_id text`
+  * `quarantine_until timestamptz`
+  * `expires timestamptz`
+  * `first_claim timestamptz`
+  * `recent_tasks jsonb`
+  * `last_date_active timestamptz`
+  * `state text`
+  * `capacity int4`
+  * `provider_id text`
+  * `etag uuid`
+* *Last defined on version*: 73
+
+Get non-expired queue workers ordered by task_queue_id, worker_group, and worker_id.
+Workers are not considered expired until after their quarantine date expires.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
+This also performs an outer join with the worker_manager.worker table for more data.
 
 ### get_worker_2
 

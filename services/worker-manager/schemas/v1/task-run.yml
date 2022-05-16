@@ -1,0 +1,18 @@
+$schema: "/schemas/common/metaschema.json#"
+title:                "Task Run"
+description: |
+  A run of a task.
+type:                 object
+additionalProperties: false
+properties:
+  taskId: {$const: "taskId"}
+  runId:
+    title:            "Run Identifier"
+    description: |
+      Id of this task run, `run-id`s always starts from `0`
+    type:             integer
+    minimum:          {$const: min-run-id}
+    maximum:          {$const: max-run-id}
+required:
+  - taskId
+  - runId

@@ -1,6 +1,174 @@
 [
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/worker-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response containing information about a worker.\n",
+      "properties": {
+        "actions": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context. All actions, regardless of the action contexts,\nare registered against the provisioner when calling\n`queue.declareProvisioner`.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
+            "properties": {
+              "context": {
+                "description": "Only actions with the context `worker` are included.\n",
+                "enum": [
+                  "worker"
+                ],
+                "title": "Context",
+                "type": "string"
+              },
+              "description": {
+                "description": "Description of the provisioner.\n",
+                "title": "Description",
+                "type": "string"
+              },
+              "method": {
+                "description": "Method to indicate the desired action to be performed for a given resource.\n",
+                "enum": [
+                  "POST",
+                  "PUT",
+                  "DELETE",
+                  "PATCH"
+                ],
+                "title": "Method",
+                "type": "string"
+              },
+              "name": {
+                "description": "Short names for things like logging/error messages.\n",
+                "title": "Name",
+                "type": "string"
+              },
+              "title": {
+                "description": "Appropriate title for any sort of Modal prompt.\n",
+                "title": "Title"
+              },
+              "url": {
+                "description": "When an action is triggered, a request is made using the `url` and `method`.\nDepending on the `context`, the following parameters will be substituted in the url:\n\n| `context`   | Path parameters                                          |\n|-------------|----------------------------------------------------------|\n| provisioner | <provisionerId>                                          |\n| worker-type | <provisionerId>, <workerType>                            |\n| worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |\n\n_Note: The request needs to be signed with the user's Taskcluster credentials._\n",
+                "title": "URL",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "title",
+              "context",
+              "url",
+              "method",
+              "description"
+            ],
+            "title": "Worker Action",
+            "type": "object"
+          },
+          "title": "Worker Actions",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "capacity": {
+          "description": "Number of tasks this worker can handle at once",
+          "minimum": 1,
+          "title": "Worker Capacity",
+          "type": "integer"
+        },
+        "expires": {
+          "description": "Date and time after which the worker will be automatically\ndeleted by the queue.\n",
+          "format": "date-time",
+          "title": "Worker Expiration",
+          "type": "string"
+        },
+        "firstClaim": {
+          "description": "Date of the first time this worker claimed a task.\n",
+          "format": "date-time",
+          "title": "First task claimed",
+          "type": "string"
+        },
+        "lastDateActive": {
+          "description": "Date of the last time this worker was seen active. Updated each time a worker calls\n`queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.\n`lastDateActive` is updated every half hour but may be off by up-to half an hour.\nNonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.\nThis defaults to null in the database, and is set to the current time when the worker\nis first seen.\n",
+          "format": "date-time",
+          "title": "Worker Last Date Active",
+          "type": "string"
+        },
+        "providerId": {
+          "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Provider",
+          "type": "string"
+        },
+        "provisionerId": {
+          "$ref": "task.json#/properties/provisionerId"
+        },
+        "quarantineUntil": {
+          "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",
+          "format": "date-time",
+          "title": "Worker Quarantine",
+          "type": "string"
+        },
+        "recentTasks": {
+          "description": "List of 20 most recent tasks claimed by the worker.\n",
+          "items": {
+            "$ref": "task-run.json#"
+          },
+          "title": "Most Recent Tasks",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "state": {
+          "description": "A string specifying the state this worker is in so far as worker-manager knows.\nA \"requested\" worker is in the process of starting up, and if successful will enter\nthe \"running\" state once it has registered with the `registerWorker` API method.  A\n\"stopping\" worker is in the process of shutting down and deleting resources, while\na \"stopped\" worker is completely stopped.  Stopped workers are kept for historical\npurposes and are purged when they expire.  Note that some providers transition workers\ndirectly from \"running\" to \"stopped\".\n",
+          "enum": [
+            "requested",
+            "running",
+            "stopping",
+            "stopped"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "taskQueueId": {
+          "$ref": "task.json#/properties/taskQueueId"
+        },
+        "workerGroup": {
+          "description": "Identifier for group that worker who executes this run is a part of,\nthis identifier is mainly used for efficient routing.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Worker Group",
+          "type": "string"
+        },
+        "workerId": {
+          "description": "Identifier for worker evaluating this run within given\n`workerGroup`.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Worker Identifier",
+          "type": "string"
+        },
+        "workerType": {
+          "$ref": "task.json#/properties/workerType"
+        }
+      },
+      "required": [
+        "provisionerId",
+        "workerType",
+        "workerGroup",
+        "workerId",
+        "recentTasks",
+        "expires",
+        "firstClaim",
+        "actions",
+        "state",
+        "capacity",
+        "providerId"
+      ],
+      "title": "Worker Response",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/worker-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/worker-pool-list.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -314,7 +482,7 @@
     "content": {
       "$id": "/schemas/worker-manager/v1/worker-full.json#",
       "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "description": "A complete worker definition.",
       "properties": {
         "capacity": {
@@ -454,6 +622,268 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/update-worker-pool-request.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/task.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Definition of a task that can be scheduled\n",
+      "properties": {
+        "created": {
+          "description": "Creation time of task",
+          "format": "date-time",
+          "title": "Created",
+          "type": "string"
+        },
+        "deadline": {
+          "description": "Deadline of the task, by which this task must be complete. `pending` and\n`running` runs are resolved as **exception** if not resolved by other means\nbefore the deadline. After the deadline, a task is immutable. Note,\ndeadline cannot be more than 5 days into the future\n",
+          "format": "date-time",
+          "title": "Deadline",
+          "type": "string"
+        },
+        "dependencies": {
+          "default": [
+          ],
+          "description": "List of dependent tasks. These must either be _completed_ or _resolved_\nbefore this task is scheduled. See `requires` for semantics.\n",
+          "items": {
+            "description": "The `taskId` of a task that must be resolved before this task is\nscheduled.\n",
+            "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+            "title": "Task Dependency",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Task Dependencies",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "expires": {
+          "description": "Task expiration, time at which task definition and status is deleted.\nNotice that all artifacts for the task must have an expiration that is no\nlater than this. If this property isn't it will be set to `deadline`\nplus one year (this default may change).\n",
+          "format": "date-time",
+          "title": "Expiration",
+          "type": "string"
+        },
+        "extra": {
+          "default": {
+          },
+          "description": "Object with properties that can hold any kind of extra data that should be\nassociated with the task. This can be data for the task which doesn't\nfit into `payload`, or it can supplementary data for use in services\nlistening for events from this task. For example this could be details to\ndisplay on dashboard, or information for indexing the task. Please, try\nto put all related information under one property, so `extra` data keys\ndon't conflict.  **Warning**, do not stuff large data-sets in here --\ntask definitions should not take-up multiple MiBs.\n",
+          "title": "Extra Data",
+          "type": "object"
+        },
+        "metadata": {
+          "additionalProperties": false,
+          "description": "Required task metadata\n",
+          "properties": {
+            "description": {
+              "description": "Human readable description of the task, please **explain** what the\ntask does. A few lines of documentation is not going to hurt you.\n",
+              "maxLength": 32768,
+              "title": "Description",
+              "type": "string"
+            },
+            "name": {
+              "description": "Human readable name of task, used to very briefly given an idea about\nwhat the task does.\n",
+              "maxLength": 255,
+              "title": "Name",
+              "type": "string"
+            },
+            "owner": {
+              "description": "Entity who caused this task, not necessarily a person with email who did\n`hg push` as it could be automation bots as well. The entity we should\ncontact to ask why this task is here.\n",
+              "maxLength": 255,
+              "title": "Owner",
+              "type": "string"
+            },
+            "source": {
+              "description": "Link to source of this task, should specify a file, revision and\nrepository. This should be place someone can go an do a git/hg blame\nto who came up with recipe for this task.\n",
+              "format": "uri",
+              "maxLength": 4096,
+              "pattern": "^(https?|ssh)://",
+              "title": "Source",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "description",
+            "owner",
+            "source"
+          ],
+          "title": "Task Metadata",
+          "type": "object"
+        },
+        "payload": {
+          "description": "Task-specific payload following worker-specific format.\nRefer to the documentation for the worker implementing\n`<provisionerId>/<workerType>` for details.\n",
+          "title": "Task Payload",
+          "type": "object"
+        },
+        "priority": {
+          "default": "lowest",
+          "description": "Priority of task. This defaults to `lowest` and the scope\n`queue:create-task:<priority>/<provisionerId>/<workerType>` is required\nto define a task with `<priority>`. The `normal` priority is treated as\n`lowest`.\n",
+          "enum": [
+            "highest",
+            "very-high",
+            "high",
+            "medium",
+            "low",
+            "very-low",
+            "lowest",
+            "normal"
+          ],
+          "title": "Task Priority",
+          "type": "string"
+        },
+        "projectId": {
+          "default": "none",
+          "description": "The name for the \"project\" with which this task is associated.  This\nvalue can be used to control permission to manipulate tasks as well as\nfor usage reporting.  Project ids are typically simple identifiers,\noptionally in a hierarchical namespace separated by `/` characters.\nThis value defaults to `none`.\n",
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9._/-]*)$",
+          "title": "Project Identifier",
+          "type": "string"
+        },
+        "provisionerId": {
+          "description": "Unique identifier for a provisioner, that can supply specified\n`workerType`. Deprecation is planned for this property as it\nwill be replaced, together with `workerType`, by the new\nidentifier `taskQueueId`.\n",
+          "pattern": "^[a-zA-Z0-9-_]{1,38}$",
+          "title": "Provisioner Id",
+          "type": "string"
+        },
+        "requires": {
+          "default": "all-completed",
+          "description": "The tasks relation to its dependencies. This property specifies the\nsemantics of the `task.dependencies` property.\nIf `all-completed` is given the task will be scheduled when all\ndependencies are resolved _completed_ (successful resolution).\nIf `all-resolved` is given the task will be scheduled when all dependencies\nhave been resolved, regardless of what their resolution is.\n",
+          "enum": [
+            "all-completed",
+            "all-resolved"
+          ],
+          "title": "Dependency Requirement Semantics",
+          "type": "string"
+        },
+        "retries": {
+          "default": 5,
+          "description": "Number of times to retry the task in case of infrastructure issues.\nAn _infrastructure issue_ is a worker node that crashes or is shutdown,\nthese events are to be expected.\n",
+          "maximum": 49,
+          "minimum": 0,
+          "title": "Retries",
+          "type": "integer"
+        },
+        "routes": {
+          "default": [
+          ],
+          "description": "List of task-specific routes. Pulse messages about the task will be CC'ed to\n`route.<value>` for each `<value>` in this array.\n\nThis array has a maximum size due to a limitation of the AMQP protocol,\nover which Pulse runs.  All routes must fit in the same \"frame\" of this\nprotocol, and the frames have a fixed maximum size (typically 128k).\n",
+          "items": {
+            "description": "A task specific route.\n",
+            "maxLength": 249,
+            "minLength": 1,
+            "title": "Task Specific Route",
+            "type": "string"
+          },
+          "maxItems": 64,
+          "title": "Task Specific Routes",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "schedulerId": {
+          "default": "-",
+          "description": "All tasks in a task group must have the same `schedulerId`. This is used for several purposes:\n\n* it can represent the entity that created the task;\n* it can limit addition of new tasks to a task group: the caller of\n    `createTask` must have a scope related to the `schedulerId` of the task\n    group;\n* it controls who can manipulate tasks, again by requiring\n    `schedulerId`-related scopes; and\n* it appears in the routing key for Pulse messages about the task.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Scheduler Identifier",
+          "type": "string"
+        },
+        "scopes": {
+          "description": "List of scopes that the task is authorized to use during its execution.\n",
+          "items": {
+            "description": "A single scope. A scope must be composed of\nprintable ASCII characters and spaces.  Scopes ending in more than\none `*` character are forbidden.\n",
+            "pattern": "^[ -~]*$",
+            "title": "Scope",
+            "type": "string"
+          },
+          "title": "Scopes",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "tags": {
+          "additionalProperties": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "default": {
+          },
+          "description": "Arbitrary key-value tags (only strings limited to 4k). These can be used\nto attach informal metadata to a task. Use this for informal tags that\ntasks can be classified by. You can also think of strings here as\ncandidates for formal metadata. Something like\n`purpose: 'build' || 'test'` is a good example.\n",
+          "title": "Tags",
+          "type": "object"
+        },
+        "taskGroupId": {
+          "description": "Identifier for a group of tasks scheduled together with this task.\nGenerally, all tasks related to a single event such as a version-control\npush or a nightly build have the same `taskGroupId`.  This property\ndefaults to `taskId` if it isn't specified.  Tasks with `taskId` equal to\nthe `taskGroupId` are, [by convention](/docs/manual/using/task-graph),\ndecision tasks.\n",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Task-Group Identifier",
+          "type": "string"
+        },
+        "taskQueueId": {
+          "description": "Unique identifier for a task queue\n",
+          "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
+          "title": "Task Queue Id",
+          "type": "string"
+        },
+        "workerType": {
+          "description": "Unique identifier for a worker-type within a specific\nprovisioner. Deprecation is planned for this property as it will\nbe replaced, together with `provisionerId`, by the new\nidentifier `taskQueueId`.\n",
+          "pattern": "^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
+          "title": "Worker Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provisionerId",
+        "workerType",
+        "taskQueueId",
+        "schedulerId",
+        "taskGroupId",
+        "dependencies",
+        "requires",
+        "routes",
+        "priority",
+        "retries",
+        "created",
+        "deadline",
+        "scopes",
+        "payload",
+        "metadata",
+        "tags",
+        "extra"
+      ],
+      "title": "Task Definition Response",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/task.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/task-run.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A run of a task.\n",
+      "properties": {
+        "runId": {
+          "description": "Id of this task run, `run-id`s always starts from `0`\n",
+          "maximum": 1000,
+          "minimum": 0,
+          "title": "Run Identifier",
+          "type": "integer"
+        },
+        "taskId": {
+          "description": "Unique task identifier, this is UUID encoded as\n[URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and\nstripped of `=` padding.\n",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Task Identifier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskId",
+        "runId"
+      ],
+      "title": "Task Run",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/task-run.json"
   },
   {
     "content": {
@@ -821,6 +1251,110 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/provider-list.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/list-workers-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response from a `listWorkers` request.\n",
+      "properties": {
+        "continuationToken": {
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of workers in the worker-type.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `listWorkerTypes` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "workers": {
+          "description": "List of workers in this worker-type.\n",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "capacity": {
+                "description": "Number of tasks this worker can handle at once",
+                "minimum": 1,
+                "title": "Worker Capacity",
+                "type": "integer"
+              },
+              "firstClaim": {
+                "description": "Date of the first time this worker claimed a task.\n",
+                "format": "date-time",
+                "title": "First task claimed",
+                "type": "string"
+              },
+              "lastDateActive": {
+                "description": "Date of the last time this worker was seen active. Updated each time a worker calls\n`queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.\n`lastDateActive` is updated every half hour but may be off by up-to half an hour.\nNonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.\nThis defaults to null in the database, and is set to the current time when the worker\nis first seen.\n",
+                "format": "date-time",
+                "title": "Worker Last Date Active",
+                "type": "string"
+              },
+              "latestTask": {
+                "$ref": "task-run.json#",
+                "description": "The most recent claimed task\n",
+                "title": "Most Recent Task"
+              },
+              "providerId": {
+                "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\n",
+                "maxLength": 38,
+                "minLength": 1,
+                "pattern": "^([a-zA-Z0-9-_]*)$",
+                "title": "Provider",
+                "type": "string"
+              },
+              "quarantineUntil": {
+                "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",
+                "format": "date-time",
+                "title": "Worker Quarantine",
+                "type": "string"
+              },
+              "state": {
+                "description": "A string specifying the state this worker is in so far as worker-manager knows.\nA \"requested\" worker is in the process of starting up, and if successful will enter\nthe \"running\" state once it has registered with the `registerWorker` API method.  A\n\"stopping\" worker is in the process of shutting down and deleting resources, while\na \"stopped\" worker is completely stopped.  Stopped workers are kept for historical\npurposes and are purged when they expire.  Note that some providers transition workers\ndirectly from \"running\" to \"stopped\".\n",
+                "enum": [
+                  "requested",
+                  "running",
+                  "stopping",
+                  "stopped"
+                ],
+                "title": "State",
+                "type": "string"
+              },
+              "workerGroup": {
+                "description": "Identifier for the worker group containing this worker.\n",
+                "maxLength": 38,
+                "minLength": 1,
+                "pattern": "^([a-zA-Z0-9-_]*)$",
+                "type": "string"
+              },
+              "workerId": {
+                "description": "Identifier for this worker (unique within this worker group).\n",
+                "maxLength": 38,
+                "minLength": 1,
+                "pattern": "^([a-zA-Z0-9-_]*)$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "workerGroup",
+              "workerId",
+              "firstClaim",
+              "state",
+              "capacity",
+              "providerId"
+            ],
+            "title": "Worker",
+            "type": "object"
+          },
+          "title": "Workers from a WorkerType",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "workers"
+      ],
+      "title": "List Workers Response",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/list-workers-response.json"
   },
   {
     "content": {
@@ -13084,6 +13618,51 @@
         },
         {
           "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "category": "Worker Metadata",
+          "description": "Get a list of all active workers of a workerType.\n\n`listWorkers` allows a response to be filtered by quarantined and non quarantined workers,\nas well as the current state of the worker.\nTo filter the query, you should call the end-point with one of [`quarantined`, `requested`, `running`,\n`stopping`, `stopped`] as a query-string option with a true or false value.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "method": "get",
+          "name": "listWorkers",
+          "output": "v1/list-workers-response.json#",
+          "query": [
+            "continuationToken",
+            "limit",
+            "quarantined",
+            "requested",
+            "running",
+            "stopping",
+            "stopped"
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
+          "scopes": "worker-manager:list-workers:<provisionerId>/<workerType>",
+          "stability": "experimental",
+          "title": "Get a list of all active workers of a workerType",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType",
+            "workerGroup",
+            "workerId"
+          ],
+          "category": "Worker Metadata",
+          "description": "Get a worker from a worker-type.",
+          "method": "get",
+          "name": "getWorker",
+          "output": "v1/worker-response.json#",
+          "query": [
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
+          "scopes": "worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Get a worker-type",
+          "type": "function"
+        },
+        {
+          "args": [
           ],
           "category": "Monitoring",
           "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
@@ -15348,7 +15927,7 @@
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
           "scopes": "queue:list-workers:<provisionerId>/<workerType>",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get a list of all active workers of a workerType",
           "type": "function"
         },
@@ -15368,7 +15947,7 @@
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
           "scopes": "queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
-          "stability": "experimental",
+          "stability": "deprecated",
           "title": "Get a worker-type",
           "type": "function"
         },

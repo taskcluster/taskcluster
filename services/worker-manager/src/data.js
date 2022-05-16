@@ -2,6 +2,7 @@ const _ = require('lodash');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const taskcluster = require('taskcluster-client');
 const { MAX_MODIFY_ATTEMPTS } = require('./util');
+const { paginateResults } = require('taskcluster-lib-api');
 
 const makeError = (message, code, statusCode) => {
   const err = new Error(message);
@@ -178,7 +179,7 @@ class WorkerPoolError {
   // or one elements.  This matches the semantics of get_worker_pool_error.
   static fromDbRows(rows) {
     if (rows.length === 1) {
-      return WorkerPool.fromDb(rows[0]);
+      return WorkerPoolError.fromDb(rows[0]);
     }
   }
 
@@ -281,6 +282,10 @@ class Worker {
       etag: row.etag,
       secret: row.secret,
       quarantineUntil: row.quarantine_until,
+      taskQueueId: row.task_queue_id,
+      firstClaim: row.first_claim,
+      recentTasks: row.recent_tasks,
+      lastDateActive: row.last_date_active,
     });
   }
 
@@ -311,6 +316,44 @@ class Worker {
   // Get a worker from the DB, or undefined if it does not exist.
   static async get(db, { workerPoolId, workerGroup, workerId }) {
     return Worker.fromDbRows(await db.fns.get_worker_2(workerPoolId, workerGroup, workerId));
+  }
+
+  // Get a queue worker from the DB, or undefined if it does not exist.
+  static async getQueueWorker(db, taskQueueId, workerGroup, workerId, expires) {
+    return Worker.fromDbRows(
+      await db.fns.get_queue_worker_with_wm_join(
+        taskQueueId,
+        workerGroup,
+        workerId,
+        expires,
+      ),
+    );
+  }
+
+  // Call db.get_queue_workers_with_wm_join.
+  // The response will be of the form { rows, continationToken }.
+  // If there are no workers to show, the response will have the
+  // `rows` field set to an empty array.
+  static async getWorkers(db, { taskQueueId, expires }, { query } = {}) {
+    const fetchResults = async (query) => {
+      const { continuationToken, rows } = await paginateResults({
+        query,
+        fetch: (size, offset) =>
+          db.fns.get_queue_workers_with_wm_join(
+            taskQueueId || null,
+            expires || null,
+            size,
+            offset,
+          ),
+      });
+
+      const entries = rows.map(Worker.fromDb);
+
+      return { rows: entries, continuationToken };
+    };
+
+    // Fetch results
+    return fetchResults(query || {});
   }
 
   // Expire workers,
@@ -387,6 +430,10 @@ class Worker {
       capacity: this.capacity,
       lastModified: this.lastModified.toJSON(),
       lastChecked: this.lastChecked.toJSON(),
+      taskQueueId: this.taskQueueId,
+      firstClaim: this.firstClaim,
+      recentTasks: this.recentTasks,
+      lastDateActive: this.lastDateActive?.toJSON(),
     };
   }
 

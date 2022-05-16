@@ -8,6 +8,9 @@ export default {
   EXCEPTION: 'warning',
   DEADLINE_EXCEEDED: 'warning',
   CANCELED: 'info',
+  REQUESTED: 'default',
+  STOPPING: 'warning',
+  STOPPED: 'error',
   // deprecated, but still supported for old tasks
   SUPERSEDED: 'default',
   CLAIM_EXPIRED: 'info',
