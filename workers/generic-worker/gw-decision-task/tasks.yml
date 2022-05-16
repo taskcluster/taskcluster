@@ -6,13 +6,13 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.18.1'
+      - 'go1.18.2'
       - 'git2.24.0.2'
       - 'jq1.6'
       - 'ci-creds'
       # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
       #   DO NOT CHANGE HERE!
-      - 'golangci-lint-1.45.2'
+      - 'golangci-lint-1.46.1'
     Command: BuildAndTest
     Features:
       taskclusterProxy: true
@@ -23,7 +23,7 @@ Types:
       - Name: 'public/build/generic-worker-${OS}-${ARCH}${EXTENSION}'
         # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
         #   DO NOT CHANGE HERE!
-        Path: 'gopath1.18.1/bin/generic-worker${EXTENSION}'
+        Path: 'gopath1.18.2/bin/generic-worker${EXTENSION}'
         Type: 'file'
     MaxRunTime: 3600
 
@@ -40,7 +40,7 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.18.1'
+      - 'go1.18.2'
     Command: FormatSource
     MaxRunTime: 3600
 
@@ -119,7 +119,7 @@ WorkerPools:
     # The next comment is edited by infrastructure/tooling/src/generate/generators/go-version.js
     #   DO NOT CHANGE HERE!
 
-    # There is no arm release for go 1.18.1 on windows, but 386 release works
+    # There is no arm release for go 1.18.2 on windows, but 386 release works
     # through emulation provided by the host OS.
     Arch: '386'
   proj-taskcluster/gw-ci-windows2012r2-amd64:
@@ -140,7 +140,7 @@ Commands:
           export CGO_ENABLED=0
           # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.18.1/go"
+          export GOROOT="$(pwd)/go1.18.2/go"
           export PATH="${GOROOT}/bin:${PATH}"
           go version
           go env
@@ -193,8 +193,8 @@ Commands:
 
           # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.18.1/go"
-          export GOPATH="$(pwd)/gopath1.18.1"
+          export GOROOT="$(pwd)/go1.18.2/go"
+          export GOPATH="$(pwd)/gopath1.18.2"
 
           export PATH="${GOPATH}/bin:${GOROOT}/bin:$(pwd)/bin:${PATH}"
           git --version
@@ -236,7 +236,7 @@ Commands:
 
           # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
           #   DO NOT CHANGE HERE!
-          ../../../golangci-lint/golangci-lint-1.45.2-*/golangci-lint run --build-tags "${ENGINE}" --timeout=15m
+          ../../../golangci-lint/golangci-lint-1.46.1-*/golangci-lint run --build-tags "${ENGINE}" --timeout=15m
 
     Windows:
       - |
@@ -257,8 +257,8 @@ Commands:
 
       # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - set GOROOT=%CD%\go1.18.1\go
-      - set GOPATH=%CD%\gopath1.18.1
+      - set GOROOT=%CD%\go1.18.2\go
+      - set GOPATH=%CD%\gopath1.18.2
 
       - |
         :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
@@ -317,10 +317,10 @@ Commands:
         :: assumption here is that if something inside the if fails, we'll get a non zero exit code
         :: i've also made it an if/else so that one of them has to run, as there should always be a
         :: linter
-        if exist ..\..\..\golangci-lint\golangci-lint-1.45.2-windows-amd64 (
-          ..\..\..\golangci-lint\golangci-lint-1.45.2-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
+        if exist ..\..\..\golangci-lint\golangci-lint-1.46.1-windows-amd64 (
+          ..\..\..\golangci-lint\golangci-lint-1.46.1-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
         ) else (
-          ..\..\..\golangci-lint\golangci-lint-1.45.2-windows-386\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
+          ..\..\..\golangci-lint\golangci-lint-1.46.1-windows-386\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
         )
 
 Mounts:
@@ -332,34 +332,34 @@ Mounts:
   #
   ################################################################################
 
-  go1.18.1:
-    directory: go1.18.1
+  go1.18.2:
+    directory: go1.18.2
     content:
       darwin:
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.18.1.darwin-amd64.tar.gz'
-          sha256: '3703e9a0db1000f18c0c7b524f3d378aac71219b4715a6a4c5683eb639f41a4d'
+          url: 'https://storage.googleapis.com/golang/go1.18.2.darwin-amd64.tar.gz'
+          sha256: '1f5f539ce0baa8b65f196ee219abf73a7d9cf558ba9128cc0fe4833da18b04f2'
           format: tar.gz
         arm64:
-          url: 'https://storage.googleapis.com/golang/go1.18.1.darwin-arm64.tar.gz'
-          sha256: '6d5641a06edba8cd6d425fb0adad06bad80e2afe0fa91b4aa0e5aed1bc78f58e'
+          url: 'https://storage.googleapis.com/golang/go1.18.2.darwin-arm64.tar.gz'
+          sha256: '6c7df9a2405f09aa9bab55c93c9c4ce41d3e58127d626bc1825ba5d0a0045d5c'
       linux:
         armv6l:
-          url: 'https://storage.googleapis.com/golang/go1.18.1.linux-armv6l.tar.gz'
-          sha256: '9edc01c8e7db64e9ceeffc8258359e027812886ceca3444e83c4eb96ddb068ee'
+          url: 'https://storage.googleapis.com/golang/go1.18.2.linux-armv6l.tar.gz'
+          sha256: '570dc8df875b274981eaeabe228d0774985de42e533ffc8c7ff0c9a55174f697'
           format: tar.gz
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.18.1.linux-amd64.tar.gz'
-          sha256: 'b3b815f47ababac13810fc6021eb73d65478e0b2db4b09d348eefad9581a2334'
+          url: 'https://storage.googleapis.com/golang/go1.18.2.linux-amd64.tar.gz'
+          sha256: 'e54bec97a1a5d230fc2f9ad0880fcbabb5888f30ed9666eca4a91c5a32e86cbc'
           format: tar.gz
       windows:
         386:
-          url: 'https://storage.googleapis.com/golang/go1.18.1.windows-386.zip'
-          sha256: '49ae65551acbfaa57b52fbefa0350b2072512ae3103b8cf1a919a02626dbc743'
+          url: 'https://storage.googleapis.com/golang/go1.18.2.windows-386.zip'
+          sha256: 'ac190f91bbdaae7db993b0f12eea59eec2b3b92e1e9d8b068c565fc49f7ec9a8'
           format: zip
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.18.1.windows-amd64.zip'
-          sha256: 'c30bc3f1f7314a953fe208bd9cd5e24bd9403392a6c556ced3677f9f70f71fe1'
+          url: 'https://storage.googleapis.com/golang/go1.18.2.windows-amd64.zip'
+          sha256: '41fc44109c39a98e0c3672989ac5ad205cbb5768067e099dc4fb2b75cba922cf'
           format: zip
   git2.24.0.2:
     directory: git
@@ -397,7 +397,7 @@ Mounts:
   #
   ################################################################################
 
-  golangci-lint-1.45.2:
+  golangci-lint-1.46.1:
     # Note - we can't extract to directory '.' since after generic-worker
     # extracts the files as the root user (since generic-worker runs as root),
     # it then runs chown recursively against the target directory to make it
@@ -410,24 +410,24 @@ Mounts:
     content:
       darwin:
         amd64:
-          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.45.2/golangci-lint-1.45.2-darwin-amd64.tar.gz'
-          sha256: '995e509e895ca6a64ffc7395ac884d5961bdec98423cb896b17f345a9b4a19cf'
+          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.1/golangci-lint-1.46.1-darwin-amd64.tar.gz'
+          sha256: '78bd6518c8dd822762b1f93b180f093451fc8a869de15045ec7ded8a3fa92ba2'
           format: tar.gz
       linux:
         armv6l:
-          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.45.2/golangci-lint-1.45.2-linux-armv6.tar.gz'
-          sha256: 'dfa8bdaf0387aec1cd5c1aa8857f67b2bbdfc2e42efce540c8fb9bbe3e8af302'
+          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.1/golangci-lint-1.46.1-linux-armv6.tar.gz'
+          sha256: '6294fc074067f492178d944118625ebd05d2d0b73cc3137ead66d300d42ec8e8'
           format: tar.gz
         amd64:
-          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.45.2/golangci-lint-1.45.2-linux-amd64.tar.gz'
-          sha256: '595ad6c6dade4c064351bc309f411703e457f8ffbb7a1806b3d8ee713333427f'
+          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.1/golangci-lint-1.46.1-linux-amd64.tar.gz'
+          sha256: '2a95743902f0dbb24926481800415ba63935ed02fd291d4bfa68f87c0c355e4e'
           format: tar.gz
       windows:
         386:
-          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.45.2/golangci-lint-1.45.2-windows-386.zip'
-          sha256: '879a52107a797678a03c175cc7cf441411a14a01f66dc87f70bdfa304a4129a6'
+          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.1/golangci-lint-1.46.1-windows-386.zip'
+          sha256: 'd95330da0bc7aa6f639febd6a6175de870a28a2fd4282bace17b21f85c3a9e82'
           format: zip
         amd64:
-          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.45.2/golangci-lint-1.45.2-windows-amd64.zip'
-          sha256: '1dec0aa46d4f0d241863b573f70129bdf1de9c595cf51172a840a588a4cd9fc5'
+          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.1/golangci-lint-1.46.1-windows-amd64.zip'
+          sha256: '38585beadd574166d663aefab08d0bd2a257593a509fb34ec414cf030f8e2b30'
           format: zip
