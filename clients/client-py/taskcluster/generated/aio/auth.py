@@ -371,7 +371,7 @@ class Auth(AsyncBaseClient):
 
         Retrieve a list of all Azure accounts managed by Taskcluster Auth.
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["azureAccounts"], *args, **kwargs)
@@ -382,7 +382,7 @@ class Auth(AsyncBaseClient):
 
         Retrieve a list of all tables in an account.
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["azureTables"], *args, **kwargs)
@@ -398,7 +398,7 @@ class Auth(AsyncBaseClient):
         which type of credentials are returned.  If level is read-write, it will create the
         table if it doesn't already exist.
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["azureTableSAS"], *args, **kwargs)
@@ -409,7 +409,7 @@ class Auth(AsyncBaseClient):
 
         Retrieve a list of all containers in an account.
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["azureContainers"], *args, **kwargs)
@@ -425,7 +425,7 @@ class Auth(AsyncBaseClient):
         which type of credentials are returned.  If level is read-write, it will create the
         container if it doesn't already exist.
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["azureContainerSAS"], *args, **kwargs)
@@ -587,7 +587,7 @@ class Auth(AsyncBaseClient):
             'name': 'azureAccounts',
             'output': 'v1/azure-account-list-response.json#',
             'route': '/azure/accounts',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "azureContainerSAS": {
             'args': ['account', 'container', 'level'],
@@ -595,7 +595,7 @@ class Auth(AsyncBaseClient):
             'name': 'azureContainerSAS',
             'output': 'v1/azure-container-response.json#',
             'route': '/azure/<account>/containers/<container>/<level>',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "azureContainers": {
             'args': ['account'],
@@ -604,7 +604,7 @@ class Auth(AsyncBaseClient):
             'output': 'v1/azure-container-list-response.json#',
             'query': ['continuationToken'],
             'route': '/azure/<account>/containers',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "azureTableSAS": {
             'args': ['account', 'table', 'level'],
@@ -612,7 +612,7 @@ class Auth(AsyncBaseClient):
             'name': 'azureTableSAS',
             'output': 'v1/azure-table-access-response.json#',
             'route': '/azure/<account>/table/<table>/<level>',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "azureTables": {
             'args': ['account'],
@@ -621,7 +621,7 @@ class Auth(AsyncBaseClient):
             'output': 'v1/azure-table-list-response.json#',
             'query': ['continuationToken'],
             'route': '/azure/<account>/tables',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "client": {
             'args': ['clientId'],
