@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-lib-azqueue",
   "private": true,
-  "version": "44.13.6",
+  "version": "44.13.7",
   "license": "MPL-2.0",
   "scripts": {
     "coverage": "c8 yarn test",

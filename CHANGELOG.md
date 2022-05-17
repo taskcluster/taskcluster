@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.13.7
+
+### GENERAL
+
+▶ [patch]
+Deprecate old Azure endpoints that are no longer use:
+- `azureCredentials` (Can be migrated to `secrets` service)
+- `azureTables`
+- `azureTablesSAS`
+- `azureContainers`
+- `azureContainersSAS`
+
+Remove test dependency on AZURE_ACCOUNT
+
+▶ [patch] [#5287](https://github.com/taskcluster/taskcluster/issues/5287)
+fix: remove `temporary` dependency.
+
+### USERS
+
+▶ [patch] [#5363](https://github.com/taskcluster/taskcluster/issues/5363)
+The generic-worker no longer resolves tasks as exception that mount a file/directory that has disappeared from the file system. Instead it invalidates the cache entry.
+
 ## v44.13.6
 
 ### WORKER-DEPLOYERS
