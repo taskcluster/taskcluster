@@ -284,7 +284,7 @@ var services = map[string]definitions.Service{
 				Name:        "azureAccounts",
 				Title:       "List Accounts Managed by Auth",
 				Description: "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
-				Stability:   "stable",
+				Stability:   "deprecated",
 				Method:      "get",
 				Route:       "/azure/accounts",
 				Args:        []string{},
@@ -295,7 +295,7 @@ var services = map[string]definitions.Service{
 				Name:        "azureTables",
 				Title:       "List Tables in an Account Managed by Auth",
 				Description: "Retrieve a list of all tables in an account.",
-				Stability:   "stable",
+				Stability:   "deprecated",
 				Method:      "get",
 				Route:       "/azure/<account>/tables",
 				Args: []string{
@@ -310,7 +310,7 @@ var services = map[string]definitions.Service{
 				Name:        "azureTableSAS",
 				Title:       "Get Shared-Access-Signature for Azure Table",
 				Description: "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ntable if it doesn't already exist.",
-				Stability:   "stable",
+				Stability:   "deprecated",
 				Method:      "get",
 				Route:       "/azure/<account>/table/<table>/<level>",
 				Args: []string{
@@ -325,7 +325,7 @@ var services = map[string]definitions.Service{
 				Name:        "azureContainers",
 				Title:       "List containers in an Account Managed by Auth",
 				Description: "Retrieve a list of all containers in an account.",
-				Stability:   "stable",
+				Stability:   "deprecated",
 				Method:      "get",
 				Route:       "/azure/<account>/containers",
 				Args: []string{
@@ -340,7 +340,7 @@ var services = map[string]definitions.Service{
 				Name:        "azureContainerSAS",
 				Title:       "Get Shared-Access-Signature for Azure Container",
 				Description: "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ncontainer if it doesn't already exist.",
-				Stability:   "stable",
+				Stability:   "deprecated",
 				Method:      "get",
 				Route:       "/azure/<account>/containers/<container>/<level>",
 				Args: []string{

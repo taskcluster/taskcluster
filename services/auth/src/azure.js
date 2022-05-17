@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const azure = require('fast-azure-storage');
 const builder = require('./api');
+const { APIBuilder } = require('taskcluster-lib-api');
 
 // keyed by account/tableName, the last time createTable was called for the
 // given table.  This is used to avoid lots of redundant calls to createTable
@@ -18,7 +19,7 @@ builder.declare({
   name: 'azureAccounts',
   input: undefined,
   output: 'azure-account-list-response.yml',
-  stability: 'stable',
+  stability: APIBuilder.stability.deprecated,
   category: 'Azure Credentials',
   scopes: 'auth:azure-table:list-accounts',
   title: 'List Accounts Managed by Auth',
@@ -39,7 +40,7 @@ builder.declare({
   input: undefined,
   category: 'Azure Credentials',
   output: 'azure-table-list-response.yml',
-  stability: 'stable',
+  stability: APIBuilder.stability.deprecated,
   scopes: 'auth:azure-table:list-tables:<account>',
   title: 'List Tables in an Account Managed by Auth',
   description: [
@@ -74,7 +75,7 @@ builder.declare({
   name: 'azureTableSAS',
   input: undefined,
   output: 'azure-table-access-response.yml',
-  stability: 'stable',
+  stability: APIBuilder.stability.deprecated,
   category: 'Azure Credentials',
   scopes: {
     if: 'levelIsReadOnly',
@@ -167,7 +168,7 @@ builder.declare({
   },
   input: undefined,
   output: 'azure-container-list-response.yml',
-  stability: 'stable',
+  stability: APIBuilder.stability.deprecated,
   category: 'Azure Credentials',
   scopes: 'auth:azure-container:list-containers:<account>',
   title: 'List containers in an Account Managed by Auth',
@@ -203,7 +204,7 @@ builder.declare({
   name: 'azureContainerSAS',
   input: undefined,
   output: 'azure-container-response.yml',
-  stability: 'stable',
+  stability: APIBuilder.stability.deprecated,
   category: 'Azure Credentials',
   scopes: {
     if: 'levelIsReadOnly',

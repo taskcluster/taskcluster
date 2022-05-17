@@ -603,6 +603,8 @@ func (auth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format strin
 	return (&cd).SignedURL("/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), v, duration)
 }
 
+// Stability: *** DEPRECATED ***
+//
 // Retrieve a list of all Azure accounts managed by Taskcluster Auth.
 //
 // Required scopes:
@@ -626,6 +628,8 @@ func (auth *Auth) AzureAccounts_SignedURL(duration time.Duration) (*url.URL, err
 	return (&cd).SignedURL("/azure/accounts", nil, duration)
 }
 
+// Stability: *** DEPRECATED ***
+//
 // Retrieve a list of all tables in an account.
 //
 // Required scopes:
@@ -657,6 +661,8 @@ func (auth *Auth) AzureTables_SignedURL(account, continuationToken string, durat
 	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/tables", v, duration)
 }
 
+// Stability: *** DEPRECATED ***
+//
 // Get a shared access signature (SAS) string for use with a specific Azure
 // Table Storage table.
 //
@@ -691,6 +697,8 @@ func (auth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration
 	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), nil, duration)
 }
 
+// Stability: *** DEPRECATED ***
+//
 // Retrieve a list of all containers in an account.
 //
 // Required scopes:
@@ -722,6 +730,8 @@ func (auth *Auth) AzureContainers_SignedURL(account, continuationToken string, d
 	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/containers", v, duration)
 }
 
+// Stability: *** DEPRECATED ***
+//
 // Get a shared access signature (SAS) string for use with a specific Azure
 // Blob Storage container.
 //
