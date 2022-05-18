@@ -6,10 +6,7 @@ import { camelCase } from 'camel-case';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
-import Box from '@material-ui/core/Box';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import LinkIcon from 'mdi-react/LinkIcon';
-import TableCellItem from '../TableCellItem';
 import Button from '../Button';
 import sort from '../../utils/sort';
 import ConnectionDataTable from '../ConnectionDataTable';
@@ -25,25 +22,17 @@ const tableHeaders = ['Role ID'];
 const iconSize = 16;
 
 @withStyles(theme => ({
-  roleLinkIcon: {
-    display: 'block',
-    height: `${iconSize}px`,
-    lineHeight: `${iconSize}px`,
-  },
-  roleLinkContainer: {
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
-  },
-  roleContainer: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  roleIdContainer: {
-    flexGrow: 1,
-  },
   roleIdLink: {
     display: 'flex',
+    flexGrow: 1,
+  },
+  roleContainer: {
+    paddingTop: theme.spacing(1.5),
+    paddingBottom: theme.spacing(1.5),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    display: 'flex',
+    width: '100%',
   },
 }))
 export default class RolesTable extends Component {
@@ -137,33 +126,20 @@ export default class RolesTable extends Component {
           String(role.roleId).includes(filterValue)
         }
         renderRow={({ node: role }) => (
-          <TableRow key={role.roleId}>
-            <TableCell>
-              <TableCellItem dense button>
-                <Box className={classes.roleContainer}>
-                  <Box className={classes.roleIdContainer}>
-                    <Link
-                      className={classes.roleIdLink}
-                      to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
-                      {role.roleId}
-                    </Link>
-                  </Box>
-                  <Box className={classes.roleLinkContainer}>
-                    <Link
-                      to={`/auth/roles/${encodeURIComponent(role.roleId)}`}
-                      className={classes.roleLinkIcon}>
-                      <LinkIcon size={iconSize} />
-                    </Link>
-                  </Box>
-                  <Button
-                    requiresAuth
-                    tooltipProps={{ title: 'Delete Role' }}
-                    size="small"
-                    onClick={() => onDialogActionOpen(role.roleId)}>
-                    <DeleteIcon size={iconSize} />
-                  </Button>
-                </Box>
-              </TableCellItem>
+          <TableRow key={role.roleId} hover>
+            <TableCell className={classes.roleContainer}>
+              <Link
+                className={classes.roleIdLink}
+                to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
+                {role.roleId}
+              </Link>
+              <Button
+                requiresAuth
+                tooltipProps={{ title: 'Delete Role' }}
+                size="small"
+                onClick={() => onDialogActionOpen(role.roleId)}>
+                <DeleteIcon size={iconSize} />
+              </Button>
             </TableCell>
           </TableRow>
         )}
