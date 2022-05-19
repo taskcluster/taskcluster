@@ -130,9 +130,17 @@ export default class ConnectionDataTable extends Component {
      */
     filterFunc: func,
     /**
-     * Only render rows that are visible in the viewport
+     * Only render rows that are visible in the viewport.
+     *
+     * This currently works on a single column tables (lists)
+     * Rendering of multiple columns will be out of sync with header widths
+     * TODO: add callback to adjust column sizes for multiple columns
      */
     lazyRender: bool,
+    /**
+     * Height in pixels of a single row
+     */
+    rowHeight: number,
   };
 
   static defaultProps = {
@@ -148,6 +156,7 @@ export default class ConnectionDataTable extends Component {
     allowFilter: false,
     filterFunc: null,
     lazyRender: false,
+    rowHeight: 48,
   };
 
   state = {
@@ -274,6 +283,7 @@ export default class ConnectionDataTable extends Component {
       allowFilter,
       filterFunc,
       lazyRender,
+      rowHeight,
     } = this.props;
     const { count } = this.getPaginationMetadata();
     const colSpan = columnsSize || (headers && headers.length) || 1;
@@ -287,31 +297,27 @@ export default class ConnectionDataTable extends Component {
     const renderRows = () => {
       if (lazyRender) {
         return (
-          <div>
-            <WindowScroller>
-              {({ height, isScrolling, onChildScroll, scrollTop }) => (
-                <AutoSizer
-                  disableHeight
-                  style={{ width: '100%', height: '100%' }}>
-                  {({ width }) => (
-                    <List
-                      width={width}
-                      height={height}
-                      autoHeight
-                      isScrolling={isScrolling}
-                      onScroll={onChildScroll}
-                      scrollTop={scrollTop}
-                      rowCount={rows.length}
-                      rowHeight={48}
-                      rowRenderer={({ index, style, key }) =>
-                        renderRow(rows[index], style, key)
-                      }
-                    />
-                  )}
-                </AutoSizer>
-              )}
-            </WindowScroller>
-          </div>
+          <WindowScroller>
+            {({ height, isScrolling, onChildScroll, scrollTop }) => (
+              <AutoSizer disableHeight>
+                {({ width }) => (
+                  <List
+                    width={width}
+                    height={height}
+                    autoHeight
+                    isScrolling={isScrolling}
+                    onScroll={onChildScroll}
+                    scrollTop={scrollTop}
+                    rowCount={rows.length}
+                    rowHeight={rowHeight}
+                    rowRenderer={({ index, style, key }) =>
+                      renderRow(rows[index], style, key)
+                    }
+                  />
+                )}
+              </AutoSizer>
+            )}
+          </WindowScroller>
         );
       }
 
