@@ -125,8 +125,9 @@ export default class RolesTable extends Component {
         filterFunc={({ node: role }, filterValue) =>
           String(role.roleId).includes(filterValue)
         }
-        renderRow={({ node: role }) => (
-          <TableRow key={role.roleId} hover>
+        lazyRender
+        renderRow={({ node: role }, style, key) => (
+          <TableRow key={key || role.roleId} style={style} hover>
             <TableCell className={classes.roleContainer}>
               <Link
                 className={classes.roleIdLink}

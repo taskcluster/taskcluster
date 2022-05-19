@@ -21,6 +21,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import FilterIcon from 'mdi-react/FilterIcon';
+import { WindowScroller, AutoSizer, List } from 'react-virtualized';
 import Spinner from '../Spinner';
 import { pageInfo } from '../../utils/prop-types';
 
@@ -128,6 +129,10 @@ export default class ConnectionDataTable extends Component {
      * Function to filter rows
      */
     filterFunc: func,
+    /**
+     * Only render rows that are visible in the viewport
+     */
+    lazyRender: bool,
   };
 
   static defaultProps = {
@@ -142,6 +147,7 @@ export default class ConnectionDataTable extends Component {
     searchTerm: null,
     allowFilter: false,
     filterFunc: null,
+    lazyRender: false,
   };
 
   state = {
@@ -267,6 +273,7 @@ export default class ConnectionDataTable extends Component {
       size,
       allowFilter,
       filterFunc,
+      lazyRender,
     } = this.props;
     const { count } = this.getPaginationMetadata();
     const colSpan = columnsSize || (headers && headers.length) || 1;
@@ -277,6 +284,39 @@ export default class ConnectionDataTable extends Component {
         ? edges.filter(row => filterFunc(row, filterValue))
         : edges;
     const showFilter = allowFilter && edges.length > 10;
+    const renderRows = () => {
+      if (lazyRender) {
+        return (
+          <div>
+            <WindowScroller>
+              {({ height, isScrolling, onChildScroll, scrollTop }) => (
+                <AutoSizer
+                  disableHeight
+                  style={{ width: '100%', height: '100%' }}>
+                  {({ width }) => (
+                    <List
+                      width={width}
+                      height={height}
+                      autoHeight
+                      isScrolling={isScrolling}
+                      onScroll={onChildScroll}
+                      scrollTop={scrollTop}
+                      rowCount={rows.length}
+                      rowHeight={48}
+                      rowRenderer={({ index, style, key }) =>
+                        renderRow(rows[index], style, key)
+                      }
+                    />
+                  )}
+                </AutoSizer>
+              )}
+            </WindowScroller>
+          </div>
+        );
+      }
+
+      return rows.map((row, index) => renderRow(row, null, index));
+    };
 
     return (
       <Fragment>
@@ -326,18 +366,19 @@ export default class ConnectionDataTable extends Component {
               </TableHead>
             )}
             <TableBody>
-              {edges.length === 0 ? (
+              {rows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={colSpan}>
                     <em>
-                      {searchTerm
-                        ? `No items for this page with search term ${searchTerm}.`
+                      {searchTerm || filterValue
+                        ? `No items for this page with search term ${searchTerm ||
+                            filterValue}.`
                         : noItemsMessage}
                     </em>
                   </TableCell>
                 </TableRow>
               ) : (
-                rows.map(renderRow)
+                renderRows()
               )}
             </TableBody>
           </Table>
