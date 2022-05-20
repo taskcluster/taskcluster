@@ -93,22 +93,15 @@ func main() {
 	}
 
 	go func() {
-		waitTime := 5 * time.Millisecond // default wait time when connection fails
 		for {
 			// This simulates http.Server's Serve method
 			stream, err := client.Accept()
 			if err != nil {
-				ne, ok := err.(net.Error)
-				if !ok || !ne.Temporary() {
+				_, ok := err.(net.Error)
+				if !ok {
 					log.Fatal(err)
 				}
-				// wait if temporary
-				time.Sleep(waitTime)
-				waitTime = 2 * waitTime
-				continue
 			}
-			// reset wait time
-			waitTime = 5 * time.Millisecond
 
 			strChan <- stream
 		}

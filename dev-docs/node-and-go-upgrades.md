@@ -23,8 +23,8 @@ To update the node version:
 
 To update the go version:
 
-* Install the new go version, such as `gvm install go1.18.1`
-* Use the new go version, such as `gvm use go1.18.1`
+* Install the new go version, such as `gvm install go1.18.2`
+* Use the new go version, such as `gvm use go1.18.2`
 * Download modules with `go mod download`
 * Update `.go-version`
 * Run `yarn generate`. Some `go` errors may occur, for example on major version updates.
@@ -36,6 +36,10 @@ To update the go version:
 * Create a changelog file and commit
 * Update the package hashes in `workers/generic-worker/gw-decision-task/tasks.yml`
   with the hashes on the [go downloads page](https://go.dev/dl/)
+* If you update the `.golangci-lint-version` file, run `yarn generate` again
+  and update the package hashes in `workers/generic-worker/gw-decision-task/tasks.yml`
+  with the hashes on the `golangci-lint-<X.Y.Z>-checksums.txt` file from the
+  [GitHub releases page](https://github.com/golangci/golangci-lint/releases)
 * Build and push new images (see below)
 
 # Build and push new images
