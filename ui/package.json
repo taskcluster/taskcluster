@@ -44,7 +44,7 @@
     "date-fns": "^2.0.1",
     "deep-sort-object": "^1.0.2",
     "deepmerge": "^4.0.0",
-    "dexie": "^3.0.0",
+    "dexie": "^3.2.2",
     "docker-exec-websocket-client": "^3.0.0",
     "dot-prop-immutable": "^2.0.0",
     "error-stack-parser": "^2.0.6",
