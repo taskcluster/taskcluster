@@ -4016,7 +4016,7 @@ module.exports = {
             "workerType"
           ],
           "category": "Worker Metadata",
-          "description": "Get a list of all active workers of a workerType.\n\n`listWorkers` allows a response to be filtered by quarantined and non quarantined workers,\nas well as the current state of the worker.\nTo filter the query, you should call the end-point with one of [`quarantined`, `requested`, `running`,\n`stopping`, `stopped`] as a query-string option with a true or false value.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "description": "Get a list of all active workers of a workerType.\n\n`listWorkers` allows a response to be filtered by quarantined and non quarantined workers,\nas well as the current state of the worker.\nTo filter the query, you should call the end-point with one of [`quarantined`, `workerState`]\nas a query-string option with a true or false value.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listWorkers",
           "output": "v1/list-workers-response.json#",
@@ -4024,10 +4024,7 @@ module.exports = {
             "continuationToken",
             "limit",
             "quarantined",
-            "requested",
-            "running",
-            "stopping",
-            "stopped"
+            "workerState"
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
           "scopes": "worker-manager:list-workers:<provisionerId>/<workerType>",

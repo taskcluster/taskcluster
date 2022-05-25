@@ -1,5 +1,5 @@
-query ViewWorkers($provisionerId: String!, $workerType: String!, $workersConnection: PageConnection, $quarantined: Boolean, $requested: Boolean, $running: Boolean, $stopping: Boolean, $stopped: Boolean) {
-  workers(provisionerId: $provisionerId, workerType: $workerType, connection: $workersConnection, isQuarantined: $quarantined, isRequested: $requested, isRunning: $running, isStopping: $stopping, isStopped: $stopped) {
+query ViewWorkers($provisionerId: String!, $workerType: String!, $workersConnection: PageConnection, $quarantined: Boolean, $workerState: String) {
+  workers(provisionerId: $provisionerId, workerType: $workerType, connection: $workersConnection, isQuarantined: $quarantined, workerState: $workerState) {
     pageInfo {
       hasNextPage
       hasPreviousPage

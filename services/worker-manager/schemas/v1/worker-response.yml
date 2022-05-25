@@ -6,7 +6,7 @@ type:           object
 properties:
   provisionerId: {$ref: "task.json#/properties/provisionerId"}
   workerType: {$ref: "task.json#/properties/workerType"}
-  taskQueueId: {$ref: "task.json#/properties/taskQueueId"}
+  workerPoolId: {$ref: "task.json#/properties/workerPoolId"}
   workerGroup:
     title:        "Worker Group"
     description: |

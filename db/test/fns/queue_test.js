@@ -1130,9 +1130,9 @@ suite(testing.suiteName(), function() {
       }
       const res = await db.fns.get_queue_workers_with_wm_join(null, null, null, null);
       assert.equal(res.length, 10);
-      assert.equal(res[3].task_queue_id, 'prov/w/3');
-      assert.equal(res[4].task_queue_id, 'prov/w/4');
-      assert.equal(res[5].task_queue_id, 'prov/w/5');
+      assert.equal(res[3].worker_pool_id, 'prov/w/3');
+      assert.equal(res[4].worker_pool_id, 'prov/w/4');
+      assert.equal(res[5].worker_pool_id, 'prov/w/5');
     });
 
     helper.dbTest('get_queue_workers_with_wm_join with pagination', async function(db) {
@@ -1149,9 +1149,9 @@ suite(testing.suiteName(), function() {
       }
 
       assert.equal(results.length, 10);
-      assert.equal(results[3].task_queue_id, 'prov/w/3');
-      assert.equal(results[4].task_queue_id, 'prov/w/4');
-      assert.equal(results[5].task_queue_id, 'prov/w/5');
+      assert.equal(results[3].worker_pool_id, 'prov/w/3');
+      assert.equal(results[4].worker_pool_id, 'prov/w/4');
+      assert.equal(results[5].worker_pool_id, 'prov/w/5');
     });
 
     helper.dbTest('update_queue_worker_tqid (deprecated)', async function(db) {
@@ -1179,7 +1179,7 @@ suite(testing.suiteName(), function() {
       });
 
       const res = await db.fns.get_queue_worker_with_wm_join('prov/wt', 'wg', 'wi', new Date());
-      assert.equal(res[0].task_queue_id, 'prov/wt');
+      assert.equal(res[0].worker_pool_id, 'prov/wt');
       assert.equal(res[0].worker_group, 'wg');
       assert(res[0].quarantine_until < new Date()); // defaults to in the past
       assert.deepEqual(res[0].expires, expires);
@@ -1198,7 +1198,7 @@ suite(testing.suiteName(), function() {
       });
 
       const res = await db.fns.get_queue_worker_with_wm_join('prov/wt', 'wg', 'wi', new Date());
-      assert.equal(res[0].task_queue_id, 'prov/wt');
+      assert.equal(res[0].worker_pool_id, 'prov/wt');
       assert.equal(res[0].worker_group, 'wg');
       assert(res[0].quarantine_until < new Date()); // defaults to in the past
       assert.deepEqual(res[0].expires, expires);

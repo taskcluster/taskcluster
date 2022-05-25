@@ -23,26 +23,14 @@ module.exports = ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req
       options,
       filter,
       isQuarantined,
-      isRequested,
-      isRunning,
-      isStopping,
-      isStopped,
+      workerState,
     }) => {
       let opts = { ...options };
       if (typeof isQuarantined === 'boolean') {
         opts.isQuarantined = isQuarantined;
       }
-      if (typeof isRequested === 'boolean') {
-        opts.isRequested = isRequested;
-      }
-      if (typeof isRunning === 'boolean') {
-        opts.isRunning = isRunning;
-      }
-      if (typeof isStopping === 'boolean') {
-        opts.isStopping = isStopping;
-      }
-      if (typeof isStopped === 'boolean') {
-        opts.isStopped = isStopped;
+      if (typeof workerState === 'string') {
+        opts.workerState = workerState;
       }
       const raw = await workerManager.listWorkers(
         provisionerId,

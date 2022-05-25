@@ -40,11 +40,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       null, null, null, null, null, 10, 0));
 
     // remove properties that come from queue_workers table
-    delete fetched.taskQueueId;
     delete fetched.firstClaim;
     delete fetched.recentTasks;
     delete fetched.lastDateActive;
-    delete fetched._properties.taskQueueId;
     delete fetched._properties.firstClaim;
     delete fetched._properties.recentTasks;
     delete fetched._properties.lastDateActive;

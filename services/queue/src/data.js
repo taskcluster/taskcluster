@@ -440,7 +440,7 @@ class Worker {
   // Create a single instance from a DB row
   static fromDb(row) {
     return new Worker({
-      taskQueueId: row.task_queue_id,
+      taskQueueId: row.task_queue_id || row.worker_pool_id,
       workerGroup: row.worker_group,
       workerId: row.worker_id,
       quarantineUntil: row.quarantine_until,

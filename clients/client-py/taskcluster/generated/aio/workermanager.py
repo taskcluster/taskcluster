@@ -285,8 +285,8 @@ class WorkerManager(AsyncBaseClient):
 
         `listWorkers` allows a response to be filtered by quarantined and non quarantined workers,
         as well as the current state of the worker.
-        To filter the query, you should call the end-point with one of [`quarantined`, `requested`, `running`,
-        `stopping`, `stopped`] as a query-string option with a true or false value.
+        To filter the query, you should call the end-point with one of [`quarantined`, `workerState`]
+        as a query-string option with a true or false value.
 
         The response is paged. If this end-point returns a `continuationToken`, you
         should call the end-point again with the `continuationToken` as a query-string
@@ -404,7 +404,7 @@ class WorkerManager(AsyncBaseClient):
             'method': 'get',
             'name': 'listWorkers',
             'output': 'v1/list-workers-response.json#',
-            'query': ['continuationToken', 'limit', 'quarantined', 'requested', 'running', 'stopping', 'stopped'],
+            'query': ['continuationToken', 'limit', 'quarantined', 'workerState'],
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers',
             'stability': 'experimental',
         },

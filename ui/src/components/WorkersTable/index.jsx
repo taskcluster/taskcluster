@@ -6,10 +6,11 @@ import { formatDistanceStrict, parseISO } from 'date-fns';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
-import { IconButton, TableCell, TableRow, Typography } from '@material-ui/core';
+import { TableCell, TableRow, Typography } from '@material-ui/core';
 import LinkIcon from 'mdi-react/LinkIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import { WorkerManager } from 'taskcluster-client-web';
+import Button from '../Button';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
@@ -68,16 +69,14 @@ export default class WorkersTable extends Component {
   };
 
   state = {
-    dialogState: {
-      error: null,
-      open: false,
-      title: '',
-      body: '',
-      confirmText: '',
-      taskQueueId: '',
-      workerGroup: '',
-      workerId: '',
-    },
+    error: null,
+    open: false,
+    title: '',
+    body: '',
+    confirmText: '',
+    taskQueueId: '',
+    workerGroup: '',
+    workerId: '',
   };
 
   createSortedWorkersConnection = memoize(
@@ -113,27 +112,22 @@ export default class WorkersTable extends Component {
 
   handleDialogActionOpen = (taskQueueId, workerGroup, workerId) => () => {
     this.setState({
-      dialogState: {
-        open: true,
-        title: 'Terminate Worker?',
-        body: `This will terminate the worker with id ${workerId} in group ${workerGroup} within worker pool ${taskQueueId}.`,
-        confirmText: 'Terminate Worker',
-        taskQueueId,
-        workerGroup,
-        workerId,
-      },
+      open: true,
+      title: 'Terminate Worker?',
+      body: `This will terminate the worker with id ${workerId} in group ${workerGroup} within worker pool ${taskQueueId}.`,
+      confirmText: 'Terminate Worker',
+      taskQueueId,
+      workerGroup,
+      workerId,
     });
   };
 
   handleDeleteClick = async () => {
-    const { taskQueueId, workerGroup, workerId } = this.state.dialogState;
+    const { taskQueueId, workerGroup, workerId } = this.state;
     const { user } = this.props;
 
     this.setState({
-      dialogState: {
-        ...this.state.dialogState,
-        error: null,
-      },
+      error: null,
     });
 
     try {
@@ -151,10 +145,7 @@ export default class WorkersTable extends Component {
 
       await wm.removeWorker(taskQueueId, workerGroup, workerId);
       this.setState({
-        dialogState: {
-          ...this.state.dialogState,
-          open: false,
-        },
+        open: false,
       });
     } catch (error) {
       this.handleDialogActionError(error);
@@ -163,20 +154,14 @@ export default class WorkersTable extends Component {
 
   handleDialogActionError = error => {
     this.setState({
-      dialogState: {
-        ...this.state.dialogState,
-        error,
-      },
+      error,
     });
   };
 
   handleDialogActionClose = () => {
     this.setState({
-      dialogState: {
-        ...this.state.dialogState,
-        error: null,
-        open: false,
-      },
+      error: null,
+      open: false,
     });
   };
 
@@ -238,9 +223,7 @@ export default class WorkersTable extends Component {
       classes,
       ...props
     } = this.props;
-    const {
-      dialogState: { open, error, title, confirmText, body },
-    } = this.state;
+    const { open, error, title, confirmText, body } = this.state;
     const iconSize = 16;
     const connection = this.createSortedWorkersConnection(
       workersConnection,
@@ -355,17 +338,18 @@ export default class WorkersTable extends Component {
               </TableCell>
               <TableCell>
                 {providerId !== NULL_PROVIDER ? (
-                  <IconButton
-                    title="Terminate Worker"
-                    className={classes.button}
-                    name={`${taskQueueId}`}
+                  <Button
+                    requiresAuth
+                    variant="outlined"
+                    endIcon={<DeleteIcon size={iconSize} />}
                     onClick={this.handleDialogActionOpen(
                       taskQueueId,
                       workerGroup,
                       workerId
-                    )}>
-                    <DeleteIcon size={iconSize} />
-                  </IconButton>
+                    )}
+                    tooltipProps={{ title: '' }}>
+                    Terminate
+                  </Button>
                 ) : (
                   <Label mini status="warning" className={classes.button}>
                     Scheduled for termination

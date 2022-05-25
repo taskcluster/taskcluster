@@ -126,9 +126,6 @@
           "title": "State",
           "type": "string"
         },
-        "taskQueueId": {
-          "$ref": "task.json#/properties/taskQueueId"
-        },
         "workerGroup": {
           "description": "Identifier for group that worker who executes this run is a part of,\nthis identifier is mainly used for efficient routing.\n",
           "maxLength": 38,
@@ -144,6 +141,9 @@
           "pattern": "^([a-zA-Z0-9-_]*)$",
           "title": "Worker Identifier",
           "type": "string"
+        },
+        "workerPoolId": {
+          "$ref": "task.json#/properties/workerPoolId"
         },
         "workerType": {
           "$ref": "task.json#/properties/workerType"
@@ -741,7 +741,7 @@
           "type": "string"
         },
         "provisionerId": {
-          "description": "Unique identifier for a provisioner, that can supply specified\n`workerType`. Deprecation is planned for this property as it\nwill be replaced, together with `workerType`, by the new\nidentifier `taskQueueId`.\n",
+          "description": "Unique identifier for a provisioner, that can supply specified\n`workerType`. Deprecation is planned for this property as it\nwill be replaced, together with `workerType`, by the new\nidentifier `workerPoolId`.\n",
           "pattern": "^[a-zA-Z0-9-_]{1,38}$",
           "title": "Provisioner Id",
           "type": "string"
@@ -818,14 +818,14 @@
           "title": "Task-Group Identifier",
           "type": "string"
         },
-        "taskQueueId": {
-          "description": "Unique identifier for a task queue\n",
+        "workerPoolId": {
+          "description": "Unique identifier for a worker pool\n",
           "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
-          "title": "Task Queue Id",
+          "title": "Worker Pool Id",
           "type": "string"
         },
         "workerType": {
-          "description": "Unique identifier for a worker-type within a specific\nprovisioner. Deprecation is planned for this property as it will\nbe replaced, together with `provisionerId`, by the new\nidentifier `taskQueueId`.\n",
+          "description": "Unique identifier for a worker-type within a specific\nprovisioner. Deprecation is planned for this property as it will\nbe replaced, together with `provisionerId`, by the new\nidentifier `workerPoolId`.\n",
           "pattern": "^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
           "title": "Worker Type",
           "type": "string"
@@ -834,7 +834,7 @@
       "required": [
         "provisionerId",
         "workerType",
-        "taskQueueId",
+        "workerPoolId",
         "schedulerId",
         "taskGroupId",
         "dependencies",
@@ -13622,7 +13622,7 @@
             "workerType"
           ],
           "category": "Worker Metadata",
-          "description": "Get a list of all active workers of a workerType.\n\n`listWorkers` allows a response to be filtered by quarantined and non quarantined workers,\nas well as the current state of the worker.\nTo filter the query, you should call the end-point with one of [`quarantined`, `requested`, `running`,\n`stopping`, `stopped`] as a query-string option with a true or false value.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "description": "Get a list of all active workers of a workerType.\n\n`listWorkers` allows a response to be filtered by quarantined and non quarantined workers,\nas well as the current state of the worker.\nTo filter the query, you should call the end-point with one of [`quarantined`, `workerState`]\nas a query-string option with a true or false value.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listWorkers",
           "output": "v1/list-workers-response.json#",
@@ -13630,10 +13630,7 @@
             "continuationToken",
             "limit",
             "quarantined",
-            "requested",
-            "running",
-            "stopping",
-            "stopped"
+            "workerState"
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
           "scopes": "worker-manager:list-workers:<provisionerId>/<workerType>",

@@ -29,7 +29,7 @@ export default class WorkerManager extends Client {
     this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"category":"Workers","method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>","scopes":"worker-manager:list-workers:<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.registerWorker.entry = {"args":[],"category":"Worker Interface","input":true,"method":"post","name":"registerWorker","output":true,"query":[],"route":"/worker/register","stability":"stable","type":"function"}; // eslint-disable-line
     this.reregisterWorker.entry = {"args":[],"category":"Workers","input":true,"method":"post","name":"reregisterWorker","output":true,"query":[],"route":"/worker/reregister","scopes":"worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.listWorkers.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"listWorkers","output":true,"query":["continuationToken","limit","quarantined","requested","running","stopping","stopped"],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers","scopes":"worker-manager:list-workers:<provisionerId>/<workerType>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listWorkers.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"listWorkers","output":true,"query":["continuationToken","limit","quarantined","workerState"],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers","scopes":"worker-manager:list-workers:<provisionerId>/<workerType>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.getWorker.entry = {"args":["provisionerId","workerType","workerGroup","workerId"],"category":"Worker Metadata","method":"get","name":"getWorker","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>","scopes":"worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
@@ -227,8 +227,8 @@ export default class WorkerManager extends Client {
   // Get a list of all active workers of a workerType.
   // `listWorkers` allows a response to be filtered by quarantined and non quarantined workers,
   // as well as the current state of the worker.
-  // To filter the query, you should call the end-point with one of [`quarantined`, `requested`, `running`,
-  // `stopping`, `stopped`] as a query-string option with a true or false value.
+  // To filter the query, you should call the end-point with one of [`quarantined`, `workerState`]
+  // as a query-string option with a true or false value.
   // The response is paged. If this end-point returns a `continuationToken`, you
   // should call the end-point again with the `continuationToken` as a query-string
   // option. By default this end-point will list up to 1000 workers in a single

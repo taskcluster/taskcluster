@@ -685,7 +685,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
     const expected = worker.serializable();
     // remove properties that come from queue_workers table
-    delete expected.taskQueueId;
     delete expected.firstClaim;
     delete expected.recentTasks;
     delete expected.lastDateActive;

@@ -516,8 +516,8 @@ func (workerManager *WorkerManager) ReregisterWorker(payload *ReregisterWorkerRe
 //
 // `listWorkers` allows a response to be filtered by quarantined and non quarantined workers,
 // as well as the current state of the worker.
-// To filter the query, you should call the end-point with one of [`quarantined`, `requested`, `running`,
-// `stopping`, `stopped`] as a query-string option with a true or false value.
+// To filter the query, you should call the end-point with one of [`quarantined`, `workerState`]
+// as a query-string option with a true or false value.
 //
 // The response is paged. If this end-point returns a `continuationToken`, you
 // should call the end-point again with the `continuationToken` as a query-string
@@ -528,7 +528,7 @@ func (workerManager *WorkerManager) ReregisterWorker(payload *ReregisterWorkerRe
 //   worker-manager:list-workers:<provisionerId>/<workerType>
 //
 // See #listWorkers
-func (workerManager *WorkerManager) ListWorkers(provisionerId, workerType, continuationToken, limit, quarantined, requested, running, stopped, stopping string) (*ListWorkersResponse, error) {
+func (workerManager *WorkerManager) ListWorkers(provisionerId, workerType, continuationToken, limit, quarantined, workerState string) (*ListWorkersResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
@@ -539,17 +539,8 @@ func (workerManager *WorkerManager) ListWorkers(provisionerId, workerType, conti
 	if quarantined != "" {
 		v.Add("quarantined", quarantined)
 	}
-	if requested != "" {
-		v.Add("requested", requested)
-	}
-	if running != "" {
-		v.Add("running", running)
-	}
-	if stopped != "" {
-		v.Add("stopped", stopped)
-	}
-	if stopping != "" {
-		v.Add("stopping", stopping)
+	if workerState != "" {
+		v.Add("workerState", workerState)
 	}
 	cd := tcclient.Client(*workerManager)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", new(ListWorkersResponse), v)
@@ -562,7 +553,7 @@ func (workerManager *WorkerManager) ListWorkers(provisionerId, workerType, conti
 //   worker-manager:list-workers:<provisionerId>/<workerType>
 //
 // See ListWorkers for more details.
-func (workerManager *WorkerManager) ListWorkers_SignedURL(provisionerId, workerType, continuationToken, limit, quarantined, requested, running, stopped, stopping string, duration time.Duration) (*url.URL, error) {
+func (workerManager *WorkerManager) ListWorkers_SignedURL(provisionerId, workerType, continuationToken, limit, quarantined, workerState string, duration time.Duration) (*url.URL, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
@@ -573,17 +564,8 @@ func (workerManager *WorkerManager) ListWorkers_SignedURL(provisionerId, workerT
 	if quarantined != "" {
 		v.Add("quarantined", quarantined)
 	}
-	if requested != "" {
-		v.Add("requested", requested)
-	}
-	if running != "" {
-		v.Add("running", running)
-	}
-	if stopped != "" {
-		v.Add("stopped", stopped)
-	}
-	if stopping != "" {
-		v.Add("stopping", stopping)
+	if workerState != "" {
+		v.Add("workerState", workerState)
 	}
 	cd := tcclient.Client(*workerManager)
 	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", v, duration)

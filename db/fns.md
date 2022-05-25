@@ -2504,7 +2504,7 @@ filter `=` or `<>` provider by value.
   * `worker_id_in text`
   * `expires_in timestamptz`
 * *Returns*: `table`
-  * `task_queue_id text`
+  * `worker_pool_id text`
   * `worker_group text`
   * `worker_id text`
   * `quarantine_until timestamptz`
@@ -2518,7 +2518,7 @@ filter `=` or `<>` provider by value.
   * `etag uuid`
 * *Last defined on version*: 73
 
-Get a non-expired queue worker by task_queue_id, worker_group, and worker_id.
+Get a non-expired queue worker by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
 This also performs an outer join with the worker_manager.worker table for more data.
 
@@ -2531,7 +2531,7 @@ This also performs an outer join with the worker_manager.worker table for more d
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
-  * `task_queue_id text`
+  * `worker_pool_id text`
   * `worker_group text`
   * `worker_id text`
   * `quarantine_until timestamptz`
@@ -2545,7 +2545,7 @@ This also performs an outer join with the worker_manager.worker table for more d
   * `etag uuid`
 * *Last defined on version*: 73
 
-Get non-expired queue workers ordered by task_queue_id, worker_group, and worker_id.
+Get non-expired queue workers ordered by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.

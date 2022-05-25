@@ -874,7 +874,7 @@ type (
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
 		// will be replaced, together with `workerType`, by the new
-		// identifier `taskQueueId`.
+		// identifier `workerPoolId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
@@ -903,11 +903,6 @@ type (
 		//   * "stopped"
 		State string `json:"state"`
 
-		// Unique identifier for a task queue
-		//
-		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		TaskQueueID string `json:"taskQueueId,omitempty"`
-
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
 		//
@@ -924,10 +919,15 @@ type (
 		// Max length: 38
 		WorkerID string `json:"workerId"`
 
+		// Unique identifier for a worker pool
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerPoolID string `json:"workerPoolId,omitempty"`
+
 		// Unique identifier for a worker-type within a specific
 		// provisioner. Deprecation is planned for this property as it will
 		// be replaced, together with `provisionerId`, by the new
-		// identifier `taskQueueId`.
+		// identifier `workerPoolId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`

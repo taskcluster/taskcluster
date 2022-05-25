@@ -1,14 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import { format, parseISO } from 'date-fns';
-import {
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-} from '@material-ui/core';
+import { List, ListItem, ListItemText, Typography } from '@material-ui/core';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import { WorkerManager } from 'taskcluster-client-web';
+import Button from '../Button';
 import DateDistance from '../DateDistance';
 import DialogAction from '../DialogAction';
 import Label from '../Label';
@@ -27,48 +22,37 @@ export default class WorkerDetailsCard extends Component {
   };
 
   state = {
-    dialogState: {
-      error: null,
-      open: false,
-      title: '',
-      body: '',
-      confirmText: '',
-      taskQueueId: '',
-      workerGroup: '',
-      workerId: '',
-    },
+    error: null,
+    open: false,
+    title: '',
+    body: '',
+    confirmText: '',
+    taskQueueId: '',
+    workerGroup: '',
+    workerId: '',
   };
 
   handleDialogActionOpen = (taskQueueId, workerGroup, workerId) => () => {
     this.setState({
-      dialogState: {
-        open: true,
-        title: 'Terminate Worker?',
-        body: `This will terminate the worker with id ${workerId} in group ${workerGroup} within worker pool ${taskQueueId}.`,
-        confirmText: 'Terminate Worker',
-        taskQueueId,
-        workerGroup,
-        workerId,
-      },
+      open: true,
+      title: 'Terminate Worker?',
+      body: `This will terminate the worker with id ${workerId} in group ${workerGroup} within worker pool ${taskQueueId}.`,
+      confirmText: 'Terminate Worker',
+      taskQueueId,
+      workerGroup,
+      workerId,
     });
   };
 
   handleDeleteClick = async () => {
-    const { taskQueueId, workerGroup, workerId } = this.state.dialogState;
+    const { taskQueueId, workerGroup, workerId } = this.state;
     const { user } = this.props;
 
     this.setState({
-      dialogState: {
-        ...this.state.dialogState,
-        error: null,
-      },
+      error: null,
     });
 
     try {
-      if (typeof user?.credentials === 'undefined') {
-        throw new Error('User credentials not found. Please log in.');
-      }
-
       const wm = new WorkerManager({
         rootUrl: window.env.TASKCLUSTER_ROOT_URL,
         credentials: user.credentials,
@@ -79,10 +63,7 @@ export default class WorkerDetailsCard extends Component {
 
       await wm.removeWorker(taskQueueId, workerGroup, workerId);
       this.setState({
-        dialogState: {
-          ...this.state.dialogState,
-          open: false,
-        },
+        open: false,
       });
     } catch (error) {
       this.handleDialogActionError(error);
@@ -91,20 +72,14 @@ export default class WorkerDetailsCard extends Component {
 
   handleDialogActionError = error => {
     this.setState({
-      dialogState: {
-        ...this.state.dialogState,
-        error,
-      },
+      error,
     });
   };
 
   handleDialogActionClose = () => {
     this.setState({
-      dialogState: {
-        ...this.state.dialogState,
-        error: null,
-        open: false,
-      },
+      error: null,
+      open: false,
     });
   };
 
@@ -120,9 +95,7 @@ export default class WorkerDetailsCard extends Component {
         workerId,
       },
     } = this.props;
-    const {
-      dialogState: { open, error, title, confirmText, body },
-    } = this.state;
+    const { open, error, title, confirmText, body } = this.state;
     const iconSize = 16;
 
     return (
@@ -155,14 +128,16 @@ export default class WorkerDetailsCard extends Component {
           {providerId !== NULL_PROVIDER ? (
             <ListItem>
               <Button
+                requiresAuth
                 variant="outlined"
                 endIcon={<DeleteIcon size={iconSize} />}
                 onClick={this.handleDialogActionOpen(
                   taskQueueId,
                   workerGroup,
                   workerId
-                )}>
-                Terminate Worker
+                )}
+                tooltipProps={{ title: '' }}>
+                Terminate
               </Button>
             </ListItem>
           ) : (

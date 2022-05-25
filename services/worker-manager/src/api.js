@@ -4,9 +4,8 @@ const assert = require('assert');
 const { ApiError, Provider } = require('./providers/provider');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { WorkerPool, WorkerPoolError, Worker } = require('./data');
-const { createCredentials } = require('./util');
-const { joinTaskQueueId, addSplitFields } = require('../../queue/src/utils');
-const { TaskQueue } = require('../../queue/src/data');
+const { createCredentials, joinWorkerPoolId } = require('./util');
+const { TaskQueue } = require('./queue-data');
 
 let builder = new APIBuilder({
   title: 'Worker Manager Service',
@@ -847,10 +846,7 @@ builder.declare({
   query: {
     ...paginateResults.query,
     quarantined: /^(true|false)$/,
-    requested: /^(true|false)$/,
-    running: /^(true|false)$/,
-    stopping: /^(true|false)$/,
-    stopped: /^(true|false)$/,
+    workerState: /^(requested|running|stopping|stopped)$/,
   },
   name: 'listWorkers',
   scopes: 'worker-manager:list-workers:<provisionerId>/<workerType>',
@@ -863,8 +859,8 @@ builder.declare({
     '',
     '`listWorkers` allows a response to be filtered by quarantined and non quarantined workers,',
     'as well as the current state of the worker.',
-    'To filter the query, you should call the end-point with one of [`quarantined`, `requested`, `running`,',
-    '`stopping`, `stopped`] as a query-string option with a true or false value.',
+    'To filter the query, you should call the end-point with one of [`quarantined`, `workerState`]',
+    'as a query-string option with a true or false value.',
     '',
     'The response is paged. If this end-point returns a `continuationToken`, you',
     'should call the end-point again with the `continuationToken` as a query-string',
@@ -873,18 +869,14 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const quarantined = req.query.quarantined || null;
-  const requested = req.query.requested || null;
-  const running = req.query.running || null;
-  const stopping = req.query.stopping || null;
-  const stopped = req.query.stopped || null;
-  const workerState = requested || running || stopping || stopped || null;
+  const workerState = req.query.workerState || null;
   const { provisionerId, workerType } = req.params;
   const now = new Date();
-  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
+  const workerPoolId = joinWorkerPoolId(provisionerId, workerType);
 
   const { rows: workers, continuationToken } = await Worker.getWorkers(
     this.db,
-    { taskQueueId },
+    { workerPoolId },
     { query: req.query },
   );
 
@@ -941,12 +933,12 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { provisionerId, workerType, workerGroup, workerId } = req.params;
-  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
+  const workerPoolId = joinWorkerPoolId(provisionerId, workerType);
 
   const now = new Date();
   const [worker, tQueue] = await Promise.all([
-    Worker.getQueueWorker(this.db, taskQueueId, workerGroup, workerId, now),
-    TaskQueue.get(this.db, taskQueueId, now),
+    Worker.getQueueWorker(this.db, workerPoolId, workerGroup, workerId, now),
+    TaskQueue.get(this.db, workerPoolId, now),
   ]);
 
   // do not consider workers expired until their quarantine date expires.
@@ -965,8 +957,8 @@ builder.declare({
     );
   }
 
-  const workerResult = worker.serializable();
-  addSplitFields(workerResult);
+  let workerResult = worker.serializable();
+  workerResult = { ...workerResult, provisionerId, workerType };
 
   const actions = [];
   return res.reply(Object.assign({}, workerResult, { actions }));

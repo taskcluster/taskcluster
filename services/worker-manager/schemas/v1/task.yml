@@ -10,7 +10,7 @@ properties:
       Unique identifier for a provisioner, that can supply specified
       `workerType`. Deprecation is planned for this property as it
       will be replaced, together with `workerType`, by the new
-      identifier `taskQueueId`.
+      identifier `workerPoolId`.
     type:           string
     pattern:        {$const: provisionerid-pattern}
   workerType:
@@ -19,15 +19,15 @@ properties:
       Unique identifier for a worker-type within a specific
       provisioner. Deprecation is planned for this property as it will
       be replaced, together with `provisionerId`, by the new
-      identifier `taskQueueId`.
+      identifier `workerPoolId`.
     type:           string
     pattern:        {$const: workertype-pattern}
-  taskQueueId:
-    title:          "Task Queue Id"
+  workerPoolId:
+    title:          "Worker Pool Id"
     description: |
-      Unique identifier for a task queue
+      Unique identifier for a worker pool
     type:           string
-    pattern:        {$const: taskqueueid-pattern}
+    pattern:        {$const: workerpoolid-pattern}
   schedulerId:
     title:          "Scheduler Identifier"
     description: |
@@ -244,7 +244,7 @@ additionalProperties: false
 required:
   - provisionerId
   - workerType
-  - taskQueueId
+  - workerPoolId
   - schedulerId
   - taskGroupId
   - dependencies
