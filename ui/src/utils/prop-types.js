@@ -159,6 +159,7 @@ const taskRun = shape({
 });
 
 export const worker = shape({
+  workerPoolId: string,
   provisionerId: string,
   workerType: string,
   workerGroup: string,

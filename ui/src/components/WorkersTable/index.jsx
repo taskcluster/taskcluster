@@ -9,7 +9,6 @@ import { withStyles } from '@material-ui/core/styles';
 import { TableCell, TableRow, Typography } from '@material-ui/core';
 import LinkIcon from 'mdi-react/LinkIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import { WorkerManager } from 'taskcluster-client-web';
 import Button from '../Button';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import StatusLabel from '../StatusLabel';
@@ -22,6 +21,7 @@ import { NULL_PROVIDER, VIEW_WORKERS_PAGE_SIZE } from '../../utils/constants';
 import { workers } from '../../utils/prop-types';
 import { withAuth } from '../../utils/Auth';
 import Link from '../../utils/Link';
+import { removeWorker } from '../../utils/client';
 import sort from '../../utils/sort';
 
 const sorted = pipe(
@@ -74,7 +74,7 @@ export default class WorkersTable extends Component {
     title: '',
     body: '',
     confirmText: '',
-    taskQueueId: '',
+    workerPoolId: '',
     workerGroup: '',
     workerId: '',
   };
@@ -110,20 +110,20 @@ export default class WorkersTable extends Component {
     }
   );
 
-  handleDialogActionOpen = (taskQueueId, workerGroup, workerId) => () => {
+  handleDialogActionOpen = (workerPoolId, workerGroup, workerId) => () => {
     this.setState({
       open: true,
       title: 'Terminate Worker?',
-      body: `This will terminate the worker with id ${workerId} in group ${workerGroup} within worker pool ${taskQueueId}.`,
+      body: `This will terminate the worker with id ${workerId} in group ${workerGroup} within worker pool ${workerPoolId}.`,
       confirmText: 'Terminate Worker',
-      taskQueueId,
+      workerPoolId,
       workerGroup,
       workerId,
     });
   };
 
   handleDeleteClick = async () => {
-    const { taskQueueId, workerGroup, workerId } = this.state;
+    const { workerPoolId, workerGroup, workerId } = this.state;
     const { user } = this.props;
 
     this.setState({
@@ -131,19 +131,7 @@ export default class WorkersTable extends Component {
     });
 
     try {
-      if (typeof user?.credentials === 'undefined') {
-        throw new Error('User credentials not found. Please log in.');
-      }
-
-      const wm = new WorkerManager({
-        rootUrl: window.env.TASKCLUSTER_ROOT_URL,
-        credentials: user.credentials,
-        authorizedScopes: [
-          `worker-manager:remove-worker:${taskQueueId}/${workerGroup}/${workerId}`,
-        ],
-      });
-
-      await wm.removeWorker(taskQueueId, workerGroup, workerId);
+      removeWorker({ workerPoolId, workerGroup, workerId, user });
       this.setState({
         open: false,
       });
@@ -251,7 +239,7 @@ export default class WorkersTable extends Component {
               state,
               capacity,
               providerId,
-              taskQueueId,
+              workerPoolId,
             },
           }) => (
             <TableRow key={workerId}>
@@ -337,20 +325,22 @@ export default class WorkersTable extends Component {
                 )}
               </TableCell>
               <TableCell>
-                {providerId !== NULL_PROVIDER ? (
+                {providerId !== NULL_PROVIDER && state !== 'stopping' && (
                   <Button
                     requiresAuth
+                    disabled={['stopping', 'stopped'].includes(state)}
                     variant="outlined"
                     endIcon={<DeleteIcon size={iconSize} />}
                     onClick={this.handleDialogActionOpen(
-                      taskQueueId,
+                      workerPoolId,
                       workerGroup,
                       workerId
                     )}
-                    tooltipProps={{ title: '' }}>
+                    tooltipProps={{ title: 'Terminate Worker' }}>
                     Terminate
                   </Button>
-                ) : (
+                )}
+                {state === 'stopping' && (
                   <Label mini status="warning" className={classes.button}>
                     Scheduled for termination
                   </Label>
@@ -374,16 +364,18 @@ export default class WorkersTable extends Component {
           ]}
           {...props}
         />
-        <DialogAction
-          open={open}
-          onSubmit={this.handleDeleteClick}
-          onClose={this.handleDialogActionClose}
-          onError={this.handleDialogActionError}
-          error={error}
-          title={title}
-          body={<Typography>{body}</Typography>}
-          confirmText={confirmText}
-        />
+        {open && (
+          <DialogAction
+            open={open}
+            onSubmit={this.handleDeleteClick}
+            onClose={this.handleDialogActionClose}
+            onError={this.handleDialogActionError}
+            error={error}
+            title={title}
+            body={<Typography>{body}</Typography>}
+            confirmText={confirmText}
+          />
+        )}
       </Fragment>
     );
   }

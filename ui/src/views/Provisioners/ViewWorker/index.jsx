@@ -17,6 +17,7 @@ import WorkerTable from '../../../components/WorkerTable';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import { withAuth } from '../../../utils/Auth';
+import { removeWorker } from '../../../utils/client';
 import ErrorPanel from '../../../components/ErrorPanel';
 import workerQuery from './worker.graphql';
 import quarantineWorkerQuery from './quarantineWorker.graphql';
@@ -43,6 +44,11 @@ export default class ViewWorker extends Component {
     this.state = {
       dialogError: null,
       dialogOpen: false,
+      terminateDialogError: null,
+      terminateDialogOpen: false,
+      terminateDialogTitle: '',
+      terminateDialogBody: '',
+      terminateDialogConfirmText: '',
       quarantineUntilInput:
         props.worker && props.worker.quarantineUntil
           ? parseISO(props.worker.quarantineUntil)
@@ -151,6 +157,49 @@ export default class ViewWorker extends Component {
     });
   }
 
+  handleTerminateDialogActionOpen = (workerId, workerGroup, workerPoolId) => {
+    this.setState({
+      terminateDialogOpen: true,
+      terminateDialogTitle: 'Terminate Worker?',
+      terminateDialogBody: `This will terminate the worker with id ${workerId} in group ${workerGroup} within worker pool ${workerPoolId}.`,
+      terminateDialogConfirmText: 'Terminate Worker',
+      workerPoolId,
+      workerGroup,
+      workerId,
+    });
+  };
+
+  handleTerminateDeleteClick = async () => {
+    const { workerPoolId, workerGroup, workerId } = this.state;
+    const { user } = this.props;
+
+    this.setState({
+      terminateDialogError: null,
+    });
+
+    try {
+      removeWorker({ workerPoolId, workerGroup, workerId, user });
+      this.setState({
+        terminateDialogOpen: false,
+      });
+    } catch (terminateDialogError) {
+      this.handleTerminateDialogActionError(terminateDialogError);
+    }
+  };
+
+  handleTerminateDialogActionError = terminateDialogError => {
+    this.setState({
+      terminateDialogError,
+    });
+  };
+
+  handleTerminateDialogActionClose = () => {
+    this.setState({
+      terminateDialogError: null,
+      terminateDialogOpen: false,
+    });
+  };
+
   render() {
     const {
       classes,
@@ -163,6 +212,11 @@ export default class ViewWorker extends Component {
       actionLoading,
       quarantineUntilInput,
       dialogError,
+      terminateDialogError,
+      terminateDialogOpen,
+      terminateDialogTitle,
+      terminateDialogBody,
+      terminateDialogConfirmText,
     } = this.state;
     const graphqlError = this.getError(error);
 
@@ -198,7 +252,18 @@ export default class ViewWorker extends Component {
                 </Typography>
               </Breadcrumbs>
               <br />
-              <WorkerDetailsCard worker={worker} />
+              <WorkerDetailsCard
+                worker={worker}
+                dialogError={terminateDialogError}
+                dialogConfirmText={terminateDialogConfirmText}
+                dialogBody={terminateDialogBody}
+                dialogTitle={terminateDialogTitle}
+                dialogOpen={terminateDialogOpen}
+                onDialogActionOpen={this.handleTerminateDialogActionOpen}
+                onDeleteClick={this.handleTerminateDeleteClick}
+                onDialogActionError={this.handleTerminateDialogActionError}
+                onDialogActionClose={this.handleTerminateDialogActionClose}
+              />
               <br />
               <WorkerTable worker={worker} />
               <SpeedDial>

@@ -1,15 +1,6 @@
+import { getClient } from './client';
+
 const { Queue, Index } = require('taskcluster-client-web');
-
-function getClient({ Class, user }) {
-  if (user) {
-    return new Class({
-      rootUrl: window.env.TASKCLUSTER_ROOT_URL,
-      credentials: user.credentials,
-    });
-  }
-
-  return new Class({ rootUrl: window.env.TASKCLUSTER_ROOT_URL });
-}
 
 /**
  * Get a signed URL that can be used to fetch the given task.  This URL is
