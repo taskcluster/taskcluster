@@ -192,7 +192,7 @@ export default class WorkersTable extends Component {
 
     this.props.history.replace({
       search: stringify(
-        { sortBy: 'Last Active', sortDirection: 'desc' },
+        { sortBy: 'Last Active', sortDirection: 'desc', ...query },
         { addQueryPrefix: true }
       ),
     });
