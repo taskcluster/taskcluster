@@ -5,10 +5,7 @@ import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
-import Box from '@material-ui/core/Box';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import LinkIcon from 'mdi-react/LinkIcon';
-import TableCellItem from '../TableCellItem';
 import Button from '../Button';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../utils/constants';
@@ -23,24 +20,15 @@ const sorted = pipe(
 const iconSize = 16;
 
 @withStyles(theme => ({
-  secretLinkIcon: {
-    display: 'block',
-    height: `${iconSize}px`,
-    lineHeight: `${iconSize}px`,
-  },
-  secretLinkContainer: {
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
-  },
   secretContainer: {
     width: '100%',
     display: 'flex',
     alignItems: 'center',
-  },
-  secretIdContainer: {
-    flexGrow: 1,
+    paddingTop: theme.spacing(1.5),
+    paddingBottom: theme.spacing(1.5),
   },
   nameLink: {
+    flexGrow: 1,
     display: 'flex',
   },
 }))
@@ -145,34 +133,22 @@ export default class SecretsTable extends Component {
           String(name).includes(filterValue)
         }
         headers={['Secret ID']}
-        renderRow={({ node: { name } }) => (
-          <TableRow key={name}>
-            <TableCell>
-              <TableCellItem dense button>
-                <Box className={classes.secretContainer}>
-                  <Box className={classes.secretIdContainer}>
-                    <Link
-                      className={classes.nameLink}
-                      to={`/secrets/${encodeURIComponent(name)}`}>
-                      {name}
-                    </Link>
-                  </Box>
-                  <Box className={classes.secretLinkContainer}>
-                    <Link
-                      to={`/secrets/${encodeURIComponent(name)}`}
-                      className={classes.secretLinkIcon}>
-                      <LinkIcon size={iconSize} />
-                    </Link>
-                  </Box>
-                  <Button
-                    requiresAuth
-                    tooltipProps={{ title: 'Delete Secret' }}
-                    size="small"
-                    onClick={() => onDialogActionOpen(name)}>
-                    <DeleteIcon size={iconSize} />
-                  </Button>
-                </Box>
-              </TableCellItem>
+        lazyRender
+        renderRow={({ node: { name } }, style, key) => (
+          <TableRow key={key || name} style={style} hover>
+            <TableCell className={classes.secretContainer}>
+              <Link
+                className={classes.nameLink}
+                to={`/secrets/${encodeURIComponent(name)}`}>
+                {name}
+              </Link>
+              <Button
+                requiresAuth
+                tooltipProps={{ title: 'Delete Secret' }}
+                size="small"
+                onClick={() => onDialogActionOpen(name)}>
+                <DeleteIcon size={iconSize} />
+              </Button>
             </TableCell>
           </TableRow>
         )}

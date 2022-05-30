@@ -239,6 +239,8 @@ class AzureProvider extends Provider {
       apiRateLimits,
       intervalDefault: 100 * 1000, // Intervals are enforced every 100 seconds
       intervalCapDefault: 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
+      timeout: 10 * 60 * 1000, // each cloud call should not take longer than 10 minutes
+      throwOnTimeout: true,
       monitor: this.monitor,
       providerId: this.providerId,
       errorHandler: ({ err, tries }) => {
@@ -1188,17 +1190,18 @@ class AzureProvider extends Provider {
       seen: this.seen,
       total: Provider.calcSeenTotal(this.seen),
     });
-    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
-      const workerPool = await WorkerPool.get(this.db, workerPoolId);
 
-      if (!workerPool) {
-        return; // In this case, the workertype has been deleted so we can just move on
-      }
+    await Promise.all(Object.entries(this.errors).filter(([workerPoolId, errors]) => errors.length > 0).map(
+      async ([workerPoolId, errors]) => {
+        const workerPool = await WorkerPool.get(this.db, workerPoolId);
 
-      if (this.errors[workerPoolId].length) {
-        await Promise.all(this.errors[workerPoolId].map(error => this.reportError({ workerPool, ...error })));
-      }
-    }));
+        if (!workerPool) {
+          return; // In this case, the workertype has been deleted so we can just move on
+        }
+
+        await Promise.all(errors.map(error => this.reportError({ workerPool, ...error })));
+      }),
+    );
   }
 
   /*

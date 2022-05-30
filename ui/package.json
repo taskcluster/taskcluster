@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-ui",
-  "version": "44.13.3",
+  "version": "44.13.7",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
@@ -44,7 +44,7 @@
     "date-fns": "^2.0.1",
     "deep-sort-object": "^1.0.2",
     "deepmerge": "^4.0.0",
-    "dexie": "^3.0.0",
+    "dexie": "^3.2.2",
     "docker-exec-websocket-client": "^3.0.0",
     "dot-prop-immutable": "^2.0.0",
     "error-stack-parser": "^2.0.6",
@@ -94,7 +94,7 @@
     "shebang-loader": "^0.0.1",
     "snake-case": "^3.0.3",
     "subscriptions-transport-ws": "^0.9.16",
-    "taskcluster-client-web": "^43.0.0",
+    "taskcluster-client-web": "^44.13.5",
     "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^13.0.0",
     "title-case": "^3.0.2",

@@ -17,11 +17,19 @@ export default class WorkerDetailsCard extends Component {
 
   render() {
     const {
-      worker: { quarantineUntil, firstClaim },
+      worker: { quarantineUntil, firstClaim, lastDateActive },
     } = this.props;
 
     return (
       <List>
+        <ListItem>
+          <ListItemText
+            primary="Last Active"
+            secondary={
+              lastDateActive ? <DateDistance from={lastDateActive} /> : 'n/a'
+            }
+          />
+        </ListItem>
         <ListItem>
           <ListItemText
             primary="First Claim"

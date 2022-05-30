@@ -6,7 +6,9 @@ to s3 after the task has completed running.
 const Debug = require('debug');
 const fs = require('mz/fs');
 const streamClosed = require('../stream_closed');
-const temporary = require('temporary');
+const { tmpdir } = require('os');
+const { mkdtemp, rm } = require('fs/promises');
+const { join, sep } = require('path');
 const uploadToS3 = require('../upload_to_s3');
 const zlib = require('zlib');
 
@@ -18,17 +20,20 @@ class BulkLog {
   constructor(artifact) {
     this.featureName = 'bulkLogHandler';
     this.artifactName = artifact || ARTIFACT_NAME;
-    this.file = new temporary.File();
-    debug('Created BulkLog using tempfile: ' + this.file.path);
   }
 
   async created(task) {
+    this.tmpDir = await mkdtemp(`${tmpdir()}${sep}`);
+    this.tmpFile = 'bulk_log';
+    this.filePath = join(this.tmpDir, this.tmpFile);
+    debug('Created BulkLog using tempfile: ' + this.filePath);
+
     // Eventually we want to save the content as gzip on s3 or azure so we
     // incrementally compress it via streams.
     let gzip = zlib.createGzip();
 
     // Pipe the task stream to a temp file on disk.
-    this.stream = fs.createWriteStream(this.file.path);
+    this.stream = fs.createWriteStream(this.filePath);
     task.stream.pipe(gzip).pipe(this.stream);
   }
 
@@ -40,7 +45,7 @@ class BulkLog {
 
     // Open a new stream to read the entire log from disk (this in theory could
     // be a huge file).
-    let diskStream = fs.createReadStream(this.file.path);
+    let diskStream = fs.createReadStream(this.filePath);
 
     // expire the log when the task expires
     let expiration = new Date(task.task.expires);
@@ -56,8 +61,8 @@ class BulkLog {
       throw err;
     }
 
-    // Unlink the temp file.
-    await fs.unlink(this.file.path);
+    // Remove temporary directory
+    await rm(this.tmpDir, { recursive: true });
 
     return this.artifactName;
   }

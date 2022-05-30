@@ -1559,4 +1559,59 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
     }
   });
+
+  suite('scanCleanup', function() {
+    const sandbox = sinon.createSandbox({});
+    let reportedErrors = [];
+
+    setup(() => {
+      reportedErrors = [];
+    });
+
+    teardown(function () {
+      sandbox.restore();
+    });
+
+    test('iterates all seen workers', async function() {
+      sandbox.stub(provider, 'reportError');
+      const workerPool1 = await makeWorkerPool({ workerPoolId: 'foo/bar1' });
+      const workerPool2 = await makeWorkerPool({ workerPoolId: 'foo/bar2' });
+
+      provider.scanPrepare();
+      provider.seen[workerPool1.workerPoolId] = 3;
+      provider.seen[workerPool2.workerPoolId] = 1;
+      provider.errors[workerPool1.workerPoolId] = [];
+      provider.errors[workerPool2.workerPoolId] = [];
+
+      await provider.scanCleanup();
+      assert.equal(4, monitor.manager.messages[0].Fields.total);
+      sandbox.assert.notCalled(provider.reportError);
+      assert.equal(0, reportedErrors.length);
+    });
+
+    test('iterates and reports errors', async function() {
+      sandbox.replace(provider, 'reportError', (error) => {
+        reportedErrors.push(error);
+      });
+
+      const workerPool1 = await makeWorkerPool({ workerPoolId: 'foo/bar1' });
+      const workerPool2 = await makeWorkerPool({ workerPoolId: 'foo/bar2' });
+
+      provider.scanPrepare();
+      provider.seen[workerPool1.workerPoolId] = 3;
+      provider.seen[workerPool2.workerPoolId] = 1;
+      provider.seen['non/existing'] = 0;
+      provider.errors[workerPool1.workerPoolId] = [{ error: 'error1' }, { error: 'error2' }];
+      provider.errors[workerPool2.workerPoolId] = [];
+      provider.errors['non/existing'] = [{ error: 'will not be reported' }];
+
+      await provider.scanCleanup();
+      assert.equal(4, monitor.manager.messages[0].Fields.total);
+      assert.equal(2, reportedErrors.length);
+      assert.equal(workerPool1.workerPoolId, reportedErrors[0].workerPool.workerPoolId);
+      assert.equal('error1', reportedErrors[0].error);
+      assert.equal(workerPool1.workerPoolId, reportedErrors[1].workerPool.workerPoolId);
+      assert.equal('error2', reportedErrors[1].error);
+    });
+  });
 });

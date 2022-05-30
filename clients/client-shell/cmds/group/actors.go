@@ -121,7 +121,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	for _, taskID := range tasks {
 		wg.Add(1)
 		go func(taskID string) {
-			// If we paniced on the way out, abort all the other tasks.
+			// If we panicked on the way out, abort all the other tasks.
 			defer func() {
 				//recover from panic and abort
 				if err := recover(); err != nil {

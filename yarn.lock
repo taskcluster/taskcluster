@@ -1381,9 +1381,9 @@ async-retry@^1.2.1:
     retry "0.13.1"
 
 async@^2.6.3:
-  version "2.6.3"
-  resolved "https://registry.yarnpkg.com/async/-/async-2.6.3.tgz#d72625e2344a3656e3a3ad4fa749fa83299d82ff"
-  integrity sha512-zflvls11DCy+dQWzTW2dzuilv8Z5X/pjfmZOWba6TNIVDm+2UDaJmXSOXlasHKfNBs8oo3M0aT50fDEWfKZjXg==
+  version "2.6.4"
+  resolved "https://registry.yarnpkg.com/async/-/async-2.6.4.tgz#706b7ff6084664cd7eae713f6f965433b5504221"
+  integrity sha512-mzo5dfJYwAn29PeiJ0zvwTo04zj8HDJj0Mn8TD7sno7q12prdbnasKJHhkm2c1LgrhlJ0teaea8860oxi51mGA==
   dependencies:
     lodash "^4.17.14"
 
@@ -3518,10 +3518,10 @@ ignore@^4.0.6:
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-4.0.6.tgz#750e3db5862087b4737ebac8207ffd1ef27b25fc"
   integrity sha512-cyFDKrqc/YdcWFniJhzI42+AzS+gNwmUzOSFcRCQYwySuBBBy/KjuxWLZ/FHEH6Moq1NizMOBWyTcv8O4OZIMg==
 
-immutable@^3.8.2:
-  version "3.8.2"
-  resolved "https://registry.yarnpkg.com/immutable/-/immutable-3.8.2.tgz#c2439951455bb39913daf281376f1530e104adf3"
-  integrity sha1-wkOZUUVbs5kT2vKBN28VMOEErfM=
+immutable@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/immutable/-/immutable-4.1.0.tgz#f795787f0db780183307b9eb2091fcac1f6fafef"
+  integrity sha512-oNkuqVTA8jqG1Q6c+UglTOD1xhC1BtjKI7XkCXRkZHrN5m18/XsnUp8Q89GkQO/z+0WjonSvl0FLhDYftp46nQ==
 
 import-fresh@^3.0.0, import-fresh@^3.2.1:
   version "3.3.0"
@@ -4926,7 +4926,7 @@ p-locate@^5.0.0:
   dependencies:
     p-limit "^3.0.2"
 
-p-queue@^6.1.1, p-queue@^6.6.1:
+p-queue@^6.6.1, p-queue@^6.6.2:
   version "6.6.2"
   resolved "https://registry.yarnpkg.com/p-queue/-/p-queue-6.6.2.tgz#2068a9dcf8e67dd0ec3e7a2bcb76810faa85e426"
   integrity sha512-RwFpb72c/BhQLEXIZ5K2e+AhgNVmIejGlTgiB9MzZ0e93GRvqZ7uSi0dvRF7/XIXDeNkra2fNHBxTyPDGySpjQ==
@@ -6196,37 +6196,37 @@ tar-stream@^2.0.0:
   version "0.0.0"
 
 "taskcluster-db@link:db":
-  version "44.13.3"
+  version "44.13.7"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "44.13.3"
+  version "44.13.7"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "44.13.3"
+  version "44.13.7"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "44.13.3"
+  version "44.13.7"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "44.13.3"
+  version "44.13.7"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "44.13.3"
+  version "44.13.7"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "44.13.3"
+  version "44.13.7"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "44.13.3"
+  version "44.13.7"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "44.13.3"
+  version "44.13.7"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "44.13.3"
+  version "44.13.7"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "44.13.3"
+  version "44.13.7"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6236,7 +6236,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "44.13.3"
+  version "44.13.7"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6244,12 +6244,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "44.13.3"
-
-temporary@^1.0.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/temporary/-/temporary-1.1.0.tgz#76df5cab744623dd9c0b8b71f1c5a7dd5602bf9e"
-  integrity sha512-geB3U/E75RLr++koy9EBw4mZ1BCfxg72SYJQdQld1iRvka+fyijfbiXrVpWQB9bJKNsgAB4lIHOeJtVSvyiJiQ==
+  version "44.13.7"
 
 test-exclude@^6.0.0:
   version "6.0.0"

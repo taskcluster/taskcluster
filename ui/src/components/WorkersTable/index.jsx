@@ -118,11 +118,24 @@ export default class WorkersTable extends Component {
     return mapping[query.sortBy];
   }
 
+  componentDidMount() {
+    const query = parse(this.props.location.search.slice(1));
+
+    if (query.sortBy) return;
+
+    this.props.history.replace({
+      search: stringify(
+        { sortBy: 'Last Active', sortDirection: 'desc' },
+        { addQueryPrefix: true }
+      ),
+    });
+  }
+
   render() {
     const query = parse(this.props.location.search.slice(1));
     const { sortBy, sortDirection } = query.sortBy
       ? query
-      : { sortBy: null, sortDirection: null };
+      : { sortBy: 'Last Active', sortDirection: 'desc' };
     const {
       provisionerId,
       workerType,

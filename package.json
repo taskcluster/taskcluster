@@ -1,6 +1,6 @@
 {
   "name": "taskcluster",
-  "version": "44.13.3",
+  "version": "44.13.7",
   "private": true,
   "engine-strict": true,
   "engines": {
@@ -62,7 +62,7 @@
     "hashids": "^2.0.0",
     "hawk": "9.0.1",
     "hsts": "^2.1.0",
-    "immutable": "^3.8.2",
+    "immutable": "^4.1.0",
     "iterall": "^1.2.2",
     "js-yaml": "^4.0.0",
     "json-e": "^4.0.1",
@@ -81,7 +81,7 @@
     "node-forge": "^1.0.0",
     "nodemailer": "^6.6.1",
     "oauth2orize": "^1.11.0",
-    "p-queue": "^6.1.1",
+    "p-queue": "^6.6.2",
     "p-synchronize": "^1.0.0",
     "parseurl": "^1.3.3",
     "passport": "^0.5.2",
@@ -160,7 +160,6 @@
     "sinon": "^13.0.0",
     "snake-case": "^3.0.3",
     "taskcluster-lib-testing": "link:libraries/testing",
-    "temporary": "^1.0.0",
     "ws": "^7.4.6",
     "yarn-minify": "^1.0.1",
     "zen-observable": "^0.8.11",

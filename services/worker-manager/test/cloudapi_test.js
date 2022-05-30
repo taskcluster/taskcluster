@@ -4,16 +4,19 @@ const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
 const { CloudAPI } = require('../src/providers/cloudapi');
 
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 suite(testing.suiteName(), function() {
   let cloud;
 
-  setup(async function() {
+  const initCloudApi = async (options = {}) => {
     const _backoffDelay = 1;
-    cloud = new CloudAPI({
+    return new CloudAPI({
       types: ['query', 'get', 'list', 'opRead'],
       apiRateLimits: {},
       intervalDefault: 100 * 1000,
       intervalCapDefault: 2000,
+      ...options,
       monitor: await helper.load('monitor'),
       providerId: 'fake-provider',
       errorHandler: ({ err, tries }) => {
@@ -33,6 +36,10 @@ suite(testing.suiteName(), function() {
         throw err;
       },
     });
+  };
+
+  setup(async () => {
+    cloud = await initCloudApi();
   });
 
   test('non existing queue', async function() {
@@ -80,5 +87,19 @@ suite(testing.suiteName(), function() {
     }
     assert.equal(remote.callCount, 5);
     throw new Error('should have thrown an error');
+  });
+
+  test('operations timing out', async function() {
+    const cloudWithTimeout = await initCloudApi({ timeout: 1, throwOnTimeout: true });
+    const remote = sinon.stub();
+    remote.onCall(0).resolves(sleep(5));
+
+    try {
+      await cloudWithTimeout.enqueue('query', () => remote());
+    } catch (err) {
+      assert.equal(err.name, 'TimeoutError');
+      return;
+    }
+    assert.equal(remote.callCount, 1);
   });
 });

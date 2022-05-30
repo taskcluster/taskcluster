@@ -1,0 +1,17 @@
+{
+  "bad1": {
+    "location": "fakelocation"
+  },
+  "good1": {
+    "location": "."
+  },
+  "bad2": {
+    "location": "fakelocation"
+  },
+  "good2": {
+    "location": "testdata"
+  },
+  "good3": {
+    "location": "main.go"
+  }
+}

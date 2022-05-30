@@ -418,7 +418,7 @@ module.exports = {
           ],
           "route": "/azure/accounts",
           "scopes": "auth:azure-table:list-accounts",
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "List Accounts Managed by Auth",
           "type": "function"
         },
@@ -436,7 +436,7 @@ module.exports = {
           ],
           "route": "/azure/<account>/tables",
           "scopes": "auth:azure-table:list-tables:<account>",
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "List Tables in an Account Managed by Auth",
           "type": "function"
         },
@@ -464,7 +464,7 @@ module.exports = {
               ]
             }
           },
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "Get Shared-Access-Signature for Azure Table",
           "type": "function"
         },
@@ -482,7 +482,7 @@ module.exports = {
           ],
           "route": "/azure/<account>/containers",
           "scopes": "auth:azure-container:list-containers:<account>",
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "List containers in an Account Managed by Auth",
           "type": "function"
         },
@@ -510,7 +510,7 @@ module.exports = {
               ]
             }
           },
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "Get Shared-Access-Signature for Azure Container",
           "type": "function"
         },

@@ -199,7 +199,7 @@ export default class DataTable extends Component {
             nextIconButtonProps={{
               'aria-label': 'Next Page',
             }}
-            onChangePage={this.handlePageChange}
+            onPageChange={this.handlePageChange}
           />
         )}
       </Fragment>

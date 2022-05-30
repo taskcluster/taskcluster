@@ -3,6 +3,60 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.13.7
+
+### GENERAL
+
+▶ [patch]
+Deprecate old Azure endpoints that are no longer use:
+- `azureCredentials` (Can be migrated to `secrets` service)
+- `azureTables`
+- `azureTablesSAS`
+- `azureContainers`
+- `azureContainersSAS`
+
+Remove test dependency on AZURE_ACCOUNT
+
+▶ [patch] [#5287](https://github.com/taskcluster/taskcluster/issues/5287)
+fix: remove `temporary` dependency.
+
+### USERS
+
+▶ [patch] [#5363](https://github.com/taskcluster/taskcluster/issues/5363)
+The generic-worker no longer resolves tasks as exception that mount a file/directory that has disappeared from the file system. Instead it invalidates the cache entry.
+
+## v44.13.6
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#4999](https://github.com/taskcluster/taskcluster/issues/4999)
+Introduce queue timeout to avoid some cloud calls to be stuck and fail whole scan process.
+
+### USERS
+
+▶ [patch] [#4366](https://github.com/taskcluster/taskcluster/issues/4366)
+Display last date active in the worker detail view.
+
+▶ [patch] [#5412](https://github.com/taskcluster/taskcluster/issues/5412)
+Docker-worker no longer accepts and ignores arbitrary properties in task payloads. It now only accepts properties defined in its payload schema.
+
+▶ [patch] [#2776](https://github.com/taskcluster/taskcluster/issues/2776)
+Show worker tasks from most recent to least recent. Also, link the `taskId` field to the task page.
+
+▶ [patch] [#5433](https://github.com/taskcluster/taskcluster/issues/5433)
+Show workers from last recently active. Also, removed the deprecated prop `onChangePage` and replaced with `onPageChange`.
+
+## v44.13.5
+
+### GENERAL
+
+▶ [patch]
+Add null check to `lastDateActive` in queue workers serialize() func.
+
+## v44.13.4
+
+No changes
+
 ## v44.13.3
 
 ### GENERAL
