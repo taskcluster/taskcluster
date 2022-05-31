@@ -257,6 +257,33 @@ exports.dockerPush = async ({ baseDir, tag, logfile, credentials, utils }) => {
   let homeDir;
   const env = { ...process.env };
 
+  /**
+   * exponential backoff with the following delays
+   * for the first 5 retries:
+   * [1ms,10ms,100ms,1s,10s]
+   */
+  const delay = retryCount =>
+    new Promise(resolve => setTimeout(resolve, 10 ** retryCount));
+
+  const execDockerPush = async (maxRetries, retryCount = 0, lastError = null) => {
+    if (retryCount > maxRetries) {
+      throw new Error(lastError);
+    }
+
+    try {
+      return await execCommand({
+        dir: baseDir,
+        command: ['docker', 'push', tag],
+        utils,
+        logfile,
+        env,
+      });
+    } catch (err) {
+      await delay(retryCount);
+      return execDockerPush(maxRetries, retryCount + 1, err);
+    }
+  };
+
   try {
     if (credentials) {
       // override HOME so this doesn't use the user's credentials
@@ -276,13 +303,7 @@ exports.dockerPush = async ({ baseDir, tag, logfile, credentials, utils }) => {
       });
     }
 
-    await execCommand({
-      dir: baseDir,
-      command: ['docker', 'push', tag],
-      utils,
-      logfile,
-      env,
-    });
+    await execDockerPush(5);
   } finally {
     if (homeDir) {
       await rimraf(homeDir);
