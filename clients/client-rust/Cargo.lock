@@ -90,12 +90,6 @@ dependencies = [
 
 [[package]]
 name = "base64"
-version = "0.12.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3441f0f7b02788e948e47f457ca01f1d7e6d92c693bc132c22b087d3141c03ff"
-
-[[package]]
-name = "base64"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
@@ -444,12 +438,12 @@ checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
 
 [[package]]
 name = "hawk"
-version = "3.2.1"
+version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7539c8d8699bae53238aacd3f93cfb0bcaef77b85dc963902b9367c5d7a84c48"
+checksum = "f42afdd0e58859aa7b944db9125bdddb5437233161726c20578fbb73c776f440"
 dependencies = [
  "anyhow",
- "base64 0.12.3",
+ "base64",
  "log",
  "once_cell",
  "ring",
@@ -1010,7 +1004,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "46a1f7aa4f35e5e8b4160449f51afc758f0ce6454315a9fa7d0d113e958c41eb"
 dependencies = [
  "async-compression",
- "base64 0.13.0",
+ "base64",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -1178,11 +1172,11 @@ checksum = "eb703cfe953bccee95685111adeedb76fabe4e97549a58d16f03ea7b9367bb32"
 
 [[package]]
 name = "slugid"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dffce550aa0f2596e2dd72848902c9602bd4e9545bb64fc1da270d01dc192fd"
+checksum = "a797a9aeced44a2b3b70946cb925bdefe8f2eb15d36bc8edafd150e9f82c5beb"
 dependencies = [
- "base64 0.12.3",
+ "base64",
  "lazy_static",
  "ring",
 ]
@@ -1220,7 +1214,7 @@ version = "44.14.0"
 dependencies = [
  "anyhow",
  "backoff",
- "base64 0.12.3",
+ "base64",
  "chrono",
  "hawk",
  "httptest",
@@ -1274,7 +1268,7 @@ version = "44.14.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "base64 0.12.3",
+ "base64",
  "httptest",
  "reqwest",
  "ring",
