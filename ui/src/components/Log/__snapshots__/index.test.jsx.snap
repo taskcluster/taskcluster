@@ -109,104 +109,6 @@ exports[`should render Log 1`] = `
     </span>
   </div>
   <div
-    class="MuiSpeedDial-root MuiSpeedDial-directionUp SpeedDial-speedDial-11 Log-logSpeedDial-7"
-    role="presentation"
-  >
-    <button
-      aria-controls="speed-dial-actions"
-      aria-expanded="false"
-      aria-haspopup="true"
-      aria-label="speed-dial"
-      class="MuiButtonBase-root MuiFab-root MuiSpeedDial-fab MuiFab-secondary"
-      style="transform: none; webkit-transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
-      tabindex="0"
-      type="button"
-    >
-      <span
-        class="MuiFab-label"
-      >
-        <span
-          class="MuiSpeedDialIcon-root"
-        >
-          <svg
-            class="mdi-icon MuiSpeedDialIcon-openIcon"
-            fill="currentColor"
-            height="24"
-            viewBox="0 0 24 24"
-            width="24"
-          >
-            <path
-              d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
-            />
-          </svg>
-          <svg
-            class="mdi-icon MuiSpeedDialIcon-icon"
-            fill="currentColor"
-            height="24"
-            viewBox="0 0 24 24"
-            width="24"
-          >
-            <path
-              d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"
-            />
-          </svg>
-        </span>
-      </span>
-      <span
-        class="MuiTouchRipple-root"
-      />
-    </button>
-    <div
-      aria-orientation="vertical"
-      class="MuiSpeedDial-actions MuiSpeedDial-actionsClosed"
-      id="speed-dial-actions"
-      role="menu"
-    >
-      <span
-        class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
-        id="speed-dial-action-0"
-      >
-        <span
-          class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabel-14"
-          id="speed-dial-action-0-label"
-          style="transition-delay: 30ms;"
-        >
-          Raw Log
-        </span>
-        <a
-          aria-describedby="speed-dial-action-0-label"
-          aria-disabled="false"
-          class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-12 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall"
-          href="https://localhost:1234/logs/public/test.log"
-          rel="noopener noreferrer"
-          role="menuitem"
-          style="transition-delay: 30ms;"
-          tabindex="-1"
-          target="_blank"
-        >
-          <span
-            class="MuiFab-label"
-          >
-            <svg
-              class="mdi-icon "
-              fill="currentColor"
-              height="20"
-              viewBox="0 0 24 24"
-              width="20"
-            >
-              <path
-                d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"
-              />
-            </svg>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </a>
-      </span>
-    </div>
-  </div>
-  <div
     class="resize-triggers"
   >
     <div
@@ -270,10 +172,10 @@ exports[`should render without following 1`] = `
     />
   </div>
   <div
-    class="Log-logActions-17"
+    class="Log-logActions-13"
   >
     <span
-      class="Log-logToolbarButton-22 Log-goToLineButton-23"
+      class="Log-logToolbarButton-18 Log-goToLineButton-19"
       title="Go to Line"
     >
       <button
@@ -306,7 +208,7 @@ exports[`should render without following 1`] = `
       title="Follow Log"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-text Log-logToolbarButton-22 MuiButton-textSecondary MuiButton-textSizeSmall MuiButton-sizeSmall"
+        class="MuiButtonBase-root MuiButton-root MuiButton-text Log-logToolbarButton-18 MuiButton-textSecondary MuiButton-textSizeSmall MuiButton-sizeSmall"
         tabindex="0"
         type="button"
       >
@@ -330,104 +232,6 @@ exports[`should render without following 1`] = `
         />
       </button>
     </span>
-  </div>
-  <div
-    class="MuiSpeedDial-root MuiSpeedDial-directionUp SpeedDial-speedDial-25 Log-logSpeedDial-21"
-    role="presentation"
-  >
-    <button
-      aria-controls="speed-dial-actions"
-      aria-expanded="false"
-      aria-haspopup="true"
-      aria-label="speed-dial"
-      class="MuiButtonBase-root MuiFab-root MuiSpeedDial-fab MuiFab-secondary"
-      style="transform: none; webkit-transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
-      tabindex="0"
-      type="button"
-    >
-      <span
-        class="MuiFab-label"
-      >
-        <span
-          class="MuiSpeedDialIcon-root"
-        >
-          <svg
-            class="mdi-icon MuiSpeedDialIcon-openIcon"
-            fill="currentColor"
-            height="24"
-            viewBox="0 0 24 24"
-            width="24"
-          >
-            <path
-              d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
-            />
-          </svg>
-          <svg
-            class="mdi-icon MuiSpeedDialIcon-icon"
-            fill="currentColor"
-            height="24"
-            viewBox="0 0 24 24"
-            width="24"
-          >
-            <path
-              d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"
-            />
-          </svg>
-        </span>
-      </span>
-      <span
-        class="MuiTouchRipple-root"
-      />
-    </button>
-    <div
-      aria-orientation="vertical"
-      class="MuiSpeedDial-actions MuiSpeedDial-actionsClosed"
-      id="speed-dial-actions"
-      role="menu"
-    >
-      <span
-        class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
-        id="speed-dial-action-0"
-      >
-        <span
-          class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabel-28"
-          id="speed-dial-action-0-label"
-          style="transition-delay: 30ms;"
-        >
-          Raw Log
-        </span>
-        <a
-          aria-describedby="speed-dial-action-0-label"
-          aria-disabled="false"
-          class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-26 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall"
-          href="https://localhost:1234/logs/public/test.log"
-          rel="noopener noreferrer"
-          role="menuitem"
-          style="transition-delay: 30ms;"
-          tabindex="-1"
-          target="_blank"
-        >
-          <span
-            class="MuiFab-label"
-          >
-            <svg
-              class="mdi-icon "
-              fill="currentColor"
-              height="20"
-              viewBox="0 0 24 24"
-              width="20"
-            >
-              <path
-                d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"
-              />
-            </svg>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </a>
-      </span>
-    </div>
   </div>
   <div
     class="resize-triggers"
