@@ -3,6 +3,21 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.14.0
+
+### GENERAL
+
+▶ [minor] [#5179](https://github.com/taskcluster/taskcluster/issues/5179)
+Lazy rendering of big tables. Improves Roles page rendering
+
+▶ [patch]
+Go update from 1.18.1 to 1.18.2. Also upgrade golangci-lint from 1.45.2 to 1.46.1.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#3490](https://github.com/taskcluster/taskcluster/issues/3490)
+Azure: scan only worker pools with errors
+
 ## v44.13.7
 
 ### GENERAL
