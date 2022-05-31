@@ -54,7 +54,7 @@ exports.execCommand = async ({
   }
 
   await utils.waitFor(stream);
-  return await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     cp.once('close', code => {
       if (code === 0 || ignoreReturn) {
         resolve(output);
