@@ -1,7 +1,8 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import ArrowLeftIcon from 'mdi-react/ArrowLeftIcon';
+import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import Log from '../../../components/Log';
@@ -20,6 +21,12 @@ import { withAuth } from '../../../utils/Auth';
     ...theme.mixins.actionButton,
     bottom: theme.spacing(3),
     right: theme.spacing(12),
+  },
+  rawLog: {
+    ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
+    bottom: theme.spacing(3),
+    right: theme.spacing(3),
   },
 }))
 @graphql(taskQuery, {
@@ -99,16 +106,27 @@ export default class TaskLog extends Component {
           url={url}
           stream={stream}
           actions={
-            <Link
-              to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}>
-              <Button
-                spanProps={{ className: classes.fab }}
-                tooltipProps={{ title: 'View Task' }}
-                variant="round"
-                color="secondary">
-                <ArrowLeftIcon />
-              </Button>
-            </Link>
+            <Fragment>
+              <Link
+                to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}>
+                <Button
+                  spanProps={{ className: classes.fab }}
+                  tooltipProps={{ title: 'View Task' }}
+                  variant="round"
+                  color="secondary">
+                  <ArrowLeftIcon />
+                </Button>
+              </Link>
+              <Link to={url}>
+                <Button
+                  spanProps={{ className: classes.rawLog }}
+                  tooltipProps={{ title: 'Raw Log' }}
+                  variant="round"
+                  color="secondary">
+                  <OpenInNewIcon size={20} />
+                </Button>
+              </Link>
+            </Fragment>
           }
         />
       </Dashboard>

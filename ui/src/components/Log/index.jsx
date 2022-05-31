@@ -7,12 +7,9 @@ import storage from 'localforage';
 import { omit } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
-import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import GoToLineButton from './GoToLineButton';
 import Loading from './Loading';
 import Button from '../Button';
-import SpeedDial from '../SpeedDial';
-import SpeedDialAction from '../SpeedDialAction';
 import { THEME } from '../../utils/constants';
 
 const LINE_NUMBER_MATCH = /L(\d+)-?(\d+)?/;
@@ -281,19 +278,6 @@ export default class Log extends Component {
     } = this.props;
     const highlight = this.getHighlightFromHash();
     const scrollToLine = this.getScrollToLine();
-    const rawLogButton = (
-      <SpeedDialAction
-        tooltipOpen
-        icon={<OpenInNewIcon size={20} />}
-        tooltipTitle="Raw Log"
-        FabProps={{
-          component: 'a',
-          href: url,
-          target: '_blank',
-          rel: 'noopener noreferrer',
-        }}
-      />
-    );
     const FollowLogButtonRest = omit(['className'], FollowLogButtonProps);
 
     return (
@@ -351,9 +335,6 @@ export default class Log extends Component {
               </Button>
             </div>
             {actions}
-            <SpeedDial className={classes.logSpeedDial}>
-              {rawLogButton}
-            </SpeedDial>
           </Fragment>
         )}
       />
