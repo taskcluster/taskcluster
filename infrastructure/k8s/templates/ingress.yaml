@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: taskcluster-ingress
@@ -16,82 +16,142 @@ spec:
       http:
         paths:
           - path: /*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-ui
+              service:
+                name: taskcluster-ui
+                port:
+                  number: 80
           - path: /references
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-references
+              service:
+                name: taskcluster-references
+                port:
+                  number: 80
           - path: /references/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-references
+              service:
+                name: taskcluster-references
+                port:
+                  number: 80
           - path: /schemas
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-references
+              service:
+                name: taskcluster-references
+                port:
+                  number: 80
           - path: /schemas/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-references
+              service:
+                name: taskcluster-references
+                port:
+                  number: 80
           - path: /api/auth/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-auth
+              service:
+                name: taskcluster-auth
+                port:
+                  number: 80
           - path: /api/github/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-github
+              service:
+                name: taskcluster-github
+                port:
+                  number: 80
           - path: /api/hooks/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-hooks
+              service:
+                name: taskcluster-hooks
+                port:
+                  number: 80
           - path: /api/index/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-index
+              service:
+                name: taskcluster-index
+                port:
+                  number: 80
           - path: /api/notify/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-notify
+              service:
+                name: taskcluster-notify
+                port:
+                  number: 80
           - path: /api/object/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-object
+              service:
+                name: taskcluster-object
+                port:
+                  number: 80
           - path: /api/purge-cache/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-purge-cache
+              service:
+                name: taskcluster-purge-cache
+                port:
+                  number: 80
           - path: /api/queue/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-queue
+              service:
+                name: taskcluster-queue
+                port:
+                  number: 80
           - path: /api/secrets/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-secrets
+              service:
+                name: taskcluster-secrets
+                port:
+                  number: 80
           - path: /login
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-web-server
+              service:
+                name: taskcluster-web-server
+                port:
+                  number: 80
           - path: /login/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-web-server
+              service:
+                name: taskcluster-web-server
+                port:
+                  number: 80
           - path: /subscription
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-web-server
+              service:
+                name: taskcluster-web-server
+                port:
+                  number: 80
           - path: /graphql
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-web-server
+              service:
+                name: taskcluster-web-server
+                port:
+                  number: 80
           - path: /api/web-server/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-web-server
+              service:
+                name: taskcluster-web-server
+                port:
+                  number: 80
           - path: /api/worker-manager/*
+            pathType: Prefix
             backend:
-              servicePort: 80
-              serviceName: taskcluster-worker-manager
+              service:
+                name: taskcluster-worker-manager
+                port:
+                  number: 80
