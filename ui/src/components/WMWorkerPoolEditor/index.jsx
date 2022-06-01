@@ -1,11 +1,21 @@
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { oneOfType, object, string, func, bool } from 'prop-types';
-import List from '@material-ui/core/List';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Chip from '@material-ui/core/Chip';
+import {
+  ButtonBase,
+  Switch,
+  withStyles,
+  Paper,
+  FormGroup,
+  FormControlLabel,
+  MenuItem,
+  Typography,
+  Chip,
+  ListItemText,
+  ListItem,
+  ListSubheader,
+  List,
+} from '@material-ui/core';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import RunIcon from 'mdi-react/RunIcon';
 import TimerSandIcon from 'mdi-react/TimerSandIcon';
@@ -15,16 +25,8 @@ import green from '@material-ui/core/colors/green';
 import purple from '@material-ui/core/colors/purple';
 import { titleCase } from 'title-case';
 import classNames from 'classnames';
-import Typography from '@material-ui/core/Typography';
-import MenuItem from '@material-ui/core/MenuItem';
 import WorkerIcon from 'mdi-react/WorkerIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from '@material-ui/core/FormGroup';
-import Paper from '@material-ui/core/Paper';
-import ButtonBase from '@material-ui/core/ButtonBase';
-import Switch from '@material-ui/core/Switch';
-import { withStyles } from '@material-ui/core';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import CodeEditor from '../CodeEditor';
@@ -405,24 +407,34 @@ export default class WMWorkerPoolEditor extends Component {
         value: pendingTasks,
         className: 'pendingTasks',
         Icon: ClockOutlineIcon,
+        href: '',
       },
       {
         label: 'Requested Capacity',
         value: requestedCapacity,
         className: 'requestedCapacity',
         Icon: TimerSandIcon,
+        href: `/provisioners/${encodeURIComponent(
+          provisionerId
+        )}/worker-types/${encodeURIComponent(workerType)}?filterBy=requested`,
       },
       {
         label: 'Running Capacity',
         value: runningCapacity,
         className: 'runningCapacity',
         Icon: RunIcon,
+        href: `/provisioners/${encodeURIComponent(
+          provisionerId
+        )}/worker-types/${encodeURIComponent(workerType)}?filterBy=running`,
       },
       {
         label: 'Stopping Capacity',
         value: stoppingCapacity,
         className: 'stoppingCapacity',
         Icon: CloseIcon,
+        href: `/provisioners/${encodeURIComponent(
+          provisionerId
+        )}/worker-types/${encodeURIComponent(workerType)}?filterBy=stopping`,
       },
     ];
 
@@ -432,43 +444,46 @@ export default class WMWorkerPoolEditor extends Component {
         {!isNewWorkerPool && (
           <Fragment>
             <Paper component="ul" className={classes.overviewList}>
-              {workerPoolStats.map(({ label, value, className, Icon }) => {
-                return (
-                  <ButtonBase
-                    focusRipple
-                    key={className}
-                    name={className}
-                    variant="contained"
-                    className={classNames(
-                      classes[className],
-                      classes.statusButton
-                    )}>
-                    <div>
-                      <Icon
-                        color="white"
-                        className={classes.statusIcon}
-                        size={32}
-                      />
-                    </div>
-                    <div>
-                      <Typography
-                        align="right"
-                        className={classes.statusButtonTypography}
-                        variant="h4">
-                        {value || 0}
-                      </Typography>
-                      <Typography
-                        className={classNames(
-                          classes.statusTitle,
-                          classes.statusButtonTypography
-                        )}
-                        variant="caption">
-                        {titleCase(label)}
-                      </Typography>
-                    </div>
-                  </ButtonBase>
-                );
-              })}
+              {workerPoolStats.map(
+                ({ label, value, className, Icon, href }) => {
+                  return (
+                    <ButtonBase
+                      focusRipple
+                      key={className}
+                      name={className}
+                      variant="contained"
+                      href={href}
+                      className={classNames(
+                        classes[className],
+                        classes.statusButton
+                      )}>
+                      <div>
+                        <Icon
+                          color="white"
+                          className={classes.statusIcon}
+                          size={32}
+                        />
+                      </div>
+                      <div>
+                        <Typography
+                          align="right"
+                          className={classes.statusButtonTypography}
+                          variant="h4">
+                          {value || 0}
+                        </Typography>
+                        <Typography
+                          className={classNames(
+                            classes.statusTitle,
+                            classes.statusButtonTypography
+                          )}
+                          variant="caption">
+                          {titleCase(label)}
+                        </Typography>
+                      </div>
+                    </ButtonBase>
+                  );
+                }
+              )}
               <li>
                 <Chip
                   size="medium"
