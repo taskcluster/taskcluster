@@ -131,7 +131,7 @@ export default class WorkersTable extends Component {
     });
 
     try {
-      removeWorker({ workerPoolId, workerGroup, workerId, user });
+      await removeWorker({ workerPoolId, workerGroup, workerId, user });
       this.setState({
         open: false,
       });

@@ -43,10 +43,11 @@ const STATES = {
         parse(location.search.slice(1)).filterBy === 'quarantined'
           ? true
           : null,
-      workerState:
-        parse(location.search.slice(1)).filterBy in STATES
-          ? parse(location.search.slice(1)).filterBy
-          : null,
+      workerState: Object.values(STATES).includes(
+        parse(location.search.slice(1)).filterBy
+      )
+        ? parse(location.search.slice(1)).filterBy
+        : null,
     },
   }),
 })
@@ -139,7 +140,9 @@ export default class ViewWorkers extends Component {
         limit: VIEW_WORKERS_PAGE_SIZE,
       },
       quarantined: target.value === 'quarantined' ? true : null,
-      workerState: target.value in STATES ? target.value : null,
+      workerState: Object.values(STATES).includes(target.value)
+        ? target.value
+        : null,
     });
   };
 
@@ -163,7 +166,7 @@ export default class ViewWorkers extends Component {
           previousCursor,
         },
         quarantined: filterBy === 'quarantined' ? true : null,
-        workerState: filterBy in STATES ? filterBy : null,
+        workerState: Object.values(STATES).includes(filterBy) ? filterBy : null,
       },
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.workers;

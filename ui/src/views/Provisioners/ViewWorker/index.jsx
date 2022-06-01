@@ -178,7 +178,7 @@ export default class ViewWorker extends Component {
     });
 
     try {
-      removeWorker({ workerPoolId, workerGroup, workerId, user });
+      await removeWorker({ workerPoolId, workerGroup, workerId, user });
       this.setState({
         terminateDialogOpen: false,
       });
