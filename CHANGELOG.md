@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.15.2
+
+### USERS
+
+▶ [patch]
+Fix `GRAPHQL_VALIDATION_FAILED` error on ViewWorker query.
+
 ## v44.15.1
 
 ### USERS
