@@ -67,6 +67,9 @@ type Worker {
 
   # The worker's provider-specific ID.
   providerId: String
+
+  # Unique identifier for a worker pool.
+  workerPoolId: String
 }
 
 input WorkerQuarantine {
