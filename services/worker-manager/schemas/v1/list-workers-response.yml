@@ -92,9 +92,6 @@ properties:
         - workerGroup
         - workerId
         - firstClaim
-        - state
-        - capacity
-        - providerId
   continuationToken:
     type:           string
     title:          "Continuation Token"

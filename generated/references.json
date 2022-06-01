@@ -157,10 +157,7 @@
         "recentTasks",
         "expires",
         "firstClaim",
-        "actions",
-        "state",
-        "capacity",
-        "providerId"
+        "actions"
       ],
       "title": "Worker Response",
       "type": "object"
@@ -1335,10 +1332,7 @@
             "required": [
               "workerGroup",
               "workerId",
-              "firstClaim",
-              "state",
-              "capacity",
-              "providerId"
+              "firstClaim"
             ],
             "title": "Worker",
             "type": "object"
