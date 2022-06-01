@@ -21,6 +21,13 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import workersQuery from './workers.graphql';
 
+const STATES = {
+  requested: 'requested',
+  running: 'running',
+  stopping: 'stopping',
+  stopped: 'stopped',
+};
+
 @withAuth
 @graphql(workersQuery, {
   skip: props => !props.match.params.provisionerId,
@@ -36,6 +43,11 @@ import workersQuery from './workers.graphql';
         parse(location.search.slice(1)).filterBy === 'quarantined'
           ? true
           : null,
+      workerState: Object.values(STATES).includes(
+        parse(location.search.slice(1)).filterBy
+      )
+        ? parse(location.search.slice(1)).filterBy
+        : null,
     },
   }),
 })
@@ -127,7 +139,10 @@ export default class ViewWorkers extends Component {
       workersConnection: {
         limit: VIEW_WORKERS_PAGE_SIZE,
       },
-      quarantined: target.value === 'Quarantined' ? true : null,
+      quarantined: target.value === 'quarantined' ? true : null,
+      workerState: Object.values(STATES).includes(target.value)
+        ? target.value
+        : null,
     });
   };
 
@@ -151,6 +166,7 @@ export default class ViewWorkers extends Component {
           previousCursor,
         },
         quarantined: filterBy === 'quarantined' ? true : null,
+        workerState: Object.values(STATES).includes(filterBy) ? filterBy : null,
       },
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.workers;
@@ -243,6 +259,10 @@ export default class ViewWorkers extends Component {
                 <em>None</em>
               </MenuItem>
               <MenuItem value="quarantined">Quarantined</MenuItem>
+              <MenuItem value="requested">Requested</MenuItem>
+              <MenuItem value="running">Running</MenuItem>
+              <MenuItem value="stopping">Stopping</MenuItem>
+              <MenuItem value="stopped">Stopped</MenuItem>
             </TextField>
           </div>
           <br />

@@ -440,7 +440,7 @@ class Worker {
   // Create a single instance from a DB row
   static fromDb(row) {
     return new Worker({
-      taskQueueId: row.task_queue_id,
+      taskQueueId: row.task_queue_id || row.worker_pool_id,
       workerGroup: row.worker_group,
       workerId: row.worker_id,
       quarantineUntil: row.quarantine_until,
@@ -480,7 +480,7 @@ class Worker {
   // Get a worker from the DB, or undefined
   static async get(db, taskQueueId, workerGroup, workerId, expires) {
     return Worker.fromDbRows(
-      await db.fns.get_queue_worker_tqid_with_last_date_active(
+      await db.fns.get_queue_worker_with_wm_join(
         taskQueueId,
         workerGroup,
         workerId,
@@ -489,7 +489,7 @@ class Worker {
     );
   }
 
-  // Call db.get_queue_workers_tqid_with_last_date_active.
+  // Call db.get_queue_workers_with_wm_join.
   // The response will be of the form { rows, continationToken }.
   // If there are no workers to show, the response will have the
   // `rows` field set to an empty array.
@@ -498,7 +498,7 @@ class Worker {
       const { continuationToken, rows } = await paginateResults({
         query,
         fetch: (size, offset) =>
-          db.fns.get_queue_workers_tqid_with_last_date_active(
+          db.fns.get_queue_workers_with_wm_join(
             taskQueueId || null,
             expires || null,
             size,

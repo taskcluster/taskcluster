@@ -1202,7 +1202,7 @@ func (queue *Queue) GetTaskQueue_SignedURL(taskQueueId string, duration time.Dur
 	return (&cd).SignedURL("/task-queues/"+url.QueryEscape(taskQueueId), nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: *** DEPRECATED ***
 //
 // Get a list of all active workers of a workerType.
 //
@@ -1256,7 +1256,7 @@ func (queue *Queue) ListWorkers_SignedURL(provisionerId, workerType, continuatio
 	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", v, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Stability: *** DEPRECATED ***
 //
 // Get a worker from a worker-type.
 //

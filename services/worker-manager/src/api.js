@@ -4,7 +4,8 @@ const assert = require('assert');
 const { ApiError, Provider } = require('./providers/provider');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { WorkerPool, WorkerPoolError, Worker } = require('./data');
-const { createCredentials } = require('./util');
+const { createCredentials, joinWorkerPoolId } = require('./util');
+const { TaskQueue } = require('./queue-data');
 
 let builder = new APIBuilder({
   title: 'Worker Manager Service',
@@ -837,6 +838,130 @@ builder.declare({
   });
 
   return res.reply({ expires: expires.toJSON(), credentials, secret: newSecret });
+});
+
+builder.declare({
+  method: 'get',
+  route: '/provisioners/:provisionerId/worker-types/:workerType/workers',
+  query: {
+    ...paginateResults.query,
+    quarantined: /^(true|false)$/,
+    workerState: /^(requested|running|stopping|stopped)$/,
+  },
+  name: 'listWorkers',
+  scopes: 'worker-manager:list-workers:<provisionerId>/<workerType>',
+  stability: APIBuilder.stability.experimental,
+  category: 'Worker Metadata',
+  output: 'list-workers-response.yml',
+  title: 'Get a list of all active workers of a workerType',
+  description: [
+    'Get a list of all active workers of a workerType.',
+    '',
+    '`listWorkers` allows a response to be filtered by quarantined and non quarantined workers,',
+    'as well as the current state of the worker.',
+    'To filter the query, you should call the end-point with one of [`quarantined`, `workerState`]',
+    'as a query-string option with a true or false value.',
+    '',
+    'The response is paged. If this end-point returns a `continuationToken`, you',
+    'should call the end-point again with the `continuationToken` as a query-string',
+    'option. By default this end-point will list up to 1000 workers in a single',
+    'page. You may limit this with the query-string parameter `limit`.',
+  ].join('\n'),
+}, async function(req, res) {
+  const quarantined = req.query.quarantined || null;
+  const workerState = req.query.workerState || null;
+  const { provisionerId, workerType } = req.params;
+  const now = new Date();
+  const workerPoolId = joinWorkerPoolId(provisionerId, workerType);
+
+  const { rows: workers, continuationToken } = await Worker.getWorkers(
+    this.db,
+    { workerPoolId },
+    { query: req.query },
+  );
+
+  const result = {
+    workers: workers.filter(worker => {
+      let quarantineFilter = true;
+      if (quarantined === 'true') {
+        quarantineFilter = worker.quarantineUntil >= now;
+      } else if (quarantined === 'false') {
+        quarantineFilter = worker.quarantineUntil < now;
+      }
+      // filter out anything that is both expired and not quarantined
+      // so that quarantined workers remain visible even after expiration
+      return (
+        (worker.expires >= now || worker.quarantineUntil >= now) &&
+        quarantineFilter &&
+        (workerState ? worker.state === workerState : true)
+      );
+    }).map(worker => {
+      let entry = {
+        workerGroup: worker.workerGroup,
+        workerId: worker.workerId,
+        firstClaim: worker.firstClaim.toJSON(),
+        lastDateActive: worker.lastDateActive?.toJSON(),
+      };
+      if (worker.recentTasks.length > 0) {
+        entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];
+      }
+      if (worker.quarantineUntil.getTime() > now.getTime()) {
+        entry.quarantineUntil = worker.quarantineUntil.toJSON();
+      }
+      return entry;
+    }),
+  };
+
+  if (continuationToken) {
+    result.continuationToken = continuationToken;
+  }
+
+  return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
+  name: 'getWorker',
+  scopes: 'worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-response.yml',
+  title: 'Get a worker-type',
+  category: 'Worker Metadata',
+  description: [
+    'Get a worker from a worker-type.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { provisionerId, workerType, workerGroup, workerId } = req.params;
+  const workerPoolId = joinWorkerPoolId(provisionerId, workerType);
+
+  const now = new Date();
+  const [worker, tQueue] = await Promise.all([
+    Worker.getQueueWorker(this.db, workerPoolId, workerGroup, workerId, now),
+    TaskQueue.get(this.db, workerPoolId, now),
+  ]);
+
+  // do not consider workers expired until their quarantine date expires.
+  const expired = worker && worker.expires < now && worker.quarantineUntil < now;
+
+  if (expired || !worker || !tQueue) {
+    return res.reportError('ResourceNotFound',
+      'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
+      'worker-type `{{workerType}}` and provisioner `{{provisionerId}}` not found. ' +
+      'Are you sure it was created?', {
+        workerId,
+        workerGroup,
+        workerType,
+        provisionerId,
+      },
+    );
+  }
+
+  let workerResult = worker.serializable();
+  workerResult = { ...workerResult, provisionerId, workerType };
+
+  const actions = [];
+  return res.reply(Object.assign({}, workerResult, { actions }));
 });
 
 builder.declare({

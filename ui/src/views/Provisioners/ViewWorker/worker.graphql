@@ -8,6 +8,7 @@ query ViewWorker($provisionerId: String!, $workerType: String!, $workerGroup: St
     expires
     firstClaim
     lastDateActive
+    workerPoolId
     recentTasks {
       taskId
       run {

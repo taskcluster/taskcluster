@@ -277,6 +277,38 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["reregisterWorker"], *args, **kwargs)
 
+    async def listWorkers(self, *args, **kwargs):
+        """
+        Get a list of all active workers of a workerType
+
+        Get a list of all active workers of a workerType.
+
+        `listWorkers` allows a response to be filtered by quarantined and non quarantined workers,
+        as well as the current state of the worker.
+        To filter the query, you should call the end-point with one of [`quarantined`, `workerState`]
+        as a query-string option with a true or false value.
+
+        The response is paged. If this end-point returns a `continuationToken`, you
+        should call the end-point again with the `continuationToken` as a query-string
+        option. By default this end-point will list up to 1000 workers in a single
+        page. You may limit this with the query-string parameter `limit`.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["listWorkers"], *args, **kwargs)
+
+    async def getWorker(self, *args, **kwargs):
+        """
+        Get a worker-type
+
+        Get a worker from a worker-type.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["getWorker"], *args, **kwargs)
+
     async def heartbeat(self, *args, **kwargs):
         """
         Heartbeat
@@ -318,6 +350,14 @@ class WorkerManager(AsyncBaseClient):
             'route': '/worker-pool/<workerPoolId>',
             'stability': 'stable',
         },
+        "getWorker": {
+            'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
+            'method': 'get',
+            'name': 'getWorker',
+            'output': 'v1/worker-response.json#',
+            'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',
+            'stability': 'experimental',
+        },
         "heartbeat": {
             'args': [],
             'method': 'get',
@@ -358,6 +398,15 @@ class WorkerManager(AsyncBaseClient):
             'query': ['continuationToken', 'limit'],
             'route': '/worker-pools',
             'stability': 'stable',
+        },
+        "listWorkers": {
+            'args': ['provisionerId', 'workerType'],
+            'method': 'get',
+            'name': 'listWorkers',
+            'output': 'v1/list-workers-response.json#',
+            'query': ['continuationToken', 'limit', 'quarantined', 'workerState'],
+            'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers',
+            'stability': 'experimental',
         },
         "listWorkersForWorkerGroup": {
             'args': ['workerPoolId', 'workerGroup'],

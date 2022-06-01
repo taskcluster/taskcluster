@@ -776,7 +776,7 @@ class Queue(AsyncBaseClient):
         option. By default this end-point will list up to 1000 workers in a single
         page. You may limit this with the query-string parameter `limit`.
 
-        This method is ``experimental``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["listWorkers"], *args, **kwargs)
@@ -787,7 +787,7 @@ class Queue(AsyncBaseClient):
 
         Get a worker from a worker-type.
 
-        This method is ``experimental``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["getWorker"], *args, **kwargs)
@@ -965,7 +965,7 @@ class Queue(AsyncBaseClient):
             'name': 'getWorker',
             'output': 'v1/worker-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',
-            'stability': 'experimental',
+            'stability': 'deprecated',
         },
         "getWorkerType": {
             'args': ['provisionerId', 'workerType'],
@@ -1075,7 +1075,7 @@ class Queue(AsyncBaseClient):
             'output': 'v1/list-workers-response.json#',
             'query': ['continuationToken', 'limit', 'quarantined'],
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers',
-            'stability': 'experimental',
+            'stability': 'deprecated',
         },
         "pendingTasks": {
             'args': ['taskQueueId'],
