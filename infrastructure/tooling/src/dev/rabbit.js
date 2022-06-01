@@ -63,9 +63,18 @@ const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
   prompts.push({
     type: 'input',
     when: () => setupNeeded.length,
-    default: () => userConfig.pulseHostname ? `https://${userConfig.pulseHostname}` : '',
+    default: (previous) => {
+      if (previous.meta?.rabbitAdminManagementOrigin) {
+        return previous.meta?.rabbitAdminManagementOrigin;
+      }
+      if (userConfig.pulseHostname || previous.pulseHostname) {
+        return `https://${userConfig.pulseHostname || previous.pulseHostname}`;
+      }
+
+      return "";
+    },
     name: 'meta.rabbitAdminManagementOrigin',
-    message: 'Now the origin of the management API for that RabbitMQ cluster (http? different port?).',
+    message: 'Now the origin of the management API for that RabbitMQ cluster (i.e. http://127.0.0.1:15672, https://your.rabbitmq.service.com).',
   });
 };
 
@@ -124,7 +133,7 @@ const rabbitEnsureResources = async ({ userConfig, answer }) => {
   const agent = request.agent().auth(userConfig.meta?.rabbitAdminUser, answer.rabbitAdminPassword).type('json');
   const vhost = userConfig.pulseVhost;
 
-  console.log(`(Re-)creating RabbitMQ vhost ${vhost}`);
+  console.log(`(Re-)creating RabbitMQ vhost ${vhost} using apiUrl: ${apiUrl}`);
   await agent.put(`${apiUrl}/vhosts/${encodeURIComponent(vhost)}`);
 
   for (const [name, cfg] of Object.entries(userConfig)) {
