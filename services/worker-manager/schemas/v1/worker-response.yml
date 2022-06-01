@@ -151,6 +151,3 @@ required:
   - expires
   - firstClaim
   - actions
-  - state
-  - capacity
-  - providerId

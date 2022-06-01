@@ -322,7 +322,7 @@ type (
 		// Number of tasks this worker can handle at once
 		//
 		// Mininum:    1
-		Capacity int64 `json:"capacity"`
+		Capacity int64 `json:"capacity,omitempty"`
 
 		// Date of the first time this worker claimed a task.
 		FirstClaim tcclient.Time `json:"firstClaim"`
@@ -344,7 +344,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		ProviderID string `json:"providerId"`
+		ProviderID string `json:"providerId,omitempty"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
@@ -365,7 +365,7 @@ type (
 		//   * "running"
 		//   * "stopping"
 		//   * "stopped"
-		State string `json:"state"`
+		State string `json:"state,omitempty"`
 
 		// Identifier for the worker group containing this worker.
 		//
@@ -846,7 +846,7 @@ type (
 		// Number of tasks this worker can handle at once
 		//
 		// Mininum:    1
-		Capacity int64 `json:"capacity"`
+		Capacity int64 `json:"capacity,omitempty"`
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
@@ -869,7 +869,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		ProviderID string `json:"providerId"`
+		ProviderID string `json:"providerId,omitempty"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
@@ -901,7 +901,7 @@ type (
 		//   * "running"
 		//   * "stopping"
 		//   * "stopped"
-		State string `json:"state"`
+		State string `json:"state,omitempty"`
 
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
