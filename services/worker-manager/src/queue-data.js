@@ -42,7 +42,7 @@ class TaskQueue {
 
   // Get a worker type from the DB, or undefined
   static async get(db, taskQueueId, expires) {
-    return TaskQueue.fromDbRows(await db.fns.get_task_queue(taskQueueId, expires));
+    return TaskQueue.fromDbRows(await db.fns.get_task_queue_wm(taskQueueId, expires));
   }
 
   // Call db.get_task_queues.
@@ -62,7 +62,7 @@ class TaskQueue {
     const fetchResults = async (query) => {
       const { continuationToken, rows } = await paginateResults({
         query,
-        fetch: (size, offset) => db.fns.get_task_queues(
+        fetch: (size, offset) => db.fns.get_task_queues_wm(
           taskQueueId || null,
           expires || null,
           size,
@@ -81,7 +81,7 @@ class TaskQueue {
   // Get a list with all the task queues in the DB, possibly filtered
   // by `expires`, without pagination.
   static async getAllTaskQueues(db, expires) {
-    return (await db.fns.get_task_queues(
+    return (await db.fns.get_task_queues_wm(
       null,
       expires || null,
       null,

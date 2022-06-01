@@ -41,7 +41,6 @@ queue:
     queue_workers: write
     azure_queue_messages: write
     tasks: write
-    workers: read
 secrets:
   tables:
     secrets: write
@@ -57,3 +56,4 @@ worker_manager:
     worker_pools: write
     worker_pool_errors: write
     queue_workers: read
+    task_queues: read

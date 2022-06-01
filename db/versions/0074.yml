@@ -1,0 +1,64 @@
+version: 74
+description: get task queue(s) via worker manager service
+migrationScript: |
+  begin
+    revoke select on workers from $db_user_prefix$_queue; -- undoing an issue from v0073
+    grant select on task_queues to $db_user_prefix$_worker_manager;
+  end
+downgradeScript: |
+  begin
+    revoke select on task_queues from $db_user_prefix$_worker_manager;
+  end
+methods:
+  get_task_queue_wm:
+    description: |-
+      Get a non-expired task queue by task_queue_id.
+    mode: read
+    serviceName: worker_manager
+    args: task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer
+    returns: table(task_queue_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          task_queues.task_queue_id,
+          task_queues.expires,
+          task_queues.last_date_active,
+          task_queues.description,
+          task_queues.stability,
+          public.gen_random_uuid()
+        from task_queues
+        where
+          (task_queues.task_queue_id = task_queue_id_in or task_queue_id_in is null) and
+          (task_queues.expires > expires_in or expires_in is null)
+        order by task_queue_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  get_task_queues_wm:
+    description: |-
+      Get task queues ordered by `task_queue_id`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: worker_manager
+    args: task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer
+    returns: table(task_queue_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          task_queues.task_queue_id,
+          task_queues.expires,
+          task_queues.last_date_active,
+          task_queues.description,
+          task_queues.stability,
+          public.gen_random_uuid()
+        from task_queues
+        where
+          (task_queues.task_queue_id = task_queue_id_in or task_queue_id_in is null) and
+          (task_queues.expires > expires_in or expires_in is null)
+        order by task_queue_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
