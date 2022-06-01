@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: taskcluster-ingress
@@ -14,6 +14,9 @@ spec:
         $map: {$eval: ingresses}
         each(i):
           path: '${i.path}'
+          pathType: Prefix
           backend:
-            servicePort: 80
-            serviceName: ${i.projectName}
+            service:
+              name: ${i.projectName}
+              port:
+                number: 80
