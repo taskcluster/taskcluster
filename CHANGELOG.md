@@ -3,6 +3,44 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.15.0
+
+### GENERAL
+
+▶ [patch] [#5459](https://github.com/taskcluster/taskcluster/issues/5459)
+Add exponential backoff retries to the `dockerPush` function to help alleviate intermittent failures in the `release-publish` task.
+
+### DEPLOYERS
+
+▶ [patch]
+Updated k8s ingress API from deprecated `extensions/v1beta1` to `networking.k8s.io/v1` allowing usage of k8s 1.22+
+
+### USERS
+
+▶ [minor] [#5440](https://github.com/taskcluster/taskcluster/issues/5440)
+Add functionality to terminate workers via a Terminate Worker button in the Worker views.
+
+▶ [minor] [#3060](https://github.com/taskcluster/taskcluster/issues/3060)
+Mix queue and worker info to provide worker manager worker data in Worker views. This additional data also enabled us to provide a Terminate Worker button in the Worker views.
+
+**Deprecated**: `queue.listWorkers()` and `queue.getWorker()`
+
+**Use instead**: `workerManager.listWorkers()` and `workerManager.getWorker()`
+
+▶ [patch] [#5446](https://github.com/taskcluster/taskcluster/issues/5446)
+Don't require user to hover over speed dial actions button to reach Raw Log button. Show by default.
+
+▶ [patch] [#5361](https://github.com/taskcluster/taskcluster/issues/5361)
+Link Worker State Buttons on Worker Pool Details View to a filtered view of workers in that state.
+
+▶ [patch]
+Update some rust dependencies to get rid of duplicated versions of base64
+
+### DEVELOPERS
+
+▶ [minor] [#5152](https://github.com/taskcluster/taskcluster/issues/5152)
+Fix default config value and improve prompt message.
+
 ## v44.14.0
 
 ### GENERAL
