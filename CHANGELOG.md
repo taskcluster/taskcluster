@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.15.1
+
+### USERS
+
+▶ [patch]
+Fix output schema validation error when calling `workerManager.listWorkers()` and `workerManager.getWorker()` methods by not requiring additional worker manager fields.
+
 ## v44.15.0
 
 ### GENERAL
