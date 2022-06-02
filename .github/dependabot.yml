@@ -41,3 +41,9 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+
+  # Set update schedule for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
