@@ -42,7 +42,7 @@ class TaskQueue {
 
   // Get a worker type from the DB, or undefined
   static async get(db, taskQueueId, expires) {
-    return TaskQueue.fromDbRows(await db.fns.get_task_queue_wm(taskQueueId, expires));
+    return TaskQueue.fromDbRows(await db.fns.get_task_queue_wm_2(taskQueueId, expires));
   }
 
   // Call db.get_task_queues.

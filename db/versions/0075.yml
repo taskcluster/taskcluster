@@ -1,0 +1,27 @@
+version: 75
+description: fix get_task_queue_wm args
+methods:
+  get_task_queue_wm:
+    deprecated: true
+  get_task_queue_wm_2:
+    description: |-
+      Get a non-expired task queue by task_queue_id.
+    mode: read
+    serviceName: worker_manager
+    args: task_queue_id_in text, expires_in timestamptz
+    returns: table(task_queue_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          task_queues.task_queue_id,
+          task_queues.expires,
+          task_queues.last_date_active,
+          task_queues.description,
+          task_queues.stability,
+          public.gen_random_uuid()
+        from task_queues
+        where
+          task_queues.task_queue_id = task_queue_id_in and
+          task_queues.expires > expires_in;
+        end

@@ -1103,4 +1103,16 @@ suite(testing.suiteName(), function() {
       assert.equal(pools[1].current_capacity, 5);
     });
   });
+
+  suite(`${testing.suiteName()} - TaskQueue`, function() {
+    helper.dbTest('no such task queue', async function(db) {
+      const res = await db.fns.get_task_queue_wm_2('prov/wt', new Date());
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_task_queues_wm empty', async function(db) {
+      const res = await db.fns.get_task_queues_wm(null, null, null, null);
+      assert.deepEqual(res, []);
+    });
+  });
 });
