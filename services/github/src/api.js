@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const _ = require('lodash');
+const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS } = require('./constants');
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -11,7 +12,7 @@ function sanitizeGitHubField(field) {
 // Reduce a pull request WebHook's data to only fields needed to checkout a
 // revision
 //
-// See https://developer.github.com/v3/activity/events/types/#pullrequestevent
+// See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pullrequestevent
 function getPullRequestDetails(eventData) {
   return {
     'event.base.ref': 'refs/heads/' + eventData.pull_request.base.ref,
@@ -35,7 +36,7 @@ function getPullRequestDetails(eventData) {
   };
 }
 
-// See https://developer.github.com/v3/activity/events/types/#pushevent
+// See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
 function getPushDetails(eventData) {
   let ref = eventData.ref;
   // parsing the ref refs/heads/<branch-name> is the most reliable way
@@ -67,10 +68,9 @@ function getPushDetails(eventData) {
 
   }
   return details;
-
 }
 
-// See https://developer.github.com/v3/activity/events/types/#releaseevent
+// SEe https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#release
 function getReleaseDetails(eventData) {
   return {
     'event.type': 'release',
@@ -86,6 +86,38 @@ function getReleaseDetails(eventData) {
     'event.draft': eventData.release.draft,
     'event.tar': eventData.release.tarball_url,
     'event.zip': eventData.release.zipball_url,
+  };
+}
+
+// See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#check_run
+function getRerunDetails(eventData) {
+  return {
+    'event.type': 'rerun',
+    'event.head.user.login': eventData.sender.login,
+    'event.head.user.id': eventData.sender.id,
+
+    'event.check.name': eventData.check_run.name,
+    'event.check.url': eventData.check_run.url,
+
+    'event.checksuite.url': eventData.check_run.check_suite.url,
+
+    // eventData.check_run.check_suite.pull_requests might be empty...
+
+    // 'event.base.ref': 'refs/heads/' + eventData.pull_request.base.ref,
+    // 'event.base.repo.branch': eventData.pull_request.base.ref,
+    // 'event.base.repo.name': eventData.pull_request.base.repo.name,
+    // 'event.base.repo.url': eventData.pull_request.base.repo.clone_url,
+    // 'event.base.sha': eventData.pull_request.base.sha,
+    // 'event.base.user.login': eventData.pull_request.base.user.login,
+
+    // 'event.head.ref': 'refs/heads/' + eventData.pull_request.head.ref,
+    // 'event.head.repo.branch': eventData.pull_request.head.ref,
+    // 'event.head.repo.name': eventData.pull_request.head.repo.name,
+    // 'event.head.repo.url': eventData.pull_request.head.repo.clone_url,
+    // 'event.head.sha': eventData.pull_request.head.sha,
+
+    // 'event.pullNumber': eventData.number,
+    // 'event.title': eventData.pull_request.title,
   };
 }
 
@@ -211,7 +243,7 @@ builder.declare({
   stability: 'stable',
   description: [
     'Capture a GitHub event and publish it via pulse, if it\'s a push,',
-    'release or pull request.',
+    'release, check run or pull request.',
   ].join('\n'),
 }, async function(req, res) {
   let eventId = req.headers['x-github-delivery'];
@@ -255,44 +287,60 @@ builder.declare({
 
     switch (eventType) {
 
-      case 'pull_request':
+      case EVENT_TYPES.PULL_REQUEST:
         msg.organization = sanitizeGitHubField(body.repository.owner.login);
         msg.action = body.action;
         msg.details = getPullRequestDetails(body);
         msg.installationId = body.installation.id;
-        publisherKey = 'pullRequest';
+        publisherKey = PUBLISHERS.PULL_REQUEST;
         msg.tasks_for = 'github-pull-request';
         msg.branch = body.pull_request.head.ref;
         break;
 
-      case 'push':
+      case EVENT_TYPES.PUSH:
         msg.organization = sanitizeGitHubField(body.repository.owner.name);
         msg.details = getPushDetails(body);
         msg.installationId = body.installation.id;
-        publisherKey = 'push';
+        publisherKey = PUBLISHERS.PUSH;
         msg.tasks_for = 'github-push';
         msg.branch = body.ref.split('/').slice(2).join('/');
         break;
 
-      case 'ping':
+      case EVENT_TYPES.PING:
         return resolve(res, 200, 'Received ping event!');
 
-      case 'release':
+      case EVENT_TYPES.RELEASE:
         msg.organization = sanitizeGitHubField(body.repository.owner.login);
         msg.details = getReleaseDetails(body);
         msg.installationId = body.installation.id;
-        publisherKey = 'release';
+        publisherKey = PUBLISHERS.RELEASE;
         msg.tasks_for = 'github-release';
         msg.branch = body.release.target_commitish;
         break;
 
-      case 'installation':
+      case EVENT_TYPES.INSTALLATION:
         // Creates a new entity or overwrites an existing one
         await this.db.fns.upsert_github_integration(
           body.installation.account.login,
           body.installation.id,
         );
         return resolve(res, 200, 'Created table row!');
+
+      case EVENT_TYPES.CHECK_RUN:
+        // We only want to check if re-run was requested
+        if (body.action !== CHECK_RUN_ACTIONS.REREQUESTED) {
+          return resolve(res, 400, 'Only rerequested for check runs is supported');
+        }
+
+        publisherKey = PUBLISHERS.RERUN;
+        msg.organization = sanitizeGitHubField(body.repository.owner.login);
+        msg.action = body.action;
+        msg.details = getRerunDetails(body);
+        msg.installationId = body.installation.id;
+        msg.tasks_for = 'github-push';
+        msg.checkRunId = body.check_run.id;
+        msg.checkSuiteId = body.check_run.check_suite.id;
+        break;
 
       default:
         return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
