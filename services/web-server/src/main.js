@@ -131,6 +131,7 @@ const load = loader(
           formatError,
           tracing: true,
           plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+          csrfPrevention: true,
         });
         await server.start();
 
