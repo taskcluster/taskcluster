@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.15.3
+
+### USERS
+
+▶ [patch]
+Remove unneeded read access to `workers` table from `queue` service. Add read access to `task_queues` table to `worker_manager` service for `workerManager.getWorker()` method to prevent 500 permission denied SQL error.
+
 ## v44.15.2
 
 ### USERS
