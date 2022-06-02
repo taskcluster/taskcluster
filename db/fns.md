@@ -147,6 +147,8 @@
    * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
    * [`get_queue_worker_with_wm_join`](#get_queue_worker_with_wm_join)
    * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
+   * [`get_task_queue_wm`](#get_task_queue_wm)
+   * [`get_task_queues_wm`](#get_task_queues_wm)
    * [`get_worker_2`](#get_worker_2)
    * [`get_worker_pool_error`](#get_worker_pool_error)
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
@@ -2325,6 +2327,8 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
 * [`get_queue_worker_with_wm_join`](#get_queue_worker_with_wm_join)
 * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
+* [`get_task_queue_wm`](#get_task_queue_wm)
+* [`get_task_queues_wm`](#get_task_queues_wm)
 * [`get_worker_2`](#get_worker_2)
 * [`get_worker_pool_error`](#get_worker_pool_error)
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
@@ -2550,6 +2554,46 @@ Workers are not considered expired until after their quarantine date expires.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 This also performs an outer join with the worker_manager.worker table for more data.
+
+### get_task_queue_wm
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `expires_in timestamptz`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `expires timestamptz`
+  * `last_date_active timestamptz`
+  * `description text`
+  * `stability text`
+  * `etag uuid`
+* *Last defined on version*: 74
+
+Get a non-expired task queue by task_queue_id.
+
+### get_task_queues_wm
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `expires_in timestamptz`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `expires timestamptz`
+  * `last_date_active timestamptz`
+  * `description text`
+  * `stability text`
+  * `etag uuid`
+* *Last defined on version*: 74
+
+Get task queues ordered by `task_queue_id`.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
 
 ### get_worker_2
 
