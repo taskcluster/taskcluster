@@ -6317,6 +6317,24 @@
       },
       "migrationScript": "begin\n  revoke select on workers from $db_user_prefix$_queue; -- undoing an issue from v0073\n  grant select on task_queues to $db_user_prefix$_worker_manager;\nend\n",
       "version": 74
+    },
+    {
+      "description": "fix get_task_queue_wm args",
+      "methods": {
+        "get_task_queue_wm": {
+          "deprecated": true
+        },
+        "get_task_queue_wm_2": {
+          "args": "task_queue_id_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    task_queues.task_queue_id,\n    task_queues.expires,\n    task_queues.last_date_active,\n    task_queues.description,\n    task_queues.stability,\n    public.gen_random_uuid()\n  from task_queues\n  where\n    task_queues.task_queue_id = task_queue_id_in and\n    task_queues.expires > expires_in;\n  end",
+          "deprecated": false,
+          "description": "Get a non-expired task queue by task_queue_id.",
+          "mode": "read",
+          "returns": "table(task_queue_id text, expires timestamptz, last_date_active timestamptz, description text, stability text, etag uuid)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 75
     }
   ]
 }
