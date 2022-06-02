@@ -1327,6 +1327,9 @@
                 "minLength": 1,
                 "pattern": "^([a-zA-Z0-9-_]*)$",
                 "type": "string"
+              },
+              "workerPoolId": {
+                "$ref": "task.json#/properties/workerPoolId"
               }
             },
             "required": [
