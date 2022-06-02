@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.15.4
+
+### GENERAL
+
+▶ [patch]
+Fix arguments for `get_task_queue_wm_2` (`get_task_queue_wm` is now deprecated).
+
 ## v44.15.3
 
 ### USERS
