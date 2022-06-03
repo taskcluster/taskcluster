@@ -36,20 +36,16 @@ properties:
     type: object
     description: |
       The raw body of github event (for version 1)
-  tasks_for:
-    type: string
-    description: |
-      The type of the event (for version 1)
-  action:
-    type: string
-    description: |
-      Check run action
   checkRunId:
     type: number
     description: Check run id
   checkSuiteId:
     type: number
     description: Check suite id
+  tasks_for:
+    type: string
+    description: |
+      The type of the event (for version 1)
 additionalProperties: false
 required:
   - version
@@ -58,7 +54,6 @@ required:
   - installationId
   - eventId
   - body
-  - tasks_for
-  - action
   - checkRunId
   - checkSuiteId
+  - tasks_for

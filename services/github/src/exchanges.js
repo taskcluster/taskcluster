@@ -122,7 +122,7 @@ exchanges.declare({
   CCBuilder: () => [],
 });
 
-/** release exchange */
+/** rerun exchange */
 exchanges.declare({
   exchange: 'rerun',
   name: PUBLISHERS.RERUN,

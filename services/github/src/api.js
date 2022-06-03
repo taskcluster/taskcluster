@@ -70,7 +70,7 @@ function getPushDetails(eventData) {
   return details;
 }
 
-// SEe https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#release
+// See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#release
 function getReleaseDetails(eventData) {
   return {
     'event.type': 'release',
@@ -95,29 +95,9 @@ function getRerunDetails(eventData) {
     'event.type': 'rerun',
     'event.head.user.login': eventData.sender.login,
     'event.head.user.id': eventData.sender.id,
-
     'event.check.name': eventData.check_run.name,
     'event.check.url': eventData.check_run.url,
-
     'event.checksuite.url': eventData.check_run.check_suite.url,
-
-    // eventData.check_run.check_suite.pull_requests might be empty...
-
-    // 'event.base.ref': 'refs/heads/' + eventData.pull_request.base.ref,
-    // 'event.base.repo.branch': eventData.pull_request.base.ref,
-    // 'event.base.repo.name': eventData.pull_request.base.repo.name,
-    // 'event.base.repo.url': eventData.pull_request.base.repo.clone_url,
-    // 'event.base.sha': eventData.pull_request.base.sha,
-    // 'event.base.user.login': eventData.pull_request.base.user.login,
-
-    // 'event.head.ref': 'refs/heads/' + eventData.pull_request.head.ref,
-    // 'event.head.repo.branch': eventData.pull_request.head.ref,
-    // 'event.head.repo.name': eventData.pull_request.head.repo.name,
-    // 'event.head.repo.url': eventData.pull_request.head.repo.clone_url,
-    // 'event.head.sha': eventData.pull_request.head.sha,
-
-    // 'event.pullNumber': eventData.number,
-    // 'event.title': eventData.pull_request.title,
   };
 }
 
@@ -291,7 +271,7 @@ builder.declare({
         msg.organization = sanitizeGitHubField(body.repository.owner.login);
         msg.action = body.action;
         msg.details = getPullRequestDetails(body);
-        msg.installationId = body.installation.id;
+        msg.installationId = installationId;
         publisherKey = PUBLISHERS.PULL_REQUEST;
         msg.tasks_for = 'github-pull-request';
         msg.branch = body.pull_request.head.ref;
@@ -300,7 +280,7 @@ builder.declare({
       case EVENT_TYPES.PUSH:
         msg.organization = sanitizeGitHubField(body.repository.owner.name);
         msg.details = getPushDetails(body);
-        msg.installationId = body.installation.id;
+        msg.installationId = installationId;
         publisherKey = PUBLISHERS.PUSH;
         msg.tasks_for = 'github-push';
         msg.branch = body.ref.split('/').slice(2).join('/');
@@ -312,7 +292,7 @@ builder.declare({
       case EVENT_TYPES.RELEASE:
         msg.organization = sanitizeGitHubField(body.repository.owner.login);
         msg.details = getReleaseDetails(body);
-        msg.installationId = body.installation.id;
+        msg.installationId = installationId;
         publisherKey = PUBLISHERS.RELEASE;
         msg.tasks_for = 'github-release';
         msg.branch = body.release.target_commitish;
@@ -322,7 +302,7 @@ builder.declare({
         // Creates a new entity or overwrites an existing one
         await this.db.fns.upsert_github_integration(
           body.installation.account.login,
-          body.installation.id,
+          installationId,
         );
         return resolve(res, 200, 'Created table row!');
 
@@ -334,10 +314,9 @@ builder.declare({
 
         publisherKey = PUBLISHERS.RERUN;
         msg.organization = sanitizeGitHubField(body.repository.owner.login);
-        msg.action = body.action;
         msg.details = getRerunDetails(body);
-        msg.installationId = body.installation.id;
         msg.tasks_for = 'github-push';
+        msg.installationId = installationId;
         msg.checkRunId = body.check_run.id;
         msg.checkSuiteId = body.check_run.check_suite.id;
         break;

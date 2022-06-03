@@ -69,7 +69,7 @@ class Github(AsyncBaseClient):
         Consume GitHub WebHook
 
         Capture a GitHub event and publish it via pulse, if it's a push,
-        release or pull request.
+        release, check run or pull request.
 
         This method is ``stable``
         """

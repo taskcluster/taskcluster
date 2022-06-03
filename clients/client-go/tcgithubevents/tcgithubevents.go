@@ -115,6 +115,30 @@ func (binding Release) NewPayloadObject() interface{} {
 	return new(GitHubReleaseMessage)
 }
 
+// When a GitHub check_run event with action="rerequested" is posted
+// it will be broadcast on this exchange with the designated
+// `organization` and `repository`
+// in the routing-key along with event specific metadata in the payload.
+//
+// See #rerun
+type Rerun struct {
+	RoutingKeyKind string `mwords:"*"`
+	Organization   string `mwords:"*"`
+	Repository     string `mwords:"*"`
+}
+
+func (binding Rerun) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding Rerun) ExchangeName() string {
+	return "exchange/taskcluster-github/v1/rerun"
+}
+
+func (binding Rerun) NewPayloadObject() interface{} {
+	return new(GitHubReRunRequestMessage)
+}
+
 // supposed to signal that taskCreate API has been called for every task in the task group
 // for this particular repo and this particular organization
 // currently used for creating initial status indicators in GitHub UI using Statuses API.

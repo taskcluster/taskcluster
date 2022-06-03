@@ -480,7 +480,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "githubWebHookConsumer",
 				Title:       "Consume GitHub WebHook",
-				Description: "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease or pull request.",
+				Description: "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease, check run or pull request.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/github",
