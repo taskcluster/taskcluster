@@ -124,24 +124,23 @@ properties:
       purposes and are purged when they expire.  Note that some providers transition workers
       directly from "running" to "stopped".
     type: string
-    enum: ["requested", "running", "stopping", "stopped"]
+    enum: ["requested", "running", "stopping", "stopped", ""]
   capacity:
     title: Worker Capacity
     description: Number of tasks this worker can handle at once
     type: integer
-    minimum: 1
+    minimum: 0
   providerId:
     title: Provider
     type: string
     # note that this is typically used as the workerGroup for workers,
     # so its format should match that for workerGroup.
-    minLength: {$const: identifier-min-length}
     maxLength: {$const: identifier-max-length}
     pattern: {$const: identifier-pattern}
     description: |
       The provider that had started the worker and responsible for managing it.
       Can be different from the provider that's currently in the worker pool config.
-additionalProperties: false
+additionalProperties: true
 required:
   - provisionerId
   - workerType
