@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.15.5
+
+### GENERAL
+
+▶ [patch]
+Handle some null checks with optional chaining. Also, ensure all data is extracted out during `workerManager.listWorkers()` calls.
+
 ## v44.15.4
 
 ### GENERAL
