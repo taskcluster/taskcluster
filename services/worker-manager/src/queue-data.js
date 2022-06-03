@@ -93,8 +93,8 @@ class TaskQueue {
   serialize() {
     return {
       taskQueueId: this.taskQueueId,
-      expires: this.expires.toJSON(),
-      lastDateActive: this.lastDateActive.toJSON(),
+      expires: this.expires?.toJSON(),
+      lastDateActive: this.lastDateActive?.toJSON(),
       description: this.description,
       stability: this.stability,
     };

@@ -380,6 +380,11 @@ type (
 		// Min length: 1
 		// Max length: 38
 		WorkerID string `json:"workerId"`
+
+		// Unique identifier for a worker pool
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerPoolID string `json:"workerPoolId,omitempty"`
 	}
 
 	// Actions provide a generic mechanism to expose additional features of a

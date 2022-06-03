@@ -28,6 +28,7 @@ properties:
           minLength:    {$const: identifier-min-length}
           maxLength:    {$const: identifier-max-length}
           pattern:      {$const: identifier-pattern}
+        workerPoolId: {$ref: "task.json#/properties/workerPoolId"}
         quarantineUntil:
           title:        "Worker Quarantine"
           description: |

@@ -899,13 +899,17 @@ builder.declare({
       let entry = {
         workerGroup: worker.workerGroup,
         workerId: worker.workerId,
-        firstClaim: worker.firstClaim.toJSON(),
+        firstClaim: worker.firstClaim?.toJSON(),
         lastDateActive: worker.lastDateActive?.toJSON(),
+        workerPoolId: worker.workerPoolId,
+        state: worker.state,
+        capacity: worker.capacity,
+        providerId: worker.providerId,
       };
       if (worker.recentTasks.length > 0) {
         entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];
       }
-      if (worker.quarantineUntil.getTime() > now.getTime()) {
+      if (worker.quarantineUntil?.getTime() > now.getTime()) {
         entry.quarantineUntil = worker.quarantineUntil.toJSON();
       }
       return entry;
