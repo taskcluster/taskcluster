@@ -12,7 +12,7 @@ Types:
       - 'ci-creds'
       # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
       #   DO NOT CHANGE HERE!
-      - 'golangci-lint-1.46.1'
+      - 'golangci-lint-1.46.2'
     Command: BuildAndTest
     Features:
       taskclusterProxy: true
@@ -236,7 +236,7 @@ Commands:
 
           # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
           #   DO NOT CHANGE HERE!
-          ../../../golangci-lint/golangci-lint-1.46.1-*/golangci-lint run --build-tags "${ENGINE}" --timeout=15m
+          ../../../golangci-lint/golangci-lint-1.46.2-*/golangci-lint run --build-tags "${ENGINE}" --timeout=15m
 
     Windows:
       - |
@@ -317,10 +317,10 @@ Commands:
         :: assumption here is that if something inside the if fails, we'll get a non zero exit code
         :: i've also made it an if/else so that one of them has to run, as there should always be a
         :: linter
-        if exist ..\..\..\golangci-lint\golangci-lint-1.46.1-windows-amd64 (
-          ..\..\..\golangci-lint\golangci-lint-1.46.1-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
+        if exist ..\..\..\golangci-lint\golangci-lint-1.46.2-windows-amd64 (
+          ..\..\..\golangci-lint\golangci-lint-1.46.2-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
         ) else (
-          ..\..\..\golangci-lint\golangci-lint-1.46.1-windows-386\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
+          ..\..\..\golangci-lint\golangci-lint-1.46.2-windows-386\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
         )
 
 Mounts:
@@ -397,7 +397,7 @@ Mounts:
   #
   ################################################################################
 
-  golangci-lint-1.46.1:
+  golangci-lint-1.46.2:
     # Note - we can't extract to directory '.' since after generic-worker
     # extracts the files as the root user (since generic-worker runs as root),
     # it then runs chown recursively against the target directory to make it
@@ -410,24 +410,24 @@ Mounts:
     content:
       darwin:
         amd64:
-          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.1/golangci-lint-1.46.1-darwin-amd64.tar.gz'
-          sha256: '78bd6518c8dd822762b1f93b180f093451fc8a869de15045ec7ded8a3fa92ba2'
+          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.2/golangci-lint-1.46.2-darwin-amd64.tar.gz'
+          sha256: '658078aaaf7608693f37c4cf1380b2af418ab8b2d23fdb33e7e2d4339328590e'
           format: tar.gz
       linux:
         armv6l:
-          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.1/golangci-lint-1.46.1-linux-armv6.tar.gz'
-          sha256: '6294fc074067f492178d944118625ebd05d2d0b73cc3137ead66d300d42ec8e8'
+          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.2/golangci-lint-1.46.2-linux-armv6.tar.gz'
+          sha256: '177f5210ef04aee282bfbc6ec519d36af5fb7d2b2c8d3f4ea5e59fdba71b0a27'
           format: tar.gz
         amd64:
-          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.1/golangci-lint-1.46.1-linux-amd64.tar.gz'
-          sha256: '2a95743902f0dbb24926481800415ba63935ed02fd291d4bfa68f87c0c355e4e'
+          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.2/golangci-lint-1.46.2-linux-amd64.tar.gz'
+          sha256: '242cd4f2d6ac0556e315192e8555784d13da5d1874e51304711570769c4f2b9b'
           format: tar.gz
       windows:
         386:
-          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.1/golangci-lint-1.46.1-windows-386.zip'
-          sha256: 'd95330da0bc7aa6f639febd6a6175de870a28a2fd4282bace17b21f85c3a9e82'
+          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.2/golangci-lint-1.46.2-windows-386.zip'
+          sha256: 'b48a421ec12a43f8fc8f977b9cf7d4a1ea1c4b97f803a238de7d3ce4ab23a84b'
           format: zip
         amd64:
-          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.1/golangci-lint-1.46.1-windows-amd64.zip'
-          sha256: '38585beadd574166d663aefab08d0bd2a257593a509fb34ec414cf030f8e2b30'
+          url: 'https://github.com/golangci/golangci-lint/releases/download/v1.46.2/golangci-lint-1.46.2-windows-amd64.zip'
+          sha256: '604acc1378a566abb0eac799362f3a37b7fcb5fa2268aeb2d5d954c829367301'
           format: zip
