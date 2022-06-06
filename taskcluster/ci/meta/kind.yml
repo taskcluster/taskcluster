@@ -24,7 +24,7 @@ jobs:
   generate:
     description: check that `yarn generate` was run
     run:
-      install: yarn install --frozen-lockfile
+      install: yarn
       command: >-
         ./db/test-setup.sh --users &&
         set -o pipefail &&
@@ -37,17 +37,17 @@ jobs:
   build:
     description: taskcluster build dry-run
     run:
-      install: yarn install --frozen-lockfile
+      install: yarn
       command: yarn build --dry-run
   changelog-pr:
     description: taskcluster changelog checks
     run-on-tasks-for: [github-pull-request]
     run:
-      install: yarn install --frozen-lockfile
+      install: yarn
       command: yarn changelog:check --pr $TASKCLUSTER_PULL_REQUEST_NUMBER
   changelog-push:
     description: taskcluster changelog checks
     run-on-tasks-for: [github-push]
     run:
-      install: yarn install --frozen-lockfile
+      install: yarn
       command: yarn changelog:check

@@ -20,9 +20,9 @@ jobs:
     description: UI Browser Tests
     run:
       install: >-
-         {{ yarn --frozen-lockfile || exit 99; }} &&
+         {{ yarn || exit 99; }} &&
          cd ui &&
-         {{ yarn --frozen-lockfile || exit 99; }}
+         {{ yarn || exit 99; }}
       command: >-
          yarn lint &&
          yarn test --coverage &&

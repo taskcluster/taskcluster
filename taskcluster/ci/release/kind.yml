@@ -51,7 +51,7 @@ job-defaults:
       - cd taskcluster
       - git checkout {head_rev}
       # publish the release
-      - yarn --frozen-lockfile
+      - yarn
 
 jobs:
   publish:

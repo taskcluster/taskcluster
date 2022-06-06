@@ -5,3 +5,9 @@ npm-debug.log
 /taskcluster-client.conf.json
 /taskcluster-client.js
 /user-config.yml
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

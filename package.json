@@ -5,7 +5,7 @@
   "engine-strict": true,
   "engines": {
     "node": "16.15.1",
-    "yarn": "^1.22.10"
+    "yarn": "^3.2.1"
   },
   "workspaces": [
     "libraries/*",
@@ -185,7 +185,7 @@
     "changelog:show": "node infrastructure/tooling/src/main.js changelog:show",
     "changelog:check": "node infrastructure/tooling/src/main.js changelog:check",
     "heroku-prebuild": "echo {\\\"version\\\"\\: \\\"$SOURCE_VERSION\\\"} > version.json",
-    "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi",
+    "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install && yarn build; fi",
     "dev:init": "node infrastructure/tooling/src/main.js dev:init",
     "dev:db:upgrade": "node infrastructure/tooling/src/main.js dev:db:upgrade",
     "dev:db:downgrade": "node infrastructure/tooling/src/main.js dev:db:downgrade",
@@ -281,5 +281,6 @@
     "**/node_modules/**",
     "services/web-server/build"
   ],
-  "heroku-run-build-script": true
+  "heroku-run-build-script": true,
+  "packageManager": "yarn@3.2.1"
 }

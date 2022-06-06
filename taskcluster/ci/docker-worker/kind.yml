@@ -20,7 +20,7 @@ job-defaults:
   run:
     using: bare
     clone: false
-    install: '"( cd ../..; yarn install --frozen-lockfile ) && yarn install --frozen-lockfile && ./build.sh"'
+    install: '"( cd ../..; yarn ) && yarn && ./build.sh"'
   worker:
     taskcluster-proxy: true
     privileged: true

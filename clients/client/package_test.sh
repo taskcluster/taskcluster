@@ -11,7 +11,7 @@ trap "cd /; rm -rf $tmpdir" EXIT
 
 yarn pack --filename $tmpdir/client.tgz
 cd $tmpdir
-yarn add ./client.tgz
+yarn add file:./client.tgz
 node <<'EOF'
 const taskcluster = require('taskcluster-client');
 
