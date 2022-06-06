@@ -1028,6 +1028,9 @@
         "aws_endpoint": {
           "type": "string"
         },
+        "aws_force_path_style": {
+          "type": "boolean"
+        },
         "aws_secret_access_key": {
           "type": "string"
         },
