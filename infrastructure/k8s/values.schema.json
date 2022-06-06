@@ -1034,6 +1034,9 @@
         "aws_secret_access_key": {
           "type": "string"
         },
+        "aws_skip_cors_configuration": {
+          "type": "boolean"
+        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
