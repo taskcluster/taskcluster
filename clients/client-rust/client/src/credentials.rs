@@ -1,8 +1,6 @@
 use crate::util::collect_scopes;
 use anyhow::{anyhow, Context, Error};
-use crypto::hmac::Hmac;
-use crypto::mac::Mac;
-use crypto::sha2::Sha256;
+use hmac_sha256::HMAC;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::iter::{IntoIterator, Iterator};
@@ -39,9 +37,9 @@ pub(crate) struct Certificate {
 }
 
 fn gen_temp_access_token(perm_access_token: &str, seed: &str) -> String {
-    let mut hash = Hmac::new(Sha256::new(), perm_access_token.as_bytes());
-    hash.input(seed.as_bytes());
-    base64::encode_config(hash.result().code(), base64::URL_SAFE_NO_PAD)
+    let mut hash = HMAC::new(perm_access_token.as_bytes());
+    hash.update(seed.as_bytes());
+    base64::encode_config(hash.finalize(), base64::URL_SAFE_NO_PAD)
 }
 
 impl Credentials {
@@ -239,9 +237,9 @@ impl Certificate {
                 .as_slice(),
         );
 
-        let mut hash = Hmac::new(Sha256::new(), access_token.as_bytes());
-        hash.input(lines.join("\n").as_bytes());
-        self.signature = base64::encode(hash.result().code());
+        let mut hash = HMAC::new(access_token.as_bytes());
+        hash.update(lines.join("\n").as_bytes());
+        self.signature = base64::encode(hash.finalize());
     }
 }
 
