@@ -171,8 +171,8 @@
   "scripts": {
     "lint": "eslint --cache --ext js --ignore-pattern clients/client-rust --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
     "lint:fix": "eslint --fix --cache --ext js --ignore-pattern clients/client-rust --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
-    "lint:go": "sh test/go-lint.sh",
-    "lint:py": "sh test/py-lint.sh",
+    "lint:go": "bash test/go-lint.sh",
+    "lint:py": "bash test/py-lint.sh",
     "test": "yarn workspaces run test",
     "fetch-coverage": "node test/fetch-coverage.js",
     "build": "node infrastructure/tooling/src/main.js build",

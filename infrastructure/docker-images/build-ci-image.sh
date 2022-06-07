@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 repo_root=$(dirname "$0")/../..
 node_version=$(jq -r .engines.node "${repo_root}/package.json")
@@ -20,7 +20,7 @@ pg_version=11
 tmpdir=$(mktemp -d)
 trap "cd /; rm -rf ${tmpdir}" EXIT
 cat > ${tmpdir}/pginstall <<EOF
-#! /bin/bash
+#!/bin/bash
 set -ex
 
 # install postgres

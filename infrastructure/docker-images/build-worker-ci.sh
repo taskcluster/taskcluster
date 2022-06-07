@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 repo_root=$(dirname "$0")/../..
 NODE_VERSION=$(jq -r .engines.node "${repo_root}/package.json")

@@ -1,4 +1,4 @@
-#! /bin/bash -e
+#!/bin/bash -e
 ./ref-branch
 ./ref-master
 ./pr-master
