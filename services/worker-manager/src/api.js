@@ -902,9 +902,9 @@ builder.declare({
         firstClaim: worker.firstClaim?.toJSON(),
         lastDateActive: worker.lastDateActive?.toJSON(),
         workerPoolId: worker.workerPoolId,
-        state: worker.state,
-        capacity: worker.capacity,
-        providerId: worker.providerId,
+        state: worker.state || '',
+        capacity: worker.capacity || 0,
+        providerId: worker.providerId || '',
       };
       if (worker.recentTasks.length > 0) {
         entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];

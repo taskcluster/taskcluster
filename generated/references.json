@@ -3,7 +3,7 @@
     "content": {
       "$id": "/schemas/worker-manager/v1/worker-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "description": "Response containing information about a worker.\n",
       "properties": {
         "actions": {
@@ -67,7 +67,7 @@
         },
         "capacity": {
           "description": "Number of tasks this worker can handle at once",
-          "minimum": 1,
+          "minimum": 0,
           "title": "Worker Capacity",
           "type": "integer"
         },
@@ -92,7 +92,6 @@
         "providerId": {
           "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\n",
           "maxLength": 38,
-          "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
           "title": "Provider",
           "type": "string"
@@ -121,7 +120,8 @@
             "requested",
             "running",
             "stopping",
-            "stopped"
+            "stopped",
+            ""
           ],
           "title": "State",
           "type": "string"
@@ -1268,7 +1268,7 @@
             "properties": {
               "capacity": {
                 "description": "Number of tasks this worker can handle at once",
-                "minimum": 1,
+                "minimum": 0,
                 "title": "Worker Capacity",
                 "type": "integer"
               },
@@ -1292,7 +1292,6 @@
               "providerId": {
                 "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\n",
                 "maxLength": 38,
-                "minLength": 1,
                 "pattern": "^([a-zA-Z0-9-_]*)$",
                 "title": "Provider",
                 "type": "string"
@@ -1309,7 +1308,8 @@
                   "requested",
                   "running",
                   "stopping",
-                  "stopped"
+                  "stopped",
+                  ""
                 ],
                 "title": "State",
                 "type": "string"
