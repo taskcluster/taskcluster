@@ -109,7 +109,9 @@ defaults:
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
     region:           !env ARTIFACT_REGION
     endpoint:         !env:optional AWS_ENDPOINT
+    s3ForcePathStyle: !env:bool:optional AWS_FORCE_PATH_STYLE
     apiVersion:       2014-01-01
+    skipCorsConfiguration: !env:bool:optional AWS_SKIP_CORS_CONFIGURATION
 
   # new relic config (processed in services/prelude.js)
   newRelic: !env:json:optional NEW_RELIC

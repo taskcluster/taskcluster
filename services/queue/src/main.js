@@ -89,7 +89,7 @@ let load = loader({
         bucketCDN: cfg.app.publicArtifactBucketCDN,
         monitor: monitor.childMonitor('public-bucket'),
       });
-      await bucket.setupCORS();
+      await bucket.setupCORSIfNecessary();
       return bucket;
     },
   },
@@ -101,7 +101,7 @@ let load = loader({
         awsOptions: cfg.aws,
         monitor: monitor.childMonitor('private-bucket'),
       });
-      await bucket.setupCORS();
+      await bucket.setupCORSIfNecessary();
       return bucket;
     },
   },

@@ -1028,8 +1028,14 @@
         "aws_endpoint": {
           "type": "string"
         },
+        "aws_force_path_style": {
+          "type": "boolean"
+        },
         "aws_secret_access_key": {
           "type": "string"
+        },
+        "aws_skip_cors_configuration": {
+          "type": "boolean"
         },
         "debug": {
           "title": "node debug env var",

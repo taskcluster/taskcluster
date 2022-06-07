@@ -46,8 +46,9 @@ let Bucket = function(options) {
   } else {
     this.s3 = options.awsOptions.mock;
   }
-  // Store bucket CDN
+  // Store bucket CDN & CORS options
   this.bucketCDN = options.bucketCDN;
+  this.skipCorsConfiguration = options.awsOptions.skipCorsConfiguration;
 };
 
 // Export Bucket
@@ -146,7 +147,7 @@ Bucket.prototype.deleteObjects = function(prefixes) {
 };
 
 /** Setup CORS policy, so it can opened from a browser, when authenticated */
-Bucket.prototype.setupCORS = async function() {
+Bucket.prototype.setupCORSIfNecessary = async function() {
   let rules = [
     {
       AllowedOrigins: ['*'],
@@ -156,6 +157,11 @@ Bucket.prototype.setupCORS = async function() {
       ExposeHeaders: [],
     },
   ];
+
+  if (this.skipCorsConfiguration) {
+    debug('Skipping CORS configuration for bucket: %s', this.bucket);
+    return;
+  }
   try {
     // Fetch CORS to see if they as expected already
     let req = await this.s3.getBucketCors().promise();

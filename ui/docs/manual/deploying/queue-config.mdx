@@ -31,6 +31,8 @@ That involves the following Helm values:
 * `queue.aws_access_key_id`
 * `queue.aws_secret_access_key`
 * `queue.aws_endpoint` (optional; use this to interface with non-AWS services' S3-compatibility support)
+* `queue.aws_force_path_style` (optional; use this to interface with non-AWS services' S3-compatibility support)
+* `queue.aws_skip_cors_configuration` (optional; default false. Use this to interface with non-AWS services' S3-compatibility support)
 
 The service uses the public bucket for artifacts having prefix `public/`, and the private bucket for all others.
 Both buckets must be in the given `artifact_region`.
