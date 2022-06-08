@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 
 echo "Running gofmt.."
 unformatted_files=$(git ls-files | grep '\.go$' | xargs gofmt -l)

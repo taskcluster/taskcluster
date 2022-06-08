@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 build() {
   local dir=$1
   local tag=$2

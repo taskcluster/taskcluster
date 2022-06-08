@@ -59,7 +59,7 @@ func TestStartWorkerReleaseTarball(t *testing.T) {
 	binDir := filepath.Join(dir, "docker-worker", "bin")
 	require.NoError(t, os.MkdirAll(binDir, 0755))
 	workerScript := filepath.Join(binDir, "docker-worker")
-	require.NoError(t, ioutil.WriteFile(workerScript, []byte(`#! /bin/sh
+	require.NoError(t, ioutil.WriteFile(workerScript, []byte(`#!/bin/sh
 		bail() { echo "fake docker-worker: $1" >&2; exit 1; }
 		[ "$#" = "3" ] || bail "wrong number of args ($#)"
 		[ "$1" = "--host" ] || bail "no --host"

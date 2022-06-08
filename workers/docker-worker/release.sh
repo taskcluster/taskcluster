@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 set -ex
 
@@ -16,7 +16,7 @@ trap "rm -rf $DW_ROOT" EXIT
 # create an easy-to-use thing that will find the right paths, etc.
 mkdir -p $DW_ROOT/bin
 cat > $DW_ROOT/bin/docker-worker <<'EOF'
-#! /bin/bash
+#!/bin/bash
 DW_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"
 NODE=$DW_ROOT/node/bin/node
 exec $NODE $DW_ROOT/src/main.js "${@}"

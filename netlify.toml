@@ -10,7 +10,7 @@
 [build.environment]
   YARN_FLAGS = "--frozen-lockfile"
   YARN_VERSION = "1.22.4"
-  NODE_VERSION = "16.15.0"
+  NODE_VERSION = "16.15.1"
   APPLICATION_NAME = "Taskcluster"
   GRAPHQL_ENDPOINT = "https://community-tc.services.mozilla.com/graphql"
   GRAPHQL_SUBSCRIPTION_ENDPOINT = "https://community-tc.services.mozilla.com/subscription"

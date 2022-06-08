@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 if [ -z "${TASK_ID}" ]; then
     echo "This script is only intended for use in CI."

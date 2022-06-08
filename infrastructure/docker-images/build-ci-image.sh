@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 repo_root=$(dirname "$0")/../..
 node_version=$(jq -r .engines.node "${repo_root}/package.json")
@@ -20,7 +20,7 @@ pg_version=11
 tmpdir=$(mktemp -d)
 trap "cd /; rm -rf ${tmpdir}" EXIT
 cat > ${tmpdir}/pginstall <<EOF
-#! /bin/bash
+#!/bin/bash
 set -ex
 
 # install postgres
@@ -54,7 +54,7 @@ COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=golang /go /go
 ENV GOPATH /go
 ENV PATH \$GOPATH/bin:/usr/local/go/bin:\$PATH
-RUN curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b \$GOPATH/bin v${golangci_lint_version}
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b \$GOPATH/bin v${golangci_lint_version}
 COPY pginstall /pginstall
 RUN bash /pginstall && rm /pginstall
 ENV TEST_DB_URL=postgresql://postgres@localhost/postgres

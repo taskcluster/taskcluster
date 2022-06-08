@@ -1,4 +1,4 @@
-#! /bin/bash -ex
+#!/bin/bash -ex
 
 USAGE="git ci-checkout-pr <directory> <source_repository> <source_ref> <source_rev> <target_repo> <target_ref> <target_rev>"
 
