@@ -6,7 +6,7 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.18.2'
+      - 'go1.18.3'
       - 'git2.24.0.2'
       - 'jq1.6'
       - 'ci-creds'
@@ -23,7 +23,7 @@ Types:
       - Name: 'public/build/generic-worker-${OS}-${ARCH}${EXTENSION}'
         # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
         #   DO NOT CHANGE HERE!
-        Path: 'gopath1.18.2/bin/generic-worker${EXTENSION}'
+        Path: 'gopath1.18.3/bin/generic-worker${EXTENSION}'
         Type: 'file'
     MaxRunTime: 3600
 
@@ -40,7 +40,7 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.18.2'
+      - 'go1.18.3'
     Command: FormatSource
     MaxRunTime: 3600
 
@@ -119,7 +119,7 @@ WorkerPools:
     # The next comment is edited by infrastructure/tooling/src/generate/generators/go-version.js
     #   DO NOT CHANGE HERE!
 
-    # There is no arm release for go 1.18.2 on windows, but 386 release works
+    # There is no arm release for go 1.18.3 on windows, but 386 release works
     # through emulation provided by the host OS.
     Arch: '386'
   proj-taskcluster/gw-ci-windows2012r2-amd64:
@@ -140,7 +140,7 @@ Commands:
           export CGO_ENABLED=0
           # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.18.2/go"
+          export GOROOT="$(pwd)/go1.18.3/go"
           export PATH="${GOROOT}/bin:${PATH}"
           go version
           go env
@@ -193,8 +193,8 @@ Commands:
 
           # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.18.2/go"
-          export GOPATH="$(pwd)/gopath1.18.2"
+          export GOROOT="$(pwd)/go1.18.3/go"
+          export GOPATH="$(pwd)/gopath1.18.3"
 
           export PATH="${GOPATH}/bin:${GOROOT}/bin:$(pwd)/bin:${PATH}"
           git --version
@@ -257,8 +257,8 @@ Commands:
 
       # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - set GOROOT=%CD%\go1.18.2\go
-      - set GOPATH=%CD%\gopath1.18.2
+      - set GOROOT=%CD%\go1.18.3\go
+      - set GOPATH=%CD%\gopath1.18.3
 
       - |
         :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
@@ -332,34 +332,34 @@ Mounts:
   #
   ################################################################################
 
-  go1.18.2:
-    directory: go1.18.2
+  go1.18.3:
+    directory: go1.18.3
     content:
       darwin:
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.18.2.darwin-amd64.tar.gz'
-          sha256: '1f5f539ce0baa8b65f196ee219abf73a7d9cf558ba9128cc0fe4833da18b04f2'
+          url: 'https://storage.googleapis.com/golang/go1.18.3.darwin-amd64.tar.gz'
+          sha256: 'd9dcf8fc35da54c6f259be41954783a9f4984945a855d03a003a7fd6ea4c5ca1'
           format: tar.gz
         arm64:
-          url: 'https://storage.googleapis.com/golang/go1.18.2.darwin-arm64.tar.gz'
-          sha256: '6c7df9a2405f09aa9bab55c93c9c4ce41d3e58127d626bc1825ba5d0a0045d5c'
+          url: 'https://storage.googleapis.com/golang/go1.18.3.darwin-arm64.tar.gz'
+          sha256: '40ecd383c941cc9f0682e6a6f2a333539d58c7dea15c842434d03afafe2f7242'
       linux:
         armv6l:
-          url: 'https://storage.googleapis.com/golang/go1.18.2.linux-armv6l.tar.gz'
-          sha256: '570dc8df875b274981eaeabe228d0774985de42e533ffc8c7ff0c9a55174f697'
+          url: 'https://storage.googleapis.com/golang/go1.18.3.linux-armv6l.tar.gz'
+          sha256: 'b8f0b5db24114388d5dcba7ca0698510ea05228b0402fcbeb0881f74ae9cb83b'
           format: tar.gz
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.18.2.linux-amd64.tar.gz'
-          sha256: 'e54bec97a1a5d230fc2f9ad0880fcbabb5888f30ed9666eca4a91c5a32e86cbc'
+          url: 'https://storage.googleapis.com/golang/go1.18.3.linux-amd64.tar.gz'
+          sha256: '956f8507b302ab0bb747613695cdae10af99bbd39a90cae522b7c0302cc27245'
           format: tar.gz
       windows:
         386:
-          url: 'https://storage.googleapis.com/golang/go1.18.2.windows-386.zip'
-          sha256: 'ac190f91bbdaae7db993b0f12eea59eec2b3b92e1e9d8b068c565fc49f7ec9a8'
+          url: 'https://storage.googleapis.com/golang/go1.18.3.windows-386.zip'
+          sha256: '6661798e9669c3f03498a2e018ed948d9f53a90c5ccbd05b4e4b36303facb33e'
           format: zip
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.18.2.windows-amd64.zip'
-          sha256: '41fc44109c39a98e0c3672989ac5ad205cbb5768067e099dc4fb2b75cba922cf'
+          url: 'https://storage.googleapis.com/golang/go1.18.3.windows-amd64.zip'
+          sha256: '9c46023f3ad0300fcfd1e62f2b6c2dfd9667b1f2f5c7a720b14b792af831f071'
           format: zip
   git2.24.0.2:
     directory: git
