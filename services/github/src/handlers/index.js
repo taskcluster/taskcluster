@@ -11,6 +11,7 @@ const { taskGroupCreationHandler } = require('./taskGroupCreation');
 const { statusHandler } = require('./status');
 const { taskDefinedHandler } = require('./taskDefined');
 const { jobHandler } = require('./job');
+const { rerunHandler } = require('./rerun');
 const { POLICIES } = require('./policies');
 
 /**
@@ -28,6 +29,7 @@ class Handlers {
       deprecatedInitialStatusQueueName,
       resultStatusQueueName,
       initialStatusQueueName,
+      rerunQueueName,
       intree,
       context,
       pulseClient,
@@ -46,6 +48,7 @@ class Handlers {
     this.deprecatedResultStatusQueueName = deprecatedResultStatusQueueName;
     this.resultStatusQueueName = resultStatusQueueName;
     this.jobQueueName = jobQueueName;
+    this.rerunQueueName = rerunQueueName;
     this.deprecatedInitialStatusQueueName = deprecatedInitialStatusQueueName;
     this.initialStatusQueueName = initialStatusQueueName;
     this.context = context;
@@ -61,6 +64,7 @@ class Handlers {
     this.deprecatedResultStatusPq = null;
     this.initialTaskStatusPq = null;
     this.deprecatedInitialStatusPq = null;
+    this.rerunPq = null;
 
     this.queueClient = null;
   }
@@ -74,6 +78,7 @@ class Handlers {
     assert(!this.initialTaskStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedInitialStatusPq, 'Cannot setup twice!');
+    assert(!this.rerunPq, 'Cannot setup twice!');
 
     // This is a powerful Queue client without scopes to use throughout the handlers for things
     // where taskcluster-github is acting of its own accord
@@ -87,10 +92,15 @@ class Handlers {
     // Listen for new jobs created via the api webhook endpoint
     const GithubEvents = taskcluster.createClient(this.reference);
     const githubEvents = new GithubEvents({ rootUrl: this.rootUrl });
+
     const jobBindings = [
       githubEvents.pullRequest(),
       githubEvents.push(),
       githubEvents.release(),
+    ];
+
+    const rerunBindings = [
+      githubEvents.rerun(),
     ];
 
     const schedulerId = this.context.cfg.taskcluster.schedulerId;
@@ -180,6 +190,15 @@ class Handlers {
       this.monitor.timedHandler('tasklistener', callHandler('task', taskDefinedHandler).bind(this)),
     );
 
+    this.rerunPq = await consume(
+      {
+        client: this.pulseClient,
+        bindings: rerunBindings,
+        queueName: this.rerunQueueName,
+      },
+      this.monitor.timedHandler('tasklistener', callHandler('rerun', rerunHandler).bind(this)),
+    );
+
   }
 
   async terminate() {
@@ -197,6 +216,9 @@ class Handlers {
     }
     if (this.deprecatedInitialStatusPq) {
       await this.deprecatedInitialStatusPq.stop();
+    }
+    if (this.rerunPq) {
+      await this.rerunPq.stop();
     }
   }
 

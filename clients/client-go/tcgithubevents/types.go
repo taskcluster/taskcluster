@@ -150,6 +150,9 @@ type (
 		// Max length: 100
 		Repository string `json:"repository"`
 
+		// The type of the event (for version 1)
+		Tasks_For string `json:"tasks_for"`
+
 		// Message version
 		//
 		// Possible values:

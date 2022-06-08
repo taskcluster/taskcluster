@@ -45,13 +45,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     );
   }
 
-  async function addCheckRun({ taskGroupId, taskId }) {
+  async function addCheckRun({ taskGroupId, taskId, checkSuiteId = '11111', checkRunId = '22222' }) {
     debug(`adding CheckRun row for task ${taskId} of group ${taskGroupId}`);
     await helper.db.fns.create_github_check(
       taskGroupId,
       taskId,
-      '11111',
-      '22222',
+      checkSuiteId,
+      checkRunId,
     );
   }
 
@@ -1051,6 +1051,163 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         taskId: TASKID,
       });
       assertStatusCreate('pending');
+    });
+  });
+
+  suite('Statuses API: initial status handler', function () {
+    suiteSetup(function () {
+      if (skipping()) {
+        this.skip();
+      }
+    });
+
+    teardown(async function () {
+      await helper.db.fns.delete_github_build(TASKGROUPID);
+    });
+
+    const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';
+
+    function assertStatusCreation(state) {
+      assert(github.inst(9988).repos.createCommitStatus.called, 'createCommitStatus was not called');
+
+      github.inst(9988).repos.createCommitStatus.firstCall.args.forEach(args => {
+        if (args.state === state) {
+          assert.equal(args.owner, 'TaskclusterRobot');
+          assert.equal(args.repo, 'hooks-testing');
+          assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+          debug('Created task group: ' + args.target_url);
+          assert(args.target_url.startsWith(URL_PREFIX));
+          let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+          assert.equal(taskGroupId, TASKGROUPID);
+          assert.equal(/Taskcluster-Test \((.*)\)/.exec(args.context)[1], 'push');
+        }
+      });
+    }
+
+    test('create pending status when task is defined', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-github/v1/task-group-creation-requested',
+        routingKey: 'route.statuses',
+      });
+      assertStatusCreation('pending');
+    });
+  });
+
+  suite('Checks API: rerun handler', function () {
+    const taskGroupId = 'AXB-sjV-SoCyibyq3P5555';
+    const taskId = 'failingone';
+    const checkSuiteId = '6781240077';
+    const checkRunId = '6725570353';
+
+    let reruns = [];
+
+    suiteSetup(function () {
+      if (skipping()) {
+        this.skip();
+      }
+    });
+
+    setup(() => {
+      handlers.queueClient.rerunTask = async (taskId) => {
+        reruns.push(taskId);
+      };
+    });
+
+    teardown(async function () {
+      await helper.db.fns.delete_github_build(taskGroupId);
+      reruns = [];
+    });
+
+    test('create task rerun', async function () {
+      await addBuild({ state: 'failure', taskGroupId });
+      await addCheckRun({ taskGroupId, taskId, checkSuiteId, checkRunId });
+
+      // trigger exchange message
+      const message = {
+        exchange: 'exchange/taskcluster-github/v1/rerun',
+        routingKey: 'primary.taskcluster.taskcluster',
+        routes: [],
+        payload: {
+          organization: 'taskcluster',
+          eventId: '26370a8b-b9b1-4f5d-b8d7-f8f9f8f8f8f8',
+          installationId: 5828,
+          checkRunId: 6725570353,
+          checkSuiteId: 6781240077,
+          version: 1,
+          body: { tbd: 'true' },
+          details: {
+            'event.type': 'rerun',
+            'event.head.user.login': 'owlishDeveloper',
+            'event.head.user.id': 18102552,
+            'event.head.user.email': 'anotheruser@github.com',
+            'event.check.name': 'service-github',
+            'event.check.run.id': '6725570353',
+            'event.check.run.url': 'https://api.github.com/repos/taskcluster/taskcluster/check-runs/6725570353',
+            'event.check.suite.id': '6781240077',
+            'event.check.suite.url': 'https://api.github.com/repos/taskcluster/taskcluster/check-suites/6781240077',
+            'event.head.repo.name': 'taskcluster',
+          },
+        },
+      };
+
+      const handlerComplete = new Promise((resolve, reject) => {
+        handlers.handlerComplete = resolve;
+        handlers.handlerRejected = reject;
+      });
+      await helper.fakePulseMessage(message);
+      await handlerComplete;
+
+      assert.equal(reruns.length, 1);
+      assert.equal(reruns[0], taskId);
+    });
+    test('do nothing if invalid payload is provided', async function () {
+      await addBuild({ state: 'failure', taskGroupId });
+      await addCheckRun({ taskGroupId, taskId, checkSuiteId, checkRunId });
+
+      // trigger exchange message
+      const message = {
+        exchange: 'exchange/taskcluster-github/v1/rerun',
+        routingKey: 'primary.taskcluster.taskcluster',
+        routes: [],
+        payload: {
+          organization: 'taskcluster',
+          eventId: '26370a8b-b9b1-4f5d-b8d7-f8f9f8f8f8f8',
+          installationId: 5828,
+          checkRunId: 'non-existant-id',
+          checkSuiteId: 'not-a-number',
+          version: 1,
+          body: { tbd: 'true' },
+          details: {
+            'event.type': 'rerun',
+            'event.head.user.login': 'owlishDeveloper',
+            'event.head.user.id': 18102552,
+            'event.head.user.email': 'anotheruser@github.com',
+            'event.check.name': 'service-github',
+            'event.check.run.id': 'non-existant-id',
+            'event.check.run.url': 'https://api.github.com/repos/taskcluster/taskcluster/check-runs/non-existant-id',
+            'event.check.suite.id': 'not-a-number',
+            'event.check.suite.url': 'https://api.github.com/repos/taskcluster/taskcluster/check-suites/not-a-number',
+            'event.head.repo.name': 'taskcluster',
+          },
+        },
+      };
+
+      const handlerComplete = new Promise((resolve, reject) => {
+        handlers.handlerComplete = resolve;
+        handlers.handlerRejected = reject;
+      });
+      await helper.fakePulseMessage(message);
+      try {
+        await handlerComplete;
+      } catch (e) {
+        assert.equal(e.message, 'No checkRun found for checkRunId non-existant-id and checkSuiteId not-a-number');
+      }
+
+      const monitor = await helper.load('monitor');
+      assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'monitor.error' && Severity === LEVELS.err));
+      monitor.manager.reset();
     });
   });
 });

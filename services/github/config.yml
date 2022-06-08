@@ -6,6 +6,7 @@ defaults:
     deprecatedInitialStatusQueue: 'stat-init'
     resultStatusQueue: 'ch-result'
     initialStatusQueue: 'ch-init'
+    rerunQueue: 're-run'
     checkTaskRoute: 'checks'
     statusTaskRoute: 'statuses'
     statusContext: !env APPLICATION_NAME

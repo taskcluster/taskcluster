@@ -96,8 +96,11 @@ function getRerunDetails(eventData) {
     'event.head.user.login': eventData.sender.login,
     'event.head.user.id': eventData.sender.id,
     'event.check.name': eventData.check_run.name,
-    'event.check.url': eventData.check_run.url,
-    'event.checksuite.url': eventData.check_run.check_suite.url,
+    'event.check.run.id': String(eventData.check_run.id),
+    'event.check.run.url': eventData.check_run.url,
+    'event.check.suite.url': eventData.check_run.check_suite.url,
+    'event.check.suite.id': String(eventData.check_run.check_suite.id),
+    'event.head.repo.name': eventData.repository.name,
   };
 }
 

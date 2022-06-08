@@ -6726,6 +6726,10 @@
           "pattern": "^([a-zA-Z0-9-_%]*)$",
           "type": "string"
         },
+        "tasks_for": {
+          "description": "The type of the event (for version 1)\n",
+          "type": "string"
+        },
         "version": {
           "description": "Message version",
           "enum": [
@@ -6741,7 +6745,8 @@
         "eventId",
         "body",
         "checkRunId",
-        "checkSuiteId"
+        "checkSuiteId",
+        "tasks_for"
       ],
       "title": "GitHub Re-run Request Message",
       "type": "object"
