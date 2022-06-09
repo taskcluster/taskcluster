@@ -183,5 +183,12 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(fetched, { ...checks[0], check_run_id: 'abc' });
     });
 
+    helper.dbTest('get by check run id', async function(db) {
+      await create_check(db, checks[0]);
+      const [fetched] = await db.fns.get_github_check_by_run_id(checks[0].check_suite_id, checks[0].check_run_id);
+
+      assert.deepEqual(fetched, checks[0]);
+      assert.deepEqual([], await db.fns.get_github_check_by_run_id('-not-a-suite-id', 'fake-check-run'));
+    });
   });
 });

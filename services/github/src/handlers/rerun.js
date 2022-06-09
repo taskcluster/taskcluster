@@ -5,6 +5,7 @@ const { makeDebug } = require('./utils');
  **/
 async function rerunHandler(message) {
   const { checkRunId, checkSuiteId, organization, eventId, installationId, details } = message.payload;
+  const repo = details['event.head.repo.name'];
 
   let debug = makeDebug(this.monitor, {
     checkRunId,
@@ -13,7 +14,7 @@ async function rerunHandler(message) {
     owner: organization,
     eventId,
     checkName: details['event.check.name'],
-    repo: details['details.head.repo.name'],
+    repo,
   });
   debug(JSON.stringify(message.payload));
 
@@ -30,7 +31,10 @@ async function rerunHandler(message) {
   debug(`Requesting rerun on a taskId ${taskId} / taskGroupId ${taskGroupId}`);
 
   try {
-    const taskStatus = await this.queueClient.rerunTask(taskId);
+    const limitedQueueClient = this.queueClient.use({
+      authorizedScopes: [`assume:repo:github.com/${organization}/${repo}`],
+    });
+    const taskStatus = await limitedQueueClient.rerunTask(taskId);
     debug('Response', { taskStatus });
 
     // Update commit status? or anything else
@@ -41,7 +45,7 @@ async function rerunHandler(message) {
     e.checkRunId = checkRunId;
     e.checkSuiteId = checkSuiteId;
     e.organization = organization;
-    e.repo = details['details.head.repo.name'];
+    e.repo = repo;
     throw e;
   }
 }

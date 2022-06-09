@@ -1102,6 +1102,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const checkRunId = '6725570353';
 
     let reruns = [];
+    let usedScopes = [];
 
     suiteSetup(function () {
       if (skipping()) {
@@ -1110,14 +1111,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     setup(() => {
-      handlers.queueClient.rerunTask = async (taskId) => {
-        reruns.push(taskId);
+      handlers.queueClient.use = (options) => {
+        usedScopes.push(options);
+        return {
+          rerunTask: async (taskId) => {
+            reruns.push(taskId);
+          },
+        };
       };
     });
 
     teardown(async function () {
       await helper.db.fns.delete_github_build(taskGroupId);
       reruns = [];
+      usedScopes = [];
     });
 
     test('create task rerun', async function () {
@@ -1138,15 +1145,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           version: 1,
           body: { tbd: 'true' },
           details: {
-            'event.type': 'rerun',
             'event.head.user.login': 'owlishDeveloper',
-            'event.head.user.id': 18102552,
             'event.head.user.email': 'anotheruser@github.com',
-            'event.check.name': 'service-github',
-            'event.check.run.id': '6725570353',
-            'event.check.run.url': 'https://api.github.com/repos/taskcluster/taskcluster/check-runs/6725570353',
-            'event.check.suite.id': '6781240077',
-            'event.check.suite.url': 'https://api.github.com/repos/taskcluster/taskcluster/check-suites/6781240077',
             'event.head.repo.name': 'taskcluster',
           },
         },
@@ -1161,6 +1161,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(reruns.length, 1);
       assert.equal(reruns[0], taskId);
+      assert.deepEqual(usedScopes, [{
+        authorizedScopes: ['assume:repo:github.com/taskcluster/taskcluster'],
+      }]);
     });
     test('do nothing if invalid payload is provided', async function () {
       await addBuild({ state: 'failure', taskGroupId });
