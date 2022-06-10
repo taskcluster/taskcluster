@@ -361,7 +361,7 @@ type (
 		// a "stopped" worker is completely stopped.  Stopped workers are kept for historical
 		// purposes and are purged when they expire.  Note that some providers transition workers
 		// directly from "running" to "stopped".
-		// An "unmanaged" worker is a worker that is not managed by worker-manager, these workers
+		// An "standalone" worker is a worker that is not managed by worker-manager, these workers
 		// are only known by the queue.
 		//
 		// Possible values:
@@ -369,7 +369,7 @@ type (
 		//   * "running"
 		//   * "stopping"
 		//   * "stopped"
-		//   * "unmanaged"
+		//   * "standalone"
 		State string `json:"state,omitempty"`
 
 		// Identifier for the worker group containing this worker.
@@ -892,7 +892,7 @@ type (
 		// a "stopped" worker is completely stopped.  Stopped workers are kept for historical
 		// purposes and are purged when they expire.  Note that some providers transition workers
 		// directly from "running" to "stopped".
-		// An "unmanaged" worker is a worker that is not managed by worker-manager, these workers
+		// An "standalone" worker is a worker that is not managed by worker-manager, these workers
 		// are only known by the queue.
 		//
 		// Possible values:
@@ -900,7 +900,7 @@ type (
 		//   * "running"
 		//   * "stopping"
 		//   * "stopped"
-		//   * "unmanaged"
+		//   * "standalone"
 		State string `json:"state,omitempty"`
 
 		// Identifier for group that worker who executes this run is a part of,
