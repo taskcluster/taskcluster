@@ -27,7 +27,7 @@ module.exports = ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req
     }) => {
       let opts = { ...options };
       if (typeof isQuarantined === 'boolean') {
-        opts.isQuarantined = isQuarantined;
+        opts.quarantined = isQuarantined;
       }
       if (typeof workerState === 'string') {
         opts.workerState = workerState;
