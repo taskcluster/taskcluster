@@ -124,11 +124,18 @@ export default class WorkerDetailsCard extends Component {
             <ListItem>
               <Button
                 requiresAuth
-                disabled={['stopping', 'stopped'].includes(state)}
+                disabled={
+                  ['stopping', 'stopped'].includes(state) ||
+                  ['static', 'none'].includes(providerId)
+                }
                 variant="outlined"
                 endIcon={<DeleteIcon size={iconSize} />}
                 onClick={this.handleDialogActionOpen}
-                tooltipProps={{ title: 'Terminate Worker' }}>
+                tooltipProps={{
+                  title: ['static', 'none'].includes(providerId)
+                    ? 'Cannot Terminate Static/Standalone Worker'
+                    : 'Terminate Worker',
+                }}>
                 Terminate
               </Button>
             </ListItem>

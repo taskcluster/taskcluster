@@ -328,7 +328,10 @@ export default class WorkersTable extends Component {
                 {providerId !== NULL_PROVIDER && state !== 'stopping' && (
                   <Button
                     requiresAuth
-                    disabled={['stopping', 'stopped'].includes(state)}
+                    disabled={
+                      ['stopping', 'stopped'].includes(state) ||
+                      ['static', 'none'].includes(providerId)
+                    }
                     variant="outlined"
                     endIcon={<DeleteIcon size={iconSize} />}
                     onClick={this.handleDialogActionOpen(
@@ -336,7 +339,11 @@ export default class WorkersTable extends Component {
                       workerGroup,
                       workerId
                     )}
-                    tooltipProps={{ title: 'Terminate Worker' }}>
+                    tooltipProps={{
+                      title: ['static', 'none'].includes(providerId)
+                        ? 'Cannot Terminate Static/Standalone Worker'
+                        : 'Terminate Worker',
+                    }}>
                     Terminate
                   </Button>
                 )}
