@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.16.1
+
+### GENERAL
+
+▶ [patch]
+This fixes the default worker state of a worker not known by worker manager to be `standalone` as opposed to `unmanaged` to be consistent with the rest of the project. This issue was first brought up in v44.16.0
+
+### USERS
+
+▶ [patch]
+Fix this error (`Function listWorkers takes options: continuationToken, limit, quarantined, workerState but was given isQuarantined`) while filtering workers based on quaratine status.
+
 ## v44.16.0
 
 ### GENERAL
