@@ -11,7 +11,7 @@ export default {
   REQUESTED: 'default',
   STOPPING: 'warning',
   STOPPED: 'error',
-  UNMANAGED: 'info',
+  STANDALONE: 'info',
   // deprecated, but still supported for old tasks
   SUPERSEDED: 'default',
   CLAIM_EXPIRED: 'info',

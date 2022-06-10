@@ -425,7 +425,7 @@ class Worker {
       providerId: this.providerId || 'none',
       created: this.created?.toJSON(),
       expires: this.expires?.toJSON(),
-      state: this.state || 'unmanaged',
+      state: this.state || 'standalone',
       capacity: this.capacity || 0,
       lastModified: this.lastModified?.toJSON(),
       lastChecked: this.lastChecked?.toJSON(),

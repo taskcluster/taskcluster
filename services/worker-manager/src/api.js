@@ -902,7 +902,7 @@ builder.declare({
         firstClaim: worker.firstClaim?.toJSON(),
         lastDateActive: worker.lastDateActive?.toJSON(),
         workerPoolId: worker.workerPoolId,
-        state: worker.state || 'unmanaged',
+        state: worker.state || 'standalone',
         capacity: worker.capacity || 0,
         providerId: worker.providerId || 'none',
       };

@@ -63,7 +63,7 @@ type Worker {
   lastDateActive: DateTime
 
   # The current state of the worker.
-  # One of [`requested`, `running`, `stopping`, `stopped`, `unmanaged`].
+  # One of [`requested`, `running`, `stopping`, `stopped`, `standalone`].
   state: String
 
   # The current capacity of the worker.
