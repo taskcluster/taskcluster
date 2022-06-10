@@ -3,6 +3,10 @@ const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 const testing = require('taskcluster-lib-testing');
 
+// Webhooks payloads can be introspected by going to the app admin page
+// https://github.com/organizations/taskcluster/settings/apps/community-tc-integration/advanced
+// It keeps list of recent webhooks
+
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -29,7 +33,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
    *  listenFor:    'some event type',
    *  exchangeFunc: 'name of exchange function',
    *  routingKey:   {...}, a dict containing a pulse routing key
-   *  details:      {...}, a dict of details we expect to seein the msg payload
+   *  details:      {...}, a dict of details we expect to see in the msg payload
    *  jsonFile:     'data file'
    *  tasks_for:    'the event type; for v1'
    *  branch:       'the head branch name; for v1'
@@ -44,16 +48,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         if (m.routingKey === params.routingKey && m.payload.eventId === params.eventId) {
           // use assert.deepEqual so we get a decent diff of this large object on error
           assert.deepEqual(m.payload, {
-            organization: 'TaskclusterRobot',
+            organization: params.organization || 'TaskclusterRobot',
             details: params.details,
             installationId: 5808,
-            repository: 'hooks-testing',
+            repository: params.repository || 'hooks-testing',
             eventId: params.eventId,
             version: 1,
             body: require('./data/webhooks/' + params.jsonFile).body,
             tasks_for: params.tasks_for,
-            branch: params.branch,
+            ...params.branch ? { branch: params.branch } : {},
             ...params.action ? { action: params.action } : {},
+            ...params.checkRunId ? { checkRunId: params.checkRunId } : {},
+            ...params.checkSuiteId ? { checkSuiteId: params.checkSuiteId } : {},
           });
           return true;
         }
@@ -173,5 +179,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     jsonFile: 'webhook.tag_push.json',
     tasks_for: 'github-push',
     branch: 'v1.0.2',
+  });
+
+  pulseTest({
+    testName: 'Rerun Check Push',
+    jsonFile: 'webhook.check_run.rerequested.json',
+    listenFor: 'rerun',
+    organization: 'taskcluster',
+    repository: 'taskcluster',
+    routingKey: 'primary.taskcluster.taskcluster',
+    exchangeFunc: 'rerun',
+    eventId: '0c363020-e341-11ec-8051-0510556569bf',
+    details: {
+      'event.head.user.login': 'owlishDeveloper',
+      'event.head.user.email': 'anotheruser@github.com',
+      'event.head.repo.name': 'taskcluster',
+    },
+    tasks_for: 'github-push',
+    checkRunId: 6725570353,
+    checkSuiteId: 6781240077,
   });
 });

@@ -52,6 +52,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   statusTest('Push', 'webhook.push.json', 204);
   statusTest('Release', 'webhook.release.json', 204);
   statusTest('Tag', 'webhook.tag_push.json', 204);
+  statusTest('CheckRun rerun', 'webhook.check_run.rerequested.json', 204);
 
   // Also should have data in the db after this one
   statusTest('Installation', 'webhook.installation.json', 200, 11725878, async () => {
@@ -66,4 +67,5 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   statusTest('Unknown Event', 'webhook.unknown_event.json', 400);
   statusTest('Push with bad secret', 'webhook.push.bad_secret.json', 403);
   statusTest('Release with bad secret', 'webhook.release.bad_secret.json', 403);
+  statusTest('CheckRun created', 'webhook.check_run.created.json', 403);
 });

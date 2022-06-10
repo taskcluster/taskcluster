@@ -6335,6 +6335,21 @@
         }
       },
       "version": 75
+    },
+    {
+      "description": "get github check by check suite id and check run id",
+      "methods": {
+        "get_github_check_by_run_id": {
+          "args": "check_suite_id_in text, check_run_id_in text",
+          "body": "begin\n  return query\n  select\n    github_checks.task_group_id,\n    github_checks.task_id,\n    github_checks.check_suite_id,\n    github_checks.check_run_id\n  from github_checks\n  where\n    github_checks.check_suite_id = check_suite_id_in\n    and\n    github_checks.check_run_id = check_run_id_in\n    ;\nend",
+          "deprecated": false,
+          "description": "Get github check run id and check suite id",
+          "mode": "read",
+          "returns": "table (\n  task_group_id text,\n  task_id text,\n  check_suite_id text,\n  check_run_id text\n)",
+          "serviceName": "github"
+        }
+      },
+      "version": 76
     }
   ]
 }

@@ -17,6 +17,7 @@
    * [`delete_github_build`](#delete_github_build)
    * [`get_github_build`](#get_github_build)
    * [`get_github_builds`](#get_github_builds)
+   * [`get_github_check_by_run_id`](#get_github_check_by_run_id)
    * [`get_github_check_by_task_id`](#get_github_check_by_task_id)
    * [`get_github_integration`](#get_github_integration)
    * [`get_github_integrations`](#get_github_integrations)
@@ -337,6 +338,7 @@ Does nothing if the client does not exist.
 * [`delete_github_build`](#delete_github_build)
 * [`get_github_build`](#get_github_build)
 * [`get_github_builds`](#get_github_builds)
+* [`get_github_check_by_run_id`](#get_github_check_by_run_id)
 * [`get_github_check_by_task_id`](#get_github_check_by_task_id)
 * [`get_github_integration`](#get_github_integration)
 * [`get_github_integrations`](#get_github_integrations)
@@ -430,6 +432,21 @@ Get a github build. The returned table will have one or zero rows.
 * *Last defined on version*: 49
 
 Get github builds.
+
+### get_github_check_by_run_id
+
+* *Mode*: read
+* *Arguments*:
+  * `check_suite_id_in text`
+  * `check_run_id_in text`
+* *Returns*: `table`
+  * `   task_group_id text`
+  * `  task_id text`
+  * `  check_suite_id text`
+  * `  check_run_id text `
+* *Last defined on version*: 76
+
+Get github check run id and check suite id
 
 ### get_github_check_by_task_id
 

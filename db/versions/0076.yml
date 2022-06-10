@@ -1,0 +1,31 @@
+version: 76
+description: get github check by check suite id and check run id
+methods:
+  get_github_check_by_run_id:
+    description: |-
+      Get github check run id and check suite id
+    mode: read
+    serviceName: github
+    args: check_suite_id_in text, check_run_id_in text
+    returns: |-
+      table (
+        task_group_id text,
+        task_id text,
+        check_suite_id text,
+        check_run_id text
+      )
+    body: |-
+      begin
+        return query
+        select
+          github_checks.task_group_id,
+          github_checks.task_id,
+          github_checks.check_suite_id,
+          github_checks.check_run_id
+        from github_checks
+        where
+          github_checks.check_suite_id = check_suite_id_in
+          and
+          github_checks.check_run_id = check_run_id_in
+          ;
+      end

@@ -51,7 +51,7 @@ export default class Github extends Client {
   }
   /* eslint-disable max-len */
   // Capture a GitHub event and publish it via pulse, if it's a push,
-  // release or pull request.
+  // release, check run or pull request.
   /* eslint-enable max-len */
   githubWebHookConsumer(...args) {
     this.validate(this.githubWebHookConsumer.entry, args);

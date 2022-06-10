@@ -128,7 +128,7 @@ func (github *Github) Version() error {
 }
 
 // Capture a GitHub event and publish it via pulse, if it's a push,
-// release or pull request.
+// release, check run or pull request.
 //
 // See #githubWebHookConsumer
 func (github *Github) GithubWebHookConsumer() error {

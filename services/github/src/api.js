@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const _ = require('lodash');
+const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS } = require('./constants');
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -11,7 +12,7 @@ function sanitizeGitHubField(field) {
 // Reduce a pull request WebHook's data to only fields needed to checkout a
 // revision
 //
-// See https://developer.github.com/v3/activity/events/types/#pullrequestevent
+// See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pullrequestevent
 function getPullRequestDetails(eventData) {
   return {
     'event.base.ref': 'refs/heads/' + eventData.pull_request.base.ref,
@@ -35,7 +36,7 @@ function getPullRequestDetails(eventData) {
   };
 }
 
-// See https://developer.github.com/v3/activity/events/types/#pushevent
+// See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
 function getPushDetails(eventData) {
   let ref = eventData.ref;
   // parsing the ref refs/heads/<branch-name> is the most reliable way
@@ -67,10 +68,9 @@ function getPushDetails(eventData) {
 
   }
   return details;
-
 }
 
-// See https://developer.github.com/v3/activity/events/types/#releaseevent
+// See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#release
 function getReleaseDetails(eventData) {
   return {
     'event.type': 'release',
@@ -86,6 +86,16 @@ function getReleaseDetails(eventData) {
     'event.draft': eventData.release.draft,
     'event.tar': eventData.release.tarball_url,
     'event.zip': eventData.release.zipball_url,
+  };
+}
+
+// See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#check_run
+function getRerunDetails(eventData) {
+  // This is mostly for the v0 compatability, which is not supported anymore
+  // and will be removed in the future.
+  return {
+    'event.head.user.login': eventData.sender.login,
+    'event.head.repo.name': eventData.repository.name,
   };
 }
 
@@ -211,7 +221,7 @@ builder.declare({
   stability: 'stable',
   description: [
     'Capture a GitHub event and publish it via pulse, if it\'s a push,',
-    'release or pull request.',
+    'release, check run or pull request.',
   ].join('\n'),
 }, async function(req, res) {
   let eventId = req.headers['x-github-delivery'];
@@ -255,44 +265,59 @@ builder.declare({
 
     switch (eventType) {
 
-      case 'pull_request':
+      case EVENT_TYPES.PULL_REQUEST:
         msg.organization = sanitizeGitHubField(body.repository.owner.login);
         msg.action = body.action;
         msg.details = getPullRequestDetails(body);
-        msg.installationId = body.installation.id;
-        publisherKey = 'pullRequest';
+        msg.installationId = installationId;
+        publisherKey = PUBLISHERS.PULL_REQUEST;
         msg.tasks_for = 'github-pull-request';
         msg.branch = body.pull_request.head.ref;
         break;
 
-      case 'push':
+      case EVENT_TYPES.PUSH:
         msg.organization = sanitizeGitHubField(body.repository.owner.name);
         msg.details = getPushDetails(body);
-        msg.installationId = body.installation.id;
-        publisherKey = 'push';
+        msg.installationId = installationId;
+        publisherKey = PUBLISHERS.PUSH;
         msg.tasks_for = 'github-push';
         msg.branch = body.ref.split('/').slice(2).join('/');
         break;
 
-      case 'ping':
+      case EVENT_TYPES.PING:
         return resolve(res, 200, 'Received ping event!');
 
-      case 'release':
+      case EVENT_TYPES.RELEASE:
         msg.organization = sanitizeGitHubField(body.repository.owner.login);
         msg.details = getReleaseDetails(body);
-        msg.installationId = body.installation.id;
-        publisherKey = 'release';
+        msg.installationId = installationId;
+        publisherKey = PUBLISHERS.RELEASE;
         msg.tasks_for = 'github-release';
         msg.branch = body.release.target_commitish;
         break;
 
-      case 'installation':
+      case EVENT_TYPES.INSTALLATION:
         // Creates a new entity or overwrites an existing one
         await this.db.fns.upsert_github_integration(
           body.installation.account.login,
-          body.installation.id,
+          installationId,
         );
         return resolve(res, 200, 'Created table row!');
+
+      case EVENT_TYPES.CHECK_RUN:
+        // We only want to check if re-run was requested
+        if (body.action !== CHECK_RUN_ACTIONS.REREQUESTED) {
+          return resolve(res, 400, 'Only rerequested for check runs is supported');
+        }
+
+        publisherKey = PUBLISHERS.RERUN;
+        msg.organization = sanitizeGitHubField(body.repository.owner.login);
+        msg.details = getRerunDetails(body);
+        msg.tasks_for = 'github-push';
+        msg.installationId = installationId;
+        msg.checkRunId = body.check_run.id;
+        msg.checkSuiteId = body.check_run.check_suite.id;
+        break;
 
       default:
         return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);

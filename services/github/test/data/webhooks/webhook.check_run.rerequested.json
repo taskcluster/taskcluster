@@ -1,0 +1,339 @@
+{
+  "headers": {
+    "Host": "requestb.in",
+    "Accept": "*/*",
+    "content-type": "application/json",
+    "User-Agent": "GitHub-Hookshot/b257cdf",
+    "X-GitHub-Delivery": "0c363020-e341-11ec-8051-0510556569bf",
+    "X-GitHub-Event": "check_run",
+    "X-GitHub-Hook-ID": "143649925",
+    "X-GitHub-Hook-Installation-Target-ID": "40788",
+    "X-GitHub-Hook-Installation-Target-Type": "integration",
+    "X-Hub-Signature": "sha1=be32da586288abcd3a626b3a509e7129c0b1181a"
+  },
+  "body": {
+    "action": "rerequested",
+    "check_run": {
+      "id": 6725570353,
+      "name": "service-github",
+      "node_id": "CR_kwDOCaXmMM8AAAABkOAPMQ",
+      "head_sha": "f2fd3e142a518cc14c1ac3743eaf22cc4f4db475",
+      "external_id": "",
+      "url": "https://api.github.com/repos/taskcluster/taskcluster/check-runs/6725570353",
+      "html_url": "https://github.com/taskcluster/taskcluster/runs/6725570353",
+      "details_url": "https://community-tc.services.mozilla.com/tasks/E5DC3YhOQ8mANc8mICbkDg",
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2022-06-03T12:18:17Z",
+      "completed_at": "2022-06-03T12:23:25Z",
+      "output": {
+        "title": "Community-TC (pull_request)",
+        "summary": "package tests for github",
+        "text": "[View task in Taskcluster](https://community-tc.services.mozilla.com/tasks/E5DC3YhOQ8mANc8mICbkDg)\n[View logs in Taskcluster](https://community-tc.services.mozilla.com/tasks/E5DC3YhOQ8mANc8mICbkDg/runs/0/logs/public/logs/live.log)\n",
+        "annotations_count": 0,
+        "annotations_url": "https://api.github.com/repos/taskcluster/taskcluster/check-runs/6725570353/annotations"
+      },
+      "check_suite": {
+        "id": 6781240077,
+        "node_id": "CS_kwDOCaXmMM8AAAABlDGDDQ",
+        "head_branch": "github-rerun-task",
+        "head_sha": "f2fd3e142a518cc14c1ac3743eaf22cc4f4db475",
+        "status": "queued",
+        "conclusion": null,
+        "url": "https://api.github.com/repos/taskcluster/taskcluster/check-suites/6781240077",
+        "before": "d9d55c829f25768f8ce683b7947de8f7047437dc",
+        "after": "f2fd3e142a518cc14c1ac3743eaf22cc4f4db475",
+        "pull_requests": [
+          {
+            "url": "https://api.github.com/repos/taskcluster/taskcluster/pulls/5458",
+            "id": 951217632,
+            "number": 5458,
+            "head": {
+              "ref": "github-rerun-task",
+              "sha": "f2fd3e142a518cc14c1ac3743eaf22cc4f4db475",
+              "repo": {
+                "id": 161867312,
+                "url": "https://api.github.com/repos/taskcluster/taskcluster",
+                "name": "taskcluster"
+              }
+            },
+            "base": {
+              "ref": "main",
+              "sha": "abefd8e31f41184ded50bdb13a8b469a4aac9f33",
+              "repo": {
+                "id": 161867312,
+                "url": "https://api.github.com/repos/taskcluster/taskcluster",
+                "name": "taskcluster"
+              }
+            }
+          }
+        ],
+        "app": {
+          "id": 40788,
+          "slug": "community-tc-integration",
+          "node_id": "MDM6QXBwNDA3ODg=",
+          "owner": {
+            "login": "taskcluster",
+            "id": 6257436,
+            "node_id": "MDEyOk9yZ2FuaXphdGlvbjYyNTc0MzY=",
+            "avatar_url": "https://avatars.githubusercontent.com/u/6257436?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/taskcluster",
+            "html_url": "https://github.com/taskcluster",
+            "followers_url": "https://api.github.com/users/taskcluster/followers",
+            "following_url": "https://api.github.com/users/taskcluster/following{/other_user}",
+            "gists_url": "https://api.github.com/users/taskcluster/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/taskcluster/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/taskcluster/subscriptions",
+            "organizations_url": "https://api.github.com/users/taskcluster/orgs",
+            "repos_url": "https://api.github.com/users/taskcluster/repos",
+            "events_url": "https://api.github.com/users/taskcluster/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/taskcluster/received_events",
+            "type": "Organization",
+            "site_admin": false
+          },
+          "name": "Community-TC Integration",
+          "description": "Integration with the Community-TC deployment at https://community-tc.services.mozilla.com/.  Add this app to the repositories for which you would like to run tasks in Taskcluster.",
+          "external_url": "https://community-tc.services.mozilla.com",
+          "html_url": "https://github.com/apps/community-tc-integration",
+          "created_at": "2019-09-11T01:15:34Z",
+          "updated_at": "2019-09-26T17:48:07Z",
+          "permissions": {
+            "administration": "read",
+            "checks": "write",
+            "contents": "read",
+            "issues": "write",
+            "members": "read",
+            "metadata": "read",
+            "pull_requests": "write",
+            "statuses": "write"
+          },
+          "events": [
+            "pull_request",
+            "push",
+            "release"
+          ]
+        },
+        "created_at": "2022-06-03T12:16:00Z",
+        "updated_at": "2022-06-03T13:28:25Z"
+      },
+      "app": {
+        "id": 40788,
+        "slug": "community-tc-integration",
+        "node_id": "MDM6QXBwNDA3ODg=",
+        "owner": {
+          "login": "taskcluster",
+          "id": 6257436,
+          "node_id": "MDEyOk9yZ2FuaXphdGlvbjYyNTc0MzY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/6257436?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/taskcluster",
+          "html_url": "https://github.com/taskcluster",
+          "followers_url": "https://api.github.com/users/taskcluster/followers",
+          "following_url": "https://api.github.com/users/taskcluster/following{/other_user}",
+          "gists_url": "https://api.github.com/users/taskcluster/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/taskcluster/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/taskcluster/subscriptions",
+          "organizations_url": "https://api.github.com/users/taskcluster/orgs",
+          "repos_url": "https://api.github.com/users/taskcluster/repos",
+          "events_url": "https://api.github.com/users/taskcluster/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/taskcluster/received_events",
+          "type": "Organization",
+          "site_admin": false
+        },
+        "name": "Community-TC Integration",
+        "description": "Integration with the Community-TC deployment at https://community-tc.services.mozilla.com/.  Add this app to the repositories for which you would like to run tasks in Taskcluster.",
+        "external_url": "https://community-tc.services.mozilla.com",
+        "html_url": "https://github.com/apps/community-tc-integration",
+        "created_at": "2019-09-11T01:15:34Z",
+        "updated_at": "2019-09-26T17:48:07Z",
+        "permissions": {
+          "administration": "read",
+          "checks": "write",
+          "contents": "read",
+          "issues": "write",
+          "members": "read",
+          "metadata": "read",
+          "pull_requests": "write",
+          "statuses": "write"
+        },
+        "events": [
+          "pull_request",
+          "push",
+          "release"
+        ]
+      },
+      "pull_requests": [
+        {
+          "url": "https://api.github.com/repos/taskcluster/taskcluster/pulls/5458",
+          "id": 951217632,
+          "number": 5458,
+          "head": {
+            "ref": "github-rerun-task",
+            "sha": "f2fd3e142a518cc14c1ac3743eaf22cc4f4db475",
+            "repo": {
+              "id": 161867312,
+              "url": "https://api.github.com/repos/taskcluster/taskcluster",
+              "name": "taskcluster"
+            }
+          },
+          "base": {
+            "ref": "main",
+            "sha": "abefd8e31f41184ded50bdb13a8b469a4aac9f33",
+            "repo": {
+              "id": 161867312,
+              "url": "https://api.github.com/repos/taskcluster/taskcluster",
+              "name": "taskcluster"
+            }
+          }
+        }
+      ]
+    },
+    "repository": {
+      "id": 161867312,
+      "node_id": "MDEwOlJlcG9zaXRvcnkxNjE4NjczMTI=",
+      "name": "taskcluster",
+      "full_name": "taskcluster/taskcluster",
+      "private": false,
+      "owner": {
+        "login": "taskcluster",
+        "id": 6257436,
+        "node_id": "MDEyOk9yZ2FuaXphdGlvbjYyNTc0MzY=",
+        "avatar_url": "https://avatars.githubusercontent.com/u/6257436?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/taskcluster",
+        "html_url": "https://github.com/taskcluster",
+        "followers_url": "https://api.github.com/users/taskcluster/followers",
+        "following_url": "https://api.github.com/users/taskcluster/following{/other_user}",
+        "gists_url": "https://api.github.com/users/taskcluster/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/taskcluster/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/taskcluster/subscriptions",
+        "organizations_url": "https://api.github.com/users/taskcluster/orgs",
+        "repos_url": "https://api.github.com/users/taskcluster/repos",
+        "events_url": "https://api.github.com/users/taskcluster/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/taskcluster/received_events",
+        "type": "Organization",
+        "site_admin": false
+      },
+      "html_url": "https://github.com/taskcluster/taskcluster",
+      "description": "CI for Engineers",
+      "fork": false,
+      "url": "https://api.github.com/repos/taskcluster/taskcluster",
+      "forks_url": "https://api.github.com/repos/taskcluster/taskcluster/forks",
+      "keys_url": "https://api.github.com/repos/taskcluster/taskcluster/keys{/key_id}",
+      "collaborators_url": "https://api.github.com/repos/taskcluster/taskcluster/collaborators{/collaborator}",
+      "teams_url": "https://api.github.com/repos/taskcluster/taskcluster/teams",
+      "hooks_url": "https://api.github.com/repos/taskcluster/taskcluster/hooks",
+      "issue_events_url": "https://api.github.com/repos/taskcluster/taskcluster/issues/events{/number}",
+      "events_url": "https://api.github.com/repos/taskcluster/taskcluster/events",
+      "assignees_url": "https://api.github.com/repos/taskcluster/taskcluster/assignees{/user}",
+      "branches_url": "https://api.github.com/repos/taskcluster/taskcluster/branches{/branch}",
+      "tags_url": "https://api.github.com/repos/taskcluster/taskcluster/tags",
+      "blobs_url": "https://api.github.com/repos/taskcluster/taskcluster/git/blobs{/sha}",
+      "git_tags_url": "https://api.github.com/repos/taskcluster/taskcluster/git/tags{/sha}",
+      "git_refs_url": "https://api.github.com/repos/taskcluster/taskcluster/git/refs{/sha}",
+      "trees_url": "https://api.github.com/repos/taskcluster/taskcluster/git/trees{/sha}",
+      "statuses_url": "https://api.github.com/repos/taskcluster/taskcluster/statuses/{sha}",
+      "languages_url": "https://api.github.com/repos/taskcluster/taskcluster/languages",
+      "stargazers_url": "https://api.github.com/repos/taskcluster/taskcluster/stargazers",
+      "contributors_url": "https://api.github.com/repos/taskcluster/taskcluster/contributors",
+      "subscribers_url": "https://api.github.com/repos/taskcluster/taskcluster/subscribers",
+      "subscription_url": "https://api.github.com/repos/taskcluster/taskcluster/subscription",
+      "commits_url": "https://api.github.com/repos/taskcluster/taskcluster/commits{/sha}",
+      "git_commits_url": "https://api.github.com/repos/taskcluster/taskcluster/git/commits{/sha}",
+      "comments_url": "https://api.github.com/repos/taskcluster/taskcluster/comments{/number}",
+      "issue_comment_url": "https://api.github.com/repos/taskcluster/taskcluster/issues/comments{/number}",
+      "contents_url": "https://api.github.com/repos/taskcluster/taskcluster/contents/{+path}",
+      "compare_url": "https://api.github.com/repos/taskcluster/taskcluster/compare/{base}...{head}",
+      "merges_url": "https://api.github.com/repos/taskcluster/taskcluster/merges",
+      "archive_url": "https://api.github.com/repos/taskcluster/taskcluster/{archive_format}{/ref}",
+      "downloads_url": "https://api.github.com/repos/taskcluster/taskcluster/downloads",
+      "issues_url": "https://api.github.com/repos/taskcluster/taskcluster/issues{/number}",
+      "pulls_url": "https://api.github.com/repos/taskcluster/taskcluster/pulls{/number}",
+      "milestones_url": "https://api.github.com/repos/taskcluster/taskcluster/milestones{/number}",
+      "notifications_url": "https://api.github.com/repos/taskcluster/taskcluster/notifications{?since,all,participating}",
+      "labels_url": "https://api.github.com/repos/taskcluster/taskcluster/labels{/name}",
+      "releases_url": "https://api.github.com/repos/taskcluster/taskcluster/releases{/id}",
+      "deployments_url": "https://api.github.com/repos/taskcluster/taskcluster/deployments",
+      "created_at": "2018-12-15T03:48:26Z",
+      "updated_at": "2022-06-01T13:31:21Z",
+      "pushed_at": "2022-06-03T12:54:55Z",
+      "git_url": "git://github.com/taskcluster/taskcluster.git",
+      "ssh_url": "git@github.com:taskcluster/taskcluster.git",
+      "clone_url": "https://github.com/taskcluster/taskcluster.git",
+      "svn_url": "https://github.com/taskcluster/taskcluster",
+      "homepage": "https://taskcluster.net",
+      "size": 134412,
+      "stargazers_count": 282,
+      "watchers_count": 282,
+      "language": "JavaScript",
+      "has_issues": true,
+      "has_projects": true,
+      "has_downloads": true,
+      "has_wiki": false,
+      "has_pages": false,
+      "forks_count": 226,
+      "mirror_url": null,
+      "archived": false,
+      "disabled": false,
+      "open_issues_count": 299,
+      "license": {
+        "key": "mpl-2.0",
+        "name": "Mozilla Public License 2.0",
+        "spdx_id": "MPL-2.0",
+        "url": "https://api.github.com/licenses/mpl-2.0",
+        "node_id": "MDc6TGljZW5zZTE0"
+      },
+      "allow_forking": true,
+      "is_template": false,
+      "topics": [
+        "ci",
+        "ci-framework",
+        "continuous-integration",
+        "taskcluster"
+      ],
+      "visibility": "public",
+      "forks": 226,
+      "open_issues": 299,
+      "watchers": 282,
+      "default_branch": "main"
+    },
+    "organization": {
+      "login": "taskcluster",
+      "id": 6257436,
+      "node_id": "MDEyOk9yZ2FuaXphdGlvbjYyNTc0MzY=",
+      "url": "https://api.github.com/orgs/taskcluster",
+      "repos_url": "https://api.github.com/orgs/taskcluster/repos",
+      "events_url": "https://api.github.com/orgs/taskcluster/events",
+      "hooks_url": "https://api.github.com/orgs/taskcluster/hooks",
+      "issues_url": "https://api.github.com/orgs/taskcluster/issues",
+      "members_url": "https://api.github.com/orgs/taskcluster/members{/member}",
+      "public_members_url": "https://api.github.com/orgs/taskcluster/public_members{/member}",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6257436?v=4",
+      "description": "Taskcluster is the task execution framework that supports Mozilla's continuous integration and release processes."
+    },
+    "sender": {
+      "login": "owlishDeveloper",
+      "id": 18102552,
+      "avatar_url": "https://avatars.githubusercontent.com/u/18102552?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/owlishDeveloper",
+      "html_url": "https://github.com/owlishDeveloper",
+      "followers_url": "https://api.github.com/users/owlishDeveloper/followers",
+      "following_url": "https://api.github.com/users/owlishDeveloper/following{/other_user}",
+      "gists_url": "https://api.github.com/users/owlishDeveloper/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/owlishDeveloper/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/owlishDeveloper/subscriptions",
+      "organizations_url": "https://api.github.com/users/owlishDeveloper/orgs",
+      "repos_url": "https://api.github.com/users/owlishDeveloper/repos",
+      "events_url": "https://api.github.com/users/owlishDeveloper/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/owlishDeveloper/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "installation": {
+      "id": 5808,
+      "node_id": "MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMjI1NTE3Mw=="
+    }
+  }
+}

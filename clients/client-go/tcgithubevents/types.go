@@ -109,6 +109,57 @@ type (
 		Version float64 `json:"version"`
 	}
 
+	// Message reporting that a GitHub re-run task request has occurred
+	GitHubReRunRequestMessage struct {
+
+		// The raw body of github event (for version 1)
+		//
+		// Additional properties allowed
+		Body json.RawMessage `json:"body"`
+
+		// Check run id
+		CheckRunID float64 `json:"checkRunId"`
+
+		// Check suite id
+		CheckSuiteID float64 `json:"checkSuiteId"`
+
+		// Metadata describing the push (for version 0)
+		//
+		// Additional properties allowed
+		Details json.RawMessage `json:"details,omitempty"`
+
+		// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+		//
+		// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
+		EventID string `json:"eventId"`
+
+		// The installation which had an event.
+		InstallationID int64 `json:"installationId"`
+
+		// The GitHub `organization` which had an event.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_%]*)$
+		// Min length: 1
+		// Max length: 100
+		Organization string `json:"organization"`
+
+		// The GitHub `repository` which had an event.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_%]*)$
+		// Min length: 1
+		// Max length: 100
+		Repository string `json:"repository"`
+
+		// The type of the event (for version 1)
+		Tasks_For string `json:"tasks_for"`
+
+		// Message version
+		//
+		// Possible values:
+		//   * 1
+		Version float64 `json:"version"`
+	}
+
 	// Message reporting that a GitHub release has occurred
 	GitHubReleaseMessage struct {
 

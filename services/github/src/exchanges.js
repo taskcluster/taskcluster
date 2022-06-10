@@ -1,6 +1,7 @@
 const { Exchanges } = require('taskcluster-lib-pulse');
 const _ = require('lodash');
 const assert = require('assert');
+const { PUBLISHERS } = require('./constants');
 
 /** Build common routing key construct for `exchanges.declare` */
 const commonRoutingKey = function(options) {
@@ -73,7 +74,7 @@ let exchanges = new Exchanges({
 /** pull request exchange */
 exchanges.declare({
   exchange: 'pull-request',
-  name: 'pullRequest',
+  name: PUBLISHERS.PULL_REQUEST,
   title: 'GitHub Pull Request Event',
   description: [
     'When a GitHub pull request event is posted it will be broadcast on this',
@@ -90,7 +91,7 @@ exchanges.declare({
 /** push exchange */
 exchanges.declare({
   exchange: 'push',
-  name: 'push',
+  name: PUBLISHERS.PUSH,
   title: 'GitHub push Event',
   description: [
     'When a GitHub push event is posted it will be broadcast on this',
@@ -107,7 +108,7 @@ exchanges.declare({
 /** release exchange */
 exchanges.declare({
   exchange: 'release',
-  name: 'release',
+  name: PUBLISHERS.RELEASE,
   title: 'GitHub release Event',
   description: [
     'When a GitHub release event is posted it will be broadcast on this',
@@ -116,6 +117,24 @@ exchanges.declare({
   ].join('\n'),
   routingKey: commonRoutingKey(),
   schema: 'github-release-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository'),
+  CCBuilder: () => [],
+});
+
+/** rerun exchange */
+exchanges.declare({
+  exchange: 'rerun',
+  name: PUBLISHERS.RERUN,
+  title: 'GitHub re-run task Event',
+  description: [
+    'When a GitHub check_run event with action="rerequested" is posted ',
+    'it will be broadcast on this exchange with the designated ',
+    '`organization` and `repository`',
+    'in the routing-key along with event specific metadata in the payload.',
+  ].join('\n'),
+  routingKey: commonRoutingKey(),
+  schema: 'github-rerun-message.yml',
   messageBuilder: commonMessageBuilder,
   routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository'),
   CCBuilder: () => [],

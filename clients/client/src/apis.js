@@ -795,7 +795,7 @@ module.exports = {
           "args": [
           ],
           "category": "Github Service",
-          "description": "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease or pull request.",
+          "description": "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease, check run or pull request.",
           "method": "post",
           "name": "githubWebHookConsumer",
           "query": [
@@ -1035,6 +1035,35 @@ module.exports = {
           ],
           "schema": "v1/github-release-message.json#",
           "title": "GitHub release Event",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "When a GitHub check_run event with action=\"rerequested\" is posted \nit will be broadcast on this exchange with the designated \n`organization` and `repository`\nin the routing-key along with event specific metadata in the payload.",
+          "exchange": "rerun",
+          "name": "rerun",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "organization",
+              "required": true,
+              "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            },
+            {
+              "multipleWords": false,
+              "name": "repository",
+              "required": true,
+              "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            }
+          ],
+          "schema": "v1/github-rerun-message.json#",
+          "title": "GitHub re-run task Event",
           "type": "topic-exchange"
         },
         {

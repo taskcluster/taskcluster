@@ -1,0 +1,59 @@
+$schema: "/schemas/common/metaschema.json#"
+title:        "GitHub Re-run Request Message"
+description: |
+  Message reporting that a GitHub re-run task request has occurred
+type:         object
+properties:
+  version:    {$const: message-version}
+  organization:
+    description: |
+      The GitHub `organization` which had an event.
+    type:         string
+    minLength:    {$const: github-identifier-min-length}
+    maxLength:    {$const: github-identifier-max-length}
+    pattern:      {$const: github-identifier-pattern}
+  repository:
+    description: |
+      The GitHub `repository` which had an event.
+    type:         string
+    minLength:    {$const: github-identifier-min-length}
+    maxLength:    {$const: github-identifier-max-length}
+    pattern:      {$const: github-identifier-pattern}
+  installationId:
+    description: |
+       The installation which had an event.
+    type:          integer
+  eventId:
+    type: string
+    description: |
+      The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+    pattern: {$const: github-guid-pattern}
+  details:
+    type:         object
+    description: |
+      Metadata describing the push (for version 0)
+  body:
+    type: object
+    description: |
+      The raw body of github event (for version 1)
+  checkRunId:
+    type: number
+    description: Check run id
+  checkSuiteId:
+    type: number
+    description: Check suite id
+  tasks_for:
+    type: string
+    description: |
+      The type of the event (for version 1)
+additionalProperties: false
+required:
+  - version
+  - organization
+  - repository
+  - installationId
+  - eventId
+  - body
+  - checkRunId
+  - checkSuiteId
+  - tasks_for
