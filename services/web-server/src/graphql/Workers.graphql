@@ -13,6 +13,10 @@ type WorkerCompact {
   quarantineUntil: DateTime
   provisionerId: String!
   workerType: String!
+  state: String
+  capacity: Int
+  providerId: String
+  workerPoolId: String
 }
 
 # Definition of a worker
@@ -59,7 +63,7 @@ type Worker {
   lastDateActive: DateTime
 
   # The current state of the worker.
-  # One of [`requested`, `running`, `stopping`, `stopped`].
+  # One of [`requested`, `running`, `stopping`, `stopped`, `unmanaged`].
   state: String
 
   # The current capacity of the worker.

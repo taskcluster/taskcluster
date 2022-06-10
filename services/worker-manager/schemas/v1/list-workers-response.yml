@@ -70,11 +70,16 @@ properties:
             a "stopped" worker is completely stopped.  Stopped workers are kept for historical
             purposes and are purged when they expire.  Note that some providers transition workers
             directly from "running" to "stopped".
+            An "unmanaged" worker is a worker that is not managed by worker-manager, these workers
+            are only known by the queue.
           type: string
-          enum: ["requested", "running", "stopping", "stopped", ""]
+          enum: ["requested", "running", "stopping", "stopped", "unmanaged"]
         capacity:
           title: Worker Capacity
-          description: Number of tasks this worker can handle at once
+          description: |
+            Number of tasks this worker can handle at once. A worker capacity of 0 means
+            the worker is not managed by worker manager and is only known to the queue, the
+            true capacity is not known.
           type: integer
           minimum: 0
         providerId:
@@ -82,11 +87,13 @@ properties:
           type: string
           # note that this is typically used as the workerGroup for workers,
           # so its format should match that for workerGroup.
+          minLength: {$const: identifier-min-length}
           maxLength: {$const: identifier-max-length}
           pattern: {$const: identifier-pattern}
           description: |
             The provider that had started the worker and responsible for managing it.
             Can be different from the provider that's currently in the worker pool config.
+            A providerId of "none" is used when the worker is not managed by worker manager.
       additionalProperties: false
       required:
         - workerGroup

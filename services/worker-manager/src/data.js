@@ -417,15 +417,15 @@ class Worker {
 
   // Create a serializable representation of this worker suitable for response
   // from an API method.
-  serializable() {
-    return {
+  serializable({ removeQueueData = false, removeWorkerManagerData = false } = {}) {
+    const worker = {
       workerPoolId: this.workerPoolId,
       workerGroup: this.workerGroup,
       workerId: this.workerId,
-      providerId: this.providerId || '',
+      providerId: this.providerId || 'none',
       created: this.created?.toJSON(),
       expires: this.expires?.toJSON(),
-      state: this.state || '',
+      state: this.state || 'unmanaged',
       capacity: this.capacity || 0,
       lastModified: this.lastModified?.toJSON(),
       lastChecked: this.lastChecked?.toJSON(),
@@ -433,6 +433,27 @@ class Worker {
       recentTasks: _.cloneDeep(this.recentTasks),
       lastDateActive: this.lastDateActive?.toJSON(),
     };
+
+    // Remove properties that should not be in this response schema.
+    // These properties are used in the `worker-response.yml` schema
+    // which is used in the `getWorker` API.
+    if (removeQueueData) {
+      delete worker.firstClaim;
+      delete worker.recentTasks;
+      delete worker.lastDateActive;
+    }
+
+    // Remove properties that should not be in this response schema.
+    // These properties are used in the `worker-full.yml` schema
+    // which is used in the `worker`, `createWorker`, and `updateWorker`
+    // APIs.
+    if (removeWorkerManagerData) {
+      delete worker.created;
+      delete worker.lastModified;
+      delete worker.lastChecked;
+    }
+
+    return worker;
   }
 
   // Calls db.update_worker given a modifier.

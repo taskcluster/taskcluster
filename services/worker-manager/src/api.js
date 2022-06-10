@@ -415,7 +415,7 @@ builder.declare({
   });
 
   return res.reply({
-    workers: rows.map(w => Worker.fromDb(w).serializable()),
+    workers: rows.map(w => Worker.fromDb(w).serializable({ removeQueueData: true })),
     continuationToken,
   });
 });
@@ -439,7 +439,7 @@ builder.declare({
   if (!worker) {
     return res.reportError('ResourceNotFound', 'Worker not found', {});
   }
-  res.reply(worker.serializable());
+  res.reply(worker.serializable({ removeQueueData: true }));
 });
 
 let cleanCreatePayload = payload => {
@@ -511,7 +511,7 @@ builder.declare({
   }
   assert(worker, 'Provider createWorker did not return a worker');
 
-  return res.reply(worker.serializable());
+  return res.reply(worker.serializable({ removeQueueData: true }));
 });
 
 builder.declare({
@@ -579,7 +579,7 @@ builder.declare({
   }
   assert(worker, 'Provider updateWorker did not return a worker');
 
-  return res.reply(worker.serializable());
+  return res.reply(worker.serializable({ removeQueueData: true }));
 });
 
 builder.declare({
@@ -663,7 +663,7 @@ builder.declare({
   });
 
   return res.reply({
-    workers: rows.map(w => Worker.fromDb(w).serializable()),
+    workers: rows.map(w => Worker.fromDb(w).serializable({ removeQueueData: true })),
     continuationToken,
   });
 });
@@ -902,9 +902,9 @@ builder.declare({
         firstClaim: worker.firstClaim?.toJSON(),
         lastDateActive: worker.lastDateActive?.toJSON(),
         workerPoolId: worker.workerPoolId,
-        state: worker.state || '',
+        state: worker.state || 'unmanaged',
         capacity: worker.capacity || 0,
-        providerId: worker.providerId || '',
+        providerId: worker.providerId || 'none',
       };
       if (worker.recentTasks.length > 0) {
         entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];
@@ -961,7 +961,7 @@ builder.declare({
     );
   }
 
-  let workerResult = worker.serializable();
+  let workerResult = worker.serializable({ removeWorkerManagerData: true });
   workerResult = { ...workerResult, provisionerId, workerType };
 
   const actions = [];

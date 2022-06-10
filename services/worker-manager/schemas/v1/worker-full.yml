@@ -80,7 +80,7 @@ properties:
     type: integer
     minimum: 1
 
-additionalProperties: true
+additionalProperties: false
 required:
   - workerPoolId
   - workerGroup

@@ -3,7 +3,7 @@
     "content": {
       "$id": "/schemas/worker-manager/v1/worker-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "description": "Response containing information about a worker.\n",
       "properties": {
         "actions": {
@@ -66,7 +66,7 @@
           "uniqueItems": false
         },
         "capacity": {
-          "description": "Number of tasks this worker can handle at once",
+          "description": "Number of tasks this worker can handle at once. A worker capacity of 0 means\nthe worker is not managed by worker manager and is only known to the queue, the\ntrue capacity is not known.\n",
           "minimum": 0,
           "title": "Worker Capacity",
           "type": "integer"
@@ -90,8 +90,9 @@
           "type": "string"
         },
         "providerId": {
-          "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\n",
+          "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\nA providerId of \"none\" is used when the worker is not managed by worker manager.\n",
           "maxLength": 38,
+          "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
           "title": "Provider",
           "type": "string"
@@ -115,13 +116,13 @@
           "uniqueItems": false
         },
         "state": {
-          "description": "A string specifying the state this worker is in so far as worker-manager knows.\nA \"requested\" worker is in the process of starting up, and if successful will enter\nthe \"running\" state once it has registered with the `registerWorker` API method.  A\n\"stopping\" worker is in the process of shutting down and deleting resources, while\na \"stopped\" worker is completely stopped.  Stopped workers are kept for historical\npurposes and are purged when they expire.  Note that some providers transition workers\ndirectly from \"running\" to \"stopped\".\n",
+          "description": "A string specifying the state this worker is in so far as worker-manager knows.\nA \"requested\" worker is in the process of starting up, and if successful will enter\nthe \"running\" state once it has registered with the `registerWorker` API method.  A\n\"stopping\" worker is in the process of shutting down and deleting resources, while\na \"stopped\" worker is completely stopped.  Stopped workers are kept for historical\npurposes and are purged when they expire.  Note that some providers transition workers\ndirectly from \"running\" to \"stopped\".\nAn \"unmanaged\" worker is a worker that is not managed by worker-manager, these workers\nare only known by the queue.\n",
           "enum": [
             "requested",
             "running",
             "stopping",
             "stopped",
-            ""
+            "unmanaged"
           ],
           "title": "State",
           "type": "string"
@@ -479,7 +480,7 @@
     "content": {
       "$id": "/schemas/worker-manager/v1/worker-full.json#",
       "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "description": "A complete worker definition.",
       "properties": {
         "capacity": {
@@ -1267,7 +1268,7 @@
             "additionalProperties": false,
             "properties": {
               "capacity": {
-                "description": "Number of tasks this worker can handle at once",
+                "description": "Number of tasks this worker can handle at once. A worker capacity of 0 means\nthe worker is not managed by worker manager and is only known to the queue, the\ntrue capacity is not known.\n",
                 "minimum": 0,
                 "title": "Worker Capacity",
                 "type": "integer"
@@ -1290,8 +1291,9 @@
                 "title": "Most Recent Task"
               },
               "providerId": {
-                "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\n",
+                "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\nA providerId of \"none\" is used when the worker is not managed by worker manager.\n",
                 "maxLength": 38,
+                "minLength": 1,
                 "pattern": "^([a-zA-Z0-9-_]*)$",
                 "title": "Provider",
                 "type": "string"
@@ -1303,13 +1305,13 @@
                 "type": "string"
               },
               "state": {
-                "description": "A string specifying the state this worker is in so far as worker-manager knows.\nA \"requested\" worker is in the process of starting up, and if successful will enter\nthe \"running\" state once it has registered with the `registerWorker` API method.  A\n\"stopping\" worker is in the process of shutting down and deleting resources, while\na \"stopped\" worker is completely stopped.  Stopped workers are kept for historical\npurposes and are purged when they expire.  Note that some providers transition workers\ndirectly from \"running\" to \"stopped\".\n",
+                "description": "A string specifying the state this worker is in so far as worker-manager knows.\nA \"requested\" worker is in the process of starting up, and if successful will enter\nthe \"running\" state once it has registered with the `registerWorker` API method.  A\n\"stopping\" worker is in the process of shutting down and deleting resources, while\na \"stopped\" worker is completely stopped.  Stopped workers are kept for historical\npurposes and are purged when they expire.  Note that some providers transition workers\ndirectly from \"running\" to \"stopped\".\nAn \"unmanaged\" worker is a worker that is not managed by worker-manager, these workers\nare only known by the queue.\n",
                 "enum": [
                   "requested",
                   "running",
                   "stopping",
                   "stopped",
-                  ""
+                  "unmanaged"
                 ],
                 "title": "State",
                 "type": "string"
