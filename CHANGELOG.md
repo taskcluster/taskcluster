@@ -3,6 +3,42 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.16.0
+
+### GENERAL
+
+▶ [patch]
+Don't allow additional properties in `worker-response.yml` schema. Updated descriptions in `worker-response.yml` and `list-workers-response.yml` schemas to explain some default values that may occur in the case where the queue knows about the worker, but worker manager does not. Also, updated the GraphQL queries to extract additional needed data.
+
+▶ [patch]
+Fix schema validation issues.
+
+▶ [patch]
+Upgrade node to the latest LTS release, v16.15.1. Also upgrade `golangci-lint` to 1.46.2.
+
+▶ [patch]
+Upgrade to `go1.18.3` from `go1.18.2`.
+
+### DEPLOYERS
+
+▶ [patch] [#5042](https://github.com/taskcluster/taskcluster/issues/5042)
+Add a configuration option to disable CORS configuration for the queue's S3
+client. This is a step forward for supporting minio as a S3 backend.
+
+▶ [patch] [#5043](https://github.com/taskcluster/taskcluster/issues/5043)
+Add a configuration option to enable `s3ForcePathStyle` for the queue's S3 client
+
+### USERS
+
+▶ [minor] [#5085](https://github.com/taskcluster/taskcluster/issues/5085)
+Allow Taskcluster to rerun single task from github interface.
+
+▶ [patch]
+Replace rust-crypto by hmac-sha256 in the rust client to help with dependency deduplication
+
+▶ [patch]
+Update a few rust dependencies in the client crate to help reducing duplicates
+
 ## v44.15.5
 
 ### GENERAL
