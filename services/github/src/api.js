@@ -121,10 +121,6 @@ function compareSignatures(sOne, sTwo) {
   return h1.digest('hex') === h2.digest('hex');
 }
 
-function resolve(res, status, message) {
-  return res.status(status).send(message);
-}
-
 /***
  Helper function to look up repo owner in the Azure table to get installation ID,
  and authenticate with GitHub using that ID.
@@ -226,6 +222,15 @@ builder.declare({
 }, async function(req, res) {
   let eventId = req.headers['x-github-delivery'];
 
+  const debugMonitor = this.monitor.childMonitor({ eventId });
+
+  function resolve(res, status, message) {
+    if (status !== 200) {
+      debugMonitor.debug({ message, status });
+    }
+    return res.status(status).send(message);
+  }
+
   let eventType = req.headers['x-github-event'];
   if (!eventType) {
     return resolve(res, 400, 'Missing X-GitHub-Event');
@@ -259,6 +264,13 @@ builder.declare({
 
   const installationId = body.installation && body.installation.id;
   this.monitor.log.webhookReceived({ eventId, eventType, installationId });
+
+  debugMonitor.debug({
+    message: 'Github webhook payload',
+    eventType,
+    installationId,
+    body,
+  });
 
   try {
     msg.body = body;
