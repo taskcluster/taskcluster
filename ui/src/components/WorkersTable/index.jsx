@@ -337,11 +337,7 @@ export default class WorkersTable extends Component {
                       workerGroup,
                       workerId
                     )}
-                    tooltipProps={{
-                      title: ['static', 'none'].includes(providerId)
-                        ? 'Cannot Terminate Static/Standalone Worker'
-                        : 'Terminate Worker',
-                    }}>
+                    tooltipProps={{ title: 'Terminate Worker' }}>
                     Terminate
                   </Button>
                 )}
