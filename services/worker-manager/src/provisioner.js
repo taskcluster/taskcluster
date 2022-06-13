@@ -159,7 +159,12 @@ class Provisioner {
           };
           await provider.provision({ workerPool, workerInfo });
         } catch (err) {
-          this.monitor.reportError(err, { providerId: workerPool.providerId }); // Just report this and move on
+          this.monitor.reportError(err,
+            {
+              providerId: workerPool.providerId,
+              type: 'provisioning-failed',
+            },
+          ); // Just report this and move on
         }
 
         await Promise.all(previousProviderIds.map(async pId => {
