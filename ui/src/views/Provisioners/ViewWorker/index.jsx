@@ -20,6 +20,7 @@ import Link from '../../../utils/Link';
 import { NULL_PROVIDER } from '../../../utils/constants';
 import { withAuth } from '../../../utils/Auth';
 import { removeWorker } from '../../../utils/client';
+import { terminateDisabled } from '../../../utils/terminate';
 import ErrorPanel from '../../../components/ErrorPanel';
 import workerQuery from './worker.graphql';
 import quarantineWorkerQuery from './quarantineWorker.graphql';
@@ -293,9 +294,10 @@ export default class ViewWorker extends Component {
                       )
                     }
                     FabProps={{
-                      disabled:
-                        ['stopping', 'stopped'].includes(worker.state) ||
-                        ['static', 'none'].includes(worker.providerId),
+                      disabled: terminateDisabled(
+                        worker.state,
+                        worker.providerId
+                      ),
                     }}
                   />
                 )}
