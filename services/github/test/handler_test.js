@@ -1162,7 +1162,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(reruns.length, 1);
       assert.equal(reruns[0], taskId);
       assert.deepEqual(usedScopes, [{
-        authorizedScopes: ['assume:repo:github.com/taskcluster/taskcluster'],
+        authorizedScopes: ['assume:repo:github.com/taskcluster/taskcluster:rerun'],
       }]);
     });
     test('do nothing if invalid payload is provided', async function () {
