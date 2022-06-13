@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import HomeLockIcon from 'mdi-react/HomeLockIcon';
 import HammerIcon from 'mdi-react/HammerIcon';
 import HomeLockOpenIcon from 'mdi-react/HomeLockOpenIcon';
+import DeleteIcon from 'mdi-react/DeleteIcon';
 import Spinner from '../../../components/Spinner';
 import TextField from '../../../components/TextField';
 import Dashboard from '../../../components/Dashboard';
@@ -16,8 +17,10 @@ import SpeedDialAction from '../../../components/SpeedDialAction';
 import WorkerTable from '../../../components/WorkerTable';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
+import { NULL_PROVIDER } from '../../../utils/constants';
 import { withAuth } from '../../../utils/Auth';
 import { removeWorker } from '../../../utils/client';
+import { terminateDisabled } from '../../../utils/terminate';
 import ErrorPanel from '../../../components/ErrorPanel';
 import workerQuery from './worker.graphql';
 import quarantineWorkerQuery from './quarantineWorker.graphql';
@@ -252,18 +255,7 @@ export default class ViewWorker extends Component {
                 </Typography>
               </Breadcrumbs>
               <br />
-              <WorkerDetailsCard
-                worker={worker}
-                dialogError={terminateDialogError}
-                dialogConfirmText={terminateDialogConfirmText}
-                dialogBody={terminateDialogBody}
-                dialogTitle={terminateDialogTitle}
-                dialogOpen={terminateDialogOpen}
-                onDialogActionOpen={this.handleTerminateDialogActionOpen}
-                onDeleteClick={this.handleTerminateDeleteClick}
-                onDialogActionError={this.handleTerminateDialogActionError}
-                onDialogActionClose={this.handleTerminateDialogActionClose}
-              />
+              <WorkerDetailsCard worker={worker} />
               <br />
               <WorkerTable worker={worker} />
               <SpeedDial>
@@ -288,6 +280,27 @@ export default class ViewWorker extends Component {
                     disabled: actionLoading,
                   }}
                 />
+                {worker.providerId !== NULL_PROVIDER && (
+                  <SpeedDialAction
+                    tooltipOpen
+                    requiresAuth
+                    icon={<DeleteIcon />}
+                    tooltipTitle="Terminate Worker"
+                    onClick={() =>
+                      this.handleTerminateDialogActionOpen(
+                        worker.workerId,
+                        worker.workerGroup,
+                        worker.workerPoolId
+                      )
+                    }
+                    FabProps={{
+                      disabled: terminateDisabled(
+                        worker.state,
+                        worker.providerId
+                      ),
+                    }}
+                  />
+                )}
                 {worker.actions.map(action => (
                   <SpeedDialAction
                     requiresAuth
@@ -347,6 +360,18 @@ export default class ViewWorker extends Component {
                     onClose={this.handleDialogClose}
                   />
                 ))}
+              {terminateDialogOpen && (
+                <DialogAction
+                  error={terminateDialogError}
+                  open={terminateDialogOpen}
+                  title={terminateDialogTitle}
+                  body={terminateDialogBody}
+                  confirmText={terminateDialogConfirmText}
+                  onSubmit={this.handleTerminateDeleteClick}
+                  onError={this.handleTerminateDialogActionError}
+                  onClose={this.handleTerminateDialogActionClose}
+                />
+              )}
             </Fragment>
           )}
         </Fragment>

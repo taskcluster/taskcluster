@@ -23,6 +23,7 @@ import { withAuth } from '../../utils/Auth';
 import Link from '../../utils/Link';
 import { removeWorker } from '../../utils/client';
 import sort from '../../utils/sort';
+import { enableTerminate, terminateDisabled } from '../../utils/terminate';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.workerId, b.node.workerId)),
@@ -325,10 +326,10 @@ export default class WorkersTable extends Component {
                 )}
               </TableCell>
               <TableCell>
-                {providerId !== NULL_PROVIDER && state !== 'stopping' && (
+                {providerId !== NULL_PROVIDER && enableTerminate(state) && (
                   <Button
                     requiresAuth
-                    disabled={['stopping', 'stopped'].includes(state)}
+                    disabled={terminateDisabled(state, providerId)}
                     variant="outlined"
                     endIcon={<DeleteIcon size={iconSize} />}
                     onClick={this.handleDialogActionOpen(
@@ -336,7 +337,11 @@ export default class WorkersTable extends Component {
                       workerGroup,
                       workerId
                     )}
-                    tooltipProps={{ title: 'Terminate Worker' }}>
+                    tooltipProps={{
+                      title: ['static', 'none'].includes(providerId)
+                        ? 'Cannot Terminate Static/Standalone Worker'
+                        : 'Terminate Worker',
+                    }}>
                     Terminate
                   </Button>
                 )}
