@@ -196,7 +196,7 @@ class Handlers {
         bindings: rerunBindings,
         queueName: this.rerunQueueName,
       },
-      this.monitor.timedHandler('tasklistener', callHandler('rerun', rerunHandler).bind(this)),
+      this.monitor.timedHandler('rerunlistener', callHandler('rerun', rerunHandler).bind(this)),
     );
 
   }

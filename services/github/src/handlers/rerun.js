@@ -2,6 +2,9 @@ const { makeDebug } = require('./utils');
 
 /**
  * Github events that request a task rerun.
+ *
+ * To be able to rerun a task, client will assume `repo:github.com/<owner>/<repo>:rerun` role.
+ * This role needs to be defined and should include scopes necessary to call `queue.rerunTask`
  **/
 async function rerunHandler(message) {
   const { checkRunId, checkSuiteId, organization, eventId, installationId, details } = message.payload;
@@ -32,7 +35,7 @@ async function rerunHandler(message) {
 
   try {
     const limitedQueueClient = this.queueClient.use({
-      authorizedScopes: [`assume:repo:github.com/${organization}/${repo}`],
+      authorizedScopes: [`assume:repo:github.com/${organization}/${repo}:rerun`],
     });
     const taskStatus = await limitedQueueClient.rerunTask(taskId);
     debug('Response', { taskStatus });
