@@ -216,6 +216,7 @@ You need to know which provisioner and which worker type you want to use to run 
 [Roles](/docs/manual/design/apis/hawk/roles) are, in a nutshell, sets of [scopes](/docs/reference/platform/auth/scopes). Taskcluster-Github uses a very specific role to create tasks for each project.  That role has the form
 * `assume:repo:github.com/<owner>/<repo>:branch:<branch>` for a push event
 * `assume:repo:github.com/<owner>/<repo>:pull-request` for a pull request
+* `assume:repo:github.com/<owner>/<repo>:rerun` for failed task re-run request
 * `assume:repo:github.com/<owner>/<repo>:release` for a release event
 * `assume:repo:github.com/<organization>/<repository>:tag:<tag>` for a tag event
 
