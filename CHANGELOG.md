@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.16.2
+
+### GENERAL
+
+▶ [patch]
+This patch adds a new field to be logged out on a failed provision call. This field will be used to measure the provisioning failed count.
+
+### USERS
+
+▶ [patch] [#5503](https://github.com/taskcluster/taskcluster/issues/5503)
+Add missing task-rerun scope to github handler.
+
+▶ [patch] [#5506](https://github.com/taskcluster/taskcluster/issues/5506)
+Log debug information for incoming Github webhooks.
+
+▶ [patch] [#5501](https://github.com/taskcluster/taskcluster/issues/5501)
+This patch makes it so a user cannot click the `Terminate Worker` button on a Static or Standalone worker. This patch also moves the `Terminate Worker` button on the view individual worker page to the speed dial menu alongside the `Quarantine` button. These issues were first brought up in v44.15.0.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Renovate updates</summary>
+
+* Update module golang.org/x/tools to v0.1.11 (147766abb)
+
+</details>
+
 ## v44.16.1
 
 ### GENERAL
