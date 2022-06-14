@@ -82,10 +82,11 @@ The taskcluster UI defines the following roles:
 
 * `repo:<host>/<path>:…`,
   `repo:<host>/<path>:branch:<branch>`,
-  `repo:<host>/<path>:pull-request` -
+  `repo:<host>/<path>:pull-request`,
+  `repo:<host>/<path>:rerun`, -
    Roles of this form represent scopes available to version-control pushes and pull requests.
    The `host` and `path` are modeled on the URL for the repository, allowing the first version of this pattern to apply to all version-control systems.
-   The `branch` and `pull-request` forms are specific to version-control systems supporting those concepts.
+   The `branch`, `pull-request` and `rerun` forms are specific to version-control systems supporting those concepts.
    This pattern can be extended, too.
    For example, given a system to schedule periodic tasks from a repository, those tasks could be granted `assume:repo:<host>/<path>:cron:<name>`.
 
