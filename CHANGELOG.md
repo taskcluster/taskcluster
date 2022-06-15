@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.16.3
+
+### GENERAL
+
+▶ [patch]
+This patch returns up the `quarantineUntil` field in the `workerManager.getWorker` and `workerManager.listWorkers` methods. This issue was first noticed in v44.15.0.
+
 ## v44.16.2
 
 ### GENERAL
