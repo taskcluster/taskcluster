@@ -432,6 +432,7 @@ class Worker {
       firstClaim: this.firstClaim?.toJSON(),
       recentTasks: _.cloneDeep(this.recentTasks),
       lastDateActive: this.lastDateActive?.toJSON(),
+      quarantineUntil: this.quarantineUntil?.toJSON(),
     };
 
     // Remove properties that should not be in this response schema.
@@ -441,6 +442,7 @@ class Worker {
       delete worker.firstClaim;
       delete worker.recentTasks;
       delete worker.lastDateActive;
+      delete worker.quarantineUntil;
     }
 
     // Remove properties that should not be in this response schema.

@@ -683,11 +683,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerGroup: input.workerGroup,
       workerId: input.workerId,
     });
-    const expected = worker.serializable();
-    // remove properties that come from queue_workers table
-    delete expected.firstClaim;
-    delete expected.recentTasks;
-    delete expected.lastDateActive;
+    const expected = worker.serializable({ removeQueueData: true });
 
     assert(!('secret' in data));
     assert.deepStrictEqual(data, expected);

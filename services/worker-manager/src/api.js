@@ -905,12 +905,10 @@ builder.declare({
         state: worker.state || 'standalone',
         capacity: worker.capacity || 0,
         providerId: worker.providerId || 'none',
+        quarantineUntil: worker.quarantineUntil?.toJSON(),
       };
       if (worker.recentTasks.length > 0) {
         entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];
-      }
-      if (worker.quarantineUntil?.getTime() > now.getTime()) {
-        entry.quarantineUntil = worker.quarantineUntil.toJSON();
       }
       return entry;
     }),
