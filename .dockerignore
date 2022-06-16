@@ -7,3 +7,5 @@ dev-config.yml
 artifacts
 **/.nyc_output
 clients/client-rust/target
+ui/build
+temp
