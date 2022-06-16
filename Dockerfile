@@ -23,18 +23,8 @@ RUN cp -r /base/yarn/node_modules /base/app/
 RUN cp -r /base/yarn-ui/node_modules /base/app/ui/
 
 # copy the repository into the image, including the entrypoint
-COPY / /base/repo
-
-# We have to do this rather than git clone because
-# git won't let us clone into a non-empty repo
-# We do this git stuff at all so that we don't
-# make images with things people have in their
-# personal gitignores, etc
 WORKDIR /base/app
-RUN git init
-RUN git remote add origin /base/repo
-RUN git pull --tags origin HEAD
-
+COPY . /base/app
 RUN chmod +x entrypoint
 
 # Write out the DockerFlow-compatible version.json file
@@ -42,7 +32,7 @@ ARG DOCKER_FLOW_VERSION
 RUN if [ -n "${DOCKER_FLOW_VERSION}" ]; then \
     echo "${DOCKER_FLOW_VERSION}" > version.json; \
 else \
-    echo \{\"version\": \"$(git describe --tags --always --match v*.*.*)\", \"commit\": \"$(git rev-parse HEAD)\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json; \
+    echo \{\"version\": \"44.16.3\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json; \
 fi
 
 # Build the UI and discard everything else in that directory

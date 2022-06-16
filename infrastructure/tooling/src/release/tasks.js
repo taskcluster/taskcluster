@@ -215,6 +215,13 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         changed.push(file);
       }
 
+      utils.status({ message: 'Dockerfile' });
+      await modifyRepoFile('Dockerfile',
+        contents => contents.replace(
+          /\\"version\\":\s*\\"([0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2})/gm,
+          `\\"version\\": \\"${requirements['release-version']}`));
+      changed.push('Dockerfile');
+
       return { 'version-updated': changed };
     },
   });
