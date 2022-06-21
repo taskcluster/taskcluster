@@ -36,7 +36,7 @@
     "diveSync": "^0.3.0",
     "docker-exec-websocket-server": "^3.0.0",
     "docker-image-parser": "^1.0.0",
-    "dockerode": "^3.2.1",
+    "dockerode": "^3.3.2",
     "dockerode-options": "^0.2.0",
     "dockerode-process": "^0.7.0",
     "fs-ext": "^2.0.0",
