@@ -58,7 +58,7 @@
     "request-promise-native": "^1.0.7",
     "rimraf": "^3.0.0",
     "serialize-error": "^8.0.0",
-    "slugid": "^2.0.0",
+    "slugid": "^3.0.0",
     "source-map-support": "^0.5.0",
     "split2": "^3.0.0",
     "stateless-dns-server": "^0.2.1",
