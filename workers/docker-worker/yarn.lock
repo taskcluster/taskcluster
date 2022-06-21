@@ -1995,10 +1995,10 @@ tar-stream@^2.0.0, tar-stream@^2.1.3, tar-stream@^2.1.4:
     inherits "^2.0.3"
     readable-stream "^3.1.1"
 
-taskcluster-client@^44.13.5:
-  version "44.13.5"
-  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-44.13.5.tgz#19b0074b7f1dfb736006f3d89ca6842acff53e66"
-  integrity sha512-AK3b6c9jssf4qdY2v9Z4hJpdOALlMv74RgCueI7kYjM0lQXicEYyn8sLlNCCTNEVrk5c7VSbK/abhTJ1FZZEdw==
+taskcluster-client@^44.16.3:
+  version "44.16.3"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-44.16.3.tgz#4edbdb7cb41861e4c6f8d53a4c4fe7ecc2e7e80c"
+  integrity sha512-pa8W+W1WDoLceiRAMuF50pmwW3qjutCx2e5rJsXDmH6RrFdkxnlGh6Q2vcx1htShdldHBsH/zrf0CDWwHEdvfg==
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
