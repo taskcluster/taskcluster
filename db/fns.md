@@ -148,6 +148,8 @@
    * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
    * [`get_queue_worker_with_wm_join`](#get_queue_worker_with_wm_join)
    * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
+   * [`get_queue_workers_with_wm_join_quarantined`](#get_queue_workers_with_wm_join_quarantined)
+   * [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
    * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
    * [`get_task_queues_wm`](#get_task_queues_wm)
    * [`get_worker_2`](#get_worker_2)
@@ -2344,6 +2346,8 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
 * [`get_queue_worker_with_wm_join`](#get_queue_worker_with_wm_join)
 * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
+* [`get_queue_workers_with_wm_join_quarantined`](#get_queue_workers_with_wm_join_quarantined)
+* [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
 * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
 * [`get_task_queues_wm`](#get_task_queues_wm)
 * [`get_worker_2`](#get_worker_2)
@@ -2567,6 +2571,63 @@ This also performs an outer join with the worker_manager.worker table for more d
 * *Last defined on version*: 73
 
 Get non-expired queue workers ordered by worker_pool_id, worker_group, and worker_id.
+Workers are not considered expired until after their quarantine date expires.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
+This also performs an outer join with the worker_manager.worker table for more data.
+
+### get_queue_workers_with_wm_join_quarantined
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `worker_group text`
+  * `worker_id text`
+  * `quarantine_until timestamptz`
+  * `expires timestamptz`
+  * `first_claim timestamptz`
+  * `recent_tasks jsonb`
+  * `last_date_active timestamptz`
+  * `state text`
+  * `capacity int4`
+  * `provider_id text`
+  * `etag uuid`
+* *Last defined on version*: 77
+
+Get quarantined queue workers ordered by worker_pool_id, worker_group, and worker_id.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
+This also performs an outer join with the worker_manager.worker table for more data.
+
+### get_queue_workers_with_wm_join_state
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `expires_in timestamptz`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+  * `worker_state_in text`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `worker_group text`
+  * `worker_id text`
+  * `quarantine_until timestamptz`
+  * `expires timestamptz`
+  * `first_claim timestamptz`
+  * `recent_tasks jsonb`
+  * `last_date_active timestamptz`
+  * `state text`
+  * `capacity int4`
+  * `provider_id text`
+  * `etag uuid`
+* *Last defined on version*: 77
+
+Get non-expired queue workers by state ordered by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.

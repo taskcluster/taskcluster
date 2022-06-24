@@ -6350,6 +6350,30 @@
         }
       },
       "version": 76
+    },
+    {
+      "description": "create additional functions to filter workers on state and quarantined status",
+      "methods": {
+        "get_queue_workers_with_wm_join_quarantined": {
+          "args": "task_queue_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id as worker_pool_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active,\n    workers.state,\n    workers.capacity,\n    workers.provider_id,\n    public.gen_random_uuid()\n  from queue_workers\n  full outer join workers on workers.worker_id = queue_workers.worker_id\n  where\n    (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_with_wm_join_quarantined.task_queue_id_in is null) and\n    (queue_workers.expires >= now() and queue_workers.quarantine_until >= now())\n  order by worker_pool_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get quarantined queue workers ordered by worker_pool_id, worker_group, and worker_id.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.\nThis also performs an outer join with the worker_manager.worker table for more data.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, state text, capacity int4, provider_id text, etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "get_queue_workers_with_wm_join_state": {
+          "args": "task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer, worker_state_in text",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id as worker_pool_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active,\n    workers.state,\n    workers.capacity,\n    workers.provider_id,\n    public.gen_random_uuid()\n  from queue_workers\n  full outer join workers on workers.worker_id = queue_workers.worker_id\n  where\n    workers.state = worker_state_in and\n    (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_with_wm_join_state.task_queue_id_in is null) and\n    ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers_with_wm_join_state.expires_in is null)\n  order by worker_pool_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get non-expired queue workers by state ordered by worker_pool_id, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.\nThis also performs an outer join with the worker_manager.worker table for more data.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, state text, capacity int4, provider_id text, etag uuid)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 77
     }
   ]
 }

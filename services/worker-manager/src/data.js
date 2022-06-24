@@ -337,13 +337,32 @@ class Worker {
     const fetchResults = async (query) => {
       const { continuationToken, rows } = await paginateResults({
         query,
-        fetch: (size, offset) =>
-          db.fns.get_queue_workers_with_wm_join(
+        fetch: (size, offset) => {
+          if (Object.keys(query).includes('workerState')) {
+            return db.fns.get_queue_workers_with_wm_join_state(
+              workerPoolId || null,
+              expires || null,
+              size,
+              offset,
+              query.workerState,
+            );
+          }
+
+          if (query.quarantined === 'true') {
+            return db.fns.get_queue_workers_with_wm_join_quarantined(
+              workerPoolId || null,
+              size,
+              offset,
+            );
+          }
+
+          return db.fns.get_queue_workers_with_wm_join(
             workerPoolId || null,
             expires || null,
             size,
             offset,
-          ),
+          );
+        },
       });
 
       const entries = rows.map(Worker.fromDb);
