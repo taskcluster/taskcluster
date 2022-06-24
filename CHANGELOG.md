@@ -3,6 +3,22 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.16.4
+
+### USERS
+
+▶ [patch] [#5517](https://github.com/taskcluster/taskcluster/issues/5517)
+This patch fixes the quarantined value on the workers table to be `n/a` if the quarantined value is in the past. This issue was first noticed in v44.16.3.
+
+### DEVELOPERS
+
+▶ [patch]
+Added docker-compose.yml for local development.
+
+### OTHER
+
+▶ Additional change not described here: [#5503](https://github.com/taskcluster/taskcluster/issues/5503).
+
 ## v44.16.3
 
 ### GENERAL
