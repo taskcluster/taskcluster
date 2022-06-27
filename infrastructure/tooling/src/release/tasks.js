@@ -215,12 +215,18 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         changed.push(file);
       }
 
-      utils.status({ message: 'Dockerfile' });
+      utils.status({ message: 'Update Dockerfile' });
       await modifyRepoFile('Dockerfile',
         contents => contents.replace(
-          /\\"version\\":\s*\\"([0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2})/gm,
+          /\\"version\\":\s*\\"[0-9.]*/gm,
           `\\"version\\": \\"${requirements['release-version']}`));
       changed.push('Dockerfile');
+
+      const dockerCompose = 'docker-compose.yml';
+      utils.status({ message: `Update ${dockerCompose}` });
+      await modifyRepoFile(dockerCompose, contents =>
+        contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage));
+      changed.push(dockerCompose);
 
       return { 'version-updated': changed };
     },
