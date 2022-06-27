@@ -1154,6 +1154,16 @@ suite(testing.suiteName(), function() {
       assert.equal(results[5].worker_pool_id, 'prov/w/5');
     });
 
+    helper.dbTest('get_queue_workers_with_wm_join_state empty', async function(db) {
+      const res = await db.fns.get_queue_workers_with_wm_join_state(null, null, null, null, null);
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_queue_workers_with_wm_join_quarantined empty', async function(db) {
+      const res = await db.fns.get_queue_workers_with_wm_join_quarantined(null, null, null);
+      assert.deepEqual(res, []);
+    });
+
     helper.dbTest('update_queue_worker_tqid (deprecated)', async function(db) {
       await create(db);
       const res = await db.deprecatedFns.update_queue_worker_tqid(

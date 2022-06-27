@@ -868,10 +868,7 @@ builder.declare({
     'page. You may limit this with the query-string parameter `limit`.',
   ].join('\n'),
 }, async function(req, res) {
-  const quarantined = req.query.quarantined || null;
-  const workerState = req.query.workerState || null;
   const { provisionerId, workerType } = req.params;
-  const now = new Date();
   const workerPoolId = joinWorkerPoolId(provisionerId, workerType);
 
   const { rows: workers, continuationToken } = await Worker.getWorkers(
@@ -881,21 +878,7 @@ builder.declare({
   );
 
   const result = {
-    workers: workers.filter(worker => {
-      let quarantineFilter = true;
-      if (quarantined === 'true') {
-        quarantineFilter = worker.quarantineUntil >= now;
-      } else if (quarantined === 'false') {
-        quarantineFilter = worker.quarantineUntil < now;
-      }
-      // filter out anything that is both expired and not quarantined
-      // so that quarantined workers remain visible even after expiration
-      return (
-        (worker.expires >= now || worker.quarantineUntil >= now) &&
-        quarantineFilter &&
-        (workerState ? worker.state === workerState : true)
-      );
-    }).map(worker => {
+    workers: workers.map(worker => {
       let entry = {
         workerGroup: worker.workerGroup,
         workerId: worker.workerId,
