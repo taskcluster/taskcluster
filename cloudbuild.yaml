@@ -1,0 +1,18 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '--build-arg'
+      - 'DOCKER_FLOW_VERSION=${_VERSION}'
+      - '-t'
+      - '${_IMAGE_NAME}'
+      - .
+timeout: 1500s
+images:
+  - '${_IMAGE_NAME}'
+options:
+  dynamicSubstitutions: true
+substitutions:
+  _IMAGE_NAME: 'gcr.io/taskcluster-dev/${PROJECT_ID}/${BRANCH_NAME}:latest'
+  _VERSION: >-
+    {"version":"${BRANCH_NAME}_dev","commit":"${SHORT_SHA}","source":"https://github.com/taskcluster/taskcluster","build":"${BUILD_ID}"}
