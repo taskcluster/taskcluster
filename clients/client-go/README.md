@@ -135,6 +135,7 @@ settings.Reset()
 queue.HTTPBackoffClient = &httpbackoff.Client{
     BackOffSettings: settings,
 }
+```
 
 
 ### Generating Signed URLs
