@@ -1,6 +1,7 @@
 const WatchDog = require('./watchdog');
 const debug = require('debug')('iterate');
 const events = require('events');
+const { hrtime } = require('process');
 
 /**
  * The Iterate Class.  See README.md for explanation of constructor
@@ -128,14 +129,14 @@ class Iterate extends events.EventEmitter {
 
       this.emit('iteration-start');
 
-      const start = process.hrtime();
+      const start = hrtime.bigint();
       try {
         await this.single_iteration();
       } catch (err) {
         iterError = err;
       }
-      const d = process.hrtime(start);
-      const duration = d[0] * 1000 + d[1] / 1000000;
+      const end = hrtime.bigint();
+      const duration = Number(end - start) / 1e6; // in ms
 
       this.emit(iterError ? 'iteration-failure' : 'iteration-success');
 

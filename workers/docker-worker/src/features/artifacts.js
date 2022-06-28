@@ -9,6 +9,7 @@ const mime = require('mime');
 const tarStream = require('tar-stream');
 const Debug = require('debug');
 const assert = require('assert');
+const { hrtime } = require('process');
 
 const { fmtLog, fmtErrorLog } = require('../log');
 const uploadToS3 = require('../upload_to_s3');
@@ -149,14 +150,14 @@ class Artifacts {
         assert.ok(region);
 
         let monitor = taskHandler.runtime.monitor;
-        let start = process.hrtime();
+        const start = hrtime.bigint();
 
         let { digest, size } = await uploadToS3(taskHandler.queue, taskId, runId, stream,
           entryName, expiry, headers, null, null, compress);
 
         // save the time taken to upload the artifact
-        let elapsedTime = process.hrtime(start);
-        let uploadTime = elapsedTime[0] * 1e3 + elapsedTime[1] / 1e6; // in miliseconds
+        const end = hrtime.bigint();
+        let uploadTime = Number(end - start) / 1e6; // in ms
 
         // report metrics globally...
         monitor.measure('artifacts.global.size', size);
