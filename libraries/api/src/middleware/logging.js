@@ -1,4 +1,5 @@
 const { MonitorManager } = require('taskcluster-lib-monitor');
+const { hrtime } = require('process');
 
 MonitorManager.register({
   name: 'apiMethod',
@@ -51,7 +52,7 @@ MonitorManager.register({
 const logRequest = ({ builder, entry }) => {
   return (req, res, next) => {
     let sent = false;
-    const start = process.hrtime();
+    const start = hrtime.bigint();
     const send = async () => {
       // Avoid sending twice
       if (sent) {
@@ -73,7 +74,7 @@ const logRequest = ({ builder, entry }) => {
         query['bewit'] = '...';
       }
 
-      const d = process.hrtime(start);
+      const end = hrtime.bigint();
 
       req.tcContext.monitor.log.apiMethod({
         name: entry.name,
@@ -93,7 +94,7 @@ const logRequest = ({ builder, entry }) => {
         sourceIp: req.ip,
         satisfyingScopes: req.satisfyingScopes ? req.satisfyingScopes : [],
         statusCode: res.statusCode,
-        duration: d[0] * 1000 + d[1] / 1000000,
+        duration: Number(end - start) / 1e6, // in ms
       });
     };
     res.once('finish', send);

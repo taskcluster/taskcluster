@@ -2,6 +2,7 @@ const _ = require('lodash');
 const assert = require('assert');
 const { Logger } = require('./logger');
 const TimeKeeper = require('./timekeeper');
+const { hrtime } = require('process');
 
 class Monitor {
   constructor({
@@ -113,12 +114,12 @@ class Monitor {
    * The most basic timer.
    */
   timer(key, funcOrPromise) {
-    const start = process.hrtime();
-    const done = (x) => {
-      const d = process.hrtime(start);
+    const start = hrtime.bigint();
+    const done = () => {
+      const end = hrtime.bigint();
       this.log.basicTimer({
         key,
-        duration: d[0] * 1000 + d[1] / 1000000,
+        duration: Number(end - start) / 1e6, // in ms
       });
     };
     if (funcOrPromise instanceof Function) {
@@ -141,7 +142,7 @@ class Monitor {
    */
   timedHandler(name, handler) {
     return async (message) => {
-      const start = process.hrtime();
+      const start = hrtime.bigint();
       let success = 'success';
       try {
         await handler(message);
@@ -149,11 +150,11 @@ class Monitor {
         success = 'error';
         throw e;
       } finally {
-        const d = process.hrtime(start);
+        const end = hrtime.bigint();
         this.log.handlerTimer({
           name,
           status: success,
-          duration: d[0] * 1000 + d[1] / 1000000,
+          duration: Number(end - start) / 1e6, // in ms
         });
       }
     };
@@ -193,7 +194,7 @@ class Monitor {
    */
   async oneShot(name, fn) {
     let exitStatus = 0;
-    const start = process.hrtime();
+    const start = hrtime.bigint();
     try {
       assert.equal(typeof name, 'string');
       assert.equal(typeof fn, 'function');
@@ -203,10 +204,10 @@ class Monitor {
       this.reportError(err);
       exitStatus = 1;
     } finally {
-      const d = process.hrtime(start);
+      const end = hrtime.bigint();
       this.log.periodic({
         name,
-        duration: d[0] * 1000 + d[1] / 1000000,
+        duration: Number(end - start) / 1e6, // in ms
         status: exitStatus ? 'exception' : 'success',
       }, { level: exitStatus ? 'err' : 'notice' });
       if (!this.fake || this.fake.allowExit) {

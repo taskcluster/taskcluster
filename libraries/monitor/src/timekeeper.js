@@ -1,3 +1,5 @@
+const { hrtime } = require('process');
+
 /**
  * A TimeKeeper is used for measuring arbitrary times.  This is nice when the
  * action to time does not fit neatly into a single function or promise.  A
@@ -13,7 +15,7 @@ class TimeKeeper {
   constructor(monitor, name) {
     this.monitor = monitor;
     this.name = name;
-    this.start = process.hrtime();
+    this.start = hrtime.bigint();
     this.submitted = false;
   }
 
@@ -26,10 +28,10 @@ class TimeKeeper {
       throw new Error('Cannot submit measurement twice for ' + this.monitor.prefix + ' ' + this.name);
     }
     this.submitted = true;
-    const d = process.hrtime(this.start);
+    const end = hrtime.bigint();
     this.monitor.log.timekeeper(Object.assign({
       key: this.name,
-      duration: d[0] * 1000 + d[1] / 1000000,
+      duration: Number(end - this.start) / 1e6, // in ms
     }, extra));
   }
 }

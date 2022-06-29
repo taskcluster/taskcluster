@@ -6,6 +6,7 @@ const assert = require('assert');
 const _ = require('lodash');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
+const { hrtime } = require('process');
 
 suite(testing.suiteName(), () => {
   let scopeResolver;
@@ -374,26 +375,26 @@ suite(testing.suiteName(), () => {
         // initial runs to skip (allows JIT warmup)
         // we also use this to estimate how many iterations we need to run
         // inorder to do timing for TIMEING_TIME time.
-        const preheat = process.hrtime();
+        const preheat = hrtime.bigint();
         while (true) {
           for (let i = 0; i < MIN_ITERATIONS; i++) {
             result = fn();
           }
           count += 1;
-          const diff = process.hrtime(preheat);
-          if (diff[0] * 1000000000 + diff[1] > PREHEAT_TIME) {
-            mean = (diff[0] * 1000000000 + diff[1]) / (MIN_ITERATIONS * count);
+          const end = hrtime.bigint();
+          if (end - preheat > PREHEAT_TIME) {
+            mean = Number(end - preheat) / (MIN_ITERATIONS * count);
             break;
           }
         }
         // Estimate iterations to measure and run them
         let iterations = Math.ceil(TIMEING_TIME / mean);
-        const start = process.hrtime();
+        const start = hrtime.bigint();
         for (let i = 0; i < iterations; i++) {
           result = fn();
         }
-        const diff = process.hrtime(start);
-        mean = (diff[0] * 1000000000 + diff[1]) / iterations;
+        const end = hrtime.bigint();
+        mean = Number(end - start) / iterations;
 
         let unit = 'ns';
         if (mean > 1000) {
