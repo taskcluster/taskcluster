@@ -132,6 +132,8 @@ const load = loader(
           tracing: true,
           plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
           csrfPrevention: true,
+          // https://www.apollographql.com/docs/apollo-server/performance/cache-backends/#ensuring-a-bounded-cache
+          cache: 'bounded',
         });
         await server.start();
 
