@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.17.0
+
+### GENERAL
+
+▶ [minor] [#5456](https://github.com/taskcluster/taskcluster/issues/5456)
+This change adds more DB functions to allow for filtering in the DB based on worker state and quarantined status for the workers page. Previously, filtering would only happen on the initial page loaded from the DB if results were paginated. This should also speed up the workers page rendering when a filter is applied.
+
+▶ [patch] [#5529](https://github.com/taskcluster/taskcluster/issues/5529)
+This patch makes it so that the `docker-compose.yml` file is updated with the new taskcluster docker image version on a `yarn release`. Previously, the version wasn't updated, so the `meta-generate` task would fail on releases. This issue first appeared in v44.16.4.
+
+▶ [patch] [#5319](https://github.com/taskcluster/taskcluster/issues/5319)
+This patch migrates the legacy, `process.hrtime([time])` to the new, `process.hrtime.bigint()`.
+See [Node Docs](https://nodejs.org/docs/latest-v16.x/api/process.html#processhrtimetime) for more information.
+
+▶ [patch]
+This patch upgrades dependencies to their latest minor/patch versions. Doing so fixes a handful of vulns found within Snyk and docker scans.
+
+### DEVELOPERS
+
+▶ [patch]
+Added a `cloudbuild.yaml` file for the Google Cloud Build trigger on the `main` branch.
+
 ## v44.16.4
 
 ### USERS

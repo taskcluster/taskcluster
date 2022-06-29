@@ -44,7 +44,7 @@ services:
       retries: 60
       start_period: 3s
   pg_init_db:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -88,7 +88,7 @@ services:
         condition: service_healthy
     entrypoint: /bin/sh -c "/usr/bin/mc config host rm local;/usr/bin/mc config host add --quiet --api s3v4 local http://s3:9000 minioadmin miniopassword;/usr/bin/mc rb --force local/public-bucket/;/usr/bin/mc mb --quiet local/public-bucket/;/usr/bin/mc policy set public local/public-bucket;/usr/bin/mc rb --force local/private-bucket/;/usr/bin/mc mb --quiet local/private-bucket/;/usr/bin/mc policy set public local/public-bucket;"
   ui:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -115,7 +115,7 @@ services:
     ports:
       - '8080:80'
   auth-web:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -151,7 +151,7 @@ services:
     ports:
       - '3011:80'
   built-in-workers-server:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -170,7 +170,7 @@ services:
       queue-web:
         condition: service_healthy
   github-web:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -211,7 +211,7 @@ services:
     ports:
       - '3012:80'
   hooks-web:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -248,7 +248,7 @@ services:
     ports:
       - '3013:80'
   index-web:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -284,7 +284,7 @@ services:
     ports:
       - '3014:80'
   notify-web:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -323,7 +323,7 @@ services:
     ports:
       - '3015:80'
   object-web:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -356,7 +356,7 @@ services:
     ports:
       - '3016:80'
   purge-cache-web:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -387,7 +387,7 @@ services:
     ports:
       - '3017:80'
   queue-web:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -432,7 +432,7 @@ services:
     ports:
       - '3018:80'
   secrets-web:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -463,7 +463,7 @@ services:
     ports:
       - '3019:80'
   web-server-web:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
@@ -503,7 +503,7 @@ services:
     ports:
       - '3050:3050'
   worker-manager-web:
-    image: taskcluster/taskcluster:v44.16.4
+    image: taskcluster/taskcluster:v44.17.0
     networks:
       - local
     environment:
