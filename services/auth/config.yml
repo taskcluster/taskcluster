@@ -43,9 +43,6 @@ defaults:
       schemas:                  !env:optional SCHEMAS_BUCKET
       references:               !env:optional REFS_BUCKET
 
-    # Name of a kinesis firehose stream to write audit logs to
-    auditLog:                   !env:optional AUDIT_LOG
-
   monitoring:
     level:                      !env:optional LEVEL
     errorConfig:                !env:json:optional ERROR_CONFIG
