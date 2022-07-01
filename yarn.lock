@@ -3343,7 +3343,7 @@ googleapis@^73.0.0:
     google-auth-library "^7.0.2"
     googleapis-common "^5.0.2"
 
-got@^11.7.0, got@^11.8.1:
+got@^11.7.0:
   version "11.8.5"
   resolved "https://registry.yarnpkg.com/got/-/got-11.8.5.tgz#ce77d045136de56e8f024bebb82ea349bc730046"
   integrity sha512-o0Je4NvQObAuZPHLFoRSkdG2lTgtcynqymzg2Vupdx6PorhaT5MCbIyXG6d4D94kk8ZG57QeosgdiqfJWhEhlQ==
@@ -3488,7 +3488,7 @@ hashids@^2.0.0:
   resolved "https://registry.yarnpkg.com/hashids/-/hashids-2.2.10.tgz#82f45538cf03ce73e31b78d1abe78d287cf760c4"
   integrity sha512-nXnYums7F8B5Y+GSThutLPlKMaamW1yjWNZVt0WModiJfdjaDZHnhYTWblS+h1OoBx3yjwiBwxldPP3nIbFSSA==
 
-hawk@9.0.1, hawk@^9.0.1:
+hawk@9.0.1:
   version "9.0.1"
   resolved "https://registry.yarnpkg.com/hawk/-/hawk-9.0.1.tgz#0be51769103e76fe97a97ae7fa356c313bb93160"
   integrity sha512-H2E+5ATFEXmorgVzYl3NzG3PCo2e+euYrHDnRpLLdOtJrQHGRXrJT9/joWnrkHCtzDZkaNoLXg/+TsSkD06eNg==
@@ -4291,7 +4291,7 @@ lodash.truncate@^4.4.2:
   resolved "https://registry.yarnpkg.com/lodash.truncate/-/lodash.truncate-4.4.2.tgz#5a350da0b1113b837ecfffd5812cbe58d6eae193"
   integrity sha1-WjUNoLERO4N+z//VgSy+WNbq4ZM=
 
-lodash@4.17.21, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.21, lodash@^4.17.4, lodash@^4.17.5:
+lodash@4.17.21, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.21, lodash@^4.17.5:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
@@ -5672,10 +5672,10 @@ repeat-string@^1.0.0:
   resolved "https://registry.yarnpkg.com/repeat-string/-/repeat-string-1.6.1.tgz#8dcae470e1c88abc2d600fff4a776286da75e637"
   integrity sha1-jcrkcOHIirwtYA//Sndihtp15jc=
 
-request-ip@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/request-ip/-/request-ip-2.2.0.tgz#8dbf53de6c5eb9a7da63a4f9f8991c1ea968a099"
-  integrity sha512-Hn4zUAr+XHbUs2RrfHur62t7+UhvtevqK32ordFewguEfNHUkhSdYgbG7PDGmXZEzqEXll9bei0+VMe6gkmuUQ==
+request-ip@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/request-ip/-/request-ip-3.0.2.tgz#d99e759e79ad4b6cac6bc80674ddbdcdd4e8b39e"
+  integrity sha512-uH2rCq8yug89KD1r59obP6n2PySNmXKtqzUgYlR+7b3njx9QM2e7mG+P5PMWp3ipUH4XjidUjZbjPnQRY+QdpA==
   dependencies:
     is_js "^0.9.0"
 
@@ -6024,13 +6024,6 @@ slugid@^2.0.0:
     uuid "^3.2.1"
     uuid-parse "^1.0.0"
 
-slugid@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/slugid/-/slugid-3.0.0.tgz#57cb692641a20feb4a1d774b2ad11594c9aa6125"
-  integrity sha512-MIir9SJS6BQFjFg8DHGMgPkDg21huT0+kYHiS6NkkWZXHSEdgIECo3nUVEG3GDkmecBTy+zRs6pCvPhpk4bKcg==
-  dependencies:
-    uuid "^8.3.2"
-
 snake-case@^3.0.3:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/snake-case/-/snake-case-3.0.4.tgz#4f2bbd568e9935abdfd593f34c691dadb49c452c"
@@ -6300,51 +6293,39 @@ tar-stream@^2.0.0:
 
 "taskcluster-client@link:clients/client":
   version "0.0.0"
-  uid ""
 
 "taskcluster-db@link:db":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6354,8 +6335,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6363,8 +6343,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "0.0.0"
-  uid ""
+  version "44.17.0"
 
 test-exclude@^6.0.0:
   version "6.0.0"

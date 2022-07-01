@@ -92,7 +92,7 @@
     "qs": "^6.10.1",
     "quick-lru": "^5.0.0",
     "regex-escape": "^3.4.8",
-    "request-ip": "^2.2.0",
+    "request-ip": "^3.0.2",
     "rimraf": "^3.0.0",
     "sanitize-html": "^2.0.0",
     "sentry-api": "^0.2.0",
