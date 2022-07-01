@@ -10,9 +10,6 @@
     "auth": {
       "additionalProperties": false,
       "properties": {
-        "audit_log": {
-          "type": "string"
-        },
         "aws_credentials_allowed_buckets": {
           "oneOf": [
             {
