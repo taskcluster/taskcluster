@@ -16,6 +16,10 @@ async function statusHandler(message) {
   let conclusion = CONCLUSIONS[reasonResolved || state];
 
   let [build] = await this.context.db.fns.get_github_build(taskGroupId);
+  if (!build) {
+    debug(`No github build is associated with task group ${taskGroupId}. Most likely this was triggered by periodic cron hook, which doesn't require github event / check suite.`);
+    return false;
+  }
 
   let { organization, repository, sha, event_id, event_type, installation_id } = build;
 
