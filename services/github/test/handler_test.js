@@ -754,7 +754,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }
 
     function assertStatusCreate(state) {
-      assert(github.inst(9988).checks.create.called, 'checks. create was not called');
+      assert(github.inst(9988).checks.create.called, 'checks.create was not called');
 
       github.inst(9988).checks.create.firstCall.args.forEach(args => {
         if (args.state === state) {
@@ -968,6 +968,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       monitor.manager.reset();
       sinon.restore();
     });
+
+    test('skip status update when build is not defined', async function () {
+      // Some tasks will be create without github events, like periodic cron hooks
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: TASKID,
+      });
+      assert.equal(false, github.inst(9988).checks.update.called);
+      assert.equal(false, github.inst(9988).checks.create.called);
+    });
   });
 
   suite('Statuses API: initial status handler', function() {
@@ -1051,6 +1063,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         taskId: TASKID,
       });
       assertStatusCreate('pending');
+    });
+
+    test('skip check when build is not defined', async function () {
+      // Some tasks will be create without github events, like periodic cron hooks
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-defined',
+        routingKey: 'route.checks',
+        taskId: TASKID,
+      });
+      assert.equal(false, github.inst(9988).checks.create.called);
     });
   });
 
