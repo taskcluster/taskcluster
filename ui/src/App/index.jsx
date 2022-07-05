@@ -39,6 +39,12 @@ export default class App extends Component {
     routes: arrayOf(route).isRequired,
   };
 
+  /**
+   * This is deprecated in apollo client v3
+   * https://www.apollographql.com/docs/react/migrating/apollo-client-3-migration/#breaking-cache-changes
+   * After upgrade InMemoryCache would have { possibleTypes } option
+   * which will accept fragmentTypes.json contents directly
+   */
   fragmentMatcher = new IntrospectionFragmentMatcher({
     introspectionQueryResultData,
   });
