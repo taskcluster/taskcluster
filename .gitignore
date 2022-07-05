@@ -77,3 +77,4 @@ __pycache__
 
 # docker-compose artifacts
 /docker/buckets
+docker-compose.override.yml
