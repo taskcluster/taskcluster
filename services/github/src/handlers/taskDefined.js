@@ -15,14 +15,20 @@ async function taskDefinedHandler(message) {
   let debug = makeDebug(this.monitor, { taskGroupId, taskId });
   debug(`Task was defined for task group ${taskGroupId}. Creating status for task ${taskId}...`);
 
-  const [{
+  const [build] = await this.context.db.fns.get_github_build(taskGroupId);
+  if (!build) {
+    debug(`No github build is associated with task group ${taskGroupId}. Most likely this was triggered by periodic cron hook, which doesn't require github event / check suite.`);
+    return false;
+  }
+
+  const {
     sha,
     event_type,
     event_id,
     installation_id,
     organization,
     repository,
-  }] = await this.context.db.fns.get_github_build(taskGroupId);
+  } = build;
   debug = debug.refine({ owner: organization, repo: repository, sha, installation_id, event_id });
 
   const taskDefinition = await this.queueClient.task(taskId);
