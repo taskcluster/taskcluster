@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.17.1
+
+### GENERAL
+
+▶ [patch]
+Remove unused config value auditLog
+
+▶ [patch]
+This patch addresses the following vuln in `passport` https://security.snyk.io/vuln/SNYK-JS-PASSPORT-2840631. This also upgrades `express` to the latest stable release.
+
+▶ [patch] [#5557](https://github.com/taskcluster/taskcluster/issues/5557)
+This patch upgrades to Debian 10 docker images, as Debian 9 hit EOL.
+
+▶ [patch]
+Upgrade node to the latest LTS release, v16.16.0.
+This is a security release. More info can be found [here](https://nodejs.org/en/blog/vulnerability/july-2022-security-releases/#update-07-july-2022-security-releases-available).
+
+### DEVELOPERS
+
+▶ [patch]
+Remove node-fetch dependency from ui/ as it was only used in abandoned queryServer.js script to cache possible graphql types.
+
+▶ [patch] [#5391](https://github.com/taskcluster/taskcluster/issues/5391)
+Skip github checks if github build is unkown.
+This happens in periodic and manual hooks that are doing some periodic operations on github repo.
+Those operations are not initiated by github, so there is no new build/check suite created for those events.
+
 ## v44.17.0
 
 ### GENERAL
