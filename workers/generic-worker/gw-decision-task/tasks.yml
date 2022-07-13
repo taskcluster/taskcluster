@@ -6,8 +6,8 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.18.3'
-      - 'git2.24.0.2'
+      - 'go1.18.4'
+      - 'git2.37.1'
       - 'jq1.6'
       - 'ci-creds'
       # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
@@ -23,7 +23,7 @@ Types:
       - Name: 'public/build/generic-worker-${OS}-${ARCH}${EXTENSION}'
         # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
         #   DO NOT CHANGE HERE!
-        Path: 'gopath1.18.3/bin/generic-worker${EXTENSION}'
+        Path: 'gopath1.18.4/bin/generic-worker${EXTENSION}'
         Type: 'file'
     MaxRunTime: 3600
 
@@ -40,7 +40,7 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.18.3'
+      - 'go1.18.4'
     Command: FormatSource
     MaxRunTime: 3600
 
@@ -119,7 +119,7 @@ WorkerPools:
     # The next comment is edited by infrastructure/tooling/src/generate/generators/go-version.js
     #   DO NOT CHANGE HERE!
 
-    # There is no arm release for go 1.18.3 on windows, but 386 release works
+    # There is no arm release for go 1.18.4 on windows, but 386 release works
     # through emulation provided by the host OS.
     Arch: '386'
   proj-taskcluster/gw-ci-windows2012r2-amd64:
@@ -140,7 +140,7 @@ Commands:
           export CGO_ENABLED=0
           # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.18.3/go"
+          export GOROOT="$(pwd)/go1.18.4/go"
           export PATH="${GOROOT}/bin:${PATH}"
           go version
           go env
@@ -193,8 +193,8 @@ Commands:
 
           # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.18.3/go"
-          export GOPATH="$(pwd)/gopath1.18.3"
+          export GOROOT="$(pwd)/go1.18.4/go"
+          export GOPATH="$(pwd)/gopath1.18.4"
 
           export PATH="${GOPATH}/bin:${GOROOT}/bin:$(pwd)/bin:${PATH}"
           git --version
@@ -257,8 +257,8 @@ Commands:
 
       # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - set GOROOT=%CD%\go1.18.3\go
-      - set GOPATH=%CD%\gopath1.18.3
+      - set GOROOT=%CD%\go1.18.4\go
+      - set GOPATH=%CD%\gopath1.18.4
 
       - |
         :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
@@ -332,46 +332,46 @@ Mounts:
   #
   ################################################################################
 
-  go1.18.3:
-    directory: go1.18.3
+  go1.18.4:
+    directory: go1.18.4
     content:
       darwin:
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.18.3.darwin-amd64.tar.gz'
-          sha256: 'd9dcf8fc35da54c6f259be41954783a9f4984945a855d03a003a7fd6ea4c5ca1'
+          url: 'https://storage.googleapis.com/golang/go1.18.4.darwin-amd64.tar.gz'
+          sha256: '315e1a2b21a827c68da1b7f492b5dcbe81d8df8a79ebe50922df9588893f87f0'
           format: tar.gz
         arm64:
-          url: 'https://storage.googleapis.com/golang/go1.18.3.darwin-arm64.tar.gz'
-          sha256: '40ecd383c941cc9f0682e6a6f2a333539d58c7dea15c842434d03afafe2f7242'
+          url: 'https://storage.googleapis.com/golang/go1.18.4.darwin-arm64.tar.gz'
+          sha256: '04eed623d5143ffa44965b618b509e0beccccfd3a4a1bfebc0cdbcf906046769'
       linux:
         armv6l:
-          url: 'https://storage.googleapis.com/golang/go1.18.3.linux-armv6l.tar.gz'
-          sha256: 'b8f0b5db24114388d5dcba7ca0698510ea05228b0402fcbeb0881f74ae9cb83b'
+          url: 'https://storage.googleapis.com/golang/go1.18.4.linux-armv6l.tar.gz'
+          sha256: '7dfeab572e49638b0f3d9901457f0622c27b73301c2b99db9f5e9568ff40460c'
           format: tar.gz
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.18.3.linux-amd64.tar.gz'
-          sha256: '956f8507b302ab0bb747613695cdae10af99bbd39a90cae522b7c0302cc27245'
+          url: 'https://storage.googleapis.com/golang/go1.18.4.linux-amd64.tar.gz'
+          sha256: 'c9b099b68d93f5c5c8a8844a89f8db07eaa58270e3a1e01804f17f4cf8df02f5'
           format: tar.gz
       windows:
         386:
-          url: 'https://storage.googleapis.com/golang/go1.18.3.windows-386.zip'
-          sha256: '6661798e9669c3f03498a2e018ed948d9f53a90c5ccbd05b4e4b36303facb33e'
+          url: 'https://storage.googleapis.com/golang/go1.18.4.windows-386.zip'
+          sha256: '6343010a13ab783e553786b3cc3b4d63080128f61cf1e963505139c71ca66a0d'
           format: zip
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.18.3.windows-amd64.zip'
-          sha256: '9c46023f3ad0300fcfd1e62f2b6c2dfd9667b1f2f5c7a720b14b792af831f071'
+          url: 'https://storage.googleapis.com/golang/go1.18.4.windows-amd64.zip'
+          sha256: 'dfb93c517e050ba0cfc066802b38a8e7cda2ef666efd634859356b33f543cc49'
           format: zip
-  git2.24.0.2:
+  git2.37.1:
     directory: git
     content:
       windows:
         386:
-          url: 'https://github.com/git-for-windows/git/releases/download/v2.24.0.windows.2/MinGit-2.24.0.2-32-bit.zip'
-          sha256: 'b7b26e87d3df9b44fee0606a9df3ca839bc444faf76c4c27bc0824a6c10e7831'
+          url: 'https://github.com/git-for-windows/git/releases/download/v2.37.1.windows.1/MinGit-2.37.1-32-bit.zip'
+          sha256: 'b336137fb286552c5c2616af50c54e9aca7d16a24ec1b00189a6c221a81af14c'
           format: zip
         amd64:
-          url: 'https://github.com/git-for-windows/git/releases/download/v2.24.0.windows.2/MinGit-2.24.0.2-64-bit.zip'
-          sha256: 'c33aec6ae68989103653ca9fb64f12cabccf6c61d0dde30c50da47fc15cf66e2'
+          url: 'https://github.com/git-for-windows/git/releases/download/v2.37.1.windows.1/MinGit-2.37.1-64-bit.zip'
+          sha256: 'edacf2d5c39555c25a396e0b9d27182ab5587259dc2e824b4490996b373f9300'
           format: zip
   jq1.6:
     file: bin/jq${EXTENSION}
