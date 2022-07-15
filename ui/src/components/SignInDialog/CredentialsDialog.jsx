@@ -86,6 +86,7 @@ export default class CredentialsDialog extends Component {
               value={accessToken}
               onChange={this.handleFieldChange}
               error={!accessToken && accessToken !== ''}
+              type="password"
               required
               fullWidth
             />
