@@ -375,24 +375,29 @@ http {
     server_name _;
 
     location / {
-      proxy_pass http://ui;
+      set $pass http://ui;
+      proxy_pass $pass;
       ${extraDirectives}
     }
     location /login {
-      proxy_pass http://web-server-web:${serviceHostPort('web-server')};
+      set $pass http://web-server-web:${serviceHostPort('web-server')};
+      proxy_pass $pass;
       ${extraDirectives}
     }
     location /graphql {
-      proxy_pass http://web-server-web:${serviceHostPort('web-server')};
+      set $pass http://web-server-web:${serviceHostPort('web-server')};
+      proxy_pass $pass;
       ${extraDirectives}
     }
     location /subscription {
-      proxy_pass http://web-server-web:${serviceHostPort('web-server')};
+      set $pass http://web-server-web:${serviceHostPort('web-server')};
+      proxy_pass $pass;
       ${extraDirectives}
     }
 ${SERVICES.filter(name => !!ports[name]).map(name => `
     location /api/${name} {
-      proxy_pass http://${name}-web;
+      set $pass http://${name}-web;
+      proxy_pass $pass;
       ${extraDirectives}
     }`).join('\n')}
   }
