@@ -252,9 +252,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         handlers.handlerComplete = resolve;
         handlers.handlerRejected = reject;
       });
+      const [eventBase, eventAction] = eventType.split('.');
 
-      let body = {
-        pull_request: {
+      let body = {};
+      let details = {
+        'event.type': eventType,
+        'event.base.repo.branch': 'tc-gh-tests',
+        'event.head.repo.branch': 'tc-gh-tests',
+        'event.head.user.login': user,
+        'event.head.repo.url': 'https://github.com/TaskclusterRobot/hooks-testing.git',
+        'event.head.sha': head || '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        'event.head.ref': 'refs/heads/tc-gh-tests',
+        'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
+        'event.head.user.id': 190790,
+      };
+      if (eventBase === 'pull_request') {
+        body['pull_request'] = {
           user: {
             login: opener || user || 'octocat',
           },
@@ -268,21 +281,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
               login: baseUser || 'hooks-testing',
             },
           },
-        },
-      };
-
-      let details = {
-        'event.type': eventType,
-        'event.base.repo.branch': 'tc-gh-tests',
-        'event.head.repo.branch': 'tc-gh-tests',
-        'event.head.user.login': user,
-        'event.head.repo.url': 'https://github.com/TaskclusterRobot/hooks-testing.git',
-        'event.head.sha': head || '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        'event.head.ref': 'refs/heads/tc-gh-tests',
-        'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
-        'event.head.user.id': 190790,
-      };
-      if (eventType === 'release') {
+        };
+      } else if (eventBase === 'release') {
         // remove a few details fields from the above that aren't present in releases,
         // and add one that is present.  Note that this isn't incomplete, and leaves some
         // fields in place that shouldn't be here and omits fields that should be here.
@@ -294,15 +294,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           target_commitish: 'refs/tags/v1.2.3',
         };
         details['event.version'] = 'v1.2.3';
-      }
-      if (eventType === 'tag') {
+      } else if (eventBase === 'tag') {
         details['event.head.tag'] = 'v1.0.2';
         delete details['event.head.repo.branch'];
         delete details['event.base.repo.branch'];
+      } else if (eventBase === 'push') {
+        body['ref'] = 'tc-gh-tests';
       }
 
       debug(`publishing ${JSON.stringify({ user, head, base, eventType })}`);
-      const [eventBase, eventAction] = eventType.split('.');
       const exchange = {
         // 'tag' events arrive on the 'push' exchange..
         tag: 'push',
@@ -324,6 +324,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           installationId: 5828,
           version: 1,
           body,
+          tasks_for: `github-${exchange}`,
         },
       };
       if (eventBase === 'pull_request') {
@@ -413,7 +414,88 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.equal(build.state, 'pending');
     });
 
-    test('valid push (but not collaborator) creates a taskGroup', async function () {
+    test('valid pull_request (user is not a collaborator) does not create tasks', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf', // HEAD
+        content: require('./data/yml/valid-yaml.json'),
+      });
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development', // default branch
+        content: require('./data/yml/valid-yaml.json'),
+      });
+
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
+
+      assert(handlers.createTasks.notCalled);
+    });
+
+    test('valid pull_request (user is not a collaborator, policy is public) creates a taskGroup', async function() {
+      let tcyaml = { ...require('./data/yml/valid-yaml-v1.json') };
+      tcyaml['policy'] = { 'pullRequests': 'public' };
+
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf', // HEAD
+        content: tcyaml,
+      });
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development', // default branch
+        content: tcyaml,
+      });
+
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
+
+      assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
+      let args = handlers.createTasks.firstCall.args[0];
+      assert.ok(args.scopes.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'));
+
+      let taskGroupId = args.tasks[0].task.taskGroupId;
+      let [build] = await helper.db.fns.get_github_build(taskGroupId);
+      assert.equal(build.organization, 'TaskclusterRobot');
+      assert.equal(build.repository, 'hooks-testing');
+      assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(build.state, 'pending');
+    });
+
+    test('valid pull_request (user is not a collaborator, policy is public_restricted) creates a taskGroup', async function() {
+      let tcyaml = { ...require('./data/yml/valid-yaml-v1.json') };
+      tcyaml['policy'] = { 'pullRequests': 'public_restricted' };
+
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf', // HEAD
+        content: tcyaml,
+      });
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development', // default branch
+        content: tcyaml,
+      });
+
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
+
+      assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
+      let args = handlers.createTasks.firstCall.args[0];
+      assert.ok(args.scopes.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request-untrusted'));
+
+      let taskGroupId = args.tasks[0].task.taskGroupId;
+      let [build] = await helper.db.fns.get_github_build(taskGroupId);
+      assert.equal(build.organization, 'TaskclusterRobot');
+      assert.equal(build.repository, 'hooks-testing');
+      assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(build.state, 'pending');
+    });
+
+    test('valid push (but not collaborator) creates a taskGroup', async function() {
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
@@ -422,6 +504,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       await simulateJobMessage({ user: 'TaskclusterCollaborator', eventType: 'push' });
 
+      assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
       let [build] = await helper.db.fns.get_github_build(taskGroupId);

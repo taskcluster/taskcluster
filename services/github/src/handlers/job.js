@@ -74,6 +74,94 @@ async function jobHandler(message) {
     return;
   }
 
+  // Checking pull request permission.
+  if (message.payload.details['event.type'].startsWith('pull_request.')) {
+    debug(`Checking pull request permission for ${organization}/${repository}@${sha}...`);
+
+    debug(`Retrieving  ${organization}/${repository}@${sha}...`);
+    let defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository }))
+      .data
+      .default_branch;
+
+    let defaultBranchYml = await this.getYml({ instGithub, owner: organization, repo: repository, ref: defaultBranch });
+
+    if (!defaultBranchYml) {
+      debug(`${organization}/${repository} has no '.taskcluster.yml' at ${defaultBranch}.`);
+
+      // If the repository does not contain a '.taskcluster.yml' file, collaborators should be able to test before
+      // initializing.
+      defaultBranchYml = { version: 1, policy: { pullRequests: POLICIES.COLLABORATORS_QUIET } };
+    }
+
+    const repoPolicy = this.getRepoPolicy(defaultBranchYml);
+
+    // There are four usernames associated with a PR action:
+    //  - pull_request.user.login -- the user who opened the PR
+    //  - pull_request.head.user.login -- the username or org name for the repo from which changes are pulled
+    //  - pull_request.base.user.login -- the username or org name for the repo into which changes will merge
+    //  - sender.login -- the user who clicked the button to trigger this action
+    //
+    // The "collaborators" and "collaborators_quiet" policies require:
+    //  - pull_request.user.login is a collaborator; AND
+    //  - pull_request.head.user.login is
+    //    - a collaborator OR
+    //    - the same as pull_request.base.user.login
+    //
+    // Meaning that the PR must have been opened by a collaborator and be merging code from a collaborator
+    // or from the repo against which the PR is filed.
+    //
+    // The "public_restricted" policy uses the same criteria as above, but will assume a separate role
+    // for a PR associated with a collaborator or one that is public.
+
+    const isCollaborator = async login => {
+      return Boolean(await instGithub.repos.checkCollaborator({
+        owner: organization,
+        repo: repository,
+        username: login,
+      }).catch(e => {
+        if (e.status !== 404) {
+          throw e;
+        }
+        return false; // 404 -> false
+      }));
+    };
+
+    const evt = message.payload.body;
+    const opener = evt.pull_request.user.login;
+    const openerIsCollaborator = await isCollaborator(opener);
+    const head = evt.pull_request.head.user.login;
+    const headIsCollaborator = head === opener ? openerIsCollaborator : await isCollaborator(head);
+    const headIsBase = evt.pull_request.head.user.login === evt.pull_request.base.user.login;
+    const isPullRequestTrusted = openerIsCollaborator && (headIsCollaborator || headIsBase);
+
+    if (!isPullRequestTrusted) {
+      if (repoPolicy.startsWith(POLICIES.COLLABORATORS)) {
+        if (message.payload.details['event.type'].startsWith('pull_request.opened') && (repoPolicy !== POLICIES.COLLABORATORS_QUIET)) {
+          let body = [
+            '<details>\n',
+            '<summary>No Taskcluster jobs started for this pull request</summary>\n\n',
+            '```js\n',
+            'The `allowPullRequests` configuration for this repository (in `.taskcluster.yml` on the',
+            'default branch) does not allow starting tasks for this pull request.',
+            '```\n',
+            '</details>',
+          ].join('\n');
+          await instGithub.issues.createComment({
+            owner: organization,
+            repo: repository,
+            issue_number: pullNumber,
+            body,
+          });
+        }
+
+        debug(`This user is not a collaborator on ${organization}/${repository} and can't make PR@${sha}. Exiting...`);
+        return;
+      } else if (repoPolicy === POLICIES.PUBLIC_RESTRICTED) {
+        message.payload.tasks_for = "github-pull-request-untrusted";
+      }
+    }
+  }
+
   let groupState = 'pending';
   let taskGroupId = 'nonexistent';
   let graphConfig;
@@ -101,86 +189,6 @@ async function jobHandler(message) {
       Leaving comment on Github.`);
     await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e, pullNumber });
     return;
-  }
-
-  // Checking pull request permission.
-  if (message.payload.details['event.type'].startsWith('pull_request.')) {
-    debug(`Checking pull request permission for ${organization}/${repository}@${sha}...`);
-
-    debug(`Retrieving  ${organization}/${repository}@${sha}...`);
-    let defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository }))
-      .data
-      .default_branch;
-
-    let defaultBranchYml = await this.getYml({ instGithub, owner: organization, repo: repository, ref: defaultBranch });
-
-    if (!defaultBranchYml) {
-      debug(`${organization}/${repository} has no '.taskcluster.yml' at ${defaultBranch}.`);
-
-      // If the repository does not contain a '.taskcluster.yml' file, collaborators should be able to test before
-      // initializing.
-      defaultBranchYml = { version: 1, policy: { pullRequests: POLICIES.COLLABORATORS_QUIET } };
-    }
-
-    if (this.getRepoPolicy(defaultBranchYml).startsWith(POLICIES.COLLABORATORS)) {
-      // There are four usernames associated with a PR action:
-      //  - pull_request.user.login -- the user who opened the PR
-      //  - pull_request.head.user.login -- the username or org name for the repo from which changes are pulled
-      //  - pull_request.base.user.login -- the username or org name for the repo into which changes will merge
-      //  - sender.login -- the user who clicked the button to trigger this action
-      //
-      // The "collaborators" and "collaborators_quiet" policies require:
-      //  - pull_request.user.login is a collaborator; AND
-      //  - pull_request.head.user.login is
-      //    - a collaborator OR
-      //    - the same as pull_request.base.user.login
-      //
-      // Meaning that the PR must have been opened by a collaborator and be merging code from a collaborator
-      // or from the repo against which the PR is filed.
-
-      const isCollaborator = async login => {
-        return Boolean(await instGithub.repos.checkCollaborator({
-          owner: organization,
-          repo: repository,
-          username: login,
-        }).catch(e => {
-          if (e.status !== 404) {
-            throw e;
-          }
-          return false; // 404 -> false
-        }));
-      };
-
-      const evt = message.payload.body;
-      const opener = evt.pull_request.user.login;
-      const openerIsCollaborator = await isCollaborator(opener);
-      const head = evt.pull_request.head.user.login;
-      const headIsCollaborator = head === opener ? openerIsCollaborator : await isCollaborator(head);
-      const headIsBase = evt.pull_request.head.user.login === evt.pull_request.base.user.login;
-
-      if (!(openerIsCollaborator && (headIsCollaborator || headIsBase))) {
-        if (message.payload.details['event.type'].startsWith('pull_request.opened') && (this.getRepoPolicy(defaultBranchYml) !== POLICIES.COLLABORATORS_QUIET)) {
-          let body = [
-            '<details>\n',
-            '<summary>No Taskcluster jobs started for this pull request</summary>\n\n',
-            '```js\n',
-            'The `allowPullRequests` configuration for this repository (in `.taskcluster.yml` on the',
-            'default branch) does not allow starting tasks for this pull request.',
-            '```\n',
-            '</details>',
-          ].join('\n');
-          await instGithub.issues.createComment({
-            owner: organization,
-            repo: repository,
-            issue_number: pullNumber,
-            body,
-          });
-        }
-
-        debug(`This user is not collaborator on ${organization}/${repository} and can't make PR@${sha}. Exiting...`);
-        return;
-      }
-    }
   }
 
   let routes;
