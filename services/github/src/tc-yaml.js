@@ -183,6 +183,10 @@ class VersionOne extends TcYaml {
       config.scopes = [
         `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`,
       ];
+    } else if (payload.tasks_for === 'github-pull-request-untrusted') {
+      config.scopes = [
+        `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request-untrusted`,
+      ];
     } else if (payload.tasks_for === 'github-push') {
       if (payload.body.ref.split('/')[1] === 'tags') {
         let prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:tag:`;

@@ -132,114 +132,180 @@ suite(testing.suiteName(), function() {
       ]);
     });
 
-    test('compileTasks for a pull-request sets scopes correctly', function() {
-      const config = {
-        tasks: [{}],
-      };
+    suite('scopes', function() {
+      test('compileTasks with collaborators policy for a pull-request sets scopes correctly', function() {
+        const config = {
+          policy: { pullRequests: "collaborators" },
+          tasks: [{}],
+        };
 
-      tcyaml.compileTasks(config, cfg, {
-        tasks_for: 'github-pull-request',
-        organization: 'org',
-        repository: 'repo',
-      }, now);
-      assume(config.scopes.sort()).to.deeply.equal([
-        'assume:repo:github.com/org/repo:pull-request',
-        'queue:route:statuses-queue',
-        'queue:scheduler-id:test-sched',
-      ]);
-    });
+        tcyaml.compileTasks(config, cfg, {
+          tasks_for: 'github-pull-request',
+          organization: 'org',
+          repository: 'repo',
+        }, now);
+        assume(config.scopes.sort()).to.deeply.equal([
+          'assume:repo:github.com/org/repo:pull-request',
+          'queue:route:statuses-queue',
+          'queue:scheduler-id:test-sched',
+        ]);
+      });
 
-    test('compileTasks for a pull-request with checks sets scopes correctly', function() {
-      const config = {
-        tasks: [{}],
-        reporting: 'checks',
-      };
+      test('compileTasks with public_restricted policy for a untrusted pull-request sets scopes correctly', function() {
+        const config = {
+          policy: { pullRequests: "public_restricted" },
+          tasks: [{}],
+        };
 
-      tcyaml.compileTasks(config, cfg, {
-        tasks_for: 'github-pull-request',
-        organization: 'org',
-        repository: 'repo',
-      }, now);
-      assume(config.scopes.sort()).to.deeply.equal([
-        'assume:repo:github.com/org/repo:pull-request',
-        'queue:route:checks-queue',
-        'queue:scheduler-id:test-sched',
-      ]);
-    });
+        let payload = {
+          tasks_for: 'github-pull-request-untrusted',
+          organization: 'org',
+          repository: 'repo',
+        };
 
-    test('compileTasks for a push sets scopes correctly', function() {
-      const config = {
-        tasks: [{}],
-      };
+        tcyaml.compileTasks(config, cfg, payload, now);
+        assume(config.scopes.sort()).to.deeply.equal([
+          'assume:repo:github.com/org/repo:pull-request-untrusted',
+          'queue:route:statuses-queue',
+          'queue:scheduler-id:test-sched',
+        ]);
+        assume(payload.tasks_for).to.deeply.equal("github-pull-request-untrusted");
+      });
 
-      tcyaml.compileTasks(config, cfg, {
-        tasks_for: 'github-push',
-        organization: 'org',
-        repository: 'repo',
-        body: { ref: 'refs/heads/master' },
-        details: { 'event.base.repo.branch': 'master' },
-      }, now);
-      assume(config.scopes.sort()).to.deeply.equal([
-        'assume:repo:github.com/org/repo:branch:master',
-        'queue:route:statuses-queue',
-        'queue:scheduler-id:test-sched',
-      ]);
-    });
+      test('compileTasks with public_restricted policy for a trusted pull-request sets scopes correctly', function() {
+        const config = {
+          policy: { pullRequests: "public_restricted" },
+          tasks: [{}],
+        };
 
-    test('compileTasks for a tag sets scopes correctly', function() {
-      const config = {
-        tasks: [{}],
-      };
+        const payload = {
+          tasks_for: 'github-pull-request',
+          organization: 'org',
+          repository: 'repo',
+        };
 
-      tcyaml.compileTasks(config, cfg, {
-        tasks_for: 'github-push',
-        organization: 'org',
-        repository: 'repo',
-        body: { ref: 'refs/tags/v1.2.3' },
-        details: { 'event.head.tag': 'v1.2.3' },
-      }, now);
-      assume(config.scopes.sort()).to.deeply.equal([
-        'assume:repo:github.com/org/repo:tag:v1.2.3',
-        'queue:route:statuses-queue',
-        'queue:scheduler-id:test-sched',
-      ]);
-    });
+        tcyaml.compileTasks(config, cfg, payload, now);
+        assume(config.scopes.sort()).to.deeply.equal([
+          'assume:repo:github.com/org/repo:pull-request',
+          'queue:route:statuses-queue',
+          'queue:scheduler-id:test-sched',
+        ]);
+        assume(payload.tasks_for).to.deeply.equal("github-pull-request");
+      });
 
-    test('compileTasks for a release sets scopes correctly', function() {
-      const config = {
-        tasks: [{}],
-      };
+      test('compileTasks with public policy for a pull-request sets scopes correctly', function() {
+        const config = {
+          policy: { pullRequests: "public" },
+          tasks: [{}],
+        };
 
-      tcyaml.compileTasks(config, cfg, {
-        tasks_for: 'github-release',
-        organization: 'org',
-        repository: 'repo',
-      }, now);
-      assume(config.scopes.sort()).to.deeply.equal([
-        'assume:repo:github.com/org/repo:release',
-        'queue:route:statuses-queue',
-        'queue:scheduler-id:test-sched',
-      ]);
-    });
+        let payload = {
+          tasks_for: 'github-pull-request',
+          organization: 'org',
+          repository: 'repo',
+        };
 
-    test('compileTasks with one taskId sets taskGroupId', function() {
-      const config = {
-        tasks: [{
+        tcyaml.compileTasks(config, cfg, payload, now);
+        assume(config.scopes.sort()).to.deeply.equal([
+          'assume:repo:github.com/org/repo:pull-request',
+          'queue:route:statuses-queue',
+          'queue:scheduler-id:test-sched',
+        ]);
+        assume(payload.tasks_for).to.deeply.equal("github-pull-request");
+      });
+
+      test('compileTasks for a pull-request with checks sets scopes correctly', function() {
+        const config = {
+          policy: { pullRequests: "collaborators" },
+          tasks: [{}],
+          reporting: 'checks',
+        };
+
+        tcyaml.compileTasks(config, cfg, {
+          tasks_for: 'github-pull-request',
+          organization: 'org',
+          repository: 'repo',
+        }, now);
+        assume(config.scopes.sort()).to.deeply.equal([
+          'assume:repo:github.com/org/repo:pull-request',
+          'queue:route:checks-queue',
+          'queue:scheduler-id:test-sched',
+        ]);
+      });
+
+      test('compileTasks for a push sets scopes correctly', function() {
+        const config = {
+          tasks: [{}],
+        };
+
+        tcyaml.compileTasks(config, cfg, {
+          tasks_for: 'github-push',
+          organization: 'org',
+          repository: 'repo',
+          body: { ref: 'refs/heads/master' },
+          details: { 'event.base.repo.branch': 'master' },
+        }, now);
+        assume(config.scopes.sort()).to.deeply.equal([
+          'assume:repo:github.com/org/repo:branch:master',
+          'queue:route:statuses-queue',
+          'queue:scheduler-id:test-sched',
+        ]);
+      });
+
+      test('compileTasks for a tag sets scopes correctly', function() {
+        const config = {
+          tasks: [{}],
+        };
+
+        tcyaml.compileTasks(config, cfg, {
+          tasks_for: 'github-push',
+          organization: 'org',
+          repository: 'repo',
+          body: { ref: 'refs/tags/v1.2.3' },
+          details: { 'event.head.tag': 'v1.2.3' },
+        }, now);
+        assume(config.scopes.sort()).to.deeply.equal([
+          'assume:repo:github.com/org/repo:tag:v1.2.3',
+          'queue:route:statuses-queue',
+          'queue:scheduler-id:test-sched',
+        ]);
+      });
+
+      test('compileTasks for a release sets scopes correctly', function() {
+        const config = {
+          tasks: [{}],
+        };
+
+        tcyaml.compileTasks(config, cfg, {
+          tasks_for: 'github-release',
+          organization: 'org',
+          repository: 'repo',
+        }, now);
+        assume(config.scopes.sort()).to.deeply.equal([
+          'assume:repo:github.com/org/repo:release',
+          'queue:route:statuses-queue',
+          'queue:scheduler-id:test-sched',
+        ]);
+      });
+
+      test('compileTasks with one taskId sets taskGroupId', function() {
+        const config = {
+          tasks: [{
+            taskId: 'task-1',
+          }],
+        };
+        tcyaml.compileTasks(config, cfg, {}, now);
+        assume(config.tasks).to.deeply.equal([{
           taskId: 'task-1',
-        }],
-      };
-      tcyaml.compileTasks(config, cfg, {}, now);
-      assume(config.tasks).to.deeply.equal([{
-        taskId: 'task-1',
-        task: {
-          created: now,
-          taskGroupId: 'task-1',
-          schedulerId: 'test-sched',
-          routes: ['statuses-queue'],
-        },
-      }]);
+          task: {
+            created: now,
+            taskGroupId: 'task-1',
+            schedulerId: 'test-sched',
+            routes: ['statuses-queue'],
+          },
+        }]);
+      });
     });
-
     test('compileTasks with taskGroupId and one task sets taskId', function() {
       const config = {
         tasks: [{

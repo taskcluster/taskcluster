@@ -35,6 +35,8 @@ The `pullRequests` policy controls this behavior:
 
 * `public` -- tasks are created for all pull requests.
 
+* `public_restricted` -- tasks are created for all pull requests, however if the pull request is not from a collaborator (see the `collaborators` policy), a distinct `github-pull-request-untrusted` role will be assumed. This allows a separate set of scopes to apply for non-collaborators.
+
 * `collaborators` (the default) -- tasks are created if the user who made the pull request is a collaborator on the repository, and has requested that changes be merged either from the same repository or from a repository belonging to a collaborator. If the check fails then we leave a comment "No taskcluster jobs were created.."  on the pullRequest.
   Please note that only user who *created* the pull request and the user owning the head repository are being checked, even if the event itself comes from the actions of another user.
   For example, if a collaborator modifies the assignee for or re-opens a PR filed by a non-collaborator, tasks will not be started.
