@@ -740,7 +740,7 @@ export default class HookForm extends Component {
                     <span>
                       When the hook fires, this template is rendered with{' '}
                       <a
-                        href="https://taskcluster.github.io/json-e/"
+                        href="https://json-e.js.org/"
                         target="_blank"
                         rel="noopener noreferrer">
                         JSON-e
