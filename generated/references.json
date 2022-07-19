@@ -6344,7 +6344,7 @@
           "$ref": "schedule.json#"
         },
         "task": {
-          "description": "Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)\nas described in [firing hooks](/docs/reference/core/hooks/firing-hooks) to produce\na task definition that is submitted to the Queue service.\n",
+          "description": "Template for the task definition.  This is rendered using [JSON-e](https://json-e.js.org/)\nas described in [firing hooks](/docs/reference/core/hooks/firing-hooks) to produce\na task definition that is submitted to the Queue service.\n",
           "title": "Task Template",
           "type": "object"
         },
@@ -6403,7 +6403,7 @@
           "uniqueItems": true
         },
         "task": {
-          "description": "Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)\nas described in [firing hooks](/docs/reference/core/hooks/firing-hooks) to produce\na task definition that is submitted to the Queue service.\n",
+          "description": "Template for the task definition.  This is rendered using [JSON-e](https://json-e.js.org/)\nas described in [firing hooks](/docs/reference/core/hooks/firing-hooks) to produce\na task definition that is submitted to the Queue service.\n",
           "title": "Task Template",
           "type": "object"
         },

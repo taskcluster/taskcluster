@@ -66,7 +66,7 @@ type (
 		// Note that tasks may not be created at exactly the time specified.
 		Schedule []string `json:"schedule,omitempty"`
 
-		// Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)
+		// Template for the task definition.  This is rendered using [JSON-e](https://json-e.js.org/)
 		// as described in [firing hooks](/docs/reference/core/hooks/firing-hooks) to produce
 		// a task definition that is submitted to the Queue service.
 		//
@@ -109,7 +109,7 @@ type (
 		// See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
 		Schedule []string `json:"schedule"`
 
-		// Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)
+		// Template for the task definition.  This is rendered using [JSON-e](https://json-e.js.org/)
 		// as described in [firing hooks](/docs/reference/core/hooks/firing-hooks) to produce
 		// a task definition that is submitted to the Queue service.
 		//
