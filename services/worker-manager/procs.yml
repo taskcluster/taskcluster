@@ -15,12 +15,12 @@ workerscanner-azure:
   command: node services/worker-manager/src/main.js workerScannerAzure
 expire-workers:
   type: cron
-  schedule: '0 0 * * *'
+  schedule: '30 1 * * *'
   deadline: 86400
   command: node services/worker-manager/src/main.js expireWorkers
 expire-worker-pools:
   type: cron
-  schedule: '0 1 * * *'
+  schedule: '1 0 * * *'
   deadline: 86400
   command: node services/worker-manager/src/main.js expireWorkerPools
 expire-errors:
