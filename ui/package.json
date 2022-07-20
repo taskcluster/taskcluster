@@ -94,7 +94,7 @@
     "shebang-loader": "^0.0.1",
     "snake-case": "^3.0.3",
     "subscriptions-transport-ws": "^0.11.0",
-    "taskcluster-client-web": "^44.13.5",
+    "taskcluster-client-web": "^44.17.0",
     "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^13.0.0",
     "title-case": "^3.0.2",
