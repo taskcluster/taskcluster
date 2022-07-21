@@ -6,7 +6,7 @@ worker:
   command: node services/github/src/main worker
 sync:
   type: cron
-  schedule: '0 0 * * *'
+  schedule: '0 2 * * *'
   deadline: 86400
   command: node services/github/src/main syncInstallations
 write-docs:

@@ -18,22 +18,22 @@ dependencyResolver:
   command: node services/queue/src/main dependency-resolver
 expireArtifacts:
   type: cron
-  schedule: '0 0 * * *'
+  schedule: '10 1 * * *'
   deadline: 86400
   command: node services/queue/src/main expire-artifacts
 expireTask:
   type: cron
-  schedule: '0 0 * * *'
+  schedule: '10 0 * * *'
   deadline: 86400
   command: node services/queue/src/main expire-tasks
 expireTaskGroups:
   type: cron
-  schedule: '0 0 * * *'
+  schedule: '15 0 * * *'
   deadline: 86400
   command: node services/queue/src/main expire-task-groups
 expireTaskDependency:
   type: cron
-  schedule: '0 0 * * *'
+  schedule: '20 0 * * *'
   deadline: 86400
   command: node services/queue/src/main expire-task-dependency
 expireQueueMessages:
@@ -43,6 +43,6 @@ expireQueueMessages:
   command: node services/queue/src/main expire-queue-messages
 expireWorkerInfo:
   type: cron
-  schedule: '0 0 * * *'
+  schedule: '5 0 * * *'
   deadline: 86400
   command: node services/queue/src/main expire-worker-info

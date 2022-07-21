@@ -3,7 +3,7 @@ web:
   command: node services/purge-cache/src/main server
 expireCachePurges:
   type: cron
-  schedule: '0 0 * * *'
+  schedule: '5 1 * * *'
   deadline: 86400
   command: node services/purge-cache/src/main expire-cache-purges
 write-docs:

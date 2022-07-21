@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/part-of: taskcluster
 spec:
   concurrencyPolicy: Forbid
-  schedule: 0 0 * * *
+  schedule: 0 2 * * *
   jobTemplate:
     metadata:
       labels: *ref_0

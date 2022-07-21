@@ -6,7 +6,7 @@ handlers:
   command: node services/index/src/main handlers
 expire:
   type: cron
-  schedule: '0 0 * * *'
+  schedule: '5 0 * * *'
   deadline: 86400
   command: node services/index/src/main expire
 write-docs:
