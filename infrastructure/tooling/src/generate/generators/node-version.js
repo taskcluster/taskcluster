@@ -32,6 +32,12 @@ exports.tasks = [{
         /^FROM node:[0-9.]+(.*)$/gm,
         `FROM node:${nodeVersion}$1`));
 
+    utils.status({ message: 'ui/Dockerfile' });
+    await modifyRepoFile('ui/Dockerfile',
+      contents => contents.replace(
+        /^FROM node:[0-9.]+(.*)$/gm,
+        `FROM node:${nodeVersion}$1`));
+
     utils.status({ message: '.nvmrc' });
     await writeRepoFile('.nvmrc', nodeVersion + '\n');
 
