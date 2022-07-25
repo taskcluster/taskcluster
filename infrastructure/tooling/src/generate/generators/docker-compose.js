@@ -57,8 +57,8 @@ const workerManagerProviders = {
 const defaultValues = {
   NODE_ENV: 'development',
 
-  DEBUG: '*',
-  LEVEL: 'debug',
+  DEBUG: '',
+  LEVEL: 'warning',
   FORCE_SSL: 'false',
   TRUST_PROXY: 'true',
 
@@ -459,7 +459,6 @@ exports.tasks.push({
   run: async (requirements, utils) => {
     const prodConfig = {
       environment: {
-        LEVEL: 'info',
         NODE_ENV: 'production',
       },
     };

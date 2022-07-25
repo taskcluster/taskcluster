@@ -142,7 +142,7 @@ services:
     environment:
       TASKCLUSTER_ROOT_URL: http://ingress
       STATIC_CLIENTS: '[{"clientId":"static/taskcluster/built-in-workers","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/github","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/hooks","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/index","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/notify","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/object","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/purge-cache","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/queue","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/secrets","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/web-server","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/worker-manager","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/root","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/generic-worker-compose-client","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA","description":"Static generic worker client","scopes":["*"]}]'
-      LEVEL: debug
+      LEVEL: warning
       PORT: 80
       NODE_ENV: development
       FORCE_SSL: 'false'
@@ -155,7 +155,7 @@ services:
       PULSE_HOSTNAME: rabbitmq
       PULSE_VHOST: local
       PULSE_AMQPS: 'false'
-      DEBUG: '*'
+      DEBUG: ''
     command:
       - auth/web
     healthcheck:
@@ -179,8 +179,8 @@ services:
       TASKCLUSTER_ROOT_URL: http://ingress
       TASKCLUSTER_CLIENT_ID: static/taskcluster/built-in-workers
       TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      LEVEL: debug
-      DEBUG: '*'
+      LEVEL: warning
+      DEBUG: ''
     command:
       - built-in-workers/server
     depends_on:
@@ -205,7 +205,7 @@ services:
       WEBHOOK_SECRET: ''
       READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
       WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      LEVEL: debug
+      LEVEL: warning
       PORT: 80
       NODE_ENV: development
       FORCE_SSL: 'false'
@@ -215,7 +215,7 @@ services:
       PULSE_PASSWORD: admin
       PULSE_VHOST: local
       PULSE_AMQPS: 'false'
-      DEBUG: '*'
+      DEBUG: ''
     command:
       - github/web
     healthcheck:
@@ -242,7 +242,7 @@ services:
       TASKCLUSTER_ROOT_URL: http://ingress
       TASKCLUSTER_CLIENT_ID: static/taskcluster/hooks
       TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      LEVEL: debug
+      LEVEL: warning
       PORT: 80
       NODE_ENV: development
       FORCE_SSL: 'false'
@@ -252,7 +252,7 @@ services:
       PULSE_HOSTNAME: rabbitmq
       PULSE_VHOST: local
       PULSE_AMQPS: 'false'
-      DEBUG: '*'
+      DEBUG: ''
     command:
       - hooks/web
     healthcheck:
@@ -275,7 +275,7 @@ services:
     environment:
       READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
       WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      LEVEL: debug
+      LEVEL: warning
       PORT: 80
       NODE_ENV: development
       FORCE_SSL: 'false'
@@ -288,7 +288,7 @@ services:
       PULSE_PASSWORD: admin
       PULSE_VHOST: local
       PULSE_AMQPS: 'false'
-      DEBUG: '*'
+      DEBUG: ''
     command:
       - index/web
     healthcheck:
@@ -315,7 +315,7 @@ services:
       TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
       READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
       WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      LEVEL: debug
+      LEVEL: warning
       PORT: 80
       NODE_ENV: development
       FORCE_SSL: 'false'
@@ -327,7 +327,7 @@ services:
       PULSE_PASSWORD: admin
       PULSE_VHOST: local
       PULSE_AMQPS: 'false'
-      DEBUG: '*'
+      DEBUG: ''
     command:
       - notify/web
     healthcheck:
@@ -354,11 +354,11 @@ services:
       READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
       WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
       DB_CRYPTO_KEYS: '[{"id": "dev-init", "algo": "aes-256", "key": "AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4="}]'
-      LEVEL: debug
+      LEVEL: warning
       PORT: 80
       NODE_ENV: development
       FORCE_SSL: 'false'
-      DEBUG: '*'
+      DEBUG: ''
     command:
       - object/web
     healthcheck:
@@ -381,7 +381,7 @@ services:
     networks:
       - local
     environment:
-      LEVEL: debug
+      LEVEL: warning
       PORT: 80
       NODE_ENV: development
       FORCE_SSL: 'false'
@@ -391,7 +391,7 @@ services:
       TASKCLUSTER_ROOT_URL: http://ingress
       TASKCLUSTER_CLIENT_ID: static/taskcluster/purge-cache
       TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      DEBUG: '*'
+      DEBUG: ''
     command:
       - purge-cache/web
     healthcheck:
@@ -417,7 +417,7 @@ services:
       TASKCLUSTER_ROOT_URL: http://ingress
       TASKCLUSTER_CLIENT_ID: static/taskcluster/queue
       TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      LEVEL: debug
+      LEVEL: warning
       PORT: 80
       NODE_ENV: development
       FORCE_SSL: 'false'
@@ -434,7 +434,7 @@ services:
       AWS_ENDPOINT: http://s3:9000
       AWS_FORCE_PATH_STYLE: 'true'
       AWS_SKIP_CORS_CONFIGURATION: 'true'
-      DEBUG: '*'
+      DEBUG: ''
     command:
       - queue/web
     healthcheck:
@@ -463,11 +463,11 @@ services:
       READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
       WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
       DB_CRYPTO_KEYS: '[{"id": "dev-init", "algo": "aes-256", "key": "AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4="}]'
-      LEVEL: debug
+      LEVEL: warning
       PORT: 80
       NODE_ENV: development
       FORCE_SSL: 'false'
-      DEBUG: '*'
+      DEBUG: ''
     command:
       - secrets/web
     healthcheck:
@@ -489,7 +489,7 @@ services:
       - local
     environment:
       PUBLIC_URL: http://localhost:8080
-      LEVEL: debug
+      LEVEL: warning
       PORT: 80
       TRUST_PROXY: 'true'
       TASKCLUSTER_ROOT_URL: http://ingress
@@ -507,7 +507,7 @@ services:
       REGISTERED_CLIENTS: '[]'
       UI_LOGIN_STRATEGIES: ''
       SESSION_SECRET: quaYpvahRKmYOz2-wR4jaw
-      DEBUG: '*'
+      DEBUG: ''
     command:
       - web-server/web
     healthcheck:
@@ -528,7 +528,7 @@ services:
     networks:
       - local
     environment:
-      LEVEL: debug
+      LEVEL: warning
       TASKCLUSTER_ROOT_URL: http://ingress
       TASKCLUSTER_CLIENT_ID: static/taskcluster/worker-manager
       TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
@@ -545,7 +545,7 @@ services:
       PULSE_VHOST: local
       PULSE_AMQPS: 'false'
       PROVIDERS: '{"static":{"providerType":"static"}}'
-      DEBUG: '*'
+      DEBUG: ''
     command:
       - worker-manager/web
     healthcheck:
