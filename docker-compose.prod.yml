@@ -3,7 +3,7 @@ version: '3'
 services:
   pg_init_db: &ref_0
     environment:
-      LEVEL: info
+      LEVEL: warning
       NODE_ENV: production
   ui: *ref_0
   auth-web: *ref_0

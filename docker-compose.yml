@@ -94,6 +94,7 @@ services:
     environment:
       PORT: 80
       APPLICATION_NAME: Taskcluster
+      TASKCLUSTER_ROOT_URL: http://localhost:8080
       GRAPHQL_SUBSCRIPTION_ENDPOINT: http://localhost:8080/graphql
       GRAPHQL_ENDPOINT: http://localhost:8080/graphql
       UI_LOGIN_STRATEGY_NAMES: local
@@ -112,13 +113,35 @@ services:
       - ./docker/nginx.conf:/etc/nginx/nginx.conf
     ports:
       - '8080:80'
+  generic-worker:
+    image: taskcluster/generic-worker:local
+    networks:
+      - local
+    environment:
+      TASKCLUSTER_ROOT_URL: http://ingress
+      TASKCLUSTER_CLIENT_ID: static/generic-worker-compose-client
+      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
+    build:
+      context: ./workers
+      dockerfile: Dockerfile
+    volumes:
+      - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      auth-web:
+        condition: service_healthy
+      queue-web:
+        condition: service_healthy
+      ingress:
+        condition: service_started
   auth-web:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
     environment:
       TASKCLUSTER_ROOT_URL: http://ingress
-      STATIC_CLIENTS: '[{"clientId":"static/taskcluster/built-in-workers","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/github","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/hooks","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/index","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/notify","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/object","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/purge-cache","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/queue","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/secrets","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/web-server","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/worker-manager","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/root","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"}]'
+      STATIC_CLIENTS: '[{"clientId":"static/taskcluster/built-in-workers","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/github","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/hooks","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/index","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/notify","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/object","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/purge-cache","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/queue","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/secrets","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/web-server","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/worker-manager","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/root","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/generic-worker-compose-client","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA","description":"Static generic worker client","scopes":["*"]}]'
       LEVEL: debug
       PORT: 80
       NODE_ENV: development
@@ -408,7 +431,7 @@ services:
       AWS_ACCESS_KEY_ID: minioadmin
       AWS_SECRET_ACCESS_KEY: miniopassword
       ARTIFACT_REGION: local
-      AWS_ENDPOINT: s3://s3:9000
+      AWS_ENDPOINT: http://s3:9000
       AWS_FORCE_PATH_STYLE: 'true'
       AWS_SKIP_CORS_CONFIGURATION: 'true'
       DEBUG: '*'

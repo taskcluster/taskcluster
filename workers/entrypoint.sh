@@ -18,4 +18,10 @@ then
   exit 2
 fi
 
+if grep -Fxq '127.0.1.1 taskcluster' /etc/hosts; then
+  echo '127.0.1.1 taskcluster' >> /etc/hosts
+fi
+
+generic-worker --version
+
 generic-worker run --config /etc/generic-worker/config.json
