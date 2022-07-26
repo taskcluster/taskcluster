@@ -353,3 +353,9 @@ Warning: by using this approach, you are responsible for maintenance and backups
    Once users are set, you can run `yarn dev:db:upgrade` (with running port-forward) to create db schema and stored functions
 
 Now it should be possible to use postgres for dev purposes inside the cluster. Make sure to make backups.
+
+## GCP Cloud Build
+
+Commits that land on `main` trigger a build on GCP Cloud Build. This build is configured by the [`cloudbuild.yaml` file](../cloudbuild.yaml). Here's a link to Google's docs on the build config file schema for cloud build: https://cloud.google.com/build/docs/build-config-file-schema.
+
+A couple secrets are used in the config and they are both stored in GCP Secret Manager. Follow [these docs](https://cloud.google.com/build/docs/securing-builds/use-secrets) to create more secrets or edit the current secrets. A new version needs to be created each time you change the secrets. The current cloudbuild config points to the latest version of the secrets, so any edits to these secrets will be automatically picked up.
