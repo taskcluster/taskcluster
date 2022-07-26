@@ -1,4 +1,4 @@
-const { readRepoFile, modifyRepoFile, writeRepoFile, modifyRepoJSON } = require('../../utils');
+const { readRepoFile, modifyRepoFile, writeRepoFile, modifyRepoJSON, modifyRepoYAML } = require('../../utils');
 
 /**
  * Update the node version to match everywhere, treating that in `package.json`
@@ -64,6 +64,13 @@ exports.tasks = [{
     await modifyRepoJSON('workers/docker-worker/package.json',
       contents => {
         contents.engines.node = nodeVersion;
+        return contents;
+      });
+
+    utils.status({ message: 'cloudbuild.yaml' });
+    await modifyRepoYAML('cloudbuild.yaml',
+      contents => {
+        contents.substitutions._NODE_VERSION = nodeVersion;
         return contents;
       });
   },
