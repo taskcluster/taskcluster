@@ -6374,6 +6374,24 @@
         }
       },
       "version": 77
+    },
+    {
+      "description": "fix filtering of static workers based on quarantined status",
+      "methods": {
+        "get_queue_workers_with_wm_join_quarantined": {
+          "deprecated": true
+        },
+        "get_queue_workers_with_wm_join_quarantined_2": {
+          "args": "task_queue_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id as worker_pool_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active,\n    workers.state,\n    workers.capacity,\n    workers.provider_id,\n    public.gen_random_uuid()\n  from queue_workers\n  full outer join workers on workers.worker_id = queue_workers.worker_id\n  where\n    (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_with_wm_join_quarantined_2.task_queue_id_in is null)\n    and queue_workers.quarantine_until >= now()\n  order by worker_pool_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get quarantined queue workers ordered by worker_pool_id, worker_group, and worker_id.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.\nThis also performs an outer join with the worker_manager.worker table for more data.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, state text, capacity int4, provider_id text, etag uuid)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 78
     }
   ]
 }

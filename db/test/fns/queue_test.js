@@ -1159,8 +1159,8 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_workers_with_wm_join_quarantined empty', async function(db) {
-      const res = await db.fns.get_queue_workers_with_wm_join_quarantined(null, null, null);
+    helper.dbTest('get_queue_workers_with_wm_join_quarantined_2 empty', async function(db) {
+      const res = await db.fns.get_queue_workers_with_wm_join_quarantined_2(null, null, null);
       assert.deepEqual(res, []);
     });
 
