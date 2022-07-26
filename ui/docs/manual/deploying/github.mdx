@@ -43,5 +43,5 @@ In the Helm templates, you'll need to set
 
 On the app's settings page, generate a private key, and add its PEM to your Taskcluster instance's configs.
 This is a multiline string.
-If your deployment mechanics does not handle multiline values correctly, the newlines can be replaced by a literal `\``n` escape sequence, thus fitting on a single (long) line.
+If your deployment mechanics do not handle multiline values correctly, the newlines can be replaced by a literal `\n` escape sequence, thus fitting on a single (long) line.
 Note that the entire PEM key, including the "BEGIN" and "END" lines, must be included, with no additional whitespace or other formatting added or moved.
