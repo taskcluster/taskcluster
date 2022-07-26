@@ -12,7 +12,7 @@ services:
       context: ./ui
       dockerfile: Dockerfile
     environment:
-      TASKCLUSTER_ROOT_URL: http://ingress
+      TASKCLUSTER_ROOT_URL: http://taskcluster
     command: start:docker
     volumes:
       - ./clients:/app/clients
