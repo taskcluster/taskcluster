@@ -338,7 +338,10 @@ class Worker {
       const { continuationToken, rows } = await paginateResults({
         query,
         fetch: (size, offset) => {
-          if (Object.keys(query).includes('workerState')) {
+          if (
+            Object.keys(query).includes("workerState") &&
+            Object.values(Worker.states).includes(query.workerState)
+          ) {
             return db.fns.get_queue_workers_with_wm_join_state(
               workerPoolId || null,
               expires || null,
@@ -349,7 +352,7 @@ class Worker {
           }
 
           if (query.quarantined === 'true') {
-            return db.fns.get_queue_workers_with_wm_join_quarantined(
+            return db.fns.get_queue_workers_with_wm_join_quarantined_2(
               workerPoolId || null,
               size,
               offset,
