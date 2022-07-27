@@ -3,6 +3,36 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.17.2
+
+### GENERAL
+
+▶ [patch]
+Go update from 1.18.3 to 1.18.4. Also updates the git version for generic worker decision tasks from `git2.24.0.2` to `git2.37.1`.
+
+### DEPLOYERS
+
+▶ [patch] [bug 1633440](http://bugzil.la/1633440)
+Spread cron task times that started at 00:00 to minimize CPU spikes and DB loads.
+
+### USERS
+
+▶ [patch]
+Set the `key` field on the login window to a password field instead of a text one
+
+### DEVELOPERS
+
+▶ [patch]
+Fix docker compose sometimes not starting the ingress container
+
+▶ [patch] [#5553](https://github.com/taskcluster/taskcluster/issues/5553)
+This change adds continuous deployment support to the `cloudbuild.yaml` file so that each change to `main` results in a new deployment to [`https://dev.alpha.taskcluster-dev.net/`](https://dev.alpha.taskcluster-dev.net/).
+
+▶ [patch] [#5554](https://github.com/taskcluster/taskcluster/issues/5554)
+This patch splits the docker compose file into separate dev and prod configuration files. For prod-like deployments, where you want to use the latest `taskcluster/taskcluster` docker image, use the command `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d`. For development deployments, where local source code mounts as volumes for testing/debugging purposes, use the command `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`.
+
+This change also switches `docker-compose` (v1) references over to `docker compose` (v2). See [here](https://docs.docker.com/compose/#compose-v2-and-the-new-docker-compose-command) for more details.
+
 ## v44.17.1
 
 ### GENERAL
