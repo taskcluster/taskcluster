@@ -57,6 +57,17 @@ steps:
       - gcloud container images list-tags ${_IMAGE_NAME} --filter='-tags:*' --format='get(digest)' --limit=unlimited | xargs -I {sha} gcloud container images delete "${_IMAGE_NAME}@{sha}"
     id: Delete old images
     entrypoint: bash
+  - name: node:${_NODE_VERSION}
+    args:
+      - '-c'
+      - yarn && yarn smoketest
+    id: Smoketest
+    entrypoint: bash
+    env:
+      - TASKCLUSTER_ROOT_URL=https://dev.alpha.taskcluster-dev.net
+    secretEnv:
+      - TASKCLUSTER_CLIENT_ID
+      - TASKCLUSTER_ACCESS_TOKEN
 timeout: 1800s
 images:
   - ${_IMAGE_NAME}:${_IMAGE_VERSION}
@@ -74,3 +85,7 @@ availableSecrets:
   secretManager:
     - versionName: projects/${PROJECT_ID}/secrets/dev-config/versions/latest
       env: DEV_CONFIG
+    - versionName: projects/${PROJECT_ID}/secrets/smoketest-client-id/versions/latest
+      env: TASKCLUSTER_CLIENT_ID
+    - versionName: projects/${PROJECT_ID}/secrets/smoketest-access-token/versions/latest
+      env: TASKCLUSTER_ACCESS_TOKEN
