@@ -13,7 +13,7 @@ Generic-worker runs on several platforms, with several engines, and is written i
 * [Generic Worker](generic-worker#readme)
 <!-- TOC END -->
 
-## [DRAFT] Docker image with generic worker
+## Docker image with generic worker
 
 In order to simplify generic-worker installation, it is possible to build and use docker image to run `generic-worker`:
 
@@ -43,4 +43,6 @@ Minimal `config.json` looks like this:
 }
 ```
 
-Access Token and Client Id can be created in <https://tc-root.url/auth/clients/create>
+Access Token and Client Id can be created in <https://tc-root.url/auth/clients/create>.
+
+This image is also used in a local `docker compose` development environment.
