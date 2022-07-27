@@ -1,0 +1,120 @@
+---
+title: Running Taskcluster locally
+---
+
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
+
+# Running Taskcluster locally
+
+Let's try to run whole Taskcluster locally to see what it consists of and
+how services interact with each other and.
+
+You would need `git` to clone [taskcluster/taskcluster](https://github.com/taskcluster/taskcluster) repository:
+
+```sh
+git clone https://github.com/taskcluster/taskcluster
+cd taskcluster
+```
+
+You will also need recent `docker` that has [`compose`](https://docs.docker.com/compose/) tool.
+(`docker-compose` will also work here).
+
+You can have a look at [`docker-compose.yml`](https://github.com/taskcluster/taskcluster/blob/main/docker-compose.yml)
+to see more details.
+
+## Running everything
+
+To start everything simply run `docker compose up -d`.
+
+This should start following services:
+
+* `postgres` database to store clients, tasks, workers and much more
+* `rabbitmq` message broker that allows services to communicate effectively and also lets anyone listen to [important events](/docs/manual/tasks/messages)
+* `minio` to mimic S3 storage that Taskcluster needs to store [artifacts](/docs/manual/tasks/artifacts)
+* `taskcluster` which is an nginx reverse-proxy that serves all of Taskcluster services through single endpoint
+
+It will need some time to intialize database and start the services, after which everything should be accessible at <http://localhost>
+
+<Warning>
+Default port for the `taskcluster` service is `80`. If your system doesn't allow you to bind service to this port,
+or you need extra privileges, you can simply change this to something else.
+However, some services might not work correctly with non-standard port.
+</Warning>
+
+You might also want to add custom domain entry to your `/etc/hosts` file to be sure that UI can work properly with tasks and artifacts:
+
+```sh
+echo '127.0.0.1 taskcluster' >> /etc/hosts
+```
+
+Which will allow you to open <http://taskcluster> in browser.
+
+## Authentication
+
+Once you have loaded Taskcluster in browser, you should be able to login with static credentials.
+
+Click on **Sign in** button, choose **Sign in with credentials**  on the front page and fill out the form:
+
+* `Client ID` we can use `static/taskcluster/root`
+* `Access Token` copy and paste `j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA` (hardcoded dev access token as seen in `docker-compose.yml` file)
+
+From now on Taskcluster will know that you are logged in and will allow you to do perform various actions.
+
+## Workers
+
+To run any task in Taskcluster you need a worker. If you go to the [Workers](http://taskcluster/provisioners) page, you would see two provisioners:
+
+* `built-in` which is a simple provisioner that doesn't do anything and has two workers:
+  - `succeed` will make the task resolve with success
+  - `fail` will make the task fail
+* `docker-compose` will have a single worker called `generic-worker`. This is a [simple generic worker](/docs/reference/workers/generic-worker) that can run real commands.
+
+Let's try to create a task for this generic-worker!
+
+## Create a task
+
+Head to the [Create Task](http://taskcluster/tasks/create) page.
+
+Replace yaml with something like:
+
+```yaml
+taskQueueId: docker-compose/generic-worker
+schedulerId: taskcluster-ui
+created: '2022-07-27T13:53:21.190Z'
+deadline: '2022-07-27T16:53:21.190Z'
+payload:
+  command:
+    - - /bin/bash
+      - '-c'
+      - for ((i=1;i<=10;i++)); do echo $i; sleep 1; done
+  maxRunTime: 30
+metadata:
+  name: example-task
+  description: An **example** task
+  owner: name@example.com
+  source: http://taskcluster/tasks/create
+```
+
+To make sure that timestamps are valid you can click on the `...` menu at the bottom and press `Update Timestamps` button.
+
+Now it is fine to click `Save` button at the bottom at the page.
+
+UI should redirect you to the newly create task page, i.e. <http://taskcluster/tasks/QiGSm7nTTkOVZKLYBPKjMA>.
+
+You should be able to see that this task is `Running` now.
+
+Once it will be finished, you could click on the `public/logs/live.log` artifact to see task execution log.
+
+
+## That's it!
+
+Congratulations, you have just run your first task on your local Taskcluster!
+
+To stop everything simply do `docker compose down` to stop services and clean up resources.
+
+
+<TutorialNavigation links={[
+  {link: "/docs/reference", text: "API documentation for all Taskcluster services"},
+]}>
+</TutorialNavigation>

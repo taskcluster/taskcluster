@@ -3914,6 +3914,48 @@
   },
   {
     "element": "h1",
+    "id": "running-taskcluster-locally",
+    "path": "/tutorial/local-dev",
+    "subtitle": null,
+    "title": "Running Taskcluster locally"
+  },
+  {
+    "element": "h2",
+    "id": "authentication",
+    "path": "/tutorial/local-dev",
+    "subtitle": "Authentication",
+    "title": "Running Taskcluster locally"
+  },
+  {
+    "element": "h2",
+    "id": "create-a-task",
+    "path": "/tutorial/local-dev",
+    "subtitle": "Create a task",
+    "title": "Running Taskcluster locally"
+  },
+  {
+    "element": "h2",
+    "id": "running-everything",
+    "path": "/tutorial/local-dev",
+    "subtitle": "Running everything",
+    "title": "Running Taskcluster locally"
+  },
+  {
+    "element": "h2",
+    "id": "thats-it",
+    "path": "/tutorial/local-dev",
+    "subtitle": "That's it!",
+    "title": "Running Taskcluster locally"
+  },
+  {
+    "element": "h2",
+    "id": "workers",
+    "path": "/tutorial/local-dev",
+    "subtitle": "Workers",
+    "title": "Running Taskcluster locally"
+  },
+  {
+    "element": "h1",
     "id": "what-is-taskcluster",
     "path": "/tutorial/what-is-tc",
     "subtitle": null,
