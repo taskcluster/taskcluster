@@ -231,8 +231,8 @@ docker compose run --rm auth-web worker-manager/expire-workers
 
 **Minio** (S3) will provision two buckets on first start: `public-bucket`, `private-bucket`.
 
-All services would be served through `taskcluster` service which uses [`docker/nginx.conf`](../docker/nginx.conf).
-UI can be accessed through [http://taskcluster](http://taskcluster) (or http://localhost).
+All services are served through the `taskcluster` service which uses [`docker/nginx.conf`](../docker/nginx.conf).
+UI can be accessed through [http://taskcluster](http://taskcluster) (or [http://localhost](http://localhost)).
 
 To avoid having HAWK authentication issues and be able to see worker logs, modification of `/etc/hosts` is necessary with this entry:
 
@@ -245,7 +245,7 @@ To login, use `static/taskcluster/*` client ids and access tokens that can be se
 
 ## Running tasks with local generic-worker
 
-`generic-worker` is configured to automatically start with docker compose and connect to taskcluster using `docker-compose/generic-worker` task queue id.
+`generic-worker` is configured to automatically start with `docker compose` and connect to taskcluster using `docker-compose/generic-worker` task queue id.
 
 It is possible to create a task in the UI using similar payload:
 

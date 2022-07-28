@@ -54,12 +54,12 @@ Which will allow you to open <http://taskcluster> in browser.
 
 Once you have loaded Taskcluster in browser, you should be able to login with static credentials.
 
-Click on **Sign in** button, choose **Sign in with credentials**  on the front page and fill out the form:
+Click on **Sign in** button, choose **Sign in with credentials** on the front page and fill out the form:
 
 * `Client ID` we can use `static/taskcluster/root`
 * `Access Token` copy and paste `j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA` (hardcoded dev access token as seen in `docker-compose.yml` file)
 
-From now on Taskcluster will know that you are logged in and will allow you to do perform various actions.
+From now on Taskcluster will know that you are logged in and will allow you to perform various actions.
 
 ## Workers
 
@@ -96,22 +96,22 @@ metadata:
   source: http://taskcluster/tasks/create
 ```
 
-To make sure that timestamps are valid you can click on the `...` menu at the bottom and press `Update Timestamps` button.
+To make sure that timestamps are valid you can click on the `...` menu at the bottom and press the `Update Timestamps` button.
 
-Now it is fine to click `Save` button at the bottom at the page.
+Now click the `Save` button at the bottom of the page to create the task!
 
-UI should redirect you to the newly create task page, i.e. <http://taskcluster/tasks/QiGSm7nTTkOVZKLYBPKjMA>.
+UI should redirect you to the newly created task page, i.e. <http://taskcluster/tasks/QiGSm7nTTkOVZKLYBPKjMA>.
 
 You should be able to see that this task is `Running` now.
 
-Once it will be finished, you could click on the `public/logs/live.log` artifact to see task execution log.
+Once it finishes, you can click on the `public/logs/live.log` artifact to see the task execution log.
 
 
 ## That's it!
 
 Congratulations, you have just run your first task on your local Taskcluster!
 
-To stop everything simply do `docker compose down` to stop services and clean up resources.
+To stop everything simply run `docker compose down` to stop services and clean up resources.
 
 
 <TutorialNavigation links={[

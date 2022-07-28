@@ -102,7 +102,7 @@ services:
     ports:
       - '3022:80'
   references:
-    image: taskcluster/taskcluster:v44.17.1
+    image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
     environment:
