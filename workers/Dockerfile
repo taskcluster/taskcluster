@@ -1,6 +1,6 @@
 # Build generic worker and run
 
-FROM golang:1.18-buster as build
+FROM golang:1.18.4-buster as build
 
 WORKDIR /app
 
