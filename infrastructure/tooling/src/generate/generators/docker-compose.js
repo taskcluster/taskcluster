@@ -400,7 +400,6 @@ exports.tasks.push({
     const devVolumes = [
       './db:/app/db', // in case of new migrations
       './clients:/app/clients',
-      './services:/app/services',
       './libraries:/app/libraries',
     ];
 
@@ -433,6 +432,15 @@ exports.tasks.push({
       },
     };
 
+    const nodemonFlags = (service) => {
+      return [
+        '--delay 3',
+        '--watch services',
+        '--watch libraries',
+        `--watch services/${service}`, // limit restarts to single service
+      ].join(' ');
+    };
+
     for (let name of SERVICES) {
       const procs = requirements[`procslist-${name}`];
       // only web services for now
@@ -445,11 +453,16 @@ exports.tasks.push({
         }
 
         dockerCompose.services[`${name}-${proc}`] = {
-          volumes: devVolumes,
+          volumes: [
+            ...devVolumes,
+            `./services/${name}:/app/services/${name}`, // service should only care about own code
+          ],
           environment: {
             LEVEL: 'info',
             DEBUG: 'taskcluster:*',
           },
+          command: '',
+          entrypoint: `/bin/sh -c "${procs[proc].command.replace(/^node /, `npx nodemon ${nodemonFlags(name)} `)}"`,
         };
       });
     }

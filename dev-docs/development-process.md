@@ -242,6 +242,22 @@ To avoid having HAWK authentication issues and be able to see worker logs, modif
 
 To login, use `static/taskcluster/*` client ids and access tokens that can be seen in `AUTH_WEB` environment variable of `auth-web` service.
 
+### Development mode
+
+Running docker compose with `docker-compose.dev.yml` allows local development in containers without necessity of restarting them.
+Changes in source code will be applied immediately.
+
+This is achieved with the help of mounting source code from host to the container, and using `nodemon` for core services and `webpack-dev-server` for `ui`.
+
+It might take longer for `ui` service to start, as it needs to compile application. After that reloads would be fast.
+
+```sh
+# start
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+# stop
+docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+```
 
 ## Running tasks with local generic-worker
 
