@@ -23,6 +23,7 @@ const ports = {
   'worker-manager': ['3020:80'],
   'web-server': ['3050:3050'],
   ui: ['3022:80'],
+  references: ['3023:80'],
 };
 
 const servicePorts = (service) => (ports[service] || []);
@@ -291,6 +292,12 @@ exports.tasks.push({
           },
         }),
         ui: serviceDefinition('ui', { command: 'ui/web' }),
+        references: serviceDefinition('references', {
+          command: 'references/web',
+          environment: {
+            TASKCLUSTER_ROOT_URL: defaultValues.TASKCLUSTER_ROOT_URL,
+          },
+        }),
         taskcluster: serviceDefinition('taskcluster', {
           image: 'nginx:1.21.6',
           depends_on: ['ui', 'web-server-web'],
@@ -523,6 +530,16 @@ http {
 
     location / {
       set $pass http://ui;
+      proxy_pass $pass;
+      ${extraDirectives}
+    }
+    location /references {
+      set $pass http://references;
+      proxy_pass $pass;
+      ${extraDirectives}
+    }
+    location /schemas {
+      set $pass http://references;
       proxy_pass $pass;
       ${extraDirectives}
     }

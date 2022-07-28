@@ -101,6 +101,15 @@ services:
     command: ui/web
     ports:
       - '3022:80'
+  references:
+    image: taskcluster/taskcluster:v44.17.1
+    networks:
+      - local
+    environment:
+      TASKCLUSTER_ROOT_URL: http://taskcluster
+    command: references/web
+    ports:
+      - '3023:80'
   taskcluster:
     image: nginx:1.21.6
     networks:
