@@ -1,0 +1,12 @@
+{
+  "accessToken": "j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA",
+  "clientId": "static/generic-worker-compose-client",
+  "ed25519SigningKeyLocation": "/etc/generic-worker/ed25519_key",
+  "rootURL": "http://taskcluster",
+  "workerId": "generic-worker",
+  "provisionerId": "docker-compose",
+  "workerType": "generic-worker",
+  "livelogExecutable": "/usr/local/bin/livelog",
+  "taskclusterProxyExecutable": "/usr/local/bin/taskcluster-proxy",
+  "publicIP": "127.1.2.3"
+}

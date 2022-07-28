@@ -9,7 +9,7 @@ const PROD_COMPOSE_FILENAME = 'docker-compose.prod.yml';
 const NGINX_FILENAME = 'nginx.conf';
 
 const ports = {
-  ingress: ['8080:80'],
+  taskcluster: ['80:80'],
 
   auth: ['3011:80'],
   github: ['3012:80'],
@@ -23,10 +23,10 @@ const ports = {
   'worker-manager': ['3020:80'],
   'web-server': ['3050:3050'],
   ui: ['3022:80'],
+  references: ['3023:80'],
 };
 
 const servicePorts = (service) => (ports[service] || []);
-const servicePrimaryPort = (service) => ports[service][0].split(':')[0];
 const serviceHostPort = (service) => ports[service][0].split(':')[1];
 
 const staticClients = [
@@ -42,6 +42,8 @@ const staticClients = [
   { 'clientId': 'static/taskcluster/web-server', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
   { 'clientId': 'static/taskcluster/worker-manager', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
   { 'clientId': 'static/taskcluster/root', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { 'clientId': 'static/generic-worker-compose-client', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA',
+    description: 'Static generic worker client', scopes: ['*'] },
 ];
 
 const getTokenByService = (service) => staticClients.find(client => client.clientId.includes(service)).accessToken;
@@ -55,8 +57,8 @@ const workerManagerProviders = {
 const defaultValues = {
   NODE_ENV: 'development',
 
-  DEBUG: '*',
-  LEVEL: 'debug',
+  DEBUG: '',
+  LEVEL: 'warning',
   FORCE_SSL: 'false',
   TRUST_PROXY: 'true',
 
@@ -65,7 +67,7 @@ const defaultValues = {
   READ_DB_URL: 'postgresql://postgres@postgres:5432/taskcluster',
   WRITE_DB_URL: 'postgresql://postgres@postgres:5432/taskcluster',
 
-  TASKCLUSTER_ROOT_URL: `http://ingress`,
+  TASKCLUSTER_ROOT_URL: `http://taskcluster`,
 
   PULSE_USERNAME: 'admin',
   PULSE_PASSWORD: 'admin',
@@ -74,8 +76,8 @@ const defaultValues = {
   PULSE_AMQPS: 'false',
 
   APPLICATION_NAME: 'Taskcluster',
-  GRAPHQL_ENDPOINT: `http://localhost:${servicePrimaryPort('ingress')}/graphql`,
-  GRAPHQL_SUBSCRIPTION_ENDPOINT: `http://localhost:${servicePrimaryPort('ingress')}/graphql`,
+  GRAPHQL_ENDPOINT: `http://taskcluster/graphql`,
+  GRAPHQL_SUBSCRIPTION_ENDPOINT: `http://taskcluster/graphql`,
   UI_LOGIN_STRATEGY_NAMES: 'local',
 
   // Auth
@@ -103,12 +105,12 @@ const defaultValues = {
   AWS_SECRET_ACCESS_KEY: 'miniopassword',
   AWS_FORCE_PATH_STYLE: 'true',
   AWS_SKIP_CORS_CONFIGURATION: 'true',
-  AWS_ENDPOINT: 's3://s3:9000',
+  AWS_ENDPOINT: 'http://taskcluster/',
 
   // Web server
   SESSION_SECRET: 'quaYpvahRKmYOz2-wR4jaw',
   UI_LOGIN_STRATEGIES: '',
-  PUBLIC_URL: `http://localhost:${servicePrimaryPort('ingress')}`,
+  PUBLIC_URL: 'http://taskcluster',
   ADDITIONAL_ALLOWED_CORS_ORIGIN: '',
   REGISTERED_CLIENTS: '[]',
 };
@@ -126,12 +128,15 @@ const healthcheck = (test) => ({
 const uiConfig = [
   { type: '!env', var: 'PORT' },
   { type: '!env', var: 'APPLICATION_NAME' },
+  { type: '!env', var: 'TASKCLUSTER_ROOT_URL' },
   { type: '!env', var: 'GRAPHQL_SUBSCRIPTION_ENDPOINT' },
   { type: '!env', var: 'GRAPHQL_ENDPOINT' },
   { type: '!env', var: 'UI_LOGIN_STRATEGY_NAMES' },
   { type: '!env:string', var: 'BANNER_MESSAGE', optional: true },
   { type: '!env:json', var: 'SITE_SPECIFIC', optional: true },
 ];
+
+const allowedBackgroundJobs = ['built-in-workers/server'];
 
 exports.tasks.push({
   title: `Generate docker-compose.yml`,
@@ -287,7 +292,13 @@ exports.tasks.push({
           },
         }),
         ui: serviceDefinition('ui', { command: 'ui/web' }),
-        ingress: serviceDefinition('ingress', {
+        references: serviceDefinition('references', {
+          command: 'references/web',
+          environment: {
+            TASKCLUSTER_ROOT_URL: defaultValues.TASKCLUSTER_ROOT_URL,
+          },
+        }),
+        taskcluster: serviceDefinition('taskcluster', {
           image: 'nginx:1.21.6',
           depends_on: ['ui', 'web-server-web'],
           volumes: [
@@ -297,6 +308,32 @@ exports.tasks.push({
       },
     };
 
+    ['standalone', 'static'].forEach(type => {
+      dockerCompose.services[`generic-worker-${type}`] = serviceDefinition('generic-worker', {
+        image: 'taskcluster/generic-worker:local', // TODO build and publish this image as well?
+        build: {
+          context: './workers',
+          dockerfile: 'Dockerfile',
+        },
+        volumes: [
+          './docker/generic-worker-config.json:/etc/generic-worker/config.json',
+          './docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json',
+        ],
+        command: type,
+        environment: {
+          TASKCLUSTER_ROOT_URL: 'http://taskcluster',
+          TASKCLUSTER_CLIENT_ID: 'static/generic-worker-compose-client',
+          TASKCLUSTER_ACCESS_TOKEN: getTokenByService('generic-worker'),
+        },
+        depends_on: {
+          rabbitmq: { condition: 'service_healthy' },
+          'auth-web': { condition: 'service_healthy' },
+          'queue-web': { condition: 'service_healthy' },
+          taskcluster: { condition: 'service_started' },
+        },
+      });
+    });
+
     delete dockerCompose.services.ui.environment.DEBUG;
 
     for (let name of SERVICES) {
@@ -304,9 +341,7 @@ exports.tasks.push({
       // only web services for now
       Object.keys(procs).forEach((proc) => {
         const isWeb = procs[proc].type === 'web';
-        const allowedBackgroundJob = [
-          'built-in-workers/server',
-        ].includes(`${name}/${proc}`);
+        const allowedBackgroundJob = allowedBackgroundJobs.includes(`${name}/${proc}`);
 
         if (!isWeb && !allowedBackgroundJob) {
           return;
@@ -363,6 +398,7 @@ exports.tasks.push({
   provides: ['target-docker-compose.dev.yml'],
   run: async (requirements, utils) => {
     const devVolumes = [
+      './db:/app/db', // in case of new migrations
       './clients:/app/clients',
       './services:/app/services',
       './libraries:/app/libraries',
@@ -371,6 +407,9 @@ exports.tasks.push({
     const dockerCompose = {
       'x-autogenerated': 'This file is autogenerated',
       version: '3',
+      volumes: {
+        ui_node_modules: {},
+      },
       services: {
         pg_init_db: { volumes: devVolumes },
         ui: {
@@ -380,14 +419,15 @@ exports.tasks.push({
             dockerfile: 'Dockerfile',
           },
           environment: {
-            TASKCLUSTER_ROOT_URL: 'http://ingress',
+            TASKCLUSTER_ROOT_URL: 'http://taskcluster',
           },
           command: 'start:docker',
           volumes: [
             ...devVolumes,
-            './ui:/app/ui',
             './generated:/app/generated',
             '.all-contributorsrc:/app/.all-contributorsrc',
+            './ui:/app/ui',
+            'ui_node_modules:/app/ui/node_modules/', // prevent previous mount to overwrite modules inside container
           ],
         },
       },
@@ -398,15 +438,19 @@ exports.tasks.push({
       // only web services for now
       Object.keys(procs).forEach((proc) => {
         const isWeb = procs[proc].type === 'web';
-        const allowedBackgroundJob = [
-          'built-in-workers/server',
-        ].includes(`${name}/${proc}`);
+        const allowedBackgroundJob = allowedBackgroundJobs.includes(`${name}/${proc}`);
 
         if (!isWeb && !allowedBackgroundJob) {
           return;
         }
 
-        dockerCompose.services[`${name}-${proc}`] = { volumes: devVolumes };
+        dockerCompose.services[`${name}-${proc}`] = {
+          volumes: devVolumes,
+          environment: {
+            LEVEL: 'info',
+            DEBUG: 'taskcluster:*',
+          },
+        };
       });
     }
 
@@ -428,7 +472,6 @@ exports.tasks.push({
   run: async (requirements, utils) => {
     const prodConfig = {
       environment: {
-        LEVEL: 'info',
         NODE_ENV: 'production',
       },
     };
@@ -447,9 +490,7 @@ exports.tasks.push({
       // only web services for now
       Object.keys(procs).forEach((proc) => {
         const isWeb = procs[proc].type === 'web';
-        const allowedBackgroundJob = [
-          'built-in-workers/server',
-        ].includes(`${name}/${proc}`);
+        const allowedBackgroundJob = allowedBackgroundJobs.includes(`${name}/${proc}`);
 
         if (!isWeb && !allowedBackgroundJob) {
           return;
@@ -472,9 +513,11 @@ exports.tasks.push({
   provides: ['target-nginx.conf'],
   run: async (requirements, utils) => {
     const extraDirectives = `proxy_hide_header Content-Security-Policy;
-      proxy_set_header Host ingress;`;
+      proxy_set_header Host taskcluster;`;
 
     const conf = `
+# this file is autogenerated
+
 worker_processes  1;
 error_log  stderr;
 events {
@@ -496,6 +539,16 @@ http {
       proxy_pass $pass;
       ${extraDirectives}
     }
+    location /references {
+      set $pass http://references;
+      proxy_pass $pass;
+      ${extraDirectives}
+    }
+    location /schemas {
+      set $pass http://references;
+      proxy_pass $pass;
+      ${extraDirectives}
+    }
     location /login {
       set $pass http://web-server-web:${serviceHostPort('web-server')};
       proxy_pass $pass;
@@ -510,6 +563,19 @@ http {
       set $pass http://web-server-web:${serviceHostPort('web-server')};
       proxy_pass $pass;
       ${extraDirectives}
+    }
+    location /public-bucket/ {
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header Host $http_host;
+
+      proxy_connect_timeout 300;
+      proxy_http_version 1.1;
+      proxy_set_header Connection "";
+      chunked_transfer_encoding off;
+
+      proxy_pass http://s3:9000;
     }
 ${SERVICES.filter(name => !!ports[name]).map(name => `
     location /api/${name} {

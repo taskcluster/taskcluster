@@ -4278,6 +4278,16 @@
         ],
         "data": {
           "order": 1000,
+          "title": "Running Taskcluster locally"
+        },
+        "name": "local-dev",
+        "path": "tutorial/local-dev"
+      },
+      {
+        "children": [
+        ],
+        "data": {
+          "order": 1000,
           "title": "Monitor task status via API"
         },
         "name": "monitor-task-status",
