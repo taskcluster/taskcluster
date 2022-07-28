@@ -1,0 +1,20 @@
+{
+  "worker": {
+    "implementation": "generic-worker",
+    "path": "/usr/local/bin/generic-worker",
+    "configPath": "/etc/generic-worker/config-worker-runner.yml"
+  },
+  "provider": {
+    "providerID": "static",
+    "providerType": "static",
+    "rootURL": "http://taskcluster/",
+    "workerID": "vm-1",
+    "workerGroup": "local",
+    "workerPoolID": "docker-compose/generic-worker",
+    "workerNodeType": "generic-worker",
+    "staticSecret": "NMd5YFgrZZHmAejHUNhNWKcEtfRwtHeME6wdESMf798V"
+  },
+  "workerConfig": {
+    "ed25519SigningKeyLocation": "/etc/generic-worker/ed25519_key"
+  }
+}

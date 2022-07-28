@@ -122,7 +122,7 @@ services:
       - ./docker/nginx.conf:/etc/nginx/nginx.conf
     ports:
       - '80:80'
-  generic-worker:
+  generic-worker-standalone:
     image: taskcluster/generic-worker:local
     networks:
       - local
@@ -135,6 +135,32 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
+      - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
+    command: standalone
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      auth-web:
+        condition: service_healthy
+      queue-web:
+        condition: service_healthy
+      taskcluster:
+        condition: service_started
+  generic-worker-static:
+    image: taskcluster/generic-worker:local
+    networks:
+      - local
+    environment:
+      TASKCLUSTER_ROOT_URL: http://taskcluster
+      TASKCLUSTER_CLIENT_ID: static/generic-worker-compose-client
+      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
+    build:
+      context: ./workers
+      dockerfile: Dockerfile
+    volumes:
+      - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
+      - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
+    command: static
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -497,7 +523,7 @@ services:
     networks:
       - local
     environment:
-      PUBLIC_URL: http://localhost:80
+      PUBLIC_URL: http://taskcluster
       LEVEL: warning
       PORT: 80
       TRUST_PROXY: 'true'

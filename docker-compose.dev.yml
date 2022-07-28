@@ -26,25 +26,61 @@ services:
       - ui_node_modules:/app/ui/node_modules/
   auth-web:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*
   built-in-workers-server:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*
   github-web:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*
   hooks-web:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*
   index-web:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*
   notify-web:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*
   object-web:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*
   purge-cache-web:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*
   queue-web:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*
   secrets-web:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*
   web-server-web:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*
   worker-manager-web:
     volumes: *ref_0
+    environment:
+      LEVEL: info
+      DEBUG: taskcluster:*

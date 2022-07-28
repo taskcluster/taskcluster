@@ -27,7 +27,6 @@ const ports = {
 };
 
 const servicePorts = (service) => (ports[service] || []);
-const servicePrimaryPort = (service) => ports[service][0].split(':')[0];
 const serviceHostPort = (service) => ports[service][0].split(':')[1];
 
 const staticClients = [
@@ -107,12 +106,11 @@ const defaultValues = {
   AWS_FORCE_PATH_STYLE: 'true',
   AWS_SKIP_CORS_CONFIGURATION: 'true',
   AWS_ENDPOINT: 'http://taskcluster/',
-  // AWS_ENDPOINT: 'http://s3:9000/',
 
   // Web server
   SESSION_SECRET: 'quaYpvahRKmYOz2-wR4jaw',
   UI_LOGIN_STRATEGIES: '',
-  PUBLIC_URL: `http://localhost:${servicePrimaryPort('taskcluster')}`,
+  PUBLIC_URL: 'http://taskcluster',
   ADDITIONAL_ALLOWED_CORS_ORIGIN: '',
   REGISTERED_CLIENTS: '[]',
 };
@@ -137,6 +135,8 @@ const uiConfig = [
   { type: '!env:string', var: 'BANNER_MESSAGE', optional: true },
   { type: '!env:json', var: 'SITE_SPECIFIC', optional: true },
 ];
+
+const allowedBackgroundJobs = ['built-in-workers/server'];
 
 exports.tasks.push({
   title: `Generate docker-compose.yml`,
@@ -305,29 +305,34 @@ exports.tasks.push({
             './docker/nginx.conf:/etc/nginx/nginx.conf',
           ],
         }),
-        'generic-worker': serviceDefinition('generic-worker', {
-          image: 'taskcluster/generic-worker:local', // TODO build and publish this image as well?
-          build: {
-            context: './workers',
-            dockerfile: 'Dockerfile',
-          },
-          volumes: [
-            './docker/generic-worker-config.json:/etc/generic-worker/config.json',
-          ],
-          environment: {
-            TASKCLUSTER_ROOT_URL: 'http://taskcluster',
-            TASKCLUSTER_CLIENT_ID: 'static/generic-worker-compose-client',
-            TASKCLUSTER_ACCESS_TOKEN: getTokenByService('generic-worker'),
-          },
-          depends_on: {
-            rabbitmq: { condition: 'service_healthy' },
-            'auth-web': { condition: 'service_healthy' },
-            'queue-web': { condition: 'service_healthy' },
-            taskcluster: { condition: 'service_started' },
-          },
-        }),
       },
     };
+
+    ['standalone', 'static'].forEach(type => {
+      dockerCompose.services[`generic-worker-${type}`] = serviceDefinition('generic-worker', {
+        image: 'taskcluster/generic-worker:local', // TODO build and publish this image as well?
+        build: {
+          context: './workers',
+          dockerfile: 'Dockerfile',
+        },
+        volumes: [
+          './docker/generic-worker-config.json:/etc/generic-worker/config.json',
+          './docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json',
+        ],
+        command: type,
+        environment: {
+          TASKCLUSTER_ROOT_URL: 'http://taskcluster',
+          TASKCLUSTER_CLIENT_ID: 'static/generic-worker-compose-client',
+          TASKCLUSTER_ACCESS_TOKEN: getTokenByService('generic-worker'),
+        },
+        depends_on: {
+          rabbitmq: { condition: 'service_healthy' },
+          'auth-web': { condition: 'service_healthy' },
+          'queue-web': { condition: 'service_healthy' },
+          taskcluster: { condition: 'service_started' },
+        },
+      });
+    });
 
     delete dockerCompose.services.ui.environment.DEBUG;
 
@@ -336,9 +341,7 @@ exports.tasks.push({
       // only web services for now
       Object.keys(procs).forEach((proc) => {
         const isWeb = procs[proc].type === 'web';
-        const allowedBackgroundJob = [
-          'built-in-workers/server',
-        ].includes(`${name}/${proc}`);
+        const allowedBackgroundJob = allowedBackgroundJobs.includes(`${name}/${proc}`);
 
         if (!isWeb && !allowedBackgroundJob) {
           return;
@@ -395,6 +398,7 @@ exports.tasks.push({
   provides: ['target-docker-compose.dev.yml'],
   run: async (requirements, utils) => {
     const devVolumes = [
+      './db:/app/db', // in case of new migrations
       './clients:/app/clients',
       './services:/app/services',
       './libraries:/app/libraries',
@@ -434,15 +438,19 @@ exports.tasks.push({
       // only web services for now
       Object.keys(procs).forEach((proc) => {
         const isWeb = procs[proc].type === 'web';
-        const allowedBackgroundJob = [
-          'built-in-workers/server',
-        ].includes(`${name}/${proc}`);
+        const allowedBackgroundJob = allowedBackgroundJobs.includes(`${name}/${proc}`);
 
         if (!isWeb && !allowedBackgroundJob) {
           return;
         }
 
-        dockerCompose.services[`${name}-${proc}`] = { volumes: devVolumes };
+        dockerCompose.services[`${name}-${proc}`] = {
+          volumes: devVolumes,
+          environment: {
+            LEVEL: 'info',
+            DEBUG: 'taskcluster:*',
+          },
+        };
       });
     }
 
@@ -482,9 +490,7 @@ exports.tasks.push({
       // only web services for now
       Object.keys(procs).forEach((proc) => {
         const isWeb = procs[proc].type === 'web';
-        const allowedBackgroundJob = [
-          'built-in-workers/server',
-        ].includes(`${name}/${proc}`);
+        const allowedBackgroundJob = allowedBackgroundJobs.includes(`${name}/${proc}`);
 
         if (!isWeb && !allowedBackgroundJob) {
           return;
