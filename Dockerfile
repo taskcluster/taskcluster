@@ -53,6 +53,8 @@ RUN rm -rf ui/node_modules ui/src
 
 FROM node:16.16.0-alpine as image
 RUN apk --no-cache add --update nginx bash
+# needed for docker-compose.dev.yml
+RUN npm install --global nodemon
 COPY --from=build /base/app /app
 ENV HOME=/app
 WORKDIR /app
