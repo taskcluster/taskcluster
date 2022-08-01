@@ -204,7 +204,7 @@ It's easy: `yarn build` in the root directory.
 
 > Note: you'll need recent version of `docker` with [`docker-compose-plugin`](https://docs.docker.com/compose/install/compose-plugin/) |(or alternatively [docker-compose](https://github.com/docker/compose/releases))
 >
-> For non-linux systems it is advised to run docker with at least 4 CPU cores and at least 6 Gb of memory.
+> For non-linux systems it is advised to run docker with at least 4 CPU cores and at least 6 GB of memory.
 
 It is possible to run all web services locally using `docker compose`.
 
