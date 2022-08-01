@@ -216,10 +216,10 @@ User names and passwords can be seen in [`docker-compose.yml`](../docker-compose
 
 ```shell
 # to run all containers
-docker compose up -d
+yarn start
 
 # to stop them
-docker compose down
+yarn stop
 
 # to run only some
 docker compose up -d auth-web
@@ -254,25 +254,25 @@ It might take longer for `ui` service to start, as it needs to compile applicati
 
 ```sh
 # run ALL containers with local source code mounts as volumes
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+yarn dev:start
 
 # stop
-docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+yarn dev:stop
 ```
 
 > Note: starting all services in developer mode might be slower and will require extra resources. As alternative you can only start some of the services in development mode:
 
 ```sh
 # first run everything
-docker compose up -d
+yarn start
 
 # then start some of the services you want to develop
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d queue-web auth-web
+yarn dev:start queue-web auth-web
 
 # now queue-web and auth-web are started with nodemon and will be live-reloaded when source file will change
 
 # to stop everything
-docker compose down
+yarn stop
 ```
 
 ## Running tasks with local generic-worker
