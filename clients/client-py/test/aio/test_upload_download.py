@@ -95,10 +95,10 @@ class FakeObject:
 
 async def test_hashing_reader_hashes():
     hashingReader = upload.HashingReader(BufferReader(b"some data"))
-    assert(await hashingReader.read(4) == b"some")
-    assert(await hashingReader.read(1) == b" ")
-    assert(await hashingReader.read(16) == b"data")
-    assert(await hashingReader.read(16) == b"")
+    assert (await hashingReader.read(4) == b"some")
+    assert (await hashingReader.read(1) == b" ")
+    assert (await hashingReader.read(16) == b"data")
+    assert (await hashingReader.read(16) == b"")
 
     exp = {}
     h = hashlib.sha256()
@@ -108,7 +108,7 @@ async def test_hashing_reader_hashes():
     h.update(b"some data")
     exp["sha512"] = h.hexdigest()
 
-    assert(hashingReader.hashes(9) == exp)
+    assert (hashingReader.hashes(9) == exp)
 
     with pytest.raises(RuntimeError):
         hashingReader.hashes(999)
