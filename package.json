@@ -80,6 +80,7 @@
     "node-fetch": "^2.6.0",
     "node-forge": "^1.0.0",
     "nodemailer": "^6.6.1",
+    "nodemon": "^2.0.19",
     "oauth2orize": "^1.11.0",
     "p-queue": "^6.6.2",
     "p-synchronize": "^1.0.0",
