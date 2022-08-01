@@ -5,7 +5,7 @@
   "license": "MPL-2.0",
   "engines": {
     "node": "16.16.0",
-    "yarn": "^1.22.10"
+    "yarn": "^1.22.19"
   },
   "scripts": {
     "build": "webpack --mode production",
