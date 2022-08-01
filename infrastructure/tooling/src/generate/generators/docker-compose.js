@@ -431,8 +431,7 @@ exports.tasks.push({
 
     const nodemonCmd = (service) => {
       return [
-        'node',
-        '/app/node_modules/nodemon/bin/nodemon.js', // using this instead of `yarn nodemon` as it consumes less memory
+        'nodemon',
         '--delay 3',
         '--watch services',
         '--watch libraries',

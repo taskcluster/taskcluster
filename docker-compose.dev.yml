@@ -32,7 +32,7 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main server"
   built-in-workers-server:
     volumes:
       - ./db:/app/db
@@ -43,7 +43,7 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/built-in-workers services/built-in-workers/src/main.js server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/built-in-workers services/built-in-workers/src/main.js server"
   github-web:
     volumes:
       - ./db:/app/db
@@ -54,7 +54,7 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/github services/github/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/github services/github/src/main server"
   hooks-web:
     volumes:
       - ./db:/app/db
@@ -65,7 +65,7 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/hooks services/hooks/src/main.js server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/hooks services/hooks/src/main.js server"
   index-web:
     volumes:
       - ./db:/app/db
@@ -76,7 +76,7 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/index services/index/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/index services/index/src/main server"
   notify-web:
     volumes:
       - ./db:/app/db
@@ -87,7 +87,7 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/notify services/notify/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/notify services/notify/src/main server"
   object-web:
     volumes:
       - ./db:/app/db
@@ -98,7 +98,7 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/object services/object/src/main.js server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/object services/object/src/main.js server"
   purge-cache-web:
     volumes:
       - ./db:/app/db
@@ -109,7 +109,7 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/purge-cache services/purge-cache/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/purge-cache services/purge-cache/src/main server"
   queue-web:
     volumes:
       - ./db:/app/db
@@ -120,7 +120,7 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main server"
   secrets-web:
     volumes:
       - ./db:/app/db
@@ -131,7 +131,7 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/secrets services/secrets/src/main.js server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/secrets services/secrets/src/main.js server"
   web-server-web:
     volumes:
       - ./db:/app/db
@@ -142,7 +142,7 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js server"
   worker-manager-web:
     volumes:
       - ./db:/app/db
@@ -153,4 +153,4 @@ services:
       LEVEL: info
       DEBUG: taskcluster:*
     command: ''
-    entrypoint: /bin/sh -c "node /app/node_modules/nodemon/bin/nodemon.js --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js server"
