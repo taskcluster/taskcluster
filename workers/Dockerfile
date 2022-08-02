@@ -1,6 +1,6 @@
 # Simple generic worker
 
-FROM golang:1.18.4-buster as build
+FROM golang:1.18.5-buster as build
 
 WORKDIR /app
 
