@@ -79,10 +79,14 @@ const defaultValues = {
   GRAPHQL_ENDPOINT: `http://taskcluster/graphql`,
   GRAPHQL_SUBSCRIPTION_ENDPOINT: `http://taskcluster/graphql`,
   UI_LOGIN_STRATEGY_NAMES: 'local',
+  SITE_SPECIFIC: JSON.stringify({
+    tutorial_worker_pool_id: 'docker-compose/generic-worker',
+    tutorial_worker_schema: 'generic-simple-posix',
+  }),
 
   // Auth
   STATIC_CLIENTS: JSON.stringify(staticClients),
-  DB_CRYPTO_KEYS: '[{"id": "dev-init", "algo": "aes-256", "key": "AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4="}]',
+  DB_CRYPTO_KEYS: JSON.stringify([{ id: 'dev-init', algo: 'aes-256', key: 'AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4=' }]),
 
   // Worker Manager
   PROVIDERS: JSON.stringify(workerManagerProviders),
