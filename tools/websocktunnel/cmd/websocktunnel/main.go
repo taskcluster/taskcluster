@@ -120,7 +120,6 @@ func main() {
 		config := &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		}
-		config.BuildNameToCertificate()
 		listener, err := tls.Listen("tcp", ":"+port, config)
 		if err != nil {
 			panic(err)
