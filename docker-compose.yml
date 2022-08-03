@@ -9,10 +9,6 @@ services:
     image: rabbitmq:3.7.8-management
     networks:
       - local
-    environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin
-      RABBITMQ_DEFAULT_VHOST: local
     healthcheck:
       test: rabbitmq-diagnostics ping
       interval: 3s
@@ -22,20 +18,24 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+      RABBITMQ_DEFAULT_VHOST: local
   postgres:
     image: postgres:11
     networks:
       - local
-    environment:
-      POSTGRES_DB: taskcluster
-      POSTGRES_HOST_AUTH_METHOD: trust
-      LC_COLLATE: en_US.UTF8
-      LC_CTYPE: en_US.UTF8
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - '5432:5432'
+    environment:
+      POSTGRES_DB: taskcluster
+      POSTGRES_HOST_AUTH_METHOD: trust
+      LC_COLLATE: en_US.UTF8
+      LC_CTYPE: en_US.UTF8
     healthcheck:
       test: pg_isready -U postgres
       interval: 3s
@@ -46,28 +46,28 @@ services:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      USERNAME_PREFIX: taskcluster
-      ADMIN_DB_URL: postgresql://postgres@postgres:5432/taskcluster
     x-info: Run this first to bring database up to date
     command:
       - script/db:upgrade
     depends_on:
       postgres:
         condition: service_healthy
+    environment:
+      USERNAME_PREFIX: taskcluster
+      ADMIN_DB_URL: postgresql://postgres@postgres:5432/taskcluster
   s3:
     image: minio/minio
     networks:
       - local
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: miniopassword
     command: server /data --console-address :9001
     ports:
       - '3090:9000'
       - '3091:9001'
     volumes:
       - ./docker/buckets:/data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: miniopassword
     healthcheck:
       test: curl -I http://localhost:9000/minio/health/cluster
       interval: 3s
@@ -78,26 +78,18 @@ services:
     image: minio/mc
     networks:
       - local
-    environment:
-      MINIO_ENDPOINT: http://s3:9000
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: miniopassword
     depends_on:
       s3:
         condition: service_healthy
     entrypoint: /bin/sh -c "/usr/bin/mc config host rm local;/usr/bin/mc config host add --quiet --api s3v4 local http://s3:9000 minioadmin miniopassword;/usr/bin/mc rb --force local/public-bucket/;/usr/bin/mc mb --quiet local/public-bucket/;/usr/bin/mc policy set public local/public-bucket;/usr/bin/mc rb --force local/private-bucket/;/usr/bin/mc mb --quiet local/private-bucket/;/usr/bin/mc policy set public local/public-bucket;"
+    environment:
+      MINIO_ENDPOINT: http://s3:9000
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: miniopassword
   ui:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      PORT: 80
-      APPLICATION_NAME: Taskcluster
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      GRAPHQL_SUBSCRIPTION_ENDPOINT: http://taskcluster/graphql
-      GRAPHQL_ENDPOINT: http://taskcluster/graphql
-      UI_LOGIN_STRATEGY_NAMES: local
-      SITE_SPECIFIC: '{"tutorial_worker_pool_id":"docker-compose/generic-worker","tutorial_worker_schema":"generic-simple-posix"}'
     command: ui/web
     ports:
       - '3022:80'
@@ -105,16 +97,15 @@ services:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
+    command: references/web
     environment:
       TASKCLUSTER_ROOT_URL: http://taskcluster
-    command: references/web
     ports:
       - '3023:80'
   taskcluster:
     image: nginx:1.21.6
     networks:
       - local
-    environment: {}
     depends_on:
       - ui
       - web-server-web
@@ -126,10 +117,6 @@ services:
     image: taskcluster/generic-worker:local
     networks:
       - local
-    environment:
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/generic-worker-compose-client
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
     build:
       context: ./workers
       dockerfile: Dockerfile
@@ -137,6 +124,10 @@ services:
       - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
       - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
     command: standalone
+    environment:
+      TASKCLUSTER_ROOT_URL: http://taskcluster
+      TASKCLUSTER_CLIENT_ID: static/generic-worker-compose-client
+      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -150,10 +141,6 @@ services:
     image: taskcluster/generic-worker:local
     networks:
       - local
-    environment:
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/generic-worker-compose-client
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
     build:
       context: ./workers
       dockerfile: Dockerfile
@@ -161,6 +148,10 @@ services:
       - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
       - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
     command: static
+    environment:
+      TASKCLUSTER_ROOT_URL: http://taskcluster
+      TASKCLUSTER_CLIENT_ID: static/generic-worker-compose-client
+      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -174,48 +165,43 @@ services:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      STATIC_CLIENTS: '[{"clientId":"static/taskcluster/built-in-workers","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/github","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/hooks","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/index","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/notify","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/object","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/purge-cache","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/queue","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/secrets","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/web-server","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/worker-manager","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/taskcluster/root","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA"},{"clientId":"static/generic-worker-compose-client","accessToken":"j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA","description":"Static generic worker client","scopes":["*"]}]'
-      LEVEL: warning
-      PORT: 80
-      NODE_ENV: development
-      FORCE_SSL: 'false'
-      TRUST_PROXY: 'true'
-      READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      DB_CRYPTO_KEYS: '[{"id":"dev-init","algo":"aes-256","key":"AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4="}]'
-      PULSE_USERNAME: admin
-      PULSE_PASSWORD: admin
-      PULSE_HOSTNAME: rabbitmq
-      PULSE_VHOST: local
-      PULSE_AMQPS: 'false'
-      DEBUG: ''
+    env_file: ./docker/env/.auth
     command:
       - auth/web
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: wget -q --spider http://localhost:80/api/auth/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
+    ports:
+      - '3011:80'
+  auth-cron-purgeExpiredClients:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.auth
+    command:
+      - auth/purgeExpiredClients
     depends_on:
       rabbitmq:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    ports:
-      - '3011:80'
+    profiles:
+      - cron
+      - auth
+      - auth-cron
   built-in-workers-server:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/taskcluster/built-in-workers
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      LEVEL: warning
-      DEBUG: ''
+    env_file: ./docker/env/.built-in-workers
     command:
       - built-in-workers/server
     depends_on:
@@ -229,179 +215,239 @@ services:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      APPLICATION_NAME: Taskcluster
-      BOT_USERNAME: ''
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/taskcluster/github
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      GITHUB_PRIVATE_PEM: ''
-      GITHUB_APP_ID: ''
-      WEBHOOK_SECRET: ''
-      READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      LEVEL: warning
-      PORT: 80
-      NODE_ENV: development
-      FORCE_SSL: 'false'
-      TRUST_PROXY: 'true'
-      PULSE_HOSTNAME: rabbitmq
-      PULSE_USERNAME: admin
-      PULSE_PASSWORD: admin
-      PULSE_VHOST: local
-      PULSE_AMQPS: 'false'
-      DEBUG: ''
+    env_file: ./docker/env/.github
     command:
       - github/web
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: wget -q --spider http://localhost:80/api/github/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
+    ports:
+      - '3012:80'
+  github-background-worker:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.github
+    command:
+      - github/worker
     depends_on:
       rabbitmq:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    ports:
-      - '3012:80'
+    profiles:
+      - background
+      - github
+      - github-background
+  github-cron-sync:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.github
+    command:
+      - github/sync
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - github
+      - github-cron
   hooks-web:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      DB_CRYPTO_KEYS: '[{"id":"dev-init","algo":"aes-256","key":"AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4="}]'
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/taskcluster/hooks
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      LEVEL: warning
-      PORT: 80
-      NODE_ENV: development
-      FORCE_SSL: 'false'
-      TRUST_PROXY: 'true'
-      PULSE_USERNAME: admin
-      PULSE_PASSWORD: admin
-      PULSE_HOSTNAME: rabbitmq
-      PULSE_VHOST: local
-      PULSE_AMQPS: 'false'
-      DEBUG: ''
+    env_file: ./docker/env/.hooks
     command:
       - hooks/web
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: wget -q --spider http://localhost:80/api/hooks/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
+    ports:
+      - '3013:80'
+  hooks-background-scheduler:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.hooks
+    command:
+      - hooks/scheduler
     depends_on:
       rabbitmq:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    ports:
-      - '3013:80'
+    profiles:
+      - background
+      - hooks
+      - hooks-background
+  hooks-background-listeners:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.hooks
+    command:
+      - hooks/listeners
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - background
+      - hooks
+      - hooks-background
+  hooks-cron-expires:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.hooks
+    command:
+      - hooks/expires
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - hooks
+      - hooks-cron
   index-web:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      LEVEL: warning
-      PORT: 80
-      NODE_ENV: development
-      FORCE_SSL: 'false'
-      TRUST_PROXY: 'true'
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/taskcluster/index
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      PULSE_HOSTNAME: rabbitmq
-      PULSE_USERNAME: admin
-      PULSE_PASSWORD: admin
-      PULSE_VHOST: local
-      PULSE_AMQPS: 'false'
-      DEBUG: ''
+    env_file: ./docker/env/.index
     command:
       - index/web
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: wget -q --spider http://localhost:80/api/index/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
+    ports:
+      - '3014:80'
+  index-background-handlers:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.index
+    command:
+      - index/handlers
     depends_on:
       rabbitmq:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    ports:
-      - '3014:80'
+    profiles:
+      - background
+      - index
+      - index-background
+  index-cron-expire:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.index
+    command:
+      - index/expire
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - index
+      - index-cron
   notify-web:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      EMAIL_SOURCE_ADDRESS: root@local
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/taskcluster/notify
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      LEVEL: warning
-      PORT: 80
-      NODE_ENV: development
-      FORCE_SSL: 'false'
-      TRUST_PROXY: 'true'
-      AWS_ACCESS_KEY_ID: minioadmin
-      AWS_SECRET_ACCESS_KEY: miniopassword
-      PULSE_HOSTNAME: rabbitmq
-      PULSE_USERNAME: admin
-      PULSE_PASSWORD: admin
-      PULSE_VHOST: local
-      PULSE_AMQPS: 'false'
-      DEBUG: ''
+    env_file: ./docker/env/.notify
     command:
       - notify/web
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: wget -q --spider http://localhost:80/api/notify/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
+    ports:
+      - '3015:80'
+  notify-background-handler:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.notify
+    command:
+      - notify/handler
     depends_on:
       rabbitmq:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    ports:
-      - '3015:80'
+    profiles:
+      - background
+      - notify
+      - notify-background
   object-web:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/taskcluster/object
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      DB_CRYPTO_KEYS: '[{"id":"dev-init","algo":"aes-256","key":"AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4="}]'
-      LEVEL: warning
-      PORT: 80
-      NODE_ENV: development
-      FORCE_SSL: 'false'
-      DEBUG: ''
+    env_file: ./docker/env/.object
     command:
       - object/web
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
     healthcheck:
       test: wget -q --spider http://localhost:80/api/object/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
+    ports:
+      - '3016:80'
+  object-cron-expire:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.object
+    command:
+      - object/expire
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -409,75 +455,53 @@ services:
         condition: service_healthy
       s3_init_buckets:
         condition: service_completed_successfully
-    ports:
-      - '3016:80'
+    profiles:
+      - cron
+      - object
+      - object-cron
   purge-cache-web:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      LEVEL: warning
-      PORT: 80
-      NODE_ENV: development
-      FORCE_SSL: 'false'
-      TRUST_PROXY: 'true'
-      READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/taskcluster/purge-cache
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      DEBUG: ''
+    env_file: ./docker/env/.purge-cache
     command:
       - purge-cache/web
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: wget -q --spider http://localhost:80/api/purge-cache/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
+    ports:
+      - '3017:80'
+  purge-cache-cron-expireCachePurges:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.purge-cache
+    command:
+      - purge-cache/expireCachePurges
     depends_on:
       rabbitmq:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    ports:
-      - '3017:80'
+    profiles:
+      - cron
+      - purge-cache
+      - purge-cache-cron
   queue-web:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      PUBLIC_ARTIFACT_BUCKET: public-bucket
-      PRIVATE_ARTIFACT_BUCKET: private-bucket
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/taskcluster/queue
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      LEVEL: warning
-      PORT: 80
-      NODE_ENV: development
-      FORCE_SSL: 'false'
-      READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      PULSE_USERNAME: admin
-      PULSE_PASSWORD: admin
-      PULSE_HOSTNAME: rabbitmq
-      PULSE_VHOST: local
-      PULSE_AMQPS: 'false'
-      AWS_ACCESS_KEY_ID: minioadmin
-      AWS_SECRET_ACCESS_KEY: miniopassword
-      ARTIFACT_REGION: local
-      AWS_ENDPOINT: http://taskcluster/
-      AWS_FORCE_PATH_STYLE: 'true'
-      AWS_SKIP_CORS_CONFIGURATION: 'true'
-      DEBUG: ''
+    env_file: ./docker/env/.queue
     command:
       - queue/web
-    healthcheck:
-      test: wget -q --spider http://localhost:80/api/queue/v1/ping
-      interval: 3s
-      timeout: 4s
-      retries: 100
-      start_period: 3s
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -485,114 +509,393 @@ services:
         condition: service_healthy
       s3_init_buckets:
         condition: service_completed_successfully
+    healthcheck:
+      test: wget -q --spider http://localhost:80/api/queue/v1/ping
+      interval: 3s
+      timeout: 4s
+      retries: 100
+      start_period: 3s
     ports:
       - '3018:80'
+  queue-background-claimResolver:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/claimResolver
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - background
+      - queue
+      - queue-background
+  queue-background-deadlineResolver:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/deadlineResolver
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - background
+      - queue
+      - queue-background
+  queue-background-dependencyResolver:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/dependencyResolver
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - background
+      - queue
+      - queue-background
+  queue-cron-expireArtifacts:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/expireArtifacts
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - cron
+      - queue
+      - queue-cron
+  queue-cron-expireTask:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/expireTask
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - cron
+      - queue
+      - queue-cron
+  queue-cron-expireTaskGroups:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/expireTaskGroups
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - cron
+      - queue
+      - queue-cron
+  queue-cron-expireTaskDependency:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/expireTaskDependency
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - cron
+      - queue
+      - queue-cron
+  queue-cron-expireQueueMessages:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/expireQueueMessages
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - cron
+      - queue
+      - queue-cron
+  queue-cron-expireWorkerInfo:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/expireWorkerInfo
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - cron
+      - queue
+      - queue-cron
   secrets-web:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/taskcluster/secrets
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      DB_CRYPTO_KEYS: '[{"id":"dev-init","algo":"aes-256","key":"AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4="}]'
-      LEVEL: warning
-      PORT: 80
-      NODE_ENV: development
-      FORCE_SSL: 'false'
-      DEBUG: ''
+    env_file: ./docker/env/.secrets
     command:
       - secrets/web
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: wget -q --spider http://localhost:80/api/secrets/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
+    ports:
+      - '3019:80'
+  secrets-cron-expire:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.secrets
+    command:
+      - secrets/expire
     depends_on:
       rabbitmq:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    ports:
-      - '3019:80'
+    profiles:
+      - cron
+      - secrets
+      - secrets-cron
   web-server-web:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      PUBLIC_URL: http://taskcluster
-      LEVEL: warning
-      PORT: 80
-      TRUST_PROXY: 'true'
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      ADDITIONAL_ALLOWED_CORS_ORIGIN: ''
-      TASKCLUSTER_CLIENT_ID: static/taskcluster/web-server
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      DB_CRYPTO_KEYS: '[{"id":"dev-init","algo":"aes-256","key":"AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4="}]'
-      PULSE_USERNAME: admin
-      PULSE_PASSWORD: admin
-      PULSE_HOSTNAME: rabbitmq
-      PULSE_VHOST: local
-      PULSE_AMQPS: 'false'
-      REGISTERED_CLIENTS: '[]'
-      UI_LOGIN_STRATEGIES: ''
-      SESSION_SECRET: quaYpvahRKmYOz2-wR4jaw
-      DEBUG: ''
+    env_file: ./docker/env/.web-server
     command:
       - web-server/web
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: wget -q --spider http://localhost:3050/api/web-server/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
+    ports:
+      - '3050:3050'
+  web-server-cron-scanner:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.web-server
+    command:
+      - web-server/scanner
     depends_on:
       rabbitmq:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    ports:
-      - '3050:3050'
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
+  web-server-cron-cleanup-expire-auth-codes:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.web-server
+    command:
+      - web-server/cleanup-expire-auth-codes
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
+  web-server-cron-cleanup-expire-access-tokens:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.web-server
+    command:
+      - web-server/cleanup-expire-access-tokens
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
   worker-manager-web:
     image: taskcluster/taskcluster:v44.17.2
     networks:
       - local
-    environment:
-      LEVEL: warning
-      TASKCLUSTER_ROOT_URL: http://taskcluster
-      TASKCLUSTER_CLIENT_ID: static/taskcluster/worker-manager
-      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-      READ_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      WRITE_DB_URL: postgresql://postgres@postgres:5432/taskcluster
-      DB_CRYPTO_KEYS: '[{"id":"dev-init","algo":"aes-256","key":"AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4="}]'
-      PORT: 80
-      NODE_ENV: development
-      FORCE_SSL: 'false'
-      TRUST_PROXY: 'true'
-      PULSE_HOSTNAME: rabbitmq
-      PULSE_USERNAME: admin
-      PULSE_PASSWORD: admin
-      PULSE_VHOST: local
-      PULSE_AMQPS: 'false'
-      PROVIDERS: '{"static":{"providerType":"static"}}'
-      DEBUG: ''
+    env_file: ./docker/env/.worker-manager
     command:
       - worker-manager/web
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: wget -q --spider http://localhost:80/api/worker-manager/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
+    ports:
+      - '3020:80'
+  worker-manager-background-provisioner:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.worker-manager
+    command:
+      - worker-manager/provisioner
     depends_on:
       rabbitmq:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    ports:
-      - '3020:80'
+    profiles:
+      - background
+      - worker-manager
+      - worker-manager-background
+  worker-manager-background-workerscanner:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.worker-manager
+    command:
+      - worker-manager/workerscanner
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - background
+      - worker-manager
+      - worker-manager-background
+  worker-manager-background-workerscanner-azure:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.worker-manager
+    command:
+      - worker-manager/workerscanner-azure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - background
+      - worker-manager
+      - worker-manager-background
+  worker-manager-cron-expire-workers:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.worker-manager
+    command:
+      - worker-manager/expire-workers
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - worker-manager
+      - worker-manager-cron
+  worker-manager-cron-expire-worker-pools:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.worker-manager
+    command:
+      - worker-manager/expire-worker-pools
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - worker-manager
+      - worker-manager-cron
+  worker-manager-cron-expire-errors:
+    image: taskcluster/taskcluster:v44.17.2
+    networks:
+      - local
+    env_file: ./docker/env/.worker-manager
+    command:
+      - worker-manager/expire-errors
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - worker-manager
+      - worker-manager-cron
