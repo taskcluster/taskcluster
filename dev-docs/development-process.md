@@ -275,6 +275,47 @@ yarn dev:start queue-web auth-web
 yarn stop
 ```
 
+### Using compose profiles
+
+By default `yarn start` (`docker compose up`) will only start web services and workers. Background tasks and cron jobs do not start with the rest of the services.
+
+If you need to run those services you can use [profiles](https://docs.docker.com/compose/profiles/) functionality of `docker compose`.
+
+Each background and cron job have special profiles defined for them (see `docker-compose.yml`):
+
+* service name (`queue`, `github`, ...)
+* job type (`background`, `cron`)
+* service + job type (`queue-cron`, `worker-manager-background`, ...)
+
+That can help to run only what is needed:
+
+```sh
+# start all services + all queue background and cron jobs
+export COMPOSE_PROFILES=queue
+yarn start
+# stop all
+yarn stop
+
+# start all services + all cron jobs in development mode
+export COMPOSE_PROFILES=cron
+yarn dev:start
+# stop all
+yarn dev:stop
+
+# start all services + background tasks of worker-manager
+export COMPOSE_PROFILES=worker-manager-background
+yarn start
+# stop all
+yarn stop
+
+# start only one specific background job by name
+yarn start notify-background-handler
+```
+
+> Note: although `docker compose` command allows passing profile names through arguments like `docker compose --profile cron up -d`, those services will not be stopped if you run `docker compose down` afterwards. To stop them you would need to use same arguments `docker compose --profile cron down`.
+>
+> This way using exported environment variable makes compose behaviour more intuitive.
+
 ## Running tasks with local generic-worker
 
 `generic-worker` is configured to automatically start with `docker compose` and connect to taskcluster using `docker-compose/generic-worker` task queue id.
