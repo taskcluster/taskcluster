@@ -3,6 +3,46 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.18.0
+
+### GENERAL
+
+▶ [patch] [#5577](https://github.com/taskcluster/taskcluster/issues/5577)
+Adds linting functionality in the Create Task page.
+
+Validates create task and its payload based on the selected worker type.
+
+▶ [patch]
+Update go version from 1.18.4 to 1.18.5 for building generic-worker, livelog, taskcluster-proxy, start-worker, and the taskcluster cli.
+Update golangci-lint from 1.46.2 to 1.47.3 for linting go code.
+
+### USERS
+
+▶ [patch] [#5555](https://github.com/taskcluster/taskcluster/issues/5555)
+This patch fixes an issue with filtering workers based on quarantined status. The issue only occurs with static workers that are quarantined. When the filter was active, those static, quarantined workers would not be displayed in the list. This issue was first brought up in v44.17.0.
+
+### DEVELOPERS
+
+▶ [minor]
+Docker compose changes and improvements:
+* `generic-worker` runs with local `docker compose` and is able to execute tasks
+* (breaking change) default ingress service was renamed to `taskcluster` and now binds to port `80` instead of `8080`
+* manual entry of '127.0.0.1 taskcluster' to `/etc/hosts` is necessary in order to make HAWK authentication work properly across whole UI
+
+New tutorial page is added `docs/tutorial/local-dev` describing how to launch Taskcluster locally and run a simple task.
+
+▶ [patch]
+Auto-reload services in docker-compose.dev.yml when source changes.
+This will allow to develop services without restarting manually docker compose.
+
+▶ [patch] [#5602](https://github.com/taskcluster/taskcluster/issues/5602)
+Introduced docker compose profiles to allow running background tasks and cron jobs.
+
+▶ [patch]
+Added scripts to `package.json` to more easily use the `docker compose` commands.
+
+New `yarn` commands: `start`, `stop`, `dev:start`, `dev:stop`, `prod:start`, and `prod:stop`.
+
 ## v44.17.2
 
 ### GENERAL
