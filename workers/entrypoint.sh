@@ -60,10 +60,8 @@ run_static() {
     exit 2
   fi
 
-  # this is for local development/testing purposes only
-  echo "Ensure that worker pool exists"
-  echo '{"providerId": "static", "description": "local testing", "config": {}, "owner": "developer@taskcluster.local", "emailOnError": false}' | \
-    taskcluster api workerManager createWorkerPool docker-compose/generic-worker
+  # # this is for local development/testing purposes only
+  # worker pool is provisioned by tc-admin locally
 
   # echo "Ensure worker is created"
   echo '{"expires": "2033-01-01 12:12:12", "providerInfo": { "staticSecret": "NMd5YFgrZZHmAejHUNhNWKcEtfRwtHeME6wdESMf798V"}}' | \
