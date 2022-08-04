@@ -228,6 +228,12 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage));
       changed.push(dockerCompose);
 
+      const dockerComposeDev = 'docker-compose.dev.yml';
+      utils.status({ message: `Update ${dockerComposeDev}` });
+      await modifyRepoFile(dockerComposeDev, contents =>
+        contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage));
+      changed.push(dockerComposeDev);
+
       return { 'version-updated': changed };
     },
   });

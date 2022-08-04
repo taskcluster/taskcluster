@@ -228,6 +228,7 @@ exports.tasks.push({
     });
 
     const serviceDefinitionDev = (name, profiles = null, originalCommand) => ({
+      image: `${currentRelease.image}-devel`,
       environment: {
         NODE_ENV: 'development',
         DEBUG: '*',
