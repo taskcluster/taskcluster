@@ -30,7 +30,7 @@
     "ajv-formats": "^1.5.1",
     "app-root-dir": "^1.0.2",
     "co": "^4.6.0",
-    "commander": "^9.0.0",
+    "commander": "^9.4.0",
     "debug": "*",
     "diskspace": "^2.0.0",
     "diveSync": "^0.3.0",
