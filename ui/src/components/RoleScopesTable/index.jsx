@@ -6,7 +6,6 @@ import {
   pipe,
   map,
   length,
-  contains,
   prop,
   toLower,
   pluck,
@@ -129,7 +128,7 @@ export default class RoleScopesTable extends Component {
     } = this.props;
     const items = this.createSortedRolesScopes(roles, selectedScope);
     const filteredItems = searchTerm
-      ? filter(contains(searchTerm), items)
+      ? filter(includes(searchTerm), items)
       : items;
     const windowHeight = window.innerHeight;
     const tableHeight = windowHeight > 400 ? 0.6 * windowHeight : 400;

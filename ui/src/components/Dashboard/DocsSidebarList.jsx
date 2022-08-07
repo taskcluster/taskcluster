@@ -11,10 +11,13 @@ import Divider from '@material-ui/core/Divider';
 import Collapse from '@material-ui/core/Collapse';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
-import { join } from 'path';
 import { DOCS_MENU_ITEMS, DOCS_PATH_PREFIX } from '../../utils/constants';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
+
+// not imported in vite
+// import { join } from 'path';
+const join = (...args) => args.join('/'); // shameless polyfill
 
 const getDocsSectionFromPathname = pathname => {
   if (!pathname) {

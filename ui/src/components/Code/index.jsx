@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import { string } from 'prop-types';
-import { getLanguage, highlight } from 'highlight.js';
+// import { getLanguage, highlight } from 'highlight.js';
+import hljs from 'highlight.js';
 import classNames from 'classnames';
 import 'highlight.js/styles/atom-one-dark.css';
 
 const validLanguage = (props, propName) => {
   const language = props[propName];
 
-  if (!getLanguage(language)) {
+  if (!hljs.getLanguage(language)) {
     return new Error(`Language '${language}' not supported by highlight.js`);
   }
 };
@@ -35,7 +36,7 @@ export default class Code extends Component {
 
   render() {
     const { children, language, className, ...props } = this.props;
-    const code = highlight(children, {
+    const code = hljs.highlight(children, {
       language,
       ignoreIllegals: true,
     }).value;

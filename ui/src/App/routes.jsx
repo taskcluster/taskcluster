@@ -1,4 +1,4 @@
-import { join } from 'path';
+// import { join } from 'path';
 import { DOCS_PATH_PREFIX } from '../utils/constants';
 import secretRoutes from '../views/Secrets/routes';
 import scopeRoutes from '../views/Scopes/routes';
@@ -11,6 +11,9 @@ import hookRoutes from '../views/Hooks/routes';
 import denylistRoutes from '../views/Denylist/routes';
 import cachePurgeRoutes from '../views/CachePurges/routes';
 import lazy from '../utils/lazy';
+
+// not imported in vite
+const join = (...args) => args.join('/'); // shameless polyfill
 
 const SwitchEntryPoint = lazy(() =>
   import(/* webpackChunkName: 'SwitchEntryPoint' */ '../views/SwitchEntryPoint')

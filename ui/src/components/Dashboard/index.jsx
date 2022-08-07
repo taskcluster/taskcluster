@@ -229,10 +229,11 @@ export default class Dashboard extends Component {
   }
 
   getDeploymentVersion() {
-    const importer = require.context('../../../..', false, /version\.json/);
-    const file = importer.keys()[0];
+    return { todo: "load version.json" };
+    // const importer = require.context('../../../..', false, /version\.json/);
+    // const file = importer.keys()[0];
 
-    return file ? importer(file).version : null;
+    // return file ? importer(file).version : null;
   }
 
   handleDrawerToggle = () => {

@@ -8,7 +8,6 @@ import {
   toLower,
   identity,
   includes,
-  contains,
   length,
   sort as rSort,
 } from 'ramda';
@@ -91,7 +90,7 @@ export default class ClientScopesTable extends Component {
     }
 
     return pipe(
-      searchTerm ? filter(contains(searchTerm)) : identity,
+      searchTerm ? filter(includes(searchTerm)) : identity,
       map(node => (
         <TableRow key={node}>
           <TableCell>
