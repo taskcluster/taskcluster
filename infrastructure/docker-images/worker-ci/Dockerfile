@@ -28,7 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     jq
 
-RUN curl -SL "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" | \
+RUN case "$(uname -m)" in x86_64) ARCH=x64;; aarch64) ARCH=arm64;; *) ARCH=$(uname -m);; esac && \
+    curl -SL "http://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${ARCH}.tar.xz" | \
     tar --xz --extract --directory /usr/local --strip-components=1 && \
     npm install -g yarn@1.0.2 && \
     yarn global add babel-cli

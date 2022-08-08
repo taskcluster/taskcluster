@@ -78,10 +78,16 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
       ].join('\n'));
       let command = [
-        'docker', 'build',
+        'docker',
+        'buildx',
+        'build',
+        '--platform',
+        'linux/arm/v7,linux/arm64,linux/amd64',
         '--no-cache',
-        '--progress', 'plain',
-        '--tag', tag,
+        '--progress',
+        'plain',
+        '--tag',
+        tag,
         contextDir,
       ];
       await execCommand({
