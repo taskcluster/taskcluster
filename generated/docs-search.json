@@ -2352,6 +2352,13 @@
     "title": "Github Service"
   },
   {
+    "element": "h2",
+    "id": "skipping-ci-tasks-on-push",
+    "path": "/reference/integrations/github",
+    "subtitle": "Skipping CI tasks on push",
+    "title": "Github Service"
+  },
+  {
     "element": "h1",
     "id": "taskcluster-github-checks",
     "path": "/reference/integrations/github/checks",

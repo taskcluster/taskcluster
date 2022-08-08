@@ -50,6 +50,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   statusTest('Pull Request Opened', 'webhook.pull_request.open.json', 204);
   statusTest('Pull Request Closed', 'webhook.pull_request.close.json', 204);
   statusTest('Push', 'webhook.push.json', 204);
+  statusTest('Push skip ci', 'webhook.push.skip-ci.json', 200);
   statusTest('Release', 'webhook.release.json', 204);
   statusTest('Tag', 'webhook.tag_push.json', 204);
   statusTest('CheckRun rerun', 'webhook.check_run.rerequested.json', 204);
