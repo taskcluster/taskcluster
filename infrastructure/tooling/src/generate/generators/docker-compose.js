@@ -228,6 +228,7 @@ exports.tasks.push({
     });
 
     const serviceDefinitionDev = (name, profiles = null, originalCommand) => ({
+      image: `${currentRelease.image}-devel`,
       environment: {
         NODE_ENV: 'development',
         DEBUG: '*',
@@ -346,6 +347,28 @@ exports.tasks.push({
           volumes: [
             './docker/nginx.conf:/etc/nginx/nginx.conf',
           ],
+          healthcheck: healthcheck('curl -I http://localhost/'),
+        }),
+        tc_admin_init: serviceDefinition('tc_admin_init', {
+          image: 'taskcluster/tc-admin:3.2.0',
+          volumes: ['./docker/tc-admin:/app'],
+          working_dir: '/app',
+          'x-info': 'This script provisions taskcluster configuration. See docker/tc-admin for details',
+          environment: {
+            TASKCLUSTER_ROOT_URL: defaultValues.TASKCLUSTER_ROOT_URL,
+            TASKCLUSTER_CLIENT_ID: 'static/taskcluster/root',
+            TASKCLUSTER_ACCESS_TOKEN: getTokenByService('root'),
+          },
+          entrypoint: [
+            '/bin/sh -c "',
+            'echo \'Applying config\'; tc-admin apply ||true;',
+            '"',
+          ].join(' '),
+          depends_on: Object.fromEntries(
+            ['auth-web', 'hooks-web', 'queue-web', 'worker-manager-web', 'secrets-web', 'taskcluster'].map(
+              svc => ([svc, { condition: 'service_healthy' }]),
+            ),
+          ),
         }),
       },
     };
@@ -372,6 +395,7 @@ exports.tasks.push({
           'auth-web': { condition: 'service_healthy' },
           'queue-web': { condition: 'service_healthy' },
           taskcluster: { condition: 'service_started' },
+          tc_admin_init: { condition: 'service_completed_successfully' },
         },
       });
     });

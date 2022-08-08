@@ -111,8 +111,40 @@ services:
       - web-server-web
     volumes:
       - ./docker/nginx.conf:/etc/nginx/nginx.conf
+    healthcheck:
+      test: curl -I http://localhost/
+      interval: 3s
+      timeout: 4s
+      retries: 100
+      start_period: 3s
     ports:
       - '80:80'
+  tc_admin_init:
+    image: taskcluster/tc-admin:3.2.0
+    networks:
+      - local
+    volumes:
+      - ./docker/tc-admin:/app
+    working_dir: /app
+    x-info: This script provisions taskcluster configuration. See docker/tc-admin for details
+    environment:
+      TASKCLUSTER_ROOT_URL: http://taskcluster
+      TASKCLUSTER_CLIENT_ID: static/taskcluster/root
+      TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
+    entrypoint: /bin/sh -c " echo 'Applying config'; tc-admin apply ||true; "
+    depends_on:
+      auth-web:
+        condition: service_healthy
+      hooks-web:
+        condition: service_healthy
+      queue-web:
+        condition: service_healthy
+      worker-manager-web:
+        condition: service_healthy
+      secrets-web:
+        condition: service_healthy
+      taskcluster:
+        condition: service_healthy
   generic-worker-standalone:
     image: taskcluster/generic-worker:local
     networks:
@@ -137,6 +169,8 @@ services:
         condition: service_healthy
       taskcluster:
         condition: service_started
+      tc_admin_init:
+        condition: service_completed_successfully
   generic-worker-static:
     image: taskcluster/generic-worker:local
     networks:
@@ -161,6 +195,8 @@ services:
         condition: service_healthy
       taskcluster:
         condition: service_started
+      tc_admin_init:
+        condition: service_completed_successfully
   auth-web:
     image: taskcluster/taskcluster:v44.18.0
     networks:
