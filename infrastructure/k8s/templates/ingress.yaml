@@ -10,145 +10,155 @@ metadata:
   annotations:
     kubernetes.io/ingress.global-static-ip-name: '{{ .Values.ingressStaticIpName }}'
     ingress.gcp.kubernetes.io/pre-shared-cert: '{{ .Values.ingressCertName }}'
+    cert-manager.io/cluster-issuer: '{{ .Values.certManagerClusterIssuerName | default "" }}'
+    cert-manager.io/acme-challenge-type: '{{ if .Values.certManagerClusterIssuerName }}http01{{ end }}'
+    cert-manager.io/acme-http01-edit-in-place: '{{ if .Values.certManagerClusterIssuerName }}true{{ end }}'
+    kubernetes.io/tls-acme: '{{ if .Values.certManagerClusterIssuerName }}true{{ end }}'
+    kubernetes.io/ingress.class: '{{ if eq .Values.ingressType "nginx" }}nginx{{ end }}'
+    ingress.kubernetes.io/force-ssl-redirect: '{{ if .Values.certManagerClusterIssuerName }}true{{ end }}'
 spec:
+  tls:
+    - secretName: '{{ .Values.ingressTlsSecretName | default "" }}'
+      hosts:
+        - '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}'
   rules:
     - host: '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}'
       http:
         paths:
-          - path: /*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/*" }}{{ else }}/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-ui
                 port:
                   number: 80
-          - path: /references
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/references" }}{{ else }}/references{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-references
                 port:
                   number: 80
-          - path: /references/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/references/*" }}{{ else }}/references/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-references
                 port:
                   number: 80
-          - path: /schemas
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/schemas" }}{{ else }}/schemas{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-references
                 port:
                   number: 80
-          - path: /schemas/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/schemas/*" }}{{ else }}/schemas/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-references
                 port:
                   number: 80
-          - path: /api/auth/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/api/auth/*" }}{{ else }}/api/auth/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-auth
                 port:
                   number: 80
-          - path: /api/github/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/api/github/*" }}{{ else }}/api/github/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-github
                 port:
                   number: 80
-          - path: /api/hooks/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/api/hooks/*" }}{{ else }}/api/hooks/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-hooks
                 port:
                   number: 80
-          - path: /api/index/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/api/index/*" }}{{ else }}/api/index/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-index
                 port:
                   number: 80
-          - path: /api/notify/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/api/notify/*" }}{{ else }}/api/notify/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-notify
                 port:
                   number: 80
-          - path: /api/object/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/api/object/*" }}{{ else }}/api/object/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-object
                 port:
                   number: 80
-          - path: /api/purge-cache/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/api/purge-cache/*" }}{{ else }}/api/purge-cache/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-purge-cache
                 port:
                   number: 80
-          - path: /api/queue/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/api/queue/*" }}{{ else }}/api/queue/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-queue
                 port:
                   number: 80
-          - path: /api/secrets/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/api/secrets/*" }}{{ else }}/api/secrets/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-secrets
                 port:
                   number: 80
-          - path: /login
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/login" }}{{ else }}/login{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-web-server
                 port:
                   number: 80
-          - path: /login/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/login/*" }}{{ else }}/login/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-web-server
                 port:
                   number: 80
-          - path: /subscription
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/subscription" }}{{ else }}/subscription{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-web-server
                 port:
                   number: 80
-          - path: /graphql
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/graphql" }}{{ else }}/graphql{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-web-server
                 port:
                   number: 80
-          - path: /api/web-server/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/api/web-server/*" }}{{ else }}/api/web-server/*{{ end }}'
             pathType: Prefix
             backend:
               service:
                 name: taskcluster-web-server
                 port:
                   number: 80
-          - path: /api/worker-manager/*
+          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/api/worker-manager/*" }}{{ else }}/api/worker-manager/*{{ end }}'
             pathType: Prefix
             backend:
               service:

@@ -25,7 +25,7 @@ You will need to have the following
 * A hostname for which you control DNS.
   Your deployments "root URL" will be `https://<hostname>`.
 
-TODO: how to set up an IP and cert for a non-GKE deployment
+You can also use [cert-manager](#cert-manager) to automatically provision certificates and use [ingress nginx](#ingress-nginx) for a non-GKE deployment (or deployment without using GLB).
 
 You should also familiarize yourself with [the deployment docs](../ui/docs/manual/deploying/database.mdx).
 
@@ -40,6 +40,26 @@ Set up an IP for your deployment:
 1. Create a certificate: `certbot certonly --manual --preferred-challenges dns`.  This will ask you to add a TXT record to the DNS.
    Note that certbot is installed with `brew install letsencrypt` on macOS.
 1. Upload the certificate: `gcloud compute ssl-certificates create <yourname>-ingress --certificate <path-to-fullchain.pem> --private-key <path-to-key>`. When the time comes to renew the certificate, simply increment the name (e.g., <yourname>-ingress-1).
+
+### Ingress nginx
+
+If you want more flexibility you can use [ingress nginx](https://kubernetes.github.io/ingress-nginx/) to handle all incoming requests instead of default Load Balancer.
+
+1. Reserve a static IP address. (by using your cloud provider tools)
+1. Create DNS entry that will point to a static IP address from previous step. (AWS Route53 or GCP CloudDNS)
+1. Install ingress nginx by running following or checking deployment-specific [documentation](https://kubernetes.github.io/ingress-nginx/deploy/)
+
+   ```sh
+   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+   helm repo update
+   helm install ingress-nginx/ingress-nginx \
+      --name nginx-ingress \
+      --namespace ingress-nginx \
+      --set controller.service.loadBalancerIP="$STATIC_IP_ADDRESS"
+   ```
+
+1. In `dev-config.yml` specify `ingressType: nginx` to make sure ingress routes are valid
+1. Refer to [cert-manager](#cert-manager) documentation on how to setup automatic provisioning of certificates.
 
 ### Minikube
 
@@ -359,3 +379,77 @@ Now it should be possible to use postgres for dev purposes inside the cluster. M
 Commits that land on `main` trigger a build on GCP Cloud Build. This build is configured by the [`cloudbuild.yaml` file](../cloudbuild.yaml). Here's a link to Google's docs on the build config file schema for cloud build: https://cloud.google.com/build/docs/build-config-file-schema.
 
 A couple secrets are used in the config and they are both stored in GCP Secret Manager. Follow [these docs](https://cloud.google.com/build/docs/securing-builds/use-secrets) to create more secrets or edit the current secrets. A new version needs to be created each time you change the secrets. The current cloudbuild config points to the latest version of the secrets, so any edits to these secrets will be automatically picked up.
+
+## Cert Manager
+
+You have a choice to use [cert manager](https://cert-manager.io/docs/) that can automatically issue certificates for your domains.
+
+You can use [helm](https://cert-manager.io/docs/installation/helm/#example-usage) to install it:
+
+```sh
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm install \
+  --name cert-manager \
+  --namespace cert-manager \
+  --version v1.9.1 \  # check latest version for cert-manager.io
+  jetstack/cert-manager \
+  --set installCRDs=true
+```
+
+You will also need to create `ClusterIssuer` resources that will tell cert-manager how to obtain those certificates.
+
+`kubectl apply -f ./certbot-issuers.yaml`
+
+ <details>
+   <summary><code>certbot-issuers.yml</code></summary>
+
+   ```yaml
+   apiVersion: cert-manager.io/v1
+   kind: ClusterIssuer
+   metadata:
+   name: letsencrypt-staging
+   spec:
+      acme:
+         server: https://acme-staging-v02.api.letsencrypt.org/directory
+         email: your@email.dev
+         privateKeySecretRef:
+            name: letsencrypt-staging
+         solvers:
+         - http01:
+            ingress:
+               class: nginx
+
+   ---
+
+   apiVersion: cert-manager.io/v1
+   kind: ClusterIssuer
+   metadata:
+   name: letsencrypt-prod
+   spec:
+      acme:
+         server: https://acme-v02.api.letsencrypt.org/directory
+         email: your@email.dev
+         privateKeySecretRef:
+            name: letsencrypt-prod
+         solvers:
+         - http01:
+            ingress:
+               class: nginx
+   ```
+
+   This sample configuration assumes you have also installed [ingress nginx](#ingress-nginx) that will be used to accept incoming HTTP verification requests automatically.
+
+   In this case please also make sure that your DNS configuration has correct records that point to the ingress-nginx.
+</details>
+
+For all possible configuration possibilities please refer to the [issuer documentation](https://cert-manager.io/docs/configuration/).
+
+In the `dev-config.yml` you will need to set those values:
+
+```yml
+certManagerClusterIssuerName: letsencrypt-prod # that's the name of the install cluster issuer to use
+ingressTlsSecretName: my-tls-cert # name of the secret, where cert manager will store obtained certificate
+```
+
+Certbot will automatically renew certificates and update `ingressTlsSecretName` secret.

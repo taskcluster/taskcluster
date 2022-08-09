@@ -194,7 +194,7 @@ exports.tasks.push({
 });
 
 exports.tasks.push({
-  title: `Clear k8s/templates dirctory`,
+  title: `Clear k8s/templates directory`,
   requires: [],
   provides: ['k8s-templates-dir'],
   run: async (requirements, utils) => {
@@ -402,6 +402,18 @@ exports.tasks.push({
           },
           additionalProperties: { type: 'string' },
         },
+        ingressType: {
+          type: 'string',
+          description: 'Allows to use non-GLB ingress types, like "nginx"',
+        },
+        ingressTlsSecretName: {
+          type: 'string',
+          description: 'Name of the secret where cert is stored, i.e. "dev-cert". This can be provisioned manually or automatically, by using cert-manager',
+        },
+        certManagerClusterIssuerName: {
+          type: 'string',
+          description: 'Name of the cluster issuer, i.e. "letsencrypt-prod"',
+        },
       },
       required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'forceSSL', 'trustProxy', 'nodeEnv', 'useKubernetesDnsServiceDiscovery'],
       additionalProperties: false,
@@ -414,6 +426,9 @@ exports.tasks.push({
       dockerImage: '...',
       ingressStaticIpName: '...',
       ingressCertName: '...',
+      ingressType: '...',
+      ingressTlsSecretName: '',
+      certManagerClusterIssuerName: '',
       pulseHostname: '...',
       pulseAmqps: true,
       pulseVhost: '...',
