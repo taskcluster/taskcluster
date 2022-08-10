@@ -45,6 +45,32 @@ const throttleRequest = async ({ url, method, response = { status: 0 }, attempt 
 // for overriding in testing..
 throttleRequest.request = request;
 
+/**
+ * Check if push event should be skipped.
+ * It can happen when head commit includes one of the keywords in it's message:
+ * "[skip ci]" or "[ci skip]"
+ *
+ * @param {body} object event body
+ * @param {body.commits} object[]
+ * @param {body.commits[].message} string
+ * @param {body.head_commit} object
+ * @param {body.head_commit.message} string
+ *
+ * @returns boolean
+ */
+const shouldSkipCommit = ({ commits, head_commit = {} }) => {
+  const testRe = new RegExp('\\[(skip ci|ci skip)\\]', 'i');
+
+  let last_commit = head_commit && head_commit.message ? head_commit : false;
+
+  if (!last_commit && Array.isArray(commits) && commits.length > 0) {
+    last_commit = commits[commits.length - 1];
+  }
+
+  return last_commit && testRe.test(last_commit.message);
+};
+
 module.exports = {
   throttleRequest,
+  shouldSkipCommit,
 };
