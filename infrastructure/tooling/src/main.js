@@ -173,6 +173,13 @@ program.command('dev:verify')
     run(verify, options);
   }));
 
+program.command('dev:templates')
+  .description('Dump kubernetes templates for debug purposes')
+  .action(actFn(({ options }) => {
+    const { templates } = require('./dev');
+    run(templates, options);
+  }));
+
 program.command('dev:ensure:db')
   .description('Verify that database permissions are properly set')
   .action(actFn(({ options }) => {

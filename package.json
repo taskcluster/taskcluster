@@ -198,6 +198,7 @@
     "dev:apply": "node infrastructure/tooling/src/main.js dev:apply",
     "dev:delete": "node infrastructure/tooling/src/main.js dev:delete",
     "dev:verify": "node infrastructure/tooling/src/main.js dev:verify",
+    "dev:templates": "node infrastructure/tooling/src/main.js dev:templates",
     "dev:ensure:db": "node infrastructure/tooling/src/main.js dev:ensure:db",
     "dev:ensure:rabbit": "node infrastructure/tooling/src/main.js dev:ensure:rabbit",
     "smoketest": "node infrastructure/tooling/src/main.js smoketest",

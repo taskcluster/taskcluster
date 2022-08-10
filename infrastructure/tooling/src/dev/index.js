@@ -104,6 +104,11 @@ const verify = async (options) => {
   await helm('verify');
 };
 
+const templates = async (options) => {
+  const templates = await helm('dump-templates');
+  return templates;
+};
+
 const ensureDb = async (options) => {
   const userConfig = await readUserConfig();
   await postgresEnsureDb({ userConfig });
@@ -123,4 +128,7 @@ const delete_ = async (options) => {
   await helm('delete');
 };
 
-module.exports = { init, apply, verify, ensureDb, ensureRabbit, delete_, dbUpgrade, dbDowngrade };
+module.exports = {
+  init, apply, verify, templates,
+  ensureDb, ensureRabbit, delete_, dbUpgrade, dbDowngrade,
+};

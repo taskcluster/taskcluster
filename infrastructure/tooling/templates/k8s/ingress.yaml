@@ -6,14 +6,24 @@ metadata:
   annotations:
     'kubernetes.io/ingress.global-static-ip-name': '{{ .Values.ingressStaticIpName }}'
     'ingress.gcp.kubernetes.io/pre-shared-cert': '{{ .Values.ingressCertName }}'
+    'cert-manager.io/cluster-issuer': '{{ .Values.certManagerClusterIssuerName | default "" }}'
+    'cert-manager.io/acme-challenge-type': '{{ if .Values.certManagerClusterIssuerName }}http01{{ end }}'
+    'cert-manager.io/acme-http01-edit-in-place': '{{ if .Values.certManagerClusterIssuerName }}true{{ end }}'
+    'kubernetes.io/tls-acme': '{{ if .Values.certManagerClusterIssuerName }}true{{ end }}'
+    'kubernetes.io/ingress.class': '{{ if eq .Values.ingressType "nginx" }}nginx{{ end }}'
+    'ingress.kubernetes.io/force-ssl-redirect': '{{ if .Values.certManagerClusterIssuerName }}true{{ end }}'
 spec:
+  tls:
+  - secretName: '{{ .Values.ingressTlsSecretName | default "" }}'
+    hosts:
+    - '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}'
   rules:
   - host: '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}' # Turn url into a hostname
     http:
       paths:
         $map: {$eval: ingresses}
         each(i):
-          path: '${i.path}'
+          path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "${i.path}" }}{{ else }}${i.path}{{ end }}'
           pathType: Prefix
           backend:
             service:

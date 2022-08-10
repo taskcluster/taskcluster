@@ -1,4 +1,6 @@
-const { REPO_ROOT, readRepoYAML, execCommand } = require('../utils');
+const os = require('os');
+const path = require('path');
+const { REPO_ROOT, readRepoYAML, writeRepoFile, execCommand } = require('../utils');
 const { TaskGraph } = require('console-taskgraph');
 
 const resourceTypes = [
@@ -9,6 +11,8 @@ const resourceTypes = [
   'serviceaccount',
   'service',
 ];
+
+const dumpFileLocation = path.join(os.tmpdir(), 'taskcluster.k8s.yml');
 
 const actions = [
   {
@@ -111,13 +115,22 @@ const actions = [
     provides: ['target-verify'],
     run: async (requirements, utils) => ({
       'target-verify': await execCommand({
-        command: ['kubectl', 'apply', '--dry-run', '-f', '-'],
+        command: ['kubectl', 'apply', '--dry-run=client', '-f', '-'],
         dir: REPO_ROOT,
         stdin: requirements['target-templates'],
         keepAllOutput: true,
         utils,
       }),
     }),
+  },
+  {
+    title: `Dump kubernetes templates to ${dumpFileLocation}`,
+    requires: ['target-templates'],
+    provides: ['target-dump-templates'],
+    run: async (requirements, utils) => {
+      await writeRepoFile(dumpFileLocation, requirements['target-templates']);
+      return { 'target-dump-templates': dumpFileLocation };
+    },
   },
   {
     title: 'Apply Your Deployment',
