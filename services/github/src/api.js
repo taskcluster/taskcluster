@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const _ = require('lodash');
 const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS } = require('./constants');
+const { shouldSkipCommit } = require('./utils');
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -288,6 +289,13 @@ builder.declare({
         break;
 
       case EVENT_TYPES.PUSH:
+        if (shouldSkipCommit(body)) {
+          debugMonitor.debug({
+            message: 'Skipping push event',
+            body,
+          });
+          return resolve(res, 200, 'Skipping push event');
+        }
         msg.organization = sanitizeGitHubField(body.repository.owner.name);
         msg.details = getPushDetails(body);
         msg.installationId = installationId;

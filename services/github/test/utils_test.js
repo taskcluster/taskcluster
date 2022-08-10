@@ -1,6 +1,6 @@
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
-const { throttleRequest } = require('../src/utils');
+const { throttleRequest, shouldSkipCommit } = require('../src/utils');
 
 suite(testing.suiteName(), function() {
   suite('throttleRequest', function() {
@@ -84,6 +84,63 @@ suite(testing.suiteName(), function() {
       await assert.rejects(
         () => throttleRequest({ url: 'https://foo', method: 'GET', delay: 10 }),
         err => err.code === 'ECONNREFUSED');
+    });
+  });
+  suite('shouldSkipCommit', function() {
+    const skipMessages = [
+      '[CI Skip] this is not ready',
+      'this is WIP [ci skip]',
+      '[SKIP CI] WORKING ON IT',
+      'testing things out [skip CI] .. please wait',
+    ];
+
+    test('should not skip commit', function() {
+      assert.equal(false, shouldSkipCommit({
+        commits: [{
+          message: 'first commit',
+        }, {
+          message: 'more than one commit, do not skip',
+        }],
+      }));
+      assert.equal(false, shouldSkipCommit({
+        commits: [{
+          message: 'first commit with normal message, no ci skip present',
+        }],
+      }));
+      assert.equal(false, shouldSkipCommit({
+        _extra: 'should not skip because skip commit is not the latest commit',
+        commits: [{
+          message: 'first commit',
+        }, {
+          message: 'second commit [ci skip] please',
+        }, {
+          message: 'third commit, no skip',
+        }],
+      }));
+      assert.equal(false, shouldSkipCommit({
+        _extra: 'this is not even a valid payload',
+        commits: [],
+      }));
+      assert.equal(false, shouldSkipCommit({
+        _extra: 'this has only a head_commit',
+        commits: [],
+        head_commit: {
+          message: 'just a regular commit',
+        },
+      }));
+      // should not skip as this is not present in latest commit
+      skipMessages.forEach(message => assert.equal(false, shouldSkipCommit({
+        commits: [{ message }, { message: 'this commit is the last' }],
+      })));
+    });
+    test('should skip commit', function() {
+      skipMessages.forEach(message => assert.equal(true, shouldSkipCommit({
+        commits: [{ message: 'this commit is the first' }, { message }],
+      })));
+
+      skipMessages.forEach(message => assert.equal(true, shouldSkipCommit({
+        head_commit: { message },
+      })));
     });
   });
 });
