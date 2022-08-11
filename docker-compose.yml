@@ -149,6 +149,7 @@ services:
     image: taskcluster/generic-worker:local
     networks:
       - local
+    restart: unless-stopped
     build:
       context: ./workers
       dockerfile: Dockerfile
@@ -175,6 +176,7 @@ services:
     image: taskcluster/generic-worker:local
     networks:
       - local
+    restart: unless-stopped
     build:
       context: ./workers
       dockerfile: Dockerfile

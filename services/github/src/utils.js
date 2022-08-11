@@ -45,6 +45,8 @@ const throttleRequest = async ({ url, method, response = { status: 0 }, attempt 
 // for overriding in testing..
 throttleRequest.request = request;
 
+const ciSkipRegexp = new RegExp('\\[(skip ci|ci skip)\\]', 'i');
+
 /**
  * Check if push event should be skipped.
  * It can happen when head commit includes one of the keywords in it's message:
@@ -59,18 +61,37 @@ throttleRequest.request = request;
  * @returns boolean
  */
 const shouldSkipCommit = ({ commits, head_commit = {} }) => {
-  const testRe = new RegExp('\\[(skip ci|ci skip)\\]', 'i');
-
   let last_commit = head_commit && head_commit.message ? head_commit : false;
 
   if (!last_commit && Array.isArray(commits) && commits.length > 0) {
     last_commit = commits[commits.length - 1];
   }
 
-  return last_commit && testRe.test(last_commit.message);
+  return last_commit && ciSkipRegexp.test(last_commit.message);
 };
 
 module.exports = {
   throttleRequest,
   shouldSkipCommit,
+};
+
+/**
+ * Check if pull_request event should be skipped.
+ * It can happen when pull request contains keywords in it's title:
+ * "[skip ci]" or "[ci skip]"
+ *
+ * @param {body} object event body
+ * @param {body.pull_request} object[]
+ * @param {body.pull_request.title} string
+ *
+ * @returns boolean
+ */
+const shouldSkipPullRequest = ({ pull_request }) => {
+  return pull_request !== undefined && ciSkipRegexp.test(pull_request.title);
+};
+
+module.exports = {
+  throttleRequest,
+  shouldSkipCommit,
+  shouldSkipPullRequest,
 };

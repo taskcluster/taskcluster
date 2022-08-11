@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const _ = require('lodash');
 const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS } = require('./constants');
-const { shouldSkipCommit } = require('./utils');
+const { shouldSkipCommit, shouldSkipPullRequest } = require('./utils');
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -279,6 +279,14 @@ builder.declare({
     switch (eventType) {
 
       case EVENT_TYPES.PULL_REQUEST:
+        if (shouldSkipPullRequest(body)) {
+          debugMonitor.debug({
+            message: 'Skipping pull_request event',
+            body,
+          });
+          return resolve(res, 200, 'Skipping pull_request event');
+        }
+
         msg.organization = sanitizeGitHubField(body.repository.owner.login);
         msg.action = body.action;
         msg.details = getPullRequestDetails(body);

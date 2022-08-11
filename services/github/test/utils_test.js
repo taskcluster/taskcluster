@@ -1,6 +1,6 @@
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
-const { throttleRequest, shouldSkipCommit } = require('../src/utils');
+const { throttleRequest, shouldSkipCommit, shouldSkipPullRequest } = require('../src/utils');
 
 suite(testing.suiteName(), function() {
   suite('throttleRequest', function() {
@@ -140,6 +140,27 @@ suite(testing.suiteName(), function() {
 
       skipMessages.forEach(message => assert.equal(true, shouldSkipCommit({
         head_commit: { message },
+      })));
+    });
+  });
+  suite('shouldSkipPullRequest', function() {
+    test('should not skip pull request', function() {
+      assert.equal(false, shouldSkipPullRequest({
+        pull_request: {
+          title: 'Regular pr title',
+        },
+      }));
+      assert.equal(false, shouldSkipPullRequest({
+        something: 'This one does not include pull_request for some reason',
+      }));
+    });
+    test('should skip pull request', function() {
+      const skipMessages = [
+        'PR: [CI Skip] this is not ready',
+        'PR: this is WIP [skip ci]',
+      ];
+      skipMessages.forEach(title => assert.equal(true, shouldSkipPullRequest({
+        pull_request: { title },
       })));
     });
   });
