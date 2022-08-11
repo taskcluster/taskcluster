@@ -576,6 +576,8 @@ http {
       set $pass http://web-server-web:${serviceHostPort('web-server')};
       proxy_pass $pass;
       ${extraDirectives}
+      proxy_set_header Upgrade $http_upgrade; # websocket
+      proxy_set_header Connection "Upgrade"; # websocket
     }
     location /public-bucket/ {
       proxy_set_header X-Real-IP $remote_addr;
