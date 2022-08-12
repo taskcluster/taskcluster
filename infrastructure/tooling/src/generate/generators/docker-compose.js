@@ -334,7 +334,10 @@ exports.tasks.push({
             MINIO_ROOT_PASSWORD: 'miniopassword',
           },
         }),
-        ui: serviceDefinition('ui', { command: 'ui/web' }),
+        ui: serviceDefinition('ui', {
+          command: 'ui/web',
+          _useEnvFile: true,
+        }),
         references: serviceDefinition('references', {
           command: 'references/web',
           environment: {
@@ -432,7 +435,9 @@ exports.tasks.push({
       },
     };
 
-    const envFiles = {};
+    const envFiles = {
+      ui: serviceEnv('ui'),
+    };
 
     for (let name of SERVICES) {
       const procs = requirements[`procslist-${name}`];
