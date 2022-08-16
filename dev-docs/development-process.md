@@ -446,5 +446,6 @@ It should allow calling queue service, and for the local environment it can look
 ```yml
 queue:create-task:*
 queue:route:checks
-queue:scheduler-id:taskcluster-ui
+queue:scheduler-id:*
+queue:rerun-task:*
 ```

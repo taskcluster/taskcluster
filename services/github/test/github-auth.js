@@ -165,6 +165,12 @@ class FakeGithub {
         }
         return {};
       },
+      'checks.rerequestRun': async ({ repo }) => {
+        if (repo === 'no-permission') {
+          throwError(403);
+        }
+        return {};
+      },
       'checks.listForRef': async ({ owner, repo, ref }) => {
         if (repo === 'no-permission') {
           throwError(403);

@@ -3,7 +3,7 @@
 PORT=80
 APPLICATION_NAME=Taskcluster
 TASKCLUSTER_ROOT_URL=http://taskcluster
-GRAPHQL_SUBSCRIPTION_ENDPOINT=http://taskcluster/graphql
+GRAPHQL_SUBSCRIPTION_ENDPOINT=http://taskcluster/subscription
 GRAPHQL_ENDPOINT=http://taskcluster/graphql
 UI_LOGIN_STRATEGY_NAMES=local
 BANNER_MESSAGE=

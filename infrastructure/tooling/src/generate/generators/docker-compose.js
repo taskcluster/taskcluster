@@ -78,7 +78,7 @@ const defaultValues = {
 
   APPLICATION_NAME: 'Taskcluster',
   GRAPHQL_ENDPOINT: `http://taskcluster/graphql`,
-  GRAPHQL_SUBSCRIPTION_ENDPOINT: `http://taskcluster/graphql`,
+  GRAPHQL_SUBSCRIPTION_ENDPOINT: `http://taskcluster/subscription`,
   UI_LOGIN_STRATEGY_NAMES: 'local',
   SITE_SPECIFIC: JSON.stringify({
     tutorial_worker_pool_id: 'docker-compose/generic-worker',

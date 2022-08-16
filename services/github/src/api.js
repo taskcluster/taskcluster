@@ -338,6 +338,18 @@ builder.declare({
           return resolve(res, 400, 'Only rerequested for check runs is supported');
         }
 
+        if (body?.sender?.type?.toLowerCase() === 'bot') {
+          // When someone reruns task in taskcluster that was previously completed, we can't change check run state
+          // instead, we are calling github's rerequestRun that will reset completion status and dispatch this event,
+          // But since we know that task was already restarted, there is no need to publish this rerun message
+          // see handlers/status.js
+          debugMonitor.debug({
+            message: `This rerun was triggered by taskcluster bot and should not be processed: ${body?.sender?.login} (${body?.sender?.id})`,
+            body,
+          });
+          return resolve(res, 200, 'Skipping rerequested event started by bot');
+        }
+
         publisherKey = PUBLISHERS.RERUN;
         msg.organization = sanitizeGitHubField(body.repository.owner.login);
         msg.details = getRerunDetails(body);
