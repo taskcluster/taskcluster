@@ -70,14 +70,9 @@ const shouldSkipCommit = ({ commits, head_commit = {} }) => {
   return last_commit && ciSkipRegexp.test(last_commit.message);
 };
 
-module.exports = {
-  throttleRequest,
-  shouldSkipCommit,
-};
-
 /**
  * Check if pull_request event should be skipped.
- * It can happen when pull request contains keywords in it's title:
+ * It can happen when pull request contains keywords in title or description:
  * "[skip ci]" or "[ci skip]"
  *
  * @param {body} object event body
@@ -87,7 +82,8 @@ module.exports = {
  * @returns boolean
  */
 const shouldSkipPullRequest = ({ pull_request }) => {
-  return pull_request !== undefined && ciSkipRegexp.test(pull_request.title);
+  return pull_request !== undefined &&
+    (ciSkipRegexp.test(pull_request.title) || ciSkipRegexp.test(pull_request.body));
 };
 
 module.exports = {

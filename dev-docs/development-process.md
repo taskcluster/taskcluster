@@ -360,6 +360,7 @@ You can use <https://ngrok.com/> for this purpose:
 Make sure you configure github services in docker compose properly. For this you will need to override following environment variables in your `docker-compose.override.yml`:
 
 ```yml
+# Make sure to replace all values if you want to use the code below
 services:
   github-web:
     environment: &ref1

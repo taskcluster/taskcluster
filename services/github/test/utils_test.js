@@ -162,6 +162,9 @@ suite(testing.suiteName(), function() {
       skipMessages.forEach(title => assert.equal(true, shouldSkipPullRequest({
         pull_request: { title },
       })));
+      skipMessages.forEach(body => assert.equal(true, shouldSkipPullRequest({
+        pull_request: { title: 'regular title', body },
+      })));
     });
   });
 });

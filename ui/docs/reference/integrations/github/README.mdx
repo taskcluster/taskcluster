@@ -39,4 +39,4 @@ If you push your changes and head commit will include `[ci skip]` or `[skip ci]`
 
 It is worth keeping in mind on how your `.taskcluster.yml` is set up.
 If you have open pull request, then each push to this branch will result in two different events: `pull_request` and `push`.
-To disable all tasks, please make sure that pull request has `[ci skip]` in its title also. Once everything is ready, you can remove this from the title to allow Taskcluster to create tasks again.
+To disable all tasks, please make sure that pull request has `[ci skip]` in title or description also. Once everything is ready, you can remove this from the title to allow Taskcluster to create tasks again.
