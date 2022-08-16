@@ -363,7 +363,7 @@ Make sure you configure github services in docker compose properly. For this you
 services:
   github-web:
     environment: &ref1
-      - GITHUB_PRIVATE_PEM="-----BEGIN RSA PRIVATE KEY-----\n....\n-----END RSA PRIVATE KEY-----\n"
+      - GITHUB_PRIVATE_PEM="-----BEGIN RSA PRIVATE KEY-----\n<private key>\n-----END RSA PRIVATE KEY-----\n"
       - GITHUB_APP_ID=<application id>
       - WEBHOOK_SECRET=<secret or blank>
       - LEVEL=debug
@@ -376,7 +376,7 @@ services:
 # start everything
 yarn start
 
-# and github api handler and background worker in development mode
+# start github api handler and background worker in development mode
 yarn dev:start github-web github-background-worker
 
 # follow logs
@@ -385,7 +385,7 @@ docker compose logs -f github-web github-background-worker
 
 ### Connect to your test repository
 
-You can use any existing repository or create new one. Install the application you've configured before to that repository.
+You can use any existing repository or create a new one. Install the application you've configured before to that repository.
 
 In order for Taskcluster to start doing something you need to create `.taskclster.yml` in the root of that repository, in the main branch. You can refer to the <http://taskcluster/quickstart> page to see how this file should look like.
 
@@ -441,7 +441,7 @@ After this, if you push something or create a pull request, you will start recei
 
 However, `static/taskcluster/github` client will not be able to create tasks at this point, since it misses some scopes. For this you will need to visit <http://taskcluster/auth/roles> page and create new role with name that matches: `repo:github.com/<org>/<name>:*`. (see [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/checks#taskcluster-github-checks))
 
-It should allow calling queue service, and for the local environment it can look like:
+It should allow calling queue service, and for the local environment the list of scopes can look like:
 
 ```yml
 queue:create-task:*

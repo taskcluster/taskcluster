@@ -378,7 +378,7 @@ exports.tasks.push({
 
     ['standalone', 'static'].forEach(type => {
       dockerCompose.services[`generic-worker-${type}`] = serviceDefinition('generic-worker', {
-        image: 'taskcluster/generic-worker:local', // TODO build and publish this image as well?
+        image: 'taskcluster/generic-worker:local', // this image is built locally at the moment
         restart: 'unless-stopped', // if they crash, restart it to pick up next jobs
         build: {
           context: './workers',
