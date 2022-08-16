@@ -248,9 +248,7 @@ const extras = {
         type: 'web',
         readinessPath: '/references/',
         paths: [
-          '/references',
           '/references/*',
-          '/schemas',
           '/schemas/*',
         ],
       },

@@ -32,21 +32,7 @@ spec:
                 name: taskcluster-ui
                 port:
                   number: 80
-          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/references" }}{{ else }}/references{{ end }}'
-            pathType: Prefix
-            backend:
-              service:
-                name: taskcluster-references
-                port:
-                  number: 80
           - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/references/*" }}{{ else }}/references/*{{ end }}'
-            pathType: Prefix
-            backend:
-              service:
-                name: taskcluster-references
-                port:
-                  number: 80
-          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/schemas" }}{{ else }}/schemas{{ end }}'
             pathType: Prefix
             backend:
               service:
@@ -121,13 +107,6 @@ spec:
             backend:
               service:
                 name: taskcluster-secrets
-                port:
-                  number: 80
-          - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/login" }}{{ else }}/login{{ end }}'
-            pathType: Prefix
-            backend:
-              service:
-                name: taskcluster-web-server
                 port:
                   number: 80
           - path: '{{ if eq .Values.ingressType "nginx" }}{{ trimSuffix "*" "/login/*" }}{{ else }}/login/*{{ end }}'
