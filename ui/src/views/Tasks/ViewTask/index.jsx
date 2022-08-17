@@ -101,7 +101,7 @@ const getCachesFromTask = task =>
 @graphql(taskQuery, {
   options: props => ({
     fetchPolicy: 'network-only',
-    pollInterval: TASK_POLL_INTERVAL * 10,
+    pollInterval: TASK_POLL_INTERVAL,
     errorPolicy: 'all',
     variables: {
       taskId: props.match.params.taskId,

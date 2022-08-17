@@ -28,6 +28,7 @@ import DataTable from '../../components/DataTable';
 import PulseBindings from '../../components/PulseBindings';
 import pulseMessagesQuery from './pulseMessages.graphql';
 import removeKeys from '../../utils/removeKeys';
+import exchangesList from '../../utils/exchangesList';
 
 const getBindingsFromProps = props => {
   const query = parse(props.location.search.slice(1));
@@ -106,7 +107,14 @@ export default class PulseMessages extends Component {
       drawerOpen: false,
       drawerMessage: null,
       downloadLink: 'data:application/json;base64,IkJyb3dzZXIgSXNzdWUi',
+      exchangesDictionary: null,
     };
+  }
+
+  async componentDidMount() {
+    this.setState({
+      exchangesDictionary: await exchangesList(),
+    });
   }
 
   componentWillUnmount() {
@@ -217,6 +225,7 @@ export default class PulseMessages extends Component {
       error,
       drawerOpen,
       drawerMessage,
+      exchangesDictionary,
     } = this.state;
     const iconSize = 16;
     const description = `Bind to Pulse exchanges in your browser, observe messages arriving and inspect
@@ -261,6 +270,7 @@ export default class PulseMessages extends Component {
             onPulseExchangeChange={this.handlePulseExchangeChange}
             pulseExchange={pulseExchange}
             pattern={pattern}
+            exchangesDictionary={exchangesDictionary}
           />
           <List>
             <Toolbar>
