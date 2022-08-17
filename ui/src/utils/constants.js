@@ -76,9 +76,11 @@ export const INTERACTIVE_TASK_STATUS = {
   RESOLVED: 'RESOLVED',
   READY: 'READY',
 };
-export const INTERACTIVE_CONNECT_TASK_POLL_INTERVAL = 10000; // 10 seconds
-export const TASK_POLL_INTERVAL = 30000; // 30 seconds
-export const VNC_DISPLAYS_POLLING_INTERVAL = 10000; // 10 seconds
+const SECOND = 1000;
+
+export const INTERACTIVE_CONNECT_TASK_POLL_INTERVAL = 10 * SECOND;
+export const TASK_POLL_INTERVAL = 60 * SECOND;
+export const VNC_DISPLAYS_POLLING_INTERVAL = 10 * SECOND;
 export const INITIAL_CURSOR = '$$FIRST$$';
 export const INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES = {
   groupNotifyTaskFailed: false,
