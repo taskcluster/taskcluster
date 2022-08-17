@@ -1,4 +1,4 @@
-const { CONCLUSIONS, CHECKLOGS_TEXT, CHECKRUN_TEXT, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME } = require('../constants');
+const { CONCLUSIONS, CHECKLOGS_TEXT, CHECKRUN_TEXT, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME, CHECK_RUN_STATES, TASK_STATE_TO_CHECK_RUN_STATE } = require('../constants');
 const { requestArtifact } = require('./requestArtifact');
 const { taskUI, makeDebug, taskLogUI } = require('./utils');
 
@@ -13,6 +13,7 @@ async function statusHandler(message) {
   let debug = makeDebug(this.monitor, { taskGroupId, taskId });
   debug(`Handling state change for task ${taskId} in group ${taskGroupId}`);
 
+  const checkRunStatus = TASK_STATE_TO_CHECK_RUN_STATE[state] || CHECK_RUN_STATES.COMPLETED;
   let conclusion = CONCLUSIONS[reasonResolved || state];
 
   let [build] = await this.context.db.fns.get_github_build(taskGroupId);
@@ -32,12 +33,16 @@ async function statusHandler(message) {
   });
 
   let taskState = {
-    status: 'completed',
+    status: checkRunStatus,
     conclusion: conclusion || 'neutral',
     completed_at: new Date().toISOString(),
   };
 
-  if (conclusion === undefined) {
+  if (checkRunStatus !== CHECK_RUN_STATES.COMPLETED) {
+    // non-completed checks should not include conclusion, as github will automatically resolve task as completed
+    delete taskState.conclusion;
+    delete taskState.completed_at;
+  } else if (conclusion === undefined) {
     this.monitor.reportError(new Error(`Unknown reasonResolved or state in ${message.exchange}!
       Resolution reason received: ${reasonResolved}. State received: ${state}. Add these to the handlers map.
       TaskId: ${taskId}, taskGroupId: ${taskGroupId}`),
@@ -52,10 +57,24 @@ async function statusHandler(message) {
   }
 
   // Authenticating as installation.
-  let instGithub = await this.context.github.getInstallationGithub(installation_id);
+  const instGithub = await this.context.github.getInstallationGithub(installation_id);
+
+  const [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
+
+  // If check run was previously completed, it is not possible to change state by updating check run
+  // instead, we should call `rerequestRun` for a given check run
+  // This will reset status, and trigger `rerequested` event, which will be ignored, as it was triggered by us
+  if (checkRun && checkRunStatus === CHECK_RUN_STATES.QUEUED && runId > 0) {
+    debug(`Existing check run ${checkRun.check_run_id} for task ${taskId} was already completed. Requesting rerun`);
+    await instGithub.checks.rerequestRun({
+      check_run_id: checkRun.check_run_id,
+      repo: repository,
+      owner: organization,
+    });
+  }
 
   debug(
-    `Attempting to update status of the checkrun for ${organization}/${repository}@${sha} (${taskState.conclusion})`,
+    `Attempting to update status of the checkrun for ${organization}/${repository}@${sha} (${taskState.status}:${taskState.conclusion})`,
   );
   try {
     const taskDefinition = await this.queueClient.task(taskId);
@@ -114,19 +133,24 @@ async function statusHandler(message) {
       }
     }
 
-    let [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
+    const output = {
+      title: `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
+      summary: `${taskDefinition.metadata.description}`,
+      text: [
+        `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})`,
+        `[${CHECKLOGS_TEXT}](${taskLogUI(this.context.cfg.taskcluster.rootUrl, runId, taskId)})`,
+        customCheckRunText || '',
+      ].join('\n'),
+      annotations: customCheckRunAnnotations,
+    };
+
     if (checkRun) {
       await instGithub.checks.update({
         ...taskState,
         owner: organization,
         repo: repository,
         check_run_id: checkRun.check_run_id,
-        output: {
-          title: `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
-          summary: `${taskDefinition.metadata.description}`,
-          text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n[${CHECKLOGS_TEXT}](${taskLogUI(this.context.cfg.taskcluster.rootUrl, runId, taskId)})\n${customCheckRunText || ''}`,
-          annotations: customCheckRunAnnotations,
-        },
+        output,
       });
     } else {
       const checkRun = await instGithub.checks.create({
@@ -135,12 +159,8 @@ async function statusHandler(message) {
         repo: repository,
         name: `${taskDefinition.metadata.name}`,
         head_sha: sha,
-        output: {
-          title: `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
-          summary: `${taskDefinition.metadata.description}`,
-          text: `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})\n[${CHECKLOGS_TEXT}](${taskLogUI(this.context.cfg.taskcluster.rootUrl, runId, taskId)})\n${customCheckRunText || ''}`,
-          annotations: customCheckRunAnnotations,
-        },
+        external_id: taskId,
+        output,
         details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
       });
 

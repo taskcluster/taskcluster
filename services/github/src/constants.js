@@ -1,3 +1,14 @@
+const CHECK_RUN_STATES = {
+  QUEUED: 'queued',
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'completed',
+};
+
+const TASK_STATE_TO_CHECK_RUN_STATE = {
+  pending: CHECK_RUN_STATES.QUEUED,
+  running: CHECK_RUN_STATES.IN_PROGRESS,
+};
+
 module.exports = {
   CONCLUSIONS: { // maps status communicated by the queue service to github checkrun conclusions
     'completed': 'success',
@@ -27,6 +38,8 @@ module.exports = {
     REREQUESTED: 'rerequested',
     REQUESTED_ACTION: 'requested_action',
   },
+  CHECK_RUN_STATES,
+  TASK_STATE_TO_CHECK_RUN_STATE,
   PUBLISHERS: {
     PULL_REQUEST: 'pullRequest',
     PUSH: 'push',

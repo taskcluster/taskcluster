@@ -243,6 +243,9 @@ To avoid having HAWK authentication issues and be able to see worker logs, modif
 
 To login, use `static/taskcluster/*` client ids and access tokens that can be seen in `AUTH_WEB` environment variable of `auth-web` service.
 
+> Warning: on linux systems please check that your environment variables `TASKCLUSTER_ROOT_URL`, `TASKCLUSTER_CLIENT_ID` and `TASKCLUSTER_ACCESS_TOKEN` do not interfere.
+> Docker will use those envs to overwrite generated ones, which might break some functionality.
+
 ### Development mode
 
 Running docker compose with `docker-compose.dev.yml` allows local development in containers without necessity of restarting them.
@@ -330,4 +333,120 @@ payload:
     - - ls
   maxRunTime: 60
 ...
+```
+
+## Debugging Github integration locally
+
+Please refer to the [Github integration manual](https://docs.taskcluster.net/docs/manual/deploying/github) on how to set it up initially.
+
+Github integration relies on webhook events that will be sent to the endpoint defined in your Github application settings.
+To be able to test it locally, you'd need to setup a tunnel, so those API calls will reach your dev env.
+
+### Using ngrok to forward webhook events
+
+You can use <https://ngrok.com/> for this purpose:
+
+1. Sign up for a free account (doesn't work otherwise)
+2. Download and install ngrok
+3. `ngrok config add-authtoken <token>` (found on the [settings page](https://dashboard.ngrok.com/get-started/setup)
+4. Start it using `ngrok http --host-header=taskcluster taskcluster:80`
+5. Copy the forwarding url and use it for the Github Application settings:
+   * Callback URL: `https://your-unique-subdomain.ngrok.io`
+   * Webhook URL: `https://your-unique-subdomain.ngrok.io/api/github/v1/github`
+6. Use web interface <http://127.0.0.1:4040/> to inspect incoming webhooks
+
+### Start github services in development mode
+
+Make sure you configure github services in docker compose properly. For this you will need to override following environment variables in your `docker-compose.override.yml`:
+
+```yml
+# Make sure to replace all values if you want to use the code below
+services:
+  github-web:
+    environment: &ref1
+      - GITHUB_PRIVATE_PEM="-----BEGIN RSA PRIVATE KEY-----\n<private key>\n-----END RSA PRIVATE KEY-----\n"
+      - GITHUB_APP_ID=<application id>
+      - WEBHOOK_SECRET=<secret or blank>
+      - LEVEL=debug
+      - DEBUG=*
+  github-background-worker:
+    environment: *ref1
+```
+
+```sh
+# start everything
+yarn start
+
+# start github api handler and background worker in development mode
+yarn dev:start github-web github-background-worker
+
+# follow logs
+docker compose logs -f github-web github-background-worker
+```
+
+### Connect to your test repository
+
+You can use any existing repository or create a new one. Install the application you've configured before to that repository.
+
+In order for Taskcluster to start doing something you need to create `.taskclster.yml` in the root of that repository, in the main branch. You can refer to the <http://taskcluster/quickstart> page to see how this file should look like.
+
+<details>
+<summary>Example of `.taskcluster.yml`</summary>
+
+```yml
+version: 1
+reporting: checks-v1
+policy:
+  pullRequests: collaborators
+tasks:
+  - $if: 'tasks_for == "github-push"'
+    then:
+      taskQueueId: docker-compose/generic-worker
+      schedulerId: taskcluster-ui
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '1 day'}
+      payload:
+        command:
+          - - /bin/bash
+            - '-c'
+            - echo "github-push"; exit 0
+        maxRunTime: 30
+      metadata:
+        name: example-task
+        description: An **example** task
+        owner: username@domain.tld
+        source: http://taskcluster/tasks/create
+    else:
+      $if: 'tasks_for == "github-pull-request"'
+      then:
+        taskQueueId: docker-compose/generic-worker
+        schedulerId: taskcluster-ui
+        created: {$fromNow: ''}
+        deadline: {$fromNow: '1 day'}
+        payload:
+          command:
+            - - /bin/bash
+              - '-c'
+              - echo "github-pull-request"; exit 0
+          maxRunTime: 30
+        metadata:
+          name: example-task
+          description: An **example** task
+          owner: username@domain.tld
+          source: http://taskcluster/tasks/create
+```
+
+</details>
+
+After this, if you push something or create a pull request, you will start receiving webhook events.
+
+However, `static/taskcluster/github` client will not be able to create tasks at this point, since it misses some scopes. For this you will need to visit <http://taskcluster/auth/roles> page and create new role with name that matches: `repo:github.com/<org>/<name>:*`. (see [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/checks#taskcluster-github-checks))
+
+It should allow calling queue service, and for the local environment the list of scopes can look like:
+
+```yml
+queue:create-task:*
+queue:route:checks
+queue:scheduler-id:*
+queue:rerun-task:*
 ```

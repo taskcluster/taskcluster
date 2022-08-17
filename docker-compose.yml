@@ -90,6 +90,7 @@ services:
     image: taskcluster/taskcluster:v44.18.0
     networks:
       - local
+    env_file: ./docker/env/.ui
     command: ui/web
     ports:
       - '3022:80'
@@ -149,6 +150,7 @@ services:
     image: taskcluster/generic-worker:local
     networks:
       - local
+    restart: unless-stopped
     build:
       context: ./workers
       dockerfile: Dockerfile
@@ -175,6 +177,7 @@ services:
     image: taskcluster/generic-worker:local
     networks:
       - local
+    restart: unless-stopped
     build:
       context: ./workers
       dockerfile: Dockerfile

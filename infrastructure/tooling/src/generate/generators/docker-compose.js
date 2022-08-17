@@ -78,7 +78,7 @@ const defaultValues = {
 
   APPLICATION_NAME: 'Taskcluster',
   GRAPHQL_ENDPOINT: `http://taskcluster/graphql`,
-  GRAPHQL_SUBSCRIPTION_ENDPOINT: `http://taskcluster/graphql`,
+  GRAPHQL_SUBSCRIPTION_ENDPOINT: `http://taskcluster/subscription`,
   UI_LOGIN_STRATEGY_NAMES: 'local',
   SITE_SPECIFIC: JSON.stringify({
     tutorial_worker_pool_id: 'docker-compose/generic-worker',
@@ -334,7 +334,10 @@ exports.tasks.push({
             MINIO_ROOT_PASSWORD: 'miniopassword',
           },
         }),
-        ui: serviceDefinition('ui', { command: 'ui/web' }),
+        ui: serviceDefinition('ui', {
+          command: 'ui/web',
+          _useEnvFile: true,
+        }),
         references: serviceDefinition('references', {
           command: 'references/web',
           environment: {
@@ -375,7 +378,8 @@ exports.tasks.push({
 
     ['standalone', 'static'].forEach(type => {
       dockerCompose.services[`generic-worker-${type}`] = serviceDefinition('generic-worker', {
-        image: 'taskcluster/generic-worker:local', // TODO build and publish this image as well?
+        image: 'taskcluster/generic-worker:local', // this image is built locally at the moment
+        restart: 'unless-stopped', // if they crash, restart it to pick up next jobs
         build: {
           context: './workers',
           dockerfile: 'Dockerfile',
@@ -431,7 +435,9 @@ exports.tasks.push({
       },
     };
 
-    const envFiles = {};
+    const envFiles = {
+      ui: serviceEnv('ui'),
+    };
 
     for (let name of SERVICES) {
       const procs = requirements[`procslist-${name}`];
@@ -575,6 +581,8 @@ http {
       set $pass http://web-server-web:${serviceHostPort('web-server')};
       proxy_pass $pass;
       ${extraDirectives}
+      proxy_set_header Upgrade $http_upgrade; # websocket
+      proxy_set_header Connection "Upgrade"; # websocket
     }
     location /public-bucket/ {
       proxy_set_header X-Real-IP $remote_addr;

@@ -54,6 +54,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   statusTest('Release', 'webhook.release.json', 204);
   statusTest('Tag', 'webhook.tag_push.json', 204);
   statusTest('CheckRun rerun', 'webhook.check_run.rerequested.json', 204);
+  statusTest('CheckRun rerun by bot', 'webhook.check_run.rerequested-bot.json', 200);
 
   // Also should have data in the db after this one
   statusTest('Installation', 'webhook.installation.json', 200, 11725878, async () => {

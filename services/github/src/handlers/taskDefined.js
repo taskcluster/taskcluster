@@ -45,6 +45,7 @@ async function taskDefinedHandler(message) {
       repo: repository,
       name: `${taskDefinition.metadata.name}`,
       head_sha: sha,
+      external_id: taskId,
       output: {
         title: `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
         summary: `${taskDefinition.metadata.description}`,

@@ -76,6 +76,7 @@ const getTaskDefinition = state => {
 
   return dump({
     version: 1,
+    reporting: 'checks-v1',
     policy: {
       pullRequests: access,
     },
