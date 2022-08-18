@@ -153,6 +153,7 @@ module.exports = {
     },
   },
   Subscription: {
+    // by taskGroupId
     tasksSubscriptions: {
       subscribe(
         parent,
@@ -176,6 +177,32 @@ module.exports = {
       },
       resolve: ({ tasksSubscriptions }) => {
         return tasksSubscriptions.status;
+      },
+    },
+    // by taskId
+    taskSubscriptions: {
+      subscribe(
+        parent,
+        { taskId, subscriptions },
+        { pulseEngine, clients },
+      ) {
+        const routingKey = { taskId };
+
+        return pulseEngine.eventIterator(
+          'taskSubscriptions',
+          subscriptions.map(eventName => {
+            const method = eventName.replace('tasks', 'task');
+            const binding = clients.queueEvents[method](routingKey);
+
+            return {
+              exchange: binding.exchange,
+              pattern: binding.routingKeyPattern,
+            };
+          }),
+        );
+      },
+      resolve: ({ taskSubscriptions }) => {
+        return taskSubscriptions.status;
       },
     },
   },

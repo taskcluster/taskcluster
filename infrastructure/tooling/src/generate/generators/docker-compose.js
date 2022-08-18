@@ -394,6 +394,7 @@ exports.tasks.push({
           TASKCLUSTER_CLIENT_ID: 'static/generic-worker-compose-client',
           TASKCLUSTER_ACCESS_TOKEN: getTokenByService('generic-worker'),
         },
+        ...(type === 'static' ? { profiles: ['workers'] } : {}), // start only standalone by default
         depends_on: {
           rabbitmq: { condition: 'service_healthy' },
           'auth-web': { condition: 'service_healthy' },

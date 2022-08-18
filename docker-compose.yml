@@ -189,6 +189,8 @@ services:
       TASKCLUSTER_ROOT_URL: http://taskcluster
       TASKCLUSTER_CLIENT_ID: static/generic-worker-compose-client
       TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
+    profiles:
+      - workers
     depends_on:
       rabbitmq:
         condition: service_healthy
