@@ -1,7 +1,7 @@
-import fs from 'fs';
 import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import gql from 'vite-plugin-simple-gql';
 import generateEnvJs from './generate-env-js';
 
@@ -20,6 +20,10 @@ const serverProxyConfig = {
     changeOrigin: true,
   },
   '/schemas': {
+    target: proxyTarget,
+    changeOrigin: true,
+  },
+  '/references': {
     target: proxyTarget,
     changeOrigin: true,
   },
@@ -44,6 +48,7 @@ const serverProxyConfig = {
  */
 export default ({ mode }) => {
   if (mode === 'development') {
+    // TODO: this file keeps dissappearing on reloads.. save somewhere else?
     generateEnvJs(path.join(STATIC_DIR, 'env.js'));
   }
 
@@ -85,6 +90,20 @@ export default ({ mode }) => {
           replacement: SRC_DIR,
         },
       ],
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        // Node.js global to browser globalThis
+        define: {
+          global: 'globalThis',
+        },
+        // Enable esbuild polyfill plugins
+        plugins: [
+          NodeGlobalsPolyfillPlugin({
+            buffer: true,
+          }),
+        ],
+      },
     },
   });
 };

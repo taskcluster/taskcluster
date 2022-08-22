@@ -229,7 +229,8 @@ export default class Dashboard extends Component {
   }
 
   getDeploymentVersion() {
-    return { todo: "load version.json" };
+    // TODO rebuild this logic
+    return 'TODO: version undefined';
     // const importer = require.context('../../../..', false, /version\.json/);
     // const file = importer.keys()[0];
 
