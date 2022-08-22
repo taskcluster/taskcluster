@@ -147,13 +147,13 @@ services:
       taskcluster:
         condition: service_healthy
   generic-worker-standalone:
-    image: taskcluster/generic-worker:local
+    image: taskcluster/generic-worker:v44.19.1
     networks:
       - local
     restart: unless-stopped
     build:
-      context: ./workers
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: generic-worker.Dockerfile
     volumes:
       - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
       - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
@@ -174,13 +174,13 @@ services:
       tc_admin_init:
         condition: service_completed_successfully
   generic-worker-static:
-    image: taskcluster/generic-worker:local
+    image: taskcluster/generic-worker:v44.19.1
     networks:
       - local
     restart: unless-stopped
     build:
-      context: ./workers
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: generic-worker.Dockerfile
     volumes:
       - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
       - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
