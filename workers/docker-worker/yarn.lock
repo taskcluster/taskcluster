@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@balena/dockerignore@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@balena/dockerignore/-/dockerignore-1.0.2.tgz#9ffe4726915251e8eb69f44ef3547e0da2c03e0d"
+  integrity sha512-wMue2Sy4GAVTk6Ic4tJVcnfdau+gx2EnG7S+uAEe+TWJFqE4YoWN4/H8MSLj4eYJKxGg26lZwboEniNiNwZQ6Q==
+
 "@hapi/b64@5.x.x":
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/@hapi/b64/-/b64-5.0.0.tgz#b8210cbd72f4774985e78569b77e97498d24277d"
@@ -456,10 +461,10 @@ combined-stream@^1.0.6, combined-stream@~1.0.6:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@^9.0.0:
-  version "9.3.0"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-9.3.0.tgz#f619114a5a2d2054e0d9ff1b31d5ccf89255e26b"
-  integrity sha512-hv95iU5uXPbK83mjrJKuZyFM/LBAoCV/XhVGkS5Je6tl7sxr6A0ITMw5WoRV46/UaJ46Nllm3Xt7IaJhXTIkzw==
+commander@^9.4.0:
+  version "9.4.0"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-9.4.0.tgz#bc4a40918fefe52e22450c111ecd6b7acce6f11c"
+  integrity sha512-sRPT+umqkz90UA8M1yqYfnHlZA7fF6nSphDtxeywPZ49ysjxDQybzk13CL+mXekDRG92skbcqCLVovuCusNmFw==
 
 compress-brotli@^1.3.8:
   version "1.3.8"
@@ -673,11 +678,20 @@ dockerode-process@^0.7.0:
   dependencies:
     debug "2.6.9"
 
-dockerode@^3.2.1, dockerode@^3.3.2:
+dockerode@^3.2.1:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/dockerode/-/dockerode-3.3.2.tgz#f3545700d2f7f86141b58843a755eeb21e38d5cd"
   integrity sha512-oXN+1XVH2TeyE0Jj9Ci6Fim8ZIDxyqeJrkx9qhEOaRiA+nhLihKfd3M2L+Aqrj5C2ObPw8RVN2zPWvvk0x2dwg==
   dependencies:
+    docker-modem "^3.0.0"
+    tar-fs "~2.0.1"
+
+dockerode@^3.3.3:
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/dockerode/-/dockerode-3.3.4.tgz#875de614a1be797279caa9fe27e5637cf0e40548"
+  integrity sha512-3EUwuXnCU+RUlQEheDjmBE0B7q66PV9Rw5NiH1sXwINq0M9c5ERP9fxgkw36ZHOtzf4AGEEYySnkx/sACC9EgQ==
+  dependencies:
+    "@balena/dockerignore" "^1.0.2"
     docker-modem "^3.0.0"
     tar-fs "~2.0.1"
 
@@ -1991,10 +2005,10 @@ tar-stream@^2.0.0, tar-stream@^2.1.3, tar-stream@^2.1.4:
     inherits "^2.0.3"
     readable-stream "^3.1.1"
 
-taskcluster-client@^44.17.0:
-  version "44.17.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-44.17.1.tgz#0a06e477c548faffae393b22b1924a08a6a75653"
-  integrity sha512-8YTwKO4s0CSonnX9qc43aec3Bh5xVHrek0cDr+7m1YwprWv4LyAmMt0jPGXo4TPgeVmjxJy7TeIi3yRxCOyDlA==
+taskcluster-client@^44.17.2:
+  version "44.18.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-44.18.0.tgz#7aac2abe99575796c74389411dc6f7a45c5b94c0"
+  integrity sha512-fzRojf3SWWG+fMo+BGi33C3oV4zwdwhu0OmM5f3G01Ura9yZeAjJN6uRO3Lz2FgHrDD3rlV4Tl03ns/nKxWMZA==
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
