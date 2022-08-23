@@ -81,6 +81,19 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       utils.step({ title: `Building Docker Image ${tag}` });
 
       let versionJson = requirements['docker-flow-version'];
+      let buildxCommand = [
+        'docker',
+        'buildx',
+        'create',
+        '--use',
+      ];
+      await execCommand({
+        command: buildxCommand,
+        dir: sourceDir,
+        logfile: path.join(logsDir, 'docker-build.log'),
+        utils,
+        env: { DOCKER_BUILDKIT: 1, ...process.env },
+      });
       let command = [
         'docker',
         'buildx',
@@ -160,6 +173,18 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       ].join('\n'));
 
       try {
+        await execCommand({
+          command: [
+            'docker',
+            'buildx',
+            'create',
+            '--use',
+          ],
+          dir: dockerDir,
+          logfile: path.join(logsDir, 'docker-build-devel.log'),
+          utils,
+          env: { DOCKER_BUILDKIT: 1, ...process.env },
+        });
         await execCommand({
           command: [
             'docker',
