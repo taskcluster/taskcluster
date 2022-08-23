@@ -79,6 +79,19 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'COPY livelog /livelog',
         'ENTRYPOINT ["/livelog"]',
       ].join('\n'));
+      let buildxCommand = [
+        'docker',
+        'buildx',
+        'create',
+        '--use',
+      ];
+      await execCommand({
+        command: buildxCommand,
+        dir: REPO_ROOT,
+        logfile: path.join(logsDir, 'livelog-docker-build.log'),
+        utils,
+        env: { DOCKER_BUILDKIT: 1, ...process.env },
+      });
       let command = [
         'docker', 'build',
         '--no-cache',

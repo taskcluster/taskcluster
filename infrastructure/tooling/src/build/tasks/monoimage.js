@@ -81,7 +81,26 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       utils.step({ title: `Building Docker Image ${tag}` });
 
       let versionJson = requirements['docker-flow-version'];
-      let command = ['docker', 'build'];
+      let buildxCommand = [
+        'docker',
+        'buildx',
+        'create',
+        '--use',
+      ];
+      await execCommand({
+        command: buildxCommand,
+        dir: sourceDir,
+        logfile: path.join(logsDir, 'docker-build.log'),
+        utils,
+        env: { DOCKER_BUILDKIT: 1, ...process.env },
+      });
+      let command = [
+        'docker',
+        'buildx',
+        'build',
+        '--platform',
+        'linux/arm/v7,linux/arm64,linux/amd64',
+      ];
       if (!cmdOptions.cache) {
         command.push('--no-cache');
       }
@@ -155,7 +174,30 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
       try {
         await execCommand({
-          command: ['docker', 'build', '--progress', 'plain', '--tag', tag, '.'],
+          command: [
+            'docker',
+            'buildx',
+            'create',
+            '--use',
+          ],
+          dir: dockerDir,
+          logfile: path.join(logsDir, 'docker-build-devel.log'),
+          utils,
+          env: { DOCKER_BUILDKIT: 1, ...process.env },
+        });
+        await execCommand({
+          command: [
+            'docker',
+            'buildx',
+            'build',
+            '--platform',
+            'linux/arm/v7,linux/arm64,linux/amd64',
+            '--progress',
+            'plain',
+            '--tag',
+            tag,
+            '.',
+          ],
           dir: dockerDir,
           logfile: path.join(logsDir, 'docker-build-devel.log'),
           utils,
