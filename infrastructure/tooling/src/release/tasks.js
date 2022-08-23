@@ -201,6 +201,7 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         'clients/client-shell/**',
         'internal/**',
         'tools/**',
+        'ui/docs/reference/workers/generic-worker/installing.mdx',
         'ui/docs/reference/workers/websocktunnel.mdx',
         // Provide explicit list of allowed file extensions so that
         // workers/generic-worker/testdata/*.zip files are not modified.
