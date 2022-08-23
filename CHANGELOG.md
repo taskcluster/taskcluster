@@ -3,6 +3,65 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.19.0
+
+### GENERAL
+
+▶ [minor] [#5085](https://github.com/taskcluster/taskcluster/issues/5085)
+Github integration handles task reruns, triggered from the Taskcluster side.
+Check run status updates will include in_progress and queued sates for such tasks.
+
+▶ [patch]
+Fixes error logging for "re-run" github event.
+Improves '[ci skip]' logic to also include pull_request events.
+Adds documentation on how to debug github integration locally.
+
+▶ [patch]
+Remove duplicate ingres paths as redundant
+
+### DEPLOYERS
+
+▶ [minor] [#4913](https://github.com/taskcluster/taskcluster/issues/4913)
+Adds support for nginx ingress for routes definitions.
+Adds support for certbot annotations.
+
+### ADMINS
+
+▶ [minor] [#5616](https://github.com/taskcluster/taskcluster/issues/5616)
+For projects with `policy.pullRequests` set to `public_restricted`, Taskcluster Github will now assume the role `repo:github.com/${ payload.organization }/${ payload.repository }:pull-request-untrusted`. Administrators will need to create this role for all `public_restricted` projects.
+
+### USERS
+
+▶ [minor] [#5311](https://github.com/taskcluster/taskcluster/issues/5311)
+Github integration can skip creation of tasks for single commits that include "[ci skip]" or "[skip ci]" message.
+
+▶ [patch] [#5046](https://github.com/taskcluster/taskcluster/issues/5046)
+UI automatically goes to the latest run on rerun action.
+Task page listens to updates on task status and updates the page.
+
+▶ [patch]
+UI: Pulse Messages autocompletes known exchanges
+
+### DEVELOPERS
+
+▶ [minor] [#5611](https://github.com/taskcluster/taskcluster/issues/5611)
+Added paddingLeft to the root MUISelect in the overrides in theme.js.
+
+Choosing a worker type out of the dropdown menu from the Create Task page now displays the chosen type with appropriate padding from the left. The chosen worker type no longer appears glued to the left border.
+
+▶ [patch]
+Docker compose: static worker not started by default.
+
+▶ [patch]
+Switch to devel image for docker-compose.dev.yml.
+Installing nodemon only in devel image.
+
+▶ [patch]
+Use tc-admin to setup local env.
+
+▶ [patch]
+This patch makes it so that a `yarn smoketest` on our dev environment is run after a successful deploy.
+
 ## v44.18.0
 
 ### GENERAL
