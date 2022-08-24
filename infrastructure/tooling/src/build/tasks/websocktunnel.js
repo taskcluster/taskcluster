@@ -13,6 +13,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     requires: [
       'release-version',
       'docker-flow-version',
+      'buildx-container',
     ],
     provides: [
       'websocktunnel-docker-image', // image tag
@@ -55,25 +56,13 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'COPY version.json /app/version.json',
         'ENTRYPOINT ["/websocktunnel"]',
       ].join('\n'));
-      let buildxCommand = [
-        'docker',
-        'buildx',
-        'create',
-        '--use',
-      ];
-      await execCommand({
-        command: buildxCommand,
-        dir: REPO_ROOT,
-        logfile: path.join(logsDir, 'websocktunnel-docker-build.log'),
-        utils,
-        env: { DOCKER_BUILDKIT: 1, ...process.env },
-      });
+
       let command = [
         'docker',
         'buildx',
         'build',
         '--platform',
-        'linux/arm/v7,linux/arm64,linux/amd64',
+        requirements['buildx-container'], // list of platforms
         '--no-cache',
         '--progress',
         'plain',
