@@ -81,13 +81,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       utils.step({ title: `Building Docker Image ${tag}` });
 
       let versionJson = requirements['docker-flow-version'];
-      let command = [
-        'docker',
-        'buildx',
-        'build',
-        '--platform',
-        'linux/arm/v7,linux/arm64,linux/amd64',
-      ];
+      let command = ['docker', 'build'];
       if (!cmdOptions.cache) {
         command.push('--no-cache');
       }
@@ -161,18 +155,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
       try {
         await execCommand({
-          command: [
-            'docker',
-            'buildx',
-            'build',
-            '--platform',
-            'linux/arm/v7,linux/arm64,linux/amd64',
-            '--progress',
-            'plain',
-            '--tag',
-            tag,
-            '.',
-          ],
+          command: ['docker', 'build', '--progress', 'plain', '--tag', tag, '.'],
           dir: dockerDir,
           logfile: path.join(logsDir, 'docker-build-devel.log'),
           utils,

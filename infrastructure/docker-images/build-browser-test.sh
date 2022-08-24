@@ -15,4 +15,5 @@ FROM node:${node_version}-buster
 RUN apt-get update && apt-get install -y firefox-esr xvfb
 EOF
 
-docker buildx build $DOCKER_PUSH --platform linux/arm/v7,linux/arm64,linux/amd64 -t "taskcluster/browser-test:${node_version}" ${tmpdir}
+docker build --platform linux/amd64 -t "taskcluster/browser-test:${node_version}" ${tmpdir}
+[ -n "$DOCKER_PUSH" ] && docker push "taskcluster/browser-test:${node_version}"
