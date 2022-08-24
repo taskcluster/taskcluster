@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.19.1
+
+### GENERAL
+
+▶ [patch]
+Fix broken devel image build
+
 ## v44.19.0
 
 This release failed, please see v44.19.1
