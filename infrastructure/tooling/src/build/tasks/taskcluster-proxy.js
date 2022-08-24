@@ -32,7 +32,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
   ensureTask(tasks, {
     title: 'Build taskcluster-proxy Docker image',
-    requires: ['release-version', 'docker-flow-version'],
+    requires: ['release-version', 'docker-flow-version', 'buildx-container'],
     provides: ['taskcluster-proxy-docker-image'],
     locks: ['docker'],
     run: async (requirements, utils) => {
@@ -77,21 +77,12 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'COPY --from=ubuntu /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
         'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
       ].join('\n'));
-      let buildxCommand = [
+      let command = [
         'docker',
         'buildx',
-        'create',
-        '--use',
-      ];
-      await execCommand({
-        command: buildxCommand,
-        dir: REPO_ROOT,
-        logfile: path.join(logsDir, 'taskcluster-proxy-docker-build.log'),
-        utils,
-        env: { DOCKER_BUILDKIT: 1, ...process.env },
-      });
-      let command = [
-        'docker', 'build',
+        'build',
+        '--platform',
+        requirements['buildx-container'], // list of platforms
         '--no-cache',
         '--progress', 'plain',
         '--tag', tag,
