@@ -532,6 +532,10 @@
       "title": "Configuration options for hooks",
       "type": "object"
     },
+    "imagePullSecret": {
+      "description": "Secret name with docker credentials for private registry",
+      "type": "string"
+    },
     "index": {
       "additionalProperties": false,
       "properties": {

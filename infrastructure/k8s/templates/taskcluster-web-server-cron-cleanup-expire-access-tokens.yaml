@@ -20,6 +20,7 @@ spec:
           labels: *ref_0
         spec:
           restartPolicy: OnFailure
+          imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
           containers:
             - name: taskcluster-web-server-cleanup-expire-access-tokens
               image: '{{ .Values.dockerImage }}'
