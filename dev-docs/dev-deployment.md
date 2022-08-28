@@ -116,6 +116,28 @@ docker push username/taskcluster-dev:${VERSION}
 yarn dev:apply
 ```
 
+### Deploying custom images from private registry
+
+Kubernetes supports [pulling images from private registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).
+
+You will have to set those two variables in your `dev-config.yml`:
+
+```yml
+dockerImage: path.to/private/registry:tag
+imagePullSecret: dockerSecretsName
+```
+
+Where `dockerSecretsName` is a secret name that holds docker authentication for that private registry. See [docs](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials)
+
+```sh
+# using credentials:
+kubectl create secret docker-registry dockerSecretsName --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
+# or using .dockerconfigjson
+kubectl create secret generic dockerSecretsName \
+    --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
+    --type=kubernetes.io/dockerconfigjson
+```
+
 #### Troubleshooting:
 * Certbot error `[Errno 13] Permission denied: '/var/log/letsencrypt' Either run as root, or set --config-dir, --work-dir, and --logs-dir to writeable paths.` - do not run as root, but set the directories instead.
 
