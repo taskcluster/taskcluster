@@ -94,7 +94,7 @@
     "regex-escape": "^3.4.8",
     "request-ip": "^3.3.0",
     "rimraf": "^3.0.0",
-    "sanitize-html": "^2.0.0",
+    "sanitize-html": "^2.7.1",
     "sentry-api": "^0.2.0",
     "sift": "^13.5.0",
     "slugid": "^2.0.0",
