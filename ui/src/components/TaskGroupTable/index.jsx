@@ -92,7 +92,6 @@ const createSortedTasks = memoize(
     alignItems: 'center',
     padding: theme.spacing(1),
     textDecoration: 'none',
-    ...theme.mixins.hover,
     ...theme.mixins.listItemButton,
   },
   taskGroupName: {
@@ -129,6 +128,7 @@ const createSortedTasks = memoize(
   },
   tableRow: {
     display: 'flex',
+    ...theme.mixins.hover,
   },
   tableFirstCell: {
     width: '60%',
