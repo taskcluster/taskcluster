@@ -3,6 +3,16 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.20.1
+
+### DEVELOPERS
+
+▶ [patch]
+Trim github payload for the check run updates call.
+
+▶ [patch]
+Build generic worker docker image as part of the release process.
+
 ## v44.20.0
 
 ### GENERAL
