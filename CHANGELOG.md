@@ -3,6 +3,39 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.20.0
+
+### GENERAL
+
+▶ [patch] [#5653](https://github.com/taskcluster/taskcluster/issues/5653)
+Fix a bug with github status checks not being updated.
+
+In 44.19.1 release github service started tracking additional task
+state changes, and this resulted in a race condition between "taskDefined"
+and "status" handlers where both of them would create new check run at
+the same time. Wrong check run would later get all status updates, while
+Github UI will be showing a different check run which didn't receive all
+the updates.
+
+▶ [patch]
+Upgrade node to the latest LTS release, v16.17.0
+
+### DEPLOYERS
+
+▶ [patch] [#5041](https://github.com/taskcluster/taskcluster/issues/5041)
+Add support for private docker registry by adding `imagePullSecrets` config value.
+
+### DEVELOPERS
+
+▶ [minor] [#5295](https://github.com/taskcluster/taskcluster/issues/5295)
+When hovering over a task in a group task, the background color changes for the whole row, now. As opposed to a portion of the row.
+
+▶ [patch]
+Building and publishing generic worker docker image
+
+▶ [patch] [#5217](https://github.com/taskcluster/taskcluster/issues/5217)
+This patch gets a tail of the last 250 lines of the `live.log` file and provides it in the GitHub checks view without having to visit the Taskcluster UI.
+
 ## v44.19.1
 
 ### GENERAL
