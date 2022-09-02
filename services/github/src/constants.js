@@ -48,6 +48,7 @@ module.exports = {
   },
   CHECKLOGS_TEXT: 'View logs in Taskcluster',
   CHECKRUN_TEXT: 'View task in Taskcluster',
+  LIVE_LOG_ARTIFACT_NAME: 'public/logs/live.log',
   CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME: 'public/github/customCheckRunText.md',
   CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME: 'public/github/customCheckRunAnnotations.json',
 };

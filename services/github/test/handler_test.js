@@ -22,6 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
   const CUSTOM_CHECKRUN_TASKID = 'apple';
   const CUSTOM_CHECKRUN_TEXT = 'Hi there! This is your custom text';
+  const LIVE_LOG_TEXT = 'Hi there! This is your live log';
   const CUSTOM_CHECKRUN_ANNOTATIONS = JSON.stringify([
     { path: 'assets/css/main.css', start_line: 1, end_line: 2, annotation_level: 'notice', message: 'Hi there!' },
   ]);
@@ -938,8 +939,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       sinon.restore();
       sinon.stub(utils, "throttleRequest")
         .onFirstCall()
-        .returns({ status: 200, text: CUSTOM_CHECKRUN_TEXT })
+        .returns({ status: 404 })
         .onSecondCall()
+        .returns({ status: 200, text: CUSTOM_CHECKRUN_TEXT })
+        .onThirdCall()
         .returns({ status: 404 });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
@@ -955,7 +958,38 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
-        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/public/logs/live.log)\n${CUSTOM_CHECKRUN_TEXT}`
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/public/logs/live.log)\n\n${CUSTOM_CHECKRUN_TEXT}`
+      );
+      /* eslint-enable comma-dangle */
+      sinon.restore();
+    });
+
+    test('successfully adds live log text from an artifact', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
+      sinon.restore();
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({ status: 200, text: LIVE_LOG_TEXT })
+        .onSecondCall()
+        .returns({ status: 404 })
+        .onThirdCall()
+        .returns({ status: 404 });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_CHECKRUN_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+      });
+
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      let [args] = github.inst(9988).checks.update.firstCall.args;
+      /* eslint-disable comma-dangle */
+      assert.strictEqual(
+        args.output.text,
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/public/logs/live.log)\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
       );
       /* eslint-enable comma-dangle */
       sinon.restore();
@@ -991,8 +1025,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       sinon.restore();
       sinon.stub(utils, "throttleRequest")
         .onFirstCall()
-        .returns({ status: 404 })
+        .returns({ status: 200, text: LIVE_LOG_TEXT })
         .onSecondCall()
+        .returns({ status: 404 })
+        .onThirdCall()
         .returns({ status: 200, text: CUSTOM_CHECKRUN_ANNOTATIONS });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
@@ -1017,6 +1053,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         .onFirstCall()
         .returns({ status: 404 })
         .onSecondCall()
+        .returns({ status: 404 })
+        .onThirdCall()
         .returns({ status: 200, text: "{{{invalid json!!" });
 
       await simulateExchangeMessage({
