@@ -168,6 +168,7 @@ exports.tasks.push({
   ],
   run: async (requirements, utils) => {
     const currentRelease = await readRepoYAML(path.join('infrastructure', 'tooling', 'current-release.yml'));
+    const [, currentVersion] = currentRelease.image.split(':');
 
     const serviceEnv = (name) => {
       let config = name === 'ui' ? uiConfig : requirements[`configs-${name}`];
@@ -378,11 +379,11 @@ exports.tasks.push({
 
     ['standalone', 'static'].forEach(type => {
       dockerCompose.services[`generic-worker-${type}`] = serviceDefinition('generic-worker', {
-        image: 'taskcluster/generic-worker:local', // this image is built locally at the moment
+        image: `taskcluster/generic-worker:${currentVersion}`, // this image is built locally at the moment
         restart: 'unless-stopped', // if they crash, restart it to pick up next jobs
         build: {
-          context: './workers',
-          dockerfile: 'Dockerfile',
+          context: '.',
+          dockerfile: 'generic-worker.Dockerfile',
         },
         volumes: [
           './docker/generic-worker-config.json:/etc/generic-worker/config.json',

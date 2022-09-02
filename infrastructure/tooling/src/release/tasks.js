@@ -222,6 +222,13 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
           `\\"version\\": \\"${requirements['release-version']}`));
       changed.push('Dockerfile');
 
+      utils.status({ message: 'Update generic-worker.Dockerfile' });
+      await modifyRepoFile('generic-worker.Dockerfile',
+        contents => contents.replace(
+          /\\"version\\":\s*\\"[0-9.]*/gm,
+          `\\"version\\": \\"${requirements['release-version']}`));
+      changed.push('generic-worker.Dockerfile');
+
       const dockerCompose = 'docker-compose.yml';
       utils.status({ message: `Update ${dockerCompose}` });
       await modifyRepoFile(dockerCompose, contents =>
