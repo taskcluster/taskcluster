@@ -1,4 +1,5 @@
 const { CONCLUSIONS, CHECKLOGS_TEXT, CHECKRUN_TEXT, LIVE_LOG_ARTIFACT_NAME, CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME, CHECK_RUN_STATES, TASK_STATE_TO_CHECK_RUN_STATE } = require('../constants');
+const { tailLog } = require('../utils');
 const { requestArtifact } = require('./requestArtifact');
 const { taskUI, makeDebug, taskLogUI } = require('./utils');
 
@@ -136,7 +137,7 @@ async function statusHandler(message) {
       text: [
         `[${CHECKRUN_TEXT}](${taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)})`,
         `[${CHECKLOGS_TEXT}](${taskLogUI(this.context.cfg.taskcluster.rootUrl, runId, taskId)})`,
-        liveLogText ? `\n\`\`\`bash\n${liveLogText.split('\n').slice(-250).join('\n')}\n\`\`\`` : '', // tails the last 250 lines of the log
+        liveLogText ? `\n\`\`\`bash\n${tailLog(liveLogText)}\n\`\`\`` : '', // tails the last 250 lines of the log
         customCheckRunText || '',
       ].join('\n'),
       annotations: customCheckRunAnnotations,

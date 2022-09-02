@@ -1,6 +1,6 @@
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
-const { throttleRequest, shouldSkipCommit, shouldSkipPullRequest } = require('../src/utils');
+const { throttleRequest, shouldSkipCommit, shouldSkipPullRequest, tailLog } = require('../src/utils');
 
 suite(testing.suiteName(), function() {
   suite('throttleRequest', function() {
@@ -165,6 +165,18 @@ suite(testing.suiteName(), function() {
       skipMessages.forEach(body => assert.equal(true, shouldSkipPullRequest({
         pull_request: { title: 'regular title', body },
       })));
+    });
+  });
+
+  suite('tailLog', function() {
+    test('should get max lines', function () {
+      const payload = Array.from({ length: 500 }).map(line => `line: ${line}`).join('\n');
+      assert.equal(250, tailLog(payload).split('\n').length);
+      assert.equal(25, tailLog(payload, 25).split('\n').length);
+
+      const payloadLong = Array.from({ length: 10 }).map(line => 'line'.repeat(1000)).join('\n');
+      assert.equal(1, tailLog(payloadLong, 10, 20).split('\n').length);
+      assert.equal('line', tailLog(payloadLong, 10, 4));
     });
   });
 });
