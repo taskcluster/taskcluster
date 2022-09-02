@@ -11,7 +11,7 @@ async function statusHandler(message) {
   let { reasonResolved } = runs[runId];
 
   let debug = makeDebug(this.monitor, { taskGroupId, taskId });
-  debug(`Handling state change for task ${taskId} in group ${taskGroupId}`);
+  debug(`Handling state change for task ${taskId} in group ${taskGroupId}, reason=${reasonResolved || state}`);
 
   const checkRunStatus = TASK_STATE_TO_CHECK_RUN_STATE[state] || CHECK_RUN_STATES.COMPLETED;
   let conclusion = CONCLUSIONS[reasonResolved || state];
@@ -30,6 +30,8 @@ async function statusHandler(message) {
     sha,
     event_id,
     installation_id,
+    checkRunStatus,
+    conclusion,
   });
 
   let taskState = {
@@ -58,20 +60,6 @@ async function statusHandler(message) {
 
   // Authenticating as installation.
   const instGithub = await this.context.github.getInstallationGithub(installation_id);
-
-  const [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
-
-  // If check run was previously completed, it is not possible to change state by updating check run
-  // instead, we should call `rerequestRun` for a given check run
-  // This will reset status, and trigger `rerequested` event, which will be ignored, as it was triggered by us
-  if (checkRun && checkRunStatus === CHECK_RUN_STATES.QUEUED && runId > 0) {
-    debug(`Existing check run ${checkRun.check_run_id} for task ${taskId} was already completed. Requesting rerun`);
-    await instGithub.checks.rerequestRun({
-      check_run_id: checkRun.check_run_id,
-      repo: repository,
-      owner: organization,
-    });
-  }
 
   debug(
     `Attempting to update status of the checkrun for ${organization}/${repository}@${sha} (${taskState.status}:${taskState.conclusion})`,
@@ -144,7 +132,22 @@ async function statusHandler(message) {
       annotations: customCheckRunAnnotations,
     };
 
+    let [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
+
     if (checkRun) {
+      if (checkRunStatus === CHECK_RUN_STATES.QUEUED && runId > 0) {
+        // If check run was previously completed, it is not possible to change state by updating check run
+        // instead, we should call `rerequestRun` for a given check run
+        // This will reset status, and trigger `rerequested` event, which will be ignored, as it was triggered by us
+        debug(`Existing check run ${checkRun.check_run_id} for task ${taskId} was already completed. Requesting rerun`);
+        await instGithub.checks.rerequestRun({
+          check_run_id: checkRun.check_run_id,
+          repo: repository,
+          owner: organization,
+        });
+      }
+
+      debug(`Updated check run ${checkRun.check_run_id} for task ${taskId}`);
       await instGithub.checks.update({
         ...taskState,
         owner: organization,
@@ -153,7 +156,7 @@ async function statusHandler(message) {
         output,
       });
     } else {
-      const checkRun = await instGithub.checks.create({
+      checkRun = await instGithub.checks.create({
         ...taskState,
         owner: organization,
         repo: repository,
@@ -170,6 +173,7 @@ async function statusHandler(message) {
         checkRun.data.check_suite.id.toString(),
         checkRun.data.id.toString(),
       );
+      debug(`Created check run ${checkRun.data.id} for task ${taskId}`);
     }
   } catch (e) {
     e.owner = build.organization;
