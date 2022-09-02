@@ -128,6 +128,7 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
       }
 
       const releaseImage = `taskcluster/taskcluster:v${requirements['release-version']}`;
+      const releaseImageGenericWorker = `taskcluster/generic-worker:v${requirements['release-version']}`;
 
       const build = 'infrastructure/tooling/current-release.yml';
       utils.status({ message: `Update ${build}` });
@@ -233,6 +234,8 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
       utils.status({ message: `Update ${dockerCompose}` });
       await modifyRepoFile(dockerCompose, contents =>
         contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage));
+      await modifyRepoFile(dockerCompose, contents =>
+        contents.replace(/taskcluster\/generic-worker:v[0-9.]*/g, releaseImageGenericWorker));
       changed.push(dockerCompose);
 
       const dockerComposeDev = 'docker-compose.dev.yml';

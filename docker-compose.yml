@@ -147,7 +147,7 @@ services:
       taskcluster:
         condition: service_healthy
   generic-worker-standalone:
-    image: taskcluster/generic-worker:v44.19.1
+    image: taskcluster/generic-worker:v44.20.0
     networks:
       - local
     restart: unless-stopped
@@ -174,7 +174,7 @@ services:
       tc_admin_init:
         condition: service_completed_successfully
   generic-worker-static:
-    image: taskcluster/generic-worker:v44.19.1
+    image: taskcluster/generic-worker:v44.20.0
     networks:
       - local
     restart: unless-stopped
