@@ -1148,18 +1148,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.equal(args.check_run_id, '22222');
     }
 
-    test('task is pending gets a queued check result', async function () {
-      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+    test('task is running gets a queued check result', async function () {
+      await addBuild({ state: 'running', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
-        exchange: 'exchange/taskcluster-queue/v1/task-pending',
+        exchange: 'exchange/taskcluster-queue/v1/task-running',
         routingKey: 'route.checks',
         taskId: TASKID,
         runId: 0,
-        state: 'pending',
+        state: 'running',
       });
-      await assertCheckRunStatus('queued');
+      await assertCheckRunStatus('in_progress');
     });
 
     test('task is running gets a in_progress check result', async function () {
@@ -1176,18 +1176,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('task is rerun and queued gets a queued check result and rerequested run', async function () {
-      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addBuild({ state: 'running', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
-        exchange: 'exchange/taskcluster-queue/v1/task-pending',
+        exchange: 'exchange/taskcluster-queue/v1/task-running',
         routingKey: 'route.checks',
         taskId: TASKID,
-        state: 'pending',
+        state: 'running',
         runId: 1, // means task was already completed, rerequest is expected
       });
       await assertCheckRerequestRun();
-      await assertCheckRunStatus('queued');
+      await assertCheckRunStatus('in_progress');
     });
 
     test('task is completed after rerun', async function () {

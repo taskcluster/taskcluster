@@ -145,7 +145,7 @@ async function statusHandler(message) {
     let [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
 
     if (checkRun) {
-      if (checkRunStatus === CHECK_RUN_STATES.QUEUED && runId > 0) {
+      if (checkRunStatus === CHECK_RUN_STATES.IN_PROGRESS && runId > 0) {
         // If check run was previously completed, it is not possible to change state by updating check run
         // instead, we should call `rerequestRun` for a given check run
         // This will reset status, and trigger `rerequested` event, which will be ignored, as it was triggered by us
