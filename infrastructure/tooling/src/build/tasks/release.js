@@ -150,6 +150,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'websocktunnel-docker-image',
       'livelog-docker-image',
       'taskcluster-proxy-docker-image',
+      'generic-worker-image',
       'livelog-artifacts',
     ],
     provides: [
