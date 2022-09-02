@@ -86,8 +86,23 @@ const shouldSkipPullRequest = ({ pull_request }) => {
     (ciSkipRegexp.test(pull_request.title) || ciSkipRegexp.test(pull_request.body));
 };
 
+/**
+ * Github checks API call is limited to 64kb
+ * @param {string} log
+ * @param {number} maxLines
+ * @param {number} maxPayloadLength
+ * @returns string
+ */
+const tailLog = (log, maxLines = 250, maxPayloadLength = 30000) => {
+  return log.substring(log.length - maxPayloadLength)
+    .split('\n')
+    .slice(-maxLines)
+    .join('\n');
+};
+
 module.exports = {
   throttleRequest,
   shouldSkipCommit,
   shouldSkipPullRequest,
+  tailLog,
 };
