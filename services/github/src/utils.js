@@ -87,6 +87,19 @@ const shouldSkipPullRequest = ({ pull_request }) => {
 };
 
 /**
+ * Removes ANSI control characters from string
+ * Source: https://stackoverflow.com/a/18000433
+ *
+ * @param {string} src
+ * @returns string
+ */
+const ansi2txt = (src) => {
+  // eslint-disable-next-line no-control-regex
+  const regex = /\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]/gm;
+  return src.replace(regex, '');
+};
+
+/**
  * Github checks API call is limited to 64kb
  * @param {string} log
  * @param {number} maxLines
@@ -94,7 +107,7 @@ const shouldSkipPullRequest = ({ pull_request }) => {
  * @returns string
  */
 const tailLog = (log, maxLines = 250, maxPayloadLength = 30000) => {
-  return log.substring(log.length - maxPayloadLength)
+  return ansi2txt(log).substring(log.length - maxPayloadLength)
     .split('\n')
     .slice(-maxLines)
     .join('\n');
@@ -104,5 +117,6 @@ module.exports = {
   throttleRequest,
   shouldSkipCommit,
   shouldSkipPullRequest,
+  ansi2txt,
   tailLog,
 };

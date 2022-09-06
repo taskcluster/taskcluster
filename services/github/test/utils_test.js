@@ -1,6 +1,6 @@
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
-const { throttleRequest, shouldSkipCommit, shouldSkipPullRequest, tailLog } = require('../src/utils');
+const { throttleRequest, shouldSkipCommit, shouldSkipPullRequest, tailLog, ansi2txt } = require('../src/utils');
 
 suite(testing.suiteName(), function() {
   suite('throttleRequest', function() {
@@ -165,6 +165,20 @@ suite(testing.suiteName(), function() {
       skipMessages.forEach(body => assert.equal(true, shouldSkipPullRequest({
         pull_request: { title: 'regular title', body },
       })));
+    });
+  });
+
+  suite('ansi2txt', function() {
+    test('it should remove control sequences', function() {
+      const src = [
+        '[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/utils/[22m[1misDateWithin.test.js[22m',
+        '[2K[1G[2m$ webpack --mode production[22m',
+      ];
+      const expected = [
+        ' PASS  src/utils/isDateWithin.test.js',
+        '$ webpack --mode production',
+      ];
+      assert.equal(expected.join('\n'), ansi2txt(src.join('\n')));
     });
   });
 
