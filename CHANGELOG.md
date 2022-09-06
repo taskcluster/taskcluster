@@ -3,6 +3,16 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.20.3
+
+### USERS
+
+▶ [patch]
+Fixes UI bug with hooks creation form, where changing Exchange input resulted in error message.
+
+▶ [patch]
+Trim ANSI control codes from the live log that is being shown in github check run.
+
 ## v44.20.2
 
 No changes
