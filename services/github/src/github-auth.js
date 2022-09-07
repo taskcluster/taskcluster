@@ -4,6 +4,31 @@ const { retry } = require("@octokit/plugin-retry");
 
 const PluggedOctokit = Octokit.plugin(retry);
 
+const tokenCache = new Map();
+/**
+ * Github app access token have an expiration date of 1h
+ * https://docs.github.com/en/developers/apps/building-github-apps/authenticating-with-github-apps#authenticating-as-an-installation
+ *
+ * As we run multiple handlers for the same repository, we can save a lot of resources by using cached token
+ * On average it takes 0.5-1s to get one.
+ */
+const getCachedInstallationToken = async (gh, inst_id) => {
+  let tokenData = tokenCache.get(inst_id);
+  const timeMargin = 10 * 60 * 1000; // 10min before expiry
+  if (tokenData) {
+    if (new Date(tokenData.expires_at).getTime() > new Date().getTime() + timeMargin) {
+      return tokenData;
+    }
+  }
+
+  tokenData = (await gh.apps.createInstallationAccessToken({
+    installation_id: inst_id,
+  })).data;
+
+  tokenCache.set(inst_id, tokenData);
+  return tokenData;
+};
+
 const getPrivatePEM = cfg => {
   const keyRe = /-----BEGIN RSA PRIVATE KEY-----(\n|\\n).*(\n|\\n)-----END RSA PRIVATE KEY-----(\n|\\n)?/s;
   const privatePEM = cfg.github.credentials.privatePEM;
@@ -50,9 +75,7 @@ module.exports = async ({ cfg, monitor }) => {
     try {
       const inteGithub = await getAppGithub();
       // Authenticating as installation
-      const instaToken = (await inteGithub.apps.createInstallationAccessToken({
-        installation_id: inst_id,
-      })).data;
+      const instaToken = await getCachedInstallationToken(inteGithub, inst_id);
       const instaGithub = new PluggedOctokit({
         auth: `token ${instaToken.token}`,
         ...OctokitOptions,
@@ -70,3 +93,4 @@ module.exports = async ({ cfg, monitor }) => {
 };
 
 module.exports.getPrivatePEM = getPrivatePEM; // for testing
+module.exports.getCachedInstallationToken = getCachedInstallationToken;

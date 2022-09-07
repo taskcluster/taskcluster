@@ -40,7 +40,7 @@ async function rerunHandler(message) {
       authorizedScopes: [`assume:repo:github.com/${organization}/${repo}:rerun`],
     });
     const taskStatus = await limitedQueueClient.rerunTask(taskId);
-    debug('Response', { taskStatus });
+    debug('Rerun task response', { taskStatus });
 
     // Update commit status? or anything else
     debug(`Updating github build state to pending for taskGroupId ${taskGroupId}`);

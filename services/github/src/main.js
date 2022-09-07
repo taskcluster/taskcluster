@@ -184,7 +184,6 @@ const load = loader({
         deprecatedResultStatusQueueName: cfg.app.deprecatedResultStatusQueue,
         deprecatedInitialStatusQueueName: cfg.app.deprecatedInitialStatusQueue,
         resultStatusQueueName: cfg.app.resultStatusQueue,
-        initialStatusQueueName: cfg.app.initialStatusQueue,
         rerunQueueName: cfg.app.rerunQueue,
         context: { cfg, github, schemaset, db, publisher },
         pulseClient,

@@ -5,7 +5,6 @@ defaults:
     deprecatedResultStatusQueue: 'stat-result'
     deprecatedInitialStatusQueue: 'stat-init'
     resultStatusQueue: 'ch-result'
-    initialStatusQueue: 'ch-init'
     rerunQueue: 're-run'
     checkTaskRoute: 'checks'
     statusTaskRoute: 'statuses'
@@ -63,7 +62,6 @@ test:
     deprecatedResultStatusQueue: 'deprecated-statuses'
     deprecatedInitialStatusQueue: 'deprecated-tasks'
     resultStatusQueue: 'checks-statuses'
-    initialStatusQueue: 'checks-tasks'
     statusContext: 'Taskcluster-Test'
 
   github:

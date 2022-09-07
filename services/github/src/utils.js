@@ -113,10 +113,15 @@ const tailLog = (log, maxLines = 250, maxPayloadLength = 30000) => {
     .join('\n');
 };
 
+const markdownLog = (log) => ['\n---\n\n```bash\n', log, '\n```'].join('');
+const markdownAnchor = (name, url) => `[${name}](${url})`;
+
 module.exports = {
   throttleRequest,
   shouldSkipCommit,
   shouldSkipPullRequest,
   ansi2txt,
   tailLog,
+  markdownLog,
+  markdownAnchor,
 };
