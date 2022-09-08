@@ -252,15 +252,15 @@ func (client *Client) APICall(payload interface{}, method, route string, result 
 
 		// httpbackoff considers a 3xx response to be an error, but the client
 		// treats it as success, so do not return an error in that case.
-		if callSummary.HTTPResponse.StatusCode >= 400 {
+		if callSummary.HTTPResponse != nil && callSummary.HTTPResponse.StatusCode < 400 {
+			err = nil
+		} else {
 			return result,
 				callSummary,
 				&APICallException{
 					CallSummary: callSummary,
 					RootCause:   err,
 				}
-		} else {
-			err = nil
 		}
 	}
 	// if result is passed in as nil, it means the API defines no response body
