@@ -1,4 +1,6 @@
 version: 1
+policy:
+  pullRequests: collaborators
 tasks:
   - $if: ' tasks_for == "github-push" '
     then:

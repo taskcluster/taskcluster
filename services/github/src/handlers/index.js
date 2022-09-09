@@ -110,7 +110,6 @@ class Handlers {
       queueEvents.taskFailed(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskException(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskCompleted(`route.${this.context.cfg.app.checkTaskRoute}`),
-      queueEvents.taskPending(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskRunning(`route.${this.context.cfg.app.checkTaskRoute}`),
     ];
 

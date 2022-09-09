@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-github",
-  "version": "44.18.0",
+  "version": "44.20.4",
   "private": true,
   "scripts": {
     "coverage": "c8 yarn test",

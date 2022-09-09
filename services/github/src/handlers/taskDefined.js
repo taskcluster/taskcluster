@@ -40,7 +40,7 @@ async function taskDefinedHandler(message) {
 
   let [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
   if (!checkRun) {
-    const checkRun = await instGithub.checks.create({
+    checkRun = await instGithub.checks.create({
       owner: organization,
       repo: repository,
       name: `${taskDefinition.metadata.name}`,

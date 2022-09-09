@@ -3,6 +3,140 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.20.4
+
+### DEVELOPERS
+
+▶ [patch] [#5663](https://github.com/taskcluster/taskcluster/issues/5663)
+This patch upgrades to the new, v2 Docker Hub APIs.
+v1 APIs were deprecated as of September 5, 2022 - see [here](https://www.docker.com/blog/docker-hub-v1-api-deprecation/) for more info.
+
+## v44.20.3
+
+### USERS
+
+▶ [patch]
+Fixes UI bug with hooks creation form, where changing Exchange input resulted in error message.
+
+▶ [patch]
+Trim ANSI control codes from the live log that is being shown in github check run.
+
+## v44.20.2
+
+No changes
+
+## v44.20.1
+
+### DEVELOPERS
+
+▶ [patch]
+Trim github payload for the check run updates call.
+
+▶ [patch]
+Build generic worker docker image as part of the release process.
+
+## v44.20.0
+
+### GENERAL
+
+▶ [patch] [#5653](https://github.com/taskcluster/taskcluster/issues/5653)
+Fix a bug with github status checks not being updated.
+
+In 44.19.1 release github service started tracking additional task
+state changes, and this resulted in a race condition between "taskDefined"
+and "status" handlers where both of them would create new check run at
+the same time. Wrong check run would later get all status updates, while
+Github UI will be showing a different check run which didn't receive all
+the updates.
+
+▶ [patch]
+Upgrade node to the latest LTS release, v16.17.0
+
+### DEPLOYERS
+
+▶ [patch] [#5041](https://github.com/taskcluster/taskcluster/issues/5041)
+Add support for private docker registry by adding `imagePullSecrets` config value.
+
+### DEVELOPERS
+
+▶ [minor] [#5295](https://github.com/taskcluster/taskcluster/issues/5295)
+When hovering over a task in a group task, the background color changes for the whole row, now. As opposed to a portion of the row.
+
+▶ [patch]
+Building and publishing generic worker docker image
+
+▶ [patch] [#5217](https://github.com/taskcluster/taskcluster/issues/5217)
+This patch gets a tail of the last 250 lines of the `live.log` file and provides it in the GitHub checks view without having to visit the Taskcluster UI.
+
+## v44.19.1
+
+### GENERAL
+
+▶ [patch]
+Fix broken devel image build
+
+## v44.19.0
+
+This release failed, please see v44.19.1
+---
+
+### GENERAL
+
+▶ [minor] [#5085](https://github.com/taskcluster/taskcluster/issues/5085)
+Github integration handles task reruns, triggered from the Taskcluster side.
+Check run status updates will include in_progress and queued sates for such tasks.
+
+▶ [patch]
+Fixes error logging for "re-run" github event.
+Improves '[ci skip]' logic to also include pull_request events.
+Adds documentation on how to debug github integration locally.
+
+▶ [patch]
+Remove duplicate ingres paths as redundant
+
+### DEPLOYERS
+
+▶ [minor] [#4913](https://github.com/taskcluster/taskcluster/issues/4913)
+Adds support for nginx ingress for routes definitions.
+Adds support for certbot annotations.
+
+### ADMINS
+
+▶ [minor] [#5616](https://github.com/taskcluster/taskcluster/issues/5616)
+For projects with `policy.pullRequests` set to `public_restricted`, Taskcluster Github will now assume the role `repo:github.com/${ payload.organization }/${ payload.repository }:pull-request-untrusted`. Administrators will need to create this role for all `public_restricted` projects.
+
+### USERS
+
+▶ [minor] [#5311](https://github.com/taskcluster/taskcluster/issues/5311)
+Github integration can skip creation of tasks for single commits that include "[ci skip]" or "[skip ci]" message.
+
+▶ [patch] [#5046](https://github.com/taskcluster/taskcluster/issues/5046)
+UI automatically goes to the latest run on rerun action.
+Task page listens to updates on task status and updates the page.
+
+▶ [patch]
+UI: Pulse Messages autocompletes known exchanges
+
+### DEVELOPERS
+
+▶ [minor] [#5611](https://github.com/taskcluster/taskcluster/issues/5611)
+Added paddingLeft to the root MUISelect in the overrides in theme.js.
+
+Choosing a worker type out of the dropdown menu from the Create Task page now displays the chosen type with appropriate padding from the left. The chosen worker type no longer appears glued to the left border.
+
+▶ [patch]
+Docker compose: static worker not started by default.
+
+▶ [patch]
+Switch to devel image for docker-compose.dev.yml.
+Installing nodemon only in devel image.
+
+▶ [patch]
+Use tc-admin to setup local env.
+
+▶ [patch]
+This patch makes it so that a `yarn smoketest` on our dev environment is run after a successful deploy.
+
 ## v44.18.0
 
 ### GENERAL

@@ -6468,6 +6468,7 @@
               "description": "Policy for creating tasks for pull requests.  The effective policy is found in this property\nin the `.taskcluster.yml` file in the repository's default branch.  See the documentation for\ndetailed definition of the options.\n",
               "enum": [
                 "public",
+                "public_restricted",
                 "collaborators"
               ],
               "type": "string"
@@ -9468,6 +9469,10 @@
           ],
           "title": "Configuration options for hooks",
           "type": "object"
+        },
+        "imagePullSecret": {
+          "description": "Secret name with docker credentials for private registry",
+          "type": "string"
         },
         "index": {
           "additionalProperties": false,

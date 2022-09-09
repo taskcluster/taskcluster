@@ -128,6 +128,7 @@ class Build extends Base {
       'target-client-shell',
       'target-docker-worker',
       'target-generic-worker',
+      'target-generic-worker-image',
       'target-worker-runner',
       'target-taskcluster-proxy',
       'target-websocktunnel',
@@ -155,6 +156,7 @@ class Publish extends Base {
       push: cmdOptions.staging ? false : true,
       // always push to the "official" Taskcluster repo on publish
       dockerRepo: 'taskcluster/taskcluster',
+      dockerRepoGenericWorker: 'taskcluster/generic-worker',
     });
   }
 

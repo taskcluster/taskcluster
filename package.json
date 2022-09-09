@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "44.18.0",
+  "version": "44.20.4",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "16.16.0",
+    "node": "16.17.0",
     "yarn": "^1.22.19"
   },
   "workspaces": [

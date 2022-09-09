@@ -80,16 +80,10 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'ENTRYPOINT ["/livelog"]',
       ].join('\n'));
       let command = [
-        'docker',
-        'buildx',
-        'build',
-        '--platform',
-        'linux/arm/v7,linux/arm64,linux/amd64',
+        'docker', 'build',
         '--no-cache',
-        '--progress',
-        'plain',
-        '--tag',
-        tag,
+        '--progress', 'plain',
+        '--tag', tag,
         contextDir,
       ];
       await execCommand({
