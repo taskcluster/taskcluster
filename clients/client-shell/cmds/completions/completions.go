@@ -2,37 +2,72 @@
 package completions
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/taskcluster/v44/clients/client-shell/cmds/root"
 )
 
 var (
-	defaultFilename = "bash_completion.sh"
+	defaultFilename = "completion.sh"
 )
 
 func init() {
 	// Add the task subtree to the root.
-	use := "completions <filename (default:" + defaultFilename + ")>"
+	use := "completions shell [filename (default:" + defaultFilename + ")]"
 	completionsCommand := &cobra.Command{
-		Short: "Provides bash completion script.",
-		Long: `Writes a bash completion script to the path specified, or the default filename if not given.
+		Short: "Provides completion script for the specified shell.",
+		Long: `Writes a completion script for the specified shell to the path specified, or the default filename if not given.
 
-To use, do one of the following:
+The following is a couple of example usages for bash:
 'source bash_completion.sh' to add to your current shell,
 Add 'source bash_completion.sh' to your bash login scripts
 On Linux you can also copy it to /etc/bash_completion.d/ so that future bash shells have it active.
         `,
-		RunE: genCompletion,
-		Use:  use,
+		Use: use,
 	}
 	root.Command.AddCommand(completionsCommand)
-}
 
-func genCompletion(cmd *cobra.Command, args []string) error {
-	filename := defaultFilename
-	if len(args) != 0 {
-		filename = args[0]
+	shortDesc := "Generate the autocompletion script for %s"
+	usage := "%s [filename]"
+
+	bash := &cobra.Command{
+		Args:  cobra.MaximumNArgs(1),
+		RunE:  genCompletion("bash"),
+		Short: fmt.Sprintf(shortDesc, "bash"),
+		Use:   fmt.Sprintf(usage, "bash"),
 	}
 
-	return root.Command.GenBashCompletionFile(filename)
+	fish := &cobra.Command{
+		Args:  cobra.MaximumNArgs(1),
+		RunE:  genCompletion("fish"),
+		Short: fmt.Sprintf(shortDesc, "fish"),
+		Use:   fmt.Sprintf(usage, "fish"),
+	}
+
+	powershell := &cobra.Command{
+		Args:  cobra.MaximumNArgs(1),
+		RunE:  genCompletion("powershell"),
+		Short: fmt.Sprintf(shortDesc, "powershell"),
+		Use:   fmt.Sprintf(usage, "powershell"),
+	}
+
+	zsh := &cobra.Command{
+		Args:  cobra.MaximumNArgs(1),
+		RunE:  genCompletion("zsh"),
+		Short: fmt.Sprintf(shortDesc, "zsh"),
+		Use:   fmt.Sprintf(usage, "zsh"),
+	}
+
+	completionsCommand.AddCommand(bash, fish, powershell, zsh)
+}
+
+func genCompletion(shell string) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		filename := fmt.Sprintf("%s_%s", shell, defaultFilename)
+		if len(args) > 0 {
+			filename = args[0]
+		}
+		return root.Command.GenBashCompletionFile(filename)
+	}
 }
