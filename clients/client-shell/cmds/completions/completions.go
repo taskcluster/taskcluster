@@ -71,13 +71,13 @@ func genCompletion(shell string) func(*cobra.Command, []string) error {
 
 		switch shell {
 		case "bash":
-			root.Command.GenBashCompletionFile(filename)
+			return root.Command.GenBashCompletionFile(filename)
 		case "fish":
-			root.Command.GenFishCompletionFile(filename, false)
+			return root.Command.GenFishCompletionFile(filename, false)
 		case "powershell":
-			root.Command.GenPowerShellCompletionFile(filename)
+			return root.Command.GenPowerShellCompletionFile(filename)
 		case "zsh":
-			root.Command.GenZshCompletionFile(filename)
+			return root.Command.GenZshCompletionFile(filename)
 		}
 
 		return nil
