@@ -20,8 +20,13 @@ on:
   schedule:
     - cron: '18 19 * * 1'
 
+permissions:
+  contents: read
+
 jobs:
   analyze:
+    permissions:
+      security-events: write
     name: Analyze
     runs-on: ubuntu-latest
 
