@@ -142,11 +142,11 @@ module.exports = ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
       `generic-worker-push`,
     ],
     provides: [
-      `target-generic-worker-image`,
+      `generic-worker-image`,
     ],
     run: async (requirements, utils) => {
       return {
-        'target-generic-worker-image': `Generic worker docker image: ${requirements['generic-worker-push']}`,
+        'generic-worker-image': `Generic worker docker image: ${requirements['generic-worker-push']}`,
       };
     },
   });

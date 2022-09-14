@@ -3,6 +3,38 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.20.4
+
+### DEVELOPERS
+
+▶ [patch] [#5663](https://github.com/taskcluster/taskcluster/issues/5663)
+This patch upgrades to the new, v2 Docker Hub APIs.
+v1 APIs were deprecated as of September 5, 2022 - see [here](https://www.docker.com/blog/docker-hub-v1-api-deprecation/) for more info.
+
+## v44.20.3
+
+### USERS
+
+▶ [patch]
+Fixes UI bug with hooks creation form, where changing Exchange input resulted in error message.
+
+▶ [patch]
+Trim ANSI control codes from the live log that is being shown in github check run.
+
+## v44.20.2
+
+No changes
+
+## v44.20.1
+
+### DEVELOPERS
+
+▶ [patch]
+Trim github payload for the check run updates call.
+
+▶ [patch]
+Build generic worker docker image as part of the release process.
+
 ## v44.20.0
 
 ### GENERAL
