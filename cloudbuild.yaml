@@ -66,7 +66,7 @@ steps:
   - name: gcr.io/cloud-builders/gcloud
     args:
       - '-c'
-      - gcloud container images list-tags ${_IMAGE_NAME} --filter='-tags:*' --format='get(digest)' --limit=unlimited | xargs -I {sha} gcloud container images delete "${_IMAGE_NAME}@{sha}"
+      - gcloud container images list-tags ${_IMAGE_NAME} --filter='-tags:latest' --format='get(digest)' --limit=unlimited | xargs -I {sha} gcloud container images delete "${_IMAGE_NAME}@{sha}" --force-delete-tags && gcloud container images list-tags ${_DEPLOY_IMAGE_NAME} --filter='-tags:latest' --format='get(digest)' --limit=unlimited | xargs -I {sha} gcloud container images delete "${_DEPLOY_IMAGE_NAME}@{sha}" --force-delete-tags
     id: Delete old images
     entrypoint: bash
   - name: node:${_NODE_VERSION}

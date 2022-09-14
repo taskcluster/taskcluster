@@ -10,6 +10,7 @@ import createHookQuery from './createHook.graphql';
 import deleteHookQuery from './deleteHook.graphql';
 import updateHookQuery from './updateHook.graphql';
 import triggerHookQuery from './triggerHook.graphql';
+import exchangesList from '../../../utils/exchangesList';
 
 @withApollo
 @graphql(hookQuery, {
@@ -34,7 +35,14 @@ export default class ViewHook extends Component {
       variant: 'success',
       open: false,
     },
+    exchangesDictionary: null,
   };
+
+  async componentDidMount() {
+    this.setState({
+      exchangesDictionary: await exchangesList(),
+    });
+  }
 
   preRunningAction = () => {
     this.setState({ dialogError: null, actionLoading: true });
@@ -164,6 +172,7 @@ export default class ViewHook extends Component {
       deleteDialogOpen,
       dialogOpen,
       snackbar,
+      exchangesDictionary,
     } = this.state;
     const error = (data && data.error) || err;
     const hookLastFires =
@@ -183,6 +192,7 @@ export default class ViewHook extends Component {
               dialogError={dialogError}
               actionLoading={actionLoading}
               onCreateHook={this.handleCreateHook}
+              exchangesDictionary={exchangesDictionary}
             />
           </Fragment>
         ) : (
@@ -206,6 +216,7 @@ export default class ViewHook extends Component {
                 onDialogActionError={this.handleDialogActionError}
                 onDialogOpen={this.handleDialogOpen}
                 onDialogDeleteHook={this.handleDeleteDialogHook}
+                exchangesDictionary={exchangesDictionary}
               />
             )}
           </Fragment>
