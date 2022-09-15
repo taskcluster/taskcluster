@@ -5,8 +5,10 @@ const CHECK_RUN_STATES = {
 };
 
 const TASK_STATE_TO_CHECK_RUN_STATE = {
+  unscheduled: CHECK_RUN_STATES.QUEUED,
   pending: CHECK_RUN_STATES.QUEUED,
   running: CHECK_RUN_STATES.IN_PROGRESS,
+  completed: CHECK_RUN_STATES.COMPLETED,
 };
 
 module.exports = {

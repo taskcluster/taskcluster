@@ -7,11 +7,14 @@ const taskGroupUI = (rootUrl, taskGroupId) =>
 const taskLogUI = (rootUrl, runId, taskId) =>
   libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/logs/public/logs/live.log`);
 
+let debugCounter = 0;
+
 /**
  * Create or refine a debug function with the given attributes.  This eventually calls
  * `monitor.log.handlerDebug`.
  */
 const makeDebug = (monitor, attrs = {}) => {
+  const debugId = `id-${debugCounter}`;
   const debug = message => monitor.log.handlerDebug({
     eventId: null,
     installationId: null,
@@ -22,8 +25,9 @@ const makeDebug = (monitor, attrs = {}) => {
     sha: null,
     ...attrs,
     message,
+    debugId,
   });
-  debug.refine = moreAttrs => makeDebug(monitor, { ...attrs, ...moreAttrs });
+  debug.refine = moreAttrs => makeDebug(monitor, { ...attrs, ...moreAttrs, debugId });
   return debug;
 };
 

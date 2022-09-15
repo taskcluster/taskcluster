@@ -79,4 +79,50 @@ suite(testing.suiteName(), function() {
       });
     });
   });
+  suite('getCachedInstallationToken', function () {
+    const getGh = async () => {
+      const gh = await githubAuth({
+        monitor: await helper.load('monitor'),
+        cfg: {
+          github: {
+            credentials: {
+              appId: 12345,
+              privatePEM: FAKE_KEY,
+            },
+          },
+        },
+      });
+      return gh.getAppGithub();
+    };
+
+    test('cache responses', async function() {
+      nock('https://api.github.com:443')
+        .post('/app/installations/500/access_tokens')
+        .reply(200, { expires_at: new Date('3000-01-01T00:00:00Z'), token: 'abc' });
+
+      const ghApp = await getGh();
+      const token1 = await githubAuth.getCachedInstallationToken(ghApp, 500);
+      // calling this second time ensures that nock() will not be activated, since it only expects one call
+      const token2 = await githubAuth.getCachedInstallationToken(ghApp, 500);
+
+      assert.equal('abc', token1.token);
+      assert.equal('abc', token2.token);
+      assert.equal(true, nock.isDone());
+    });
+
+    test('cache responses and checks expiration dates', async function() {
+      nock('https://api.github.com:443')
+        .post('/app/installations/505/access_tokens')
+        .times(2)
+        .reply(200, { expires_at: new Date('1000-01-01T00:00:00Z'), token: 'abc' });
+
+      const ghApp = await getGh();
+      const token1 = await githubAuth.getCachedInstallationToken(ghApp, 505);
+      const token2 = await githubAuth.getCachedInstallationToken(ghApp, 505);
+
+      assert.equal('abc', token1.token);
+      assert.equal('abc', token2.token);
+      assert.equal(true, nock.isDone());
+    });
+  });
 });

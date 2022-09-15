@@ -958,7 +958,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
-        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/public/logs/live.log)\n\n${CUSTOM_CHECKRUN_TEXT}`
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/public/logs/live.log)\n${CUSTOM_CHECKRUN_TEXT}\n`
       );
       /* eslint-enable comma-dangle */
       sinon.restore();
@@ -989,7 +989,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
-        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/public/logs/live.log)\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/public/logs/live.log)\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
       );
       /* eslint-enable comma-dangle */
       sinon.restore();
@@ -1130,6 +1130,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     const TASKID = 'rerequested';
 
     async function assertCheckRunStatus(status, conclusion) {
+      assert(github.inst(9988).checks.create.called === false, 'checks.create should not be called');
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
       let args = github.inst(9988).checks.update.firstCall.args[0];
       assert.equal(args.owner, 'TaskclusterRobot');
@@ -1139,13 +1140,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.equal(args.conclusion, conclusion);
     }
 
-    function assertCheckRerequestRun() {
-      assert(github.inst(9988).checks.rerequestRun.called, 'checks.rerequestRun was not called');
+    function assertCheckRunCreated() {
+      assert(github.inst(9988).checks.update.called === false, 'checks.update should not be called');
+      assert(github.inst(9988).checks.create.called, 'checks.create was not called');
 
-      let args = github.inst(9988).checks.rerequestRun.firstCall.args[0];
+      let args = github.inst(9988).checks.create.firstCall.args[0];
       assert.equal(args.owner, 'TaskclusterRobot');
       assert.equal(args.repo, 'hooks-testing');
-      assert.equal(args.check_run_id, '22222');
     }
 
     test('task is running gets a queued check result', async function () {
@@ -1186,8 +1187,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         state: 'running',
         runId: 1, // means task was already completed, rerequest is expected
       });
-      await assertCheckRerequestRun();
-      await assertCheckRunStatus('in_progress');
+      await assertCheckRunCreated();
     });
 
     test('task is completed after rerun', async function () {
@@ -1201,7 +1201,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         state: 'completed',
         runId: 1,
       });
-      assert(github.inst(9988).checks.rerequestRun.called === false, 'Rerequest run should not be called');
+      assert(github.inst(9988).checks.create.called === false, 'Rerequest run should not be called');
       await assertCheckRunStatus('completed', 'success');
     });
 
