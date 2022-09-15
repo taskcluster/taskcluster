@@ -15,6 +15,7 @@ let debugCounter = 0;
  */
 const makeDebug = (monitor, attrs = {}) => {
   const debugId = `id-${debugCounter}`;
+  debugCounter += 1;
   const debug = message => monitor.log.handlerDebug({
     eventId: null,
     installationId: null,
