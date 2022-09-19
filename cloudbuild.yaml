@@ -1,51 +1,102 @@
 steps:
   - name: gcr.io/cloud-builders/docker
+    id: Prefetch deploy image
+    entrypoint: bash
+    args:
+      - '-c'
+      - docker pull ${_DEPLOY_IMAGE_NAME}:latest || exit 0
+  - name: gcr.io/cloud-builders/docker
     args:
       - build
       - '--build-arg'
       - DOCKER_FLOW_VERSION=${_VERSION}
       - '-t'
       - ${_IMAGE_NAME}:${_IMAGE_VERSION}
+      - '-t'
+      - ${_IMAGE_NAME}:latest
       - .
     id: Build
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - ${_IMAGE_NAME}:${_IMAGE_VERSION}
+      - '-a'
+      - ${_IMAGE_NAME}
     id: Push
+  - name: gcr.io/cloud-builders/docker
+    id: Build deploy image using cache from previous build
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        docker build -t ${_DEPLOY_IMAGE_NAME}:latest --cache-from ${_DEPLOY_IMAGE_NAME}:latest -<<EOF
+        FROM node:${_NODE_VERSION}
+        RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+        RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+        RUN apt-get update -y && apt-get install google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin -y
+        EOF
   - name: bash
     args:
       - '-c'
-      - echo "$$DEV_CONFIG" > /workspace/dev-config.yml && echo "$$INGRESS" > /workspace/infrastructure/k8s/templates/ingress.yaml
+      - |
+        echo "$$DEV_CONFIG" | sed -E "s|dockerImage:.+$|dockerImage: ${_IMAGE_NAME}:${_IMAGE_VERSION}|" > /workspace/dev-config.yml
     id: Get secrets
     secretEnv:
       - DEV_CONFIG
-      - INGRESS
-  - name: node:${_NODE_VERSION}
+  - name: ${_DEPLOY_IMAGE_NAME}
     args:
       - '-c'
-      - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash && curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - && apt-get update -y && apt-get install google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin -y && gcloud container clusters get-credentials ${PROJECT_ID} --region us-east1 --project ${PROJECT_ID} && yarn && yarn dev:db:upgrade && yarn dev:apply
+      - |
+        gcloud container clusters get-credentials ${PROJECT_ID} --region us-east1 --project ${PROJECT_ID} \
+        && yarn \
+        && yarn dev:db:upgrade \
+        && yarn dev:apply > /dev/null
     id: Deploy
+    entrypoint: bash
+  - name: ${_DEPLOY_IMAGE_NAME}
+    id: Cleanup old pods
+    args:
+      - '-c'
+      - |
+        gcloud container clusters get-credentials ${PROJECT_ID} --region us-east1 --project ${PROJECT_ID} \
+        && kubectl get pods -n dev --field-selector=status.phase!=Running -o name | xargs kubectl delete -n dev
     entrypoint: bash
   - name: gcr.io/cloud-builders/gcloud
     args:
       - '-c'
-      - gcloud container images list-tags ${_IMAGE_NAME} --filter='-tags:*' --format='get(digest)' --limit=unlimited | xargs -I {sha} gcloud container images delete "${_IMAGE_NAME}@{sha}"
+      - gcloud container images list-tags ${_IMAGE_NAME} --filter='-tags:latest' --format='get(digest)' --limit=unlimited | xargs -I {sha} gcloud container images delete "${_IMAGE_NAME}@{sha}" --force-delete-tags && gcloud container images list-tags ${_DEPLOY_IMAGE_NAME} --filter='-tags:latest' --format='get(digest)' --limit=unlimited | xargs -I {sha} gcloud container images delete "${_DEPLOY_IMAGE_NAME}@{sha}" --force-delete-tags
     id: Delete old images
     entrypoint: bash
+  - name: node:${_NODE_VERSION}
+    args:
+      - '-c'
+      - yarn && yarn smoketest
+    id: Smoketest
+    entrypoint: bash
+    env:
+      - TASKCLUSTER_ROOT_URL=https://dev.alpha.taskcluster-dev.net
+    secretEnv:
+      - TASKCLUSTER_CLIENT_ID
+      - TASKCLUSTER_ACCESS_TOKEN
 timeout: 1800s
 images:
-  - ${_IMAGE_NAME}:${_IMAGE_VERSION}
+  - ${_DEPLOY_IMAGE_NAME}:latest
 options:
   dynamicSubstitutions: true
+  machineType: E2_HIGHCPU_8
 substitutions:
-  _NODE_VERSION: 16.16.0
+  _NODE_VERSION: 16.17.0
   _VERSION: '{"version":"${BRANCH_NAME}_${SHORT_SHA}","commit":"${SHORT_SHA}","source":"https://github.com/taskcluster/taskcluster","build":"${BUILD_ID}"}'
   _IMAGE_NAME: gcr.io/${PROJECT_ID}/${PROJECT_ID}/${BRANCH_NAME}
-  _IMAGE_VERSION: latest
+  _DEPLOY_IMAGE_NAME: gcr.io/${PROJECT_ID}/${PROJECT_ID}/${BRANCH_NAME}-deploy
+  _IMAGE_VERSION: ${SHORT_SHA}
 availableSecrets:
   secretManager:
     - versionName: projects/${PROJECT_ID}/secrets/dev-config/versions/latest
       env: DEV_CONFIG
-    - versionName: projects/${PROJECT_ID}/secrets/ingress/versions/latest
-      env: INGRESS
+    - versionName: projects/${PROJECT_ID}/secrets/smoketest-client-id/versions/latest
+      env: TASKCLUSTER_CLIENT_ID
+    - versionName: projects/${PROJECT_ID}/secrets/smoketest-access-token/versions/latest
+      env: TASKCLUSTER_ACCESS_TOKEN

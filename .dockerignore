@@ -9,3 +9,10 @@ artifacts
 clients/client-rust/target
 ui/build
 temp
+workers/generic-worker/generic-worker-*
+workers/generic-worker/generic-worker
+workers/generic-worker/testdata/Test*
+tools/worker-runner/start-worker
+tools/worker-runner/start-worker-*-*
+tools/taskcluster-proxy/taskcluster-proxy
+tools/livelog/livelog

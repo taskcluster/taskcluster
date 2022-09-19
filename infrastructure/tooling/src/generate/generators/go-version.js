@@ -77,8 +77,8 @@ exports.tasks = [{
         /go[0-9]+\.[0-9]+\.[0-9]+/g,
         `${goVersion}`));
 
-    utils.status({ message: 'workers/Dockerfile' });
-    await modifyRepoFile('workers/Dockerfile',
+    utils.status({ message: 'generic-worker.Dockerfile' });
+    await modifyRepoFile('generic-worker.Dockerfile',
       contents => contents.replace(
         /FROM golang:[0-9]+\.[0-9]+\.[0-9]+/,
         `FROM golang:${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,

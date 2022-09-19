@@ -18,6 +18,7 @@ spec:
       labels: *ref_0
     spec:
       serviceAccountName: taskcluster-github
+      imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       containers:
         - name: taskcluster-github-web
           image: '{{ .Values.dockerImage }}'

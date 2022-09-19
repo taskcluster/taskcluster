@@ -1,10 +1,10 @@
 {
   "name": "taskcluster-ui",
-  "version": "44.18.0",
+  "version": "44.20.4",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "16.16.0",
+    "node": "16.17.0",
     "yarn": "^1.22.19"
   },
   "scripts": {
@@ -19,7 +19,7 @@
     "create:fragment-matcher": "dotenv node src/scripts/queryServer"
   },
   "dependencies": {
-    "@fontsource/roboto": "^4.0.0",
+    "@fontsource/roboto": "^4.5.8",
     "@material-ui/core": "^4.8.3",
     "@material-ui/icons": "^4.5.1",
     "@material-ui/lab": "4.0.0-alpha.57",
@@ -41,7 +41,7 @@
     "camel-case": "^4.1.1",
     "catch-links": "^2.0.1",
     "classnames": "^2.2.6",
-    "codemirror": "^5.65.2",
+    "codemirror": "^5.65.7",
     "date-fns": "^2.29.1",
     "deep-sort-object": "^1.0.2",
     "deepmerge": "^4.0.0",
@@ -52,7 +52,7 @@
     "escape-string-regexp": "^5.0.0",
     "fast-memoize": "^2.5.1",
     "graphql": "^15.0.0",
-    "highlight.js": "^11.0.0",
+    "highlight.js": "^11.6.0",
     "hterm-umd": "^1.0.1",
     "is-absolute-url": "^4.0.1",
     "js-yaml": "^4.0.0",
@@ -73,7 +73,7 @@
     "mitt": "^2.0.0",
     "param-case": "^3.0.3",
     "prism-themes": "^1.0.1",
-    "prismjs": "^1.27.0",
+    "prismjs": "^1.29.0",
     "prop-types": "^15.6.2",
     "qs": "^6.6.0",
     "ramda": "^0.28.0",
@@ -95,7 +95,7 @@
     "shebang-loader": "^0.0.1",
     "snake-case": "^3.0.3",
     "subscriptions-transport-ws": "^0.11.0",
-    "taskcluster-client-web": "^44.17.0",
+    "taskcluster-client-web": "^44.17.2",
     "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^13.0.0",
     "title-case": "^3.0.2",

@@ -9,7 +9,6 @@ const { consume } = require('taskcluster-lib-pulse');
 const { deprecatedStatusHandler } = require('./deprecatedStatus');
 const { taskGroupCreationHandler } = require('./taskGroupCreation');
 const { statusHandler } = require('./status');
-const { taskDefinedHandler } = require('./taskDefined');
 const { jobHandler } = require('./job');
 const { rerunHandler } = require('./rerun');
 const { POLICIES } = require('./policies');
@@ -28,7 +27,6 @@ class Handlers {
       deprecatedResultStatusQueueName,
       deprecatedInitialStatusQueueName,
       resultStatusQueueName,
-      initialStatusQueueName,
       rerunQueueName,
       intree,
       context,
@@ -50,7 +48,6 @@ class Handlers {
     this.jobQueueName = jobQueueName;
     this.rerunQueueName = rerunQueueName;
     this.deprecatedInitialStatusQueueName = deprecatedInitialStatusQueueName;
-    this.initialStatusQueueName = initialStatusQueueName;
     this.context = context;
     this.pulseClient = pulseClient;
 
@@ -62,7 +59,6 @@ class Handlers {
     this.jobPq = null;
     this.resultStatusPq = null;
     this.deprecatedResultStatusPq = null;
-    this.initialTaskStatusPq = null;
     this.deprecatedInitialStatusPq = null;
     this.rerunPq = null;
 
@@ -75,7 +71,6 @@ class Handlers {
   async setup(options = {}) {
     assert(!this.jobPq, 'Cannot setup twice!');
     assert(!this.resultStatusPq, 'Cannot setup twice!');
-    assert(!this.initialTaskStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedInitialStatusPq, 'Cannot setup twice!');
     assert(!this.rerunPq, 'Cannot setup twice!');
@@ -106,10 +101,13 @@ class Handlers {
     const schedulerId = this.context.cfg.taskcluster.schedulerId;
     const queueEvents = new taskcluster.QueueEvents({ rootUrl: this.rootUrl });
 
-    const statusBindings = [
+    // Listen for state changes of tasks and update check runs on github
+    const taskStatusBindings = [
+      queueEvents.taskDefined(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskFailed(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskException(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskCompleted(`route.${this.context.cfg.app.checkTaskRoute}`),
+      queueEvents.taskRunning(`route.${this.context.cfg.app.checkTaskRoute}`),
     ];
 
     // Listen for state changes to the taskcluster tasks and taskgroups
@@ -127,12 +125,8 @@ class Handlers {
       githubEvents.taskGroupCreationRequested(`route.${this.context.cfg.app.statusTaskRoute}`),
     ];
 
-    // Listen for taskDefined event to create initial status on github
-    const taskBindings = [
-      queueEvents.taskDefined(`route.${this.context.cfg.app.checkTaskRoute}`),
-    ];
-
-    const callHandler = (name, handler) => message => {
+    // handler returned must be async, as timedHandler will not be able to time it correctly
+    const callHandler = (name, handler) => message =>
       handler.call(this, message).catch(async err => {
         await this.monitor.reportError(err);
         return err;
@@ -143,7 +137,6 @@ class Handlers {
           this.handlerRejected(err);
         }
       });
-    };
 
     this.jobPq = await consume(
       {
@@ -175,19 +168,10 @@ class Handlers {
     this.resultStatusPq = await consume(
       {
         client: this.pulseClient,
-        bindings: statusBindings,
+        bindings: taskStatusBindings,
         queueName: this.resultStatusQueueName,
       },
       this.monitor.timedHandler('statuslistener', callHandler('status', statusHandler).bind(this)),
-    );
-
-    this.initialTaskStatusPq = await consume(
-      {
-        client: this.pulseClient,
-        bindings: taskBindings,
-        queueName: this.initialStatusQueueName,
-      },
-      this.monitor.timedHandler('tasklistener', callHandler('task', taskDefinedHandler).bind(this)),
     );
 
     this.rerunPq = await consume(
@@ -207,9 +191,6 @@ class Handlers {
     }
     if (this.resultStatusPq) {
       await this.resultStatusPq.stop();
-    }
-    if (this.initialTaskStatusPq) {
-      await this.initialTaskStatusPq.stop();
     }
     if (this.deprecatedResultStatusPq) {
       await this.deprecatedResultStatusPq.stop();

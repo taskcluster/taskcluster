@@ -54,6 +54,7 @@ import { nice } from '../../../utils/slugid';
 import Link from '../../../utils/Link';
 import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
+import taskSubscription from './taskSubscription.graphql';
 import scheduleTaskQuery from './scheduleTask.graphql';
 import rerunTaskQuery from './rerunTask.graphql';
 import cancelTaskQuery from './cancelTask.graphql';
@@ -189,6 +190,64 @@ export default class ViewTask extends Component {
     caches: null,
     selectedCaches: null,
   };
+
+  listener = null;
+
+  componentDidUpdate(prevProps) {
+    const taskId = prevProps.match.params.taskId || '';
+    const {
+      data: { task, subscribeToMore, refetch },
+    } = this.props;
+
+    if (task && taskId !== task) {
+      this.subscribe(task.taskId, subscribeToMore, refetch);
+    }
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe();
+  }
+
+  subscribe(taskId, subscribeToMore, refetch) {
+    if (this.listener) {
+      if (this.listener.taskId === taskId) {
+        return this.listener;
+      }
+
+      this.unsubscribe();
+    }
+
+    const unsubscribe = subscribeToMore({
+      document: taskSubscription,
+      variables: {
+        taskId,
+        subscriptions: [
+          'tasksDefined',
+          'tasksPending',
+          'tasksRunning',
+          'tasksCompleted',
+          'tasksFailed',
+          'tasksException',
+        ],
+      },
+      // refetch everything as subscription event holds incomplete task data
+      updateQuery: refetch,
+    });
+
+    this.listener = {
+      taskId,
+      unsubscribe,
+    };
+  }
+
+  unsubscribe() {
+    if (!this.listener) {
+      return;
+    }
+
+    this.listener.unsubscribe();
+    this.listener = null;
+  }
 
   handleActionClick = name => () => {
     const { action } = this.state.actionData[name];
@@ -661,6 +720,7 @@ export default class ViewTask extends Component {
 
   rerunTask = async () => {
     const { taskId } = this.props.match.params;
+    const { history, location } = this.props;
 
     this.preRunningAction();
 
@@ -671,6 +731,9 @@ export default class ViewTask extends Component {
           taskId,
         },
       });
+      // make sure location doesn't include previous runId,
+      // so the UI will show the latest run automatically
+      history.push(`/tasks/${taskId}${location.hash}`);
     } catch (error) {
       this.postRunningFailedAction(error);
       throw error;

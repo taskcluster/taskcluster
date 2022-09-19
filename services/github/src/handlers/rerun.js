@@ -7,7 +7,7 @@ const { makeDebug } = require('./utils');
  * This role needs to be defined and should include scopes necessary to call `queue.rerunTask`
  **/
 async function rerunHandler(message) {
-  const { checkRunId, checkSuiteId, organization, eventId, installationId, details } = message.payload;
+  const { body, checkRunId, checkSuiteId, organization, eventId, installationId, details } = message.payload;
   const repo = details['event.head.repo.name'];
 
   let debug = makeDebug(this.monitor, {
@@ -20,6 +20,8 @@ async function rerunHandler(message) {
     repo,
   });
   debug(JSON.stringify(message.payload));
+
+  const instGithub = await this.context.github.getInstallationGithub(installationId);
 
   // get github build by checkrun/checksuite ids
   const [checkRun] = await this.context.db.fns.get_github_check_by_run_id(checkSuiteId, checkRunId);
@@ -38,13 +40,25 @@ async function rerunHandler(message) {
       authorizedScopes: [`assume:repo:github.com/${organization}/${repo}:rerun`],
     });
     const taskStatus = await limitedQueueClient.rerunTask(taskId);
-    debug('Response', { taskStatus });
+    debug('Rerun task response', { taskStatus });
 
     // Update commit status? or anything else
     debug(`Updating github build state to pending for taskGroupId ${taskGroupId}`);
     await this.context.db.fns.set_github_build_state(taskGroupId, 'pending');
 
   } catch (e) {
+    const sha = body?.check_run?.head_sha;
+    const pullNumber = body?.check_run?.check_suite?.pull_requests?.[0]?.number;
+
+    await this.createExceptionComment({
+      debug,
+      instGithub,
+      organization,
+      repository: repo,
+      sha,
+      pullNumber,
+      error: e,
+    });
     e.checkRunId = checkRunId;
     e.checkSuiteId = checkSuiteId;
     e.organization = organization;

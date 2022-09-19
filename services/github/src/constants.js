@@ -1,3 +1,16 @@
+const CHECK_RUN_STATES = {
+  QUEUED: 'queued',
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'completed',
+};
+
+const TASK_STATE_TO_CHECK_RUN_STATE = {
+  unscheduled: CHECK_RUN_STATES.QUEUED,
+  pending: CHECK_RUN_STATES.QUEUED,
+  running: CHECK_RUN_STATES.IN_PROGRESS,
+  completed: CHECK_RUN_STATES.COMPLETED,
+};
+
 module.exports = {
   CONCLUSIONS: { // maps status communicated by the queue service to github checkrun conclusions
     'completed': 'success',
@@ -27,6 +40,8 @@ module.exports = {
     REREQUESTED: 'rerequested',
     REQUESTED_ACTION: 'requested_action',
   },
+  CHECK_RUN_STATES,
+  TASK_STATE_TO_CHECK_RUN_STATE,
   PUBLISHERS: {
     PULL_REQUEST: 'pullRequest',
     PUSH: 'push',
@@ -35,6 +50,7 @@ module.exports = {
   },
   CHECKLOGS_TEXT: 'View logs in Taskcluster',
   CHECKRUN_TEXT: 'View task in Taskcluster',
+  LIVE_LOG_ARTIFACT_NAME: 'public/logs/live.log',
   CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME: 'public/github/customCheckRunText.md',
   CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME: 'public/github/customCheckRunAnnotations.json',
 };

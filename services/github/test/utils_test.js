@@ -1,6 +1,6 @@
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
-const { throttleRequest, shouldSkipCommit } = require('../src/utils');
+const { throttleRequest, shouldSkipCommit, shouldSkipPullRequest, tailLog, ansi2txt } = require('../src/utils');
 
 suite(testing.suiteName(), function() {
   suite('throttleRequest', function() {
@@ -141,6 +141,56 @@ suite(testing.suiteName(), function() {
       skipMessages.forEach(message => assert.equal(true, shouldSkipCommit({
         head_commit: { message },
       })));
+    });
+  });
+  suite('shouldSkipPullRequest', function() {
+    test('should not skip pull request', function() {
+      assert.equal(false, shouldSkipPullRequest({
+        pull_request: {
+          title: 'Regular pr title',
+        },
+      }));
+      assert.equal(false, shouldSkipPullRequest({
+        something: 'This one does not include pull_request for some reason',
+      }));
+    });
+    test('should skip pull request', function() {
+      const skipMessages = [
+        'PR: [CI Skip] this is not ready',
+        'PR: this is WIP [skip ci]',
+      ];
+      skipMessages.forEach(title => assert.equal(true, shouldSkipPullRequest({
+        pull_request: { title },
+      })));
+      skipMessages.forEach(body => assert.equal(true, shouldSkipPullRequest({
+        pull_request: { title: 'regular title', body },
+      })));
+    });
+  });
+
+  suite('ansi2txt', function() {
+    test('it should remove control sequences', function() {
+      const src = [
+        '[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/utils/[22m[1misDateWithin.test.js[22m',
+        '[2K[1G[2m$ webpack --mode production[22m',
+      ];
+      const expected = [
+        ' PASS  src/utils/isDateWithin.test.js',
+        '$ webpack --mode production',
+      ];
+      assert.equal(expected.join('\n'), ansi2txt(src.join('\n')));
+    });
+  });
+
+  suite('tailLog', function() {
+    test('should get max lines', function () {
+      const payload = Array.from({ length: 500 }).map(line => `line: ${line}`).join('\n');
+      assert.equal(250, tailLog(payload).split('\n').length);
+      assert.equal(25, tailLog(payload, 25).split('\n').length);
+
+      const payloadLong = Array.from({ length: 10 }).map(line => 'line'.repeat(1000)).join('\n');
+      assert.equal(1, tailLog(payloadLong, 10, 20).split('\n').length);
+      assert.equal('line', tailLog(payloadLong, 10, 4));
     });
   });
 });

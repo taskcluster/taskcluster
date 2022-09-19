@@ -6,6 +6,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Tooltip from '@material-ui/core/Tooltip';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -47,6 +48,7 @@ export default class PulseBindings extends Component {
     onBindingRemove: func.isRequired,
     onRoutingKeyPatternChange: func.isRequired,
     onPulseExchangeChange: func.isRequired,
+    exchangesDictionary: arrayOf(string),
   };
 
   render() {
@@ -59,20 +61,42 @@ export default class PulseBindings extends Component {
       onBindingRemove,
       onRoutingKeyPatternChange,
       onPulseExchangeChange,
+      exchangesDictionary,
     } = this.props;
+    const onKeyHandler = ev => {
+      if (ev.key === 'Enter') {
+        setTimeout(onBindingAdd, 1); // wait for onChange event to update value
+        ev.preventDefault();
+      }
+    };
 
     return (
       <Fragment>
         <div className={classes.inputWrapper}>
           <div className={classes.inputList}>
-            <TextField
-              required
-              label="Pulse Exchange"
-              name="pulseExchange"
-              placeholder="exchange/<username>/some-exchange-name"
-              onChange={onPulseExchangeChange}
-              fullWidth
-              value={pulseExchange}
+            <Autocomplete
+              freeSolo
+              options={exchangesDictionary || []}
+              inputValue={pulseExchange}
+              onInputChange={(event, newValue) =>
+                onPulseExchangeChange({
+                  target: {
+                    name: 'pulseExchange',
+                    value: newValue,
+                  },
+                })
+              }
+              renderInput={params => (
+                <TextField
+                  {...params}
+                  required
+                  label="Pulse Exchange"
+                  name="pulseExchange"
+                  placeholder="exchange/<username>/some-exchange-name"
+                  onKeyPress={onKeyHandler}
+                  fullWidth
+                />
+              )}
             />
             <TextField
               margin="normal"
@@ -81,6 +105,7 @@ export default class PulseBindings extends Component {
               placeholder="#.some-interesting-key.#"
               name="pattern"
               onChange={onRoutingKeyPatternChange}
+              onKeyPress={onKeyHandler}
               fullWidth
               value={pattern}
             />

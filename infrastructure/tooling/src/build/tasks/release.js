@@ -92,16 +92,10 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'ENTRYPOINT ["/websocktunnel"]',
       ].join('\n'));
       let command = [
-        'docker',
-        'buildx',
-        'build',
-        '--platform',
-        'linux/arm/v7,linux/arm64,linux/amd64',
+        'docker', 'build',
         '--no-cache',
-        '--progress',
-        'plain',
-        '--tag',
-        tag,
+        '--progress', 'plain',
+        '--tag', tag,
         contextDir,
       ];
       await execCommand({
@@ -156,6 +150,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'websocktunnel-docker-image',
       'livelog-docker-image',
       'taskcluster-proxy-docker-image',
+      'generic-worker-image',
       'livelog-artifacts',
     ],
     provides: [

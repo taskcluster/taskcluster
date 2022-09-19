@@ -22,6 +22,7 @@ spec:
           # the face of k8s node failure, with the concurrencyPolicy ensuring
           # that two pods never run in parallel.
           restartPolicy: OnFailure
+          imagePullSecrets: IMAGE_PULL_SECRETS_STRING
           containers:
           - name: ${projectName}-${lowercase(procName)}
             image: '{{ .Values.dockerImage }}'

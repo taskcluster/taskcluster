@@ -254,6 +254,11 @@ const themeOptions = isDarkTheme => {
       },
     },
     overrides: {
+      MuiSelect: {
+        root: {
+          paddingLeft: '7px',
+        },
+      },
       MuiTypography: {
         root: {
           color: textPrimary,

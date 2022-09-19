@@ -301,4 +301,6 @@ extend type Mutation {
 extend type Subscription {
   # Subscribe to multiple task group subscriptions.
   tasksSubscriptions(taskGroupId: ID!, subscriptions: [TaskSubscriptions]!): TaskStatus
+  # Subscribe to single task
+  taskSubscriptions(taskId: ID!, subscriptions: [TaskSubscriptions]!): TaskStatus
 }

@@ -20,6 +20,7 @@ properties:
         type: string
         enum:
           - public
+          - public_restricted
           - collaborators
     additionalProperties: false
     required: [pullRequests]
