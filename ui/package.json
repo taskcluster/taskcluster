@@ -42,7 +42,7 @@
     "catch-links": "^2.0.1",
     "classnames": "^2.2.6",
     "codemirror": "^5.65.7",
-    "date-fns": "^2.29.1",
+    "date-fns": "^2.29.2",
     "deep-sort-object": "^1.0.2",
     "deepmerge": "^4.0.0",
     "dexie": "^3.2.2",
