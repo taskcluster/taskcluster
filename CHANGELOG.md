@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.21.0
+
+### GENERAL
+
+▶ [minor] [#4534](https://github.com/taskcluster/taskcluster/issues/4534)
+Add completions for other shells
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#5666](https://github.com/taskcluster/taskcluster/issues/5666)
+The generic-worker no longer panics if it gets no HTTP responses from Queue for over 15 minutes.
+
+### DEVELOPERS
+
+▶ [minor]
+Refactored github status checks handler to do handle task status transitions in single place.
+
+Previous implementation relied on two handlers: taskDefined and statusChanged.
+For some tasks both events happened at the same time, which led to a race condition and multiple check_runs being created.
+To prevent concurrent handlers overwriting newer updates, simple time-based check was added to prevent this.
+
 ## v44.20.4
 
 ### DEVELOPERS
