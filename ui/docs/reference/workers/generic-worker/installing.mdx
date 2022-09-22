@@ -6,80 +6,78 @@ order: 40
 # Installing Generic-Worker
 
 The following instructions should be considered more as a guide rather than
-concrete requirements.  In particular, it does not use
-worker-runner, and contains some outdated references to the
-"legacy" deployment of Taskcluster at https://taskcluster.net.
+concrete requirements. They document _possible_ (and simple) ways to install
+and run generic-worker on various platforms. Real world production deployments
+may be performed differently.
 
-They document _possible_ (and simple) ways to install and run generic-worker on
-various platforms. Real life production deployments may be integrated quite
-differently.
-
-Each installation guide provides a bootstrap script to runs the generic-worker
-binary. The bootstrapping script can be easily customised (for example, to deal
-with automatic quarantining of workers, waiting for custom events, etc).
-
-## Obtain prebuilt release
+## Option 1: Obtain prebuilt release
 
 * Download the latest release for your platform from https://github.com/taskcluster/taskcluster/releases
 * Download the latest release of taskcluster-proxy for your platform from https://github.com/taskcluster/taskcluster/releases
 * Download the latest release of livelog for your platform from https://github.com/taskcluster/taskcluster/releases
-* For darwin/linux, make the binaries executable: `chmod a+x {generic-worker,livelog,taskcluster-proxy}*`
+* Download the latest release of start-worker for your platform from https://github.com/taskcluster/taskcluster/releases
+* For darwin/linux, make the binaries executable: `chmod a+x {generic-worker,livelog,taskcluster-proxy,start-worker}*`
 
-## Build from source
+## Option 2: Build from source
 
-If you prefer not to use a prepackaged binary, or want to have the latest unreleased version from the development head, follow these instructions.
-Determine the major Taskcluster version `<MAJOR>` that you would like to build.  Then,
+If you prefer to build from source:
 
-* Head over to https://golang.org/dl/ and follow the instructions for your platform. __NOTE: The go version required is given in https://github.com/taskcluster/taskcluster/blob/main/dev-docs/development-process.md__.
-* Run `go get github.com/taskcluster/taskcluster/v<MAJOR>/tools/livelog`
-* Run `go get github.com/taskcluster/taskcluster/v<MAJOR>/tools/taskcluster-proxy`
+* Download the required go compiler from https://golang.org/dl/ and follow the
+  instructions for your platform. __NOTE: The go compiler version required is
+  given in
+  https://github.com/taskcluster/taskcluster/blob/main/dev-docs/development-process.md#go__.
+* Clone taskcluster monorepo: `git clone github.com/taskcluster/taskcluster`
+* Change directory into the tools subdirectory: `cd taskcluster/tools`
+* Build livelog, taskcluster-proxy and start-worker: `go install ./...`
+  This should place the binaries inside directory `$(go env GOPATH)/bin`.
+* Change directory to the generic-worker subdirectory of the monorepo: `cd ../workers/generic-worker`
+* Run `./build.sh` to check go version, generate code, build binaries, compile
+  (but not run) tests, perform linting, and ensure there are no ineffective
+  assignments in go code.
 
-Run `go get -tags multiuser github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (windows/darwin) and/or `go get -tags simple github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (linux/darwin) and/or `go get -tags docker github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (linux). This should also build binaries for your platform.
+  `./build.sh` takes optional arguments, `-a` to build all platforms, and `-t`
+  to run tests. By default tests are not run and only the current platform is
+  built.
 
-Run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
-
-`./build.sh` takes optional arguments, `-a` to build all platforms, and `-t` to run tests. By default tests are not run and only the current platform is built.
-
-All being well, the binaries will be built in the directory you executed the `build.sh` script from.
+  All being well, the generic-worker binary/binaries will be built in the
+  current directory.
 
 ## Installation on worker machines
 
 ### Windows - multiuser build
 
-1. Build or download a `generic-worker.exe` windows multiuser binary.
+ 1. Build or download a `generic-worker.exe` windows multiuser binary (see above).
 
-2. Run the following command to generate an ed25519 private key for signing
-   artifacts:
+ 2. Run the following command to generate an ed25519 private key for signing
+    artifacts:
 
-   * `generic-worker.exe new-ed25519-keypair --file C:\generic-worker\ed25519_key`
+    * `generic-worker.exe new-ed25519-keypair --file C:\generic-worker\ed25519_key`
 
-   The private key will be written to the file `C:\generic-worker\ed25519_key`,
-   and the public key will be written to standard out. Keep a copy of the
-   public key if you wish to validate artifact signatures.
+    The private key will be written to the file `C:\generic-worker\ed25519_key`,
+    and the public key will be written to standard out. Keep a copy of the
+    public key if you wish to validate artifact signatures.
 
-3. Download NSSM 2.24 from https://nssm.cc/release/nssm-2.24.zip and extract it
-   under `C:\`.
+ 3. Download NSSM 2.24 from https://nssm.cc/release/nssm-2.24.zip and extract it
+    under `C:\`.
 
-4. Install generic-worker as a Windows service running under the `LocalSystem`
-   account, by running the following command as an `Administrator`:
+ 4. Download livelog from https://github.com/taskcluster/taskcluster/releases/ and
+    place it in `C:\generic-worker\livelog.exe`.
 
-   * `generic-worker.exe install service` (see `generic-worker.exe --help` to
-     apply non-default configuration settings)
+ 5. Download taskcluster-proxy from
+    https://github.com/taskcluster/taskcluster/releases/ and place it in
+    `C:\generic-worker\taskcluster-proxy.exe`.
 
-5. Download livelog from https://github.com/taskcluster/taskcluster/releases/ and
-   place it in `C:\generic-worker\livelog.exe`.
+ 6. Download start-worker from
+    https://github.com/taskcluster/taskcluster/releases/ and place it in
+    `C:\generic-worker\start-worker.exe`.
 
-6. Download taskcluster proxy from
-   https://github.com/taskcluster/taskcluster/releases/ and place it in
-   `C:\generic-worker\taskcluster-proxy.exe`.
+ 7. Create `C:\generic-worker\generic-worker.config` with appopriate values.
 
-7. Create `C:\generic-worker\generic-worker.config` with appopriate values.
+ 8. Edit file `C:\generic-worker\generic-worker.config` with appropriate
+    settings (see `generic-worker.exe --help` for information).
 
-8. Edit file `C:\generic-worker\generic-worker.config` with appropriate
-   settings (see `generic-worker.exe --help` for information).
-
-9. Reboot the machine, and the worker should be running. Check logs under
-   `C:\generic-worker\generic-worker.log`.
+ 9. Reboot the machine, and the worker should be running. Check logs under
+    `C:\generic-worker\generic-worker.log`.
 
 
 ### macOS - multiuser/simple build
@@ -112,15 +110,19 @@ __These instructions require macOS Mojave version 10.14.x__
  4. Download livelog from https://github.com/taskcluster/taskcluster/releases/ and
     place it in `/usr/local/bin/livelog`.
 
- 5. Download taskcluster proxy from
+ 5. Download taskcluster-proxy from
     https://github.com/taskcluster/taskcluster/releases/ and place it in
     `/usr/local/bin/taskcluster-proxy`.
 
- 6. Make `generic-worker`, `taskcluster-proxy`, `livelog` binaries executable:
+ 6. Download start-worker from
+    https://github.com/taskcluster/taskcluster/releases/ and place it in
+    `/usr/local/bin/start-worker`.
 
-    * `chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog}`
+ 7. Make `generic-worker`, `taskcluster-proxy`, `livelog`, `start-worker` binaries executable:
 
- 7. Generate a key for signing artifacts:
+    * `chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog,start-worker}`
+
+ 8. Generate a key for signing artifacts:
 
     * `sudo mkdir /etc/generic-worker`
 
@@ -133,7 +135,7 @@ __These instructions require macOS Mojave version 10.14.x__
     standard out. Keep a copy of the public key if you wish to validate artifact
     signatures.
 
- 8. Create the file `/usr/local/bin/run-generic-worker.sh` with the following content:
+ 9. Create the file `/usr/local/bin/run-generic-worker.sh` with the following content:
 
     ```
     #!/bin/bash
@@ -152,7 +154,7 @@ __These instructions require macOS Mojave version 10.14.x__
     /usr/local/bin/generic-worker run --config /etc/generic-worker/config
     ```
 
- 9. Run the following to make the `run-generic-worker.sh` script executable:
+10. Run the following to make the `run-generic-worker.sh` script executable:
 
     * `chmod a+x /usr/local/bin/run-generic-worker.sh`
 
@@ -259,15 +261,16 @@ __These instructions require macOS Mojave version 10.14.x__
 
     ```
     cd /usr/local/bin
-    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v<VERSION>/generic-multiuser-linux-amd64" > generic-worker
-    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v<VERSION>/livelog-linux-amd64" > livelog
-    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v<VERSION>/taskcluster-proxy-linux-amd64" > taskcluster-proxy
+    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v44/generic-multiuser-linux-amd64" > generic-worker
+    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v44/livelog-linux-amd64" > livelog
+    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v44/taskcluster-proxy-linux-amd64" > taskcluster-proxy
+    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v44/start-worker-linux-amd64" > start-worker
     ```
 
  6. Make binaries executable:
 
     ```
-    chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog}
+    chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog,start-worker}
     ```
 
  7. Create directories required by generic-worker:
