@@ -28,3 +28,4 @@
   from = "/"
   to = "/docs/"
   status = 301
+  force = true
