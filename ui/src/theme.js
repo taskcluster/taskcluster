@@ -65,6 +65,17 @@ const themeOptions = isDarkTheme => {
     MEDIUM: 500,
     DARK: 600,
   };
+  const theme = createTheme({
+    breakpoints: {
+      values: {
+        xs: 0,
+        sm: 600,
+        md: 900,
+        lg: 1200,
+        xl: 1500,
+      },
+    },
+  });
 
   return {
     palette: {
@@ -308,8 +319,74 @@ const themeOptions = isDarkTheme => {
           backgroundColor: isDarkTheme ? 'white' : '#000',
         },
       },
+      MuiTableHead: {
+        root: {
+          width: '100%',
+          maxWidth: '1600px',
+          [theme.breakpoints.down('lg')]: {
+            transform: 'scaleX(87%)',
+            zoom: '87%',
+            overflowX: 'hidden',
+          },
+          [theme.breakpoints.down('md')]: {
+            display: 'block',
+            position: 'absolute',
+            top: '-9999px',
+            left: '-9999px',
+            transform: 'scaleX(100%)',
+            zoom: '100%',
+          },
+          [theme.breakpoints.down('xs')]: {
+            transform: 'scaleX(90%)',
+            zoom: '90%',            
+            overflowX: 'hidden',
+          },
+        },
+      },
+      MuiTableRow: {
+        root: {
+          width: '100%',
+          maxWidth: '1600px',
+          [theme.breakpoints.down('md')]: {
+            display: 'block',
+            borderRadius: '5%',
+            borderCollapse: 'separate',
+            overflowX: 'hidden',
+          },
+        },
+      },
+      MuiTableBody: {
+        root: {
+          width: '100%',
+          maxWidth: '1600px',
+          transform: 'scaleX(100%)',
+          zoom: '100%',         
+          overflowX: 'hidden',
+          [theme.breakpoints.down('lg')]: {
+            transform: 'scaleX(87%)',
+            zoom: '87%',
+            overflowX: 'hidden',
+          },
+          [theme.breakpoints.down('md')]: {
+            display: 'block',
+            transform: 'scaleX(100%)',
+            zoom: '100%',           
+            overflowX: 'hidden',
+          },
+          [theme.breakpoints.down('xs')]: {
+            transform: 'scaleX(90%)',
+            zoom: '90%',   
+            overflowX: 'hidden',
+          },
+        },
+      },
       MuiTableCell: {
         root: {
+          [theme.breakpoints.down('md')]: {
+            display: 'block',
+            position: 'relative',
+            paddingLeft: '50%',
+          },
           borderBottom: `1px solid ${
             isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK
           }`,
