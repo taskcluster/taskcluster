@@ -338,7 +338,7 @@ const themeOptions = isDarkTheme => {
           },
           [theme.breakpoints.down('xs')]: {
             transform: 'scaleX(90%)',
-            zoom: '90%',            
+            zoom: '90%',
             overflowX: 'hidden',
           },
         },
@@ -360,7 +360,7 @@ const themeOptions = isDarkTheme => {
           width: '100%',
           maxWidth: '1600px',
           transform: 'scaleX(100%)',
-          zoom: '100%',         
+          zoom: '100%',
           overflowX: 'hidden',
           [theme.breakpoints.down('lg')]: {
             transform: 'scaleX(87%)',
@@ -370,12 +370,12 @@ const themeOptions = isDarkTheme => {
           [theme.breakpoints.down('md')]: {
             display: 'block',
             transform: 'scaleX(100%)',
-            zoom: '100%',           
+            zoom: '100%',
             overflowX: 'hidden',
           },
           [theme.breakpoints.down('xs')]: {
             transform: 'scaleX(90%)',
-            zoom: '90%',   
+            zoom: '90%',
             overflowX: 'hidden',
           },
         },
