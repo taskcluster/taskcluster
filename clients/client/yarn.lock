@@ -714,9 +714,9 @@ serialize-javascript@6.0.0:
     randombytes "^2.1.0"
 
 slugid@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/slugid/-/slugid-3.0.0.tgz#57cb692641a20feb4a1d774b2ad11594c9aa6125"
-  integrity sha512-MIir9SJS6BQFjFg8DHGMgPkDg21huT0+kYHiS6NkkWZXHSEdgIECo3nUVEG3GDkmecBTy+zRs6pCvPhpk4bKcg==
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/slugid/-/slugid-3.1.0.tgz#1ab60b6e46abad6d4bb0b7c10f54e25e58ac3930"
+  integrity sha512-RYUrK/S+TrWjv06205QGqZQdPyjr8jdUerHJ2CC7PoCP7k+YfkSS+6Yl5vGbvwhzrrfru3F0gbEcSiMf9oZa5A==
   dependencies:
     uuid "^8.3.2"
 
