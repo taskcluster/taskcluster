@@ -4,7 +4,7 @@
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "16.17.0",
+    "node": "16.17.1",
     "yarn": "^1.22.19"
   },
   "workspaces": [
@@ -72,7 +72,7 @@
     "lodash": "4.17.21",
     "loglevel": "^1.6.7",
     "marked": "^4.0.16",
-    "matrix-js-sdk": "^15.0.0",
+    "matrix-js-sdk": "^20.0.2",
     "memorystore": "^1.6.1",
     "mkdirp": "^1.0.0",
     "netmask": "^2.0.0",
