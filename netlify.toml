@@ -23,7 +23,9 @@
   to = "/docs.html"
   status = 200
 
-# Rule for Single Page Applications (app)
+# Netlify is currently only used for docs.taskcluster.netlify
+# so always (force) a redirect to the docs page so we don't
+# use the app index as a landing page
 [[redirects]]
   from = "/"
   to = "/docs/"
