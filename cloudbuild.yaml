@@ -1,4 +1,17 @@
 steps:
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    id: Stop other ongoing builds
+    args:
+      - '-c'
+      - |
+        on_going_build=($(gcloud builds list --ongoing --format='value(id)' --filter="substitutions.TRIGGER_NAME=$TRIGGER_NAME" | xargs))
+        for (( i=0; i<${#on_going_build[@]}; i++ )); do
+          if [ "$i" -gt "0" ]; then # skip current
+            echo "Cancelling build ${on_going_build[i]}"
+            gcloud builds cancel ${on_going_build[i]} --quiet > /dev/null
+          fi
+        done
   - name: gcr.io/cloud-builders/docker
     id: Prefetch deploy image
     entrypoint: bash
