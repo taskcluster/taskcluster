@@ -11,7 +11,7 @@
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // This package is designed to sit on top of https://pkg.go.dev/github.com/taskcluster/pulse-go/pulse. Please read
 // the pulse package overview to get an understanding of how the pulse client is implemented in go.
@@ -22,14 +22,14 @@
 //
 // For example, when specifying a binding, rather than using:
 //
-//  pulse.Bind(
-//  	"*.*.*.*.*.*.gaia.#",
-//  	"exchange/taskcluster-queue/v1/task-defined",
-//  )
+//	pulse.Bind(
+//		"*.*.*.*.*.*.gaia.#",
+//		"exchange/taskcluster-queue/v1/task-defined",
+//	)
 //
 // You can rather use:
 //
-//  queueevents.TaskDefined{WorkerType: "gaia"}
+//	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
 // rather than just interface{}.

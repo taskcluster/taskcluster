@@ -2,7 +2,7 @@ package aws
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 
 	"github.com/taskcluster/httpbackoff/v3"
 )
@@ -61,7 +61,7 @@ func (mds *realMetadataService) queryMetadata(path string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	return string(content), err
 }
 

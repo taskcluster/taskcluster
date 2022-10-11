@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -21,7 +21,7 @@ func TestWithTls(t *testing.T) {
 
 	// first write until EOF
 	putClient := &http.Client{}
-	body := ioutil.NopCloser(strings.NewReader(logContents))
+	body := io.NopCloser(strings.NewReader(logContents))
 	req, err := http.NewRequest("PUT", fmt.Sprintf("http://127.0.0.1:%d/log", ts.PutPort()), body)
 	require.NoError(t, err)
 	res, err := putClient.Do(req)
@@ -42,7 +42,7 @@ func TestWithTls(t *testing.T) {
 
 	log.Printf("%#v", res)
 	require.Equal(t, 200, res.StatusCode)
-	resBody, err := ioutil.ReadAll(res.Body)
+	resBody, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
 
 	require.Equal(t, logContents, string(resBody))

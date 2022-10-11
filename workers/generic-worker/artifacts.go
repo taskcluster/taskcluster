@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime"
 	"net"
@@ -177,7 +176,7 @@ func (errArtifact *ErrorArtifact) String() string {
 func (s3Artifact *S3Artifact) CreateTempFileForPUTBody() string {
 	rawContentFile := filepath.Join(taskContext.TaskDir, s3Artifact.Path)
 	baseName := filepath.Base(rawContentFile)
-	tmpFile, err := ioutil.TempFile("", baseName)
+	tmpFile, err := os.CreateTemp("", baseName)
 	if err != nil {
 		panic(err)
 	}

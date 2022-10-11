@@ -3,7 +3,7 @@ package codegen
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 // References represents `generated/references.json`
@@ -18,7 +18,7 @@ type Reference struct {
 }
 
 func LoadReferences() (*References, error) {
-	file, err := ioutil.ReadFile("../../../generated/references.json")
+	file, err := os.ReadFile("../../../generated/references.json")
 	if err != nil {
 		return nil, err
 	}

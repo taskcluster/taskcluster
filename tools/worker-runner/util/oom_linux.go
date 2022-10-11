@@ -2,12 +2,12 @@ package util
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 // DisableOOM disables oom killer for the given process
 func DisableOOM(pid int) error {
-	return ioutil.WriteFile(
+	return os.WriteFile(
 		fmt.Sprintf("/proc/%d/oom_adj", pid),
 		[]byte("-17"),
 		0600,

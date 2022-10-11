@@ -3,7 +3,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -28,7 +28,7 @@ func TestRunAfterUserCreation(t *testing.T) {
 			t.Fatalf("Problem deleting old tasks: %v", err)
 		}
 	}()
-	fileContents, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, "run-after-user.txt"))
+	fileContents, err := os.ReadFile(filepath.Join(taskContext.TaskDir, "run-after-user.txt"))
 	if err != nil {
 		t.Fatalf("Got error when looking for file run-after-user.txt: %v", err)
 	}

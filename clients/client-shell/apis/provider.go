@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"hash"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -287,7 +286,7 @@ func readInput(payload io.Reader) ([]byte, error) {
 		}
 	}()
 
-	data, err := ioutil.ReadAll(payload)
+	data, err := io.ReadAll(payload)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read input, error: %s", err)
 	}

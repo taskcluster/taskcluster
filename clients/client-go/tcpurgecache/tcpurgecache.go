@@ -15,23 +15,23 @@
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // First create a PurgeCache object:
 //
-//  purgeCache := tcpurgecache.New(nil)
+//	purgeCache := tcpurgecache.New(nil)
 //
 // and then call one or more of purgeCache's methods, e.g.:
 //
-//  err := purgeCache.Ping(.....)
+//	err := purgeCache.Ping(.....)
 //
 // handling any errors...
 //
-//  if err != nil {
-//  	// handle error...
-//  }
+//	if err != nil {
+//		// handle error...
+//	}
 //
-// Taskcluster Schema
+// # Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
 // <rootUrl>/references/purge-cache/v1/api.json together with the input and output schemas it references,
@@ -50,14 +50,14 @@ type PurgeCache tcclient.Client
 // nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  purgeCache := tcpurgecache.New(
-//      nil,                                      // client without authentication
-//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
-//  )
-//  err := purgeCache.Ping(.....)                 // for example, call the Ping(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
+//	purgeCache := tcpurgecache.New(
+//	    nil,                                      // client without authentication
+//	    "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//	)
+//	err := purgeCache.Ping(.....)                 // for example, call the Ping(.....) API endpoint (described further down)...
+//	if err != nil {
+//		// handle errors...
+//	}
 func New(credentials *tcclient.Credentials, rootURL string) *PurgeCache {
 	return &PurgeCache{
 		Credentials:  credentials,
@@ -76,9 +76,9 @@ func New(credentials *tcclient.Credentials, rootURL string) *PurgeCache {
 //
 // The credentials are taken from environment variables:
 //
-//  TASKCLUSTER_CLIENT_ID
-//  TASKCLUSTER_ACCESS_TOKEN
-//  TASKCLUSTER_CERTIFICATE
+//	TASKCLUSTER_CLIENT_ID
+//	TASKCLUSTER_ACCESS_TOKEN
+//	TASKCLUSTER_CERTIFICATE
 //
 // If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
 // disabled.
@@ -131,7 +131,8 @@ func (purgeCache *PurgeCache) Version() error {
 // the current time.
 //
 // Required scopes:
-//   purge-cache:<workerPoolId>:<cacheName>
+//
+//	purge-cache:<workerPoolId>:<cacheName>
 //
 // See #purgeCache
 func (purgeCache *PurgeCache) PurgeCache(workerPoolId string, payload *PurgeCacheRequest) error {
@@ -149,7 +150,8 @@ func (purgeCache *PurgeCache) PurgeCache(workerPoolId string, payload *PurgeCach
 // provisionerId.
 //
 // Required scopes:
-//   purge-cache:all-purge-requests
+//
+//	purge-cache:all-purge-requests
 //
 // See #allPurgeRequests
 func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) (*OpenAllPurgeRequestsList, error) {
@@ -168,7 +170,8 @@ func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) 
 // Returns a signed URL for AllPurgeRequests, valid for the specified duration.
 //
 // Required scopes:
-//   purge-cache:all-purge-requests
+//
+//	purge-cache:all-purge-requests
 //
 // See AllPurgeRequests for more details.
 func (purgeCache *PurgeCache) AllPurgeRequests_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -189,7 +192,8 @@ func (purgeCache *PurgeCache) AllPurgeRequests_SignedURL(continuationToken, limi
 // This is intended to be used by workers to determine which caches to purge.
 //
 // Required scopes:
-//   purge-cache:purge-requests::<workerPoolId>
+//
+//	purge-cache:purge-requests::<workerPoolId>
 //
 // See #purgeRequests
 func (purgeCache *PurgeCache) PurgeRequests(workerPoolId, since string) (*OpenPurgeRequestList, error) {
@@ -205,7 +209,8 @@ func (purgeCache *PurgeCache) PurgeRequests(workerPoolId, since string) (*OpenPu
 // Returns a signed URL for PurgeRequests, valid for the specified duration.
 //
 // Required scopes:
-//   purge-cache:purge-requests::<workerPoolId>
+//
+//	purge-cache:purge-requests::<workerPoolId>
 //
 // See PurgeRequests for more details.
 func (purgeCache *PurgeCache) PurgeRequests_SignedURL(workerPoolId, since string, duration time.Duration) (*url.URL, error) {

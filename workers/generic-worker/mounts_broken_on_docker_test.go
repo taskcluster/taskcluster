@@ -4,7 +4,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -209,7 +208,7 @@ func TestCachesCanBeModified(t *testing.T) {
 
 	getCounter := func() int {
 		counterFile := filepath.Join(directoryCaches["test-modifications"].Location, "counter")
-		bytes, err := ioutil.ReadFile(counterFile)
+		bytes, err := os.ReadFile(counterFile)
 		if err != nil {
 			t.Fatalf("Error when trying to read cache file: %v", err)
 		}

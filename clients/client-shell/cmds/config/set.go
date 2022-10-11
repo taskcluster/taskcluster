@@ -3,7 +3,7 @@ package configCmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -37,7 +37,7 @@ func cmdSet(cmd *cobra.Command, args []string) error {
 	if len(args) == 2 {
 		data = args[1]
 	} else {
-		d, err := ioutil.ReadAll(os.Stdin)
+		d, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			return fmt.Errorf("failed to read value from stdin, error: %s", err)
 		}

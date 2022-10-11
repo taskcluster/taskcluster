@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -165,7 +164,7 @@ func TestNonExecutableBinaryFailsTask(t *testing.T) {
 // calls removeTaskDirs(tempDir), and tests that only folders that started with
 // 'task_' were deleted and that the other files and folders were not.
 func TestRemoveTaskDirs(t *testing.T) {
-	d, err := ioutil.TempDir("", t.Name())
+	d, err := os.MkdirTemp("", t.Name())
 	if err != nil {
 		t.Fatalf("Could not create temp directory: %v", err)
 	}
@@ -195,7 +194,7 @@ func TestRemoveTaskDirs(t *testing.T) {
 		"applesnpears",                          // should remain
 		filepath.Join("task_12345", "abcde"),    // should be deleted
 	} {
-		err = ioutil.WriteFile(filepath.Join(d, file), []byte("hello world"), 0777)
+		err = os.WriteFile(filepath.Join(d, file), []byte("hello world"), 0777)
 		if err != nil {
 			t.Fatalf("Could not write %v file: %v", file, err)
 		}

@@ -5,7 +5,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -137,7 +136,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			panic(err)
 		}
 
-		dirBytes, err := ioutil.ReadFile(dir)
+		dirBytes, err := os.ReadFile(dir)
 		dirString := strings.SplitN(strings.Replace(string(dirBytes), "\r\n", "\n", -1), "\n", 2)[0]
 
 		if err != nil {
@@ -175,7 +174,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	contents += "exit /b %tcexitcode%\r\n"
 
 	// now generate the .bat script that runs all of this
-	err := ioutil.WriteFile(
+	err := os.WriteFile(
 		wrapper,
 		[]byte(contents),
 		0755, // note this is mostly ignored on windows
@@ -190,7 +189,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		task.Payload.Command[index],
 	}, "\r\n"))
 
-	err = ioutil.WriteFile(
+	err = os.WriteFile(
 		script,
 		fileContents,
 		0755, // note this is mostly ignored on windows
@@ -422,7 +421,7 @@ func CreateRunGenericWorkerBatScript(batScriptFilePath string, extraOpts string)
 		`::   70: deployment ID changed - system shutdown has been triggered`,
 		``,
 	}, "\r\n"))
-	err := ioutil.WriteFile(batScriptFilePath, batScriptContents, 0755) // note 0755 is mostly ignored on windows
+	err := os.WriteFile(batScriptFilePath, batScriptContents, 0755) // note 0755 is mostly ignored on windows
 	if err != nil {
 		return fmt.Errorf("Was not able to create file %q due to %s", batScriptFilePath, err)
 	}

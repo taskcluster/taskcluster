@@ -5,7 +5,7 @@ package azure
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -92,7 +92,7 @@ func (mds *realMetadataService) fetch(path string, apiVersion string) (string, e
 		return "", err
 	}
 	defer resp.Body.Close()
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	return string(content), err
 }
 
