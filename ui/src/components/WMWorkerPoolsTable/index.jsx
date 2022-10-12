@@ -217,7 +217,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
         <TableCell>{workerPool.pendingTasks}</TableCell>
 
-
         <TableCell>
           <Link
             to={`/provisioners/${encodeURIComponent(
