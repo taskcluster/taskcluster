@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.22.0
+
+### GENERAL
+
+▶ [minor]
+Add a docker-worker capability `disableSeccomp` to disable the seccomp
+system call filter.
+
+It allows significant information leakage, and its use should not be
+considered secure. This is required to run `rr` inside a container, as
+described here: https://github.com/mozilla/rr/wiki/Docker
+
+▶ [patch]
+Adjust GCP CloudBuild config to cancel other ongoing jobs, so that the latest job is the only one that runs and no race conditions will occur with deploying to dev.
+
+▶ [patch]
+Upgrade many deps with the following command:
+`pmac add 5692 5691 5690 5689 5688 5687`
+
+▶ [patch]
+Upgrades to latest Node version, v16.17.1, which is a security release.
+
+### USERS
+
+▶ [minor]
+Added basic dashboard stats: Worker pools, provisioners, hooks, clients counts.
+
 ## v44.21.0
 
 ### GENERAL
