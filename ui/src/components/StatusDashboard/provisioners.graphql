@@ -1,0 +1,9 @@
+query dashboardStatsProvisioners {
+  provisioners {
+    edges {
+      node {
+        provisionerId
+      }
+    }
+  }
+}

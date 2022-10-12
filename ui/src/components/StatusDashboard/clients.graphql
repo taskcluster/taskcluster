@@ -1,0 +1,9 @@
+query dashboardStatsClients {
+  clients {
+    edges {
+      node {
+        lastDateUsed
+      }
+    }
+  }
+}
