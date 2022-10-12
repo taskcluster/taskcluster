@@ -34,9 +34,16 @@ export default (clients, roles, secrets) => {
 
   return [
     {
-      title: 'Total Clients / Active clients',
+      title: 'Total Clients',
+      value: format(clientsCount),
+      link: '/auth/clients',
+      error: clients.error?.message,
+      loading: clients.loading,
+    },
+    {
+      title: 'Active Clients',
       hint: `Clients that were active in the last ${ACTIVE_DAYS} days`,
-      value: `${format(clientsCount)} / ${clientsRecent}`,
+      value: format(clientsRecent),
       link: '/auth/clients',
       error: clients.error?.message,
       loading: clients.loading,

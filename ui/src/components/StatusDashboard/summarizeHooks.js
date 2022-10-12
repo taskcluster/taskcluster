@@ -15,7 +15,7 @@ export default hookGroups => {
 
   return [
     {
-      title: 'Hook groups',
+      title: 'Hook Groups',
       value: format(totalGroups),
       link,
       error: hookGroups.error?.message,

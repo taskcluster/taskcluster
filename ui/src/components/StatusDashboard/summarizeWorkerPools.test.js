@@ -4,12 +4,12 @@ describe('summarizeWorkerPools', () => {
   it('should return empty values', () => {
     const out = summarizeWorkerPools({});
 
-    expect(out.length).toEqual(6);
+    expect(out.length).toEqual(9);
     expect(out[0].value).toEqual('0');
-    expect(out[1].value).toEqual('0 / 0');
+    expect(out[1].value).toEqual('0');
     expect(out[2].value).toEqual('0');
-    expect(out[3].value).toEqual('0 / 0');
-    expect(out[4].value).toEqual('0 / 0');
+    expect(out[3].value).toEqual('0');
+    expect(out[4].value).toEqual('0');
     expect(out[5].value).toEqual('0');
     expect(out[0].error).toBeUndefined();
     expect(out[0].link).toEqual('/worker-manager');
@@ -19,7 +19,7 @@ describe('summarizeWorkerPools', () => {
       error: new Error('wrong'),
     });
 
-    expect(out.length).toEqual(6);
+    expect(out.length).toEqual(9);
     expect(out[0].value).toEqual('0');
     expect(out[0].error).toEqual('wrong');
     expect(out[1].error).toEqual('wrong');
@@ -48,12 +48,16 @@ describe('summarizeWorkerPools', () => {
       },
     });
 
-    expect(out.length).toEqual(6);
+    expect(out.length).toEqual(9);
     expect(out[0].value).toEqual('1');
-    expect(out[1].value).toEqual('1 / 1');
-    expect(out[2].value).toEqual('9');
-    expect(out[3].value).toEqual('1 / 1');
-    expect(out[4].value).toEqual('1 / 1');
+    expect(out[1].value).toEqual('1');
+    expect(out[2].value).toEqual('1');
+    expect(out[3].value).toEqual('1');
+    expect(out[3].value).toEqual('1');
+    expect(out[4].value).toEqual('1');
     expect(out[5].value).toEqual('3');
+    expect(out[6].value).toEqual('9');
+    expect(out[7].value).toEqual('1');
+    expect(out[8].value).toEqual('1');
   });
 });

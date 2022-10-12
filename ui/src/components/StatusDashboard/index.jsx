@@ -8,7 +8,15 @@ import summarizeHooks from './summarizeHooks';
 import summarizeAuthorization from './summarizeAuthorization';
 
 const getLength = value => String(value).length;
-const Item = ({ title, value, classMain, classValue, hint, error }) => (
+const Item = ({
+  title,
+  value,
+  classMain,
+  classValue,
+  hint,
+  error,
+  altColor = false,
+}) => (
   <Paper className={classMain}>
     <Typography variant="h5">
       {title}
@@ -21,7 +29,7 @@ const Item = ({ title, value, classMain, classValue, hint, error }) => (
     <abbr title={error}>
       <Typography
         className={classValue}
-        style={error ? { color: '#E24' } : {}}
+        style={altColor ? { color: '#51e9f1' } : {}}
         variant={getLength(value) < 10 ? 'h2' : 'h4'}>
         {value}
       </Typography>
@@ -83,7 +91,7 @@ export default class StatusDashboard extends Component {
     const filterAvailable = items =>
       items.filter(item => !item.loading && !item.error);
     const widgets = {
-      'Worker Manager stats': filterAvailable(
+      'Worker Manager Stats': filterAvailable(
         summarizeWorkerPools(workerPools)
       ),
       'Worker Provisioners': filterAvailable(
