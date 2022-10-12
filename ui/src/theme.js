@@ -322,7 +322,6 @@ const themeOptions = isDarkTheme => {
       MuiTableHead: {
         root: {
           width: '100%',
-          maxWidth: '1600px',
           [theme.breakpoints.down('md')]: {
             display: 'block',
             position: 'absolute',
@@ -334,7 +333,6 @@ const themeOptions = isDarkTheme => {
       MuiTableRow: {
         root: {
           width: '100%',
-          maxWidth: '1600px',
           [theme.breakpoints.down('md')]: {
             display: 'block',
             borderRadius: '5%',
@@ -345,7 +343,6 @@ const themeOptions = isDarkTheme => {
       MuiTableBody: {
         root: {
           width: '100%',
-          maxWidth: '1600px',
           [theme.breakpoints.down('md')]: {
             display: 'block',
           },
