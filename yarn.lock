@@ -2220,9 +2220,9 @@ cron-parser@3.5.0:
     luxon "^1.26.0"
 
 cronstrue@^2.12.0:
-  version "2.12.0"
-  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-2.12.0.tgz#3497b98dab3cba54d3acdc63fe424947b708098b"
-  integrity sha512-PAIluUuZfZnJQcrS0XrhEVywO5+rIneWgBnwS4R0ebIeUdLnbsNBW/pWiJQIKx48WabRYwlxIEPy+qWJVmaINQ==
+  version "2.13.0"
+  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-2.13.0.tgz#9df5cfcf0a657d82236bd55d0d4777bda8130bc8"
+  integrity sha512-yS8F/GRrRehkeWerzDHFi8IVPeWUJxY+QhgPSy4+M5Ty3vSm/BRNgQ0buxlwZLQhL595tqMUURXPoT2TMj4Rtg==
 
 cross-env@^7.0.2:
   version "7.0.3"
@@ -6319,7 +6319,7 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "44.21.0"
+  version "44.22.0"
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
@@ -6329,37 +6329,37 @@ tar-stream@^2.0.0:
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-db@link:db":
-  version "44.21.0"
+  version "44.22.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "44.21.0"
+  version "44.22.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "44.21.0"
+  version "44.22.0"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "44.21.0"
+  version "44.22.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "44.21.0"
+  version "44.22.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "44.21.0"
+  version "44.22.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "44.21.0"
+  version "44.22.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "44.21.0"
+  version "44.22.0"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "44.21.0"
+  version "44.22.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "44.21.0"
+  version "44.22.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "44.21.0"
+  version "44.22.0"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6369,7 +6369,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "44.21.0"
+  version "44.22.0"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6377,7 +6377,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "44.21.0"
+  version "44.22.0"
 
 test-exclude@^6.0.0:
   version "6.0.0"
