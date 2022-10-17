@@ -151,9 +151,6 @@ services:
     networks:
       - local
     restart: unless-stopped
-    build:
-      context: .
-      dockerfile: generic-worker.Dockerfile
     volumes:
       - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
       - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
@@ -178,9 +175,6 @@ services:
     networks:
       - local
     restart: unless-stopped
-    build:
-      context: .
-      dockerfile: generic-worker.Dockerfile
     volumes:
       - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
       - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
