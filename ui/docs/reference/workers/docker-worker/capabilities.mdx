@@ -89,3 +89,15 @@ payload:
 
 It must also have scope `docker-worker:capability:privileged` or scope `docker-worker:capability:privileged:<workerPoolId>`.
 The second form is preferred, as it is specific to a single worker pool.
+
+## disableSeccomp
+
+This allows a task to run without seccomp, similar to running docker with `--security-opt seccomp=unconfined`.
+This only works for worker-types configured to enable it.
+
+```yaml
+dockerConfig:
+  disableSeccomp: true
+```
+
+Requires `docker-worker:capability:disableSeccomp` scope.
