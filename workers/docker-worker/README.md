@@ -23,7 +23,7 @@ are for hacking on the worker itself.
 
 ```
 # from the root of this repo) also see --help
-node bin/worker.js <config>
+node src/main.js <config>
 ```
 
 ### Configuration
