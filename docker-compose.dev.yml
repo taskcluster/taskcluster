@@ -16,7 +16,7 @@ services:
       - .all-contributorsrc:/app/.all-contributorsrc
       - ./ui:/app/ui
   auth-web:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -28,7 +28,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main server"
   auth-cron-purgeExpiredClients:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -44,7 +44,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main purge-expired-clients"
   built-in-workers-server:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -56,7 +56,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/built-in-workers services/built-in-workers/src/main.js server"
   github-web:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -68,7 +68,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/github services/github/src/main server"
   github-background-worker:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -84,7 +84,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/github services/github/src/main worker"
   github-cron-sync:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -100,7 +100,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/github services/github/src/main syncInstallations"
   hooks-web:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -112,7 +112,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/hooks services/hooks/src/main.js server"
   hooks-background-scheduler:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -128,7 +128,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/hooks services/hooks/src/main.js scheduler"
   hooks-background-listeners:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -144,7 +144,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/hooks services/hooks/src/main.js listeners"
   hooks-cron-expires:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -160,7 +160,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/hooks services/hooks/src/main.js expires"
   index-web:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -172,7 +172,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/index services/index/src/main server"
   index-background-handlers:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -188,7 +188,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/index services/index/src/main handlers"
   index-cron-expire:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -204,7 +204,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/index services/index/src/main expire"
   notify-web:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -216,7 +216,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/notify services/notify/src/main server"
   notify-background-handler:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -232,7 +232,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/notify services/notify/src/main handler"
   object-web:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -244,7 +244,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/object services/object/src/main.js server"
   object-cron-expire:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -260,7 +260,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/object services/object/src/main expire"
   purge-cache-web:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -272,7 +272,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/purge-cache services/purge-cache/src/main server"
   purge-cache-cron-expireCachePurges:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -288,7 +288,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/purge-cache services/purge-cache/src/main expire-cache-purges"
   queue-web:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -300,7 +300,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main server"
   queue-background-claimResolver:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -316,7 +316,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main claim-resolver"
   queue-background-deadlineResolver:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -332,7 +332,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main deadline-resolver"
   queue-background-dependencyResolver:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -348,7 +348,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main dependency-resolver"
   queue-cron-expireArtifacts:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -364,7 +364,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-artifacts"
   queue-cron-expireTask:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -380,7 +380,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-tasks"
   queue-cron-expireTaskGroups:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -396,7 +396,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-task-groups"
   queue-cron-expireTaskDependency:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -412,7 +412,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-task-dependency"
   queue-cron-expireQueueMessages:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -428,7 +428,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-queue-messages"
   queue-cron-expireWorkerInfo:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -444,7 +444,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-worker-info"
   secrets-web:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -456,7 +456,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/secrets services/secrets/src/main.js server"
   secrets-cron-expire:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -472,7 +472,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/secrets services/secrets/src/main.js expire"
   web-server-web:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -484,7 +484,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js server"
   web-server-cron-scanner:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -500,7 +500,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js scanner"
   web-server-cron-cleanup-expire-auth-codes:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -516,7 +516,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js cleanup-expire-auth-codes"
   web-server-cron-cleanup-expire-access-tokens:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -532,7 +532,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js cleanup-expire-access-tokens"
   worker-manager-web:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -544,7 +544,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js server"
   worker-manager-background-provisioner:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -560,7 +560,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js runProvisioner"
   worker-manager-background-workerscanner:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -576,7 +576,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js workerScanner"
   worker-manager-background-workerscanner-azure:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -592,7 +592,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js workerScannerAzure"
   worker-manager-cron-expire-workers:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -608,7 +608,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js expireWorkers"
   worker-manager-cron-expire-worker-pools:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'
@@ -624,7 +624,7 @@ services:
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js expireWorkerPools"
   worker-manager-cron-expire-errors:
-    image: taskcluster/taskcluster:v44.22.0-devel
+    image: taskcluster/taskcluster:v44.22.1-devel
     environment:
       NODE_ENV: development
       DEBUG: '*'

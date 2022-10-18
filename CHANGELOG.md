@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.22.1
+
+### GENERAL
+
+▶ [patch]
+Reverts commit e2015f35330a4b059d1bccf55c871df2af77bfbb.
+
 ## v44.22.0
 
 ### GENERAL
