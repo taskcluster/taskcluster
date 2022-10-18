@@ -23,6 +23,11 @@ const tcdb = require('taskcluster-db');
 
 require('./monitor');
 
+// see https://github.com/matrix-org/matrix-js-sdk/issues/2415#issuecomment-1141246410
+const matrixcs = require("matrix-js-sdk/lib/matrix");
+const request = require("request");
+matrixcs.request(request);
+
 // Create component loader
 const load = loader({
   cfg: {
