@@ -15,6 +15,20 @@ services:
       - ./generated:/app/generated
       - .all-contributorsrc:/app/.all-contributorsrc
       - ./ui:/app/ui
+  generic-worker-standalone:
+    image: taskcluster/generic-worker:v44.22.1
+    networks:
+      - local
+    build:
+      context: .
+      dockerfile: generic-worker.Dockerfile
+  generic-worker-static:
+    image: taskcluster/generic-worker:v44.22.1
+    networks:
+      - local
+    build:
+      context: .
+      dockerfile: generic-worker.Dockerfile
   auth-web:
     image: taskcluster/taskcluster:v44.22.1-devel
     environment:
