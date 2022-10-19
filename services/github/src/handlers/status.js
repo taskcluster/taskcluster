@@ -1,4 +1,4 @@
-const { CONCLUSIONS, CHECKLOGS_TEXT, CHECKRUN_TEXT, LIVE_LOG_ARTIFACT_NAME,
+const { CONCLUSIONS, CHECKLOGS_TEXT, CHECKRUN_TEXT, LIVE_BACKING_LOG_ARTIFACT_NAME,
   CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
   CHECK_RUN_STATES, TASK_STATE_TO_CHECK_RUN_STATE,
 } = require('../constants');
@@ -257,7 +257,7 @@ async function statusHandler(message) {
     const annotationsArtifactName = extraCheckRun?.annotationsArtifactName || CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME;
 
     const [ liveLogText, customCheckRunText, customCheckRunAnnotationsText ] = await Promise.all([
-      fetchArtifact(LIVE_LOG_ARTIFACT_NAME),
+      fetchArtifact(LIVE_BACKING_LOG_ARTIFACT_NAME),
       fetchArtifact(textArtifactName),
       fetchArtifact(annotationsArtifactName),
     ]);
