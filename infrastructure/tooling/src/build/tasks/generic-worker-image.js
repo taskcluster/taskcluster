@@ -79,6 +79,7 @@ module.exports = ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
         command.push('--no-cache');
       }
       command = command.concat([
+        '-f', 'generic-worker.Dockerfile',
         '--progress', 'plain',
         '--tag', tag,
         '--build-arg', 'DOCKER_FLOW_VERSION=' + versionJson,
