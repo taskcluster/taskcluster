@@ -39,7 +39,7 @@ MonitorManager.register({
   level: 'notice',
   version: 1,
   description: `
-    This message is logged every 5 minutes from each process that is using the database,
+    This message is logged every minute from each process that is using the database,
     once for each pool.  Most services have both a "read" pool and a "write" pool.  The
     fields come from the node-postgres package.
   `,
