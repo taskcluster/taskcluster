@@ -13013,7 +13013,7 @@
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "This message is logged every minute from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
           "fields": {
             "idleCount": "The number of connections (out of the total) which are not currently in use",
             "pool": "The name of the pool within the process",
@@ -13855,7 +13855,7 @@
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "This message is logged every minute from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
           "fields": {
             "idleCount": "The number of connections (out of the total) which are not currently in use",
             "pool": "The name of the pool within the process",
@@ -14100,7 +14100,7 @@
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "This message is logged every minute from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
           "fields": {
             "idleCount": "The number of connections (out of the total) which are not currently in use",
             "pool": "The name of the pool within the process",
@@ -14439,7 +14439,7 @@
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "This message is logged every minute from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
           "fields": {
             "idleCount": "The number of connections (out of the total) which are not currently in use",
             "pool": "The name of the pool within the process",
@@ -16198,7 +16198,7 @@
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "This message is logged every minute from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
           "fields": {
             "idleCount": "The number of connections (out of the total) which are not currently in use",
             "pool": "The name of the pool within the process",
@@ -16509,7 +16509,7 @@
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "This message is logged every minute from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
           "fields": {
             "idleCount": "The number of connections (out of the total) which are not currently in use",
             "pool": "The name of the pool within the process",
@@ -16853,7 +16853,7 @@
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "This message is logged every minute from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
           "fields": {
             "idleCount": "The number of connections (out of the total) which are not currently in use",
             "pool": "The name of the pool within the process",
@@ -17396,7 +17396,7 @@
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "This message is logged every minute from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
           "fields": {
             "idleCount": "The number of connections (out of the total) which are not currently in use",
             "pool": "The name of the pool within the process",
@@ -17792,7 +17792,7 @@
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "This message is logged every minute from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
           "fields": {
             "idleCount": "The number of connections (out of the total) which are not currently in use",
             "pool": "The name of the pool within the process",
@@ -18384,7 +18384,7 @@
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "This message is logged every minute from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
           "fields": {
             "idleCount": "The number of connections (out of the total) which are not currently in use",
             "pool": "The name of the pool within the process",
@@ -18418,6 +18418,20 @@
           "name": "generic",
           "title": "Generic Message",
           "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "This message logs the number of running and errored handlers periodically.",
+          "fields": {
+            "errorCount": "The number of handlers that finished with errors",
+            "handlerName": "The name of handler",
+            "runningCount": "The number of handles that are still running",
+            "totalCount": "The total number of events handled"
+          },
+          "level": "notice",
+          "name": "githubActiveHandlers",
+          "title": "Github active handler count",
+          "type": "github-handler-count",
           "version": 1
         },
         {
@@ -19138,7 +19152,7 @@
           "version": 1
         },
         {
-          "description": "This message is logged every 5 minutes from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
+          "description": "This message is logged every minute from each process that is using the database,\nonce for each pool.  Most services have both a \"read\" pool and a \"write\" pool.  The\nfields come from the node-postgres package.",
           "fields": {
             "idleCount": "The number of connections (out of the total) which are not currently in use",
             "pool": "The name of the pool within the process",
