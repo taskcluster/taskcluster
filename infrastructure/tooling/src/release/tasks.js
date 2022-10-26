@@ -242,6 +242,8 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
       utils.status({ message: `Update ${dockerComposeDev}` });
       await modifyRepoFile(dockerComposeDev, contents =>
         contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage));
+      await modifyRepoFile(dockerComposeDev, contents =>
+        contents.replace(/taskcluster\/generic-worker:v[0-9.]*/g, releaseImageGenericWorker));
       changed.push(dockerComposeDev);
 
       return { 'version-updated': changed };
