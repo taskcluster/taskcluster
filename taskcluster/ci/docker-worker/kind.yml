@@ -24,6 +24,7 @@ job-defaults:
   worker:
     taskcluster-proxy: true
     privileged: true
+    disable-seccomp: true
     loopback-video: true
     loopback-audio: true
     max-run-time: 10800
