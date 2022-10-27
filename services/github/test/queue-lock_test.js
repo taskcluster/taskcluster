@@ -9,9 +9,9 @@ suite(testing.suiteName(), function() {
 
       let counter = 0;
       const coroutine = async () => {
-        await lock.acquire('t1');
+        const release = await lock.acquire('t1');
         counter ++;
-        lock.release('t1');
+        release();
       };
 
       await coroutine();
@@ -32,9 +32,9 @@ suite(testing.suiteName(), function() {
       const lock = new QueueLock();
       let results = [];
       const coroutine = async (name, result) => {
-        await lock.acquire(name);
+        const release = await lock.acquire(name);
         results.push(result);
-        lock.release(name);
+        release();
       };
 
       await Promise.all([
@@ -48,13 +48,43 @@ suite(testing.suiteName(), function() {
 
       results = [];
       await Promise.all([
-        coroutine('lock1', 1),
+        coroutine('lock3', 1),
         coroutine('lock2', 2),
-        coroutine('lock2', 3),
         coroutine('lock1', 4),
+        coroutine('lock3', 3),
+        coroutine('lock1', 5),
+        coroutine('lock3', 6),
       ]);
 
-      assert.deepEqual([1, 2, 4, 3], results);
+      assert.deepEqual([1, 2, 4, 3, 5, 6], results);
+    });
+
+    test('should auto release after given timeout', async function () {
+      const lock = new QueueLock({ maxLockTimeMs: 1 });
+
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      let counter = 0;
+      const coroutine = async () => {
+        const release = await lock.acquire('t1');
+        await sleep(10);
+        counter++;
+        release();
+      };
+
+      await coroutine();
+      assert.equal(1, counter);
+
+      const more = [
+        coroutine(),
+        coroutine(),
+        coroutine(),
+        coroutine(),
+      ];
+
+      assert.equal(1, counter);
+      await Promise.all(more);
+      assert.equal(5, counter);
     });
   });
 });
