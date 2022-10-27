@@ -148,12 +148,15 @@ export default class TaskGroup extends Component {
           }
         });
 
+      const searchTerm = props.location.hash.substr(1);
+
       return {
         groupActions,
         actionInputs,
         actionData,
         previousTaskGroupId: taskGroupId,
         taskGroupLoaded,
+        searchTerm,
       };
     }
 
@@ -244,7 +247,7 @@ export default class TaskGroup extends Component {
         ],
       },
       updateQuery: (previousResult, { subscriptionData }) => {
-        const { tasksSubscriptions } = subscriptionData.data;
+        const { tasksSubscriptions = {} } = subscriptionData.data;
         // Make sure data is not from another task group which
         // can happen when a message is in flight and a user searches for
         // a different task group.
@@ -482,6 +485,7 @@ export default class TaskGroup extends Component {
   };
 
   handleSearchTaskSubmit = searchTerm => {
+    this.props.history.replace({ hash: searchTerm });
     this.setState({ searchTerm });
   };
 
@@ -662,6 +666,7 @@ export default class TaskGroup extends Component {
               <Search
                 formProps={{ className: classes.taskNameFormSearch }}
                 placeholder="Name contains"
+                defaultValue={searchTerm}
                 onSubmit={this.handleSearchTaskSubmit}
               />
             </Grid>
