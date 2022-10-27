@@ -18,7 +18,7 @@ const { taskUI, makeDebug, taskLogUI, GithubCheck } = require('./utils');
  * because it took him longer to reach update calls.
  */
 const qLock = new QueueLock({
-  maxLockTimeMs: 5 * 60 * 1000, // sometimes queue and github calls get delayed
+  maxLockTimeMs: 60 * 1000, // sometimes queue and github calls get delayed
 });
 
 /**
