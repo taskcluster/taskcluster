@@ -11,7 +11,7 @@ transforms:
 kind-dependencies:
   - release
 
-job-defaults:
+task-defaults:
   worker-type: dw-ci
   scopes:
     - 'docker-worker:cache:docker-worker-garbage-*'
@@ -24,6 +24,7 @@ job-defaults:
   worker:
     taskcluster-proxy: true
     privileged: true
+    disable-seccomp: true
     loopback-video: true
     loopback-audio: true
     max-run-time: 10800
@@ -35,7 +36,7 @@ job-defaults:
       NO_TEST_SKIP: 'true'
       DOCKER_TESTS: '1'
 
-jobs:
+tasks:
   chunk:
     description: 'docker-worker test chunk'
     chunks: 5

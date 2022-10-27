@@ -6,7 +6,7 @@ transforms:
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
-job-defaults:
+task-defaults:
   worker-type: ci
   run:
     using: bare
@@ -14,7 +14,7 @@ job-defaults:
     max-run-time: 600
     docker-image: {taskcluster: 'ci-image'}
 
-jobs:
+tasks:
   library:
     description: db library tests
     run:
