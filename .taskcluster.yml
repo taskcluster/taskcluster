@@ -42,6 +42,44 @@ tasks:
                       $if: 'tasks_for == "github-release"'
                       then: '${event.release.target_commitish}'
 
+          base_ref:
+              $if: 'tasks_for == "github-pull-request"'
+              then: ${event.pull_request.base.ref}
+              else:
+                  # event.base_ref is barely documented[1]. Testing showed it's only
+                  # defined when creating a new branch. It's null when pushing to an
+                  # existing branch
+                  #
+                  # [1] https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
+                  $if: 'tasks_for == "github-push" && event.base_ref'
+                  then: ${event.base_ref}
+                  else:
+                      $if: 'tasks_for == "github-push"'
+                      then: ${event.ref}
+                      else:
+                          $if: 'tasks_for in ["cron", "action"]'
+                          then: '${push.branch}'
+
+          head_ref:
+              $if: 'tasks_for == "github-pull-request"'
+              then: ${event.pull_request.head.ref}
+              else:
+                  $if: 'tasks_for == "github-push"'
+                  then: ${event.ref}
+                  else:
+                      $if: 'tasks_for in ["cron", "action"]'
+                      then: '${push.branch}'
+
+          base_sha:
+              $if: 'tasks_for == "github-push"'
+              then: '${event.before}'
+              else:
+                  $if: 'tasks_for == "github-pull-request"'
+                  then: '${event.pull_request.base.sha}'
+                  else:
+                      $if: 'tasks_for in ["cron", "action"]'
+                      then: '${push.revision}'
+
           head_sha:
               $if: 'tasks_for == "github-push"'
               then: '${event.after}'
@@ -114,8 +152,10 @@ tasks:
                       # to `mach taskgraph decision` are all on the command line.
                       $merge:
                           - TASKCLUSTER_BASE_REPOSITORY: '${baseRepoUrl}'
+                            TASKCLUSTER_BASE_REF: '${base_ref}'
+                            TASKCLUSTER_BASE_REV: '${base_sha}'
                             TASKCLUSTER_HEAD_REPOSITORY: '${repoUrl}'
-                            TASKCLUSTER_HEAD_REF: '${head_branch}'
+                            TASKCLUSTER_HEAD_REF: '${head_ref}'
                             TASKCLUSTER_HEAD_REV: '${head_sha}'
                             TASKCLUSTER_HEAD_TAG: '${head_tag}'
                             TASKCLUSTER_PIP_REQUIREMENTS: taskcluster/requirements.txt
@@ -129,18 +169,18 @@ tasks:
                   # Note: This task is built server side without the context or tooling that
                   # exist in tree so we must hard code the hash
                   image:
-                      mozillareleases/taskgraph:decision-cf4b4b4baff57d84c1f9ec8fcd70c9839b70a7d66e6430a6c41ffe67252faa19@sha256:425e07f6813804483bc5a7258288a7684d182617ceeaa0176901ccc7702dfe28
+                      mozillareleases/taskgraph:decision-10378fde0bf12adbd64e74313bf72ea3c6caf311ad6af23e2bff1d8f1232a221@sha256:7518c410bdf91142b0e26455d26ddaf861202cfbb3c35d0b1ef85d1ed577a5bd
 
                   maxRunTime: 600
 
                   command:
-                      - /usr/local/bin/run-task
-                      - '--taskcluster-checkout=/builds/worker/checkouts/vcs'
-                      - '--task-cwd=/builds/worker/checkouts/vcs'
+                      - run-task
+                      - '--taskcluster-checkout=/builds/worker/checkouts/src'
                       - '--'
                       - bash
                       - -cx
                       - >
+                        cd /builds/worker/checkouts/src &&
                         ln -s /builds/worker/artifacts artifacts &&
                         ~/.local/bin/taskgraph decision
                         --pushlog-id='0'
@@ -149,14 +189,16 @@ tasks:
                         --message=""
                         --owner='${ownerEmail}'
                         --level='${level}'
-                        --base-repository="$TASKCLUSTER_BASE_REPOSITORY"
-                        --head-repository="$TASKCLUSTER_HEAD_REPOSITORY"
-                        --head-ref="$TASKCLUSTER_HEAD_REF"
-                        --head-rev="$TASKCLUSTER_HEAD_REV"
-                        --head-tag="$TASKCLUSTER_HEAD_TAG"
-                        --repository-type="$TASKCLUSTER_REPOSITORY_TYPE"
+                        --repository-type=git
                         --target-tasks-method=taskcluster-branches
                         --tasks-for='${tasks_for}'
+                        --base-repository='${baseRepoUrl}'
+                        --base-ref='${base_ref}'
+                        --base-rev='${base_sha}'
+                        --head-repository='${repoUrl}'
+                        --head-ref='${head_ref}'
+                        --head-rev='${head_sha}'
+                        --head-tag='${head_tag}'
                   artifacts:
                       'public':
                           type: 'directory'
