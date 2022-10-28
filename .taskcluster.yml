@@ -129,7 +129,7 @@ tasks:
                   # Note: This task is built server side without the context or tooling that
                   # exist in tree so we must hard code the hash
                   image:
-                      mozillareleases/taskgraph:decision-cf4b4b4baff57d84c1f9ec8fcd70c9839b70a7d66e6430a6c41ffe67252faa19@sha256:425e07f6813804483bc5a7258288a7684d182617ceeaa0176901ccc7702dfe28
+                      mozillareleases/taskgraph:decision-10378fde0bf12adbd64e74313bf72ea3c6caf311ad6af23e2bff1d8f1232a221@sha256:7518c410bdf91142b0e26455d26ddaf861202cfbb3c35d0b1ef85d1ed577a5bd
 
                   maxRunTime: 600
 
