@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.23.2
+
+### GENERAL
+
+▶ [patch] [#5737](https://github.com/taskcluster/taskcluster/issues/5737)
+Fix React props handling for TaskGroup page in production mode.
+
 ## v44.23.1
 
 ### GENERAL

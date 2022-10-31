@@ -43,7 +43,7 @@ services:
       retries: 100
       start_period: 3s
   pg_init_db:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     x-info: Run this first to bring database up to date
@@ -87,7 +87,7 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: miniopassword
   ui:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.ui
@@ -95,7 +95,7 @@ services:
     ports:
       - '3022:80'
   references:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     command: references/web
@@ -147,7 +147,7 @@ services:
       taskcluster:
         condition: service_healthy
   generic-worker-standalone:
-    image: taskcluster/generic-worker:v44.23.1
+    image: taskcluster/generic-worker:v44.23.2
     networks:
       - local
     restart: unless-stopped
@@ -171,7 +171,7 @@ services:
       tc_admin_init:
         condition: service_completed_successfully
   generic-worker-static:
-    image: taskcluster/generic-worker:v44.23.1
+    image: taskcluster/generic-worker:v44.23.2
     networks:
       - local
     restart: unless-stopped
@@ -197,7 +197,7 @@ services:
       tc_admin_init:
         condition: service_completed_successfully
   auth-web:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.auth
@@ -217,7 +217,7 @@ services:
     ports:
       - '3011:80'
   auth-cron-purgeExpiredClients:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.auth
@@ -233,7 +233,7 @@ services:
       - auth
       - auth-cron
   built-in-workers-server:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.built-in-workers
@@ -247,7 +247,7 @@ services:
       queue-web:
         condition: service_healthy
   github-web:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.github
@@ -267,7 +267,7 @@ services:
     ports:
       - '3012:80'
   github-background-worker:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.github
@@ -283,7 +283,7 @@ services:
       - github
       - github-background
   github-cron-sync:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.github
@@ -299,7 +299,7 @@ services:
       - github
       - github-cron
   hooks-web:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.hooks
@@ -319,7 +319,7 @@ services:
     ports:
       - '3013:80'
   hooks-background-scheduler:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.hooks
@@ -335,7 +335,7 @@ services:
       - hooks
       - hooks-background
   hooks-background-listeners:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.hooks
@@ -351,7 +351,7 @@ services:
       - hooks
       - hooks-background
   hooks-cron-expires:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.hooks
@@ -367,7 +367,7 @@ services:
       - hooks
       - hooks-cron
   index-web:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.index
@@ -387,7 +387,7 @@ services:
     ports:
       - '3014:80'
   index-background-handlers:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.index
@@ -403,7 +403,7 @@ services:
       - index
       - index-background
   index-cron-expire:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.index
@@ -419,7 +419,7 @@ services:
       - index
       - index-cron
   notify-web:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.notify
@@ -439,7 +439,7 @@ services:
     ports:
       - '3015:80'
   notify-background-handler:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.notify
@@ -455,7 +455,7 @@ services:
       - notify
       - notify-background
   object-web:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.object
@@ -477,7 +477,7 @@ services:
     ports:
       - '3016:80'
   object-cron-expire:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.object
@@ -495,7 +495,7 @@ services:
       - object
       - object-cron
   purge-cache-web:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.purge-cache
@@ -515,7 +515,7 @@ services:
     ports:
       - '3017:80'
   purge-cache-cron-expireCachePurges:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.purge-cache
@@ -531,7 +531,7 @@ services:
       - purge-cache
       - purge-cache-cron
   queue-web:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -553,7 +553,7 @@ services:
     ports:
       - '3018:80'
   queue-background-claimResolver:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -571,7 +571,7 @@ services:
       - queue
       - queue-background
   queue-background-deadlineResolver:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -589,7 +589,7 @@ services:
       - queue
       - queue-background
   queue-background-dependencyResolver:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -607,7 +607,7 @@ services:
       - queue
       - queue-background
   queue-cron-expireArtifacts:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -625,7 +625,7 @@ services:
       - queue
       - queue-cron
   queue-cron-expireTask:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -643,7 +643,7 @@ services:
       - queue
       - queue-cron
   queue-cron-expireTaskGroups:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -661,7 +661,7 @@ services:
       - queue
       - queue-cron
   queue-cron-expireTaskDependency:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -679,7 +679,7 @@ services:
       - queue
       - queue-cron
   queue-cron-expireQueueMessages:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -697,7 +697,7 @@ services:
       - queue
       - queue-cron
   queue-cron-expireWorkerInfo:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -715,7 +715,7 @@ services:
       - queue
       - queue-cron
   secrets-web:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.secrets
@@ -735,7 +735,7 @@ services:
     ports:
       - '3019:80'
   secrets-cron-expire:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.secrets
@@ -751,7 +751,7 @@ services:
       - secrets
       - secrets-cron
   web-server-web:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.web-server
@@ -771,7 +771,7 @@ services:
     ports:
       - '3050:3050'
   web-server-cron-scanner:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.web-server
@@ -787,7 +787,7 @@ services:
       - web-server
       - web-server-cron
   web-server-cron-cleanup-expire-auth-codes:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.web-server
@@ -803,7 +803,7 @@ services:
       - web-server
       - web-server-cron
   web-server-cron-cleanup-expire-access-tokens:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.web-server
@@ -819,7 +819,7 @@ services:
       - web-server
       - web-server-cron
   worker-manager-web:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -839,7 +839,7 @@ services:
     ports:
       - '3020:80'
   worker-manager-background-provisioner:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -855,7 +855,7 @@ services:
       - worker-manager
       - worker-manager-background
   worker-manager-background-workerscanner:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -871,7 +871,7 @@ services:
       - worker-manager
       - worker-manager-background
   worker-manager-background-workerscanner-azure:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -887,7 +887,7 @@ services:
       - worker-manager
       - worker-manager-background
   worker-manager-cron-expire-workers:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -903,7 +903,7 @@ services:
       - worker-manager
       - worker-manager-cron
   worker-manager-cron-expire-worker-pools:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -919,7 +919,7 @@ services:
       - worker-manager
       - worker-manager-cron
   worker-manager-cron-expire-errors:
-    image: taskcluster/taskcluster:v44.23.1
+    image: taskcluster/taskcluster:v44.23.2
     networks:
       - local
     env_file: ./docker/env/.worker-manager
