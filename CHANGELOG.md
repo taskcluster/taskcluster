@@ -3,6 +3,16 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.23.1
+
+### GENERAL
+
+▶ [patch] [#5728](https://github.com/taskcluster/taskcluster/issues/5728)
+Adds auto release lock functionality to queued locks to prevent some GitHub handlers to run forever and keep the queue locked.
+
+▶ [patch] [#5737](https://github.com/taskcluster/taskcluster/issues/5737)
+Persist task group filter in URL, so navigating back restores filtered state.
+
 ## v44.23.0
 
 ### GENERAL
