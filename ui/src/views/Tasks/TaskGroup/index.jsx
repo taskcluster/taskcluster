@@ -148,15 +148,12 @@ export default class TaskGroup extends Component {
           }
         });
 
-      const searchTerm = props.location.hash.substr(1);
-
       return {
         groupActions,
         actionInputs,
         actionData,
         previousTaskGroupId: taskGroupId,
         taskGroupLoaded,
-        searchTerm,
       };
     }
 
@@ -202,8 +199,10 @@ export default class TaskGroup extends Component {
     const groupNotifySuccess =
       'Notification' in window &&
       (await db.userPreferences.get(GROUP_NOTIFY_SUCCESS_KEY)) === true;
+    const searchTerm = this.props.location.hash.substr(1);
 
     this.setState({
+      searchTerm,
       notifyPreferences: {
         groupNotifyTaskFailed,
         groupNotifySuccess,
