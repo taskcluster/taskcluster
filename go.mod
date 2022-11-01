@@ -29,7 +29,7 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.8.0
@@ -57,7 +57,7 @@ require (
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/joeshaw/multierror v0.0.0-20140124173710-69b34d4ec901 // indirect
 	github.com/klauspost/compress v1.15.6 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
