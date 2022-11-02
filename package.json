@@ -38,7 +38,7 @@
     "content-security-policy": "^0.3.0",
     "content-type": "^1.0.4",
     "cors": "^2.8.4",
-    "cron-parser": "3.5.0",
+    "cron-parser": "4.6.0",
     "dataloader": "^2.0.0",
     "debug": "^4.1.1",
     "deepmerge": "^4.0.0",
