@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.23.3
+
+### GENERAL
+
+▶ [patch]
+Minor and patch version bumps via Dependabot using `pmac`:
+
+`pmac add 5746 5747 5749 5750 5751`
+
+▶ [patch]
+Upgrades taskgraph from v1.2.0 to v3.4.0.
+
 ## v44.23.2
 
 ### GENERAL
