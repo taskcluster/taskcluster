@@ -19,10 +19,10 @@ def _dependency_versions():
 
 
 @transforms.add
-def taskcluster_images(config, jobs):
+def taskcluster_images(config, tasks):
     node_version, go_version, rust_version, pg_version = _dependency_versions()
-    for job in jobs:
-        image = job["worker"]["docker-image"]
+    for task in tasks:
+        image = task["worker"]["docker-image"]
         if isinstance(image, dict) and tuple(image.keys())[0] == "taskcluster":
             repo = image["taskcluster"]
             if (repo == "ci-image"):
@@ -34,21 +34,21 @@ def taskcluster_images(config, jobs):
             elif (repo == "worker-ci"):
                 image = "taskcluster/worker-ci:node{node_version}"
 
-            job["worker"]["docker-image"] = image.format(
+            task["worker"]["docker-image"] = image.format(
                 node_version=node_version,
                 go_version=go_version,
                 rust_version=rust_version,
                 pg_version=pg_version
             ).strip()
 
-        yield job
+        yield task
 
 
 @transforms.add
-def add_task_env(config, jobs):
+def add_task_env(config, tasks):
     node_version, go_version, rust_version, pg_version = _dependency_versions()
-    for job in jobs:
-        env = job["worker"].setdefault("env", {})
+    for task in tasks:
+        env = task["worker"].setdefault("env", {})
 
         # These are for the way docker-worker wants them
         env["GITHUB_REPO_URL"] = config.params["head_repository"]
@@ -75,24 +75,24 @@ def add_task_env(config, jobs):
         env["GITHUB_CLONE_URL"] = config.params["head_repository"]
 
         # We want to set this everywhere other than lib-testing
-        if job["name"] != "testing":
+        if task["name"] != "testing":
             env["NO_TEST_SKIP"] = "true"
-        yield job
+        yield task
 
 
 @transforms.add
-def direct_dependencies(config, jobs):
-    for job in jobs:
-        job.setdefault("soft-dependencies", [])
-        job["soft-dependencies"] += [task.label for task in config.kind_dependencies_tasks]
-        yield job
+def direct_dependencies(config, tasks):
+    for task in tasks:
+        task.setdefault("soft-dependencies", [])
+        task["soft-dependencies"] += [task.label for task in config.kind_dependencies_tasks]
+        yield task
 
 
 @transforms.add
-def parameterize_mounts(config, jobs):
+def parameterize_mounts(config, tasks):
     node_version, go_version, rust_version, pg_version = _dependency_versions()
-    for job in jobs:
-        mounts = job.get("worker", {}).get("mounts")
+    for task in tasks:
+        mounts = task.get("worker", {}).get("mounts")
         if mounts:
             for mount in mounts:
                 if mount["content"].get("url"):
@@ -105,7 +105,7 @@ def parameterize_mounts(config, jobs):
                             go_version=go_version,
                             rust_version=rust_version,
                             node_version=node_version)
-        yield job
+        yield task
 
 
 @transforms.add

@@ -7,7 +7,7 @@ transforms:
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
-job-defaults:
+task-defaults:
   worker-type: ci
   run:
     using: bare
@@ -17,7 +17,7 @@ job-defaults:
   scopes:
     - secrets:get:project/taskcluster/testing/client-libraries
 
-jobs:
+tasks:
   nodejs:
     description: nodejs client tests
     worker:
