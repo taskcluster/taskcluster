@@ -51,15 +51,23 @@ tasks:
                   # existing branch
                   #
                   # [1] https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
-                  # [2] https://taskcluster-taskgraph.readthedocs.io/en/latest/reference/parameters.html#base-ref
                   $if: 'tasks_for == "github-push" && event.base_ref'
-                  then: ${event.base_ref}
+                  then:
+                      $if: 'event.base_ref[:11] == "refs/heads/"'
+                      then: {$eval: 'event.base_ref[11:]'}
+                      else: ${event.base_ref}
                   else:
                       $if: 'tasks_for == "github-push"'
-                      then: ${event.ref}
+                      then:
+                          $if: 'event.ref[:11] == "refs/heads/"'
+                          then: {$eval: 'event.ref[11:]'}
+                          else: ${event.ref}
                       else:
                           $if: 'tasks_for in ["cron", "action"]'
-                          then: '${push.branch}'
+                          then:
+                            $if: '${push.branch}[:11] == "refs/heads/"'
+                            then: {$eval: 'push.branch[11:]'}
+                            else: '${push.branch}'
 
           head_ref:
               $if: 'tasks_for[:19] == "github-pull-request"'
@@ -157,9 +165,6 @@ tasks:
                           - $if: 'isPullRequest'
                             then:
                                 TASKCLUSTER_PULL_REQUEST_NUMBER: '${event.pull_request.number}'
-                          - $if: 'project == "staging-releases"'
-                            then:
-                                TASKCLUSTER_BASE_REF: 'refs/heads/main'
                   features:
                       taskclusterProxy: true
                   # Note: This task is built server side without the context or tooling that
