@@ -1216,17 +1216,7 @@ ajv@^6.10.0, ajv@^6.12.3, ajv@^6.12.4:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-ajv@^7.2.1:
-  version "7.2.4"
-  resolved "https://registry.yarnpkg.com/ajv/-/ajv-7.2.4.tgz#8e239d4d56cf884bccca8cca362f508446dc160f"
-  integrity sha512-nBeQgg/ZZA3u3SYxyaDvpvDtgZ/EZPF547ARgZBrG9Bhu1vKDwAIjtIf+sDtJUKa2zOcEbmRLBRSyMraS/Oy1A==
-  dependencies:
-    fast-deep-equal "^3.1.1"
-    json-schema-traverse "^1.0.0"
-    require-from-string "^2.0.2"
-    uri-js "^4.2.2"
-
-ajv@^8.0.0, ajv@^8.0.1:
+ajv@^8.0.0, ajv@^8.0.1, ajv@^8.11.0:
   version "8.11.0"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.11.0.tgz#977e91dd96ca669f54a11e23e378e33b884a565f"
   integrity sha512-wGgprdCvMalC0BztXvitD2hC04YffAvtsUn93JbGXYLAtCUO4xd17mCCZQxUOItiBwZvJScWo8NIvQMQ71rdpg==
@@ -6674,7 +6664,7 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "44.23.2"
+  version "44.23.3"
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
@@ -6684,37 +6674,37 @@ tar-stream@^2.0.0:
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-db@link:db":
-  version "44.23.2"
+  version "44.23.3"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "44.23.2"
+  version "44.23.3"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "44.23.2"
+  version "44.23.3"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "44.23.2"
+  version "44.23.3"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "44.23.2"
+  version "44.23.3"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "44.23.2"
+  version "44.23.3"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "44.23.2"
+  version "44.23.3"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "44.23.2"
+  version "44.23.3"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "44.23.2"
+  version "44.23.3"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "44.23.2"
+  version "44.23.3"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "44.23.2"
+  version "44.23.3"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6724,7 +6714,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "44.23.2"
+  version "44.23.3"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6732,7 +6722,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "44.23.2"
+  version "44.23.3"
 
 test-exclude@^6.0.0:
   version "6.0.0"
