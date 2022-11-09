@@ -51,7 +51,7 @@ RUN rm -rf ui/node_modules ui/src
 ##
 # build the final image
 
-FROM node:16.18.0-alpine as image
+FROM node:16-alpine as image
 RUN apk --no-cache add --update nginx bash
 COPY --from=build /base/app /app
 ENV HOME=/app
