@@ -8,6 +8,7 @@ import (
 
 	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v44/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/process"
 )
 
@@ -22,9 +23,9 @@ type (
 		Definition          tcqueue.TaskDefinitionResponse `json:"-"`
 		Payload             GenericWorkerPayload           `json:"-"`
 		// Artifacts is a map from artifact name to artifact
-		Artifacts map[string]TaskArtifact `json:"-"`
-		Status    TaskStatus              `json:"-"`
-		Commands  []*process.Command      `json:"-"`
+		Artifacts map[string]artifacts.TaskArtifact `json:"-"`
+		Status    TaskStatus                        `json:"-"`
+		Commands  []*process.Command                `json:"-"`
 		// not exported
 		logMux         sync.RWMutex
 		logWriter      io.Writer

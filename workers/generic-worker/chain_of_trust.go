@@ -14,6 +14,7 @@ import (
 
 	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v44/internal/scopes"
+	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/fileutil"
 )
 
@@ -134,7 +135,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	artifactHashes := map[string]ArtifactHash{}
 	for _, artifact := range feature.task.Artifacts {
 		switch a := artifact.(type) {
-		case *S3Artifact:
+		case *artifacts.S3Artifact:
 			// make sure SHA256 is calculated
 			file := filepath.Join(taskContext.TaskDir, a.Path)
 			hash, hashErr := fileutil.CalculateSHA256(file)
@@ -185,8 +186,8 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 		panic(e)
 	}
 	err.add(feature.task.uploadArtifact(
-		&S3Artifact{
-			BaseArtifact: &BaseArtifact{
+		&artifacts.S3Artifact{
+			BaseArtifact: &artifacts.BaseArtifact{
 				Name:    ed25519SignedCertName,
 				Expires: feature.task.Definition.Expires,
 			},
