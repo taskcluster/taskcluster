@@ -2,6 +2,7 @@ package artifacts
 
 import (
 	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/gwconfig"
 )
 
 type (
@@ -36,7 +37,7 @@ type (
 		//
 		// ProcessResponse can be an empty method if no post
 		// tcqueue.CreateArtifact steps are required.
-		ProcessResponse(response interface{}, logger Logger) error
+		ProcessResponse(response interface{}, logger Logger, config *gwconfig.Config) error
 
 		// Base returns a *BaseArtifact which stores the properties common to
 		// all implementations

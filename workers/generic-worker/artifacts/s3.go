@@ -13,6 +13,7 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/gwconfig"
 )
 
 type S3Artifact struct {
@@ -54,7 +55,7 @@ func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
 	return tmpFile.Name()
 }
 
-func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger) (err error) {
+func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, config *gwconfig.Config) (err error) {
 	response := resp.(*tcqueue.S3ArtifactResponse)
 
 	logger.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", s3Artifact.Name, s3Artifact.Path, s3Artifact.ContentEncoding, s3Artifact.ContentType, s3Artifact.Expires)

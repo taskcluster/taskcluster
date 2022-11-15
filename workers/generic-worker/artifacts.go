@@ -289,7 +289,7 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 	if e != nil {
 		panic(e)
 	}
-	e = artifact.ProcessResponse(resp, task)
+	e = artifact.ProcessResponse(resp, task, config)
 	if e != nil {
 		task.Errorf("Error uploading artifact: %v", e)
 	}
