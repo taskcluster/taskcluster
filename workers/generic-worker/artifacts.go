@@ -189,14 +189,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType string, path string, con
 			contentEncoding = "gzip"
 		}
 	}
-	s3Artifact := &artifacts.S3Artifact{
-		BaseArtifact:    base,
-		Path:            path,
-		RawContentFile:  filepath.Join(taskContext.TaskDir, path),
-		ContentType:     contentType,
-		ContentEncoding: contentEncoding,
-	}
-	return s3Artifact
+	return createDataArtifact(base, path, contentType, contentEncoding)
 }
 
 // The Queue expects paths to use a forward slash, so let's make sure we have a
@@ -208,19 +201,48 @@ func canonicalPath(path string) string {
 	return strings.Replace(path, string(os.PathSeparator), "/", -1)
 }
 
+// createDataArtifact creates a TaskArtifact for the given data, according to
+// the CreateObjectArtifacts configuration.
+//
+// The contentEncoding is a suggestion as to the encoding to use for the data.
+// The data in the file at 'path' must _not_ already have this encoding applied.
+func createDataArtifact(
+	base *artifacts.BaseArtifact,
+	path string,
+	contentType string,
+	contentEncoding string,
+) artifacts.TaskArtifact {
+	if config.CreateObjectArtifacts {
+		// note that contentEncoding is currently ignored for object artifacts
+		return &artifacts.ObjectArtifact{
+			BaseArtifact:   base,
+			Path:           path,
+			RawContentFile: filepath.Join(taskContext.TaskDir, path),
+			ContentType:    contentType,
+		}
+	}
+
+	return &artifacts.S3Artifact{
+		BaseArtifact:    base,
+		Path:            path,
+		RawContentFile:  filepath.Join(taskContext.TaskDir, path),
+		ContentType:     contentType,
+		ContentEncoding: contentEncoding,
+	}
+}
+
 func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 	return task.uploadArtifact(
-		&artifacts.S3Artifact{
-			BaseArtifact: &artifacts.BaseArtifact{
+		createDataArtifact(
+			&artifacts.BaseArtifact{
 				Name: name,
 				// logs expire when task expires
 				Expires: task.Definition.Expires,
 			},
-			ContentType:     "text/plain; charset=utf-8",
-			Path:            path,
-			RawContentFile:  filepath.Join(taskContext.TaskDir, path),
-			ContentEncoding: "gzip",
-		},
+			path,
+			"text/plain; charset=utf-8",
+			"gzip",
+		),
 	)
 }
 

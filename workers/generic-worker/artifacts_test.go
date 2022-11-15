@@ -47,6 +47,9 @@ func validateArtifacts(
 		if s3a, ok := a.(*artifacts.S3Artifact); ok {
 			s3a.RawContentFile = ""
 		}
+		if obja, ok := a.(*artifacts.ObjectArtifact); ok {
+			obja.RawContentFile = ""
+		}
 	}
 
 	if !reflect.DeepEqual(got, expected) {
@@ -109,6 +112,36 @@ func TestFileArtifactWithContentType(t *testing.T) {
 				ContentType:     "application/octet-stream",
 				ContentEncoding: "gzip",
 				Path:            "SampleArtifacts/_/X.txt",
+			},
+		})
+}
+
+func TestFileArtifactAsObjectWithContentType(t *testing.T) {
+
+	defer setup(t)()
+	config.CreateObjectArtifacts = true
+	validateArtifacts(t,
+
+		// what appears in task payload
+		[]Artifact{
+			{
+				Expires:     inAnHour,
+				Path:        "SampleArtifacts/_/X.txt",
+				Type:        "file",
+				Name:        "public/build/firefox.exe",
+				ContentType: "application/octet-stream",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]artifacts.TaskArtifact{
+			&artifacts.ObjectArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
+					Name:    "public/build/firefox.exe",
+					Expires: inAnHour,
+				},
+				ContentType: "application/octet-stream",
+				Path:        "SampleArtifacts/_/X.txt",
 			},
 		})
 }
