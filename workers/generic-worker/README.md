@@ -281,19 +281,6 @@ See the [![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/work
 Set up to build Taskcluster in general.
 See [development process](../../dev-docs/development-process.md).
 
-* Run
-
-  ```shell
-  go get github.com/taskcluster/livelog`
-  go install github.com/taskcluster/livelog`
-  go get github.com/taskcluster/taskcluster/v30/tools/taskcluster-proxy
-  go install github.com/taskcluster/taskcluster/v30/tools/taskcluster-proxy
-  go install ./resolvetask
-  go get golang.org/x/lint/golint
-  go install golang.org/x/lint/golint
-  go get github.com/gordonklaus/ineffassign
-  go install github.com/gordonklaus/ineffassign
-  ```
 
 In the `workers/generic-worker` directory, run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
 
