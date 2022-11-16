@@ -134,11 +134,18 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	err.add(feature.task.uploadLog(certifiedLogName, certifiedLogPath))
 	artifactHashes := map[string]ArtifactHash{}
 	for _, artifact := range feature.task.Artifacts {
+		// make sure SHA256 is calculated
 		switch a := artifact.(type) {
 		case *artifacts.S3Artifact:
-			// make sure SHA256 is calculated
-			file := filepath.Join(taskContext.TaskDir, a.Path)
-			hash, hashErr := fileutil.CalculateSHA256(file)
+			hash, hashErr := fileutil.CalculateSHA256(a.RawContentFile)
+			if hashErr != nil {
+				panic(hashErr)
+			}
+			artifactHashes[a.Name] = ArtifactHash{
+				SHA256: hash,
+			}
+		case *artifacts.ObjectArtifact:
+			hash, hashErr := fileutil.CalculateSHA256(a.RawContentFile)
 			if hashErr != nil {
 				panic(hashErr)
 			}
@@ -186,15 +193,15 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 		panic(e)
 	}
 	err.add(feature.task.uploadArtifact(
-		&artifacts.S3Artifact{
-			BaseArtifact: &artifacts.BaseArtifact{
+		createDataArtifact(
+			&artifacts.BaseArtifact{
 				Name:    ed25519SignedCertName,
 				Expires: feature.task.Definition.Expires,
 			},
-			ContentType:     "application/octet-stream",
-			ContentEncoding: "gzip",
-			Path:            ed25519SignedCertPath,
-		},
+			ed25519SignedCertPath,
+			"application/octet-stream",
+			"gzip",
+		),
 	))
 }
 
