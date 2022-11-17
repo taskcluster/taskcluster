@@ -105,7 +105,19 @@ func (c *Client) Accept() (net.Conn, error) {
 		return nil, c.acceptErr
 	}
 
+	// c.session.Accept() will block until c.session.Close() is called
+	// c.session.Close() is called when c.Close() is called, but
+	// c.Close() also locks c.m, so we need to unlock c.m before calling
+	// c.session.Accept() to avoid the deadlock
+	//
+	// The deadlock was first observed in go1.19 due to
+	// https://go-review.googlesource.com/c/go/+/409537.
+	// This started enforcing that listeners are closed before
+	// active connections are cleaned up after a server shutdown.
+	// Prior to this, we unknowingly leaked deadlocked goroutines.
+	c.m.Unlock()
 	stream, err := c.session.Accept()
+	c.m.Lock()
 	if err != nil {
 		c.state = stateBroken
 		c.acceptErr = ErrClientReconnecting
