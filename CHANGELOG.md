@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v44.23.4
+
+### GENERAL
+
+▶ [patch]
+Upgrades to latest Node version, v16.18.1.
+
 ## v44.23.3
 
 ### GENERAL
