@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -153,7 +152,7 @@ func getArtifactContentWithResponses(t *testing.T, taskID string, artifact strin
 	if err != nil {
 		t.Fatalf("Error trying to fetch artifact from signed URL %s ...\n%s", url.String(), err)
 	}
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
 	}

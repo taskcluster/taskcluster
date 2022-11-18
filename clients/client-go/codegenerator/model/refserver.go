@@ -2,9 +2,9 @@ package model
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 )
 
@@ -26,7 +26,7 @@ func StartReferencesServer() error {
 		return nil
 	}
 
-	file, err := ioutil.ReadFile("../../../../generated/references.json")
+	file, err := os.ReadFile("../../../../generated/references.json")
 	if err != nil {
 		return err
 	}

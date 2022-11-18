@@ -3,10 +3,11 @@ package mocktc
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
 	"strings"
 	"sync"
@@ -584,7 +585,7 @@ func (queue *Queue) DownloadArtifactToFile(taskId string, runId int64, name stri
 	if err != nil {
 		return "", 0, err
 	}
-	err = ioutil.WriteFile(filename, buf, 0600)
+	err = os.WriteFile(filename, buf, 0600)
 	if err != nil {
 		return "", 0, err
 	}
@@ -627,7 +628,7 @@ func (queue *Queue) DownloadArtifactToBuf(taskId string, runId int64, name strin
 		}
 
 		contentType = resp.Header.Get("Content-Type")
-		buf, err = ioutil.ReadAll(resp.Body)
+		buf, err = io.ReadAll(resp.Body)
 		if err != nil {
 			return
 		}

@@ -2,7 +2,7 @@ package livelog
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"runtime"
@@ -58,7 +58,7 @@ func TestLiveLog(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not read HTTP response from URL %s:\n%s", ll.GetURL, err)
 	}
-	respString, err := ioutil.ReadAll(resp.Body)
+	respString, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Could not read HTTP body from URL %s:\n%s", ll.GetURL, err)
 	}

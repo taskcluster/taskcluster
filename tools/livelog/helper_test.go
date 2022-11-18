@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -50,7 +49,7 @@ type TestLivelogServer struct {
 }
 
 func StartServer(t *testing.T, tls bool) *TestLivelogServer {
-	tempdir, err := ioutil.TempDir("", "livelog-tests-")
+	tempdir, err := os.MkdirTemp("", "livelog-tests-")
 	require.NoError(t, err)
 
 	ts := &TestLivelogServer{

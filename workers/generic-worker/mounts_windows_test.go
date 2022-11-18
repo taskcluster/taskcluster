@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,7 +26,7 @@ func TestRenameCrossDevice(t *testing.T) {
 		t.Fatal("Could not create directory Z:\\a\\b")
 	}
 	randomFile := "Z:\\a\\b\\randomFile.txt"
-	err = ioutil.WriteFile(randomFile, []byte("some content"), 0600)
+	err = os.WriteFile(randomFile, []byte("some content"), 0600)
 	if err != nil {
 		t.Fatalf("Hit error creating %v: %v", randomFile, err)
 	}

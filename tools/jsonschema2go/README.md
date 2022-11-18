@@ -516,7 +516,7 @@ func main() {
     if err != nil {
         log.Fatalf("Could not generate go types from given json schemas...", err)
     }
-    err = ioutil.WriteFile("generatedcode.go", result.SourceCode, 0644)
+    err = os.WriteFile("generatedcode.go", result.SourceCode, 0644)
     if err != nil {
         log.Fatalf("Could not write source code to file system...", err)
     }
