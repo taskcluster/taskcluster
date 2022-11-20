@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -183,7 +182,7 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 
 	// read response into memory, so that we can return the body
 	if callSummary.HTTPResponse != nil {
-		body, err2 := ioutil.ReadAll(callSummary.HTTPResponse.Body)
+		body, err2 := io.ReadAll(callSummary.HTTPResponse.Body)
 		if err2 == nil {
 			callSummary.HTTPResponseBody = string(body)
 		}
@@ -328,8 +327,8 @@ func (client *Client) SignedURL(route string, query url.Values, duration time.Du
 // string as meaning the ext header is not needed.
 //
 // See:
-//   * https://docs.taskcluster.net/docs/manual/design/apis/hawk/authorized-scopes
-//   * https://docs.taskcluster.net/docs/manual/design/apis/hawk/temporary-credentials
+//   - https://docs.taskcluster.net/docs/manual/design/apis/hawk/authorized-scopes
+//   - https://docs.taskcluster.net/docs/manual/design/apis/hawk/temporary-credentials
 func getExtHeader(credentials *Credentials) (header string, err error) {
 	ext := &ExtHeader{}
 	if credentials.Certificate != "" {

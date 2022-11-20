@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -23,7 +22,7 @@ func WriteToFileAsJSON(obj interface{}, filename string) error {
 	} else {
 		log.Printf("Saving file %v (absolute path: %v)", filename, absPath)
 	}
-	return ioutil.WriteFile(filename, append(jsonBytes, '\n'), 0644)
+	return os.WriteFile(filename, append(jsonBytes, '\n'), 0644)
 }
 
 func CalculateSHA256(file string) (hash string, err error) {

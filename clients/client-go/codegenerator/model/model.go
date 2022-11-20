@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/format"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -59,7 +58,7 @@ type APIDefinition struct {
 func GenerateGodocLinkInReadme(amqpLinks string, httpLinks string) {
 
 	path := `../../README.md`
-	formattedContent, err := ioutil.ReadFile(path)
+	formattedContent, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
@@ -73,9 +72,9 @@ func GenerateGodocLinkInReadme(amqpLinks string, httpLinks string) {
 		` <!--AMQP-API-end-->`
 
 	formattedContent = regexp.MustCompile(`(<!--(AMQP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--AMQP-API-end-->)`).ReplaceAll(formattedContent, []byte(AmqpAPI))
-	exitOnFail(ioutil.WriteFile(path, formattedContent, 0644))
+	exitOnFail(os.WriteFile(path, formattedContent, 0644))
 	formattedContent = regexp.MustCompile(`(<!--(HTTP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--HTTP-API-end-->)`).ReplaceAll(formattedContent, []byte(httpAPI))
-	exitOnFail(ioutil.WriteFile(path, formattedContent, 0644))
+	exitOnFail(os.WriteFile(path, formattedContent, 0644))
 }
 
 func exitOnFail(err error) {
@@ -191,7 +190,7 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	formattedContent, err = format.Source(formattedContent)
 	exitOnFail(err)
 
-	exitOnFail(ioutil.WriteFile(sourceFile, formattedContent, 0644))
+	exitOnFail(os.WriteFile(sourceFile, formattedContent, 0644))
 }
 
 type APIDefinitions []*APIDefinition

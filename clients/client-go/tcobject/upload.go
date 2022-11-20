@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -56,7 +55,7 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 	proposedUploadMethods := ProposedUploadMethods{}
 
 	if contentLength < DataInlineMaxSize {
-		content, err := ioutil.ReadAll(hashingReadSeeker)
+		content, err := io.ReadAll(hashingReadSeeker)
 		if err != nil {
 			return err
 		}

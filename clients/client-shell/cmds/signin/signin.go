@@ -4,7 +4,7 @@ package signin
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -145,8 +145,8 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	log.Infoln("Opening URL: " + loginURL)
 
 	// Discard whatever the browser dumps to stdout / stderr
-	browser.Stderr = ioutil.Discard
-	browser.Stdout = ioutil.Discard
+	browser.Stderr = io.Discard
+	browser.Stdout = io.Discard
 
 	// Open browser
 	err = browser.OpenURL(loginURL)

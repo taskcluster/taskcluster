@@ -3,8 +3,8 @@ package runtime
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -40,7 +40,7 @@ func DeleteUser(username string) (err error) {
 
 func ListUserAccounts() (usernames []string, err error) {
 	var passwd []byte
-	passwd, err = ioutil.ReadFile("/etc/passwd")
+	passwd, err = os.ReadFile("/etc/passwd")
 	if err != nil {
 		return
 	}
@@ -79,12 +79,12 @@ func InteractiveUsername() (string, error) {
 }
 
 func SetAutoLogin(user *OSUser) error {
-	source, err := ioutil.ReadFile(gdm3CustomConfFile)
+	source, err := os.ReadFile(gdm3CustomConfFile)
 	if err != nil {
 		return fmt.Errorf("Could not read file %v to update auto login user: %v", gdm3CustomConfFile, err)
 	}
 	updated := gdm3.SetAutoLogin(user.Name, source)
-	err = ioutil.WriteFile(gdm3CustomConfFile, updated, 0644)
+	err = os.WriteFile(gdm3CustomConfFile, updated, 0644)
 	if err != nil {
 		return fmt.Errorf("Error overwriting file %v: %v", gdm3CustomConfFile, err)
 	}
@@ -92,7 +92,7 @@ func SetAutoLogin(user *OSUser) error {
 }
 
 func AutoLogonUser() (username string) {
-	source, err := ioutil.ReadFile(gdm3CustomConfFile)
+	source, err := os.ReadFile(gdm3CustomConfFile)
 	if err != nil {
 		return ""
 	}

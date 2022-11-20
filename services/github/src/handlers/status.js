@@ -36,7 +36,8 @@ const qLock = new QueueLock({
  **/
 async function statusHandler(message) {
   const { taskGroupId, state, runs, taskId } = message.payload.status;
-  const { runId } = message.payload;
+  let { runId } = message.payload;
+  runId = typeof runId === 'undefined' ? 0 : runId;
   const { reasonResolved } = runs[runId] || {};
   const taskDefined = state === undefined;
 

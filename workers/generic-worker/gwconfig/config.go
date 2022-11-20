@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -162,7 +161,7 @@ type File struct {
 }
 
 func (cf *File) NewestDeploymentID() (string, error) {
-	configData, err := ioutil.ReadFile(cf.Path)
+	configData, err := os.ReadFile(cf.Path)
 	if err != nil {
 		return "", err
 	}
@@ -176,7 +175,7 @@ func (cf *File) NewestDeploymentID() (string, error) {
 
 func (cf *File) UpdateConfig(c *Config) error {
 	log.Printf("Loading generic-worker config file '%v'...", cf.Path)
-	configData, err := ioutil.ReadFile(cf.Path)
+	configData, err := os.ReadFile(cf.Path)
 	if err != nil {
 		return err
 	}

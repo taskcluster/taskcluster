@@ -3,7 +3,6 @@ package dockerworker
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -106,7 +105,7 @@ func (d *dockerworker) StartWorker(state *run.State) (workerproto.Transport, err
 	if err != nil {
 		return nil, fmt.Errorf("Error constructing worker config: %v", err)
 	}
-	err = ioutil.WriteFile(d.wicfg.ConfigPath, content, 0600)
+	err = os.WriteFile(d.wicfg.ConfigPath, content, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("Error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
 	}

@@ -1,7 +1,6 @@
 package validatejson
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -25,7 +24,7 @@ type validateTestCase struct {
 
 func TestValidateDockerJson(t *testing.T) {
 	// setup a directory in /tmp
-	tmpDir, err := ioutil.TempDir("", "validate_json")
+	tmpDir, err := os.MkdirTemp("", "validate_json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,12 +36,12 @@ func TestValidateDockerJson(t *testing.T) {
 		schema := test.Schema
 		for _, testCase := range test.Tests {
 			// create a temp file to dump json data
-			file, err := ioutil.TempFile(tmpDir, "test*.json")
+			file, err := os.CreateTemp(tmpDir, "test*.json")
 			if err != nil {
 				log.Fatal(err)
 			}
 			defer file.Close()
-			err = ioutil.WriteFile(file.Name(), testCase.Data, os.ModePerm)
+			err = os.WriteFile(file.Name(), testCase.Data, os.ModePerm)
 			if err != nil {
 				log.Fatal(err)
 			}

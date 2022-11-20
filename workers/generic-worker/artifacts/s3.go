@@ -4,7 +4,6 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -34,7 +33,7 @@ type S3Artifact struct {
 // caller to delete the temporary file.
 func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
 	baseName := filepath.Base(s3Artifact.RawContentFile)
-	tmpFile, err := ioutil.TempFile("", baseName)
+	tmpFile, err := os.CreateTemp("", baseName)
 	if err != nil {
 		panic(err)
 	}

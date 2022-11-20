@@ -3,7 +3,6 @@ package tcobject
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -14,7 +13,7 @@ func TestHashingReadSeekerOnce(t *testing.T) {
 
 	h := newHashingReadSeeker(inner)
 
-	content, err := ioutil.ReadAll(h)
+	content, err := io.ReadAll(h)
 	require.NoError(t, err)
 	require.Equal(t, []byte("fake content"), content)
 
@@ -30,14 +29,14 @@ func TestHashingReadSeekerTwice(t *testing.T) {
 
 	h := newHashingReadSeeker(inner)
 
-	content, err := ioutil.ReadAll(h)
+	content, err := io.ReadAll(h)
 	require.NoError(t, err)
 	require.Equal(t, []byte("fake"), content)
 
 	inner.Reset([]byte("fake content"))
 
 	_, _ = h.Seek(0, io.SeekStart)
-	content, err = ioutil.ReadAll(h)
+	content, err = io.ReadAll(h)
 	require.NoError(t, err)
 	require.Equal(t, []byte("fake content"), content)
 
@@ -53,7 +52,7 @@ func TestHashingReadSeekerBadContentLength(t *testing.T) {
 
 	h := newHashingReadSeeker(inner)
 
-	content, err := ioutil.ReadAll(h)
+	content, err := io.ReadAll(h)
 	require.NoError(t, err)
 	require.Equal(t, []byte("fake"), content)
 

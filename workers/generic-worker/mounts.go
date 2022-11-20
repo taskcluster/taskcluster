@@ -219,7 +219,7 @@ func (ac *ArtifactContent) RequiredScopes() []string {
 	return []string{}
 }
 
-//No scopes required to mount files in a task
+// No scopes required to mount files in a task
 func (rc *RawContent) RequiredScopes() []string {
 	return []string{}
 }
@@ -849,7 +849,7 @@ func DownloadFile(url, contentSource, file string, logger *TaskRun) (sha256, con
 	return
 }
 
-//RawContent to file
+// RawContent to file
 func (rc *RawContent) Download(task *TaskRun) (file string, sha256 string, err error) {
 	basename := slugid.Nice()
 	file = filepath.Join(config.DownloadsDir, basename)
@@ -874,7 +874,7 @@ func (rc *RawContent) TaskDependencies() []string {
 	return []string{}
 }
 
-//Base64Content to file
+// Base64Content to file
 func (bc *Base64Content) Download(task *TaskRun) (file string, sha256 string, err error) {
 	basename := slugid.Nice()
 	file = filepath.Join(config.DownloadsDir, basename)
@@ -899,7 +899,7 @@ func (bc *Base64Content) TaskDependencies() []string {
 	return []string{}
 }
 
-//Copying String to File
+// Copying String to File
 func writeStringtoFile(content, contentSource, file string, task *TaskRun) (err error) {
 	task.Infof("[mounts] Copying %v to %v", contentSource, file)
 	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)

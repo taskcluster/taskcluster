@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -114,7 +114,7 @@ func checkHeaders(t *testing.T, res *httptest.ResponseRecorder, requiredHeaders 
 }
 
 func checkStatusCode(t *testing.T, res *httptest.ResponseRecorder, statusCode int) {
-	respBody, err := ioutil.ReadAll(res.Body)
+	respBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatalf("Could not read response body: %v", err)
 	}
@@ -187,7 +187,7 @@ func TestBewit(t *testing.T) {
 					t.Fatalf("Bad response code %d", httpError.HttpResponseCode)
 				}
 			}
-			_, err = ioutil.ReadAll(resp.Body)
+			_, err = io.ReadAll(resp.Body)
 			if err != nil {
 				t.Fatalf("Exception thrown:\n%s", err)
 			}

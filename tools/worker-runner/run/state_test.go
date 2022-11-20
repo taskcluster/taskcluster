@@ -1,7 +1,7 @@
 package run
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -104,7 +104,7 @@ func TestReadCacheFile(t *testing.T) {
 			var state State
 			cachePath := filepath.Join(dir, "cache-badperms.json")
 
-			err := ioutil.WriteFile(cachePath, []byte(`{"RootURL":"foo"}`), 0644)
+			err := os.WriteFile(cachePath, []byte(`{"RootURL":"foo"}`), 0644)
 			require.NoError(t, err)
 
 			found, err := ReadCacheFile(&state, cachePath)

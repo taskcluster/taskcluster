@@ -14,7 +14,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -288,7 +287,7 @@ func setupExposer() (err error) {
 }
 
 func ReadTasksResolvedFile() uint {
-	b, err := ioutil.ReadFile("tasks-resolved-count.txt")
+	b, err := os.ReadFile("tasks-resolved-count.txt")
 	if err != nil {
 		log.Printf("could not open tasks-resolved-count.txt: %s (ignored)", err)
 		return 0
@@ -305,7 +304,7 @@ func ReadTasksResolvedFile() uint {
 // Also called from tests, so avoid panic in this function since this could
 // cause tests to silently pass - instead require error handling.
 func UpdateTasksResolvedFile(t uint) error {
-	err := ioutil.WriteFile("tasks-resolved-count.txt", []byte(strconv.Itoa(int(t))), 0777)
+	err := os.WriteFile("tasks-resolved-count.txt", []byte(strconv.Itoa(int(t))), 0777)
 	if err != nil {
 		return err
 	}
@@ -708,7 +707,8 @@ func (task *TaskRun) Error(message string) {
 }
 
 // Log lines like:
-//  [taskcluster 2017-01-25T23:31:13.787Z] Hey, hey, we're The Monkees.
+//
+//	[taskcluster 2017-01-25T23:31:13.787Z] Hey, hey, we're The Monkees.
 func (task *TaskRun) Log(prefix, message string) {
 	task.logMux.Lock()
 	defer task.logMux.Unlock()

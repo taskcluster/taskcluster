@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 
 	"golang.org/x/crypto/ed25519"
@@ -180,7 +180,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 		panic(e)
 	}
 	// create unsigned chain-of-trust.json
-	e = ioutil.WriteFile(unsignedCert, certBytes, 0644)
+	e = os.WriteFile(unsignedCert, certBytes, 0644)
 	if e != nil {
 		panic(e)
 	}
@@ -188,7 +188,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 
 	// create detached ed25519 chain-of-trust.json.sig
 	sig := ed25519.Sign(feature.ed25519PrivKey, certBytes)
-	e = ioutil.WriteFile(ed25519SignedCert, sig, 0644)
+	e = os.WriteFile(ed25519SignedCert, sig, 0644)
 	if e != nil {
 		panic(e)
 	}

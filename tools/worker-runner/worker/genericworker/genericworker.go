@@ -3,8 +3,8 @@ package genericworker
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
@@ -104,7 +104,7 @@ func (d *genericworker) StartWorker(state *run.State) (workerproto.Transport, er
 	if err != nil {
 		return nil, fmt.Errorf("Error constructing worker config: %v", err)
 	}
-	err = ioutil.WriteFile(d.wicfg.ConfigPath, content, 0600)
+	err = os.WriteFile(d.wicfg.ConfigPath, content, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("Error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
 	}

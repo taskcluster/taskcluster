@@ -60,7 +60,8 @@ func TestAppDataNotShared(t *testing.T) {
 
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1360539
 // Test we don't get weird error:
-//  c:\cygwin\bin\bash.exe: *** CreateFileMappingA, Win32 error 0.  Terminating.
+//
+//	c:\cygwin\bin\bash.exe: *** CreateFileMappingA, Win32 error 0.  Terminating.
 func TestNoCreateFileMappingError(t *testing.T) {
 	if os.Getenv("GW_SKIP_MOZILLA_BUILD_TESTS") != "" {
 		t.Skip("Skipping since GW_SKIP_MOZILLA_BUILD_TESTS env var is set")
