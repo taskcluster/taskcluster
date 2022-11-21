@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
-import { string, arrayOf, oneOf, shape } from 'prop-types';
+import { string, arrayOf, shape, bool } from 'prop-types';
 import classNames from 'classnames';
-import { curry, pipe, map, sort as rSort } from 'ramda';
+import { pipe, map, sort as rSort } from 'ramda';
 import { lowerCase } from 'lower-case';
 import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
@@ -17,8 +17,14 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import StatusLabel from '../StatusLabel';
 import Link from '../../utils/Link';
 import sort from '../../utils/sort';
-import { TASK_STATE } from '../../utils/constants';
-import { pageInfo, client } from '../../utils/prop-types';
+import {
+  filterTasks,
+  taskLastRun,
+  taskRunDurationInMs,
+} from '../../utils/task';
+import { pageInfo, task, taskState } from '../../utils/prop-types';
+import TimeDiff from '../Duration';
+import DateDistance from '../DateDistance';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.metadata.name, b.node.metadata.name)),
@@ -33,32 +39,21 @@ const sorted = pipe(
   )
 );
 const valueFromNode = (node, sortBy) => {
+  const lastRun = taskLastRun(node);
   const mapping = {
     Status: node.status.state,
     Name: node.metadata.name,
+    Duration: taskRunDurationInMs(lastRun),
+    Started: lastRun?.from,
+    Resolved: lastRun?.to,
   };
 
   return mapping[sortBy];
 };
 
-const filterTasksByState = curry((filter, tasks) =>
-  filter
-    ? tasks.filter(({ node: { status: { state } } }) => filter.includes(state))
-    : tasks
-);
-const filterTasksByName = curry((searchTerm, tasks) =>
-  searchTerm
-    ? tasks.filter(({ node: { metadata: { name } } }) =>
-        (name ? lowerCase(name) : '').includes(searchTerm)
-      )
-    : tasks
-);
 const createSortedTasks = memoize(
   (tasks, sortBy, sortDirection, filter, searchTerm) => {
-    const filteredTasks = pipe(
-      filterTasksByState(filter),
-      filterTasksByName(searchTerm)
-    )(tasks);
+    const filteredTasks = filterTasks(tasks, filter, searchTerm);
 
     if (!sortBy) {
       return filteredTasks;
@@ -125,19 +120,61 @@ const createSortedTasks = memoize(
     display: 'flex',
     flex: 1,
     justifyContent: 'flex-end',
+    width: '12%',
+  },
+  tableTimingHeadCell: {
+    display: 'flex',
+    flex: 1,
+    justifyContent: 'flex-end',
+    width: '12%',
+    [theme.breakpoints.down('md')]: {
+      display: 'none',
+    },
+  },
+  tableThirdHeadCell: {
+    display: 'flex',
+    flex: 1,
+    justifyContent: 'flex-end',
+    width: '12%',
   },
   tableRow: {
     display: 'flex',
     ...theme.mixins.hover,
   },
   tableFirstCell: {
-    width: '60%',
+    width: '76%',
+  },
+  tableFirstShortCell: {
+    width: '52%',
+    [theme.breakpoints.down('md')]: {
+      width: '76%',
+    },
   },
   tableSecondCell: {
     display: 'flex',
     justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    width: '12%',
+    paddingRight: theme.spacing(4),
+  },
+  tableTimeCell: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    width: '12%',
+    paddingRight: theme.spacing(2),
+    '& abbr': {
+      textDecoration: 'none',
+    },
+    [theme.breakpoints.down('md')]: {
+      display: 'none',
+    },
+  },
+  tableThirdCell: {
+    display: 'flex',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    width: '40%',
+    width: '12%',
   },
   noTasksText: {
     marginTop: theme.spacing(2),
@@ -156,13 +193,15 @@ export default class TaskGroupTable extends Component {
     /** Task GraphQL PageConnection instance. */
     // eslint-disable-next-line react/no-unused-prop-types
     taskGroupConnection: shape({
-      edges: arrayOf(client),
+      edges: arrayOf(task),
       pageInfo,
     }).isRequired,
     /** A task state filter to narrow down results. */
-    filter: oneOf(Object.values(TASK_STATE)),
+    filter: taskState,
     /** A task name search term to narrow down results. */
     searchTerm: string,
+    /** Show start & resolved timings */
+    showTimings: bool,
   };
 
   state = {
@@ -200,7 +239,7 @@ export default class TaskGroupTable extends Component {
 
   render() {
     const { sortBy, sortDirection, tasks } = this.state;
-    const { classes, filter, searchTerm } = this.props;
+    const { classes, filter, searchTerm, showTimings } = this.props;
     const iconSize = 16;
     const items = createSortedTasks(
       tasks,
@@ -212,6 +251,7 @@ export default class TaskGroupTable extends Component {
     const itemCount = items.length;
     const ItemRenderer = ({ index, style }) => {
       const taskGroup = items[index].node;
+      const run = taskLastRun(taskGroup);
 
       return (
         <TableRow
@@ -221,7 +261,9 @@ export default class TaskGroupTable extends Component {
           role="row">
           <TableCell
             size="small"
-            className={classes.tableFirstCell}
+            className={
+              showTimings ? classes.tableFirstShortCell : classes.tableFirstCell
+            }
             component="div"
             role="cell">
             <Link
@@ -236,9 +278,40 @@ export default class TaskGroupTable extends Component {
               </span>
             </Link>
           </TableCell>
+          {showTimings && (
+            <TableCell
+              size="small"
+              className={classes.tableTimeCell}
+              component="div"
+              role="cell">
+              <abbr title={run.from}>
+                {run?.from ? <DateDistance from={run.from} /> : 'n/a'}
+              </abbr>
+            </TableCell>
+          )}
+          {showTimings && (
+            <TableCell
+              size="small"
+              className={classes.tableTimeCell}
+              component="div"
+              role="cell">
+              <abbr title={run.to}>
+                {run?.to ? <DateDistance from={run.to} /> : 'n/a'}
+              </abbr>
+            </TableCell>
+          )}
           <TableCell
             size="small"
             className={classes.tableSecondCell}
+            component="div"
+            role="cell">
+            <span>
+              {run ? <TimeDiff from={run.from} offset={run.to} /> : 'n/a'}
+            </span>
+          </TableCell>
+          <TableCell
+            size="small"
+            className={classes.tableThirdCell}
             component="div"
             role="cell">
             <span>
@@ -263,7 +336,9 @@ export default class TaskGroupTable extends Component {
               <TableCell
                 size="small"
                 className={classNames(
-                  classes.tableFirstCell,
+                  showTimings
+                    ? classes.tableFirstShortCell
+                    : classes.tableFirstCell,
                   classes.tableHeadCell
                 )}
                 component="div"
@@ -276,11 +351,57 @@ export default class TaskGroupTable extends Component {
                   Name
                 </TableSortLabel>
               </TableCell>
+              {showTimings && (
+                <TableCell
+                  size="small"
+                  component="div"
+                  role="columnheader"
+                  className={classes.tableTimingHeadCell}>
+                  <TableSortLabel
+                    className={classes.tableHeadCell}
+                    id="Started"
+                    active={sortBy === 'Started'}
+                    direction={sortDirection || 'desc'}
+                    onClick={this.handleHeaderClick}>
+                    Started
+                  </TableSortLabel>
+                </TableCell>
+              )}
+              {showTimings && (
+                <TableCell
+                  size="small"
+                  component="div"
+                  role="columnheader"
+                  className={classes.tableTimingHeadCell}>
+                  <TableSortLabel
+                    className={classes.tableHeadCell}
+                    id="Resolved"
+                    active={sortBy === 'Resolved'}
+                    direction={sortDirection || 'desc'}
+                    onClick={this.handleHeaderClick}>
+                    Resolved
+                  </TableSortLabel>
+                </TableCell>
+              )}
               <TableCell
                 size="small"
                 component="div"
                 role="columnheader"
                 className={classes.tableSecondHeadCell}>
+                <TableSortLabel
+                  className={classes.tableHeadCell}
+                  id="Duration"
+                  active={sortBy === 'Duration'}
+                  direction={sortDirection || 'desc'}
+                  onClick={this.handleHeaderClick}>
+                  Duration
+                </TableSortLabel>
+              </TableCell>
+              <TableCell
+                size="small"
+                component="div"
+                role="columnheader"
+                className={classes.tableThirdHeadCell}>
                 <TableSortLabel
                   className={classes.tableHeadCell}
                   id="Status"
