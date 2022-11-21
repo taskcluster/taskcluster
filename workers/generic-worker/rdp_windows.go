@@ -7,6 +7,7 @@ import (
 
 	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
 	"github.com/taskcluster/taskcluster/v44/internal/scopes"
+	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/fileutil"
 )
 
@@ -93,15 +94,15 @@ func (l *RDPTask) createRDPArtifact() {
 
 func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
 	return l.task.uploadArtifact(
-		&S3Artifact{
-			BaseArtifact: &BaseArtifact{
+		createDataArtifact(
+			&artifacts.BaseArtifact{
 				Name: l.task.Payload.RdpInfo,
 				// RDP info expires one day after task
 				Expires: tcclient.Time(time.Now().Add(time.Hour * 24)),
 			},
-			ContentType:     "application/json",
-			ContentEncoding: "gzip",
-			Path:            rdpInfoPath,
-		},
+			rdpInfoPath,
+			"application/json",
+			"gzip",
+		),
 	)
 }

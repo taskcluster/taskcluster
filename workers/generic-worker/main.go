@@ -31,6 +31,7 @@ import (
 	"github.com/taskcluster/taskcluster/v44/internal"
 	"github.com/taskcluster/taskcluster/v44/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v44/internal/scopes"
+	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/errorreport"
 	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/expose"
 	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/fileutil"
@@ -570,7 +571,7 @@ func ClaimWork() *TaskRun {
 			Definition:        taskResponse.Task,
 			Queue:             taskQueue,
 			TaskClaimResponse: tcqueue.TaskClaimResponse(taskResponse),
-			Artifacts:         map[string]TaskArtifact{},
+			Artifacts:         map[string]artifacts.TaskArtifact{},
 			featureArtifacts: map[string]string{
 				logName: "Native Log",
 			},
@@ -999,7 +1000,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 			// found, and so an error artifact was uploaded. So we do that
 			// here:
 			switch a := artifact.(type) {
-			case *ErrorArtifact:
+			case *artifacts.ErrorArtifact:
 				fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
 				err.add(fail)
 				task.Errorf("TASK FAILURE during artifact upload: %v", fail)

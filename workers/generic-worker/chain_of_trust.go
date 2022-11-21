@@ -14,6 +14,7 @@ import (
 
 	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v44/internal/scopes"
+	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/fileutil"
 )
 
@@ -133,11 +134,18 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	err.add(feature.task.uploadLog(certifiedLogName, certifiedLogPath))
 	artifactHashes := map[string]ArtifactHash{}
 	for _, artifact := range feature.task.Artifacts {
+		// make sure SHA256 is calculated
 		switch a := artifact.(type) {
-		case *S3Artifact:
-			// make sure SHA256 is calculated
-			file := filepath.Join(taskContext.TaskDir, a.Path)
-			hash, hashErr := fileutil.CalculateSHA256(file)
+		case *artifacts.S3Artifact:
+			hash, hashErr := fileutil.CalculateSHA256(a.RawContentFile)
+			if hashErr != nil {
+				panic(hashErr)
+			}
+			artifactHashes[a.Name] = ArtifactHash{
+				SHA256: hash,
+			}
+		case *artifacts.ObjectArtifact:
+			hash, hashErr := fileutil.CalculateSHA256(a.RawContentFile)
 			if hashErr != nil {
 				panic(hashErr)
 			}
@@ -185,15 +193,15 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 		panic(e)
 	}
 	err.add(feature.task.uploadArtifact(
-		&S3Artifact{
-			BaseArtifact: &BaseArtifact{
+		createDataArtifact(
+			&artifacts.BaseArtifact{
 				Name:    ed25519SignedCertName,
 				Expires: feature.task.Definition.Expires,
 			},
-			ContentType:     "application/octet-stream",
-			ContentEncoding: "gzip",
-			Path:            ed25519SignedCertPath,
-		},
+			ed25519SignedCertPath,
+			"application/octet-stream",
+			"gzip",
+		),
 	))
 }
 

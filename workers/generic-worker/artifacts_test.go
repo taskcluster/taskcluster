@@ -11,6 +11,7 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
 	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/artifacts"
 )
 
 var (
@@ -22,7 +23,7 @@ var (
 func validateArtifacts(
 	t *testing.T,
 	payloadArtifacts []Artifact,
-	expected []TaskArtifact) {
+	expected []artifacts.TaskArtifact) {
 
 	// to test, create a dummy task run with given artifacts
 	// and then call Artifacts() method to see what
@@ -38,10 +39,21 @@ func validateArtifacts(
 	for i := range payloadArtifacts {
 		tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts[i])
 	}
-	artifacts := tr.PayloadArtifacts()
+	got := tr.PayloadArtifacts()
 
-	if !reflect.DeepEqual(artifacts, expected) {
-		t.Fatalf("Expected different artifacts to be generated...\nExpected:\n%q\nActual:\n%q", expected, artifacts)
+	// RawContentFile contains a full path that depends on the specific
+	// task directory, so empty that value out before comparing.
+	for _, a := range got {
+		if s3a, ok := a.(*artifacts.S3Artifact); ok {
+			s3a.RawContentFile = ""
+		}
+		if obja, ok := a.(*artifacts.ObjectArtifact); ok {
+			obja.RawContentFile = ""
+		}
+	}
+
+	if !reflect.DeepEqual(got, expected) {
+		t.Fatalf("Expected different artifacts to be generated...\nExpected:\n%q\nActual:\n%q", expected, got)
 	}
 }
 
@@ -61,9 +73,9 @@ func TestFileArtifactWithNames(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/build/firefox.exe",
 					Expires: inAnHour,
 				},
@@ -91,15 +103,45 @@ func TestFileArtifactWithContentType(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/build/firefox.exe",
 					Expires: inAnHour,
 				},
 				ContentType:     "application/octet-stream",
 				ContentEncoding: "gzip",
 				Path:            "SampleArtifacts/_/X.txt",
+			},
+		})
+}
+
+func TestFileArtifactAsObjectWithContentType(t *testing.T) {
+
+	defer setup(t)()
+	config.CreateObjectArtifacts = true
+	validateArtifacts(t,
+
+		// what appears in task payload
+		[]Artifact{
+			{
+				Expires:     inAnHour,
+				Path:        "SampleArtifacts/_/X.txt",
+				Type:        "file",
+				Name:        "public/build/firefox.exe",
+				ContentType: "application/octet-stream",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]artifacts.TaskArtifact{
+			&artifacts.ObjectArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
+					Name:    "public/build/firefox.exe",
+					Expires: inAnHour,
+				},
+				ContentType: "application/octet-stream",
+				Path:        "SampleArtifacts/_/X.txt",
 			},
 		})
 }
@@ -159,9 +201,9 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -169,8 +211,8 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            "SampleArtifacts/_/X.txt",
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -178,8 +220,8 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            "SampleArtifacts/b/c/d.jpg",
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -187,8 +229,8 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            "SampleArtifacts/_/X.txt",
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -196,8 +238,8 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            "SampleArtifacts/b/c/d.jpg",
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -205,8 +247,8 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            "SampleArtifacts/_/X.txt",
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -233,9 +275,9 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/%%%/v/X",
 					Expires: inAnHour,
 				},
@@ -243,8 +285,8 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -252,8 +294,8 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -281,9 +323,9 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/%%%/v/X",
 					Expires: inAnHour,
 				},
@@ -291,8 +333,8 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -300,8 +342,8 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -338,9 +380,9 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/%%%/v/X",
 					Expires: inAnHour,
 				},
@@ -348,8 +390,8 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -357,8 +399,8 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -366,8 +408,8 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/%%%/v/X",
 					Expires: inAnHour,
 				},
@@ -375,8 +417,8 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -384,8 +426,8 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -413,9 +455,9 @@ func TestDirectoryArtifacts(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/%%%/v/X",
 					Expires: inAnHour,
 				},
@@ -423,8 +465,8 @@ func TestDirectoryArtifacts(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -432,8 +474,8 @@ func TestDirectoryArtifacts(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -458,9 +500,9 @@ func TestMissingFileArtifact(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&ErrorArtifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.ErrorArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    t.Name() + "/no_such_file",
 					Expires: inAnHour,
 				},
@@ -485,9 +527,9 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&ErrorArtifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.ErrorArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    t.Name() + "/no_such_dir",
 					Expires: inAnHour,
 				},
@@ -512,9 +554,9 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&ErrorArtifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.ErrorArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/b/c",
 					Expires: inAnHour,
 				},
@@ -538,9 +580,9 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -567,9 +609,9 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&ErrorArtifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.ErrorArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/b/c/d.jpg",
 					Expires: inAnHour,
 				},
