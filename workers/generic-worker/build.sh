@@ -122,20 +122,13 @@ fi
 
 ls -1 "$OUTPUT_DIR"/generic-worker-*
 
-####################################################################
-# The version number in these lines is automatically updated by
-#   infrastructure/tooling/src/release/tasks.js
-# when a new major release is made.
-####################################################################
-CGO_ENABLED=0 go get \
-  github.com/taskcluster/taskcluster/v44/tools/livelog \
-  github.com/taskcluster/taskcluster/v44/tools/taskcluster-proxy \
-  golang.org/x/lint/golint \
-  github.com/gordonklaus/ineffassign \
-  golang.org/x/tools/cmd/goimports
-
-# Previous `go get` command modifies go module, so let's clean that up
-go mod tidy
+proj_root=$(go list . | sed -e 's!/workers/generic-worker$!!' )
+CGO_ENABLED=0 go install "${proj_root}/tools/livelog@latest"
+CGO_ENABLED=0 go install "${proj_root}/tools/taskcluster-proxy@latest"
+CGO_ENABLED=0 go install "${proj_root}/workers/generic-worker/resolvetask@latest"
+CGO_ENABLED=0 go install golang.org/x/lint/golint@v0.0.0-20210508222113-6edffad5e616
+CGO_ENABLED=0 go install github.com/gordonklaus/ineffassign@v0.0.0-20220928193011-d2c82e48359b
+CGO_ENABLED=0 go install golang.org/x/tools/cmd/goimports@v0.3.0
 
 if $TEST; then
 ####################################################################

@@ -285,8 +285,6 @@ See the [![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/work
 Set up to build Taskcluster in general.
 See [development process](../../dev-docs/development-process.md).
 
-* Run `go get github.com/taskcluster/livelog`
- Run `go get github.com/taskcluster/taskcluster/v30/tools/taskcluster-proxy`
 
 In the `workers/generic-worker` directory, run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
 
