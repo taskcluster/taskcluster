@@ -100,7 +100,7 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 			&FinishUploadRequest{
 				ProjectID: projectID,
 				UploadID:  uploadID,
-				Hashes:    hashes,
+				Hashes:    marshalHashes(hashes),
 			},
 		)
 		if err != nil {

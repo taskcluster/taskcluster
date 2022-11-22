@@ -12,11 +12,11 @@ import (
 	"github.com/johncgriffin/overflow"
 )
 
-// A hashingReadSeeker implements io.ReadSeeker and wraps another io.ReadSeeker, adding
+// A hashingWriteSeeker implements io.WriteSeeker and wraps another io.WriteSeeker, adding
 // functionality to hash as the data is being read.  Seeking back to the beginning resets
 // the hashing. Seeking anywhere else in the wrapped object is an error.
-type hashingReadSeeker struct {
-	inner io.ReadSeeker
+type hashingWriteSeeker struct {
+	inner io.WriteSeeker
 	// hashes for each supported algorithm
 	sha256 hash.Hash
 	sha512 hash.Hash
@@ -25,8 +25,8 @@ type hashingReadSeeker struct {
 	bytes int64
 }
 
-func newHashingReadSeeker(inner io.ReadSeeker) *hashingReadSeeker {
-	return &hashingReadSeeker{
+func newHashingWriteSeeker(inner io.WriteSeeker) *hashingWriteSeeker {
+	return &hashingWriteSeeker{
 		inner:  inner,
 		sha256: sha256.New(),
 		sha512: sha512.New(),
@@ -34,14 +34,14 @@ func newHashingReadSeeker(inner io.ReadSeeker) *hashingReadSeeker {
 	}
 }
 
-// Read implements the io.Reader interface
-func (h *hashingReadSeeker) Read(b []byte) (n int, err error) {
-	n, err = h.inner.Read(b)
+// Write implements the io.Writer interface
+func (h *hashingWriteSeeker) Write(b []byte) (n int, err error) {
+	n, err = h.inner.Write(b)
 	if err != nil || n == 0 {
 		return
 	}
 
-	// slice b down to just the buffer into which `Read` placed data
+	// slice b down to just the buffer from which `Write` wrote data
 	b = b[:n]
 
 	// use the io.Writer interface for each of the hashers.  This interface's
@@ -66,7 +66,7 @@ func (h *hashingReadSeeker) Read(b []byte) (n int, err error) {
 }
 
 // Seek implements the io.Seeker interface
-func (h *hashingReadSeeker) Seek(offset int64, whence int) (pos int64, err error) {
+func (h *hashingWriteSeeker) Seek(offset int64, whence int) (pos int64, err error) {
 	if whence != io.SeekStart || offset != 0 {
 		err = errors.New("only seek(0, io.SeekStart) is supported")
 		return
@@ -85,12 +85,7 @@ func (h *hashingReadSeeker) Seek(offset int64, whence int) (pos int64, err error
 
 // Hashes returns the calculated hashes, in a shape appropriate for FinishUpload.  If the
 // content length does not match the number of bytes hashed, something has gone wrong.
-func (h *hashingReadSeeker) hashes(contentLength int64) (map[string]string, error) {
-	if h.bytes != contentLength {
-		err := fmt.Errorf("hashing read seeker hashed %v bytes, but content length is %v", h.bytes, contentLength)
-		return nil, err
-	}
-
+func (h *hashingWriteSeeker) hashes() (map[string]string, error) {
 	return map[string]string{
 		"sha256": hex.EncodeToString(h.sha256.Sum(nil)),
 		"sha512": hex.EncodeToString(h.sha512.Sum(nil)),
