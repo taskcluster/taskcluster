@@ -14,6 +14,7 @@ import {
 @withStyles(theme => ({
   container: {
     marginBottom: theme.spacing(2),
+    padding: theme.spacing(1),
   },
   legend: {
     left: theme.spacing(1),

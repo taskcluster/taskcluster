@@ -284,7 +284,7 @@ export default class TaskGroupTable extends Component {
               className={classes.tableTimeCell}
               component="div"
               role="cell">
-              <abbr title={run.from}>
+              <abbr title={run?.from}>
                 {run?.from ? <DateDistance from={run.from} /> : 'n/a'}
               </abbr>
             </TableCell>
@@ -295,7 +295,7 @@ export default class TaskGroupTable extends Component {
               className={classes.tableTimeCell}
               component="div"
               role="cell">
-              <abbr title={run.to}>
+              <abbr title={run?.to}>
                 {run?.to ? <DateDistance from={run.to} /> : 'n/a'}
               </abbr>
             </TableCell>
