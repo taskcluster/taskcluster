@@ -2724,9 +2724,9 @@
   },
   {
     "element": "h3",
-    "id": "httpget-download-method",
+    "id": "geturl-download-method",
     "path": "/reference/platform/object/download-methods",
-    "subtitle": "`HTTP:GET` Download Method",
+    "subtitle": "`getUrl` Download Method",
     "title": "Download Methods"
   },
   {
