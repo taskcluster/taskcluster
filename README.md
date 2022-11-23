@@ -96,6 +96,7 @@ This repository is used to develop, build, and release the Taskcluster services.
 * [Taskcluster UI](ui#readme)
     * [ui/src/components/CopyToClipboardListItem](ui/src/components/CopyToClipboardListItem#readme)
     * [ui/src/components/DateDistance](ui/src/components/DateDistance#readme)
+    * [ui/src/components/Duration](ui/src/components/Duration#readme)
     * [ui/src/components/Search](ui/src/components/Search#readme)
     * [ui/src/components/Snackbar](ui/src/components/Snackbar#readme)
     * [ui/src/components/SpeedDial](ui/src/components/SpeedDial#readme)
