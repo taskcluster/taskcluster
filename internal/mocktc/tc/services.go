@@ -43,6 +43,7 @@ type Queue interface {
 	ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error)
 	CreateArtifact(taskId, runId, name string, payload *tcqueue.PostArtifactRequest) (*tcqueue.PostArtifactResponse, error)
 	CreateTask(taskId string, payload *tcqueue.TaskDefinitionRequest) (*tcqueue.TaskStatusResponse, error)
+	FinishArtifact(taskId, runId, name string, payload *tcqueue.FinishArtifactRequest) error
 	GetLatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error)
 	ListArtifacts(taskId, runId, continuationToken, limit string) (*tcqueue.ListArtifactsResponse, error)
 	Artifact(taskId, runId, name string) (*tcqueue.GetArtifactContentResponse, error)

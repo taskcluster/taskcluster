@@ -314,7 +314,14 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 	e = artifact.ProcessResponse(resp, task, config)
 	if e != nil {
 		task.Errorf("Error uploading artifact: %v", e)
+		return ResourceUnavailable(e)
 	}
-	// note: ResourceUnavailable(nil) returns nil, so this only returns an error if e != nil
-	return ResourceUnavailable(e)
+
+	e = artifact.FinishArtifact(resp, task.Queue, task.TaskID, strconv.Itoa(int(task.RunID)), artifact.Base().Name)
+	if e != nil {
+		task.Errorf("Error finishing artifact: %v", e)
+		return ResourceUnavailable(e)
+	}
+
+	return nil
 }

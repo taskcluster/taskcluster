@@ -167,6 +167,14 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *tcqueue.
 	return &par, nil
 }
 
+func (queue *Queue) FinishArtifact(taskId, runId, name string, payload *tcqueue.FinishArtifactRequest) error {
+	queue.mu.Lock()
+	defer queue.mu.Unlock()
+
+	// do nothing (for now)
+	return nil
+}
+
 func (queue *Queue) ensureUnchangedIfAlreadyExists(taskId, runId, name string, request interface{}) error {
 	previousVersion, existed := queue.artifacts[taskId+":"+runId][name]
 	if !existed || reflect.DeepEqual(previousVersion, request) {
