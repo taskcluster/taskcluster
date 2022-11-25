@@ -59,7 +59,7 @@ func (base *BaseArtifact) Base() *BaseArtifact {
 	return base
 }
 
-// FinishArtifact implements TaskArtifacg#FinishArtifact.
+// FinishArtifact implements TaskArtifact#FinishArtifact.
 //
 // This provides a default implementation that does not call
 // queue.FinishArtifact, as appropriate for link, redirect, error, and s3
