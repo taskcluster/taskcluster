@@ -739,3 +739,24 @@ func TestEmptyContentEncoding(t *testing.T) {
 		t.Fatalf("Was expecting log file to explain that contentEncoding was invalid, but it doesn't: \n%v", logtext)
 	}
 }
+
+func TestObjectArtifact(t *testing.T) {
+
+	defer setup(t)()
+	config.CreateObjectArtifacts = true
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "SampleArtifacts/_/X.txt",
+				Type: "file",
+				Name: "public/build/firefox.exe",
+			},
+		},
+	}
+
+	td := testTask(t)
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}

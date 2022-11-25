@@ -62,4 +62,7 @@ type Object interface {
 	CreateUpload(name string, payload *tcobject.CreateUploadRequest) (*tcobject.CreateUploadResponse, error)
 	FinishUpload(name string, payload *tcobject.FinishUploadRequest) error
 	StartDownload(name string, payload *tcobject.DownloadObjectRequest) (*tcobject.DownloadObjectResponse, error)
+
+	// non-API functions
+	UploadFromFile(projectID string, name string, contentType string, expires time.Time, uploadID string, filepath string) error
 }

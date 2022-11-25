@@ -32,18 +32,21 @@ func (object *Object) CreateUpload(name string, payload *tcobject.CreateUploadRe
 	object.objects[name] = Obj{
 		uploadRequest: payload,
 	}
+	um := tcobject.SelectedUploadMethodOrNone{}
+	if payload.ProposedUploadMethods.DataInline.ContentType != "" {
+		um.DataInline = true
+	} else {
+		um.PutURL = tcobject.PutURLUploadResponse{
+			Expires: tcclient.Time(time.Now().Add(1 * time.Hour)),
+			Headers: map[string]string{"header1": "value1"},
+			URL:     object.baseURL + "/upload",
+		}
+	}
 	return &tcobject.CreateUploadResponse{
-		Expires:   payload.Expires,
-		ProjectID: payload.ProjectID,
-		UploadID:  payload.UploadID,
-		UploadMethod: tcobject.SelectedUploadMethodOrNone{
-			DataInline: payload.ProposedUploadMethods.DataInline.ContentType != "",
-			PutURL: tcobject.PutURLUploadResponse{
-				Expires: tcclient.Time(time.Now().Add(1 * time.Hour)),
-				Headers: map[string]string{"header1": "value1"},
-				URL:     object.baseURL + "/upload",
-			},
-		},
+		Expires:      payload.Expires,
+		ProjectID:    payload.ProjectID,
+		UploadID:     payload.UploadID,
+		UploadMethod: um,
 	}, nil
 }
 
@@ -83,6 +86,12 @@ func (object *Object) StartDownload(name string, payload *tcobject.DownloadObjec
 		object.t.Fatalf("Error marshalling into json: %v", err)
 	}
 	return &dor, nil
+}
+
+func (object *Object) UploadFromFile(projectID string, name string, contentType string, expires time.Time, uploadID string, filepath string) error {
+	// this isn't an API method, so this is never actually called, but must be
+	// here to implement the tc.Object interface
+	panic("never actually called")
 }
 
 /////////////////////////////////////////////////

@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
+	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
 	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
 )
@@ -125,6 +126,14 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *tcqueue.
 		}
 		req = &s3Request
 		resp, err = queue.createS3Artifact(taskId, runId, name, &s3Request)
+	case "object":
+		var objectRequest tcqueue.ObjectArtifactRequest
+		err = json.Unmarshal([]byte(*payload), &objectRequest)
+		if err != nil {
+			queue.t.Fatalf("Error unmarshalling Object Artifact Request from json: %v", err)
+		}
+		req = &objectRequest
+		resp, err = queue.createObjectArtifact(taskId, runId, name, &objectRequest)
 	case "error":
 		var errorRequest tcqueue.ErrorArtifactRequest
 		err = json.Unmarshal([]byte(*payload), &errorRequest)
@@ -188,6 +197,20 @@ func (queue *Queue) ensureUnchangedIfAlreadyExists(taskId, runId, name string, r
 			HttpResponseCode: 409,
 		},
 	}
+}
+
+func (queue *Queue) createObjectArtifact(taskId, runId, name string, objectRequest *tcqueue.ObjectArtifactRequest) (*tcqueue.ObjectArtifactResponse, error) {
+	err := queue.ensureUnchangedIfAlreadyExists(taskId, runId, name, objectRequest)
+	if err != nil {
+		return nil, err
+	}
+	return &tcqueue.ObjectArtifactResponse{
+		Expires:     objectRequest.Expires,
+		Name:        name,
+		ProjectID:   "test-project",
+		UploadID:    slugid.Nice(),
+		StorageType: objectRequest.StorageType,
+	}, nil
 }
 
 func (queue *Queue) createS3Artifact(taskId, runId, name string, s3Request *tcqueue.S3ArtifactRequest) (*tcqueue.S3ArtifactResponse, error) {
