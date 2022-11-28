@@ -16,7 +16,13 @@ query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter
         taskGroupId
         status {
           state
+          runs {
+            runId
+            started
+            resolved
+          }
         }
+
       }
     }
   }
