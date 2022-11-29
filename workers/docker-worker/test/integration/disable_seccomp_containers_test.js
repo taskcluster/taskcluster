@@ -21,7 +21,7 @@ suite('disableSeccomp capability', () => {
   test('task error when necessary scopes missing', async () => {
     settings.configure({
       dockerConfig: {
-        allowDisableSeccomp: true,
+        disableSeccomp: true,
       },
     });
 
@@ -91,7 +91,7 @@ suite('disableSeccomp capability', () => {
   test('use performance counter in a container with disableSeccomp -- task should succeed', async () => {
     settings.configure({
       dockerConfig: {
-        allowDisableSeccomp: true,
+        disableSeccomp: true,
       },
     });
 
