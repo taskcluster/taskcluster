@@ -786,7 +786,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "listLastFires",
 				Title:       "Get information about recent hook fires",
-				Description: "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not",
+				Description: "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not\n\nBy default this endpoint will return up to 1000 last fires in one request.",
 				Stability:   "stable",
 				Method:      "get",
 				Route:       "/hooks/<hookGroupId>/<hookId>/last-fires",
@@ -794,7 +794,10 @@ var services = map[string]definitions.Service{
 					"hookGroupId",
 					"hookId",
 				},
-				Query: []string{},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
 				Input: "",
 			},
 			definitions.Entry{

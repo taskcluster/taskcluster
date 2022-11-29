@@ -732,10 +732,10 @@ Get a hook last fire.
   * `result text`
   * `error text`
   * `etag uuid`
-* *Last defined on version*: 49
+* *Last defined on version*: 79
 
 Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,
-ordered by `hook_group_id`, `hook_id`, and  `worker_id`.
+ordered by `hook_group_id`, `hook_id`, and `task_create_time`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 

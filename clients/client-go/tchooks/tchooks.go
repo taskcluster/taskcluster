@@ -348,14 +348,23 @@ func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payl
 // This endpoint will return information about the the last few times this hook has been
 // fired, including whether the hook was fired successfully or not
 //
+// By default this endpoint will return up to 1000 last fires in one request.
+//
 // Required scopes:
 //
 //	hooks:list-last-fires:<hookGroupId>/<hookId>
 //
 // See #listLastFires
-func (hooks *Hooks) ListLastFires(hookGroupId, hookId string) (*LastFiresList, error) {
+func (hooks *Hooks) ListLastFires(hookGroupId, hookId, continuationToken, limit string) (*LastFiresList, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", new(LastFiresList), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", new(LastFiresList), v)
 	return responseObject.(*LastFiresList), err
 }
 
@@ -366,9 +375,16 @@ func (hooks *Hooks) ListLastFires(hookGroupId, hookId string) (*LastFiresList, e
 //	hooks:list-last-fires:<hookGroupId>/<hookId>
 //
 // See ListLastFires for more details.
-func (hooks *Hooks) ListLastFires_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
+func (hooks *Hooks) ListLastFires_SignedURL(hookGroupId, hookId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
 	cd := tcclient.Client(*hooks)
-	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", nil, duration)
+	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", v, duration)
 }
 
 // Respond with a service heartbeat.
