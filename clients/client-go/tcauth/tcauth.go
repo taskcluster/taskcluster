@@ -9,30 +9,30 @@
 // /references/auth/v1/api.json
 // Authentication related API end-points for Taskcluster and related
 // services. These API end-points are of interest if you wish to:
-//   * Authorize a request signed with Taskcluster credentials,
-//   * Manage clients and roles,
-//   * Inspect or audit clients and roles,
-//   * Gain access to various services guarded by this API.
+//   - Authorize a request signed with Taskcluster credentials,
+//   - Manage clients and roles,
+//   - Inspect or audit clients and roles,
+//   - Gain access to various services guarded by this API.
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // First create an Auth object:
 //
-//  auth := tcauth.New(nil)
+//	auth := tcauth.New(nil)
 //
 // and then call one or more of auth's methods, e.g.:
 //
-//  err := auth.Ping(.....)
+//	err := auth.Ping(.....)
 //
 // handling any errors...
 //
-//  if err != nil {
-//  	// handle error...
-//  }
+//	if err != nil {
+//		// handle error...
+//	}
 //
-// Taskcluster Schema
+// # Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
 // <rootUrl>/references/auth/v1/api.json together with the input and output schemas it references,
@@ -51,14 +51,14 @@ type Auth tcclient.Client
 // nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  auth := tcauth.New(
-//      nil,                                      // client without authentication
-//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
-//  )
-//  err := auth.Ping(.....)                       // for example, call the Ping(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
+//	auth := tcauth.New(
+//	    nil,                                      // client without authentication
+//	    "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//	)
+//	err := auth.Ping(.....)                       // for example, call the Ping(.....) API endpoint (described further down)...
+//	if err != nil {
+//		// handle errors...
+//	}
 func New(credentials *tcclient.Credentials, rootURL string) *Auth {
 	return &Auth{
 		Credentials:  credentials,
@@ -77,9 +77,9 @@ func New(credentials *tcclient.Credentials, rootURL string) *Auth {
 //
 // The credentials are taken from environment variables:
 //
-//  TASKCLUSTER_CLIENT_ID
-//  TASKCLUSTER_ACCESS_TOKEN
-//  TASKCLUSTER_CERTIFICATE
+//	TASKCLUSTER_CLIENT_ID
+//	TASKCLUSTER_ACCESS_TOKEN
+//	TASKCLUSTER_CERTIFICATE
 //
 // If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
 // disabled.
@@ -136,7 +136,8 @@ func (auth *Auth) Version() error {
 // get a result without a `continuationToken`.
 //
 // Required scopes:
-//   auth:list-clients
+//
+//	auth:list-clients
 //
 // See #listClients
 func (auth *Auth) ListClients(continuationToken, limit, prefix string) (*ListClientResponse, error) {
@@ -158,7 +159,8 @@ func (auth *Auth) ListClients(continuationToken, limit, prefix string) (*ListCli
 // Returns a signed URL for ListClients, valid for the specified duration.
 //
 // Required scopes:
-//   auth:list-clients
+//
+//	auth:list-clients
 //
 // See ListClients for more details.
 func (auth *Auth) ListClients_SignedURL(continuationToken, limit, prefix string, duration time.Duration) (*url.URL, error) {
@@ -179,7 +181,8 @@ func (auth *Auth) ListClients_SignedURL(continuationToken, limit, prefix string,
 // Get information about a single client.
 //
 // Required scopes:
-//   auth:get-client:<clientId>
+//
+//	auth:get-client:<clientId>
 //
 // See #client
 func (auth *Auth) Client(clientId string) (*GetClientResponse, error) {
@@ -191,7 +194,8 @@ func (auth *Auth) Client(clientId string) (*GetClientResponse, error) {
 // Returns a signed URL for Client, valid for the specified duration.
 //
 // Required scopes:
-//   auth:get-client:<clientId>
+//
+//	auth:get-client:<clientId>
 //
 // See Client for more details.
 func (auth *Auth) Client_SignedURL(clientId string, duration time.Duration) (*url.URL, error) {
@@ -213,9 +217,10 @@ func (auth *Auth) Client_SignedURL(clientId string, duration time.Duration) (*ur
 // The caller's scopes must satisfy `scopes`.
 //
 // Required scopes:
-//   All of:
-//   * auth:create-client:<clientId>
-//   * For scope in scopes each <scope>
+//
+//	All of:
+//	* auth:create-client:<clientId>
+//	* For scope in scopes each <scope>
 //
 // See #createClient
 func (auth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, error) {
@@ -232,7 +237,8 @@ func (auth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*
 // you must reset the accessToken to acquire it again.
 //
 // Required scopes:
-//   auth:reset-access-token:<clientId>
+//
+//	auth:reset-access-token:<clientId>
 //
 // See #resetAccessToken
 func (auth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, error) {
@@ -248,9 +254,10 @@ func (auth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, erro
 // unchanged
 //
 // Required scopes:
-//   All of:
-//   * auth:update-client:<clientId>
-//   * For scope in scopesAdded each <scope>
+//
+//	All of:
+//	* auth:update-client:<clientId>
+//	* For scope in scopesAdded each <scope>
 //
 // See #updateClient
 func (auth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, error) {
@@ -266,7 +273,8 @@ func (auth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*
 // had been disabled when the corresponding identity's scopes changed.
 //
 // Required scopes:
-//   auth:enable-client:<clientId>
+//
+//	auth:enable-client:<clientId>
 //
 // See #enableClient
 func (auth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
@@ -281,7 +289,8 @@ func (auth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
 // corresponding identity's scopes no longer satisfy the client's scopes.
 //
 // Required scopes:
-//   auth:disable-client:<clientId>
+//
+//	auth:disable-client:<clientId>
 //
 // See #disableClient
 func (auth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
@@ -294,7 +303,8 @@ func (auth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
 // be deleted independently.
 //
 // Required scopes:
-//   auth:delete-client:<clientId>
+//
+//	auth:delete-client:<clientId>
 //
 // See #deleteClient
 func (auth *Auth) DeleteClient(clientId string) error {
@@ -310,7 +320,8 @@ func (auth *Auth) DeleteClient(clientId string) error {
 // To get paginated results, use `listRoles2`.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See #listRoles
 func (auth *Auth) ListRoles() (*GetAllRolesNoPagination, error) {
@@ -322,7 +333,8 @@ func (auth *Auth) ListRoles() (*GetAllRolesNoPagination, error) {
 // Returns a signed URL for ListRoles, valid for the specified duration.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See ListRoles for more details.
 func (auth *Auth) ListRoles_SignedURL(duration time.Duration) (*url.URL, error) {
@@ -339,7 +351,8 @@ func (auth *Auth) ListRoles_SignedURL(duration time.Duration) (*url.URL, error) 
 // query arguments to page through the responses.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See #listRoles2
 func (auth *Auth) ListRoles2(continuationToken, limit string) (*GetAllRolesResponse, error) {
@@ -358,7 +371,8 @@ func (auth *Auth) ListRoles2(continuationToken, limit string) (*GetAllRolesRespo
 // Returns a signed URL for ListRoles2, valid for the specified duration.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See ListRoles2 for more details.
 func (auth *Auth) ListRoles2_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -380,7 +394,8 @@ func (auth *Auth) ListRoles2_SignedURL(continuationToken, limit string, duration
 // query arguments to page through the responses.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See #listRoleIds
 func (auth *Auth) ListRoleIds(continuationToken, limit string) (*GetRoleIdsResponse, error) {
@@ -399,7 +414,8 @@ func (auth *Auth) ListRoleIds(continuationToken, limit string) (*GetRoleIdsRespo
 // Returns a signed URL for ListRoleIds, valid for the specified duration.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See ListRoleIds for more details.
 func (auth *Auth) ListRoleIds_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -418,7 +434,8 @@ func (auth *Auth) ListRoleIds_SignedURL(continuationToken, limit string, duratio
 // role expands to.
 //
 // Required scopes:
-//   auth:get-role:<roleId>
+//
+//	auth:get-role:<roleId>
 //
 // See #role
 func (auth *Auth) Role(roleId string) (*GetRoleResponse, error) {
@@ -430,7 +447,8 @@ func (auth *Auth) Role(roleId string) (*GetRoleResponse, error) {
 // Returns a signed URL for Role, valid for the specified duration.
 //
 // Required scopes:
-//   auth:get-role:<roleId>
+//
+//	auth:get-role:<roleId>
 //
 // See Role for more details.
 func (auth *Auth) Role_SignedURL(roleId string, duration time.Duration) (*url.URL, error) {
@@ -449,9 +467,10 @@ func (auth *Auth) Role_SignedURL(roleId string, duration time.Duration) (*url.UR
 // in an error response.
 //
 // Required scopes:
-//   All of:
-//   * auth:create-role:<roleId>
-//   * For scope in scopes each <scope>
+//
+//	All of:
+//	* auth:create-role:<roleId>
+//	* For scope in scopes each <scope>
 //
 // See #createRole
 func (auth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
@@ -469,9 +488,10 @@ func (auth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRol
 // in an error response.
 //
 // Required scopes:
-//   All of:
-//   * auth:update-role:<roleId>
-//   * For scope in scopesAdded each <scope>
+//
+//	All of:
+//	* auth:update-role:<roleId>
+//	* For scope in scopesAdded each <scope>
 //
 // See #updateRole
 func (auth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
@@ -484,7 +504,8 @@ func (auth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRol
 // the role exists.
 //
 // Required scopes:
-//   auth:delete-role:<roleId>
+//
+//	auth:delete-role:<roleId>
 //
 // See #deleteRole
 func (auth *Auth) DeleteRole(roleId string) error {
@@ -497,7 +518,8 @@ func (auth *Auth) DeleteRole(roleId string) error {
 // roles included.
 //
 // Required scopes:
-//   auth:expand-scopes
+//
+//	auth:expand-scopes
 //
 // See #expandScopes
 func (auth *Auth) ExpandScopes(payload *SetOfScopes) (*SetOfScopes, error) {
@@ -511,7 +533,8 @@ func (auth *Auth) ExpandScopes(payload *SetOfScopes) (*SetOfScopes, error) {
 // and roles).
 //
 // Required scopes:
-//   auth:current-scopes
+//
+//	auth:current-scopes
 //
 // See #currentScopes
 func (auth *Auth) CurrentScopes() (*SetOfScopes, error) {
@@ -523,7 +546,8 @@ func (auth *Auth) CurrentScopes() (*SetOfScopes, error) {
 // Returns a signed URL for CurrentScopes, valid for the specified duration.
 //
 // Required scopes:
-//   auth:current-scopes
+//
+//	auth:current-scopes
 //
 // See CurrentScopes for more details.
 func (auth *Auth) CurrentScopes_SignedURL(duration time.Duration) (*url.URL, error) {
@@ -569,10 +593,11 @@ func (auth *Auth) CurrentScopes_SignedURL(duration time.Duration) (*url.URL, err
 // [EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:aws-s3:read-only:<bucket>/<prefix>
-//     - auth:aws-s3:read-write:<bucket>/<prefix>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:aws-s3:read-only:<bucket>/<prefix>
+//	  - auth:aws-s3:read-write:<bucket>/<prefix>
 //
 // See #awsS3Credentials
 func (auth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWSS3CredentialsResponse, error) {
@@ -588,10 +613,11 @@ func (auth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWSS3
 // Returns a signed URL for AwsS3Credentials, valid for the specified duration.
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:aws-s3:read-only:<bucket>/<prefix>
-//     - auth:aws-s3:read-write:<bucket>/<prefix>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:aws-s3:read-only:<bucket>/<prefix>
+//	  - auth:aws-s3:read-write:<bucket>/<prefix>
 //
 // See AwsS3Credentials for more details.
 func (auth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format string, duration time.Duration) (*url.URL, error) {
@@ -608,7 +634,8 @@ func (auth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format strin
 // Retrieve a list of all Azure accounts managed by Taskcluster Auth.
 //
 // Required scopes:
-//   auth:azure-table:list-accounts
+//
+//	auth:azure-table:list-accounts
 //
 // See #azureAccounts
 func (auth *Auth) AzureAccounts() (*AzureListAccountResponse, error) {
@@ -620,7 +647,8 @@ func (auth *Auth) AzureAccounts() (*AzureListAccountResponse, error) {
 // Returns a signed URL for AzureAccounts, valid for the specified duration.
 //
 // Required scopes:
-//   auth:azure-table:list-accounts
+//
+//	auth:azure-table:list-accounts
 //
 // See AzureAccounts for more details.
 func (auth *Auth) AzureAccounts_SignedURL(duration time.Duration) (*url.URL, error) {
@@ -633,7 +661,8 @@ func (auth *Auth) AzureAccounts_SignedURL(duration time.Duration) (*url.URL, err
 // Retrieve a list of all tables in an account.
 //
 // Required scopes:
-//   auth:azure-table:list-tables:<account>
+//
+//	auth:azure-table:list-tables:<account>
 //
 // See #azureTables
 func (auth *Auth) AzureTables(account, continuationToken string) (*AzureListTableResponse, error) {
@@ -649,7 +678,8 @@ func (auth *Auth) AzureTables(account, continuationToken string) (*AzureListTabl
 // Returns a signed URL for AzureTables, valid for the specified duration.
 //
 // Required scopes:
-//   auth:azure-table:list-tables:<account>
+//
+//	auth:azure-table:list-tables:<account>
 //
 // See AzureTables for more details.
 func (auth *Auth) AzureTables_SignedURL(account, continuationToken string, duration time.Duration) (*url.URL, error) {
@@ -671,10 +701,11 @@ func (auth *Auth) AzureTables_SignedURL(account, continuationToken string, durat
 // table if it doesn't already exist.
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:azure-table:read-only:<account>/<table>
-//     - auth:azure-table:read-write:<account>/<table>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:azure-table:read-only:<account>/<table>
+//	  - auth:azure-table:read-write:<account>/<table>
 //
 // See #azureTableSAS
 func (auth *Auth) AzureTableSAS(account, table, level string) (*AzureTableSharedAccessSignature, error) {
@@ -686,10 +717,11 @@ func (auth *Auth) AzureTableSAS(account, table, level string) (*AzureTableShared
 // Returns a signed URL for AzureTableSAS, valid for the specified duration.
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:azure-table:read-only:<account>/<table>
-//     - auth:azure-table:read-write:<account>/<table>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:azure-table:read-only:<account>/<table>
+//	  - auth:azure-table:read-write:<account>/<table>
 //
 // See AzureTableSAS for more details.
 func (auth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration time.Duration) (*url.URL, error) {
@@ -702,7 +734,8 @@ func (auth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration
 // Retrieve a list of all containers in an account.
 //
 // Required scopes:
-//   auth:azure-container:list-containers:<account>
+//
+//	auth:azure-container:list-containers:<account>
 //
 // See #azureContainers
 func (auth *Auth) AzureContainers(account, continuationToken string) (*AzureListContainersResponse, error) {
@@ -718,7 +751,8 @@ func (auth *Auth) AzureContainers(account, continuationToken string) (*AzureList
 // Returns a signed URL for AzureContainers, valid for the specified duration.
 //
 // Required scopes:
-//   auth:azure-container:list-containers:<account>
+//
+//	auth:azure-container:list-containers:<account>
 //
 // See AzureContainers for more details.
 func (auth *Auth) AzureContainers_SignedURL(account, continuationToken string, duration time.Duration) (*url.URL, error) {
@@ -740,10 +774,11 @@ func (auth *Auth) AzureContainers_SignedURL(account, continuationToken string, d
 // container if it doesn't already exist.
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:azure-container:read-only:<account>/<container>
-//     - auth:azure-container:read-write:<account>/<container>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:azure-container:read-only:<account>/<container>
+//	  - auth:azure-container:read-write:<account>/<container>
 //
 // See #azureContainerSAS
 func (auth *Auth) AzureContainerSAS(account, container, level string) (*AzureBlobSharedAccessSignature, error) {
@@ -755,10 +790,11 @@ func (auth *Auth) AzureContainerSAS(account, container, level string) (*AzureBlo
 // Returns a signed URL for AzureContainerSAS, valid for the specified duration.
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:azure-container:read-only:<account>/<container>
-//     - auth:azure-container:read-write:<account>/<container>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:azure-container:read-only:<account>/<container>
+//	  - auth:azure-container:read-write:<account>/<container>
 //
 // See AzureContainerSAS for more details.
 func (auth *Auth) AzureContainerSAS_SignedURL(account, container, level string, duration time.Duration) (*url.URL, error) {
@@ -775,7 +811,8 @@ func (auth *Auth) AzureContainerSAS_SignedURL(account, container, level string, 
 // to have the project transferred to a team you have access to if needed
 //
 // Required scopes:
-//   auth:sentry:<project>
+//
+//	auth:sentry:<project>
 //
 // See #sentryDSN
 func (auth *Auth) SentryDSN(project string) (*SentryDSNResponse, error) {
@@ -787,7 +824,8 @@ func (auth *Auth) SentryDSN(project string) (*SentryDSNResponse, error) {
 // Returns a signed URL for SentryDSN, valid for the specified duration.
 //
 // Required scopes:
-//   auth:sentry:<project>
+//
+//	auth:sentry:<project>
 //
 // See SentryDSN for more details.
 func (auth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*url.URL, error) {
@@ -807,7 +845,8 @@ func (auth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*
 // refresh it before expiration.
 //
 // Required scopes:
-//   auth:websocktunnel-token:<wstAudience>/<wstClient>
+//
+//	auth:websocktunnel-token:<wstAudience>/<wstClient>
 //
 // See #websocktunnelToken
 func (auth *Auth) WebsocktunnelToken(wstAudience, wstClient string) (*WebsocktunnelTokenResponse, error) {
@@ -819,7 +858,8 @@ func (auth *Auth) WebsocktunnelToken(wstAudience, wstClient string) (*Websocktun
 // Returns a signed URL for WebsocktunnelToken, valid for the specified duration.
 //
 // Required scopes:
-//   auth:websocktunnel-token:<wstAudience>/<wstClient>
+//
+//	auth:websocktunnel-token:<wstAudience>/<wstClient>
 //
 // See WebsocktunnelToken for more details.
 func (auth *Auth) WebsocktunnelToken_SignedURL(wstAudience, wstClient string, duration time.Duration) (*url.URL, error) {
@@ -838,7 +878,8 @@ func (auth *Auth) WebsocktunnelToken_SignedURL(wstAudience, wstClient string, du
 // application.
 //
 // Required scopes:
-//   auth:gcp:access-token:<projectId>/<serviceAccount>
+//
+//	auth:gcp:access-token:<projectId>/<serviceAccount>
 //
 // See #gcpCredentials
 func (auth *Auth) GcpCredentials(projectId, serviceAccount string) (*GCPCredentialsResponse, error) {
@@ -850,7 +891,8 @@ func (auth *Auth) GcpCredentials(projectId, serviceAccount string) (*GCPCredenti
 // Returns a signed URL for GcpCredentials, valid for the specified duration.
 //
 // Required scopes:
-//   auth:gcp:access-token:<projectId>/<serviceAccount>
+//
+//	auth:gcp:access-token:<projectId>/<serviceAccount>
 //
 // See GcpCredentials for more details.
 func (auth *Auth) GcpCredentials_SignedURL(projectId, serviceAccount string, duration time.Duration) (*url.URL, error) {

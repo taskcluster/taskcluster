@@ -2,7 +2,7 @@ package tcclient
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -20,7 +20,7 @@ type TempCredsTestCase struct {
 }
 
 func Test_StaticTempCreds(t *testing.T) {
-	bytes, err := ioutil.ReadFile("testcases.json")
+	bytes, err := os.ReadFile("testcases.json")
 	if err != nil {
 		t.Fatalf("Could not read file testcases.json so could not run tests: %s", err)
 	}

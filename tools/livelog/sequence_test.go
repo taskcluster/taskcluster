@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"testing"
@@ -73,7 +72,7 @@ func TestSequence(t *testing.T) {
 
 	// kick off the writer in the background..
 	go func() {
-		body := ioutil.NopCloser(&ChunkReader{chunks: chunks})
+		body := io.NopCloser(&ChunkReader{chunks: chunks})
 		req, err := http.NewRequest("PUT", fmt.Sprintf("http://127.0.0.1:%d/log", ts.PutPort()), body)
 		if err != nil {
 			panic(err)
@@ -94,7 +93,7 @@ func TestSequence(t *testing.T) {
 
 	log.Printf("%#v", res)
 	require.Equal(t, 200, res.StatusCode)
-	resBody, err := ioutil.ReadAll(res.Body)
+	resBody, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
 
 	require.Equal(t, string(bytes.Join(chunks, []byte{})), string(resBody))

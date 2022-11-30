@@ -4,7 +4,7 @@ package version
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"runtime"
 	s "strings"
@@ -66,7 +66,7 @@ func update(cmd *cobra.Command, _ []string) {
 	}
 
 	// Read the whole response body and check for any errors
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Errorln(err)
 	}

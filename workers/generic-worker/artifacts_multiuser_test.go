@@ -5,7 +5,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -131,7 +131,7 @@ func TestChainOfTrustUpload(t *testing.T) {
 	}
 	cotSignature := getArtifactContent(t, taskID, "public/chain-of-trust.json.sig")
 	var ed25519Pubkey ed25519.PublicKey
-	base64Ed25519Pubkey, err := ioutil.ReadFile(filepath.Join("testdata", "ed25519_public_key"))
+	base64Ed25519Pubkey, err := os.ReadFile(filepath.Join("testdata", "ed25519_public_key"))
 	if err != nil {
 		t.Fatalf("Error opening ed25519 public key file")
 	}

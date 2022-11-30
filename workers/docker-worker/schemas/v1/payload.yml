@@ -104,14 +104,6 @@ properties:
           configured to enable it.
         type: boolean
         default: false
-      disableSeccomp:
-        title: Container does not have a seccomp profile set.
-        description: >-
-          Allows a task to run without seccomp, similar to running docker with
-          `--security-opt seccomp=unconfined`.  This only works for worker-types
-          configured to enable it.
-        type: boolean
-        default: false
       devices:
         title: Devices to be attached to task containers
         description: >-

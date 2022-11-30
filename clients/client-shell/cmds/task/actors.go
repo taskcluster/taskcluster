@@ -85,9 +85,9 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, f
 // runRetrigger re-triggers a given task.
 // It will generate a new taskId, update timestamps and retries to 0
 // Optionnally, you can pass '--exact' to keep stuff like:
-//  - routes,
-//  - dependencies,
-//  - ...
+//   - routes,
+//   - dependencies,
+//   - ...
 //
 // Otherwise, default behavior is to omit those as taskcluster-tools does:
 // https://github.com/taskcluster/taskcluster-tools/blob/e8b6d45f10e7520f717b7a9f5db87d550c74d15e/src/views/UnifiedInspector/ActionsMenu.jsx#L141-L158

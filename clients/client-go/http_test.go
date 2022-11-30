@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -312,7 +312,7 @@ type MockHTTPRequest struct {
 func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	mockRequestBody, err := ioutil.ReadAll(req.Body)
+	mockRequestBody, err := io.ReadAll(req.Body)
 	if err != nil {
 		m.T.Fatalf("Hit error reading mock http request request body: %s", err)
 	}
@@ -328,7 +328,7 @@ func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	}
 	return &http.Response{
 		Status: "200 OK",
-		Body:   ioutil.NopCloser(&bytes.Buffer{}),
+		Body:   io.NopCloser(&bytes.Buffer{}),
 	}, nil
 }
 

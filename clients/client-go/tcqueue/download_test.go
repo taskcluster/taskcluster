@@ -2,7 +2,6 @@ package tcqueue_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -90,7 +89,7 @@ func TestDownloadLatestS3ArtifactToFile(t *testing.T) {
 	m := mockTcServices(t)
 	defer m.Close()
 
-	tempdir, err := ioutil.TempDir("", "client-go-tests-")
+	tempdir, err := os.MkdirTemp("", "client-go-tests-")
 	require.NoError(t, err)
 	defer os.RemoveAll(tempdir)
 	filename := fmt.Sprintf("%s/download.txt", tempdir)
@@ -106,7 +105,7 @@ func TestDownloadLatestS3ArtifactToFile(t *testing.T) {
 	require.Equal(t, "text/plain", contentType)
 	require.Equal(t, int64(12), contentLength)
 
-	file, err := ioutil.ReadFile(filename)
+	file, err := os.ReadFile(filename)
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello, world"), file)
 }

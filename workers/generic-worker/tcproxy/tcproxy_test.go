@@ -2,7 +2,7 @@ package tcproxy
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"runtime"
 	"testing"
@@ -45,7 +45,7 @@ func TestTcProxy(t *testing.T) {
 		t.Fatalf("Could not hit url to download artifact using taskcluster-proxy: %v", err)
 	}
 	defer res.Body.Close()
-	data, err := ioutil.ReadAll(res.Body)
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatalf("Could not read artifact using taskcluster-proxy: %v", err)
 	}

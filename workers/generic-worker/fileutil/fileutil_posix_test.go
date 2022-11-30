@@ -3,7 +3,6 @@
 package fileutil
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -17,7 +16,7 @@ import (
 // ensures we have /usr/bin/id on the system, etc. :-)
 func TestSecureFile(t *testing.T) {
 	content := []byte("i am secret")
-	tmpfile, err := ioutil.TempFile("", "TestSecureFile")
+	tmpfile, err := os.CreateTemp("", "TestSecureFile")
 	if err != nil {
 		t.Fatal(err)
 	}
