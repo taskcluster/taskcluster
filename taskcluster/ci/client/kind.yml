@@ -113,7 +113,7 @@ tasks:
   rust:
     description: rust client tests
     worker:
-      docker-image: rust:1.60.0
+      docker-image: rust:1.65.0
     run:
       install: >-
         eval $(python3 test/client-library-secrets.py) &&
