@@ -15,9 +15,9 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/artifacts"
+	tcclient "github.com/taskcluster/taskcluster/v45/clients/client-go"
+	"github.com/taskcluster/taskcluster/v45/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v45/workers/generic-worker/artifacts"
 )
 
 var (

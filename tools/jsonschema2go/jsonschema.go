@@ -101,7 +101,7 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
-	"github.com/taskcluster/taskcluster/v44/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v45/tools/jsonschema2go/text"
 )
 
 type (
@@ -437,7 +437,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 		if f := jsonSubSchema.Format; f != nil {
 			if *f == "date-time" {
 				typ = "tcclient.Time"
-				extraPackages["tcclient \"github.com/taskcluster/taskcluster/v44/clients/client-go\""] = true
+				extraPackages["tcclient \"github.com/taskcluster/taskcluster/v45/clients/client-go\""] = true
 			}
 		}
 	}

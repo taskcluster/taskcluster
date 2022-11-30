@@ -3,6 +3,56 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v45.0.0
+
+### GENERAL
+
+▶ [minor] [#1955](https://github.com/taskcluster/taskcluster/issues/1955)
+Adds timing statistics to the Task Group page: durations for each task, totals, median and shows distribution graph.
+
+▶ [minor] [#5379](https://github.com/taskcluster/taskcluster/issues/5379)
+MUI tables are now more responsive to smaller width screens. The worker manager page, no longer has the emails of the task owner displayed.
+
+▶ [patch]
+Go upgrade from 1.18.5 to 1.19.3. Also upgrades golangci-lint version to 1.50.1 for go1.19 support.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#4605](https://github.com/taskcluster/taskcluster/issues/4605)
+Generic-worker can now create object artifacts instead of s3 artifacts if the
+`createObjectArtifacts` worker configuration parameter is true.
+
+▶ [patch] [#5634](https://github.com/taskcluster/taskcluster/issues/5634)
+The livelog docker image used by docker-worker now is not based on busybox, but
+contains only the livelog binary, /etc/ssl/certs/ca-certificates.crt and an
+empty /tmp directory. This effectively reverses the change from #3866.
+
+### USERS
+
+▶ [MAJOR] [#5799](https://github.com/taskcluster/taskcluster/issues/5799)
+Docker Worker no longer supports the `disableSeccomp` capability (added in Docker Worker 44.22.0, but turned out to be unneeded).
+
+Since this is technically a breaking change, a major version bump is necessary. However, as far as we know, nothing needed this feature.
+
+▶ [minor] [#4624](https://github.com/taskcluster/taskcluster/issues/4624)
+The object service now supports an additional download method, `getUrl`, which handles gzipped content and requires that hashes be validated.
+This method is not yet supported by the client libraries (but such support will be added soon).
+
+▶ [patch] [#5779](https://github.com/taskcluster/taskcluster/issues/5779)
+Fix `View logs in Taskcluster` link in GitHub Checks UI to default to a run ID of 0 to prevent it from being undefined and getting a 400 Bad Response while accessing this link.
+
+▶ [patch]
+Updated livelog link in GitHub checks UI to points to a streaming livelog. Previous link would only render the logs once the task was complete.
+
+### DEVELOPERS
+
+▶ [patch]
+Upgrades some rust crates and bumps rust version from 1.60.0 to 1.65.0.
+
+### OTHER
+
+▶ Additional changes not described here: [#5781](https://github.com/taskcluster/taskcluster/issues/5781), [#5795](https://github.com/taskcluster/taskcluster/issues/5795).
+
 ## v44.23.4
 
 ### GENERAL
