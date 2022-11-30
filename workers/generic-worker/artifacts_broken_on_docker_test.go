@@ -268,3 +268,24 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 	}
 	t.Fatalf("Could not find artifact public/build/X.txt in task run 0 of task %v", taskID)
 }
+
+func TestObjectArtifact(t *testing.T) {
+
+	defer setup(t)()
+	config.CreateObjectArtifacts = true
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("object-test"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "object-test",
+				Type: "file",
+				Name: "object-test.txt",
+			},
+		},
+	}
+
+	td := testTask(t)
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}

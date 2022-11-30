@@ -2,6 +2,7 @@ package artifacts
 
 import (
 	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v44/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/gwconfig"
 )
 
@@ -11,7 +12,7 @@ type LinkArtifact struct {
 	ContentType string
 }
 
-func (linkArtifact *LinkArtifact) ProcessResponse(response interface{}, logger Logger, config *gwconfig.Config) error {
+func (linkArtifact *LinkArtifact) ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
 	logger.Infof("Uploading link artifact %v to artifact %v with expiry %v", linkArtifact.Name, linkArtifact.Artifact, linkArtifact.Expires)
 	// nothing to do
 	return nil

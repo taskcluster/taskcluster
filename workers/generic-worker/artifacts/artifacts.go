@@ -2,6 +2,7 @@ package artifacts
 
 import (
 	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	"github.com/taskcluster/taskcluster/v44/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/gwconfig"
 )
 
@@ -37,7 +38,10 @@ type (
 		//
 		// ProcessResponse can be an empty method if no post
 		// tcqueue.CreateArtifact steps are required.
-		ProcessResponse(response interface{}, logger Logger, config *gwconfig.Config) error
+		ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error
+
+		// FinishArtifact calls queue.FinishArtifact if necessary for the artifact type
+		FinishArtifact(response interface{}, queue tc.Queue, taskID, runID, name string) error
 
 		// Base returns a *BaseArtifact which stores the properties common to
 		// all implementations
@@ -53,4 +57,13 @@ type (
 
 func (base *BaseArtifact) Base() *BaseArtifact {
 	return base
+}
+
+// FinishArtifact implements TaskArtifact#FinishArtifact.
+//
+// This provides a default implementation that does not call
+// queue.FinishArtifact, as appropriate for link, redirect, error, and s3
+// artifact types.
+func (*BaseArtifact) FinishArtifact(response interface{}, queue tc.Queue, taskID, runID, name string) error {
+	return nil
 }

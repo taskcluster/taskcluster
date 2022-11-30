@@ -8768,12 +8768,6 @@
               "title": "Devices to be attached to task containers",
               "type": "object"
             },
-            "disableSeccomp": {
-              "default": false,
-              "description": "Allows a task to run without seccomp, similar to running docker with `--security-opt seccomp=unconfined`.  This only works for worker-types configured to enable it.",
-              "title": "Container does not have a seccomp profile set.",
-              "type": "boolean"
-            },
             "privileged": {
               "default": false,
               "description": "Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.",

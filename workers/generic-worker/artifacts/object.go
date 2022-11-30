@@ -5,8 +5,8 @@ import (
 	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcobject"
 	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v44/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/gwconfig"
 )
 
@@ -34,7 +34,7 @@ func (a *ObjectArtifact) ResponseObject() interface{} {
 	return new(tcqueue.ObjectArtifactResponse)
 }
 
-func (a *ObjectArtifact) ProcessResponse(resp interface{}, logger Logger, config *gwconfig.Config) (err error) {
+func (a *ObjectArtifact) ProcessResponse(resp interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) (err error) {
 	response := resp.(*tcqueue.ObjectArtifactResponse)
 	logger.Infof("Uploading artifact %v from file %v with content type %q and expiry %v", a.Name, a.Path, a.ContentType, a.Expires)
 	creds := tcclient.Credentials{
@@ -42,7 +42,7 @@ func (a *ObjectArtifact) ProcessResponse(resp interface{}, logger Logger, config
 		AccessToken: response.Credentials.AccessToken,
 		Certificate: response.Credentials.Certificate,
 	}
-	objsvc := tcobject.New(&creds, config.RootURL)
+	objsvc := serviceFactory.Object(&creds, config.RootURL)
 	return objsvc.UploadFromFile(
 		response.ProjectID,
 		response.Name,
@@ -51,6 +51,14 @@ func (a *ObjectArtifact) ProcessResponse(resp interface{}, logger Logger, config
 		response.UploadID,
 		a.RawContentFile,
 	)
+}
+
+func (a *ObjectArtifact) FinishArtifact(resp interface{}, queue tc.Queue, taskID, runID, name string) error {
+	response := resp.(*tcqueue.ObjectArtifactResponse)
+	far := tcqueue.FinishArtifactRequest{
+		UploadID: response.UploadID,
+	}
+	return queue.FinishArtifact(taskID, runID, name, &far)
 }
 
 func (a *ObjectArtifact) String() string {
