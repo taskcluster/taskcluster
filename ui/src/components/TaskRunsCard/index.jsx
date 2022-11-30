@@ -561,7 +561,7 @@ export default class TaskRunsCard extends Component {
                   No Runs
                 </Typography>
                 <Typography variant="body2" className={classes.boxVariantText}>
-                  A run will be created when the task gets schedueled.
+                  A run will be created when the task gets scheduled.
                 </Typography>
               </div>
             )}

@@ -1,5 +1,5 @@
-FROM        gliderlabs/alpine:3.2
-MAINTAINER  Jonas Finnemann Jensen <jopsen@gmail.com>
+FROM        alpine:latest
+MAINTAINER  Taskcluster <taskcluster-accounts+docker-maintainer@mozilla.com>
 
 # Install dependencies
-RUN         apk-install docker
+RUN         apk add docker
