@@ -422,7 +422,7 @@ impl Hooks {
     /// This endpoint will return information about the the last few times this hook has been
     /// fired, including whether the hook was fired successfully or not
     ///
-    /// By default this endpoint will return up to 1000 last fires in one request.
+    /// By default this endpoint will return up to 1000 most recent fires in one request.
     pub async fn listLastFires(&self, hookGroupId: &str, hookId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
         let (path, query) = Self::listLastFires_details(hookGroupId, hookId, continuationToken, limit);

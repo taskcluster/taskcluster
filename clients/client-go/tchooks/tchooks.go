@@ -348,7 +348,7 @@ func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payl
 // This endpoint will return information about the the last few times this hook has been
 // fired, including whether the hook was fired successfully or not
 //
-// By default this endpoint will return up to 1000 last fires in one request.
+// By default this endpoint will return up to 1000 most recent fires in one request.
 //
 // Required scopes:
 //

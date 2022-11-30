@@ -253,7 +253,7 @@ const queryIndexInfo = async (client, table, index, column) =>
       AND a.attname = '${column}'`);
 
 /**
- * Assert that the table contains given index on specified column
+ * Assert that the table contains given index on specific column
  */
 exports.assertIndexOnColumn = async (table, index, column) => {
   await exports.withDbClient(async client => {
@@ -263,7 +263,7 @@ exports.assertIndexOnColumn = async (table, index, column) => {
 };
 
 /**
- * Assert that the table doesn't contains given index on a column
+ * Assert that the table doesn't contain given index on a column
  */
 exports.assertNoIndexOnColumn = async (table, index, column) => {
   await exports.withDbClient(async client => {
