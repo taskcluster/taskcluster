@@ -55,20 +55,48 @@ For example, a request that can use either the `simple` or `superFancy` methods 
 ```
 
 The known methods are defined below.
+See the API definitions for the object service for details on the request and response payloads.
 
 ### `simple` Download Method
 
-The `simple` method implements [simple downloads](/simple-downloads).
+The `simple` method is always supported, as it is used to implement [simple downloads](/simple-downloads).
 The response contains a URL against which a `GET` request can be made to retrieve the object's data.
+This method should only be used by generic clients that are not aware of the particulars of the object service, such as `curl` or web browsers.
+Taskcluster-aware clients should use the `getUrl` method, which is always available.
 
-To use the simple method with `startDownload`, pass the following payload:
+### `getUrl` Download Method
+
+The `getUrl` method is similar to `simple`, but with some slightly different requirements.
+Briefly, it returns a URL from which the object data may be downloaded, along with some metadata for validating the result.
+This method is always supported.
+
+To use the `getUrl` method with `startDownload`, pass the following payload:
 
 ```javascript
 acceptDownloadMethods: {
-  simple: true
+  getUrl: true
 }
 ```
 
-### `HTTP:GET` Download Method
+The response contains the following fields:
 
-This is an example method that is not well-defined.
+ * `url` -- the URL from which the object data may be fetched using an HTTP `GET` request.
+ * `expires` -- the time after which `url` is no longer available.
+ * `hashes` -- a list of hashes for the object data.
+
+The client should begin a GET request as soon as possible after receiving the reponse.
+The server will respond with a 200 OK containing the data, or with a 4xx or 5xx error response.
+It will _not_ redirect to another URL (3xx), and the client should not follow any such redirects.
+
+The client can use standard Range requests to download portions of the object or to resume an interrupted download.
+Per the HTTP standard, servers may return more data than requested by the Range header.
+
+If retrying a failed or interrupted download, and the `expires` field is in the past, the client should call `startDownload` again to get an updated `url`.
+The client can assume that the object data and `hashes` will be the same for all calls to `startDownload`.
+
+The client can use standard Accept-Encoding headers to indicate the encodings it can accept.
+However, in a deviation from standard HTTP, the client _must_ accept at least `identity` and `gzip` encodings.
+If the HTTP response has a `Content-Encoding` header, the client should decode the body before verifying its hashes and returning it to the application.
+
+The client _must_ verify that the resulting data matches the supplied hashes.
+The object service does not, itself, validate object data and relies on clients to do so.

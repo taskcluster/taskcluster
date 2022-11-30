@@ -54,7 +54,7 @@ exports.testSimpleDownloadMethod = ({
       // call the backend
       const { method, url } = await backend.startDownload(object, 'simple', true);
       assert.equal(method, 'simple');
-      checkUrl({ name, url });
+      await checkUrl({ name, url });
 
       // fetch the data at that URL and check that it matches
       const fetched = await request.get(url).responseType('blob');

@@ -164,6 +164,8 @@ Setting `signGetUrls` to false in this case causes the backend to generate un-si
 
 In general, if the bucket contents are public, set this to `false` as signatures are unnecessary; otherwise, set it to true.
 
+Note that this setting applies only to `simple` downloads, and not to other download methods.
+
 ## Middleware
 
 The object service supports "middleware" that can intercept download requests.
