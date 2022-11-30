@@ -16,7 +16,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
   }
 
   test('ensure docker image can be pulled', async () => {
-    let image = 'gliderlabs/alpine:latest';
+    let image = 'alpine:latest';
     await removeImage(docker, image);
 
     let result = await testworker({
