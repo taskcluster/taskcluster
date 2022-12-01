@@ -89,7 +89,7 @@
     "react-lazylog": "^4.5.1",
     "react-router-dom": "^5.3.4",
     "react-virtualized": "^9.21.0",
-    "react-window": "^1.8.1",
+    "react-window": "^1.8.8",
     "redbox-react": "^1.6.0",
     "resolve-pathname": "^3.0.0",
     "shebang-loader": "^0.0.1",
