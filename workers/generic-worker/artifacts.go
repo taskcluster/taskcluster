@@ -164,6 +164,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType string, path string, con
 		SkipCompressionExtensions := map[string]bool{
 			".7z":    true,
 			".bz2":   true,
+			".deb":   true,
 			".dmg":   true,
 			".flv":   true,
 			".gif":   true,
