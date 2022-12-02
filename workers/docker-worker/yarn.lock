@@ -1836,13 +1836,6 @@ setprototypeof@1.2.0:
   resolved "https://registry.yarnpkg.com/setprototypeof/-/setprototypeof-1.2.0.tgz#66c9a24a73f9fc28cbe66b09fed3d33dcaf1b424"
   integrity sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==
 
-slugid@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/slugid/-/slugid-3.0.0.tgz#57cb692641a20feb4a1d774b2ad11594c9aa6125"
-  integrity sha512-MIir9SJS6BQFjFg8DHGMgPkDg21huT0+kYHiS6NkkWZXHSEdgIECo3nUVEG3GDkmecBTy+zRs6pCvPhpk4bKcg==
-  dependencies:
-    uuid "^8.3.2"
-
 slugid@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/slugid/-/slugid-3.1.0.tgz#1ab60b6e46abad6d4bb0b7c10f54e25e58ac3930"
@@ -2022,16 +2015,16 @@ tar-stream@^2.0.0, tar-stream@^2.1.3, tar-stream@^2.1.4:
     inherits "^2.0.3"
     readable-stream "^3.1.1"
 
-taskcluster-client@^44.20.4:
-  version "44.21.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-44.21.0.tgz#8517bfa97bd7ab72e641daf17c002739019f39dc"
-  integrity sha512-SraO9YkZmRcWguyJS4c2rWqwJUKlKVtwnjTY4vAIBMqF7sgN/8ocFYHxw51+ASwg8istA+fNHJUzeft/QRoqEw==
+taskcluster-client@^44.23.3:
+  version "44.23.4"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-44.23.4.tgz#ed64f27252472af5535a3b22fe6e434f2fe45816"
+  integrity sha512-7nC1G4gap3ZI8YEs0OVqHFjuIFJs+EgDrURYdMQ/xms4VEA6l78DihC08YFGN+gdYhnGM6hTiwGvn34T7Ov8GA==
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
     hawk "^9.0.1"
     lodash "^4.17.4"
-    slugid "^3.0.0"
+    slugid "^3.1.0"
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-lib-testing@link:../../libraries/testing":
