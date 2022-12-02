@@ -147,6 +147,7 @@ properties:
 
             * 7z
             * bz2
+            * deb
             * dmg
             * flv
             * gif
