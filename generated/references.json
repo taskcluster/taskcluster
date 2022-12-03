@@ -5146,6 +5146,52 @@
   },
   {
     "content": {
+      "$id": "/schemas/object/v1/hashes.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "definitions": {
+        "download": {
+          "additionalProperties": true,
+          "description": "Hashes of the content of this object.  The caller should verify all\nhashes present for recognized algorithms, and verify that at least one\nnon-deprecated hash is present.\n",
+          "properties": {
+            "sha256": {
+              "$ref": "#/definitions/upload/properties/sha256"
+            },
+            "sha512": {
+              "$ref": "#/definitions/upload/properties/sha512"
+            }
+          },
+          "required": [
+          ],
+          "title": "Object Content Hashes For Download",
+          "type": "object"
+        },
+        "upload": {
+          "additionalProperties": true,
+          "description": "Hashes of the content of this object.  These values will be verified by\nwell-behaved downloaders.  The format is `{alogrithm: value}`.\n\nMultiple calls to `createUpload` or `finishUpload` for the same object\ncan specify additional hashes, but existing hashes cannot be changed;\nthis allows \"amending\" an upload with hashes after the data has been\ntransferred, for example.\n\nAt least one non-deprecated algorithm must be included, preferably the\nmost advanced (SHA512).  Deprecated algorithms may also be included.\n",
+          "properties": {
+            "sha256": {
+              "pattern": "^[a-z0-9]{64}$",
+              "title": "SHA256 hash",
+              "type": "string"
+            },
+            "sha512": {
+              "pattern": "^[a-z0-9]{128}$",
+              "title": "SHA512 hash",
+              "type": "string"
+            }
+          },
+          "required": [
+          ],
+          "title": "Object Content Hashes",
+          "type": "object"
+        }
+      },
+      "title": "Hash Methods"
+    },
+    "filename": "schemas/object/v1/hashes.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/object/v1/get-object-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -5157,14 +5203,7 @@
           "type": "string"
         },
         "hashes": {
-          "additionalProperties": {
-            "type": "string"
-          },
-          "description": "Hashes of the content of this object, in the format `{alogrithm: value}`.  See\nthe `createUpload` request for the list of supported hash algorithms.\n",
-          "required": [
-          ],
-          "title": "Object Content Hashes",
-          "type": "object"
+          "$ref": "hashes.json#/definitions/download"
         },
         "projectId": {
           "maxLength": 500,
@@ -5191,7 +5230,7 @@
       "additionalProperties": false,
       "properties": {
         "hashes": {
-          "$ref": "create-upload-request.json#/properties/hashes"
+          "$ref": "hashes.json#/definitions/upload"
         },
         "projectId": {
           "description": "Project identifier.\n",
@@ -5317,7 +5356,7 @@
               "type": "string"
             },
             "hashes": {
-              "$ref": "get-object-response.json#/properties/hashes"
+              "$ref": "hashes.json#/definitions/download"
             },
             "method": {
               "const": "getUrl",
@@ -5411,22 +5450,7 @@
           "type": "string"
         },
         "hashes": {
-          "additionalProperties": false,
-          "description": "Hashes of the content of this object.  These values will be verified by\nwell-behaved downloaders.  The format is `{alogrithm: value}`.  Multiple\ncalls to `createUpload` for the same object can specify additional hashes,\nbut existing hashes cannot be changed; this allows \"amending\" an upload\nwith hashes after the data has been transferred, for example.  Omitting\nthis property is the same as specifying `hashes: {}`.\n",
-          "properties": {
-            "sha256": {
-              "pattern": "^[a-z0-9]{64}$",
-              "type": "string"
-            },
-            "sha512": {
-              "pattern": "^[a-z0-9]{128}$",
-              "type": "string"
-            }
-          },
-          "required": [
-          ],
-          "title": "Object Content Hashes",
-          "type": "object"
+          "$ref": "hashes.json#/definitions/upload"
         },
         "projectId": {
           "description": "Project identifier.\n",
