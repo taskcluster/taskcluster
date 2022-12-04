@@ -7,6 +7,7 @@ const taskcluster = require('taskcluster-client');
  * methods)
  */
 const DOWNLOAD_METHODS = [
+  'getUrl',
   'simple',
 ];
 
