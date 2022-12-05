@@ -45,7 +45,7 @@ tasks:
         - go test -v ./...
   decision-task:
     description: 'decision task for generic-worker tasks'
-    worker-type: gw-ci-ubuntu-18-04
+    worker-type: gw-ci-ubuntu-22-04
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
