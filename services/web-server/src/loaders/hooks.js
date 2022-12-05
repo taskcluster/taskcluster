@@ -64,7 +64,10 @@ module.exports = ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, r
           items: raw.lastFires,
         };
       } catch (err) {
-        if (err.statusCode === 404 || err.statusCode === 424) {
+        if (err.statusCode === 404) {
+          // hooks last fires will return 404 when there are no last fires yet
+          return { items: [] };
+        } else if (err.statusCode === 424) {
           return null;
         }
 
