@@ -3,6 +3,20 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v45.0.1
+
+### GENERAL
+
+▶ [patch]
+Minor and patch version bumps via Dependabot using `pmac`:
+
+`pmac add 5822 5821 5819 5818 5817 5816 5815 5814 5813 5790 5789`
+
+### USERS
+
+▶ [patch] [bug 1803745](http://bugzil.la/1803745)
+Docker-worker and generic-worker now skip gzipping artifacts with a `.deb` extension.
+
 ## v45.0.0
 
 ### GENERAL
