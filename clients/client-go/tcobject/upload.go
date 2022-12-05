@@ -49,7 +49,6 @@ func (object *Object) UploadFromFile(projectID string, name string, contentType 
 // object content read from readSeeker. The value of contentLength is not
 // validated prior to upload.
 func (object *Object) UploadFromReadSeeker(projectID string, name string, contentType string, contentLength int64, expires time.Time, uploadID string, readSeeker io.ReadSeeker) (err error) {
-	return nil
 	// wrap the readSeeker so that it will capture hashes
 	hashingReadSeeker := newHashingReadSeeker(readSeeker)
 
@@ -104,6 +103,9 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 				Hashes:    hashes,
 			},
 		)
+		if err != nil {
+			return
+		}
 	}()
 
 	switch {
