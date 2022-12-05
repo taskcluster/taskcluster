@@ -1,4 +1,3 @@
-const request = require('superagent');
 const crypto = require('crypto');
 const assert = require('assert');
 const helper = require('../helper');
