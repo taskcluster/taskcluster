@@ -410,3 +410,6 @@ builder.declare({
 });
 
 module.exports = builder;
+
+// used in tests
+module.exports.DOWNLOAD_METHODS = DOWNLOAD_METHODS;
