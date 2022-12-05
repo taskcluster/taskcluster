@@ -175,6 +175,12 @@ type (
 
 	// List of lastFires
 	LastFiresList struct {
+
+		// A continuation token is returned if there are more results than listed
+		// here. You can optionally provide the token in the request payload to
+		// load the additional results.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
 		LastFires []Var `json:"lastFires"`
 	}
 

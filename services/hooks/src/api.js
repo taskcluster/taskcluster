@@ -1,7 +1,7 @@
 const parser = require('cron-parser');
 const taskcluster = require('taskcluster-client');
-const { APIBuilder } = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION, paginatedIterator } = require('taskcluster-lib-postgres');
+const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
+const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const nextDate = require('../src/nextdate');
 const _ = require('lodash');
 const Ajv = require('ajv').default;
@@ -131,11 +131,9 @@ builder.declare({
 
   // find the latest entry in the LastFire table for this hook
   let latest = { task_create_time: new Date(1970, 1, 1) };
-  const fetch = (size, offset) => this.db.fns.get_last_fires(hookGroupId, hookId, size, offset);
-  for await (let item of paginatedIterator({ fetch })) {
-    if (item.task_create_time > latest.task_create_time) {
-      latest = item;
-    }
+  const rows = await this.db.fns.get_last_fires(hookGroupId, hookId, 1, 0);
+  if (rows.length > 0) {
+    latest = rows[0];
   }
 
   let reply;
@@ -664,17 +662,28 @@ builder.declare({
   title: 'Get information about recent hook fires',
   stability: 'stable',
   category: 'Hook Status',
+  query: paginateResults.query,
   description: [
     'This endpoint will return information about the the last few times this hook has been',
     'fired, including whether the hook was fired successfully or not',
+    '',
+    'By default this endpoint will return up to 1000 most recent fires in one request.',
   ].join('\n'),
 }, async function(req, res) {
   const { hookGroupId, hookId } = req.params;
-  let lastFires = [];
+  const { continuationToken, rows: lastFires } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_last_fires(
+      hookGroupId, hookId, size, offset,
+    ),
+  });
 
-  const fetch = (size, offset) => this.db.fns.get_last_fires(hookGroupId, hookId, size, offset);
-  for await (let row of paginatedIterator({ fetch })) {
-    const item = {
+  if (lastFires.length === 0) {
+    return res.reportError('ResourceNotFound', 'No such hook or never fired', {});
+  }
+
+  return res.reply({
+    lastFires: lastFires.map(row => ({
       hookGroupId: row.hook_group_id,
       hookId: row.hook_id,
       firedBy: row.fired_by,
@@ -682,14 +691,9 @@ builder.declare({
       taskCreateTime: row.task_create_time.toJSON(),
       result: row.result,
       error: row.error,
-    };
-    lastFires.push(item);
-  }
-
-  if (lastFires.length === 0) {
-    return res.reportError('ResourceNotFound', 'No such hook or never fired', {});
-  }
-  return res.reply({ lastFires: lastFires });
+    })),
+    continuationToken,
+  });
 });
 
 builder.declare({
