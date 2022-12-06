@@ -11,6 +11,7 @@ import deleteHookQuery from './deleteHook.graphql';
 import updateHookQuery from './updateHook.graphql';
 import triggerHookQuery from './triggerHook.graphql';
 import exchangesList from '../../../utils/exchangesList';
+import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
 
 @withApollo
 @graphql(hookQuery, {
@@ -20,6 +21,9 @@ import exchangesList from '../../../utils/exchangesList';
     variables: {
       hookGroupId: params.hookGroupId,
       hookId: decodeURIComponent(params.hookId),
+      hookConnection: {
+        limit: VIEW_CLIENTS_PAGE_SIZE,
+      },
     },
   }),
 })
@@ -175,12 +179,9 @@ export default class ViewHook extends Component {
       exchangesDictionary,
     } = this.state;
     const error = (data && data.error) || err;
-    const hookLastFires =
-      data &&
-      data.hookLastFires &&
-      data.hookLastFires.sort(
-        (a, b) => new Date(b.taskCreateTime) - new Date(a.taskCreateTime)
-      );
+    const hookLastFires = data?.hookLastFires?.edges
+      ?.map(({ node }) => node)
+      .sort((a, b) => new Date(b.taskCreateTime) - new Date(a.taskCreateTime));
 
     return (
       <Dashboard title={isNewHook ? 'Create Hook' : 'Hook'}>

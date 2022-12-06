@@ -232,6 +232,46 @@ exports.assertNoTableColumn = async (table, column) => {
   });
 };
 
+const queryIndexInfo = async (client, table, index, column) =>
+  client.query(`SELECT
+    t.relname AS table,
+    i.relname AS index,
+    a.attname AS column
+    FROM
+      pg_class t,
+      pg_class i,
+      pg_index ix,
+      pg_attribute a
+    WHERE
+      t.oid = ix.indrelid
+      AND i.oid = ix.indexrelid
+      AND a.attrelid = t.oid
+      AND a.attnum = ANY (ix.indkey)
+      AND t.relkind = 'r'
+      AND t.relname = '${table}'
+      AND i.relname = '${index}'
+      AND a.attname = '${column}'`);
+
+/**
+ * Assert that the table contains given index on specific column
+ */
+exports.assertIndexOnColumn = async (table, index, column) => {
+  await exports.withDbClient(async client => {
+    const res = await queryIndexInfo(client, table, index, column);
+    assert.deepEqual(res.rows, [{ table, index, column }]);
+  });
+};
+
+/**
+ * Assert that the table doesn't contain given index on a column
+ */
+exports.assertNoIndexOnColumn = async (table, index, column) => {
+  await exports.withDbClient(async client => {
+    const res = await queryIndexInfo(client, table, index, column);
+    assert.deepEqual(res.rows, []);
+  });
+};
+
 /**
  * Test a version's migration and downgrade support.
  *

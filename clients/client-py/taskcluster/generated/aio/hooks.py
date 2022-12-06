@@ -206,6 +206,8 @@ class Hooks(AsyncBaseClient):
         This endpoint will return information about the the last few times this hook has been
         fired, including whether the hook was fired successfully or not
 
+        By default this endpoint will return up to 1000 most recent fires in one request.
+
         This method is ``stable``
         """
 
@@ -294,6 +296,7 @@ class Hooks(AsyncBaseClient):
             'method': 'get',
             'name': 'listLastFires',
             'output': 'v1/list-lastFires-response.json#',
+            'query': ['continuationToken', 'limit'],
             'route': '/hooks/<hookGroupId>/<hookId>/last-fires',
             'stability': 'stable',
         },
