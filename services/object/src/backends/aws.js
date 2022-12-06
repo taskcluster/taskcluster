@@ -28,6 +28,7 @@ class AwsBackend extends Backend {
     let options = { ...credentials };
     if ('endpoint' in this.config) {
       options.endpoint = new aws.Endpoint(this.config.endpoint);
+      options.s3ForcePathStyle = this.config.s3ForcePathStyle;
     } else {
       this.region = await getBucketRegion({ bucket: this.config.bucket, endpoint: this.config.endpoint, credentials });
       options.region = this.region;
