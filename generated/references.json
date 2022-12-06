@@ -5225,6 +5225,9 @@
       "oneOf": [
         {
           "$ref": "download-method-simple.json#/definitions/response"
+        },
+        {
+          "$ref": "download-method-geturl.json#/definitions/response"
         }
       ],
       "title": "Download Object Response"

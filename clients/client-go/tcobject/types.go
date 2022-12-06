@@ -94,6 +94,7 @@ type (
 	//
 	// One of:
 	//   * SimpleDownloadResponse
+	//   * GetURLDownloadResponse
 	DownloadObjectResponse json.RawMessage
 
 	FinishUploadRequest struct {
