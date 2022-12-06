@@ -163,6 +163,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
+  helper.testBackend({
+    mock, skipping, prefix,
+    backendId: 'awsPublic',
+    makeObject,
+  }, async function() {
+    teardown(cleanup);
+  });
+
   helper.testSimpleDownloadMethod({
     mock, skipping, prefix,
     title: 'public bucket',

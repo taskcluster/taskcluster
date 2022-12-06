@@ -132,6 +132,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     });
   });
 
+  helper.testBackend({
+    mock, skipping, prefix,
+    backendId: 'googlePublic',
+    makeObject,
+  }, async function() {
+    teardown(cleanup);
+  });
+
   helper.testSimpleDownloadMethod({
     mock, skipping, prefix,
     title: 'public bucket',
