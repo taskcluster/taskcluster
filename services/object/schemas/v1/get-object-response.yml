@@ -14,14 +14,7 @@ properties:
     title:          "Expiration"
     type:           string
     format:         date-time
-  hashes:
-    title: "Object Content Hashes"
-    description: |
-      Hashes of the content of this object, in the format `{alogrithm: value}`.  See
-      the `createUpload` request for the list of supported hash algorithms.
-    type: object
-    required: []
-    additionalProperties: { type: string }
+  hashes: {$ref: "hashes.json#/definitions/download"}
 additionalProperties: false
 required:
   - projectId

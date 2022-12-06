@@ -90,8 +90,7 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 			return
 		}
 
-		var hashes ObjectContentHashes
-		hashes, err = hashingReadSeeker.hashes(contentLength)
+		hashes, err := hashingReadSeeker.hashes(contentLength)
 		if err != nil {
 			return
 		}
@@ -104,6 +103,9 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 				Hashes:    hashes,
 			},
 		)
+		if err != nil {
+			return
+		}
 	}()
 
 	switch {
