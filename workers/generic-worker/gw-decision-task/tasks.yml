@@ -62,7 +62,7 @@ Tasks:
     - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-22-04'
       Env:
         ENGINE: 'docker'
-    - WorkerPool: 'proj-taskcluster/gw-ci-windows2012r2-amd64'
+    - WorkerPool: 'proj-taskcluster/gw-ci-windows-2022'
       Env:
         ENGINE: 'multiuser'
         # We must set here since this worker type does not have a Z: drive
@@ -122,8 +122,8 @@ WorkerPools:
     # There is no arm release for go 1.19.3 on windows, but 386 release works
     # through emulation provided by the host OS.
     Arch: '386'
-  proj-taskcluster/gw-ci-windows2012r2-amd64:
-    Platform: 'Windows Server 2012 R2 (amd64)'
+  proj-taskcluster/gw-ci-windows-2022:
+    Platform: 'Windows Server 2022 (amd64)'
     OS: 'windows'
     Arch: 'amd64'
   proj-taskcluster/gw-ci-windows7-386:
