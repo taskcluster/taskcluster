@@ -101,7 +101,7 @@ const defaultValues = {
   // Notify
   EMAIL_SOURCE_ADDRESS: 'root@local',
 
-  // Objectj
+  // Object
   BACKENDS: '{"everything":{"backendType":"aws","accessKeyId":"minioadmin","secretAccessKey":"miniopassword","bucket":"public-bucket","signGetUrls":"false","s3ForcePathStyle":true,"endpoint":"http://taskcluster/"}}',
   BACKEND_MAP: '[{"backendId":"everything","when":"all"}]',
 
