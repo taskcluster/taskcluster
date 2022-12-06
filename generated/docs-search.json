@@ -428,6 +428,13 @@
   },
   {
     "element": "h4",
+    "id": "forcing-path-style",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "Forcing Path Style",
+    "title": "Object Service"
+  },
+  {
+    "element": "h4",
     "id": "google-cloud-configuration",
     "path": "/manual/deploying/object-service",
     "subtitle": "Google Cloud Configuration",
