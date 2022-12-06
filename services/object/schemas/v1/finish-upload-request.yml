@@ -16,7 +16,7 @@ properties:
       Unique identifier for this upload.
     type:             string
     pattern:          {$const: slugid-pattern}
-  hashes: {$ref: "create-upload-request.json#/properties/hashes"}
+  hashes: {$ref: "hashes.json#/definitions/upload"}
 additionalProperties: false
 required:
   - uploadId

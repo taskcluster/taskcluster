@@ -2,11 +2,17 @@ package tcobject
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+type hashes struct {
+	Sha256 string
+	Sha512 string
+}
 
 func TestHashingReadSeekerOnce(t *testing.T) {
 	inner := bytes.NewReader([]byte("fake content"))
@@ -17,7 +23,11 @@ func TestHashingReadSeekerOnce(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte("fake content"), content)
 
-	hashes, err := h.hashes(12)
+	hashesJson, err := h.hashes(12)
+	require.NoError(t, err)
+
+	var hashes hashes
+	err = json.Unmarshal(hashesJson, &hashes)
 	require.NoError(t, err)
 
 	require.Equal(t, "98b1ae45059b004178a8eee0c1f6179dcea139c0fd8a69ee47a6f02d97af1f17", hashes.Sha256)
@@ -40,7 +50,11 @@ func TestHashingReadSeekerTwice(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte("fake content"), content)
 
-	hashes, err := h.hashes(12)
+	hashesJson, err := h.hashes(12)
+	require.NoError(t, err)
+
+	var hashes hashes
+	err = json.Unmarshal(hashesJson, &hashes)
 	require.NoError(t, err)
 
 	require.Equal(t, "98b1ae45059b004178a8eee0c1f6179dcea139c0fd8a69ee47a6f02d97af1f17", hashes.Sha256)
