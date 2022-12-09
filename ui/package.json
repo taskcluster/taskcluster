@@ -27,7 +27,7 @@
     "@mdx-js/react": "^1.0.20",
     "@mdx-js/runtime": "^1.0.20",
     "@sentry/browser": "^6.0.0",
-    "ajv": "8.x",
+    "ajv": "8.11.2",
     "ajv-formats": "1.x",
     "apollo-cache-inmemory": "^1.5.1",
     "apollo-cache-persist": "^0.1.1",
