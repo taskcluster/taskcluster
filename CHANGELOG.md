@@ -26,7 +26,7 @@ Fix graphql endpoint for hook without last fires.
 
 ### DEVELOPERS
 
-▶ [MAJOR] [#2791](https://github.com/taskcluster/taskcluster/issues/2791)
+▶ [MAJOR] [#5791](https://github.com/taskcluster/taskcluster/issues/5791)
 Hashes for object upload and download are now more precisely defined: uploaders
 should supply all acceptable hash algorithms, and downloaders should verify all
 recognized algorihtms and ensure that at least one is present.  This has the
