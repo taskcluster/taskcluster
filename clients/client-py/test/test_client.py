@@ -27,7 +27,7 @@ pytestmark = [
 REAL_TIME_SLEEP = time.sleep
 
 
-@pytest.yield_fixture(scope='function')
+@pytest.fixture(scope='function')
 def apiRef(mocker):
     subject.config['credentials'] = {
         'clientId': 'clientId',
@@ -54,19 +54,19 @@ def apiRef(mocker):
     yield apiRef
 
 
-@pytest.yield_fixture(scope='function')
+@pytest.fixture(scope='function')
 def clientClass(apiRef):
     clientClass = subject.createApiClient('testApi', apiRef)
     yield clientClass
 
 
-@pytest.yield_fixture(scope='function')
+@pytest.fixture(scope='function')
 def client(clientClass):
     client = clientClass({'rootUrl': base.TEST_ROOT_URL})
     yield client
 
 
-@pytest.yield_fixture(scope='function')
+@pytest.fixture(scope='function')
 def patcher(client):
     patcher = mock.patch.object(client, 'NEVER_CALL_ME')
     yield patcher
