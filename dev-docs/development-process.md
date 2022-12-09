@@ -202,7 +202,7 @@ It's easy: `yarn build` in the root directory.
 
 ## Running everything locally using `docker compose`
 
-> Note: you'll need recent version of `docker` with [`docker-compose-plugin`](https://docs.docker.com/compose/install/compose-plugin/) |(or alternatively [docker-compose](https://github.com/docker/compose/releases))
+> Note: you'll need recent version of `docker` with [`docker-compose-plugin`](https://docs.docker.com/compose/install/linux/) |(or alternatively [docker-compose](https://github.com/docker/compose/releases))
 >
 > For non-linux systems it is advised to run docker with at least 4 CPU cores and at least 6 GB of memory.
 
