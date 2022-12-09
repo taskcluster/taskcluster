@@ -3,6 +3,42 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v46.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrade `taskcluster-taskgraph` version to v4.0.0 as well as upgrade other python packages.
+
+### USERS
+
+▶ [minor] [#5804](https://github.com/taskcluster/taskcluster/issues/5804)
+Adds pagination to the hooks last fires api call.
+
+This prevents loading all last fires for the hooks that have thousands of records, which results in 500 errors.
+Changes the behaviour of the existing `get_last_fires` function by using a different sort column - creation time instead of task_id.
+
+▶ [patch] [#5804](https://github.com/taskcluster/taskcluster/issues/5804)
+Fix empty error message for hooks last fire.
+
+▶ [patch] [#5804](https://github.com/taskcluster/taskcluster/issues/5804)
+Fix graphql endpoint for hook without last fires.
+
+### DEVELOPERS
+
+▶ [MAJOR] [#2791](https://github.com/taskcluster/taskcluster/issues/2791)
+Hashes for object upload and download are now more precisely defined: uploaders
+should supply all acceptable hash algorithms, and downloaders should verify all
+recognized algorihtms and ensure that at least one is present.  This has the
+effect of a breaking change in the Go client types, leading to this change's
+designation as major.
+
+▶ [patch] [#4624](https://github.com/taskcluster/taskcluster/issues/4624)
+The `startDownload` method now accepts `getUrl` as a download method.
+
+▶ [patch]
+This patch switches running CI tasks on generic-worker-ubuntu-18-04 worker pool to the new, 22-04 worker pool.
+
 ## v45.0.1
 
 ### GENERAL
