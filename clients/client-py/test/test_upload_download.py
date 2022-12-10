@@ -4,6 +4,7 @@ Tests of uploads and downloads using local fakes and requiring no credentials.
 import io
 
 import pytest
+import hashlib
 import httptest
 import aiohttp
 
@@ -47,14 +48,17 @@ class FakeQueue:
 
 
 class FakeObject:
-    def __init__(self, ts):
+    def __init__(self, ts, *, hashes={}):
         self.ts = ts
+        self.hashes = hashes
 
     def startDownload(self, name, payload):
-        assert payload["acceptDownloadMethods"]["simple"]
+        assert payload["acceptDownloadMethods"]["getUrl"]
         return {
-            "method": "simple",
+            "method": "getUrl",
             "url": f"{self.ts.url()}data",
+            "expires": str(taskcluster.fromNow('1 hour')),
+            "hashes": self.hashes,
         }
 
     def createUpload(self, name, payload):
@@ -86,8 +90,8 @@ class FakeObject:
         return {}
 
 
-def test_simple_download_fails():
-    "When a simple download's GET fails with a 400, an exception is raised and no retries occur"
+def test_getUrl_download_fails():
+    "When a getUrl download's GET fails with a 400, an exception is raised and no retries occur"
     getcount = 0
 
     class Server(httptest.Handler):
@@ -107,8 +111,8 @@ def test_simple_download_fails():
         assert getcount == 1
 
 
-def test_simple_download_fails_retried():
-    "When a simple download's GET fails with a 500, an exception is raised after five retries"
+def test_getUrl_download_fails_retried():
+    "When a getUrl download's GET fails with a 500, an exception is raised after five retries"
     attempts = 0
 
     class Server(httptest.Handler):
@@ -129,8 +133,8 @@ def test_simple_download_fails_retried():
     assert attempts == 6  # one try plus five retries
 
 
-def test_simple_download_fails_retried_succeeds(randbytes):
-    "When a simple download's GET fails with a 500, it is retried successfully"
+def test_getUrl_download_fails_retried_succeeds(randbytes):
+    "When a getUrl download's GET fails with a 500, it is retried successfully"
     attempts = 0
     data = randbytes(1024)
 
@@ -150,7 +154,10 @@ def test_simple_download_fails_retried_succeeds(randbytes):
                 self.wfile.write(b'uhoh')
 
     with httptest.Server(Server) as ts:
-        objectService = FakeObject(ts)
+        objectService = FakeObject(ts, hashes={
+            "sha256": hashlib.sha256(data).hexdigest(),
+            "sha512": hashlib.sha512(data).hexdigest(),
+        })
         buf, content_type = download.downloadToBuf(
             name="some/object",
             objectService=objectService)
@@ -178,7 +185,10 @@ def test_download(randbytes):
         return writer
 
     with httptest.Server(Server) as ts:
-        objectService = FakeObject(ts)
+        objectService = FakeObject(ts, hashes={
+            "sha256": hashlib.sha256(data).hexdigest(),
+            "sha512": hashlib.sha512(data).hexdigest(),
+        })
         download.download(
             name="some/object",
             writerFactory=writerFactory,
@@ -330,7 +340,10 @@ def test_download_object_artifact(randbytes, monkeypatch):
             from aio.test_upload_download import FakeObject
             assert options["credentials"] == {"clientId": "c", "accessToken": "a"}
             assert options["rootUrl"] == "https://tc-testing.example.com"
-            return FakeObject(ts)
+            return FakeObject(ts, hashes={
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "sha512": hashlib.sha512(data).hexdigest(),
+            })
 
         monkeypatch.setattr(taskcluster.aio.download, "Object", make_fake_async_object)
 
