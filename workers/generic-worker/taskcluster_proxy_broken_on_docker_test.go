@@ -10,7 +10,7 @@ import (
 
 func TestTaskclusterProxy(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	taskID := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
 

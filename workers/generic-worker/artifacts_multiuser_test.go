@@ -17,7 +17,7 @@ import (
 
 func TestChainOfTrustUpload(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -216,7 +216,7 @@ func TestChainOfTrustUpload(t *testing.T) {
 
 func TestProtectedArtifactsReplaced(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 

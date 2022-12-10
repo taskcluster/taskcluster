@@ -5,7 +5,7 @@ import (
 )
 
 func TestRunAsAdministratorDisabled(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Skipping since running as current user...")
 	}
@@ -25,7 +25,7 @@ func TestRunAsAdministratorDisabled(t *testing.T) {
 }
 
 func TestRunAsAdministratorEnabledMissingScopes(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Skipping since running as current user...")
 	}
@@ -54,7 +54,7 @@ func TestRunAsAdministratorEnabledMissingScopes(t *testing.T) {
 }
 
 func TestRunAsAdministratorMissingOSGroup(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Skipping since running as current user...")
 	}
@@ -87,7 +87,7 @@ func TestRunAsAdministratorMissingOSGroup(t *testing.T) {
 
 // the payload never actually runs, so we don't need to also cover ed25519.
 func TestChainOfTrustWithRunAsAdministrator(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command: []string{
 			`type "` + config.Ed25519SigningKeyLocation + `"`,
@@ -121,7 +121,7 @@ func TestChainOfTrustWithRunAsAdministrator(t *testing.T) {
 }
 
 func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command: []string{
 			`type "` + config.Ed25519SigningKeyLocation + `"`,
@@ -156,7 +156,7 @@ func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
 }
 
 func TestRunAsAdministratorEnabled(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Skipping since running as current user...")
 	}

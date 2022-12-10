@@ -34,14 +34,14 @@ var (
 	testdataDir    = filepath.Join(cwd, "testdata")
 )
 
-func setup(t *testing.T) func() {
+func setup(t *testing.T) {
 	test := GWTest(t)
 	err := test.Setup()
 	if err != nil {
 		test.Teardown()
 		t.Fatalf("%v", err)
 	}
-	return test.Teardown
+	t.Cleanup(test.Teardown)
 }
 
 // testWorkerType returns a fake workerType identifier that conforms to

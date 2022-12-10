@@ -7,7 +7,7 @@ import (
 )
 
 func TestWorkerLocation(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	oldWorkerLocation := config.WorkerLocation
 	defer func(oldWorkerLocation string) {

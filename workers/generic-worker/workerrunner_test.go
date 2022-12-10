@@ -12,7 +12,7 @@ import (
 	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/gwconfig"
 )
 
-func setupWorkerRunnerTest(runnerCapabilities ...string) (*workerproto.Protocol, func()) {
+func setupWorkerRunnerTest(t *testing.T, runnerCapabilities ...string) *workerproto.Protocol {
 	graceful.Reset()
 	workerTransport, runnerTransport := wptesting.NewLocalTransportPair()
 
@@ -29,15 +29,16 @@ func setupWorkerRunnerTest(runnerCapabilities ...string) (*workerproto.Protocol,
 
 	runnerProto.WaitUntilInitialized()
 
-	return runnerProto, func() {
+	t.Cleanup(func() {
 		runnerTransport.Close()
 		workerTransport.Close()
-	}
+	})
+
+	return runnerProto
 }
 
 func TestGracefulTermination(t *testing.T) {
-	runnerProto, cleanup := setupWorkerRunnerTest("graceful-termination")
-	defer cleanup()
+	runnerProto := setupWorkerRunnerTest(t, "graceful-termination")
 
 	require.False(t, graceful.TerminationRequested())
 
@@ -60,8 +61,7 @@ func TestGracefulTermination(t *testing.T) {
 }
 
 func TestNewCredentials(t *testing.T) {
-	runnerProto, cleanup := setupWorkerRunnerTest("new-credentials")
-	defer cleanup()
+	runnerProto := setupWorkerRunnerTest(t, "new-credentials")
 
 	test := func(withCert bool) func(*testing.T) {
 		return func(t *testing.T) {
