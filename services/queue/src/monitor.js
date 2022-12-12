@@ -112,10 +112,10 @@ MonitorManager.register({
   name: 'taskClaimed',
   title: 'Task Claimed',
   type: 'task-claimed',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: `
-    A worker has claimed a task.  In cases where multple tasks were claimed,
+    A worker has claimed a task.  In cases where multiple tasks were claimed,
     one log message will be produced for each task.`,
   fields: {
     taskQueueId: "The task queue ID for which work is being claimed",
@@ -123,6 +123,7 @@ MonitorManager.register({
     workerId: 'The id of the claiming worker.',
     taskId: 'The task given to the worker.',
     runId: 'The run of this task assigned to the worker.',
+    workerImplementation: 'Type of payload: generic-worker or docker-worker',
   },
 });
 

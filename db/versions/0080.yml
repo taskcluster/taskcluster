@@ -1,0 +1,35 @@
+version: 80
+description: allow queue to fetch information about worker pool
+migrationScript: |
+  begin
+    grant select on worker_pools to $db_user_prefix$_queue;
+  end
+downgradeScript: |
+  begin
+    revoke select on worker_pools from $db_user_prefix$_queue;
+  end
+methods:
+  get_worker_pool:
+    description: |-
+      Get an existing worker pool without worker stats.  The returned table will have one or (if no such worker pool is defined) zero rows.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb)
+    body: |-
+      begin
+        return query
+        select
+          worker_pools.worker_pool_id,
+          worker_pools.provider_id,
+          worker_pools.previous_provider_ids,
+          worker_pools.description,
+          worker_pools.config,
+          worker_pools.created,
+          worker_pools.last_modified,
+          worker_pools.owner,
+          worker_pools.email_on_error,
+          worker_pools.provider_data
+        from worker_pools
+        where worker_pools.worker_pool_id = worker_pool_id_in;
+      end

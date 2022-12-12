@@ -85,7 +85,7 @@ class AwsProvider extends Provider {
     this._enqueue = cloud.enqueue.bind(cloud);
   }
 
-  async provision({ workerPool, workerInfo }) {
+  async provision({ workerPool, workerInfo, workerImplementation }) {
     const { workerPoolId } = workerPool;
 
     if (!workerPool.providerData[this.providerId]) {
@@ -237,6 +237,7 @@ class AwsProvider extends Provider {
           workerGroup: config.region,
           workerId: i.InstanceId,
           terminateAfter,
+          workerImplementation,
         });
         const worker = Worker.fromApi({
           workerPoolId,

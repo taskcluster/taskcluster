@@ -153,6 +153,7 @@
    * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
    * [`get_task_queues_wm`](#get_task_queues_wm)
    * [`get_worker_2`](#get_worker_2)
+   * [`get_worker_pool`](#get_worker_pool)
    * [`get_worker_pool_error`](#get_worker_pool_error)
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
    * [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
@@ -2342,6 +2343,7 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
 * [`get_task_queues_wm`](#get_task_queues_wm)
 * [`get_worker_2`](#get_worker_2)
+* [`get_worker_pool`](#get_worker_pool)
 * [`get_worker_pool_error`](#get_worker_pool_error)
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
 * [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
@@ -2686,6 +2688,26 @@ Otherwise, page_size rows are returned at offset page_offset.
 * *Last defined on version*: 14
 
 Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.
+
+### get_worker_pool
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `provider_id text`
+  * `previous_provider_ids jsonb`
+  * `description text`
+  * `config jsonb`
+  * `created timestamptz`
+  * `last_modified timestamptz`
+  * `owner text`
+  * `email_on_error boolean`
+  * `provider_data jsonb`
+* *Last defined on version*: 80
+
+Get an existing worker pool without worker stats.  The returned table will have one or (if no such worker pool is defined) zero rows.
 
 ### get_worker_pool_error
 

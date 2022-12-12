@@ -50,7 +50,8 @@
         "task_dependencies": "write",
         "task_groups": "write",
         "task_queues": "write",
-        "tasks": "write"
+        "tasks": "write",
+        "worker_pools": "read"
       }
     },
     "secrets": {
@@ -6409,6 +6410,23 @@
       },
       "migrationScript": "begin\n  create index hooks_last_fires_time on hooks_last_fires (hook_group_id,hook_id,task_create_time);\nend",
       "version": 79
+    },
+    {
+      "description": "allow queue to fetch information about worker pool",
+      "downgradeScript": "begin\n  revoke select on worker_pools from $db_user_prefix$_queue;\nend\n",
+      "methods": {
+        "get_worker_pool": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  return query\n  select\n    worker_pools.worker_pool_id,\n    worker_pools.provider_id,\n    worker_pools.previous_provider_ids,\n    worker_pools.description,\n    worker_pools.config,\n    worker_pools.created,\n    worker_pools.last_modified,\n    worker_pools.owner,\n    worker_pools.email_on_error,\n    worker_pools.provider_data\n  from worker_pools\n  where worker_pools.worker_pool_id = worker_pool_id_in;\nend",
+          "deprecated": false,
+          "description": "Get an existing worker pool without worker stats.  The returned table will have one or (if no such worker pool is defined) zero rows.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "migrationScript": "begin\n  grant select on worker_pools to $db_user_prefix$_queue;\nend\n",
+      "version": 80
     }
   ]
 }

@@ -124,9 +124,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       Logger: 'taskcluster.test.api',
       Fields: {
         taskQueueId,
-        v: 1,
+        v: 2,
         workerGroup: "my-worker-group-extended-extended",
         workerId: "my-worker-extended-extended",
+        workerImplementation: 'unknown',
         taskId,
         runId: 0,
       },

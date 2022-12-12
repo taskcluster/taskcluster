@@ -2,7 +2,7 @@ const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
 const _ = require('lodash');
-const { Worker } = require('../src/data');
+const { Worker, WorkerPool } = require('../src/data');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -47,5 +47,76 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(worker.capacity, 3);
     });
+  });
+
+  suite('worker pool', () => {
+    const testPairs = [
+      ['unknown type', 'unknown', {
+        workerPoolId: 'who-knows',
+        config: {
+          minCapacity: 1,
+          maxCapacity: 2,
+        },
+      }],
+      ['possibly docker', 'docker-worker', {
+        workerPoolId: 'possibly-docker',
+        config: {
+          minCapacity: 1,
+          maxCapacity: 2,
+          launchConfigs: [{
+            region: 'de-west-9',
+            workerConfig: {},
+          }, {
+            region: 'us-east-1',
+            workerConfig: {
+              capacity: 1,
+            },
+          }],
+        },
+      }],
+      ['probably not generic', 'docker-worker', {
+        workerPoolId: 'maybe-not-generic',
+        config: {
+          minCapacity: 1,
+          maxCapacity: 2,
+          launchConfigs: [{
+            region: 'us-east-1',
+            ImageId: 'ami-docker-disguised-as-generic',
+            workerConfig: {
+              capacity: 1,
+              genericWorker: {
+                config: {
+                  deploymentId: '/tmp',
+                },
+              },
+            },
+          }],
+        },
+      }],
+      ['clearly generic', 'generic-worker', {
+        workerPoolId: 'clearly-generic',
+        config: {
+          minCapacity: 1,
+          maxCapacity: 2,
+          launchConfigs: [{
+            region: 'us-east-1',
+            workerConfig: {
+              capacity: 1,
+              genericWorker: {
+                config: {
+                  tasksDir: '/tmp',
+                  cachesDir: '/proc',
+                  downloadsDir: '/dev',
+                },
+              },
+            },
+          }],
+        },
+      }],
+    ];
+    testPairs.forEach(([name, type, cfg]) => test(`guessWorkerImplementation: ${name}`, () => {
+      const wp = new WorkerPool(cfg);
+      assert.equal(wp.guessWorkerImplementation(), type);
+    }));
   });
 });

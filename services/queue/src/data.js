@@ -537,3 +537,60 @@ class Worker {
 
 // Export Worker
 exports.Worker = Worker;
+
+// This is queue's vision of worker pool
+// for now it only needs to guess type of the worker for monitoring purposes
+class WorkerPool {
+  // (private constructor)
+  constructor(props) {
+    Object.assign(this, props);
+  }
+
+  // Create a single instance from a DB row
+  static fromDb(row) {
+    return new WorkerPool({
+      workerPoolId: row.worker_pool_id,
+      providerId: row.provider_id,
+      description: row.description,
+      created: row.created,
+      lastModified: row.last_modified,
+      config: row.config,
+      owner: row.owner,
+      emailOnError: row.email_on_error,
+      previousProviderIds: row.previous_provider_ids,
+      providerData: row.provider_data,
+
+    });
+  }
+
+  // Create a single instance, or undefined, from a set of rows containing zero
+  // or one elements.  This matches the semantics of get_worker_pool.
+  static fromDbRows(rows) {
+    if (rows.length === 1) {
+      return WorkerPool.fromDb(rows[0]);
+    }
+  }
+
+  // Get a worker pool from the DB, or undefined if it does not exist.
+  static async get(db, workerPoolId) {
+    return WorkerPool.fromDbRows(await db.fns.get_worker_pool(workerPoolId));
+  }
+
+  // guess what worker implementation is being used
+  // we assume that provider only contains launch configs for the workers of the same type
+  guessWorkerImplementation() {
+    if (!Array.isArray(this.config?.launchConfigs)) {
+      return 'unknown';
+    }
+    if (this.config.launchConfigs.some(cfg =>
+      // some worker pools with docker worker might include genericWorker config by mistake with 1-2 entries
+      // while pools with generic worker contain config with bigger set of config options
+      Object.keys(cfg?.workerConfig?.genericWorker?.config || {})?.length > 2,
+    )) {
+      return 'generic-worker';
+    }
+    return 'docker-worker';
+  }
+}
+
+exports.WorkerPool = WorkerPool;

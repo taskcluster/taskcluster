@@ -4,7 +4,7 @@ const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
 const taskCreds = require('./task-creds');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const { Task, Worker, TaskQueue, Provisioner } = require('./data');
+const { Task, Worker, TaskQueue, Provisioner, WorkerPool } = require('./data');
 const { addSplitFields, useOnlyTaskQueueId, joinTaskQueueId, splitTaskQueueId } = require('./utils');
 
 // Maximum number runs allowed
@@ -1009,6 +1009,7 @@ builder.declare({
   });
 
   const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
+  const workerPool = await WorkerPool.get(this.db, taskQueueId);
 
   // Don't claim tasks when worker is quarantined (but do record the worker
   // being seen, and be sure to wait the 20 seconds so as not to cause a
@@ -1043,6 +1044,7 @@ builder.declare({
       workerId,
       taskId,
       runId,
+      workerImplementation: workerPool?.guessWorkerImplementation() || 'unknown',
     });
   });
 

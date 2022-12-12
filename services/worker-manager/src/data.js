@@ -79,6 +79,11 @@ class WorkerPool {
     return WorkerPool.fromDbRows(await db.fns.get_worker_pool_with_capacity_and_counts_by_state(workerPoolId));
   }
 
+  // Get a worker pool from DB without stats
+  static async getSimple(db, workerPoolId) {
+    return WorkerPool.fromDbRows(await db.fns.get_worker_pool(workerPoolId));
+  }
+
   // Expire worker pools with null-provider that no longer have any workers,
   // returning the list of worker pools expired.
   static async expire({ db, monitor }) {
@@ -153,6 +158,22 @@ class WorkerPool {
       'emailOnError',
     ];
     return _.isEqual(_.pick(other, fields), _.pick(this, fields));
+  }
+
+  // guess what worker implementation is being used
+  // we assume that provider only contains launch configs for the workers of the same type
+  guessWorkerImplementation() {
+    if (!Array.isArray(this.config?.launchConfigs)) {
+      return 'unknown';
+    }
+    if (this.config.launchConfigs.some(cfg =>
+      // some worker pools with docker worker might include genericWorker config by mistake with 1-2 entries
+      // while pools with generic worker contain config with bigger set of config options
+      Object.keys(cfg?.workerConfig?.genericWorker?.config || {})?.length > 2,
+    )) {
+      return 'generic-worker';
+    }
+    return 'docker-worker';
   }
 }
 

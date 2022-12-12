@@ -4,13 +4,14 @@ MonitorManager.register({
   name: 'workerPoolProvisioned',
   title: 'Worker Pool Provisioned',
   type: 'worker-pool-provisioned',
-  version: 2,
+  version: 3,
   level: 'info',
   description: 'A worker pool\'s provisioning run has completed',
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
     duration: 'Time taken to provision the worker pool in ms',
+    workerType: 'Guessed type of worker: generic-worker or docker-worker',
   },
 });
 
@@ -18,7 +19,7 @@ MonitorManager.register({
   name: 'workerRequested',
   title: 'Worker Requested',
   type: 'worker-requested',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: 'A worker has been requested from a cloud api',
   fields: {
@@ -27,6 +28,7 @@ MonitorManager.register({
     workerGroup: 'The worker group for this worker',
     workerId: 'The worker that was created',
     terminateAfter: 'Time after which worker should be terminated',
+    workerImplementation: 'Guessed worker implementation: generic-worker or docker-worker',
   },
 });
 

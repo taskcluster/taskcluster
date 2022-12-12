@@ -152,12 +152,14 @@ class Provisioner {
           requestedCapacity: 0,
         };
 
+        const workerImplementation = workerPool.guessWorkerImplementation();
+
         try {
           const workerInfo = {
             existingCapacity: providerByPool.existingCapacity,
             requestedCapacity: providerByPool.requestedCapacity,
           };
-          await provider.provision({ workerPool, workerInfo });
+          await provider.provision({ workerPool, workerInfo, workerImplementation });
         } catch (err) {
           this.monitor.reportError(err,
             {
@@ -199,6 +201,7 @@ class Provisioner {
           workerPoolId: workerPool.workerPoolId,
           providerId: workerPool.providerId,
           duration,
+          workerType: workerImplementation,
         });
       }
 
@@ -207,7 +210,6 @@ class Provisioner {
     } finally {
       this.provisioningLoopAlive = false; // Allow lib-iterate to start a loop again
     }
-
   }
 }
 

@@ -285,7 +285,7 @@ class AzureProvider extends Provider {
     this.restClient = new msRestAzure.AzureServiceClient(credentials);
   }
 
-  async provision({ workerPool, workerInfo }) {
+  async provision({ workerPool, workerInfo, workerImplementation }) {
     const { workerPoolId } = workerPool;
     let toSpawn = await this.estimator.simple({
       workerPoolId,
@@ -428,6 +428,7 @@ class AzureProvider extends Provider {
         workerGroup,
         workerId: virtualMachineName,
         terminateAfter,
+        workerImplementation,
       });
       const worker = Worker.fromApi({
         workerPoolId,

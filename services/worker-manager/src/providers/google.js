@@ -192,7 +192,7 @@ class GoogleProvider extends Provider {
     }
   }
 
-  async provision({ workerPool, workerInfo }) {
+  async provision({ workerPool, workerInfo, workerImplementation }) {
     const { workerPoolId } = workerPool;
 
     if (!workerPool.providerData[this.providerId]) {
@@ -319,6 +319,7 @@ class GoogleProvider extends Provider {
         workerGroup,
         workerId: op.targetId,
         terminateAfter,
+        workerImplementation,
       });
       const worker = Worker.fromApi({
         workerPoolId,

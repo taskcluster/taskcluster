@@ -64,7 +64,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === wp.workerPoolId)), {
             Logger: 'taskcluster.test.provisioner',
             Type: 'worker-pool-provisioned',
-            Fields: { workerPoolId: wp.workerPoolId, providerId: pId, v: 2, duration: 1 },
+            Fields: { workerPoolId: wp.workerPoolId, providerId: pId, v: 3, duration: 1, workerType: 'unknown' },
             Severity: LEVELS.info,
           });
           const msg = monitor.manager.messages.find(
@@ -299,7 +299,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === 'pp/ww')), {
         Logger: 'taskcluster.test.provisioner',
         Type: 'worker-pool-provisioned',
-        Fields: { workerPoolId: 'pp/ww', providerId: 'testing1', v: 2, duration: 1 },
+        Fields: { workerPoolId: 'pp/ww', providerId: 'testing1', v: 3, duration: 1, workerType: 'unknown' },
         Severity: LEVELS.info,
       });
     });
@@ -351,7 +351,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         msg => msg.Type === 'worker-pool-provisioned' && msg.Fields.workerPoolId === 'pp/ww')), {
         Logger: 'taskcluster.test.provisioner',
         Type: 'worker-pool-provisioned',
-        Fields: { workerPoolId: 'pp/ww', providerId: 'testing1', v: 2, duration: 1 },
+        Fields: { workerPoolId: 'pp/ww', providerId: 'testing1', v: 3, duration: 1, workerType: 'unknown' },
         Severity: LEVELS.info,
       });
       assert.deepEqual(

@@ -13308,13 +13308,14 @@
           "fields": {
             "duration": "Time taken to provision the worker pool in ms",
             "providerId": "The provider that did the work for this worker pool.",
-            "workerPoolId": "The worker pool ID"
+            "workerPoolId": "The worker pool ID",
+            "workerType": "Guessed type of worker: generic-worker or docker-worker"
           },
           "level": "info",
           "name": "workerPoolProvisioned",
           "title": "Worker Pool Provisioned",
           "type": "worker-pool-provisioned",
-          "version": 2
+          "version": 3
         },
         {
           "description": "A request has been made to stop a worker.  This operation can sometimes\ntake some time.",
@@ -13337,13 +13338,14 @@
             "terminateAfter": "Time after which worker should be terminated",
             "workerGroup": "The worker group for this worker",
             "workerId": "The worker that was created",
+            "workerImplementation": "Guessed worker implementation: generic-worker or docker-worker",
             "workerPoolId": "The worker pool ID"
           },
           "level": "notice",
           "name": "workerRequested",
           "title": "Worker Requested",
           "type": "worker-requested",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A worker has been marked as running",
@@ -14656,19 +14658,20 @@
           "version": 1
         },
         {
-          "description": "A worker has claimed a task.  In cases where multple tasks were claimed,\none log message will be produced for each task.",
+          "description": "A worker has claimed a task.  In cases where multiple tasks were claimed,\none log message will be produced for each task.",
           "fields": {
             "runId": "The run of this task assigned to the worker.",
             "taskId": "The task given to the worker.",
             "taskQueueId": "The task queue ID for which work is being claimed",
             "workerGroup": "Group of worker claiming work.",
-            "workerId": "The id of the claiming worker."
+            "workerId": "The id of the claiming worker.",
+            "workerImplementation": "Type of payload: generic-worker or docker-worker"
           },
           "level": "notice",
           "name": "taskClaimed",
           "title": "Task Claimed",
           "type": "task-claimed",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A task run has been resolved as completed.  This is logged when the task-completed pulse\nmessage is sent.",
