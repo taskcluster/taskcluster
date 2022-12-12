@@ -507,6 +507,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
+  test('link for clickable badges when no branch exists', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
+      await assert.rejects(() => got(
+        helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'checksRepo', 'noSuchBranch'),
+        { followRedirect: false }), err => err.response.statusCode === 404);
+    });
+  });
+
+  test('link for clickable badges when no installation exists', async function() {
+    await testing.fakeauth.withAnonymousScopes(['github:latest-status:noSuchOwner:*'], async () => {
+      await assert.rejects(() => got(
+        helper.apiClient.buildUrl(helper.apiClient.latest, 'noSuchOwner', 'noSuchRepo', 'noSuchBranch'),
+        { followRedirect: false }), err => err.response.statusCode === 404);
+    });
+  });
+
   test('latest link without scopes', async function() {
     const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
     await assert.rejects(
@@ -549,7 +565,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(status.context, 'customContext');
   });
 
-  test('status creation where integraiton lacks permission', async function() {
+  test('status creation where integration lacks permission', async function() {
     try {
       await helper.apiClient.createStatus('abc123', 'no-permission', 'master', {
         state: 'failure',
