@@ -51,7 +51,7 @@ async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRI
                     response = await makeSingleHttpRequest(method, url, payload, headers, session)
             except aiohttp.ClientError as rerr:
                 if retry < retries:
-                    log.warn('Retrying because of: %s' % rerr)
+                    log.warning('Retrying because of: %s' % rerr)
                     continue
                 # raise a connection exception
                 raise rerr
