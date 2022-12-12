@@ -23,8 +23,8 @@ To update the node version:
 
 To update the go version:
 
-* Install the new go version, such as `gvm install go1.19.3`
-* Use the new go version, such as `gvm use go1.19.3`
+* Install the new go version: `gvm install go1.19.4`
+* Use the new go version (--default to set permanently): `gvm use go1.19.4`
 * Download modules with `go mod download`
 * Update `.go-version`
 * Run `yarn generate`. Some `go` errors may occur, for example on major version updates.
