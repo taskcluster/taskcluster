@@ -156,7 +156,8 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
   try {
     statuses = (await github.repos.listCommitStatusesForRef({ owner, repo, ref: branch })).data;
   } catch (e) {
-    if (e.code === 404) {
+    // github sends 422 when branch doesn't exist
+    if (e.code === 404 || e.code === 422) {
       return undefined;
     }
     throw e;
@@ -614,10 +615,9 @@ builder.declare({
       let run = checkRuns.sort((a, b) => a.id - b.id)[0];
       return res.redirect(run.html_url);
     }
-
-    // Otherwise there is no status available for the given branch.
-    return res.reportError('ResourceNotFound', 'Status not found', {});
   }
+
+  return res.reportError('ResourceNotFound', 'Status not found', {});
 });
 
 builder.declare({
