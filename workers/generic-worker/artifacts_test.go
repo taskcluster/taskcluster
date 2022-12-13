@@ -59,7 +59,7 @@ func validateArtifacts(
 
 func TestFileArtifactWithNames(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -88,7 +88,7 @@ func TestFileArtifactWithNames(t *testing.T) {
 
 func TestFileArtifactWithContentType(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -118,7 +118,7 @@ func TestFileArtifactWithContentType(t *testing.T) {
 
 func TestFileArtifactAsObjectWithContentType(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	config.CreateObjectArtifacts = true
 	validateArtifacts(t,
 
@@ -147,7 +147,7 @@ func TestFileArtifactAsObjectWithContentType(t *testing.T) {
 }
 
 func TestFileArtifactWithContentEncoding(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -261,7 +261,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 
 func TestDirectoryArtifactWithNames(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -308,7 +308,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 
 func TestDirectoryArtifactWithContentType(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -356,7 +356,7 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 
 func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -444,7 +444,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 // artifacts.
 func TestDirectoryArtifacts(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -489,7 +489,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 // Task payload specifies a file artifact which doesn't exist on worker
 func TestMissingFileArtifact(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -516,7 +516,7 @@ func TestMissingFileArtifact(t *testing.T) {
 // Task payload specifies a directory artifact which doesn't exist on worker
 func TestMissingDirectoryArtifact(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -543,7 +543,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 // Task payload specifies a file artifact which is actually a directory on worker
 func TestFileArtifactIsDirectory(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -570,7 +570,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 // TestDefaultArtifactExpiry tests that when providing no artifact expiry, task expiry is used
 func TestDefaultArtifactExpiry(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -597,7 +597,7 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 // Task payload specifies a directory artifact which is a regular file on worker
 func TestDirectoryArtifactIsFile(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -624,7 +624,7 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 
 func TestMissingArtifactFailsTest(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -647,7 +647,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 
 func TestInvalidContentEncoding(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -680,7 +680,7 @@ func TestInvalidContentEncoding(t *testing.T) {
 
 func TestInvalidContentEncodingBlacklisted(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -713,7 +713,7 @@ func TestInvalidContentEncodingBlacklisted(t *testing.T) {
 
 func TestEmptyContentEncoding(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	td := testTask(t)
 	td.Payload = json.RawMessage(`

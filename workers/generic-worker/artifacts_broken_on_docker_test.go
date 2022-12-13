@@ -10,7 +10,7 @@ import (
 )
 
 func TestPublicDirectoryArtifact(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -56,7 +56,7 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 }
 
 func TestConflictingFileArtifactsInPayload(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -110,7 +110,7 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 }
 
 func TestFileArtifactTwiceInPayload(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -141,7 +141,7 @@ func TestFileArtifactTwiceInPayload(t *testing.T) {
 }
 
 func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -195,7 +195,7 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 
 func TestFileArtifactHasNoExpiry(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	payload := GenericWorkerPayload{
 		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
@@ -233,7 +233,7 @@ func TestFileArtifactHasNoExpiry(t *testing.T) {
 
 func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	payload := GenericWorkerPayload{
 		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
@@ -271,7 +271,7 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 
 func TestObjectArtifact(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	config.CreateObjectArtifacts = true
 
 	payload := GenericWorkerPayload{

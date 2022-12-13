@@ -78,7 +78,7 @@ func TestEnvVarsMustBeStrings(t *testing.T) {
 }
 
 func TestMalformedPayloadIncludesSchema(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	taskID := slugid.Nice()
 	td := testTask(t)
 	// invalid payload, that is still valid json
@@ -253,7 +253,7 @@ func TestArtifactExpiresAfterTaskExpiry(t *testing.T) {
 }
 
 func TestInvalidPayload(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	td := testTask(t)
 	td.Payload = json.RawMessage(`

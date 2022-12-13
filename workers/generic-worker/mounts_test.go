@@ -13,7 +13,7 @@ import (
 )
 
 func TestMissingScopes(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	taskID := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
 
@@ -56,7 +56,7 @@ func TestMissingScopes(t *testing.T) {
 
 // TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency
 func TestMissingMountsDependency(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	pretendTaskID := slugid.Nice()
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
@@ -107,7 +107,7 @@ func Test32BitOverflow(t *testing.T) {
 }
 
 func TestCorruptZipDoesntCrashWorker(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	taskID := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
 
@@ -154,7 +154,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 // TestNonExistentArtifact depends on an artifact that does not exist from a
 // task that *does* exist.
 func TestNonExistentArtifact(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	taskID := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
 
@@ -261,7 +261,7 @@ func LogTest(m *MountsLoggingTestCase) {
 }
 
 func TestInvalidSHA256(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 	LogTest(
 		&MountsLoggingTestCase{
@@ -305,7 +305,7 @@ func TestInvalidSHA256(t *testing.T) {
 }
 
 func TestValidSHA256(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
 	// whether permission is granted to task user depends if running under windows or not
@@ -360,7 +360,7 @@ func TestValidSHA256(t *testing.T) {
 }
 
 func TestFileMountNoSHA256(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
 	// whether permission is granted to task user depends if running under windows or not
@@ -415,7 +415,7 @@ func TestFileMountNoSHA256(t *testing.T) {
 }
 
 func TestMountFileAtCWD(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 	LogTest(
 		&MountsLoggingTestCase{
@@ -462,7 +462,7 @@ func TestMountFileAtCWD(t *testing.T) {
 }
 
 func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
 	// whether permission is granted to task user depends if running under windows or not
@@ -531,7 +531,7 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 
 // Test for upstream issue https://github.com/mholt/archiver/issues/152
 func TestHardLinksInArchive(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	mounts := []MountEntry{
 		// requires scope "generic-worker:cache:banana-cache"
