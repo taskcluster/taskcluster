@@ -490,7 +490,7 @@ class BaseClient(object):
                 response = utils.makeSingleHttpRequest(method, url, payload, headers)
             except requests.exceptions.RequestException as rerr:
                 if retry < retries:
-                    log.warn('Retrying because of: %s' % rerr)
+                    log.warning('Retrying because of: %s' % rerr)
                     continue
                 # raise a connection exception
                 raise exceptions.TaskclusterConnectionError(
@@ -506,7 +506,7 @@ class BaseClient(object):
             # Catch retryable errors and go to the beginning of the loop
             # to do the retry
             if 500 <= status and status < 600 and retry < retries:
-                log.warn('Retrying because of a %s status code' % status)
+                log.warning('Retrying because of a %s status code' % status)
                 continue
 
             # Throw errors for non-retryable errors

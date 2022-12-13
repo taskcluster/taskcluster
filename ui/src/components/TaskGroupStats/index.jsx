@@ -149,7 +149,7 @@ export default class TaskGroupStats extends Component {
       searchTerm,
       graphAll ? +Infinity : maxTasksInGraph
     );
-    const width = (sampledTasks.length + 1) * barWidth;
+    const width = (Math.max(25, sampledTasks.length) + 1) * barWidth;
     const relativeHeight = d => Math.max(1, (height * d) / maxDuration);
     const median = quantile(durations, 0.5);
     const q75 = quantile(durations, 0.75);

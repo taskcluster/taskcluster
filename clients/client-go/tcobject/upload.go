@@ -11,7 +11,7 @@ import (
 
 	"github.com/cenkalti/backoff/v3"
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v45/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
 )
 
 const (
@@ -90,8 +90,7 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 			return
 		}
 
-		var hashes ObjectContentHashes
-		hashes, err = hashingReadSeeker.hashes(contentLength)
+		hashes, err := hashingReadSeeker.hashes(contentLength)
 		if err != nil {
 			return
 		}
@@ -104,6 +103,9 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 				Hashes:    hashes,
 			},
 		)
+		if err != nil {
+			return
+		}
 	}()
 
 	switch {

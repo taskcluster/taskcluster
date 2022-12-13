@@ -14,8 +14,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v45/clients/client-go"
-	"github.com/taskcluster/taskcluster/v45/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
+	"github.com/taskcluster/taskcluster/v46/clients/client-go/tcqueue"
 )
 
 // Data types that map to sections of tasks.yml

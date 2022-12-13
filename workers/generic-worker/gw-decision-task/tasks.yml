@@ -6,8 +6,8 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.19.3'
-      - 'git2.37.1'
+      - 'go1.19.4'
+      - 'git2.39.0'
       - 'jq1.6'
       - 'ci-creds'
       # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
@@ -23,7 +23,7 @@ Types:
       - Name: 'public/build/generic-worker-${OS}-${ARCH}${EXTENSION}'
         # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
         #   DO NOT CHANGE HERE!
-        Path: 'gopath1.19.3/bin/generic-worker${EXTENSION}'
+        Path: 'gopath1.19.4/bin/generic-worker${EXTENSION}'
         Type: 'file'
     MaxRunTime: 3600
 
@@ -40,7 +40,7 @@ Types:
     Mounts:
       # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - 'go1.19.3'
+      - 'go1.19.4'
     Command: FormatSource
     MaxRunTime: 3600
 
@@ -119,7 +119,7 @@ WorkerPools:
     # The next comment is edited by infrastructure/tooling/src/generate/generators/go-version.js
     #   DO NOT CHANGE HERE!
 
-    # There is no arm release for go 1.19.3 on windows, but 386 release works
+    # There is no arm release for go 1.19.4 on windows, but 386 release works
     # through emulation provided by the host OS.
     Arch: '386'
   proj-taskcluster/gw-ci-windows2012r2-amd64:
@@ -140,7 +140,7 @@ Commands:
           export CGO_ENABLED=0
           # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.19.3/go"
+          export GOROOT="$(pwd)/go1.19.4/go"
           export PATH="${GOROOT}/bin:${PATH}"
           go version
           go env
@@ -193,8 +193,8 @@ Commands:
 
           # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.19.3/go"
-          export GOPATH="$(pwd)/gopath1.19.3"
+          export GOROOT="$(pwd)/go1.19.4/go"
+          export GOPATH="$(pwd)/gopath1.19.4"
 
           export PATH="${GOPATH}/bin:${GOROOT}/bin:$(pwd)/bin:${PATH}"
           git --version
@@ -230,9 +230,9 @@ Commands:
             cp "${TASK_USER_CREDENTIALS}" next-task-user.json
             # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
             # otherwise tests that call `go run ....` will write go object files to .cache as root
-            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v45/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} .
+            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v46/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} .
           fi
-          GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v45/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} ./...
+          GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v46/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} ./...
 
           # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
           #   DO NOT CHANGE HERE!
@@ -257,8 +257,8 @@ Commands:
 
       # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
       #   DO NOT CHANGE HERE!
-      - set GOROOT=%CD%\go1.19.3\go
-      - set GOPATH=%CD%\gopath1.19.3
+      - set GOROOT=%CD%\go1.19.4\go
+      - set GOPATH=%CD%\gopath1.19.4
 
       - |
         :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
@@ -304,9 +304,9 @@ Commands:
       - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
       # Run with GW_TESTS_RUN_AS_CURRENT_USER=true first, to be consistent with Linux/macOS tasks
       - set GW_TESTS_RUN_AS_CURRENT_USER=true
-      - 'go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v45/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% .'
+      - 'go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v46/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% .'
       - set GW_TESTS_RUN_AS_CURRENT_USER=
-      - 'go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v45/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...'
+      - 'go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v46/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...'
 
       ################################################################################
       # This entire section is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js to update the golangci-lint version number.
@@ -334,46 +334,46 @@ Mounts:
   #
   ################################################################################
 
-  go1.19.3:
-    directory: go1.19.3
+  go1.19.4:
+    directory: go1.19.4
     content:
       darwin:
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.19.3.darwin-amd64.tar.gz'
-          sha256: '7fa09a9a34cb6f794e61e9ada1d6d18796f936a2b35f22724906cad71396e590'
+          url: 'https://storage.googleapis.com/golang/go1.19.4.darwin-amd64.tar.gz'
+          sha256: '44894862d996eec96ef2a39878e4e1fce4d05423fc18bdc1cbba745ebfa41253'
           format: tar.gz
         arm64:
-          url: 'https://storage.googleapis.com/golang/go1.19.3.darwin-arm64.tar.gz'
-          sha256: '49e394ab92bc6fa3df3d27298ddf3e4491f99477bee9dd4934525a526f3a391c'
+          url: 'https://storage.googleapis.com/golang/go1.19.4.darwin-arm64.tar.gz'
+          sha256: 'bb3bc5d7655b9637cfe2b5e90055dee93b0ead50e2ffd091df320d1af1ca853f'
       linux:
         armv6l:
-          url: 'https://storage.googleapis.com/golang/go1.19.3.linux-armv6l.tar.gz'
-          sha256: 'd2f8028ff3e84b93265084394e4b8316138e8967864267392d7fa2d3e4623f82'
+          url: 'https://storage.googleapis.com/golang/go1.19.4.linux-armv6l.tar.gz'
+          sha256: '7a51dae4f3a52d2dfeaf59367cc0b8a296deddc87e95aa619bf87d24661d2370'
           format: tar.gz
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.19.3.linux-amd64.tar.gz'
-          sha256: '74b9640724fd4e6bb0ed2a1bc44ae813a03f1e72a4c76253e2d5c015494430ba'
+          url: 'https://storage.googleapis.com/golang/go1.19.4.linux-amd64.tar.gz'
+          sha256: 'c9c08f783325c4cf840a94333159cc937f05f75d36a8b307951d5bd959cf2ab8'
           format: tar.gz
       windows:
         386:
-          url: 'https://storage.googleapis.com/golang/go1.19.3.windows-386.zip'
-          sha256: 'cbf9ced1c6d4d874464b30dbbbb237fb45f932b68994702adabda4ef56ac63a0'
+          url: 'https://storage.googleapis.com/golang/go1.19.4.windows-386.zip'
+          sha256: '51d8d895deb9883aa2daa291572f483fead69f577bf4e7cf8381c8001e37778e'
           format: zip
         amd64:
-          url: 'https://storage.googleapis.com/golang/go1.19.3.windows-amd64.zip'
-          sha256: 'b51549a9f21ee053f8a3d8e38e45b1b8b282d976f3b60f1f89b37ac54e272d31'
+          url: 'https://storage.googleapis.com/golang/go1.19.4.windows-amd64.zip'
+          sha256: 'ada490e188bfb57c7388da7c5eba7565390992b6496204d30e710d37755956b0'
           format: zip
-  git2.37.1:
+  git2.39.0:
     directory: git
     content:
       windows:
         386:
-          url: 'https://github.com/git-for-windows/git/releases/download/v2.37.1.windows.1/MinGit-2.37.1-32-bit.zip'
-          sha256: 'b336137fb286552c5c2616af50c54e9aca7d16a24ec1b00189a6c221a81af14c'
+          url: 'https://github.com/git-for-windows/git/releases/download/v2.39.0.windows.1/MinGit-2.39.0-32-bit.zip'
+          sha256: 'ad20467cf6a4c215b2c71f9bee192fb8ea1696fa3dda8e35e89544cdabdc1c7a'
           format: zip
         amd64:
-          url: 'https://github.com/git-for-windows/git/releases/download/v2.37.1.windows.1/MinGit-2.37.1-64-bit.zip'
-          sha256: 'edacf2d5c39555c25a396e0b9d27182ab5587259dc2e824b4490996b373f9300'
+          url: 'https://github.com/git-for-windows/git/releases/download/v2.39.0.windows.1/MinGit-2.39.0-64-bit.zip'
+          sha256: 'ae6863d7b7641ecf73f61edadbc7d1ff8259d08eccb4b9f006bb443d90910c25'
           format: zip
   jq1.6:
     file: bin/jq${EXTENSION}

@@ -44,7 +44,7 @@ definitions:
         description: |
           The time after which `url` is no longer valid.
           If the client wishes to begin an HTTP GET request after this time, it should first call `startDownload` again to get a fresh URL.
-      hashes: {$ref: "get-object-response.json#/properties/hashes"}
+      hashes: {$ref: "hashes.json#/definitions/download"}
     additionalProperties: false
     required:
       - method
