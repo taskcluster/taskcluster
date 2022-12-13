@@ -31,8 +31,8 @@ workers:
       os: linux
       implementation: generic-worker
       worker-type: gw-ci-ubuntu-22-04
-    gw-ci-windows2012r2-amd64:
+    gw-ci-windows-2022:
       provisioner: proj-taskcluster
       os: windows
       implementation: generic-worker
-      worker-type: gw-ci-windows2012r2-amd64
+      worker-type: gw-ci-windows-2022

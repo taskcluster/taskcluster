@@ -16,7 +16,7 @@ task-defaults:
 tasks:
   windows-worker-runner:
     description: 'test worker-runner under windows as well'
-    worker-type: gw-ci-windows2012r2-amd64
+    worker-type: gw-ci-windows-2022
     worker:
       mounts:
         - content:
