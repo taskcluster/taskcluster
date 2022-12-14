@@ -49,6 +49,7 @@ steps:
         RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
         RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
         RUN apt-get update -y && apt-get install google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin -y
+        RUN gcloud components install gke-gcloud-auth-plugin && gcloud components update
         EOF
   - name: bash
     args:
@@ -67,6 +68,8 @@ steps:
         && yarn dev:db:upgrade \
         && yarn dev:apply > /dev/null
     id: Deploy
+    env:
+      - USE_GKE_GCLOUD_AUTH_PLUGIN=True
     entrypoint: bash
   - name: ${_DEPLOY_IMAGE_NAME}
     id: Cleanup old pods
