@@ -700,12 +700,20 @@ builder.declare({
 
   const workerPool = await WorkerPool.get(this.db, workerPoolId);
   if (!workerPool) {
+    this.monitor.debug({
+      message: 'Attempt to register worker with non-existing pool',
+      payload: JSON.stringify(req.body),
+    });
     return res.reportError('ResourceNotFound',
       `Worker pool ${workerPoolId} does not exist`, {});
   }
 
   const provider = this.providers.get(providerId);
   if (!provider) {
+    this.monitor.debug({
+      message: 'Attempt to register worker for non-existing provider',
+      payload: JSON.stringify(req.body),
+    });
     return res.reportError('ResourceNotFound',
       `Provider ${providerId} does not exist`, {});
   } else if (provider.setupFailed) {
@@ -721,6 +729,10 @@ builder.declare({
 
   const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
   if (!worker) {
+    this.monitor.debug({
+      message: 'Attempt to register worker that does not exist',
+      payload: JSON.stringify(req.body),
+    });
     return res.reportError('ResourceNotFound',
       `Worker ${workerGroup}/${workerId} in worker pool ${workerPoolId} does not exist`, {});
   }
