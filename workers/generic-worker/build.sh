@@ -126,9 +126,9 @@ proj_root=$(go list . | sed -e 's!/workers/generic-worker$!!' )
 CGO_ENABLED=0 go install "${proj_root}/tools/livelog@latest"
 CGO_ENABLED=0 go install "${proj_root}/tools/taskcluster-proxy@latest"
 CGO_ENABLED=0 go install "${proj_root}/workers/generic-worker/resolvetask@latest"
-CGO_ENABLED=0 go install golang.org/x/lint/golint@v0.0.0-20210508222113-6edffad5e616
-CGO_ENABLED=0 go install github.com/gordonklaus/ineffassign@v0.0.0-20220928193011-d2c82e48359b
-CGO_ENABLED=0 go install golang.org/x/tools/cmd/goimports@v0.3.0
+CGO_ENABLED=0 go install golang.org/x/lint/golint@latest
+CGO_ENABLED=0 go install github.com/gordonklaus/ineffassign@latest
+CGO_ENABLED=0 go install golang.org/x/tools/cmd/goimports@latest
 
 if $TEST; then
 ####################################################################
@@ -148,13 +148,7 @@ if $TEST; then
   fi
   golint $(go list ./...) | sed "s*${PWD}/**"
   ineffassign .
-
-  # We should uncomment this goimports command once either we no longer have
-  # ciruclar go module dependencies that cause an older version of
-  # github.com/taskcluster/taskcluster module to be a dependency, or when
-  # goimports no longer favours the older version over the newer.
-
-  # goimports -w .
+  goimports -w .
 
 fi
 
