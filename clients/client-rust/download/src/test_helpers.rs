@@ -46,7 +46,7 @@ impl Logger {
     }
 }
 
-/// Fake implementation of the Object service, that supports the simple method
+/// Fake implementation of the Object service, that supports the getUrl method
 pub(crate) struct FakeObjectService {
     pub(crate) logger: Logger,
     pub(crate) response: Value,
