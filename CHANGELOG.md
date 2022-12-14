@@ -3,6 +3,47 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v46.1.0
+
+### GENERAL
+
+▶ [patch] [#5851](https://github.com/taskcluster/taskcluster/issues/5851)
+Fix incorrect status reported by github service for unknown branches.
+
+▶ [patch] [#5844](https://github.com/taskcluster/taskcluster/issues/5844)
+Log extra debug information for failed worker registration attempts.
+
+▶ [patch]
+Patch python client tests to allow lint script.
+
+▶ [patch]
+Update 46.0.0 release notes that incorrectly linked issue #2791 instead of #5791.
+
+▶ [patch]
+Go update from 1.19.3 to 1.19.4. Also updates the git version for generic worker decision tasks from `git2.37.1` to `git2.39.0`.
+
+▶ [patch]
+This patch cleans up some of the python client and client test code of deprecation warnings.
+
+▶ [patch]
+Use updated gw-ci-macos-10-14 worker pool.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#5836](https://github.com/taskcluster/taskcluster/issues/5836)
+Add worker runner for windows/386 to release artifacts (previously broken).
+
+### DEVELOPERS
+
+▶ [minor] [#4624](https://github.com/taskcluster/taskcluster/issues/4624)
+All language clients now use the getUrl download method to download objects,
+including verifying hashes provided when the objects were uploaded.  However,
+note that 's3' artifacts are still not verified -- the deployment must use
+'object' artifacts to benefit from hash verification.
+
+▶ [patch]
+This patch switches running CI tasks on generic-worker-windows2012r2 worker pool to the new, windows 2022 worker pool.
+
 ## v46.0.0
 
 ### GENERAL
