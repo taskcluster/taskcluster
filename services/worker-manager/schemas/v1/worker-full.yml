@@ -80,6 +80,17 @@ properties:
     type: integer
     minimum: 1
 
+  implementation:
+    title: Worker implementation
+    description: |
+      Worker implementation type and version
+    type: object
+    properties:
+      name: {$const: "implementation-name"}
+      version: {$const: "implementation-version"}
+      schema: {$const: "implementation-schema"}
+    additionalProperties: false
+
 additionalProperties: false
 required:
   - workerPoolId

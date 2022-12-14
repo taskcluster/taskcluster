@@ -1235,6 +1235,46 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(scopes.has(`queue:claim-work:${workerPoolId}`), msg);
       assert(scopes.has(`worker-manager:reregister-worker:${workerPoolId}/${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`), msg);
     });
+
+    test('register with implementation information', async function () {
+      await createWorkerPool({});
+      let worker = await createWorker({
+        providerData: {
+          workerConfig: {
+            "someKey": "someValue",
+          },
+        },
+      });
+      const res = await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+        workerImplementation: {
+          name: 'generic-worker',
+          version: '45.0.0',
+          schema: "{ version: 'v1' }",
+        },
+      });
+
+      assert.equal(res.credentials.clientId,
+        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+
+      // todo: refetch worker data and compare what's going on
+      worker = await Worker.get(helper.db, {
+        workerPoolId: worker.workerPoolId,
+        workerGroup: worker.workerGroup,
+        workerId: worker.workerId,
+      });
+      assert.equal(worker.implementation.name, 'generic-worker');
+      assert.equal(worker.implementation.version, '45.0.0');
+      assert.equal(worker.implementation.schema, "{ version: 'v1' }");
+    });
+    test('register with invalid implementation values', async function () {
+      await createWorkerPool({});
+      await createWorker({});
+      await assert.rejects(() => helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+        workerImplementation: { name: 1, version: 2, schema: 3 },
+      }), /workerImplementation\/name should be string/);
+    });
   });
 
   suite('reregisterWorker', function () {

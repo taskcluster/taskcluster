@@ -710,7 +710,7 @@ builder.declare({
     'some proof of its identity, and that proof varies by provider type.',
   ].join('\n'),
 }, async function(req, res) {
-  const { workerPoolId, providerId, workerGroup, workerId, workerIdentityProof } = req.body;
+  const { workerPoolId, providerId, workerGroup, workerId, workerIdentityProof, workerImplementation } = req.body;
 
   // carefully check each value provided, since we have not yet validated the
   // worker's "proof"
@@ -771,6 +771,7 @@ builder.declare({
     const reg = await provider.registerWorker({ worker, workerPool, workerIdentityProof, encryptedSecret });
     await worker.update(this.db, worker => {
       worker.secret = encryptedSecret;
+      worker.implementation = workerImplementation;
     });
     expires = reg.expires;
     workerConfig = reg.workerConfig;

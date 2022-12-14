@@ -83,6 +83,9 @@
           "title": "First task claimed",
           "type": "string"
         },
+        "implementation": {
+          "$ref": "worker-full.json#/properties/implementation"
+        },
         "lastDateActive": {
           "description": "Date of the last time this worker was seen active. Updated each time a worker calls\n`queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.\n`lastDateActive` is updated every half hour but may be off by up-to half an hour.\nNonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.\nThis defaults to null in the database, and is set to the current time when the worker\nis first seen.\n",
           "format": "date-time",
@@ -542,6 +545,32 @@
           "format": "date-time",
           "title": "Expires",
           "type": "string"
+        },
+        "implementation": {
+          "additionalProperties": false,
+          "description": "Worker implementation type and version\n",
+          "properties": {
+            "name": {
+              "description": "Worker implementation name: 'generic-worker', 'docker-worker', 'any-worker'\n",
+              "maxLength": 30,
+              "minLength": 5,
+              "pattern": "^[a-z-]+worker$",
+              "type": "string"
+            },
+            "schema": {
+              "maxLength": 65536,
+              "minLength": 0,
+              "title": "Worker payload schema",
+              "type": "string"
+            },
+            "version": {
+              "pattern": "^[0-9][0-9.]+$",
+              "title": "Worker version",
+              "type": "string"
+            }
+          },
+          "title": "Worker implementation",
+          "type": "object"
         },
         "lastChecked": {
           "description": "Date and time when the state of this worker was verified with a cloud api.\nFor providers with nothing to check, this will just be permanently set to the\ntime the worker was created.\n",
@@ -1197,6 +1226,9 @@
             }
           ],
           "title": "Worker Identity Proof"
+        },
+        "workerImplementation": {
+          "$ref": "worker-full.json#/properties/implementation"
         },
         "workerPoolId": {
           "$ref": "worker-pool-full.json#/properties/workerPoolId"

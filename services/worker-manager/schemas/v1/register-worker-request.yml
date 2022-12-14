@@ -7,6 +7,7 @@ properties:
   providerId: {$ref: "worker-full.json#/properties/providerId"}
   workerGroup: {$ref: "worker-full.json#/properties/workerGroup"}
   workerId: {$ref: "worker-full.json#/properties/workerId"}
+  workerImplementation: {$ref: "worker-full.json#/properties/implementation"}
   workerIdentityProof:
     title: Worker Identity Proof
     description: |

@@ -151,6 +151,7 @@ workers:
   last_checked: timestamp with time zone not null
   secret: jsonb
   etag: uuid not null
+  implementation: jsonb
 tasks:
   task_id: text not null
   created: timestamp with time zone not null

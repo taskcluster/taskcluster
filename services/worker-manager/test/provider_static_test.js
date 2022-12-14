@@ -86,7 +86,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(worker.expires.getTime(), expires.getTime());
     assert.equal(worker.capacity, 7);
 
-    const rows = await helper.db.fns.get_worker_2(workerPoolId, workerGroup, workerId);
+    const rows = await helper.db.fns.get_worker_3(workerPoolId, workerGroup, workerId);
     assert.deepEqual(rows.map(r => [r.worker_id, r.provider_data]), [
       ['abc123', { staticSecret: 'new-secret' }],
     ]);
@@ -98,7 +98,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     await provider.removeWorker({ worker, reason: 'uhoh' });
 
-    const rows = await helper.db.fns.get_worker_2(workerPoolId, workerGroup, workerId);
+    const rows = await helper.db.fns.get_worker_3(workerPoolId, workerGroup, workerId);
     assert.deepEqual(rows.map(({ worker_id, state }) => ([worker_id, state])), [
       ['abc123', 'stopped'],
     ]);

@@ -498,7 +498,8 @@ CREATE TABLE workers (
     last_modified timestamp with time zone NOT NULL,
     last_checked timestamp with time zone NOT NULL,
     etag uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    secret jsonb
+    secret jsonb,
+    implementation jsonb
 );
 ALTER TABLE workers
     ADD CONSTRAINT workers_pkey PRIMARY KEY (worker_pool_id, worker_group, worker_id);

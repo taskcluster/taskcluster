@@ -157,6 +157,9 @@ type (
 		//   * AzureProviderType
 		WorkerIdentityProof json.RawMessage `json:"workerIdentityProof"`
 
+		// Worker implementation type and version
+		WorkerImplementation WorkerImplementation `json:"workerImplementation,omitempty"`
+
 		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
@@ -550,6 +553,9 @@ type (
 		// Date and time when this worker will be deleted from the DB
 		Expires tcclient.Time `json:"expires"`
 
+		// Worker implementation type and version
+		Implementation WorkerImplementation `json:"implementation,omitempty"`
+
 		// Date and time when the state of this worker was verified with a cloud api.
 		// For providers with nothing to check, this will just be permanently set to the
 		// time the worker was created.
@@ -599,6 +605,24 @@ type (
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerPoolID string `json:"workerPoolId"`
+	}
+
+	// Worker implementation type and version
+	WorkerImplementation struct {
+
+		// Worker implementation name: 'generic-worker', 'docker-worker', 'any-worker'
+		//
+		// Syntax:     ^[a-z-]+worker$
+		// Min length: 5
+		// Max length: 30
+		Name string `json:"name,omitempty"`
+
+		// Min length: 0
+		// Max length: 65536
+		Schema string `json:"schema,omitempty"`
+
+		// Syntax:     ^[0-9][0-9.]+$
+		Version string `json:"version,omitempty"`
 	}
 
 	// A list of workers in a given worker pool
@@ -866,6 +890,9 @@ type (
 
 		// Date of the first time this worker claimed a task.
 		FirstClaim tcclient.Time `json:"firstClaim"`
+
+		// Worker implementation type and version
+		Implementation WorkerImplementation `json:"implementation,omitempty"`
 
 		// Date of the last time this worker was seen active. Updated each time a worker calls
 		// `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.

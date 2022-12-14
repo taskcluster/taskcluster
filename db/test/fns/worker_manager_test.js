@@ -110,8 +110,8 @@ suite(testing.suiteName(), function() {
       etag,
     );
   };
-  const update_worker_2 = async (db, w = {}, etag) => {
-    return await db.fns.update_worker_2(
+  const update_worker_3 = async (db, w = {}, etag) => {
+    return await db.fns.update_worker_3(
       w.worker_pool_id || 'wp/id',
       w.worker_group || 'w/group',
       w.worker_id || 'w/id',
@@ -424,7 +424,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].last_checked, now);
     });
 
-    helper.dbTest('create_worker/get_worker_2', async function(db) {
+    helper.dbTest('create_worker/get_worker_3', async function(db) {
       const now = new Date();
       await create_worker(db, {
         created: now,
@@ -433,7 +433,7 @@ suite(testing.suiteName(), function() {
         expires: now,
       });
 
-      const rows = await db.fns.get_worker_2('wp/id', 'w/group', 'w/id');
+      const rows = await db.fns.get_worker_3('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
       assert.equal(rows[0].worker_group, 'w/group');
       assert.equal(rows[0].worker_id, 'w/id');
@@ -453,8 +453,8 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_worker_2 not found', async function(db) {
-      const rows = await db.fns.get_worker_2('wp/id', 'w/group', 'w/id');
+    helper.dbTest('get_worker_3 not found', async function(db) {
+      const rows = await db.fns.get_worker_3('wp/id', 'w/group', 'w/id');
       assert.deepEqual(rows, []);
     });
 
@@ -678,11 +678,11 @@ suite(testing.suiteName(), function() {
       assert(rows[0].last_checked instanceof Date);
     });
 
-    helper.dbTest('update_worker_2, change to a single field', async function(db) {
+    helper.dbTest('update_worker_3, change to a single field', async function(db) {
       const etag = await create_worker(db);
       const secret = `${slug.v4()}${slug.v4()}`;
       const encryptedSecret = db.encrypt({ value: Buffer.from(secret, 'utf8') });
-      await db.fns.update_worker_2(
+      await db.fns.update_worker_3(
         'wp/id',
         'w/group',
         'w/id',
@@ -698,7 +698,7 @@ suite(testing.suiteName(), function() {
         encryptedSecret,
       );
 
-      const rows = await db.fns.get_worker_2('wp/id', 'w/group', 'w/id');
+      const rows = await db.fns.get_worker_3('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
       assert.equal(rows[0].worker_group, 'w/group');
       assert.equal(rows[0].worker_id, 'w/id');
@@ -736,9 +736,9 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(updated, rows);
     });
 
-    helper.dbTest('update_worker_2, change to a multiple fields', async function(db) {
+    helper.dbTest('update_worker_3, change to a multiple fields', async function(db) {
       const etag = await create_worker(db);
-      const updated = await db.fns.update_worker_2(
+      const updated = await db.fns.update_worker_3(
         'wp/id',
         'w/group',
         'w/id',
@@ -754,7 +754,7 @@ suite(testing.suiteName(), function() {
         null,
       );
 
-      const rows = await db.fns.get_worker_2('wp/id', 'w/group', 'w/id');
+      const rows = await db.fns.get_worker_3('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].provider_id, 'provider2');
       assert.equal(rows[0].state, 'requested');
       assert.deepEqual(updated, rows);
@@ -784,9 +784,9 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].state, 'state');
     });
 
-    helper.dbTest('update_worker_2, no changes', async function(db) {
+    helper.dbTest('update_worker_3, no changes', async function(db) {
       const etag = await create_worker(db);
-      const updated = await db.fns.update_worker_2(
+      const updated = await db.fns.update_worker_3(
         'wp/id',
         'w/group',
         'w/id',
@@ -804,7 +804,7 @@ suite(testing.suiteName(), function() {
       // this is not 0 because there was a row that matched even though there was no change
       assert.equal(updated.length, 1);
 
-      const rows = await db.fns.get_worker_2('wp/id', 'w/group', 'w/id');
+      const rows = await db.fns.get_worker_3('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].provider_id, 'provider');
       assert.equal(rows[0].state, 'state');
     });
@@ -820,12 +820,12 @@ suite(testing.suiteName(), function() {
       );
     });
 
-    helper.dbTest('update_worker_2, worker doesn\'t exist', async function(db) {
+    helper.dbTest('update_worker_3, worker doesn\'t exist', async function(db) {
       const etag = await create_worker(db);
 
       await assert.rejects(
         async () => {
-          await update_worker_2(db, { worker_pool_id: 'does-not-exist' }, etag);
+          await update_worker_3(db, { worker_pool_id: 'does-not-exist' }, etag);
         },
         /no such row/,
       );
@@ -852,9 +852,9 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].capacity, 2);
     });
 
-    helper.dbTest('update_worker_2, override when etag not specified', async function(db) {
+    helper.dbTest('update_worker_3, override when etag not specified', async function(db) {
       await create_worker(db);
-      await db.fns.update_worker_2(
+      await db.fns.update_worker_3(
         'wp/id',
         'w/group',
         'w/id',
@@ -870,7 +870,7 @@ suite(testing.suiteName(), function() {
         null,
       );
 
-      const rows = await db.fns.get_worker_2('wp/id', 'w/group', 'w/id');
+      const rows = await db.fns.get_worker_3('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].capacity, 2);
     });
 
@@ -897,11 +897,11 @@ suite(testing.suiteName(), function() {
       );
     });
 
-    helper.dbTest('update_worker_2, throws when etag is wrong', async function(db) {
+    helper.dbTest('update_worker_3, throws when etag is wrong', async function(db) {
       await create_worker(db);
       await assert.rejects(
         async () => {
-          await db.fns.update_worker_2(
+          await db.fns.update_worker_3(
             'wp/id',
             'w/group',
             'w/id',
@@ -944,11 +944,11 @@ suite(testing.suiteName(), function() {
       );
     });
 
-    helper.dbTest('update_worker_2, throws when row does not exist', async function(db) {
+    helper.dbTest('update_worker_3, throws when row does not exist', async function(db) {
       const etag = await create_worker(db);
       await assert.rejects(
         async () => {
-          await db.fns.update_worker_2(
+          await db.fns.update_worker_3(
             'does-not-exist',
             'w/group',
             'w/id',

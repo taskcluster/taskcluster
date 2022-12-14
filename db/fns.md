@@ -160,14 +160,14 @@
    * [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
    * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
    * [`get_task_queues_wm`](#get_task_queues_wm)
-   * [`get_worker_2`](#get_worker_2)
+   * [`get_worker_3`](#get_worker_3)
    * [`get_worker_pool_error`](#get_worker_pool_error)
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
    * [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
    * [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
    * [`get_workers_without_provider_data`](#get_workers_without_provider_data)
    * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
-   * [`update_worker_2`](#update_worker_2)
+   * [`update_worker_3`](#update_worker_3)
    * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
    * [`update_worker_pool_with_capacity_and_counts_by_state`](#update_worker_pool_with_capacity_and_counts_by_state)
 
@@ -2514,14 +2514,14 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
 * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
 * [`get_task_queues_wm`](#get_task_queues_wm)
-* [`get_worker_2`](#get_worker_2)
+* [`get_worker_3`](#get_worker_3)
 * [`get_worker_pool_error`](#get_worker_pool_error)
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
 * [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
 * [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
 * [`get_workers_without_provider_data`](#get_workers_without_provider_data)
 * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
-* [`update_worker_2`](#update_worker_2)
+* [`update_worker_3`](#update_worker_3)
 * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
 * [`update_worker_pool_with_capacity_and_counts_by_state`](#update_worker_pool_with_capacity_and_counts_by_state)
 
@@ -2836,7 +2836,7 @@ Get task queues ordered by `task_queue_id`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
-### get_worker_2
+### get_worker_3
 
 * *Mode*: read
 * *Arguments*:
@@ -2857,7 +2857,8 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `last_checked timestamptz`
   * `secret jsonb`
   * `etag uuid`
-* *Last defined on version*: 14
+  * `implementation jsonb`
+* *Last defined on version*: 87
 
 Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.
 
@@ -3003,7 +3004,7 @@ Remove the given provider_id from the worker pool's previous_provider_ids.  It i
 not an error if the worker pool does not exist, or if the provider_id is not in the
 previous_provider_ids set.
 
-### update_worker_2
+### update_worker_3
 
 * *Mode*: write
 * *Arguments*:
@@ -3020,6 +3021,7 @@ previous_provider_ids set.
   * `last_checked_in timestamptz`
   * `etag_in uuid`
   * `secret_in jsonb`
+  * `implementation_in jsonb`
 * *Returns*: `table`
   * `worker_pool_id text`
   * `worker_group text`
@@ -3034,7 +3036,8 @@ previous_provider_ids set.
   * `last_checked timestamptz`
   * `etag uuid`
   * `secret jsonb`
-* *Last defined on version*: 14
+  * `implementation jsonb`
+* *Last defined on version*: 87
 
 Update a worker.
 Returns the up-to-date worker row that have the same worker_pool_id, worker_group, and worker_id.
@@ -3094,3 +3097,8 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
+
+### deprecated methods
+
+* `get_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text)` (compatibility guaranteed until v52.0.0)
+* `update_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz, etag_in uuid, secret_in jsonb)` (compatibility guaranteed until v52.0.0)
