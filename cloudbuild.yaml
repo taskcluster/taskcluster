@@ -67,8 +67,6 @@ steps:
         && yarn dev:db:upgrade \
         && yarn dev:apply > /dev/null
     id: Deploy
-    env:
-      - USE_GKE_GCLOUD_AUTH_PLUGIN=True
     entrypoint: bash
   - name: ${_DEPLOY_IMAGE_NAME}
     id: Cleanup old pods
@@ -101,6 +99,8 @@ images:
 options:
   dynamicSubstitutions: true
   machineType: E2_HIGHCPU_8
+  env:
+    - USE_GKE_GCLOUD_AUTH_PLUGIN=True
 substitutions:
   _NODE_VERSION: 16.18.1
   _VERSION: '{"version":"${BRANCH_NAME}_${SHORT_SHA}","commit":"${SHORT_SHA}","source":"https://github.com/taskcluster/taskcluster","build":"${BUILD_ID}"}'
