@@ -46,11 +46,11 @@ Types:
 
 Tasks:
   BuildAndTest:
-    - WorkerPool: 'proj-taskcluster/gw-ci-macos'
+    - WorkerPool: 'proj-taskcluster/gw-ci-macos-10-14'
       Env:
         ENGINE: 'multiuser'
 # disabled due to lack of mac capacity
-#    - WorkerPool: 'proj-taskcluster/gw-ci-macos'
+#    - WorkerPool: 'proj-taskcluster/gw-ci-macos-10-14'
 #      Env:
 #        ENGINE: 'simple'
     - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-22-04'
@@ -62,7 +62,7 @@ Tasks:
     - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-22-04'
       Env:
         ENGINE: 'docker'
-    - WorkerPool: 'proj-taskcluster/gw-ci-windows2012r2-amd64'
+    - WorkerPool: 'proj-taskcluster/gw-ci-windows-2022'
       Env:
         ENGINE: 'multiuser'
         # We must set here since this worker type does not have a Z: drive
@@ -96,7 +96,7 @@ Tasks:
     - WorkerPool: 'proj-taskcluster/gw-ci-ubuntu-22-04'
 
 WorkerPools:
-  proj-taskcluster/gw-ci-macos:
+  proj-taskcluster/gw-ci-macos-10-14:
     Platform: 'macOS Mojave 10.14'
     OS: 'darwin'
     Arch: 'amd64'
@@ -122,8 +122,8 @@ WorkerPools:
     # There is no arm release for go 1.19.4 on windows, but 386 release works
     # through emulation provided by the host OS.
     Arch: '386'
-  proj-taskcluster/gw-ci-windows2012r2-amd64:
-    Platform: 'Windows Server 2012 R2 (amd64)'
+  proj-taskcluster/gw-ci-windows-2022:
+    Platform: 'Windows Server 2022 (amd64)'
     OS: 'windows'
     Arch: 'amd64'
   proj-taskcluster/gw-ci-windows7-386:

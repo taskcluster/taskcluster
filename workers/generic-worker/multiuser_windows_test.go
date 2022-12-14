@@ -12,7 +12,7 @@ func TestAppDataNotShared(t *testing.T) {
 
 	t.Skip("It isn't possible to test this without rebooting, which we can't do in the middle of a test, so disabling")
 
-	defer setup(t)()
+	setup(t)
 
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Not running, since APPDATA does not change when running as current user")
@@ -66,7 +66,7 @@ func TestNoCreateFileMappingError(t *testing.T) {
 	if os.Getenv("GW_SKIP_MOZILLA_BUILD_TESTS") != "" {
 		t.Skip("Skipping since GW_SKIP_MOZILLA_BUILD_TESTS env var is set")
 	}
-	defer setup(t)()
+	setup(t)
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Not running, since we never want to call msys directly from LocalSystem account")
 	}
@@ -100,7 +100,7 @@ func TestDesktopResizeAndMovePointer(t *testing.T) {
 	if os.Getenv("GW_SKIP_PYTHON_TESTS") != "" {
 		t.Skip("Skipping since GW_SKIP_PYTHON_TESTS env var is set")
 	}
-	defer setup(t)()
+	setup(t)
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Skipping since running as current user...")
 	}

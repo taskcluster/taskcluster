@@ -15,7 +15,7 @@ func TestRunAfterUserCreation(t *testing.T) {
 	// IMPORTANT - see https://bugzil.la/1559210 - this test is independent of
 	// whether config.RunTasksAsCurrentUser is true or false.
 
-	defer setup(t)()
+	setup(t)
 	script := "run-after-user.sh"
 	if runtime.GOOS == "windows" {
 		script = "run-after-user.bat"

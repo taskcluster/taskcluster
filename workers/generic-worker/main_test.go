@@ -15,7 +15,7 @@ import (
 
 // Test failure should resolve as "failed"
 func TestFailureResolvesAsFailure(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(1),
 		MaxRunTime: 10,
@@ -26,7 +26,7 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 }
 
 func TestIdleWithoutCrash(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	start := time.Now()
 	config.IdleTimeoutSecs = 7
 	exitCode := RunWorker()
@@ -147,7 +147,7 @@ func TestExecutionErrorsText(t *testing.T) {
 //
 // See https://bugzil.la/1479415
 func TestNonExecutableBinaryFailsTask(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	commands := copyTestdataFile("ed25519_public_key")
 	commands = append(commands, singleCommandNoArgs(filepath.Join(taskContext.TaskDir, "ed25519_public_key"))...)
 	payload := GenericWorkerPayload{

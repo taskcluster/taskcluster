@@ -42,7 +42,7 @@ func setConfigRunTasksAsCurrentUser(conf *gwconfig.Config) {
 
 // TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency
 func TestWhoAmI(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	payload := GenericWorkerPayload{
 		Command:    goRun("whoami.go", strconv.FormatBool(config.RunTasksAsCurrentUser)),
