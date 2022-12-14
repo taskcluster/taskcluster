@@ -1,8 +1,7 @@
 const got = require('got');
 const { slugid } = require('./utils');
 const retry = require('./retry');
-const { Transform } = require('stream');
-const { createHash } = require('crypto');
+const { HashStream } = require('./hashstream');
 
 const DATA_INLINE_MAX_SIZE = 8192;
 
@@ -33,37 +32,6 @@ const readFullStream = stream => {
     stream.on('end', () => accept(Buffer.concat(chunks)));
   });
 };
-
-/**
- * A stream that hashes the bytes passing through it
- */
-class HashStream extends Transform {
-  constructor() {
-    super();
-    this.sha256 = createHash('sha256');
-    this.sha512 = createHash('sha512');
-    this.bytes = 0;
-  }
-
-  _transform(chunk, enc, cb) {
-    this.sha256.update(chunk);
-    this.sha512.update(chunk);
-    this.bytes += chunk.length;
-    cb(null, chunk);
-  }
-
-  // Return the calculated hashes in a format suitable for finishUpload,
-  // checking that the content length matches the bytes hashed.
-  hashes(contentLength) {
-    if (contentLength !== this.bytes) {
-      throw new Error(`Hashed ${this.bytes} bytes but content length is ${contentLength}`);
-    }
-    return {
-      sha256: this.sha256.digest('hex'),
-      sha512: this.sha512.digest('hex'),
-    };
-  }
-}
 
 const upload = async ({
   projectId,

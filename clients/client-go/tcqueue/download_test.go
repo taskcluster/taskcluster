@@ -117,8 +117,10 @@ func TestDownloadObjectArtifactToBuf(t *testing.T) {
 	taskId := slugid.Nice()
 
 	m.queueService.FakeObjectArtifact(taskId, "0", "some/thing.txt", "text/plain")
-	m.objectService.FakeObject(fmt.Sprintf("t/%s/0/some/thing.txt", taskId))
-	m.s3.FakeObject(fmt.Sprintf("t/%s/0/some/thing.txt", taskId), "text/plain", []byte("hello, world"))
+	m.objectService.FakeObject(fmt.Sprintf("t/%s/0/some/thing.txt", taskId), map[string]string{
+		"sha256": "09ca7e4eaa6e8ae9c7d261167129184883644d07dfba7cbfbc4c8a2e08360d5b",
+	})
+	m.s3.FakeObject(fmt.Sprintf("obj/t/%s/0/some/thing.txt", taskId), "text/plain", []byte("hello, world"))
 
 	buf, contentType, contentLength, err := m.queue.DownloadArtifactToBuf(taskId, 0, "some/thing.txt")
 	require.NoError(t, err)

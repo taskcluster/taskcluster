@@ -2,17 +2,11 @@ package tcobject
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
-
-type hashes struct {
-	Sha256 string
-	Sha512 string
-}
 
 func TestHashingReadSeekerOnce(t *testing.T) {
 	inner := bytes.NewReader([]byte("fake content"))
@@ -23,15 +17,11 @@ func TestHashingReadSeekerOnce(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte("fake content"), content)
 
-	hashesJson, err := h.hashes(12)
+	hashes, err := h.hashes(12)
 	require.NoError(t, err)
 
-	var hashes hashes
-	err = json.Unmarshal(hashesJson, &hashes)
-	require.NoError(t, err)
-
-	require.Equal(t, "98b1ae45059b004178a8eee0c1f6179dcea139c0fd8a69ee47a6f02d97af1f17", hashes.Sha256)
-	require.Equal(t, "e0ea5ae6e392bb46d27eebabf5e7eb817d242505a960079cd9871559eaa94c613aff4034b709ea3cbd7747b304e7da5564083df50ea51f389cddcb942d2a4a09", hashes.Sha512)
+	require.Equal(t, "98b1ae45059b004178a8eee0c1f6179dcea139c0fd8a69ee47a6f02d97af1f17", hashes["sha256"])
+	require.Equal(t, "e0ea5ae6e392bb46d27eebabf5e7eb817d242505a960079cd9871559eaa94c613aff4034b709ea3cbd7747b304e7da5564083df50ea51f389cddcb942d2a4a09", hashes["sha512"])
 }
 
 func TestHashingReadSeekerTwice(t *testing.T) {
@@ -50,15 +40,11 @@ func TestHashingReadSeekerTwice(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte("fake content"), content)
 
-	hashesJson, err := h.hashes(12)
+	hashes, err := h.hashes(12)
 	require.NoError(t, err)
 
-	var hashes hashes
-	err = json.Unmarshal(hashesJson, &hashes)
-	require.NoError(t, err)
-
-	require.Equal(t, "98b1ae45059b004178a8eee0c1f6179dcea139c0fd8a69ee47a6f02d97af1f17", hashes.Sha256)
-	require.Equal(t, "e0ea5ae6e392bb46d27eebabf5e7eb817d242505a960079cd9871559eaa94c613aff4034b709ea3cbd7747b304e7da5564083df50ea51f389cddcb942d2a4a09", hashes.Sha512)
+	require.Equal(t, "98b1ae45059b004178a8eee0c1f6179dcea139c0fd8a69ee47a6f02d97af1f17", hashes["sha256"])
+	require.Equal(t, "e0ea5ae6e392bb46d27eebabf5e7eb817d242505a960079cd9871559eaa94c613aff4034b709ea3cbd7747b304e7da5564083df50ea51f389cddcb942d2a4a09", hashes["sha512"])
 }
 
 func TestHashingReadSeekerBadContentLength(t *testing.T) {
