@@ -14,25 +14,43 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       await execCommand({
         dir: artifactsDir,
-        command: ['go', 'install', 'github.com/mitchellh/gox@latest'],
+        command: ['go', 'install', 'github.com/goreleaser/goreleaser@latest'],
         utils,
       });
 
-      const osarch = 'linux/amd64 darwin/amd64 darwin/arm64';
       await execCommand({
-        dir: path.join(REPO_ROOT, 'clients', 'client-shell'),
+        dir: REPO_ROOT,
         command: [
-          'gox',
-          `-osarch=${osarch}`,
-          `-output=${artifactsDir}/taskcluster-{{.OS}}-{{.Arch}}`,
+          'goreleaser',
+          'release',
+          '--rm-dist',
         ],
         utils,
       });
 
+      await execCommand({
+        dir: path.join(REPO_ROOT, 'dist'),
+        command: [
+          'mv',
+          'taskcluster-darwin-amd64.tar.gz',
+          'taskcluster-darwin-arm64.tar.gz',
+          'taskcluster-linux-amd64.tar.gz',
+          'taskcluster-linux-arm64.tar.gz',
+          'taskcluster-windows-amd64.zip',
+          'taskcluster-windows-arm64.zip',
+          artifactsDir,
+        ],
+        utils,
+      });
+
+      const osarch = 'linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64';
       const artifacts = osarch.split(' ')
         .map(osarch => {
           const [os, arch] = osarch.split('/');
-          return `taskcluster-${os}-${arch}`;
+          if (os === 'windows') {
+            return `taskcluster-${os}-${arch}.zip`;
+          }
+          return `taskcluster-${os}-${arch}.tar.gz`;
         });
 
       return {
