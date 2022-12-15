@@ -24,9 +24,21 @@ updates:
     schedule:
       interval: "monthly"
 
+  # Maintain node dependencies for taskcluster-client-rust
+  - package-ecosystem: "cargo"
+    directory: "/clients/client-rust"
+    schedule:
+      interval: "monthly"
+
   # Maintain node dependencies for taskcluster-ui
   - package-ecosystem: "npm"
     directory: "/ui"
+    schedule:
+      interval: "monthly"
+
+  # Maintain node dependencies for taskcluster-ui e2e tests
+  - package-ecosystem: "npm"
+    directory: "/ui/test/e2e"
     schedule:
       interval: "monthly"
 
