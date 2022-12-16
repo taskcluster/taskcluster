@@ -18,13 +18,21 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         utils,
       });
 
+      let goreleaserCmd = [
+        'goreleaser',
+        'release',
+        '--rm-dist',
+      ];
+
+      if (cmdOptions.staging || !cmdOptions.push) {
+        // --snapshot will generate an unversioned snapshot release,
+        // skipping all validations and without publishing any artifacts
+        goreleaserCmd = goreleaserCmd.push('--snapshot');
+      }
+
       await execCommand({
         dir: REPO_ROOT,
-        command: [
-          'goreleaser',
-          'release',
-          '--rm-dist',
-        ],
+        command: goreleaserCmd,
         utils,
       });
 
