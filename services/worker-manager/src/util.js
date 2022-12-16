@@ -50,3 +50,17 @@ const createCredentials = (worker, expires, cfg) => {
   });
 };
 exports.createCredentials = createCredentials;
+
+const PAYLOAD_SENSITIVE_KEYS = ['workerIdentityProof'];
+// remove sensitive keys from the request payload that would be safe for logging
+const sanitizeRegisterWorkerPayload = (obj = {}) => {
+  return Object.keys(obj).reduce((res, key) => {
+    if (PAYLOAD_SENSITIVE_KEYS.includes(key)) {
+      res[key] = '*';
+    } else {
+      res[key] = obj[key];
+    }
+    return res;
+  }, {});
+};
+exports.sanitizeRegisterWorkerPayload = sanitizeRegisterWorkerPayload;

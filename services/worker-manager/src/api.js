@@ -4,7 +4,7 @@ const assert = require('assert');
 const { ApiError, Provider } = require('./providers/provider');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { WorkerPool, WorkerPoolError, Worker } = require('./data');
-const { createCredentials, joinWorkerPoolId } = require('./util');
+const { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } = require('./util');
 const { TaskQueue } = require('./queue-data');
 
 let builder = new APIBuilder({
@@ -702,7 +702,7 @@ builder.declare({
   if (!workerPool) {
     this.monitor.debug({
       message: 'Attempt to register worker with non-existing pool',
-      payload: JSON.stringify(req.body),
+      payload: JSON.stringify(sanitizeRegisterWorkerPayload(req.body)),
     });
     return res.reportError('ResourceNotFound',
       `Worker pool ${workerPoolId} does not exist`, {});
@@ -712,7 +712,7 @@ builder.declare({
   if (!provider) {
     this.monitor.debug({
       message: 'Attempt to register worker for non-existing provider',
-      payload: JSON.stringify(req.body),
+      payload: JSON.stringify(sanitizeRegisterWorkerPayload(req.body)),
     });
     return res.reportError('ResourceNotFound',
       `Provider ${providerId} does not exist`, {});
@@ -731,7 +731,7 @@ builder.declare({
   if (!worker) {
     this.monitor.debug({
       message: 'Attempt to register worker that does not exist',
-      payload: JSON.stringify(req.body),
+      payload: JSON.stringify(sanitizeRegisterWorkerPayload(req.body)),
     });
     return res.reportError('ResourceNotFound',
       `Worker ${workerGroup}/${workerId} in worker pool ${workerPoolId} does not exist`, {});
