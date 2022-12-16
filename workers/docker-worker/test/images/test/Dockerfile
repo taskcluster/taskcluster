@@ -1,4 +1,4 @@
-FROM node:16.17.0
+FROM node:16.18.1
 
 # Top level bins to override system defaults
 RUN npm install -g babel-cli babel-preset-es2015 babel-polyfill

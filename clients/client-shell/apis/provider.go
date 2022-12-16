@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"hash"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -18,10 +17,10 @@ import (
 	got "github.com/taskcluster/go-got"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	"github.com/taskcluster/taskcluster/v44/clients/client-shell/apis/definitions"
-	"github.com/taskcluster/taskcluster/v44/clients/client-shell/client"
-	"github.com/taskcluster/taskcluster/v44/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v44/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v46/clients/client-shell/apis/definitions"
+	"github.com/taskcluster/taskcluster/v46/clients/client-shell/client"
+	"github.com/taskcluster/taskcluster/v46/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v46/clients/client-shell/config"
 )
 
 var (
@@ -287,7 +286,7 @@ func readInput(payload io.Reader) ([]byte, error) {
 		}
 	}()
 
-	data, err := ioutil.ReadAll(payload)
+	data, err := io.ReadAll(payload)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read input, error: %s", err)
 	}

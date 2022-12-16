@@ -1,4 +1,4 @@
-query Hook($hookGroupId: ID!, $hookId: ID!) {
+query Hook($hookGroupId: ID!, $hookId: ID!, $hookConnection: PageConnection) {
   hook(hookGroupId: $hookGroupId, hookId: $hookId) {
     bindings {
       exchange
@@ -33,11 +33,22 @@ query Hook($hookGroupId: ID!, $hookId: ID!) {
     triggerSchema
     task
   },
-  hookLastFires(hookGroupId: $hookGroupId, hookId: $hookId) {
+  hookLastFires(hookGroupId: $hookGroupId, hookId: $hookId, connection: $hookConnection) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
         taskId
         firedBy
         taskCreateTime
         result
         error
+      }
+    }
   }
 }

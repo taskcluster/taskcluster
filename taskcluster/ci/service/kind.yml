@@ -9,7 +9,7 @@ transforms:
 
 workspace: services
 
-job-defaults:
+task-defaults:
   worker-type: ci
   run:
     using: bare

@@ -17,23 +17,23 @@
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // First create an Index object:
 //
-//  index := tcindex.New(nil)
+//	index := tcindex.New(nil)
 //
 // and then call one or more of index's methods, e.g.:
 //
-//  err := index.Ping(.....)
+//	err := index.Ping(.....)
 //
 // handling any errors...
 //
-//  if err != nil {
-//  	// handle error...
-//  }
+//	if err != nil {
+//		// handle error...
+//	}
 //
-// Taskcluster Schema
+// # Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
 // <rootUrl>/references/index/v1/api.json together with the input and output schemas it references,
@@ -43,7 +43,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
 )
 
 type Index tcclient.Client
@@ -52,14 +52,14 @@ type Index tcclient.Client
 // nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  index := tcindex.New(
-//      nil,                                      // client without authentication
-//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
-//  )
-//  err := index.Ping(.....)                      // for example, call the Ping(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
+//	index := tcindex.New(
+//	    nil,                                      // client without authentication
+//	    "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//	)
+//	err := index.Ping(.....)                      // for example, call the Ping(.....) API endpoint (described further down)...
+//	if err != nil {
+//		// handle errors...
+//	}
 func New(credentials *tcclient.Credentials, rootURL string) *Index {
 	return &Index{
 		Credentials:  credentials,
@@ -78,9 +78,9 @@ func New(credentials *tcclient.Credentials, rootURL string) *Index {
 //
 // The credentials are taken from environment variables:
 //
-//  TASKCLUSTER_CLIENT_ID
-//  TASKCLUSTER_ACCESS_TOKEN
-//  TASKCLUSTER_CERTIFICATE
+//	TASKCLUSTER_CLIENT_ID
+//	TASKCLUSTER_ACCESS_TOKEN
+//	TASKCLUSTER_CERTIFICATE
 //
 // If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
 // disabled.
@@ -130,7 +130,8 @@ func (index *Index) Version() error {
 // task exists for the given path, this API end-point will respond with a 404 status.
 //
 // Required scopes:
-//   index:find-task:<indexPath>
+//
+//	index:find-task:<indexPath>
 //
 // See #findTask
 func (index *Index) FindTask(indexPath string) (*IndexedTaskResponse, error) {
@@ -142,7 +143,8 @@ func (index *Index) FindTask(indexPath string) (*IndexedTaskResponse, error) {
 // Returns a signed URL for FindTask, valid for the specified duration.
 //
 // Required scopes:
-//   index:find-task:<indexPath>
+//
+//	index:find-task:<indexPath>
 //
 // See FindTask for more details.
 func (index *Index) FindTask_SignedURL(indexPath string, duration time.Duration) (*url.URL, error) {
@@ -159,7 +161,8 @@ func (index *Index) FindTask_SignedURL(indexPath string, duration time.Duration)
 // object.
 //
 // Required scopes:
-//   index:list-namespaces:<namespace>
+//
+//	index:list-namespaces:<namespace>
 //
 // See #listNamespaces
 func (index *Index) ListNamespaces(namespace, continuationToken, limit string) (*ListNamespacesResponse, error) {
@@ -178,7 +181,8 @@ func (index *Index) ListNamespaces(namespace, continuationToken, limit string) (
 // Returns a signed URL for ListNamespaces, valid for the specified duration.
 //
 // Required scopes:
-//   index:list-namespaces:<namespace>
+//
+//	index:list-namespaces:<namespace>
 //
 // See ListNamespaces for more details.
 func (index *Index) ListNamespaces_SignedURL(namespace, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -205,7 +209,8 @@ func (index *Index) ListNamespaces_SignedURL(namespace, continuationToken, limit
 // services, as that makes little sense.
 //
 // Required scopes:
-//   index:list-tasks:<namespace>
+//
+//	index:list-tasks:<namespace>
 //
 // See #listTasks
 func (index *Index) ListTasks(namespace, continuationToken, limit string) (*ListTasksResponse, error) {
@@ -224,7 +229,8 @@ func (index *Index) ListTasks(namespace, continuationToken, limit string) (*List
 // Returns a signed URL for ListTasks, valid for the specified duration.
 //
 // Required scopes:
-//   index:list-tasks:<namespace>
+//
+//	index:list-tasks:<namespace>
 //
 // See ListTasks for more details.
 func (index *Index) ListTasks_SignedURL(namespace, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -246,7 +252,8 @@ func (index *Index) ListTasks_SignedURL(namespace, continuationToken, limit stri
 // about indexing successfully completed tasks automatically using custom routes.
 //
 // Required scopes:
-//   index:insert-task:<namespace>
+//
+//	index:insert-task:<namespace>
 //
 // See #insertTask
 func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, error) {
@@ -261,7 +268,8 @@ func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*I
 // previously inserted will not re-appear, as they were never stored.
 //
 // Required scopes:
-//   index:delete-task:<namespace>
+//
+//	index:delete-task:<namespace>
 //
 // See #deleteTask
 func (index *Index) DeleteTask(namespace string) error {
@@ -286,7 +294,8 @@ func (index *Index) DeleteTask(namespace string) error {
 // If no task exists for the given index path, this API end-point responds with 404.
 //
 // Required scopes:
-//   queue:get-artifact:<name>
+//
+//	queue:get-artifact:<name>
 //
 // See #findArtifactFromTask
 func (index *Index) FindArtifactFromTask(indexPath, name string) error {
@@ -298,7 +307,8 @@ func (index *Index) FindArtifactFromTask(indexPath, name string) error {
 // Returns a signed URL for FindArtifactFromTask, valid for the specified duration.
 //
 // Required scopes:
-//   queue:get-artifact:<name>
+//
+//	queue:get-artifact:<name>
 //
 // See FindArtifactFromTask for more details.
 func (index *Index) FindArtifactFromTask_SignedURL(indexPath, name string, duration time.Duration) (*url.URL, error) {

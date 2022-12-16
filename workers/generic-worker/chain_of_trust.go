@@ -6,15 +6,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 
 	"golang.org/x/crypto/ed25519"
 
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v44/internal/scopes"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v46/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v46/internal/scopes"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/fileutil"
 )
 
 const (
@@ -133,11 +134,18 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	err.add(feature.task.uploadLog(certifiedLogName, certifiedLogPath))
 	artifactHashes := map[string]ArtifactHash{}
 	for _, artifact := range feature.task.Artifacts {
+		// make sure SHA256 is calculated
 		switch a := artifact.(type) {
-		case *S3Artifact:
-			// make sure SHA256 is calculated
-			file := filepath.Join(taskContext.TaskDir, a.Path)
-			hash, hashErr := fileutil.CalculateSHA256(file)
+		case *artifacts.S3Artifact:
+			hash, hashErr := fileutil.CalculateSHA256(a.RawContentFile)
+			if hashErr != nil {
+				panic(hashErr)
+			}
+			artifactHashes[a.Name] = ArtifactHash{
+				SHA256: hash,
+			}
+		case *artifacts.ObjectArtifact:
+			hash, hashErr := fileutil.CalculateSHA256(a.RawContentFile)
 			if hashErr != nil {
 				panic(hashErr)
 			}
@@ -172,7 +180,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 		panic(e)
 	}
 	// create unsigned chain-of-trust.json
-	e = ioutil.WriteFile(unsignedCert, certBytes, 0644)
+	e = os.WriteFile(unsignedCert, certBytes, 0644)
 	if e != nil {
 		panic(e)
 	}
@@ -180,20 +188,20 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 
 	// create detached ed25519 chain-of-trust.json.sig
 	sig := ed25519.Sign(feature.ed25519PrivKey, certBytes)
-	e = ioutil.WriteFile(ed25519SignedCert, sig, 0644)
+	e = os.WriteFile(ed25519SignedCert, sig, 0644)
 	if e != nil {
 		panic(e)
 	}
 	err.add(feature.task.uploadArtifact(
-		&S3Artifact{
-			BaseArtifact: &BaseArtifact{
+		createDataArtifact(
+			&artifacts.BaseArtifact{
 				Name:    ed25519SignedCertName,
 				Expires: feature.task.Definition.Expires,
 			},
-			ContentType:     "application/octet-stream",
-			ContentEncoding: "gzip",
-			Path:            ed25519SignedCertPath,
-		},
+			ed25519SignedCertPath,
+			"application/octet-stream",
+			"gzip",
+		),
 	))
 }
 

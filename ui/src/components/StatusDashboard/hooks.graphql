@@ -1,0 +1,8 @@
+query dashboardStatsHooks {
+  hookGroups {
+    hookGroupId
+    hooks {
+      hookId
+    }
+  }
+}

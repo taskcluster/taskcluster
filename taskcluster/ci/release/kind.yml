@@ -7,7 +7,7 @@ transforms:
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
-job-defaults:
+task-defaults:
   worker-type: release
   worker:
     max-run-time: 3600
@@ -53,7 +53,7 @@ job-defaults:
       # publish the release
       - yarn --frozen-lockfile
 
-jobs:
+tasks:
   publish:
 
     attributes:

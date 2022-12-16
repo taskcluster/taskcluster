@@ -17,23 +17,23 @@
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // First create a Secrets object:
 //
-//  secrets := tcsecrets.New(nil)
+//	secrets := tcsecrets.New(nil)
 //
 // and then call one or more of secrets's methods, e.g.:
 //
-//  err := secrets.Ping(.....)
+//	err := secrets.Ping(.....)
 //
 // handling any errors...
 //
-//  if err != nil {
-//  	// handle error...
-//  }
+//	if err != nil {
+//		// handle error...
+//	}
 //
-// Taskcluster Schema
+// # Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
 // <rootUrl>/references/secrets/v1/api.json together with the input and output schemas it references,
@@ -43,7 +43,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
 )
 
 type Secrets tcclient.Client
@@ -52,14 +52,14 @@ type Secrets tcclient.Client
 // nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  secrets := tcsecrets.New(
-//      nil,                                      // client without authentication
-//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
-//  )
-//  err := secrets.Ping(.....)                    // for example, call the Ping(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
+//	secrets := tcsecrets.New(
+//	    nil,                                      // client without authentication
+//	    "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//	)
+//	err := secrets.Ping(.....)                    // for example, call the Ping(.....) API endpoint (described further down)...
+//	if err != nil {
+//		// handle errors...
+//	}
 func New(credentials *tcclient.Credentials, rootURL string) *Secrets {
 	return &Secrets{
 		Credentials:  credentials,
@@ -78,9 +78,9 @@ func New(credentials *tcclient.Credentials, rootURL string) *Secrets {
 //
 // The credentials are taken from environment variables:
 //
-//  TASKCLUSTER_CLIENT_ID
-//  TASKCLUSTER_ACCESS_TOKEN
-//  TASKCLUSTER_CERTIFICATE
+//	TASKCLUSTER_CLIENT_ID
+//	TASKCLUSTER_ACCESS_TOKEN
+//	TASKCLUSTER_CERTIFICATE
 //
 // If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
 // disabled.
@@ -130,7 +130,8 @@ func (secrets *Secrets) Version() error {
 // updated instead.
 //
 // Required scopes:
-//   secrets:set:<name>
+//
+//	secrets:set:<name>
 //
 // See #set
 func (secrets *Secrets) Set(name string, payload *Secret) error {
@@ -142,7 +143,8 @@ func (secrets *Secrets) Set(name string, payload *Secret) error {
 // Delete the secret associated with some key. It will succeed whether or not the secret exists
 //
 // Required scopes:
-//   secrets:set:<name>
+//
+//	secrets:set:<name>
 //
 // See #remove
 func (secrets *Secrets) Remove(name string) error {
@@ -157,7 +159,8 @@ func (secrets *Secrets) Remove(name string) error {
 // regardless of whether the secret exists.
 //
 // Required scopes:
-//   secrets:get:<name>
+//
+//	secrets:get:<name>
 //
 // See #get
 func (secrets *Secrets) Get(name string) (*Secret, error) {
@@ -169,7 +172,8 @@ func (secrets *Secrets) Get(name string) (*Secret, error) {
 // Returns a signed URL for Get, valid for the specified duration.
 //
 // Required scopes:
-//   secrets:get:<name>
+//
+//	secrets:get:<name>
 //
 // See Get for more details.
 func (secrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*url.URL, error) {
@@ -190,7 +194,8 @@ func (secrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*url
 // use the query-string option `limit` to return fewer.
 //
 // Required scopes:
-//   secrets:list-secrets
+//
+//	secrets:list-secrets
 //
 // See #list
 func (secrets *Secrets) List(continuationToken, limit string) (*SecretsList, error) {
@@ -209,7 +214,8 @@ func (secrets *Secrets) List(continuationToken, limit string) (*SecretsList, err
 // Returns a signed URL for List, valid for the specified duration.
 //
 // Required scopes:
-//   secrets:list-secrets
+//
+//	secrets:list-secrets
 //
 // See List for more details.
 func (secrets *Secrets) List_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {

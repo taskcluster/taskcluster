@@ -51,15 +51,15 @@ func (c *Command) Execute() (r *Result) {
 	r = &Result{}
 
 	// TODO these need to be configurable
-	dockerPath, err := exec.LookPath("docker")
+	podmanPath, err := exec.LookPath("podman")
 	if err != nil {
-		dockerPath = "/usr/bin/docker"
-		log.Printf("Could not find docker in PATH, defaulting to %v", dockerPath)
+		podmanPath = "/usr/bin/podman"
+		log.Printf("Could not find podman in PATH, defaulting to %v", podmanPath)
 	}
 	image := "ubuntu"
 
 	// TODO scary injection potential here
-	cmd := exec.CommandContext(c.ctx, dockerPath, append([]string{"run", image}, c.cmd...)...)
+	cmd := exec.CommandContext(c.ctx, podmanPath, append([]string{"run", image}, c.cmd...)...)
 	// something went horribly wrong
 	if cmd == nil {
 		r.SystemError = fmt.Errorf("nil command")
@@ -73,10 +73,10 @@ func (c *Command) Execute() (r *Result) {
 
 	startTime := time.Now()
 
-	log.Printf("Running Docker command: %v", c.String())
+	log.Printf("Running podman command: %v", c.String())
 	err = cmd.Run()
 	if err != nil {
-		log.Printf("Docker command %v failed: %v", c.String(), err.Error())
+		log.Printf("Podman command %v failed: %v", c.String(), err.Error())
 		r.SystemError = err
 		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
 			// TODO use this in the future

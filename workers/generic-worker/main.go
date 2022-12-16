@@ -14,7 +14,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -27,19 +26,20 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v44/internal"
-	"github.com/taskcluster/taskcluster/v44/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v44/internal/scopes"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/errorreport"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v44/workers/generic-worker/runtime"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
+	"github.com/taskcluster/taskcluster/v46/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v46/internal"
+	"github.com/taskcluster/taskcluster/v46/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v46/internal/scopes"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/errorreport"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v46/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -287,7 +287,7 @@ func setupExposer() (err error) {
 }
 
 func ReadTasksResolvedFile() uint {
-	b, err := ioutil.ReadFile("tasks-resolved-count.txt")
+	b, err := os.ReadFile("tasks-resolved-count.txt")
 	if err != nil {
 		log.Printf("could not open tasks-resolved-count.txt: %s (ignored)", err)
 		return 0
@@ -304,7 +304,7 @@ func ReadTasksResolvedFile() uint {
 // Also called from tests, so avoid panic in this function since this could
 // cause tests to silently pass - instead require error handling.
 func UpdateTasksResolvedFile(t uint) error {
-	err := ioutil.WriteFile("tasks-resolved-count.txt", []byte(strconv.Itoa(int(t))), 0777)
+	err := os.WriteFile("tasks-resolved-count.txt", []byte(strconv.Itoa(int(t))), 0777)
 	if err != nil {
 		return err
 	}
@@ -571,7 +571,7 @@ func ClaimWork() *TaskRun {
 			Definition:        taskResponse.Task,
 			Queue:             taskQueue,
 			TaskClaimResponse: tcqueue.TaskClaimResponse(taskResponse),
-			Artifacts:         map[string]TaskArtifact{},
+			Artifacts:         map[string]artifacts.TaskArtifact{},
 			featureArtifacts: map[string]string{
 				logName: "Native Log",
 			},
@@ -707,7 +707,8 @@ func (task *TaskRun) Error(message string) {
 }
 
 // Log lines like:
-//  [taskcluster 2017-01-25T23:31:13.787Z] Hey, hey, we're The Monkees.
+//
+//	[taskcluster 2017-01-25T23:31:13.787Z] Hey, hey, we're The Monkees.
 func (task *TaskRun) Log(prefix, message string) {
 	task.logMux.Lock()
 	defer task.logMux.Unlock()
@@ -999,7 +1000,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 			// found, and so an error artifact was uploaded. So we do that
 			// here:
 			switch a := artifact.(type) {
-			case *ErrorArtifact:
+			case *artifacts.ErrorArtifact:
 				fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
 				err.add(fail)
 				task.Errorf("TASK FAILURE during artifact upload: %v", fail)

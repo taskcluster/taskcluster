@@ -7,7 +7,7 @@ transforms:
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
-job-defaults:
+task-defaults:
   worker-type: ci
   run:
     using: bare
@@ -17,7 +17,7 @@ job-defaults:
   scopes:
     - secrets:get:project/taskcluster/testing/client-libraries
 
-jobs:
+tasks:
   nodejs:
     description: nodejs client tests
     worker:
@@ -113,7 +113,7 @@ jobs:
   rust:
     description: rust client tests
     worker:
-      docker-image: rust:1.60.0
+      docker-image: rust:1.65.0
     run:
       install: >-
         eval $(python3 test/client-library-secrets.py) &&

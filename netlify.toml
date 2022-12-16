@@ -10,7 +10,7 @@
 [build.environment]
   YARN_FLAGS = "--frozen-lockfile"
   YARN_VERSION = "1.22.4"
-  NODE_VERSION = "16.17.0"
+  NODE_VERSION = "16.18.1"
   APPLICATION_NAME = "Taskcluster"
   GRAPHQL_ENDPOINT = "https://community-tc.services.mozilla.com/graphql"
   GRAPHQL_SUBSCRIPTION_ENDPOINT = "https://community-tc.services.mozilla.com/subscription"
@@ -23,8 +23,11 @@
   to = "/docs.html"
   status = 200
 
-# Rule for Single Page Applications (app)
+# Netlify is only used for docs.taskcluster.net
+# so always (force) a redirect to /docs so we don't
+# use the index page intended for the app as landing
 [[redirects]]
   from = "/"
   to = "/docs/"
   status = 301
+  force = true

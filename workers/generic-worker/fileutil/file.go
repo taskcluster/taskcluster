@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -39,7 +38,7 @@ func (f File) ExtractFile() error {
 			return err
 		}
 		log.Printf("Writing %v to path %v", f.Description, f.Path)
-		return ioutil.WriteFile(f.Path, data, 0777)
+		return os.WriteFile(f.Path, data, 0777)
 	default:
 		return errors.New("Unsupported encoding " + f.Encoding + " for file secret in worker type definition")
 	}

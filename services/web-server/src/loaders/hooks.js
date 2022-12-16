@@ -1,5 +1,6 @@
 const DataLoader = require('dataloader');
 const sift = require('../utils/sift');
+const ConnectionLoader = require('../ConnectionLoader');
 
 module.exports = ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const hookGroups = new DataLoader(queries =>
@@ -53,24 +54,26 @@ module.exports = ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, r
     ),
   );
 
-  const hookLastFires = new DataLoader(queries =>
-    Promise.all(
-      queries.map(async ({ hookGroupId, hookId, filter }) => {
-        try {
-          const { lastFires } = await hooks.listLastFires(hookGroupId, hookId);
+  const hookLastFires = new ConnectionLoader(
+    async ({ hookGroupId, hookId, filter, options }) => {
+      try {
+        const raw = await hooks.listLastFires(hookGroupId, hookId, options);
 
-          return sift(filter, lastFires);
-        } catch (err) {
-          if (err.statusCode === 404 || err.statusCode === 424) {
-            return null;
-          }
-
-          return err;
+        return {
+          ...raw,
+          items: raw.lastFires,
+        };
+      } catch (err) {
+        if (err.statusCode === 404) {
+          // hooks last fires will return 404 when there are no last fires yet
+          return { items: [] };
+        } else if (err.statusCode === 424) {
+          return null;
         }
-      },
-      ),
-    ),
-  );
+
+        return err;
+      }
+    });
 
   return {
     hookGroups,

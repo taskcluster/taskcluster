@@ -14,9 +14,9 @@
 // This document describes AMQP exchanges offered by the queue, which allows
 // third-party listeners to monitor tasks as they progress to resolution.
 // These exchanges targets the following audience:
-//  * Schedulers, who takes action after tasks are completed,
-//  * Workers, who wants to listen for new or canceled tasks (optional),
-//  * Tools, that wants to update their view as task progress.
+//   - Schedulers, who takes action after tasks are completed,
+//   - Workers, who wants to listen for new or canceled tasks (optional),
+//   - Tools, that wants to update their view as task progress.
 //
 // You'll notice that all the exchanges in the document shares the same
 // routing key pattern. This makes it very easy to bind to all messages
@@ -57,7 +57,7 @@
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // This package is designed to sit on top of https://pkg.go.dev/github.com/taskcluster/pulse-go/pulse. Please read
 // the pulse package overview to get an understanding of how the pulse client is implemented in go.
@@ -68,14 +68,14 @@
 //
 // For example, when specifying a binding, rather than using:
 //
-//  pulse.Bind(
-//  	"*.*.*.*.*.*.gaia.#",
-//  	"exchange/taskcluster-queue/v1/task-defined",
-//  )
+//	pulse.Bind(
+//		"*.*.*.*.*.*.gaia.#",
+//		"exchange/taskcluster-queue/v1/task-defined",
+//	)
 //
 // You can rather use:
 //
-//  queueevents.TaskDefined{WorkerType: "gaia"}
+//	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
 // rather than just interface{}.

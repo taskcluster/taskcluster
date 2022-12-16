@@ -4,13 +4,13 @@ package main
 
 import (
 	"encoding/base64"
-	"io/ioutil"
+	"os"
 
 	"golang.org/x/crypto/ed25519"
 )
 
 func readEd25519PrivateKeyFromFile(path string) (privateKey ed25519.PrivateKey, err error) {
-	base64Seed, e := ioutil.ReadFile(path)
+	base64Seed, e := os.ReadFile(path)
 	if e != nil {
 		return privateKey, e
 	}

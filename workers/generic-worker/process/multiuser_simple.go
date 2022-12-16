@@ -34,10 +34,11 @@ type Result struct {
 }
 
 // ExitCode returns the exit code, or
-//  -1 if the process has not exited
-//  -2 if the process crashed
-//  -3 it could not be established what happened
-//  -4 if process was aborted
+//
+//	-1 if the process has not exited
+//	-2 if the process crashed
+//	-3 it could not be established what happened
+//	-4 if process was aborted
 func (r *Result) ExitCode() int {
 	if r.Aborted {
 		return -4

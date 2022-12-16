@@ -1,0 +1,69 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Hash Methods"
+
+# The list of allowed hashes will evolve with time, as new algorithms are added
+# and older algorithms, newly considered insecure, are removed.  This provides
+# a "window" of acceptable available algorithms, allowing services and clients
+# to be upgraded at different paces.
+#
+# Uploaders are expected to include at least one of the acceptable algorithms,
+# preferably the most recent.  They can also include deprecated algorithms.
+#
+# Downloaders should verify all hashes for which they recognize the algorithm,
+# and verify that at least one of the acceptable algorithms is included.
+
+definitions:
+  upload:
+    title: "Object Content Hashes"
+    description: |
+      Hashes of the content of this object.  These values will be verified by
+      well-behaved downloaders.  The format is `{alogrithm: value}`.
+
+      Multiple calls to `createUpload` or `finishUpload` for the same object
+      can specify additional hashes, but existing hashes cannot be changed;
+      this allows "amending" an upload with hashes after the data has been
+      transferred, for example.
+
+      At least one non-deprecated algorithm must be included, preferably the
+      most advanced (SHA512).  Deprecated algorithms may also be included.
+    type: object
+    properties:
+      # Deprecated algorithms
+      # (none)
+
+      # Acceptable algorithms
+      sha256:
+        title: "SHA256 hash"
+        type: string
+        pattern: '^[a-z0-9]{64}$'
+      sha512:
+        title: "SHA512 hash"
+        type: string
+        pattern: '^[a-z0-9]{128}$'
+
+    required: []
+
+    # Additional properties are allowed, in case a newer client includes a
+    # hash algorithm the service does not yet know about.  In this situation,
+    # these algorithms will be ignored.
+    additionalProperties: true
+
+  download:
+    title: "Object Content Hashes For Download"
+    description: |
+      Hashes of the content of this object.  The caller should verify all
+      hashes present for recognized algorithms, and verify that at least one
+      non-deprecated hash is present.
+    type: object
+    properties:
+      # (include all algorithms from upload here)
+      sha256: {$ref: "#/definitions/upload/properties/sha256"}
+      sha512: {$ref: "#/definitions/upload/properties/sha512"}
+
+    required: []
+
+    # Additional properties are allowed, in case the object includes a hash
+    # algorithm the client does not yet know about.  In this situation, these
+    # algorithms will not be verified, but the client will check that at
+    # least one acceptable hash algorithm that it recognizes is present.
+    additionalProperties: true

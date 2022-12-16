@@ -2,7 +2,6 @@ package tcqueue_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -16,9 +15,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v44/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v44/internal/mocktc/mocks3"
+	"github.com/taskcluster/taskcluster/v46/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v46/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v46/internal/mocktc/mocks3"
 )
 
 type mock struct {
@@ -90,7 +89,7 @@ func TestDownloadLatestS3ArtifactToFile(t *testing.T) {
 	m := mockTcServices(t)
 	defer m.Close()
 
-	tempdir, err := ioutil.TempDir("", "client-go-tests-")
+	tempdir, err := os.MkdirTemp("", "client-go-tests-")
 	require.NoError(t, err)
 	defer os.RemoveAll(tempdir)
 	filename := fmt.Sprintf("%s/download.txt", tempdir)
@@ -106,7 +105,7 @@ func TestDownloadLatestS3ArtifactToFile(t *testing.T) {
 	require.Equal(t, "text/plain", contentType)
 	require.Equal(t, int64(12), contentLength)
 
-	file, err := ioutil.ReadFile(filename)
+	file, err := os.ReadFile(filename)
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello, world"), file)
 }
@@ -118,8 +117,10 @@ func TestDownloadObjectArtifactToBuf(t *testing.T) {
 	taskId := slugid.Nice()
 
 	m.queueService.FakeObjectArtifact(taskId, "0", "some/thing.txt", "text/plain")
-	m.objectService.FakeObject(fmt.Sprintf("t/%s/0/some/thing.txt", taskId))
-	m.s3.FakeObject(fmt.Sprintf("t/%s/0/some/thing.txt", taskId), "text/plain", []byte("hello, world"))
+	m.objectService.FakeObject(fmt.Sprintf("t/%s/0/some/thing.txt", taskId), map[string]string{
+		"sha256": "09ca7e4eaa6e8ae9c7d261167129184883644d07dfba7cbfbc4c8a2e08360d5b",
+	})
+	m.s3.FakeObject(fmt.Sprintf("obj/t/%s/0/some/thing.txt", taskId), "text/plain", []byte("hello, world"))
 
 	buf, contentType, contentLength, err := m.queue.DownloadArtifactToBuf(taskId, 0, "some/thing.txt")
 	require.NoError(t, err)

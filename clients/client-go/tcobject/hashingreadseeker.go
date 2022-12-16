@@ -85,13 +85,14 @@ func (h *hashingReadSeeker) Seek(offset int64, whence int) (pos int64, err error
 
 // Hashes returns the calculated hashes, in a shape appropriate for FinishUpload.  If the
 // content length does not match the number of bytes hashed, something has gone wrong.
-func (h *hashingReadSeeker) hashes(contentLength int64) (hashes ObjectContentHashes, err error) {
+func (h *hashingReadSeeker) hashes(contentLength int64) (map[string]string, error) {
 	if h.bytes != contentLength {
-		err = fmt.Errorf("hashing read seeker hashed %v bytes, but content length is %v", h.bytes, contentLength)
-		return
+		err := fmt.Errorf("hashing read seeker hashed %v bytes, but content length is %v", h.bytes, contentLength)
+		return nil, err
 	}
 
-	hashes.Sha256 = hex.EncodeToString(h.sha256.Sum(nil))
-	hashes.Sha512 = hex.EncodeToString(h.sha512.Sum(nil))
-	return
+	return map[string]string{
+		"sha256": hex.EncodeToString(h.sha256.Sum(nil)),
+		"sha512": hex.EncodeToString(h.sha512.Sum(nil)),
+	}, nil
 }

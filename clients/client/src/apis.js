@@ -1364,11 +1364,13 @@ module.exports = {
             "hookId"
           ],
           "category": "Hook Status",
-          "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not",
+          "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not\n\nBy default this endpoint will return up to 1000 most recent fires in one request.",
           "method": "get",
           "name": "listLastFires",
           "output": "v1/list-lastFires-response.json#",
           "query": [
+            "continuationToken",
+            "limit"
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
           "scopes": "hooks:list-last-fires:<hookGroupId>/<hookId>",

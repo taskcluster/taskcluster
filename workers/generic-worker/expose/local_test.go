@@ -2,7 +2,7 @@ package expose
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -64,7 +64,7 @@ func TestLocalExposeHTTP(t *testing.T) {
 	}
 	assert.Equal(t, 200, res.StatusCode, "got 200 response via proxy")
 
-	greeting, err := ioutil.ReadAll(res.Body)
+	greeting, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		t.Fatal(err)

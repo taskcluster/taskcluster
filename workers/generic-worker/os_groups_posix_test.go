@@ -8,7 +8,7 @@ import (
 )
 
 func TestEmptyOSGroups(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
 		MaxRunTime: 30,
@@ -20,7 +20,7 @@ func TestEmptyOSGroups(t *testing.T) {
 }
 
 func TestNonEmptyOSGroups(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
 		MaxRunTime: 30,

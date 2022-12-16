@@ -5,14 +5,13 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/cenkalti/backoff/v3"
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
 )
 
 const (
@@ -56,7 +55,7 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 	proposedUploadMethods := ProposedUploadMethods{}
 
 	if contentLength < DataInlineMaxSize {
-		content, err := ioutil.ReadAll(hashingReadSeeker)
+		content, err := io.ReadAll(hashingReadSeeker)
 		if err != nil {
 			return err
 		}
@@ -91,8 +90,7 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 			return
 		}
 
-		var hashes ObjectContentHashes
-		hashes, err = hashingReadSeeker.hashes(contentLength)
+		hashes, err := hashingReadSeeker.hashes(contentLength)
 		if err != nil {
 			return
 		}
@@ -102,9 +100,12 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 			&FinishUploadRequest{
 				ProjectID: projectID,
 				UploadID:  uploadID,
-				Hashes:    hashes,
+				Hashes:    marshalHashes(hashes),
 			},
 		)
+		if err != nil {
+			return
+		}
 	}()
 
 	switch {

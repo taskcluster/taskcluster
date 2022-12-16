@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,8 +14,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
+	"github.com/taskcluster/taskcluster/v46/clients/client-go/tcqueue"
 )
 
 // Data types that map to sections of tasks.yml
@@ -101,7 +100,7 @@ func NewDecisionTask(yamlPath string, gitRevision string) (*DecisionTask, error)
 	if err != nil {
 		return nil, fmt.Errorf("Could not determine absolute file location of decision task YAML config file %q: %s", yamlPath, err)
 	}
-	data, err := ioutil.ReadFile(absYAMLPath)
+	data, err := os.ReadFile(absYAMLPath)
 	if err != nil {
 		return nil, fmt.Errorf("Could not read decision task YAML config file %q: %s", absYAMLPath, err)
 	}

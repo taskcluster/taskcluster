@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -11,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v44/tools/livelog/writer"
+	"github.com/taskcluster/taskcluster/v46/tools/livelog/writer"
 )
 
 func listenOnRandomPort() (net.Listener, uint16, error) {
@@ -50,7 +49,7 @@ type TestLivelogServer struct {
 }
 
 func StartServer(t *testing.T, tls bool) *TestLivelogServer {
-	tempdir, err := ioutil.TempDir("", "livelog-tests-")
+	tempdir, err := os.MkdirTemp("", "livelog-tests-")
 	require.NoError(t, err)
 
 	ts := &TestLivelogServer{

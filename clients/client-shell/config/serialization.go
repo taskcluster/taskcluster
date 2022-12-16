@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -34,10 +33,10 @@ func Load() (map[string]map[string]interface{}, error) {
 	config := make(map[string]map[string]interface{})
 
 	// Read config file and unmarshal into config overwriting default values
-	// if ioutil.ReadFile returns an error, it means the config file couldn't
+	// if os.ReadFile returns an error, it means the config file couldn't
 	// be found and we just skip
 	configFile := configFile()
-	if data, err := ioutil.ReadFile(configFile); err == nil {
+	if data, err := os.ReadFile(configFile); err == nil {
 		if err = yaml.Unmarshal(data, &config); err != nil {
 			return nil, fmt.Errorf(
 				"read config file %s, but failed to parse YAML, error: %s",
@@ -170,7 +169,7 @@ func Save(config map[string]map[string]interface{}) error {
 	configFile := configFile()
 	// Attempt to create config folder if it doesn't exist... (ignore errors)
 	_ = os.MkdirAll(filepath.Dir(configFile), 0664)
-	if err = ioutil.WriteFile(configFile, data, 0664); err != nil {
+	if err = os.WriteFile(configFile, data, 0664); err != nil {
 		return fmt.Errorf("Failed to write config file: %s, error: %s", configFile, err)
 	}
 

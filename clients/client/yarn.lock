@@ -348,9 +348,9 @@ glob@7.2.0:
     path-is-absolute "^1.0.0"
 
 got@^11.8.1:
-  version "11.8.5"
-  resolved "https://registry.yarnpkg.com/got/-/got-11.8.5.tgz#ce77d045136de56e8f024bebb82ea349bc730046"
-  integrity sha512-o0Je4NvQObAuZPHLFoRSkdG2lTgtcynqymzg2Vupdx6PorhaT5MCbIyXG6d4D94kk8ZG57QeosgdiqfJWhEhlQ==
+  version "11.8.6"
+  resolved "https://registry.yarnpkg.com/got/-/got-11.8.6.tgz#276e827ead8772eddbcfc97170590b841823233a"
+  integrity sha512-6tfZ91bOr7bOXnK7PRDCGBLa1H4U080YHNaAQ2KsMGlLEzRbk44nsZF2E1IeRc3vtJHPVbKCYgdFbaGO2ljd8g==
   dependencies:
     "@sindresorhus/is" "^4.0.0"
     "@szmarczak/http-timer" "^4.0.5"
@@ -713,10 +713,10 @@ serialize-javascript@6.0.0:
   dependencies:
     randombytes "^2.1.0"
 
-slugid@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/slugid/-/slugid-3.0.0.tgz#57cb692641a20feb4a1d774b2ad11594c9aa6125"
-  integrity sha512-MIir9SJS6BQFjFg8DHGMgPkDg21huT0+kYHiS6NkkWZXHSEdgIECo3nUVEG3GDkmecBTy+zRs6pCvPhpk4bKcg==
+slugid@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/slugid/-/slugid-3.1.0.tgz#1ab60b6e46abad6d4bb0b7c10f54e25e58ac3930"
+  integrity sha512-RYUrK/S+TrWjv06205QGqZQdPyjr8jdUerHJ2CC7PoCP7k+YfkSS+6Yl5vGbvwhzrrfru3F0gbEcSiMf9oZa5A==
   dependencies:
     uuid "^8.3.2"
 

@@ -1,11 +1,11 @@
-const { CONCLUSIONS, CHECKLOGS_TEXT, CHECKRUN_TEXT, LIVE_LOG_ARTIFACT_NAME,
+const { CONCLUSIONS, CHECKLOGS_TEXT, CHECKRUN_TEXT, LIVE_BACKING_LOG_ARTIFACT_NAME,
   CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
   CHECK_RUN_STATES, TASK_STATE_TO_CHECK_RUN_STATE,
 } = require('../constants');
 const QueueLock = require('../queue-lock');
 const { tailLog, markdownLog, markdownAnchor } = require('../utils');
 const { requestArtifact } = require('./requestArtifact');
-const { taskUI, makeDebug, taskLogUI } = require('./utils');
+const { taskUI, makeDebug, taskLogUI, GithubCheck } = require('./utils');
 
 /**
  * Tracking events order to prevent older events from overwriting newer updates
@@ -17,147 +17,9 @@ const { taskUI, makeDebug, taskLogUI } = require('./utils');
  * This can lead to situations where newer event is being overwritten by an older one,
  * because it took him longer to reach update calls.
  */
-const qLock = new QueueLock();
-class GithubCheckOutput {
-  constructor({
-    title = '',
-    summary = '',
-    text = '',
-    annotations = [],
-  }) {
-    this.title = title;
-    this.summary = summary;
-    this.text = text;
-    this.annotations = annotations;
-  }
-
-  addText(text, appendText = '\n') {
-    this.text += `${text}${appendText}`;
-  }
-
-  /**
-   * Github has a limit of 64Kb for the whole payload
-   */
-  getRemainingMaxSize() {
-    const SAFE_MAX = 60000;
-    const used = this.title.length + this.summary.length + this.text.length + JSON.stringify(this.annotations).length;
-    return SAFE_MAX - used;
-  }
-
-  getPayload() {
-    const { title, summary, text, annotations } = this;
-
-    return {
-      title,
-      summary,
-      text,
-      annotations,
-    };
-  }
-}
-
-class GithubCheck {
-  constructor({
-    // for updates only
-    check_run_id = null,
-    // base fields
-    owner = null,
-    repo = null,
-    name = null,
-    head_sha = null,
-    external_id = null,
-    details_url = null,
-
-    // task resolution and status
-    status = null,
-    conclusion = null,
-
-    // output shown in check run details page
-    output_title = '',
-    output_summary = '',
-    output_text = '',
-    output_annotations = [],
-  }) {
-    this.check_run_id = check_run_id;
-
-    this.owner = owner;
-    this.repo = repo;
-    this.name = name;
-    this.head_sha = head_sha;
-    this.external_id = external_id;
-    this.details_url = details_url;
-
-    this.status = status;
-    this.conclusion = conclusion;
-
-    this.output = new GithubCheckOutput({
-      title: output_title,
-      summary: output_summary,
-      text: output_text,
-      annotations: output_annotations,
-    });
-  }
-
-  /**
-   * Github check run conclusion and completed_at fields should only be sent
-   * when task was completed, otherwise github will
-   * automatically resolve check run as completed
-   */
-  getStatusPayload() {
-    const { status, conclusion } = this;
-    const resolution = { status };
-    if (status === CHECK_RUN_STATES.COMPLETED) {
-      resolution.conclusion = conclusion;
-      resolution.completed_at = new Date().toISOString();
-    }
-    return resolution;
-  }
-
-  getCreatePayload() {
-    const { owner, repo, name, head_sha, external_id, details_url, output } = this;
-
-    return {
-      owner,
-      repo,
-      name,
-      head_sha,
-      external_id,
-      details_url,
-      ...this.getStatusPayload(),
-      output: output.getPayload(),
-    };
-  }
-
-  getUpdatePayload() {
-    const { owner, repo, check_run_id, output } = this;
-
-    if (!this.check_run_id) {
-      throw new Error('Updating check run without check_run_id');
-    }
-
-    return {
-      check_run_id,
-      owner,
-      repo,
-      ...this.getStatusPayload(),
-      output: output.getPayload(),
-    };
-  }
-
-  getRerequestPayload() {
-    const { owner, repo, check_run_id } = this;
-
-    if (!this.check_run_id) {
-      throw new Error('Rerequesting check run without check_run_id');
-    }
-
-    return {
-      check_run_id,
-      owner,
-      repo,
-    };
-  }
-}
+const qLock = new QueueLock({
+  maxLockTimeMs: 60 * 1000, // sometimes queue and github calls get delayed
+});
 
 /**
  * Post updates to GitHub, when task is being created or its status changes.
@@ -174,11 +36,12 @@ class GithubCheck {
  **/
 async function statusHandler(message) {
   const { taskGroupId, state, runs, taskId } = message.payload.status;
-  const { runId } = message.payload;
+  let { runId } = message.payload;
+  runId = typeof runId === 'undefined' ? 0 : runId;
   const { reasonResolved } = runs[runId] || {};
   const taskDefined = state === undefined;
 
-  await qLock.acquire(taskId);
+  const releaseLock = await qLock.acquire(taskId);
 
   let debug = makeDebug(this.monitor, { taskGroupId, taskId });
   debug(`Handling state change for task ${taskId} in group ${taskGroupId}, reason=${reasonResolved || state || 'taskDefined'}`, { exchange: message.exchange });
@@ -189,7 +52,7 @@ async function statusHandler(message) {
   let [build] = await this.context.db.fns.get_github_build(taskGroupId);
   if (!build) {
     debug(`No github build is associated with task group ${taskGroupId}. Most likely this was triggered by periodic cron hook, which doesn't require github event / check suite.`);
-    qLock.release(taskId);
+    releaseLock();
     return false;
   }
 
@@ -257,7 +120,7 @@ async function statusHandler(message) {
     const annotationsArtifactName = extraCheckRun?.annotationsArtifactName || CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME;
 
     const [ liveLogText, customCheckRunText, customCheckRunAnnotationsText ] = await Promise.all([
-      fetchArtifact(LIVE_LOG_ARTIFACT_NAME),
+      fetchArtifact(LIVE_BACKING_LOG_ARTIFACT_NAME),
       fetchArtifact(textArtifactName),
       fetchArtifact(annotationsArtifactName),
     ]);
@@ -332,7 +195,7 @@ async function statusHandler(message) {
     e.sha = build.sha;
     throw e;
   } finally {
-    qLock.release(taskId);
+    releaseLock();
   }
 }
 

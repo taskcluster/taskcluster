@@ -28,6 +28,7 @@ class AwsBackend extends Backend {
     let options = { ...credentials };
     if ('endpoint' in this.config) {
       options.endpoint = new aws.Endpoint(this.config.endpoint);
+      options.s3ForcePathStyle = this.config.s3ForcePathStyle;
     } else {
       this.region = await getBucketRegion({ bucket: this.config.bucket, endpoint: this.config.endpoint, credentials });
       options.region = this.region;
@@ -141,7 +142,7 @@ class AwsBackend extends Backend {
   }
 
   async availableDownloadMethods(object) {
-    return ['simple'];
+    return ['simple', 'getUrl'];
   }
 
   async startDownload(object, method, params) {
@@ -162,6 +163,24 @@ class AwsBackend extends Backend {
           url = `${this.s3.endpoint.href}${this.config.bucket}/${encodeURIComponent(object.name)}`;
         }
         return { method, url };
+      }
+
+      case 'getUrl': {
+        // allow one minute for the caller to begin downloading the data
+        const expirationSecs = 60;
+        const expires = taskcluster.fromNow(`${expirationSecs}s`);
+        let url = await this.s3.getSignedUrlPromise('getObject', {
+          Bucket: this.config.bucket,
+          Key: object.name,
+          // Since S3 does not give a definite expiration time, allow an extra 60 seconds
+          // to cover any clock skew or other ambiguity.
+          Expires: expirationSecs + 60,
+        });
+
+        const hashRes = await this.db.fns.get_object_hashes(object.name);
+        const hashes = Object.fromEntries(hashRes.map(row => ([row.algorithm, row.hash])));
+
+        return { method, url, expires: expires.toJSON(), hashes };
       }
 
       default: {

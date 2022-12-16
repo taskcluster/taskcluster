@@ -1,0 +1,20 @@
+query dashboardStatsWmPools($connection: PageConnection) {
+  WorkerManagerWorkerPoolSummaries(connection: $connection) {
+    edges {
+      node {
+        workerPoolId
+        providerId
+        currentCapacity
+        requestedCount
+        runningCount
+        stoppingCount
+        stoppedCount
+        requestedCapacity
+        runningCapacity
+        stoppingCapacity
+        stoppedCapacity
+        pendingTasks
+      }
+    }
+  }
+}

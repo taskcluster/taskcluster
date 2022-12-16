@@ -3,7 +3,6 @@ package expose
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -47,7 +46,7 @@ func TestBasicProxying(t *testing.T) {
 	defer resp.Body.Close()
 
 	assert.Equal(t, 200, resp.StatusCode, "should have 200 return status")
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("read body: %s", err)
 	}
@@ -88,7 +87,7 @@ func TestBasicProxyingNon200(t *testing.T) {
 	defer resp.Body.Close()
 
 	assert.Equal(t, 404, resp.StatusCode, "should have 404 return status")
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("read body: %s", err)
 	}

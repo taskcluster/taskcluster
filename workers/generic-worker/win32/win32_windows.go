@@ -369,8 +369,10 @@ func SetAndCreateFolder(hUser syscall.Token, folder *syscall.GUID, value string)
 
 // https://msdn.microsoft.com/en-us/library/aa383840(VS.85).aspx
 // BOOL WTSQueryUserToken(
-//    _In_  ULONG   SessionId,
-//    _Out_ PHANDLE phToken
+//
+//	_In_  ULONG   SessionId,
+//	_Out_ PHANDLE phToken
+//
 // );
 func WTSQueryUserToken(
 	sessionId uint32,
@@ -449,8 +451,10 @@ func InteractiveUserToken(timeout time.Duration) (hToken syscall.Token, err erro
 
 // https://docs.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-getprofilesdirectoryw
 // USERENVAPI BOOL GetProfilesDirectoryW(
-//   LPWSTR  lpProfileDir,
-//   LPDWORD lpcchSize
+//
+//	LPWSTR  lpProfileDir,
+//	LPDWORD lpcchSize
+//
 // );
 func GetProfilesDirectory(dir *uint16, dirLen *uint32) (err error) {
 	r1, _, e1 := procGetProfilesDirectoryW.Call(uintptr(unsafe.Pointer(dir)), uintptr(unsafe.Pointer(dirLen)))
@@ -509,9 +513,11 @@ func ProfilesDirectory() string {
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762280(v=vs.85).aspx
 // BOOL WINAPI GetUserProfileDirectory(
-//   _In_      HANDLE  hToken,
-//   _Out_opt_ LPTSTR  lpProfileDir,
-//   _Inout_   LPDWORD lpcchSize
+//
+//	_In_      HANDLE  hToken,
+//	_Out_opt_ LPTSTR  lpProfileDir,
+//	_Inout_   LPDWORD lpcchSize
+//
 // );
 func GetUserProfileDirectory(
 	hToken syscall.Token,
@@ -531,11 +537,13 @@ func GetUserProfileDirectory(
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa446671(v=vs.85).aspx
 // BOOL WINAPI GetTokenInformation(
-//   _In_      HANDLE                  TokenHandle,
-//   _In_      TOKEN_INFORMATION_CLASS TokenInformationClass,
-//   _Out_opt_ LPVOID                  TokenInformation,
-//   _In_      DWORD                   TokenInformationLength,
-//   _Out_     PDWORD                  ReturnLength
+//
+//	_In_      HANDLE                  TokenHandle,
+//	_In_      TOKEN_INFORMATION_CLASS TokenInformationClass,
+//	_Out_opt_ LPVOID                  TokenInformation,
+//	_In_      DWORD                   TokenInformationLength,
+//	_Out_     PDWORD                  ReturnLength
+//
 // );
 func GetTokenInformation(
 	tokenHandle syscall.Token,
@@ -573,10 +581,12 @@ func GetLinkedToken(hToken syscall.Token) (syscall.Token, error) {
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379591(v=vs.85).aspx
 // BOOL WINAPI SetTokenInformation(
-//   _In_ HANDLE                  TokenHandle,
-//   _In_ TOKEN_INFORMATION_CLASS TokenInformationClass,
-//   _In_ LPVOID                  TokenInformation,
-//   _In_ DWORD                   TokenInformationLength
+//
+//	_In_ HANDLE                  TokenHandle,
+//	_In_ TOKEN_INFORMATION_CLASS TokenInformationClass,
+//	_In_ LPVOID                  TokenInformation,
+//	_In_ DWORD                   TokenInformationLength
+//
 // );
 func SetTokenInformation(
 	tokenHandle syscall.Token,
@@ -625,9 +635,10 @@ func GetTokenUIAccess(hToken syscall.Token) (uint32, error) {
 }
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/bb530719(v=vs.85).aspx
-// typedef struct _TOKEN_LINKED_TOKEN {
-//   HANDLE LinkedToken;
-// } TOKEN_LINKED_TOKEN, *PTOKEN_LINKED_TOKEN;
+//
+//	typedef struct _TOKEN_LINKED_TOKEN {
+//	  HANDLE LinkedToken;
+//	} TOKEN_LINKED_TOKEN, *PTOKEN_LINKED_TOKEN;
 type TOKEN_LINKED_TOKEN struct {
 	LinkedToken syscall.Token // HANDLE
 }
@@ -640,7 +651,9 @@ type LUID struct {
 
 // https://msdn.microsoft.com/en-us/library/Aa378612(v=VS.85).aspx
 // BOOL WINAPI ImpersonateLoggedOnUser(
-//   _In_ HANDLE hToken
+//
+//	_In_ HANDLE hToken
+//
 // );
 func ImpersonateLoggedOnUser(hToken syscall.Token) (err error) {
 	r1, _, e1 := procImpersonateLoggedOnUser.Call(
@@ -771,10 +784,12 @@ func DumpTokenInfo(token syscall.Token) {
 
 // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdiskfreespaceexw
 // BOOL GetDiskFreeSpaceExW(
-//   LPCWSTR         lpDirectoryName,
-//   PULARGE_INTEGER lpFreeBytesAvailableToCaller,
-//   PULARGE_INTEGER lpTotalNumberOfBytes,
-//   PULARGE_INTEGER lpTotalNumberOfFreeBytes
+//
+//	LPCWSTR         lpDirectoryName,
+//	PULARGE_INTEGER lpFreeBytesAvailableToCaller,
+//	PULARGE_INTEGER lpTotalNumberOfBytes,
+//	PULARGE_INTEGER lpTotalNumberOfFreeBytes
+//
 // );
 func GetDiskFreeSpace(
 	lpDirectoryName *uint16,
@@ -796,9 +811,11 @@ func GetDiskFreeSpace(
 
 // https://docs.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-deleteprofilew
 // USERENVAPI BOOL DeleteProfileW(
-//   LPCWSTR lpSidString,
-//   LPCWSTR lpProfilePath,
-//   LPCWSTR lpComputerName
+//
+//	LPCWSTR lpSidString,
+//	LPCWSTR lpProfilePath,
+//	LPCWSTR lpComputerName
+//
 // );
 func DeleteProfile(
 	lpSidString *uint16,
@@ -817,7 +834,9 @@ func DeleteProfile(
 }
 
 // ArgvToCommandLineW performs the reverse of shell32 CommandLineToArgvW:
-//   https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw?redirectedfrom=MSDN
+//
+//	https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw?redirectedfrom=MSDN
+//
 // See: https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
 func ArgvToCommandLineW(text string) string {
 	if text != "" && !strings.ContainsAny(text, " \t\n\v\"") {

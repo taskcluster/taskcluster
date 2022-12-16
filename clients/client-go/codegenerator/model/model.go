@@ -6,14 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/format"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v44/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v46/tools/jsonschema2go"
 	"golang.org/x/tools/imports"
 )
 
@@ -59,7 +58,7 @@ type APIDefinition struct {
 func GenerateGodocLinkInReadme(amqpLinks string, httpLinks string) {
 
 	path := `../../README.md`
-	formattedContent, err := ioutil.ReadFile(path)
+	formattedContent, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
@@ -73,9 +72,9 @@ func GenerateGodocLinkInReadme(amqpLinks string, httpLinks string) {
 		` <!--AMQP-API-end-->`
 
 	formattedContent = regexp.MustCompile(`(<!--(AMQP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--AMQP-API-end-->)`).ReplaceAll(formattedContent, []byte(AmqpAPI))
-	exitOnFail(ioutil.WriteFile(path, formattedContent, 0644))
+	exitOnFail(os.WriteFile(path, formattedContent, 0644))
 	formattedContent = regexp.MustCompile(`(<!--(HTTP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--HTTP-API-end-->)`).ReplaceAll(formattedContent, []byte(httpAPI))
-	exitOnFail(ioutil.WriteFile(path, formattedContent, 0644))
+	exitOnFail(os.WriteFile(path, formattedContent, 0644))
 }
 
 func exitOnFail(err error) {
@@ -185,13 +184,13 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	// in GOPATH, so reset the TC version to the appropriate value.  Note that
 	// the last argument here will be updated to the current version by `yarn
 	// release`, so this will always substitute the correct version.
-	formattedContent = regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v44/"))
+	formattedContent = regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v46/"))
 
 	// only perform general format, if that worked...
 	formattedContent, err = format.Source(formattedContent)
 	exitOnFail(err)
 
-	exitOnFail(ioutil.WriteFile(sourceFile, formattedContent, 0644))
+	exitOnFail(os.WriteFile(sourceFile, formattedContent, 0644))
 }
 
 type APIDefinitions []*APIDefinition
@@ -256,10 +255,10 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 
 	for i := range apiDefs {
 		if strings.Contains(apiDefs[i].PackageName, "events") {
-			amqpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v44/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			amqpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v46/clients/client-go/" + apiDefs[i].PackageName + "\n"
 
 		} else {
-			httpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v44/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			httpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v46/clients/client-go/" + apiDefs[i].PackageName + "\n"
 
 		}
 	}

@@ -4,13 +4,13 @@ package version
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"runtime"
 	s "strings"
 
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster/v44/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v46/clients/client-shell/cmds/root"
 )
 
 // Asset describes a download url for a published releases.
@@ -44,7 +44,7 @@ var (
 
 	// VersionNumber is a formatted string with the version information. This is
 	// filled in by `yarn release`
-	VersionNumber = "44.21.0"
+	VersionNumber = "46.1.0"
 )
 
 var log = root.Logger
@@ -66,7 +66,7 @@ func update(cmd *cobra.Command, _ []string) {
 	}
 
 	// Read the whole response body and check for any errors
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Errorln(err)
 	}

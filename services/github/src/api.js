@@ -156,7 +156,8 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
   try {
     statuses = (await github.repos.listCommitStatusesForRef({ owner, repo, ref: branch })).data;
   } catch (e) {
-    if (e.code === 404) {
+    // github sends 422 when branch doesn't exist
+    if (e.code === 404 || e.code === 422) {
       return undefined;
     }
     throw e;
@@ -174,7 +175,7 @@ async function findTCChecks(github, owner, repo, branch, configuration) {
   try {
     checks = (await github.checks.listForRef({ owner, repo, ref: branch })).data.check_runs;
   } catch (e) {
-    if (e.code === 404) {
+    if (e.code === 404 || e.code === 422) {
       return [];
     }
     throw e;
@@ -473,64 +474,64 @@ builder.declare({
 
   let instGithub = await installationAuthenticate(owner, this.db, this.github);
 
-  if (instGithub) {
-    try {
-      let state;
-
-      let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
-      if (status) {
-        state = status.state;
-      }
-
-      const checks = await findTCChecks(instGithub, owner, repo, branch, this.cfg);
-
-      // List of conclusions: https://docs.github.com/en/rest/reference/checks#check-runs
-      const SOFT_STATES = ['pending', 'timed_out', 'cancelled', 'skipped', 'stale', 'timed_out', 'action_required', 'neutral'];
-      const checksSoftStates = [];
-
-      for (const check of checks) {
-        // If any check failed, mark the whole status as failed
-        if (check.conclusion === 'failure') {
-          state = 'failure';
-          break;
-        }
-
-        // If there's any check pending, set the state to pending after looping unless there was a failure
-        if (SOFT_STATES.includes(check.conclusion)) {
-          checksSoftStates.push(check.conclusion);
-          continue;
-        }
-
-        // If the current state is success or pending and a check was successful, mark state as success.
-        // This might get reset after the loop if we find any other pending check.
-        if (state !== 'failure' && check.conclusion === 'success') {
-          state = 'success';
-        }
-      }
-
-      if (state !== 'failure' && checksSoftStates.length > 0) {
-        state = checksSoftStates[0];
-      }
-
-      if (state) {
-        // If we got a status, send a corresponding image.
-        fileConfig.headers['X-Taskcluster-Status'] = state;
-        return res.sendFile(state + '.svg', fileConfig);
-      } else {
-        // otherwise, it's a commit without a TC status, which probably means a new repo
-        fileConfig.headers['X-Taskcluster-Status'] = 'newrepo';
-        return res.sendFile('newrepo.svg', fileConfig);
-      }
-    } catch (e) {
-      if (e.code < 500) {
-        fileConfig.headers['X-Taskcluster-Status'] = 'error';
-        return res.sendFile('error.svg', fileConfig);
-      }
-      throw e;
-    }
-  } else {
+  if (!instGithub) {
     fileConfig.headers['X-Taskcluster-Status'] = 'nogithub';
     return res.sendFile('newrepo.svg', fileConfig);
+  }
+
+  try {
+    let state;
+
+    let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
+    if (status) {
+      state = status.state;
+    }
+
+    const checks = await findTCChecks(instGithub, owner, repo, branch, this.cfg);
+
+    // List of conclusions: https://docs.github.com/en/rest/reference/checks#check-runs
+    const SOFT_STATES = ['pending', 'timed_out', 'cancelled', 'skipped', 'stale', 'timed_out', 'action_required', 'neutral'];
+    const checksSoftStates = [];
+
+    for (const check of checks) {
+      // If any check failed, mark the whole status as failed
+      if (check.conclusion === 'failure') {
+        state = 'failure';
+        break;
+      }
+
+      // If there's any check pending, set the state to pending after looping unless there was a failure
+      if (SOFT_STATES.includes(check.conclusion)) {
+        checksSoftStates.push(check.conclusion);
+        continue;
+      }
+
+      // If the current state is success or pending and a check was successful, mark state as success.
+      // This might get reset after the loop if we find any other pending check.
+      if (state !== 'failure' && check.conclusion === 'success') {
+        state = 'success';
+      }
+    }
+
+    if (state !== 'failure' && checksSoftStates.length > 0) {
+      state = checksSoftStates[0];
+    }
+
+    if (state) {
+      // If we got a status, send a corresponding image.
+      fileConfig.headers['X-Taskcluster-Status'] = state;
+      return res.sendFile(state + '.svg', fileConfig);
+    } else {
+      // otherwise, it's a commit without a TC status, which probably means a new repo
+      fileConfig.headers['X-Taskcluster-Status'] = 'newrepo';
+      return res.sendFile('newrepo.svg', fileConfig);
+    }
+  } catch (e) {
+    if (e.code < 500) {
+      fileConfig.headers['X-Taskcluster-Status'] = 'error';
+      return res.sendFile('error.svg', fileConfig);
+    }
+    res.reportError('InternalError', e.message, {});
   }
 });
 
@@ -553,25 +554,26 @@ builder.declare({
 
   let instGithub = await installationAuthenticate(owner, this.db, this.github);
 
-  if (instGithub) {
-    try {
-      for await (const response of instGithub.paginate.iterator(
-        instGithub.apps.listReposAccessibleToInstallation, {})) {
-        let installed = response.data.map(repo => repo.name).indexOf(repo);
-        if (installed !== -1) {
-          return res.reply({ installed: true });
-        }
-      }
-      // no early return -> not installed
-      return res.reply({ installed: false });
-    } catch (e) {
-      if (e.code > 400 && e.code < 500) {
-        return res.reply({ installed: false });
-      }
-      throw e;
-    }
+  if (!instGithub) {
+    return res.reply({ installed: false });
   }
-  return res.reply({ installed: false });
+
+  try {
+    for await (const response of instGithub.paginate.iterator(
+      instGithub.apps.listReposAccessibleToInstallation, {})) {
+      let installed = response.data.map(repo => repo.name).indexOf(repo);
+      if (installed !== -1) {
+        return res.reply({ installed: true });
+      }
+    }
+    // no early return -> not installed
+    return res.reply({ installed: false });
+  } catch (e) {
+    if (e.code > 400 && e.code < 500) {
+      return res.reply({ installed: false });
+    }
+    res.reportError('InternalError', e.message, {});
+  }
 });
 
 builder.declare({
@@ -597,27 +599,33 @@ builder.declare({
 
   // Get task group ID
   if (instGithub) {
-    // First inspect the status API. This will be set if consumer repos are
-    // using status reporting (the default).
-    const status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
-    if (status) {
-      return res.redirect(status.target_url);
+    try {
+      // First inspect the status API. This will be set if consumer repos are
+      // using status reporting (the default).
+      const status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
+      if (status) {
+        return res.redirect(status.target_url);
+      }
+
+      // Next inspect the checks API. This will be set if consumer repos have
+      // opted into the checks-v2 reporting.
+      const checkRuns = await findTCChecks(instGithub, owner, repo, branch, this.cfg);
+
+      if (checkRuns.length > 0) {
+        // Sort the array of runs from smallest to largest id, this should yield
+        // the Decision task.
+        let run = checkRuns.sort((a, b) => a.id - b.id)[0];
+        return res.redirect(run.html_url);
+      }
+    } catch (e) {
+      if (e.code < 500) {
+        return res.reportError('ResourceNotFound', 'Status not found', {});
+      }
+      return res.reportError('InternalError', e.message, {});
     }
-
-    // Next inspect the checks API. This will be set if consumer repos have
-    // opted into the checks-v2 reporting.
-    const checkRuns = await findTCChecks(instGithub, owner, repo, branch, this.cfg);
-
-    if (checkRuns.length > 0) {
-      // Sort the array of runs from smallest to largest id, this should yield
-      // the Decision task.
-      let run = checkRuns.sort((a, b) => a.id - b.id)[0];
-      return res.redirect(run.html_url);
-    }
-
-    // Otherwise there is no status available for the given branch.
-    return res.reportError('ResourceNotFound', 'Status not found', {});
   }
+
+  return res.reportError('ResourceNotFound', 'Status not found', {});
 });
 
 builder.declare({
@@ -667,11 +675,12 @@ builder.declare({
           {});
       }
       await this.monitor.reportError(e);
-      return res.status(500).send();
+
+      return res.reportError('InternalServerError', e.message, {});
     }
   }
 
-  return res.status(404).send();
+  return res.reportError('ResourceNotFound', 'Installation not found', {});
 });
 
 builder.declare({
@@ -716,11 +725,11 @@ builder.declare({
           {});
       }
       await this.monitor.reportError(e);
-      return res.status(500).send();
+      return res.reportError('InternalServerError', e.message, {});
     }
   }
 
-  return res.status(404).send();
+  return res.reportError('ResourceNotFound', 'Issue not found', {});
 });
 
 builder.declare({
