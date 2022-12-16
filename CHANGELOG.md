@@ -3,6 +3,38 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v46.1.1
+
+### GENERAL
+
+▶ [patch] [#5844](https://github.com/taskcluster/taskcluster/issues/5844)
+Filter debug logging information for failed registerWorker calls.
+
+▶ [patch] [#5890](https://github.com/taskcluster/taskcluster/issues/5890)
+Fix provisioners endpoint returning non-unique workers for the queue view.
+
+▶ [patch] [#5851](https://github.com/taskcluster/taskcluster/issues/5851)
+Improve error reporting for github api calls.
+
+▶ [patch]
+Minor and patch version bumps via Dependabot using `pmac`:
+
+`pmac add 5887 5881 5880 5879 5878 5876 5874 5873 5872`
+
+### DEVELOPERS
+
+▶ [patch]
+The Rust client now correctly base64-encodes `ext` hawk values with the STANDARD alphabet instead of URL_SAFE. This may fix intermittent generation of invalid temporary credentials.
+
+▶ [patch]
+This patch makes it so the taskcluster shell client (cli) is built with `goreleaser`.
+
+`goreleaser` also will automatically keep our [homebrew-tap](https://github.com/taskcluster/homebrew-tap/blob/main/Formula/taskcluster.rb) formula up-to-date during the release process.
+
+GitHub releases will now also contain zipped Windows executables of this cli supporting both amd64 and arm64. arm64 binaries for linux have been added as well.
+
+The darwin and linux binaries are now tarballs.
+
 ## v46.1.0
 
 ### GENERAL
