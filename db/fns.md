@@ -2532,7 +2532,7 @@ filter `=` or `<>` provider by value.
   * `capacity int4`
   * `provider_id text`
   * `etag uuid`
-* *Last defined on version*: 73
+* *Last defined on version*: 80
 
 Get a non-expired queue worker by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
@@ -2559,7 +2559,7 @@ This also performs an outer join with the worker_manager.worker table for more d
   * `capacity int4`
   * `provider_id text`
   * `etag uuid`
-* *Last defined on version*: 73
+* *Last defined on version*: 80
 
 Get non-expired queue workers ordered by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
