@@ -518,7 +518,7 @@ mod tests {
             DecodePaddingMode,
         };
         let engine = FastPortable::from(
-            &base64::alphabet::URL_SAFE,
+            &base64::alphabet::STANDARD,
             FastPortableConfig::new().with_decode_padding_mode(DecodePaddingMode::Indifferent),
         );
 
