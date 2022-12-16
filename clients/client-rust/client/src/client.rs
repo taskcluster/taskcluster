@@ -1,4 +1,3 @@
-use crate::b64;
 use crate::retry::Backoff;
 use crate::util::collect_scopes;
 use crate::{Credentials, Retry};
@@ -190,7 +189,7 @@ impl Client {
 
         let ext = if let Some(ext) = ext_json {
             let ext_str = serde_json::to_string(&ext)?;
-            Some(base64::encode_engine(ext_str, &b64::URL_SAFE_NO_PAD))
+            Some(base64::encode(ext_str))
         } else {
             None
         };
