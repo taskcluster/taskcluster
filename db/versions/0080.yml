@@ -27,7 +27,9 @@ methods:
           workers.provider_id,
           public.gen_random_uuid()
         from queue_workers
-        full outer join workers on workers.worker_id = queue_workers.worker_id and workers.worker_pool_id = queue_workers.task_queue_id
+        full outer join workers on workers.worker_id = queue_workers.worker_id
+          and workers.worker_pool_id = queue_workers.task_queue_id
+          and workers.worker_group = queue_workers.worker_group
         where
           queue_workers.task_queue_id = task_queue_id_in and
           queue_workers.worker_group = worker_group_in and
@@ -62,7 +64,9 @@ methods:
           workers.provider_id,
           public.gen_random_uuid()
         from queue_workers
-        full outer join workers on workers.worker_id = queue_workers.worker_id and workers.worker_pool_id = queue_workers.task_queue_id
+        full outer join workers on workers.worker_id = queue_workers.worker_id
+          and workers.worker_pool_id = queue_workers.task_queue_id
+          and workers.worker_group = queue_workers.worker_group
         where
           (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_with_wm_join.task_queue_id_in is null) and
           ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers_with_wm_join.expires_in is null)
