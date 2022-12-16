@@ -284,6 +284,7 @@ Use the [slugid](https://crates.io/crates/slugid) crate to create slugIds (such 
 
 */
 
+mod b64;
 mod client;
 mod credentials;
 mod generated;

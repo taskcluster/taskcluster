@@ -1,3 +1,4 @@
+use crate::b64;
 use crate::util::collect_scopes;
 use anyhow::{anyhow, Context, Error};
 use hmac_sha256::HMAC;
@@ -39,7 +40,7 @@ pub(crate) struct Certificate {
 fn gen_temp_access_token(perm_access_token: &str, seed: &str) -> String {
     let mut hash = HMAC::new(perm_access_token.as_bytes());
     hash.update(seed.as_bytes());
-    base64::encode_config(hash.finalize(), base64::URL_SAFE_NO_PAD)
+    base64::encode_engine(hash.finalize(), &b64::URL_SAFE_NO_PAD)
 }
 
 impl Credentials {
