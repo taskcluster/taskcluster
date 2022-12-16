@@ -1303,7 +1303,7 @@ debug@^4.1.0, debug@^4.1.1, debug@^4.3.2, debug@^4.3.4, debug@~4.3.1, debug@~4.3
   dependencies:
     ms "2.1.2"
 
-decode-uri-component@^0.2.0:
+decode-uri-component@^0.2.0, decode-uri-component@^0.2.2:
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.2.tgz#e69dbe25d37941171dd540e024c444cd5188e1e9"
   integrity sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ==
@@ -1765,10 +1765,10 @@ fill-range@^7.0.1:
   dependencies:
     to-regex-range "^5.0.1"
 
-filter-obj@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/filter-obj/-/filter-obj-1.1.0.tgz#9b311112bc6c6127a16e016c6c5d7f19e0805c5b"
-  integrity sha1-mzERErxsYSehbgFsbF1/GeCAXFs=
+filter-obj@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/filter-obj/-/filter-obj-5.1.0.tgz#5bd89676000a713d7db2e197f660274428e524ed"
+  integrity sha512-qWeTREPoT7I0bifpPUXtxkZJ1XJzxWtfoWWkdVGqa+eCr3SHW/Ocp89o8vLvbUuQnadybJpjOKu4V+RwO6sGng==
 
 finalhandler@1.1.2:
   version "1.1.2"
@@ -3257,15 +3257,14 @@ qs@6.10.3:
   dependencies:
     side-channel "^1.0.4"
 
-query-string@^7.0.0:
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/query-string/-/query-string-7.1.1.tgz#754620669db978625a90f635f12617c271a088e1"
-  integrity sha512-MplouLRDHBZSG9z7fpuAAcI7aAYjDLhtsiVZsevsfaHWDS2IDdORKbSd1kWUA+V4zyva/HZoSfpwnYMMQDhb0w==
+query-string@^8.0.3:
+  version "8.0.3"
+  resolved "https://registry.yarnpkg.com/query-string/-/query-string-8.0.3.tgz#c6f18a1ce18005fb5d3dcd6507dbcdc165615c49"
+  integrity sha512-RtRwkRFCLPQWz27ETbeqIA9UdaLv2Ps7EiNjIS57BaZyx/gWi4QKq7K4+rYBEHToSo/dvLZ+S1fEOKcacojA/Q==
   dependencies:
-    decode-uri-component "^0.2.0"
-    filter-obj "^1.1.0"
+    decode-uri-component "^0.2.2"
+    filter-obj "^5.1.0"
     split-on-first "^1.0.0"
-    strict-uri-encode "^2.0.0"
 
 querystring-es3@^0.2.0:
   version "0.2.1"
@@ -3767,11 +3766,6 @@ streamroller@^3.1.1:
     date-format "^4.0.10"
     debug "^4.3.4"
     fs-extra "^10.1.0"
-
-strict-uri-encode@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/strict-uri-encode/-/strict-uri-encode-2.0.0.tgz#b9c7330c7042862f6b142dc274bbcc5866ce3546"
-  integrity sha1-ucczDHBChi9rFC3CdLvMWGbONUY=
 
 string-width@^4.1.0, string-width@^4.2.0:
   version "4.2.3"
