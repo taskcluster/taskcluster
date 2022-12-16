@@ -42,12 +42,6 @@ updates:
     schedule:
       interval: "monthly"
 
-  # Maintain node dependencies for docker-worker
-  - package-ecosystem: "npm"
-    directory: "/workers/docker-worker"
-    schedule:
-      interval: "monthly"
-
   # Maintain go dependencies
   - package-ecosystem: "gomod"
     directory: "/"
