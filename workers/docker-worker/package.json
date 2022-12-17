@@ -64,7 +64,7 @@
     "stateless-dns-server": "^0.2.1",
     "tar-fs": "^2.1.0",
     "tar-stream": "^2.1.3",
-    "taskcluster-client": "^44.20.4",
+    "taskcluster-client": "^44.23.4",
     "taskcluster-lib-urls": "^13.0.0",
     "tweetnacl": "^1.0.0",
     "typed-env-config": "^3.0.0",
