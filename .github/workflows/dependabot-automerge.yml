@@ -1,10 +1,6 @@
 name: Dependabot auto-merge
 on: pull_request
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   dependabot:
     runs-on: ubuntu-latest
@@ -14,15 +10,15 @@ jobs:
         id: metadata
         uses: dependabot/fetch-metadata@v1.3.5
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          github-token: "${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}"
       - name: Approve a PR
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}
       - name: Enable auto-merge for Dependabot PRs
         if: ${{ contains(fromJson('["version-update:semver-patch", "version-update:semver-minor"]'), steps.metadata.outputs.update-type) }}
         run: gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}
