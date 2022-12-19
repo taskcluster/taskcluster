@@ -12,6 +12,7 @@ jobs:
         with:
           github-token: "${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}"
       - name: Approve a PR
+        if: ${{ contains(fromJson('["version-update:semver-patch", "version-update:semver-minor"]'), steps.metadata.outputs.update-type) }}
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
