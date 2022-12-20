@@ -16767,7 +16767,7 @@
             "name"
           ],
           "category": "Upload",
-          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
+          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nIt is possible to finish an upload with no hashes specified via either\n`startUpload` or `finishUpload`.  However, many clients will refuse to\ndownload an object with no hashes.  The utility methods included with the\nclient libraries always include hashes as of version 44.0.0.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
           "input": "v1/finish-upload-request.json#",
           "method": "post",
           "name": "finishUpload",
