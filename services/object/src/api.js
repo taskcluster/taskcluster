@@ -150,6 +150,11 @@ builder.declare({
     'allowed, and downloads of the object may begin.  This method is idempotent, but will',
     'fail if given an incorrect uploadId for an unfinished upload.',
     '',
+    'It is possible to finish an upload with no hashes specified via either',
+    '`startUpload` or `finishUpload`.  However, many clients will refuse to',
+    'download an object with no hashes.  The utility methods included with the',
+    'client libraries always include hashes as of version 44.0.0.',
+    '',
     'Note that, once `finishUpload` is complete, the object is considered immutable.',
   ].join('\n'),
 }, async function(req, res) {
