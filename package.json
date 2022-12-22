@@ -67,7 +67,7 @@
     "js-yaml": "^4.0.0",
     "json-e": "^4.0.1",
     "json-parameterization": "^2.0.1",
-    "jsonwebtoken": "^8.1.1",
+    "jsonwebtoken": "^9.0.0",
     "jwks-rsa": "^2.1.5",
     "lodash": "4.17.21",
     "loglevel": "^1.8.1",
