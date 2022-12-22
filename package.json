@@ -184,8 +184,6 @@
     "changelog": "node infrastructure/tooling/src/main.js changelog",
     "changelog:show": "node infrastructure/tooling/src/main.js changelog:show",
     "changelog:check": "node infrastructure/tooling/src/main.js changelog:check",
-    "heroku-prebuild": "echo {\\\"version\\\"\\: \\\"$SOURCE_VERSION\\\"} > version.json",
-    "heroku-postbuild": "if [ $PROCFILE = \"ui/Procfile\" ]; then cd ui && yarn install --frozen-lockfile && yarn build; fi",
     "start": "docker compose up -d",
     "stop": "docker compose down --remove-orphans",
     "dev:start": "docker compose -f docker-compose.yml -f docker-compose.dev.yml `if [ -e ./docker-compose.override.yml ]; then echo '-f docker-compose.override.yml'; fi` up -d",
@@ -204,7 +202,8 @@
     "smoketest": "node infrastructure/tooling/src/main.js smoketest",
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
     "db:upgrade": "node db/src/main.js upgrade",
-    "db:downgrade": "node db/src/main.js downgrade"
+    "db:downgrade": "node db/src/main.js downgrade",
+    "preinstall": "cd clients/client && yarn --frozen-lockfile"
   },
   "metatests": {
     "specialImports": [
