@@ -203,7 +203,7 @@
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
     "db:upgrade": "node db/src/main.js upgrade",
     "db:downgrade": "node db/src/main.js downgrade",
-    "preinstall": "cd clients/client && yarn --frozen-lockfile"
+    "preinstall": "[ -d clients/client ] && cd clients/client && yarn --frozen-lockfile || exit 0"
   },
   "metatests": {
     "specialImports": [
