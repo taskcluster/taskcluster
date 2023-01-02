@@ -13,12 +13,12 @@
     "test": "karma start --single-run"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.5",
+    "@babel/core": "^7.20.7",
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
     "crypto-js": "^4.0.0",
     "dotenv": "^10.0.0",
-    "eslint": "^8.30.0",
+    "eslint": "^8.31.0",
     "karma": "^6.4.1",
     "karma-cli": "^2.0.0",
     "karma-coverage": "^2.2.0",

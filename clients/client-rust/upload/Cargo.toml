@@ -12,7 +12,7 @@ taskcluster = { version = "46.1.1", path = "../client" }
 anyhow = "1.0"
 async-trait = "0.1"
 reqwest = { version = "0.11", features = ["json", "stream"] }
-serde = { version = "1.0.151", features = ["derive"] }
+serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
 tokio = { version = "1.2", features = ["macros", "time", "fs"] }
 tokio-util = { version = "0.7.2", features = ["codec", "io"] }
