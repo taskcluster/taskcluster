@@ -4,6 +4,7 @@ const slugid = require('slugid');
 const jsone = require('json-e');
 const tc = require('taskcluster-client');
 const TopoSort = require('topo-sort');
+const { GITHUB_TASKS_FOR } = require('./constants');
 
 // Assert that only scope-valid characters are in branches
 const branchTest = branch => {
@@ -179,15 +180,15 @@ class VersionOne extends TcYaml {
   createScopes(cfg, config, payload) {
     config.scopes = [];
 
-    if (payload.tasks_for === 'github-pull-request') {
+    if (payload.tasks_for === GITHUB_TASKS_FOR.PULL_REQUEST) {
       config.scopes = [
         `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`,
       ];
-    } else if (payload.tasks_for === 'github-pull-request-untrusted') {
+    } else if (payload.tasks_for === GITHUB_TASKS_FOR.PULL_REQUEST_UNTRUSTED) {
       config.scopes = [
         `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request-untrusted`,
       ];
-    } else if (payload.tasks_for === 'github-push') {
+    } else if (payload.tasks_for === GITHUB_TASKS_FOR.PUSH) {
       if (payload.body.ref.split('/')[1] === 'tags') {
         let prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:tag:`;
         config.scopes = [
@@ -199,7 +200,7 @@ class VersionOne extends TcYaml {
           prefix + payload.details['event.base.repo.branch'],
         ];
       }
-    } else if (payload.tasks_for === 'github-release') {
+    } else if (payload.tasks_for === GITHUB_TASKS_FOR.RELEASE) {
       config.scopes = [
         `assume:repo:github.com/${ payload.organization }/${ payload.repository }:release`,
       ];
