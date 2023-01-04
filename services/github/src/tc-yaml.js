@@ -49,7 +49,7 @@ class VersionZero extends TcYaml {
       ];
     } else if (payload.details['event.type'] === 'release') {
       config.scopes = [
-        `assume:repo:github.com/${ payload.organization }/${ payload.repository }:release`,
+        `assume:repo:github.com/${ payload.organization }/${ payload.repository }:release:published`,
       ];
     } else if (payload.details['event.type'] === 'tag') {
       let prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:tag:`;
@@ -201,8 +201,10 @@ class VersionOne extends TcYaml {
         ];
       }
     } else if (payload.tasks_for === GITHUB_TASKS_FOR.RELEASE) {
+      // role name would include release action
+      const action = payload?.body?.action || 'published';
       config.scopes = [
-        `assume:repo:github.com/${ payload.organization }/${ payload.repository }:release`,
+        `assume:repo:github.com/${payload.organization}/${payload.repository}:release:${action}`,
       ];
     }
 

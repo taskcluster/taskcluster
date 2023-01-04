@@ -78,7 +78,7 @@ suite(testing.suiteName(), function() {
         details: { 'event.type': 'release' },
       }, now);
       assume(config.scopes.sort()).to.deeply.equal([
-        'assume:repo:github.com/org/repo:release',
+        'assume:repo:github.com/org/repo:release:published',
         'queue:route:statuses-queue',
         'queue:scheduler-id:test-sched',
       ]);
@@ -280,9 +280,30 @@ suite(testing.suiteName(), function() {
           tasks_for: 'github-release',
           organization: 'org',
           repository: 'repo',
+          body: {},
         }, now);
         assume(config.scopes.sort()).to.deeply.equal([
-          'assume:repo:github.com/org/repo:release',
+          'assume:repo:github.com/org/repo:release:published',
+          'queue:route:statuses-queue',
+          'queue:scheduler-id:test-sched',
+        ]);
+      });
+
+      test('compileTasks for a pre-release sets scopes correctly', function() {
+        const config = {
+          tasks: [{}],
+        };
+
+        tcyaml.compileTasks(config, cfg, {
+          tasks_for: 'github-release',
+          body: {
+            action: 'prereleased',
+          },
+          organization: 'org',
+          repository: 'repo',
+        }, now);
+        assume(config.scopes.sort()).to.deeply.equal([
+          'assume:repo:github.com/org/repo:release:prereleased',
           'queue:route:statuses-queue',
           'queue:scheduler-id:test-sched',
         ]);

@@ -18,6 +18,17 @@ const GITHUB_TASKS_FOR = {
   PULL_REQUEST_UNTRUSTED: 'github-pull-request-untrusted',
 };
 
+// https://docs.github.com/developers/webhooks-and-events/webhooks/webhook-events-and-payloads?actionType=released#release
+const GITHUB_RELEASE_ACTION = {
+  CREATED: 'created',
+  DELETED: 'deleted',
+  EDITED: 'edited',
+  PRERELEASED: 'prereleased',
+  PUBLISHED: 'published',
+  RELEASED: 'released',
+  UNPUBLISHED: 'unpublished',
+};
+
 module.exports = {
   CONCLUSIONS: { // maps status communicated by the queue service to github checkrun conclusions
     'completed': 'success',
@@ -56,6 +67,7 @@ module.exports = {
     RERUN: 'rerun',
   },
   GITHUB_TASKS_FOR,
+  GITHUB_RELEASE_ACTION,
   CHECKLOGS_TEXT: 'View logs in Taskcluster',
   CHECKRUN_TEXT: 'View task in Taskcluster',
   LIVE_BACKING_LOG_ARTIFACT_NAME: 'public/logs/live_backing.log',
