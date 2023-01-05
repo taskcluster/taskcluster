@@ -83,17 +83,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   // with; to figure out which this is, print the certificate in
   // `registerWorker`.  It will be one of the certs on on
   // https://www.microsoft.com/pki/mscorp/cps/default.htm
-  const intermediateCertFingerprint = '70:3D:7A:8F:0E:BF:55:AA:A5:9F:98:EA:F4:A2:06:00:4E:B2:51:6A';
-  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft RSA TLS CA 01';
-  const intermediateCertIssuer = '/C=IE,/O=Baltimore,/OU=CyberTrust,/CN=Baltimore CyberTrust Root';
+  const intermediateCertFingerprint = '2F:28:77:C5:D7:78:C3:1E:0F:29:C7:E3:71:DF:54:71:BD:67:31:73';
+  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft Azure TLS Issuing CA 01';
+  const intermediateCertIssuer = '/C=US,/O=DigiCert Inc,/OU=www.digicert.com,/CN=DigiCert Global Root G2';
   const intermediateCertPath = path.resolve(
-    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_rsa_tls_ca_1.pem');
-  const intermediateCertUrl = 'http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2001.crt';
+    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_azure_tls_issuing_ca_01_xsign.pem');
+  const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20TLS%20Issuing%20CA%2001%20-%20xsign.crt';
+  // this id should match the id of the instance where azure_signature_good cert was fetched from
+  const testVmId = 'f5b104d8-1987-40f5-bdcb-d38b97934106';
 
   suite('helpers', function() {
-    const testCertPath = path.resolve(
-      __dirname, '../src/providers/azure/azure-ca-certs/microsoft_rsa_tls_ca_1.pem');
-    const testCert = forge.pki.certificateFromPem(fs.readFileSync(testCertPath));
+    const testCert = forge.pki.certificateFromPem(fs.readFileSync(intermediateCertPath));
 
     test('dnToString of subject', async function() {
       const dn = dnToString(testCert.subject);
@@ -115,7 +115,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const info = getAuthorityAccessInfo(testCert);
       assert.deepEqual(
         info,
-        [{ method: "OSCP", location: "http://ocsp.digicert.com" }]);
+        [
+          { method: "OSCP", location: "http://ocsp.digicert.com" },
+          { method: 'CA Issuer', location: 'http://cacerts.digicert.com/DigiCertGlobalRootG2.crt' },
+        ]);
     });
   });
 
@@ -1123,7 +1126,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('registerWorker', function() {
     const workerGroup = 'westus';
-    const vmId = 'eb16a6e7-c925-418d-9de8-9e4a3041a0e3';
+    const vmId = testVmId;
     const baseWorker = {
       workerPoolId,
       workerGroup,
@@ -1146,7 +1149,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     setup('create vm', function() {
       fake.computeClient.virtualMachines.makeFakeResource('rgrp', 'some-vm', {
-        vmId: 'eb16a6e7-c925-418d-9de8-9e4a3041a0e3',
+        vmId: testVmId,
       });
     });
 
@@ -1253,8 +1256,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           });
           await worker.create(helper.db);
 
-          // this document was acquired by starting an Ubuntu instance and running
-          // curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/attested/document?api-version=2020-09-01" | jq -r .signature
+          // see services/worker-manager/README.md#Testing on how this file was obtained
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = { document };
           provider._now = () => new Date(new Date().getFullYear() + 1, 1, 1); // in the future for this fixture
@@ -1299,7 +1301,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const expectedSubject = dnToString(deletedCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: intermediateCertUrl },
-            { method: "OSCP", location: "http://ocsp.msocsp.com" },
+            { method: "OSCP", location: "http://oneocsp.microsoft.com/ocsp" },
           ]);
           const log1 = monitor.manager.messages[1].Fields;
           assert.equal(log1.message, 'Unable to download intermediate certificate');
@@ -1340,7 +1342,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const expectedSubject = dnToString(deletedCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: intermediateCertUrl },
-            { method: "OSCP", location: "http://ocsp.msocsp.com" },
+            { method: "OSCP", location: "http://oneocsp.microsoft.com/ocsp" },
           ]);
           const log1 = monitor.manager.messages[1].Fields;
           assert.equal(log1.message, 'Unable to download intermediate certificate');
@@ -1386,7 +1388,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const expectedSubject = dnToString(deletedCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: intermediateCertUrl },
-            { method: "OSCP", location: "http://ocsp.msocsp.com" },
+            { method: "OSCP", location: "http://oneocsp.microsoft.com/ocsp" },
           ]);
           const log1 = monitor.manager.messages[1].Fields;
           assert.equal(log1.message, 'Unable to download intermediate certificate');
