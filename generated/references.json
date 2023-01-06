@@ -5146,6 +5146,52 @@
   },
   {
     "content": {
+      "$id": "/schemas/object/v1/hashes.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "definitions": {
+        "download": {
+          "additionalProperties": true,
+          "description": "Hashes of the content of this object.  The caller should verify all\nhashes present for recognized algorithms, and verify that at least one\nnon-deprecated hash is present.\n",
+          "properties": {
+            "sha256": {
+              "$ref": "#/definitions/upload/properties/sha256"
+            },
+            "sha512": {
+              "$ref": "#/definitions/upload/properties/sha512"
+            }
+          },
+          "required": [
+          ],
+          "title": "Object Content Hashes For Download",
+          "type": "object"
+        },
+        "upload": {
+          "additionalProperties": true,
+          "description": "Hashes of the content of this object.  These values will be verified by\nwell-behaved downloaders.  The format is `{alogrithm: value}`.\n\nMultiple calls to `createUpload` or `finishUpload` for the same object\ncan specify additional hashes, but existing hashes cannot be changed;\nthis allows \"amending\" an upload with hashes after the data has been\ntransferred, for example.\n\nAt least one non-deprecated algorithm must be included, preferably the\nmost advanced (SHA512).  Deprecated algorithms may also be included.\n",
+          "properties": {
+            "sha256": {
+              "pattern": "^[a-z0-9]{64}$",
+              "title": "SHA256 hash",
+              "type": "string"
+            },
+            "sha512": {
+              "pattern": "^[a-z0-9]{128}$",
+              "title": "SHA512 hash",
+              "type": "string"
+            }
+          },
+          "required": [
+          ],
+          "title": "Object Content Hashes",
+          "type": "object"
+        }
+      },
+      "title": "Hash Methods"
+    },
+    "filename": "schemas/object/v1/hashes.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/object/v1/get-object-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -5157,14 +5203,7 @@
           "type": "string"
         },
         "hashes": {
-          "additionalProperties": {
-            "type": "string"
-          },
-          "description": "Hashes of the content of this object, in the format `{alogrithm: value}`.  See\nthe `createUpload` request for the list of supported hash algorithms.\n",
-          "required": [
-          ],
-          "title": "Object Content Hashes",
-          "type": "object"
+          "$ref": "hashes.json#/definitions/download"
         },
         "projectId": {
           "maxLength": 500,
@@ -5191,7 +5230,7 @@
       "additionalProperties": false,
       "properties": {
         "hashes": {
-          "$ref": "create-upload-request.json#/properties/hashes"
+          "$ref": "hashes.json#/definitions/upload"
         },
         "projectId": {
           "description": "Project identifier.\n",
@@ -5225,6 +5264,9 @@
       "oneOf": [
         {
           "$ref": "download-method-simple.json#/definitions/response"
+        },
+        {
+          "$ref": "download-method-geturl.json#/definitions/response"
         }
       ],
       "title": "Download Object Response"
@@ -5242,6 +5284,9 @@
           "additionalProperties": false,
           "description": "Download methods that the caller can suport, together with parameters for each method.\nThe server will choose one method and make the corresponding response.",
           "properties": {
+            "getUrl": {
+              "$ref": "download-method-geturl.json#/definitions/request"
+            },
             "simple": {
               "$ref": "download-method-simple.json#/definitions/request"
             }
@@ -5293,6 +5338,52 @@
       "title": "simple Download Method"
     },
     "filename": "schemas/object/v1/download-method-simple.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/object/v1/download-method-geturl.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "definitions": {
+        "request": {
+          "const": true,
+          "type": "boolean"
+        },
+        "response": {
+          "additionalProperties": false,
+          "description": "This download method returns a URL from which the data may be fetched with an HTTP GET request.\n\nThe client should begin a GET request as soon as possible after receiving the reponse.\nThe server will respond with a 200 OK containing the data, or with a 4xx or 5xx error response.\nIt will _not_ redirect to another URL (3xx), and the client should not follow any such redirects.\n\nThe client can use standard Range requests to download portions of the object or to resume an interrupted download.\nPer the HTTP standard, servers may return more data than requested by the Range header.\n\nIf retrying a failed or interrupted download, and the `expires` field is in the past, the client should call `startDownload` again to get an updated `url`.\nThe client can assume that the object data and `hashes` will be the same for all calls to `startDownload`.\n\nThe client can use standard Accept-Encoding headers to indicate the encodings it can accept.\nHowever, in a deviation from standard HTTP, the client _must_ accept at least `identity` and `gzip` encodings.\nIf the HTTP response has a `Content-Encoding` header, the client should decode the body before verifying its hashes and returning it to the application.\n\nThe client _must_ verify that the resulting data matches the supplied hashes.\nThe object service does not, itself, validate object data and relies on clients to do so.",
+          "properties": {
+            "expires": {
+              "description": "The time after which `url` is no longer valid.\nIf the client wishes to begin an HTTP GET request after this time, it should first call `startDownload` again to get a fresh URL.\n",
+              "format": "date-time",
+              "title": "Expiration",
+              "type": "string"
+            },
+            "hashes": {
+              "$ref": "hashes.json#/definitions/download"
+            },
+            "method": {
+              "const": "getUrl",
+              "type": "string"
+            },
+            "url": {
+              "description": "The URL to which the client should make a GET request.\n",
+              "format": "uri",
+              "type": "string"
+            }
+          },
+          "required": [
+            "method",
+            "url",
+            "expires",
+            "hashes"
+          ],
+          "title": "getUrl Download Response",
+          "type": "object"
+        }
+      },
+      "title": "getUrl Download Method"
+    },
+    "filename": "schemas/object/v1/download-method-geturl.json"
   },
   {
     "content": {
@@ -5362,22 +5453,7 @@
           "type": "string"
         },
         "hashes": {
-          "additionalProperties": false,
-          "description": "Hashes of the content of this object.  These values will be verified by\nwell-behaved downloaders.  The format is `{alogrithm: value}`.  Multiple\ncalls to `createUpload` for the same object can specify additional hashes,\nbut existing hashes cannot be changed; this allows \"amending\" an upload\nwith hashes after the data has been transferred, for example.  Omitting\nthis property is the same as specifying `hashes: {}`.\n",
-          "properties": {
-            "sha256": {
-              "pattern": "^[a-z0-9]{64}$",
-              "type": "string"
-            },
-            "sha512": {
-              "pattern": "^[a-z0-9]{128}$",
-              "type": "string"
-            }
-          },
-          "required": [
-          ],
-          "title": "Object Content Hashes",
-          "type": "object"
+          "$ref": "hashes.json#/definitions/upload"
         },
         "projectId": {
           "description": "Project identifier.\n",
@@ -6052,6 +6128,11 @@
       "additionalProperties": false,
       "description": "List of lastFires\n",
       "properties": {
+        "continuationToken": {
+          "description": "A continuation token is returned if there are more results than listed\nhere. You can optionally provide the token in the request payload to\nload the additional results.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
         "lastFires": {
           "items": {
             "additionalProperties": false,
@@ -7356,7 +7437,7 @@
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
@@ -7726,7 +7807,7 @@
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
@@ -8105,7 +8186,7 @@
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
@@ -8480,7 +8561,7 @@
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
@@ -8718,12 +8799,6 @@
               ],
               "title": "Devices to be attached to task containers",
               "type": "object"
-            },
-            "disableSeccomp": {
-              "default": false,
-              "description": "Allows a task to run without seccomp, similar to running docker with `--security-opt seccomp=unconfined`.  This only works for worker-types configured to enable it.",
-              "title": "Container does not have a seccomp profile set.",
-              "type": "boolean"
             },
             "privileged": {
               "default": false,
@@ -16692,7 +16767,7 @@
             "name"
           ],
           "category": "Upload",
-          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
+          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nIt is possible to finish an upload with no hashes specified via either\n`startUpload` or `finishUpload`.  However, many clients will refuse to\ndownload an object with no hashes.  The utility methods included with the\nclient libraries always include hashes as of version 44.0.0.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
           "input": "v1/finish-upload-request.json#",
           "method": "post",
           "name": "finishUpload",
@@ -18274,11 +18349,13 @@
             "hookId"
           ],
           "category": "Hook Status",
-          "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not",
+          "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not\n\nBy default this endpoint will return up to 1000 most recent fires in one request.",
           "method": "get",
           "name": "listLastFires",
           "output": "v1/list-lastFires-response.json#",
           "query": [
+            "continuationToken",
+            "limit"
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
           "scopes": "hooks:list-last-fires:<hookGroupId>/<hookId>",

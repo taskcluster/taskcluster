@@ -34,7 +34,8 @@ union Node =
   NotificationAddress |
   WorkerManagerWorkerPoolSummary |
   WorkerManagerProvider |
-  WorkerManagerError
+  WorkerManagerError |
+  HookLastFire
 
 interface Edge {
   cursor: String

@@ -4,7 +4,7 @@ package signin
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -15,10 +15,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/slugid-go/slugid"
 	libUrls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v44/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v44/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
+	"github.com/taskcluster/taskcluster/v46/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v46/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v46/clients/client-shell/config"
 )
 
 var log = root.Logger
@@ -145,8 +145,8 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	log.Infoln("Opening URL: " + loginURL)
 
 	// Discard whatever the browser dumps to stdout / stderr
-	browser.Stderr = ioutil.Discard
-	browser.Stdout = ioutil.Discard
+	browser.Stderr = io.Discard
+	browser.Stdout = io.Discard
 
 	// Open browser
 	err = browser.OpenURL(loginURL)

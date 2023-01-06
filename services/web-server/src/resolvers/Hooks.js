@@ -46,8 +46,8 @@ module.exports = {
     hookStatus(parent, { hookGroupId, hookId }, { loaders }) {
       return loaders.hookStatus.load({ hookGroupId, hookId });
     },
-    hookLastFires(parent, { hookGroupId, hookId, filter }, { loaders }) {
-      return loaders.hookLastFires.load({ hookGroupId, hookId, filter });
+    hookLastFires(parent, { hookGroupId, hookId, filter, connection }, { loaders }) {
+      return loaders.hookLastFires.load({ hookGroupId, hookId, filter, connection });
     },
   },
   Mutation: {

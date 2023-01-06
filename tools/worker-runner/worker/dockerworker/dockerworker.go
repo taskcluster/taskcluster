@@ -3,18 +3,17 @@ package dockerworker
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/util"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/worker/worker"
-	"github.com/taskcluster/taskcluster/v44/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v46/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v46/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v46/tools/worker-runner/util"
+	"github.com/taskcluster/taskcluster/v46/tools/worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v46/tools/workerproto"
 )
 
 type dockerworkerConfig struct {
@@ -106,7 +105,7 @@ func (d *dockerworker) StartWorker(state *run.State) (workerproto.Transport, err
 	if err != nil {
 		return nil, fmt.Errorf("Error constructing worker config: %v", err)
 	}
-	err = ioutil.WriteFile(d.wicfg.ConfigPath, content, 0600)
+	err = os.WriteFile(d.wicfg.ConfigPath, content, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("Error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
 	}

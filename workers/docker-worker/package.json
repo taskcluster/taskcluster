@@ -1,10 +1,10 @@
 {
   "name": "docker-worker",
   "private": true,
-  "version": "44.23.0",
+  "version": "46.1.1",
   "engine-strict": true,
   "engines": {
-    "node": "16.18.0",
+    "node": "16.19.0",
     "yarn": "^1.22.19"
   },
   "description": "Docker task host for linux.",

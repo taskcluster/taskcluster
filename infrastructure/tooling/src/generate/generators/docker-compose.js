@@ -101,6 +101,10 @@ const defaultValues = {
   // Notify
   EMAIL_SOURCE_ADDRESS: 'root@local',
 
+  // Object
+  BACKENDS: '{"everything":{"backendType":"aws","accessKeyId":"minioadmin","secretAccessKey":"miniopassword","bucket":"public-bucket","signGetUrls":"false","s3ForcePathStyle":true,"endpoint":"http://taskcluster/"}}',
+  BACKEND_MAP: '[{"backendId":"everything","when":"all"}]',
+
   // Queue
   PUBLIC_ARTIFACT_BUCKET: 'public-bucket',
   PRIVATE_ARTIFACT_BUCKET: 'private-bucket',
@@ -591,7 +595,7 @@ http {
       proxy_set_header Upgrade $http_upgrade; # websocket
       proxy_set_header Connection "Upgrade"; # websocket
     }
-    location /public-bucket/ {
+    location ~* /(public|private)-bucket/ {
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;

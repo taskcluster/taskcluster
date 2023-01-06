@@ -8,9 +8,9 @@ cd "$(dirname "${0}")"
 #
 # DO NOT CHANGE HERE!
 ####################################################################
-# Support go 1.18 or higher.
+# Support go 1.19 or higher.
 GO_MAJOR_VERSION=1
-MIN_GO_MINOR_VERSION=18
+MIN_GO_MINOR_VERSION=19
 
 unset CGO_ENABLED
 unset GOOS
@@ -122,20 +122,13 @@ fi
 
 ls -1 "$OUTPUT_DIR"/generic-worker-*
 
-####################################################################
-# The version number in these lines is automatically updated by
-#   infrastructure/tooling/src/release/tasks.js
-# when a new major release is made.
-####################################################################
-CGO_ENABLED=0 go get \
-  github.com/taskcluster/taskcluster/v44/tools/livelog \
-  github.com/taskcluster/taskcluster/v44/tools/taskcluster-proxy \
-  golang.org/x/lint/golint \
-  github.com/gordonklaus/ineffassign \
-  golang.org/x/tools/cmd/goimports
-
-# Previous `go get` command modifies go module, so let's clean that up
-go mod tidy
+proj_root=$(go list . | sed -e 's!/workers/generic-worker$!!' )
+CGO_ENABLED=0 go install "${proj_root}/tools/livelog@latest"
+CGO_ENABLED=0 go install "${proj_root}/tools/taskcluster-proxy@latest"
+CGO_ENABLED=0 go install "${proj_root}/workers/generic-worker/resolvetask@latest"
+CGO_ENABLED=0 go install golang.org/x/lint/golint@latest
+CGO_ENABLED=0 go install github.com/gordonklaus/ineffassign@latest
+CGO_ENABLED=0 go install golang.org/x/tools/cmd/goimports@latest
 
 if $TEST; then
 ####################################################################
@@ -143,7 +136,7 @@ if $TEST; then
 #   infrastructure/tooling/src/release/tasks.js
 # when a new major release is made.
 ####################################################################
-  CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags simple -ldflags "-X github.com/taskcluster/taskcluster/v44/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" go test -tags simple -failfast -ldflags "-X github.com/taskcluster/taskcluster/v46/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   MYGOHOSTOS="$(go env GOHOSTOS)"
   if [ "${MYGOHOSTOS}" == "linux" ] || [ "${MYGOHOSTOS}" == "darwin" ]; then
 ####################################################################
@@ -151,17 +144,11 @@ if $TEST; then
 #   infrastructure/tooling/src/release/tasks.js
 # when a new major release is made.
 ####################################################################
-    CGO_ENABLED=1 GORACE="history_size=7" go test -v -tags docker -ldflags "-X github.com/taskcluster/taskcluster/v44/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+    CGO_ENABLED=1 GORACE="history_size=7" go test -tags docker -failfast -ldflags "-X github.com/taskcluster/taskcluster/v46/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   fi
   golint $(go list ./...) | sed "s*${PWD}/**"
   ineffassign .
-
-  # We should uncomment this goimports command once either we no longer have
-  # ciruclar go module dependencies that cause an older version of
-  # github.com/taskcluster/taskcluster module to be a dependency, or when
-  # goimports no longer favours the older version over the newer.
-
-  # goimports -w .
+  goimports -w .
 
 fi
 

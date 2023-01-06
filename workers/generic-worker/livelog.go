@@ -7,11 +7,12 @@ import (
 	"os"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/internal/scopes"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/livelog"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
+	"github.com/taskcluster/taskcluster/v46/internal/scopes"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/livelog"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/process"
 )
 
 var (
@@ -128,8 +129,8 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 	}
 	log.Printf("Linking %v to %v", livelogName, logName)
 	err.add(l.task.uploadArtifact(
-		&LinkArtifact{
-			BaseArtifact: &BaseArtifact{
+		&artifacts.LinkArtifact{
+			BaseArtifact: &artifacts.BaseArtifact{
 				Name: livelogName,
 				// same expiry as underlying log it points to
 				Expires: l.task.Definition.Expires,
@@ -178,8 +179,8 @@ func (l *LiveLogTask) uploadLiveLogArtifact() error {
 	// add an extra 15 minutes, to adequately cover client/server clock drift or task initialisation delays
 	expires := time.Now().Add(time.Duration(l.task.Payload.MaxRunTime+900) * time.Second)
 	uploadErr := l.task.uploadArtifact(
-		&RedirectArtifact{
-			BaseArtifact: &BaseArtifact{
+		&artifacts.RedirectArtifact{
+			BaseArtifact: &artifacts.BaseArtifact{
 				Name:    livelogName,
 				Expires: tcclient.Time(expires),
 			},

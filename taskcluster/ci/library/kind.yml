@@ -10,7 +10,7 @@ transforms:
 workspace: libraries
 prefix: 'lib-'
 
-job-defaults:
+task-defaults:
   worker-type: ci
   run:
     using: bare
@@ -28,7 +28,7 @@ job-defaults:
     max-run-time: 600
     docker-image: {taskcluster: 'ci-image'}
 
-job-overrides:
+task-overrides:
   pulse:
     worker:
       docker-image: {taskcluster: 'rabbit-test'}

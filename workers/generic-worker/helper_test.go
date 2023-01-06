@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -22,11 +21,11 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v44/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
+	"github.com/taskcluster/taskcluster/v46/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v46/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/gwconfig"
 )
 
 var (
@@ -35,14 +34,14 @@ var (
 	testdataDir    = filepath.Join(cwd, "testdata")
 )
 
-func setup(t *testing.T) func() {
+func setup(t *testing.T) {
 	test := GWTest(t)
 	err := test.Setup()
 	if err != nil {
 		test.Teardown()
 		t.Fatalf("%v", err)
 	}
-	return test.Teardown
+	t.Cleanup(test.Teardown)
 }
 
 // testWorkerType returns a fake workerType identifier that conforms to
@@ -170,7 +169,7 @@ func ensureResolution(t *testing.T, taskID, state, reason string) {
 }
 
 func LogText(t *testing.T) string {
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
+	bytes, err := os.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}

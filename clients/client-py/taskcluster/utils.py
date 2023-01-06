@@ -261,7 +261,7 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES, session=
             response = makeSingleHttpRequest(method, url, payload, headers, session)
         except requests.exceptions.RequestException as rerr:
             if retry < retries:
-                log.warn('Retrying because of: %s' % rerr)
+                log.warning('Retrying because of: %s' % rerr)
                 continue
             # raise a connection exception
             raise rerr

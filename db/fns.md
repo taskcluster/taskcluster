@@ -732,10 +732,10 @@ Get a hook last fire.
   * `result text`
   * `error text`
   * `etag uuid`
-* *Last defined on version*: 49
+* *Last defined on version*: 79
 
 Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,
-ordered by `hook_group_id`, `hook_id`, and  `worker_id`.
+ordered by `hook_group_id`, `hook_id`, and `task_create_time`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
@@ -2046,15 +2046,6 @@ client side.
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
 
-### deprecated methods
-
-* `get_queue_worker_tqid(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v46.0.0)
-* `get_queue_worker_tqid_with_last_date_active(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v46.0.0)
-* `get_queue_workers_tqid(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
-* `get_queue_workers_tqid_with_last_date_active(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
-* `quarantine_queue_worker(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz)` (compatibility guaranteed until v46.0.0)
-* `queue_worker_seen(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v46.0.0)
-
 ## secrets
 
 * [`delete_secret`](#delete_secret)
@@ -2541,7 +2532,7 @@ filter `=` or `<>` provider by value.
   * `capacity int4`
   * `provider_id text`
   * `etag uuid`
-* *Last defined on version*: 73
+* *Last defined on version*: 80
 
 Get a non-expired queue worker by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
@@ -2568,7 +2559,7 @@ This also performs an outer join with the worker_manager.worker table for more d
   * `capacity int4`
   * `provider_id text`
   * `etag uuid`
-* *Last defined on version*: 73
+* *Last defined on version*: 80
 
 Get non-expired queue workers ordered by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
@@ -2929,12 +2920,3 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
-
-### deprecated methods
-
-* `get_non_stopped_workers_quntil(worker_pool_id_in text, worker_group_in text, worker_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
-* `get_queue_workers_with_wm_join_quarantined(task_queue_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
-* `get_task_queue_wm(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
-* `get_worker_pool_with_capacity(worker_pool_id_in text)` (compatibility guaranteed until v46.0.0)
-* `get_worker_pools_with_capacity(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v46.0.0)
-* `update_worker_pool_with_capacity(worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean)` (compatibility guaranteed until v46.0.0)

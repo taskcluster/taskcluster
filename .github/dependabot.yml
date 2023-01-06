@@ -1,7 +1,7 @@
 # To get started with Dependabot version updates, you'll need to specify which
 # package ecosystems to update and where the package manifests are located.
 # Please see the documentation for all configuration options:
-# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
 version: 2
 updates:
@@ -11,39 +11,60 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    rebase-strategy: "disabled"
 
   # Maintain node dependencies for taskcluster-client
   - package-ecosystem: "npm"
     directory: "/clients/client"
     schedule:
       interval: "monthly"
+    rebase-strategy: "disabled"
 
   # Maintain node dependencies for taskcluster-client-web
   - package-ecosystem: "npm"
     directory: "/clients/client-web"
     schedule:
       interval: "monthly"
+    rebase-strategy: "disabled"
+
+  # Maintain node dependencies for taskcluster-client-rust
+  - package-ecosystem: "cargo"
+    directory: "/clients/client-rust"
+    schedule:
+      interval: "monthly"
+    rebase-strategy: "disabled"
 
   # Maintain node dependencies for taskcluster-ui
   - package-ecosystem: "npm"
     directory: "/ui"
     schedule:
       interval: "monthly"
+    rebase-strategy: "disabled"
 
-  # Maintain node dependencies for docker-worker
+  # Maintain node dependencies for taskcluster-ui e2e tests
   - package-ecosystem: "npm"
-    directory: "/workers/docker-worker"
+    directory: "/ui/test/e2e"
     schedule:
       interval: "monthly"
+    rebase-strategy: "disabled"
 
   # Maintain go dependencies
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "monthly"
+    rebase-strategy: "disabled"
 
   # Set update schedule for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
+    rebase-strategy: "disabled"
+
+  # Maintain pip dependencies for taskgraph
+  - package-ecosystem: "pip"
+    directory: "/taskcluster"
+    schedule:
+      interval: "monthly"
+    rebase-strategy: "disabled"

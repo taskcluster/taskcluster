@@ -10,7 +10,7 @@ You will probably be working on only one of these pieces, so read carefully belo
 ### Node
 
 <!-- the next line is automatically edited; do not change -->
-You will need Node version 16.18.0 installed.
+You will need Node version 16.19.0 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
 We use `yarn` to run most development commands, so [install that as well](https://classic.yarnpkg.com/en/docs/install/#debian-stable).
@@ -18,7 +18,7 @@ We use `yarn` to run most development commands, so [install that as well](https:
 ### Go
 
 <!-- the next line is automatically edited; do not change -->
-Go version go1.18.5 is required for some development tasks, in particular to run `yarn generate`.
+Go version go1.19.4 is required for some development tasks, in particular to run `yarn generate`.
 For new contributors not familiar with Go, it's probably safe to skip installing Go for now -- you will see a helpful error if and when it is needed.
 We recommend using https://github.com/moovweb/gvm to support installing multiple Go versions.
 
@@ -202,7 +202,7 @@ It's easy: `yarn build` in the root directory.
 
 ## Running everything locally using `docker compose`
 
-> Note: you'll need recent version of `docker` with [`docker-compose-plugin`](https://docs.docker.com/compose/install/compose-plugin/) |(or alternatively [docker-compose](https://github.com/docker/compose/releases))
+> Note: you'll need recent version of `docker` with [`docker-compose-plugin`](https://docs.docker.com/compose/install/linux/) |(or alternatively [docker-compose](https://github.com/docker/compose/releases))
 >
 > For non-linux systems it is advised to run docker with at least 4 CPU cores and at least 6 GB of memory.
 

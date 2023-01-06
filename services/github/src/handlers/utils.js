@@ -6,7 +6,7 @@ const taskUI = (rootUrl, taskGroupId, taskId) =>
 const taskGroupUI = (rootUrl, taskGroupId) =>
   libUrls.ui(rootUrl, `${rootUrl === 'https://taskcluster.net' ? '' : '/tasks'}/groups/${taskGroupId}`);
 const taskLogUI = (rootUrl, runId, taskId) =>
-  libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/logs/public/logs/live.log`);
+  libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/logs/live/public/logs/live.log`);
 
 let debugCounter = 0;
 

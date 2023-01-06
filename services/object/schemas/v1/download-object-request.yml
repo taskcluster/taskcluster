@@ -12,6 +12,7 @@ properties:
       The server will choose one method and make the corresponding response.
     properties:
       simple: {$ref: "download-method-simple.json#/definitions/request"}
+      getUrl: {$ref: "download-method-geturl.json#/definitions/request"}
     additionalProperties: false
     required: []
 additionalProperties: false

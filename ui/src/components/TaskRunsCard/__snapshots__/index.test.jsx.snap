@@ -96,7 +96,7 @@ exports[`should render TaskRunsCard 1`] = `
           <p
             class="MuiTypography-root TaskRunsCard-boxVariantText-10 MuiTypography-body2"
           >
-            A run will be created when the task gets schedueled.
+            A run will be created when the task gets scheduled.
           </p>
         </div>
       </div>

@@ -421,30 +421,38 @@ impl Hooks {
     ///
     /// This endpoint will return information about the the last few times this hook has been
     /// fired, including whether the hook was fired successfully or not
-    pub async fn listLastFires(&self, hookGroupId: &str, hookId: &str) -> Result<Value, Error> {
+    ///
+    /// By default this endpoint will return up to 1000 most recent fires in one request.
+    pub async fn listLastFires(&self, hookGroupId: &str, hookId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
-        let (path, query) = Self::listLastFires_details(hookGroupId, hookId);
+        let (path, query) = Self::listLastFires_details(hookGroupId, hookId, continuationToken, limit);
         let body = None;
         let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listLastFires endpoint
-    pub fn listLastFires_url(&self, hookGroupId: &str, hookId: &str) -> Result<String, Error> {
-        let (path, query) = Self::listLastFires_details(hookGroupId, hookId);
+    pub fn listLastFires_url(&self, hookGroupId: &str, hookId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listLastFires_details(hookGroupId, hookId, continuationToken, limit);
         self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listLastFires endpoint
-    pub fn listLastFires_signed_url(&self, hookGroupId: &str, hookId: &str, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::listLastFires_details(hookGroupId, hookId);
+    pub fn listLastFires_signed_url(&self, hookGroupId: &str, hookId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listLastFires_details(hookGroupId, hookId, continuationToken, limit);
         self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listLastFires
-    fn listLastFires_details<'a>(hookGroupId: &'a str, hookId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+    fn listLastFires_details<'a>(hookGroupId: &'a str, hookId: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("hooks/{}/{}/last-fires", urlencode(hookGroupId), urlencode(hookId));
-        let query = None;
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
 
         (path, query)
     }

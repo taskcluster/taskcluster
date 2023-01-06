@@ -15,6 +15,7 @@ import Grid from '@material-ui/core/Grid';
 import FormGroup from '@material-ui/core/FormGroup';
 import HammerIcon from 'mdi-react/HammerIcon';
 import BellIcon from 'mdi-react/BellIcon';
+import ChartIcon from 'mdi-react/ChartBarIcon';
 import Spinner from '../../../components/Spinner';
 import Button from '../../../components/Button';
 import SpeedDial from '../../../components/SpeedDial';
@@ -44,6 +45,7 @@ import submitTaskAction from '../submitTaskAction';
 import notify from '../../../utils/notify';
 import logoFailed from '../../../images/logoFailed.png';
 import logoCompleted from '../../../images/logoCompleted.png';
+import TaskGroupStats from '../../../components/TaskGroupStats';
 
 const updateTaskGroupIdHistory = id => {
   if (!VALID_TASK.test(id)) {
@@ -105,7 +107,10 @@ const updateTaskGroupIdHistory = id => {
     },
   },
   notifyButton: {
-    marginLeft: theme.spacing(3),
+    marginLeft: theme.spacing(1),
+  },
+  statsButton: {
+    marginLeft: theme.spacing(2),
   },
   bellIcon: {
     marginRight: theme.spacing(1),
@@ -190,6 +195,7 @@ export default class TaskGroup extends Component {
     notifyPreferences: INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES,
     previousNotifyPreferences: INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES,
     taskGroupWasRunningOnPageLoad: false,
+    statsOpen: false,
   };
 
   async componentDidMount() {
@@ -199,8 +205,10 @@ export default class TaskGroup extends Component {
     const groupNotifySuccess =
       'Notification' in window &&
       (await db.userPreferences.get(GROUP_NOTIFY_SUCCESS_KEY)) === true;
+    const searchTerm = this.props.location.hash.substr(1);
 
     this.setState({
+      searchTerm,
       notifyPreferences: {
         groupNotifyTaskFailed,
         groupNotifySuccess,
@@ -244,7 +252,7 @@ export default class TaskGroup extends Component {
         ],
       },
       updateQuery: (previousResult, { subscriptionData }) => {
-        const { tasksSubscriptions } = subscriptionData.data;
+        const { tasksSubscriptions = {} } = subscriptionData.data;
         // Make sure data is not from another task group which
         // can happen when a message is in flight and a user searches for
         // a different task group.
@@ -288,7 +296,11 @@ export default class TaskGroup extends Component {
 
             return dotProp.set(edge, 'node', node =>
               dotProp.set(node, 'status', status =>
-                dotProp.set(status, 'state', tasksSubscriptions.state)
+                dotProp.set(
+                  dotProp.set(status, 'state', tasksSubscriptions.state),
+                  'runs',
+                  tasksSubscriptions.runs
+                )
               )
             );
           });
@@ -302,6 +314,7 @@ export default class TaskGroup extends Component {
               ...cloneDeep(tasksSubscriptions.task),
               status: {
                 state: tasksSubscriptions.state,
+                runs: tasksSubscriptions.runs,
                 __typename: 'TaskStatus',
               },
             },
@@ -439,7 +452,7 @@ export default class TaskGroup extends Component {
           },
         },
       },
-      updateQuery: (previousResult, { fetchMoreResult, variables }) => {
+      updateQuery: (previousResult = {}, { fetchMoreResult, variables }) => {
         if (
           variables.taskGroupConnection.previousCursor === this.previousCursor
         ) {
@@ -466,7 +479,7 @@ export default class TaskGroup extends Component {
               dotProp.set(
                 taskGroup,
                 'edges',
-                previousResult.taskGroup.edges.concat(filteredEdges)
+                previousResult?.taskGroup?.edges?.concat(filteredEdges)
               ),
               'pageInfo',
               pageInfo
@@ -482,6 +495,7 @@ export default class TaskGroup extends Component {
   };
 
   handleSearchTaskSubmit = searchTerm => {
+    this.props.history.replace({ hash: searchTerm });
     this.setState({ searchTerm });
   };
 
@@ -506,6 +520,10 @@ export default class TaskGroup extends Component {
 
   handleNotifyDialogOpen = () => {
     this.setState({ notifyDialogOpen: true });
+  };
+
+  handleStatsChart = () => {
+    this.setState({ statsOpen: !this.state.statsOpen });
   };
 
   handleNotifyChange = async ({ target: { checked, value } }) => {
@@ -608,6 +626,7 @@ export default class TaskGroup extends Component {
       searchTerm,
       notifyDialogOpen,
       notifyPreferences,
+      statsOpen,
     } = this.state;
     const bellIconSize = 16;
     const {
@@ -615,7 +634,7 @@ export default class TaskGroup extends Component {
       match: {
         params: { taskGroupId },
       },
-      data: { taskGroup, error, loading, subscribeToMore },
+      data: { taskGroup, task, error, loading, subscribeToMore },
       classes,
     } = this.props;
     // Make sure data is not from another task group which
@@ -634,9 +653,15 @@ export default class TaskGroup extends Component {
       taskGroup.edges.forEach(edge => this.tasks.set(edge.node.taskId));
     }
 
+    const title = ['Task Group'];
+
+    if (task?.metadata?.name) {
+      title.push(task?.metadata?.name);
+    }
+
     return (
       <Dashboard
-        title="Task Group"
+        title={title.join(' - ')}
         className={classes.dashboard}
         helpView={<HelpView description={description} />}
         search={
@@ -658,14 +683,23 @@ export default class TaskGroup extends Component {
         )}
         {!loading && taskGroup && (
           <Grid container>
-            <Grid item xs={12} sm={9} className={classes.firstGrid}>
+            <Grid item xs={12} sm={8} className={classes.firstGrid}>
               <Search
                 formProps={{ className: classes.taskNameFormSearch }}
                 placeholder="Name contains"
+                defaultValue={searchTerm}
                 onSubmit={this.handleSearchTaskSubmit}
               />
             </Grid>
-            <Grid item xs={12} sm={3} className={classes.secondGrid}>
+            <Grid item xs={9} sm={4} className={classes.secondGrid}>
+              <Button
+                size="small"
+                onClick={this.handleStatsChart}
+                className={classes.statsButton}
+                variant="outlined">
+                <ChartIcon size={bellIconSize} className={classes.bellIcon} />
+                Stats
+              </Button>
               {'Notification' in window && (
                 <Badge
                   className={classes.notifyButton}
@@ -687,12 +721,20 @@ export default class TaskGroup extends Component {
           </Grid>
         )}
         <br />
+        {statsOpen && (
+          <TaskGroupStats
+            searchTerm={searchTerm}
+            filter={filter}
+            taskGroup={taskGroup}
+          />
+        )}
         {!error && loading && <Spinner loading />}
         {!loading && taskGroup && (
           <TaskGroupTable
             searchTerm={searchTerm}
             filter={filter}
             taskGroupConnection={taskGroup}
+            showTimings={statsOpen}
           />
         )}
         {!loading && groupActions && groupActions.length ? (

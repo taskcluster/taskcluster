@@ -17,7 +17,9 @@ const { taskUI, makeDebug, taskLogUI, GithubCheck } = require('./utils');
  * This can lead to situations where newer event is being overwritten by an older one,
  * because it took him longer to reach update calls.
  */
-const qLock = new QueueLock();
+const qLock = new QueueLock({
+  maxLockTimeMs: 60 * 1000, // sometimes queue and github calls get delayed
+});
 
 /**
  * Post updates to GitHub, when task is being created or its status changes.
@@ -34,11 +36,12 @@ const qLock = new QueueLock();
  **/
 async function statusHandler(message) {
   const { taskGroupId, state, runs, taskId } = message.payload.status;
-  const { runId } = message.payload;
+  let { runId } = message.payload;
+  runId = typeof runId === 'undefined' ? 0 : runId;
   const { reasonResolved } = runs[runId] || {};
   const taskDefined = state === undefined;
 
-  await qLock.acquire(taskId);
+  const releaseLock = await qLock.acquire(taskId);
 
   let debug = makeDebug(this.monitor, { taskGroupId, taskId });
   debug(`Handling state change for task ${taskId} in group ${taskGroupId}, reason=${reasonResolved || state || 'taskDefined'}`, { exchange: message.exchange });
@@ -49,7 +52,7 @@ async function statusHandler(message) {
   let [build] = await this.context.db.fns.get_github_build(taskGroupId);
   if (!build) {
     debug(`No github build is associated with task group ${taskGroupId}. Most likely this was triggered by periodic cron hook, which doesn't require github event / check suite.`);
-    qLock.release(taskId);
+    releaseLock();
     return false;
   }
 
@@ -192,7 +195,7 @@ async function statusHandler(message) {
     e.sha = build.sha;
     throw e;
   } finally {
-    qLock.release(taskId);
+    releaseLock();
   }
 }
 

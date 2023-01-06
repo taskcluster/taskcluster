@@ -2,7 +2,7 @@ package mocks3
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -36,7 +36,7 @@ func (s3 *S3) Upload(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	contentEncoding := r.Header.Get("Content-Encoding")
 	contentType := r.Header.Get("Content-Type")
-	content, err := ioutil.ReadAll(r.Body)
+	content, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(400)
 	}

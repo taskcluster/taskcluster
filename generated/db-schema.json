@@ -6392,6 +6392,47 @@
         }
       },
       "version": 78
+    },
+    {
+      "description": "Speed up hooks fetching last fires by date",
+      "downgradeScript": "begin\n  drop index hooks_last_fires_time;\nend",
+      "methods": {
+        "get_last_fires": {
+          "args": "hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    hooks_last_fires.hook_group_id,\n    hooks_last_fires.hook_id,\n    hooks_last_fires.fired_by,\n    hooks_last_fires.task_id,\n    hooks_last_fires.task_create_time,\n    hooks_last_fires.result,\n    hooks_last_fires.error,\n    public.gen_random_uuid()\n  from hooks_last_fires\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in\n  order by hook_group_id, hook_id, task_create_time DESC\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,\nordered by `hook_group_id`, `hook_id`, and `task_create_time`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid)",
+          "serviceName": "hooks"
+        }
+      },
+      "migrationScript": "begin\n  create index hooks_last_fires_time on hooks_last_fires (hook_group_id,hook_id,task_create_time);\nend",
+      "version": 79
+    },
+    {
+      "description": "fix duplicate entries in queue_workers join with workers table",
+      "methods": {
+        "get_queue_worker_with_wm_join": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id as worker_pool_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active,\n    workers.state,\n    workers.capacity,\n    workers.provider_id,\n    public.gen_random_uuid()\n  from queue_workers\n  full outer join workers on workers.worker_id = queue_workers.worker_id\n    and workers.worker_pool_id = queue_workers.task_queue_id\n    and workers.worker_group = queue_workers.worker_group\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in and\n    (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);\n  end",
+          "deprecated": false,
+          "description": "Get a non-expired queue worker by worker_pool_id, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.\nThis also performs an outer join with the worker_manager.worker table for more data.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, state text, capacity int4, provider_id text, etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "get_queue_workers_with_wm_join": {
+          "args": "task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id as worker_pool_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active,\n    workers.state,\n    workers.capacity,\n    workers.provider_id,\n    public.gen_random_uuid()\n  from queue_workers\n  full outer join workers on workers.worker_id = queue_workers.worker_id\n    and workers.worker_pool_id = queue_workers.task_queue_id\n    and workers.worker_group = queue_workers.worker_group\n  where\n    (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_with_wm_join.task_queue_id_in is null) and\n    ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers_with_wm_join.expires_in is null)\n  order by worker_pool_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get non-expired queue workers ordered by worker_pool_id, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.\nThis also performs an outer join with the worker_manager.worker table for more data.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, state text, capacity int4, provider_id text, etag uuid)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 80
     }
   ]
 }

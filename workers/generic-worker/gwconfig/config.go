@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
 	"reflect"
 	"sync"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
 )
 
 type (
@@ -32,6 +31,7 @@ type (
 		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
 		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
 		ClientID                       string                 `json:"clientId"`
+		CreateObjectArtifacts          bool                   `json:"createObjectArtifacts"`
 		DeploymentID                   string                 `json:"deploymentId"`
 		DisableReboots                 bool                   `json:"disableReboots"`
 		DownloadsDir                   string                 `json:"downloadsDir"`
@@ -161,7 +161,7 @@ type File struct {
 }
 
 func (cf *File) NewestDeploymentID() (string, error) {
-	configData, err := ioutil.ReadFile(cf.Path)
+	configData, err := os.ReadFile(cf.Path)
 	if err != nil {
 		return "", err
 	}
@@ -175,7 +175,7 @@ func (cf *File) NewestDeploymentID() (string, error) {
 
 func (cf *File) UpdateConfig(c *Config) error {
 	log.Printf("Loading generic-worker config file '%v'...", cf.Path)
-	configData, err := ioutil.ReadFile(cf.Path)
+	configData, err := os.ReadFile(cf.Path)
 	if err != nil {
 		return err
 	}

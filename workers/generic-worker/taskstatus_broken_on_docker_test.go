@@ -10,13 +10,13 @@ import (
 
 // Makes sure that if a running task gets cancelled externally, the worker does not shut down
 func TestResolveResolvedTask(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	td, payload := CancelTask(t)
 	_ = submitAndAssert(t, td, payload, "exception", "canceled")
 }
 
 func TestReclaimCancelledTask(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	mounts := []MountEntry{
 		// requires scope "generic-worker:cache:banana-cache"
 		&WritableDirectoryCache{

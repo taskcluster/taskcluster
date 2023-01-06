@@ -3,7 +3,6 @@ package writer
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"sync"
@@ -43,7 +42,7 @@ type Stream struct {
 }
 
 func NewStream(read io.Reader) (*Stream, error) {
-	dir, err := ioutil.TempDir(TempDir, "livelog")
+	dir, err := os.MkdirTemp(TempDir, "livelog")
 	if err != nil {
 		return nil, err
 	}

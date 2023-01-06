@@ -11,7 +11,9 @@ const { TestMiddleware } = require('../../src/middleware/test');
 const aws = require('./aws');
 const google = require('./google');
 
+Object.assign(exports, require('./backend-general'));
 Object.assign(exports, require('./simple-download'));
+Object.assign(exports, require('./geturl-download'));
 Object.assign(exports, require('./data-inline-upload'));
 Object.assign(exports, require('./put-url-upload'));
 

@@ -428,6 +428,13 @@
   },
   {
     "element": "h4",
+    "id": "forcing-path-style",
+    "path": "/manual/deploying/object-service",
+    "subtitle": "Forcing Path Style",
+    "title": "Object Service"
+  },
+  {
+    "element": "h4",
     "id": "google-cloud-configuration",
     "path": "/manual/deploying/object-service",
     "subtitle": "Google Cloud Configuration",
@@ -2724,9 +2731,9 @@
   },
   {
     "element": "h3",
-    "id": "httpget-download-method",
+    "id": "geturl-download-method",
     "path": "/reference/platform/object/download-methods",
-    "subtitle": "`HTTP:GET` Download Method",
+    "subtitle": "`getUrl` Download Method",
     "title": "Download Methods"
   },
   {

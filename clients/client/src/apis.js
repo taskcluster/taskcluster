@@ -1364,11 +1364,13 @@ module.exports = {
             "hookId"
           ],
           "category": "Hook Status",
-          "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not",
+          "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not\n\nBy default this endpoint will return up to 1000 most recent fires in one request.",
           "method": "get",
           "name": "listLastFires",
           "output": "v1/list-lastFires-response.json#",
           "query": [
+            "continuationToken",
+            "limit"
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
           "scopes": "hooks:list-last-fires:<hookGroupId>/<hookId>",
@@ -1920,7 +1922,7 @@ module.exports = {
             "name"
           ],
           "category": "Upload",
-          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
+          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nIt is possible to finish an upload with no hashes specified via either\n`startUpload` or `finishUpload`.  However, many clients will refuse to\ndownload an object with no hashes.  The utility methods included with the\nclient libraries always include hashes as of version 44.0.0.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
           "input": "v1/finish-upload-request.json#",
           "method": "post",
           "name": "finishUpload",

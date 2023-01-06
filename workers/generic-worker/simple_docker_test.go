@@ -13,7 +13,7 @@ import (
 // since new OS users would get created, so we limit this test to simple and
 // docker engines.
 func TestNewTaskDirectoryForEachTask(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	config.NumberOfTasksToRun = 3
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(0),

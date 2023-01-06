@@ -115,6 +115,10 @@ and reports back results to the queue.
                                             but for one-off troubleshooting, it can be useful
                                             to (temporarily) leave home directories in place.
                                             Accepted values: true or false. [default: true]
+          createObjectArtifacts             If true, use artifact type 'object' for artifacts
+                                            containing data.  If false, use artifact type 's3'.
+                                            The 'object' type will become the default when the
+                                            's3' type is deprecated.
           deploymentId                      If running with --configure-for-aws, then between
                                             tasks, at a chosen maximum frequency (see
                                             checkForNewDeploymentEverySecs property), the

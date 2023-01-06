@@ -26,7 +26,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
   }
 
   test('download docker image from registry', async () => {
-    let image = 'gliderlabs/alpine:latest';
+    let image = 'alpine:latest';
     await dockerUtils.removeImageIfExists(docker, image);
     let runtime = {
       docker: docker,

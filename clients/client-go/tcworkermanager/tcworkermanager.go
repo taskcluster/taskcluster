@@ -15,23 +15,23 @@
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // First create a WorkerManager object:
 //
-//  workerManager := tcworkermanager.New(nil)
+//	workerManager := tcworkermanager.New(nil)
 //
 // and then call one or more of workerManager's methods, e.g.:
 //
-//  err := workerManager.Ping(.....)
+//	err := workerManager.Ping(.....)
 //
 // handling any errors...
 //
-//  if err != nil {
-//  	// handle error...
-//  }
+//	if err != nil {
+//		// handle error...
+//	}
 //
-// Taskcluster Schema
+// # Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
 // <rootUrl>/references/worker-manager/v1/api.json together with the input and output schemas it references,
@@ -41,7 +41,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
 )
 
 type WorkerManager tcclient.Client
@@ -50,14 +50,14 @@ type WorkerManager tcclient.Client
 // nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  workerManager := tcworkermanager.New(
-//      nil,                                      // client without authentication
-//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
-//  )
-//  err := workerManager.Ping(.....)              // for example, call the Ping(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
+//	workerManager := tcworkermanager.New(
+//	    nil,                                      // client without authentication
+//	    "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//	)
+//	err := workerManager.Ping(.....)              // for example, call the Ping(.....) API endpoint (described further down)...
+//	if err != nil {
+//		// handle errors...
+//	}
 func New(credentials *tcclient.Credentials, rootURL string) *WorkerManager {
 	return &WorkerManager{
 		Credentials:  credentials,
@@ -76,9 +76,9 @@ func New(credentials *tcclient.Credentials, rootURL string) *WorkerManager {
 //
 // The credentials are taken from environment variables:
 //
-//  TASKCLUSTER_CLIENT_ID
-//  TASKCLUSTER_ACCESS_TOKEN
-//  TASKCLUSTER_CERTIFICATE
+//	TASKCLUSTER_CLIENT_ID
+//	TASKCLUSTER_ACCESS_TOKEN
+//	TASKCLUSTER_CERTIFICATE
 //
 // If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
 // disabled.
@@ -127,7 +127,8 @@ func (workerManager *WorkerManager) Version() error {
 // Retrieve a list of providers that are available for worker pools.
 //
 // Required scopes:
-//   worker-manager:list-providers
+//
+//	worker-manager:list-providers
 //
 // See #listProviders
 func (workerManager *WorkerManager) ListProviders(continuationToken, limit string) (*ProviderList, error) {
@@ -146,7 +147,8 @@ func (workerManager *WorkerManager) ListProviders(continuationToken, limit strin
 // Returns a signed URL for ListProviders, valid for the specified duration.
 //
 // Required scopes:
-//   worker-manager:list-providers
+//
+//	worker-manager:list-providers
 //
 // See ListProviders for more details.
 func (workerManager *WorkerManager) ListProviders_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -164,9 +166,10 @@ func (workerManager *WorkerManager) ListProviders_SignedURL(continuationToken, l
 // Create a new worker pool. If the worker pool already exists, this will throw an error.
 //
 // Required scopes:
-//   All of:
-//   * worker-manager:manage-worker-pool:<workerPoolId>
-//   * worker-manager:provider:<providerId>
+//
+//	All of:
+//	* worker-manager:manage-worker-pool:<workerPoolId>
+//	* worker-manager:provider:<providerId>
 //
 // See #createWorkerPool
 func (workerManager *WorkerManager) CreateWorkerPool(workerPoolId string, payload *WorkerPoolDefinition) (*WorkerPoolFullDefinition, error) {
@@ -186,9 +189,10 @@ func (workerManager *WorkerManager) CreateWorkerPool(workerPoolId string, payloa
 // as to set its `providerId` to a real provider.
 //
 // Required scopes:
-//   All of:
-//   * worker-manager:manage-worker-pool:<workerPoolId>
-//   * worker-manager:provider:<providerId>
+//
+//	All of:
+//	* worker-manager:manage-worker-pool:<workerPoolId>
+//	* worker-manager:provider:<providerId>
 //
 // See #updateWorkerPool
 func (workerManager *WorkerManager) UpdateWorkerPool(workerPoolId string, payload *WorkerPoolDefinition1) (*WorkerPoolFullDefinition, error) {
@@ -202,7 +206,8 @@ func (workerManager *WorkerManager) UpdateWorkerPool(workerPoolId string, payloa
 // `worker-manager:provider:null-provider`.
 //
 // Required scopes:
-//   worker-manager:manage-worker-pool:<workerPoolId>
+//
+//	worker-manager:manage-worker-pool:<workerPoolId>
 //
 // See #deleteWorkerPool
 func (workerManager *WorkerManager) DeleteWorkerPool(workerPoolId string) (*WorkerPoolFullDefinition, error) {
@@ -214,7 +219,8 @@ func (workerManager *WorkerManager) DeleteWorkerPool(workerPoolId string) (*Work
 // Fetch an existing worker pool defition.
 //
 // Required scopes:
-//   worker-manager:get-worker-pool:<workerPoolId>
+//
+//	worker-manager:get-worker-pool:<workerPoolId>
 //
 // See #workerPool
 func (workerManager *WorkerManager) WorkerPool(workerPoolId string) (*WorkerPoolFullDefinition, error) {
@@ -226,7 +232,8 @@ func (workerManager *WorkerManager) WorkerPool(workerPoolId string) (*WorkerPool
 // Returns a signed URL for WorkerPool, valid for the specified duration.
 //
 // Required scopes:
-//   worker-manager:get-worker-pool:<workerPoolId>
+//
+//	worker-manager:get-worker-pool:<workerPoolId>
 //
 // See WorkerPool for more details.
 func (workerManager *WorkerManager) WorkerPool_SignedURL(workerPoolId string, duration time.Duration) (*url.URL, error) {
@@ -237,7 +244,8 @@ func (workerManager *WorkerManager) WorkerPool_SignedURL(workerPoolId string, du
 // Get the list of all the existing worker pools.
 //
 // Required scopes:
-//   worker-manager:list-worker-pools
+//
+//	worker-manager:list-worker-pools
 //
 // See #listWorkerPools
 func (workerManager *WorkerManager) ListWorkerPools(continuationToken, limit string) (*WorkerPoolList, error) {
@@ -256,7 +264,8 @@ func (workerManager *WorkerManager) ListWorkerPools(continuationToken, limit str
 // Returns a signed URL for ListWorkerPools, valid for the specified duration.
 //
 // Required scopes:
-//   worker-manager:list-worker-pools
+//
+//	worker-manager:list-worker-pools
 //
 // See ListWorkerPools for more details.
 func (workerManager *WorkerManager) ListWorkerPools_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -282,9 +291,10 @@ func (workerManager *WorkerManager) ListWorkerPools_SignedURL(continuationToken,
 // contains secrets or other sensitive information.
 //
 // Required scopes:
-//   All of:
-//   * assume:worker-pool:<workerPoolId>
-//   * assume:worker-id:<workerGroup>/<workerId>
+//
+//	All of:
+//	* assume:worker-pool:<workerPoolId>
+//	* assume:worker-id:<workerGroup>/<workerId>
 //
 // See #reportWorkerError
 func (workerManager *WorkerManager) ReportWorkerError(workerPoolId string, payload *WorkerErrorReport) (*WorkerPoolError, error) {
@@ -296,7 +306,8 @@ func (workerManager *WorkerManager) ReportWorkerError(workerPoolId string, paylo
 // Get the list of worker pool errors.
 //
 // Required scopes:
-//   worker-manager:list-worker-pool-errors:<workerPoolId>
+//
+//	worker-manager:list-worker-pool-errors:<workerPoolId>
 //
 // See #listWorkerPoolErrors
 func (workerManager *WorkerManager) ListWorkerPoolErrors(workerPoolId, continuationToken, limit string) (*WorkerPoolErrorList, error) {
@@ -315,7 +326,8 @@ func (workerManager *WorkerManager) ListWorkerPoolErrors(workerPoolId, continuat
 // Returns a signed URL for ListWorkerPoolErrors, valid for the specified duration.
 //
 // Required scopes:
-//   worker-manager:list-worker-pool-errors:<workerPoolId>
+//
+//	worker-manager:list-worker-pool-errors:<workerPoolId>
 //
 // See ListWorkerPoolErrors for more details.
 func (workerManager *WorkerManager) ListWorkerPoolErrors_SignedURL(workerPoolId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -333,7 +345,8 @@ func (workerManager *WorkerManager) ListWorkerPoolErrors_SignedURL(workerPoolId,
 // Get the list of all the existing workers in a given group in a given worker pool.
 //
 // Required scopes:
-//   worker-manager:list-workers:<workerPoolId>/<workerGroup>
+//
+//	worker-manager:list-workers:<workerPoolId>/<workerGroup>
 //
 // See #listWorkersForWorkerGroup
 func (workerManager *WorkerManager) ListWorkersForWorkerGroup(workerPoolId, workerGroup, continuationToken, limit string) (*WorkerListInAGivenWorkerPool, error) {
@@ -352,7 +365,8 @@ func (workerManager *WorkerManager) ListWorkersForWorkerGroup(workerPoolId, work
 // Returns a signed URL for ListWorkersForWorkerGroup, valid for the specified duration.
 //
 // Required scopes:
-//   worker-manager:list-workers:<workerPoolId>/<workerGroup>
+//
+//	worker-manager:list-workers:<workerPoolId>/<workerGroup>
 //
 // See ListWorkersForWorkerGroup for more details.
 func (workerManager *WorkerManager) ListWorkersForWorkerGroup_SignedURL(workerPoolId, workerGroup, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -370,7 +384,8 @@ func (workerManager *WorkerManager) ListWorkersForWorkerGroup_SignedURL(workerPo
 // Get a single worker.
 //
 // Required scopes:
-//   worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+//	worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>
 //
 // See #worker
 func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId string) (*WorkerFullDefinition, error) {
@@ -382,7 +397,8 @@ func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId s
 // Returns a signed URL for Worker, valid for the specified duration.
 //
 // Required scopes:
-//   worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+//	worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>
 //
 // See Worker for more details.
 func (workerManager *WorkerManager) Worker_SignedURL(workerPoolId, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {
@@ -398,7 +414,8 @@ func (workerManager *WorkerManager) Worker_SignedURL(workerPoolId, workerGroup, 
 // for more information.
 //
 // Required scopes:
-//   worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+//	worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>
 //
 // See #createWorker
 func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, workerId string, payload *WorkerCreationUpdateRequest) (*WorkerFullDefinition, error) {
@@ -416,7 +433,8 @@ func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, work
 // for more information.
 //
 // Required scopes:
-//   worker-manager:update-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+//	worker-manager:update-worker:<workerPoolId>/<workerGroup>/<workerId>
 //
 // See #updateWorker
 func (workerManager *WorkerManager) UpdateWorker(workerPoolId, workerGroup, workerId string, payload *WorkerCreationUpdateRequest) (*WorkerFullDefinition, error) {
@@ -432,7 +450,8 @@ func (workerManager *WorkerManager) UpdateWorker(workerPoolId, workerGroup, work
 // the API (perhaps even in state RUNNING) afterward.
 //
 // Required scopes:
-//   worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+//	worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>
 //
 // See #removeWorker
 func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, workerId string) error {
@@ -444,7 +463,8 @@ func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, work
 // Get the list of all the existing workers in a given worker pool.
 //
 // Required scopes:
-//   worker-manager:list-workers:<workerPoolId>
+//
+//	worker-manager:list-workers:<workerPoolId>
 //
 // See #listWorkersForWorkerPool
 func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, continuationToken, limit string) (*WorkerListInAGivenWorkerPool, error) {
@@ -463,7 +483,8 @@ func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, conti
 // Returns a signed URL for ListWorkersForWorkerPool, valid for the specified duration.
 //
 // Required scopes:
-//   worker-manager:list-workers:<workerPoolId>
+//
+//	worker-manager:list-workers:<workerPoolId>
 //
 // See ListWorkersForWorkerPool for more details.
 func (workerManager *WorkerManager) ListWorkersForWorkerPool_SignedURL(workerPoolId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -501,7 +522,8 @@ func (workerManager *WorkerManager) RegisterWorker(payload *RegisterWorkerReques
 // for the worker so that worker-manager does not terminate the instance.
 //
 // Required scopes:
-//   worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>
+//
+//	worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>
 //
 // See #reregisterWorker
 func (workerManager *WorkerManager) ReregisterWorker(payload *ReregisterWorkerRequest) (*ReregisterWorkerResponse, error) {
@@ -525,7 +547,8 @@ func (workerManager *WorkerManager) ReregisterWorker(payload *ReregisterWorkerRe
 // page. You may limit this with the query-string parameter `limit`.
 //
 // Required scopes:
-//   worker-manager:list-workers:<provisionerId>/<workerType>
+//
+//	worker-manager:list-workers:<provisionerId>/<workerType>
 //
 // See #listWorkers
 func (workerManager *WorkerManager) ListWorkers(provisionerId, workerType, continuationToken, limit, quarantined, workerState string) (*ListWorkersResponse, error) {
@@ -550,7 +573,8 @@ func (workerManager *WorkerManager) ListWorkers(provisionerId, workerType, conti
 // Returns a signed URL for ListWorkers, valid for the specified duration.
 //
 // Required scopes:
-//   worker-manager:list-workers:<provisionerId>/<workerType>
+//
+//	worker-manager:list-workers:<provisionerId>/<workerType>
 //
 // See ListWorkers for more details.
 func (workerManager *WorkerManager) ListWorkers_SignedURL(provisionerId, workerType, continuationToken, limit, quarantined, workerState string, duration time.Duration) (*url.URL, error) {
@@ -576,7 +600,8 @@ func (workerManager *WorkerManager) ListWorkers_SignedURL(provisionerId, workerT
 // Get a worker from a worker-type.
 //
 // Required scopes:
-//   worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
+//
+//	worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
 //
 // See #getWorker
 func (workerManager *WorkerManager) GetWorker(provisionerId, workerType, workerGroup, workerId string) (*WorkerResponse, error) {
@@ -588,7 +613,8 @@ func (workerManager *WorkerManager) GetWorker(provisionerId, workerType, workerG
 // Returns a signed URL for GetWorker, valid for the specified duration.
 //
 // Required scopes:
-//   worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
+//
+//	worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
 //
 // See GetWorker for more details.
 func (workerManager *WorkerManager) GetWorker_SignedURL(provisionerId, workerType, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {

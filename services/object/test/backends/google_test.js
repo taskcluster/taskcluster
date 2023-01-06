@@ -4,6 +4,10 @@ const aws = require('aws-sdk');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
 const { AwsBackend } = require('../../src/backends/aws');
+const { promisify } = require('util');
+const zlib = require('zlib');
+
+const gzip = promisify(zlib.gzip);
 
 helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skipping) {
   if (mock) {
@@ -61,19 +65,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     });
   });
 
-  const makeObject = async ({ name, data }) => {
-    const projectId = 'test-proj';
+  const projectId = 'test-proj';
+
+  const makeObject = async ({ name, data, hashes, gzipped }) => {
     const expires = taskcluster.fromNow('1 hour');
     const uploadId = taskcluster.slugid();
 
-    await helper.db.fns.create_object_for_upload(name, projectId, 'google', uploadId, expires, {}, expires);
+    await helper.db.fns.create_object_for_upload(name, projectId, 'aws', uploadId, expires, {}, expires);
     const [object] = await helper.db.fns.get_object_with_upload(name);
 
+    // ignore 'gzipped' and always upload gzipped data -- GCS supports
+    // "transcoding" gzip to identity on downloda.
+    const compressedData = await gzip(data);
     await s3.putObject({
       Bucket: secret.testBucket,
       Key: name,
-      Body: data,
+      Body: compressedData,
+      ContentEncoding: "gzip",
     }).promise();
+
+    if (hashes) {
+      await helper.db.fns.add_object_hashes({ name_in: name, hashes_in: hashes });
+    }
 
     await helper.db.fns.object_upload_complete(name, uploadId);
 
@@ -119,6 +132,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     });
   });
 
+  helper.testBackend({
+    mock, skipping, prefix,
+    backendId: 'googlePublic',
+    makeObject,
+  }, async function() {
+    teardown(cleanup);
+  });
+
   helper.testSimpleDownloadMethod({
     mock, skipping, prefix,
     title: 'public bucket',
@@ -142,6 +163,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       // ..contains S3 signature query args (note that testSimpleDownloadMethod
       // will verify that the URL actually works; this just verifies that it
       // is not un-signed).
+      assert(url.match(/AccessKeyId=/), `got ${url}`);
+      assert(url.match(/Signature=/), `got ${url}`);
+    },
+  }, async function() {
+    teardown(cleanup);
+  });
+
+  helper.testGetUrlDownloadMethod({
+    mock, skipping, prefix,
+    backendId: 'googlePrivate',
+    makeObject,
+    async checkUrl({ name, url }) {
       assert(url.match(/AccessKeyId=/), `got ${url}`);
       assert(url.match(/Signature=/), `got ${url}`);
     },
