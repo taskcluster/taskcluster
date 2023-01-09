@@ -404,9 +404,6 @@ func (queue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 // number of `retries` allowed. It will schedule a task that is _unscheduled_
 // regardless of the state of its dependencies.
 //
-// This method is deprecated in favour of creating a new task with the same
-// task definition (but with a new taskId).
-//
 // Remember that `retries` in the task status counts the number of runs that
 // the queue have started because the worker stopped responding, for example
 // because a spot node died.
