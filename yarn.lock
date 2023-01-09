@@ -4357,10 +4357,10 @@ json-buffer@3.0.1, json-buffer@~3.0.1:
   resolved "https://registry.yarnpkg.com/json-buffer/-/json-buffer-3.0.1.tgz#9338802a30d3b6605fbe0613e094008ca8c05a13"
   integrity sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==
 
-json-e@^4.0.1:
-  version "4.4.3"
-  resolved "https://registry.yarnpkg.com/json-e/-/json-e-4.4.3.tgz#15fa9c6036244d7ab2a8989bcb826b9e1e691db1"
-  integrity sha512-G2tp4fkEzN6hlya4J9dNaRbIxxTW+Lqu+An40E36SNZYexIGPPuNU30VuS0eZam4AieV0R+fvRxZrVFPJEvUbA==
+json-e@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/json-e/-/json-e-4.5.0.tgz#8dc023d82e0c04cd332350e564ce1bf2fb43ee1c"
+  integrity sha512-U5WpFe9VNQjbEfQhV8ZLZZbHq4GaCIPbkyrfWtMWcszvDLqzzzfyBy5XFeP9JiVttpiLO9UHfpeFJozutBn2FQ==
   dependencies:
     json-stable-stringify-without-jsonify "^1.0.1"
 
@@ -4772,9 +4772,9 @@ lru_map@^0.3.3:
   integrity sha512-Pn9cox5CsMYngeDbmChANltQl+5pi6XmTrraMSzhPmMBbmgcxmqWry0U3PGapCU1yB4/LqCcom7qhHZiF/jGfQ==
 
 luxon@^3.1.0:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.1.1.tgz#b492c645b2474fb86f3bd3283213846b99c32c1e"
-  integrity sha512-Ah6DloGmvseB/pX1cAmjbFvyU/pKuwQMQqz7d0yvuDlVYLTs2WeDHQMpC8tGjm1da+BriHROW/OEIT/KfYg6xw==
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.2.1.tgz#14f1af209188ad61212578ea7e3d518d18cee45f"
+  integrity sha512-QrwPArQCNLAKGO/C+ZIilgIuDnEnKx5QYODdDtbFaxzsbZcc/a7WFq7MhsVYgRlwawLtvOUESTlfJ+hc/USqPg==
 
 magic-string@0.25.1:
   version "0.25.1"
