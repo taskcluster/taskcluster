@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v47.0.1
+
+### GENERAL
+
+▶ [patch]
+Reduce docker image size by ignoring .git folder.
+
 ## v47.0.0
 
 ### GENERAL
