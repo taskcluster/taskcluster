@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
-	"github.com/taskcluster/taskcluster/v46/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
+	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
 )
 
 func checkSHA256(t *testing.T, sha256Hex string, file string) {

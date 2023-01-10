@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v46/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v46/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v47/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/gwconfig"
 )
 
 type S3Artifact struct {

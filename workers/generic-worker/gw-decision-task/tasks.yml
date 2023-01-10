@@ -230,9 +230,9 @@ Commands:
             cp "${TASK_USER_CREDENTIALS}" next-task-user.json
             # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
             # otherwise tests that call `go run ....` will write go object files to .cache as root
-            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v46/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} .
+            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v47/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} .
           fi
-          GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v46/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} ./...
+          GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v47/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} ./...
 
           # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
           #   DO NOT CHANGE HERE!
@@ -304,9 +304,9 @@ Commands:
       - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
       # Run with GW_TESTS_RUN_AS_CURRENT_USER=true first, to be consistent with Linux/macOS tasks
       - set GW_TESTS_RUN_AS_CURRENT_USER=true
-      - 'go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v46/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% .'
+      - 'go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v47/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% .'
       - set GW_TESTS_RUN_AS_CURRENT_USER=
-      - 'go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v46/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...'
+      - 'go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v47/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...'
 
       ################################################################################
       # This entire section is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js to update the golangci-lint version number.
