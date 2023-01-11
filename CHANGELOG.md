@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v47.0.2
+
+### GENERAL
+
+▶ [patch]
+Small fix to dockerignore and release process.
+
 ## v47.0.1
 
 ### GENERAL
