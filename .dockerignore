@@ -1,5 +1,3 @@
-.git
-
 # build specific
 **/node_modules
 .eslintcache
