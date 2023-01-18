@@ -301,12 +301,12 @@ Mounts:
     content:
       windows:
         '386':
-          url: https://github.com/git-for-windows/git/releases/download/v2.39.0.windows.1/MinGit-2.39.0-32-bit.zip
-          sha256: ad20467cf6a4c215b2c71f9bee192fb8ea1696fa3dda8e35e89544cdabdc1c7a
+          url: https://github.com/git-for-windows/git/releases/download/v2.39.1.windows.1/MinGit-2.39.1-32-bit.zip
+          sha256: e36dc71d97359f584d25efbdabb4122fb71514bcba5a99df1b82a83cee9472e3
           format: zip
         amd64:
-          url: https://github.com/git-for-windows/git/releases/download/v2.39.0.windows.1/MinGit-2.39.0-64-bit.zip
-          sha256: ae6863d7b7641ecf73f61edadbc7d1ff8259d08eccb4b9f006bb443d90910c25
+          url: https://github.com/git-for-windows/git/releases/download/v2.39.1.windows.1/MinGit-2.39.1-64-bit.zip
+          sha256: 000649846ec6e28e8f76d4a0d02f02b3dd1ba19914385f7dead1c5cde25b3bad
           format: zip
   jq1.6:
     file: bin/jq${EXTENSION}
