@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-object",
-  "version": "47.0.2",
+  "version": "47.0.3",
   "private": true,
   "scripts": {
     "coverage": "c8 yarn test",
