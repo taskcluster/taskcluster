@@ -1,10 +1,18 @@
 use crate::util::collect_scopes;
 use anyhow::{anyhow, Context, Error};
+use base64::engine::fast_portable::{FastPortable, FastPortableConfig};
 use hmac_sha256::HMAC;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::iter::{IntoIterator, Iterator};
 use std::time::{Duration, SystemTime};
+
+/// URL_SAFE_NO_PAD encodes to a url-safe value with no padding, used for
+/// temporary credential access tokens.
+const URL_SAFE_NO_PAD: FastPortable = FastPortable::from(
+    &base64::alphabet::URL_SAFE,
+    FastPortableConfig::new().with_encode_padding(false),
+);
 
 /// Credentials represents the set of credentials required to access protected
 /// Taskcluster HTTP APIs.
@@ -39,7 +47,7 @@ pub(crate) struct Certificate {
 fn gen_temp_access_token(perm_access_token: &str, seed: &str) -> String {
     let mut hash = HMAC::new(perm_access_token.as_bytes());
     hash.update(seed.as_bytes());
-    base64::encode_config(hash.finalize(), base64::URL_SAFE_NO_PAD)
+    base64::encode_engine(hash.finalize(), &URL_SAFE_NO_PAD)
 }
 
 impl Credentials {

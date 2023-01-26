@@ -102,6 +102,10 @@ and reports back results to the queue.
                                             but for one-off troubleshooting, it can be useful
                                             to (temporarily) leave home directories in place.
                                             Accepted values: true or false. [default: true]
+          createObjectArtifacts             If true, use artifact type 'object' for artifacts
+                                            containing data.  If false, use artifact type 's3'.
+                                            The 'object' type will become the default when the
+                                            's3' type is deprecated.
           deploymentId                      If running with --configure-for-aws, then between
                                             tasks, at a chosen maximum frequency (see
                                             checkForNewDeploymentEverySecs property), the
@@ -281,8 +285,6 @@ See the [![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v42/work
 Set up to build Taskcluster in general.
 See [development process](../../dev-docs/development-process.md).
 
-* Run `go get github.com/taskcluster/livelog`
- Run `go get github.com/taskcluster/taskcluster/v30/tools/taskcluster-proxy`
 
 In the `workers/generic-worker` directory, run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
 

@@ -3,13 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
 )
 
 func TestHttpRedirects(t *testing.T) {
@@ -47,7 +47,7 @@ func TestHttpRedirects(t *testing.T) {
 
 	// it should have returned the 303 directly, along with its body
 	assert.Equal(t, 303, res.Code)
-	respBody, err := ioutil.ReadAll(res.Body)
+	respBody, err := io.ReadAll(res.Body)
 	assert.NoError(t, err)
 	assert.Equal(t, "{}\n", string(respBody))
 }
@@ -86,7 +86,7 @@ func TestNonCanonicalUrls(t *testing.T) {
 
 	// it should have returned the path with `/api` but otherwise unchanged
 	assert.Equal(t, 200, res.Code)
-	respBody, err := ioutil.ReadAll(res.Body)
+	respBody, err := io.ReadAll(res.Body)
 	assert.NoError(t, err)
 	assert.Equal(t, "/api/queue/v1/double//slash/encode1%2F/encode2%252F/encode3%25252F", string(respBody))
 }

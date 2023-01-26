@@ -55,23 +55,23 @@
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // First create a Queue object:
 //
-//  queue := tcqueue.New(nil)
+//	queue := tcqueue.New(nil)
 //
 // and then call one or more of queue's methods, e.g.:
 //
-//  err := queue.Ping(.....)
+//	err := queue.Ping(.....)
 //
 // handling any errors...
 //
-//  if err != nil {
-//  	// handle error...
-//  }
+//	if err != nil {
+//		// handle error...
+//	}
 //
-// Taskcluster Schema
+// # Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
 // <rootUrl>/references/queue/v1/api.json together with the input and output schemas it references,
@@ -81,7 +81,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
 )
 
 type Queue tcclient.Client
@@ -90,14 +90,14 @@ type Queue tcclient.Client
 // nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  queue := tcqueue.New(
-//      nil,                                      // client without authentication
-//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
-//  )
-//  err := queue.Ping(.....)                      // for example, call the Ping(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
+//	queue := tcqueue.New(
+//	    nil,                                      // client without authentication
+//	    "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//	)
+//	err := queue.Ping(.....)                      // for example, call the Ping(.....) API endpoint (described further down)...
+//	if err != nil {
+//		// handle errors...
+//	}
 func New(credentials *tcclient.Credentials, rootURL string) *Queue {
 	return &Queue{
 		Credentials:  credentials,
@@ -116,9 +116,9 @@ func New(credentials *tcclient.Credentials, rootURL string) *Queue {
 //
 // The credentials are taken from environment variables:
 //
-//  TASKCLUSTER_CLIENT_ID
-//  TASKCLUSTER_ACCESS_TOKEN
-//  TASKCLUSTER_CERTIFICATE
+//	TASKCLUSTER_CLIENT_ID
+//	TASKCLUSTER_ACCESS_TOKEN
+//	TASKCLUSTER_CERTIFICATE
 //
 // If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
 // disabled.
@@ -169,7 +169,8 @@ func (queue *Queue) Version() error {
 // not specified the queue may provide a default value.
 //
 // Required scopes:
-//   queue:get-task:<taskId>
+//
+//	queue:get-task:<taskId>
 //
 // See #task
 func (queue *Queue) Task(taskId string) (*TaskDefinitionResponse, error) {
@@ -181,7 +182,8 @@ func (queue *Queue) Task(taskId string) (*TaskDefinitionResponse, error) {
 // Returns a signed URL for Task, valid for the specified duration.
 //
 // Required scopes:
-//   queue:get-task:<taskId>
+//
+//	queue:get-task:<taskId>
 //
 // See Task for more details.
 func (queue *Queue) Task_SignedURL(taskId string, duration time.Duration) (*url.URL, error) {
@@ -192,7 +194,8 @@ func (queue *Queue) Task_SignedURL(taskId string, duration time.Duration) (*url.
 // Get task status structure from `taskId`
 //
 // Required scopes:
-//   queue:status:<taskId>
+//
+//	queue:status:<taskId>
 //
 // See #status
 func (queue *Queue) Status(taskId string) (*TaskStatusResponse, error) {
@@ -204,7 +207,8 @@ func (queue *Queue) Status(taskId string) (*TaskStatusResponse, error) {
 // Returns a signed URL for Status, valid for the specified duration.
 //
 // Required scopes:
-//   queue:status:<taskId>
+//
+//	queue:status:<taskId>
 //
 // See Status for more details.
 func (queue *Queue) Status_SignedURL(taskId string, duration time.Duration) (*url.URL, error) {
@@ -230,7 +234,8 @@ func (queue *Queue) Status_SignedURL(taskId string, duration time.Duration) (*ur
 // use the query-string option `limit` to return fewer.
 //
 // Required scopes:
-//   queue:list-task-group:<taskGroupId>
+//
+//	queue:list-task-group:<taskGroupId>
 //
 // See #listTaskGroup
 func (queue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string) (*ListTaskGroupResponse, error) {
@@ -249,7 +254,8 @@ func (queue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string) 
 // Returns a signed URL for ListTaskGroup, valid for the specified duration.
 //
 // Required scopes:
-//   queue:list-task-group:<taskGroupId>
+//
+//	queue:list-task-group:<taskGroupId>
 //
 // See ListTaskGroup for more details.
 func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -282,7 +288,8 @@ func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limi
 // use the query-string option `limit` to return fewer.
 //
 // Required scopes:
-//   queue:list-dependent-tasks:<taskId>
+//
+//	queue:list-dependent-tasks:<taskId>
 //
 // See #listDependentTasks
 func (queue *Queue) ListDependentTasks(taskId, continuationToken, limit string) (*ListDependentTasksResponse, error) {
@@ -301,7 +308,8 @@ func (queue *Queue) ListDependentTasks(taskId, continuationToken, limit string) 
 // Returns a signed URL for ListDependentTasks, valid for the specified duration.
 //
 // Required scopes:
-//   queue:list-dependent-tasks:<taskId>
+//
+//	queue:list-dependent-tasks:<taskId>
 //
 // See ListDependentTasks for more details.
 func (queue *Queue) ListDependentTasks_SignedURL(taskId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -344,12 +352,13 @@ func (queue *Queue) ListDependentTasks_SignedURL(taskId, continuationToken, limi
 // `provisionerId`, and `workerType` properties of the task definition.
 //
 // Required scopes:
-//   All of:
-//   * For scope in scopes each <scope>
-//   * For route in routes each queue:route:<route>
-//   * queue:create-task:project:<projectId>
-//   * queue:scheduler-id:<schedulerId>
-//   * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
+//
+//	All of:
+//	* For scope in scopes each <scope>
+//	* For route in routes each queue:route:<route>
+//	* queue:create-task:project:<projectId>
+//	* queue:scheduler-id:<schedulerId>
+//	* For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
 //
 // See #createTask
 func (queue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, error) {
@@ -374,12 +383,13 @@ func (queue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*
 // To reschedule a task previously resolved, use `rerunTask`.
 //
 // Required scopes:
-//   Any of:
-//   - queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>
-//   - queue:schedule-task-in-project:<projectId>
-//   - All of:
-//     * queue:schedule-task
-//     * assume:scheduler-id:<schedulerId>/<taskGroupId>
+//
+//	Any of:
+//	- queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>
+//	- queue:schedule-task-in-project:<projectId>
+//	- All of:
+//	  * queue:schedule-task
+//	  * assume:scheduler-id:<schedulerId>/<taskGroupId>
 //
 // See #scheduleTask
 func (queue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
@@ -394,9 +404,6 @@ func (queue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 // number of `retries` allowed. It will schedule a task that is _unscheduled_
 // regardless of the state of its dependencies.
 //
-// This method is deprecated in favour of creating a new task with the same
-// task definition (but with a new taskId).
-//
 // Remember that `retries` in the task status counts the number of runs that
 // the queue have started because the worker stopped responding, for example
 // because a spot node died.
@@ -405,12 +412,13 @@ func (queue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 // is `pending` or `running`, it will just return the current task status.
 //
 // Required scopes:
-//   Any of:
-//   - queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>
-//   - queue:rerun-task-in-project:<projectId>
-//   - All of:
-//     * queue:rerun-task
-//     * assume:scheduler-id:<schedulerId>/<taskGroupId>
+//
+//	Any of:
+//	- queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>
+//	- queue:rerun-task-in-project:<projectId>
+//	- All of:
+//	  * queue:rerun-task
+//	  * assume:scheduler-id:<schedulerId>/<taskGroupId>
 //
 // See #rerunTask
 func (queue *Queue) RerunTask(taskId string) (*TaskStatusResponse, error) {
@@ -433,12 +441,13 @@ func (queue *Queue) RerunTask(taskId string) (*TaskStatusResponse, error) {
 // return the current task status.
 //
 // Required scopes:
-//   Any of:
-//   - queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>
-//   - queue:cancel-task-in-project:<projectId>
-//   - All of:
-//     * queue:cancel-task
-//     * assume:scheduler-id:<schedulerId>/<taskGroupId>
+//
+//	Any of:
+//	- queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>
+//	- queue:cancel-task-in-project:<projectId>
+//	- All of:
+//	  * queue:cancel-task
+//	  * assume:scheduler-id:<schedulerId>/<taskGroupId>
 //
 // See #cancelTask
 func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
@@ -457,9 +466,10 @@ func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 // simple implementation of "long polling".
 //
 // Required scopes:
-//   All of:
-//   * queue:claim-work:<taskQueueId>
-//   * queue:worker-id:<workerGroup>/<workerId>
+//
+//	All of:
+//	* queue:claim-work:<taskQueueId>
+//	* queue:worker-id:<workerGroup>/<workerId>
 //
 // See #claimWork
 func (queue *Queue) ClaimWork(taskQueueId string, payload *ClaimWorkRequest) (*ClaimWorkResponse, error) {
@@ -473,9 +483,10 @@ func (queue *Queue) ClaimWork(taskQueueId string, payload *ClaimWorkRequest) (*C
 // claim a task - never documented
 //
 // Required scopes:
-//   All of:
-//   * queue:claim-task:<provisionerId>/<workerType>
-//   * queue:worker-id:<workerGroup>/<workerId>
+//
+//	All of:
+//	* queue:claim-task:<provisionerId>/<workerType>
+//	* queue:worker-id:<workerGroup>/<workerId>
 //
 // See #claimTask
 func (queue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, error) {
@@ -490,10 +501,10 @@ func (queue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (
 // be used in-place of the credentials returned by `claimWork`.
 //
 // The `reclaimTask` requests serves to:
-//  * Postpone `takenUntil` preventing the queue from resolving
-//    `claim-expired`,
-//  * Refresh temporary credentials used for processing the task, and
-//  * Abort execution if the task/run have been resolved.
+//   - Postpone `takenUntil` preventing the queue from resolving
+//     `claim-expired`,
+//   - Refresh temporary credentials used for processing the task, and
+//   - Abort execution if the task/run have been resolved.
 //
 // If the `takenUntil` timestamp is exceeded the queue will resolve the run
 // as _exception_ with reason `claim-expired`, and proceeded to retry to the
@@ -507,7 +518,8 @@ func (queue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (
 // need to resolve the run or upload artifacts.
 //
 // Required scopes:
-//   queue:reclaim-task:<taskId>/<runId>
+//
+//	queue:reclaim-task:<taskId>/<runId>
 //
 // See #reclaimTask
 func (queue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, error) {
@@ -519,7 +531,8 @@ func (queue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, err
 // Report a task completed, resolving the run as `completed`.
 //
 // Required scopes:
-//   queue:resolve-task:<taskId>/<runId>
+//
+//	queue:resolve-task:<taskId>/<runId>
 //
 // See #reportCompleted
 func (queue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse, error) {
@@ -537,7 +550,8 @@ func (queue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse, 
 // exception, which should be reported with `reportException`.
 //
 // Required scopes:
-//   queue:resolve-task:<taskId>/<runId>
+//
+//	queue:resolve-task:<taskId>/<runId>
 //
 // See #reportFailed
 func (queue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, error) {
@@ -549,19 +563,20 @@ func (queue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, err
 // Resolve a run as _exception_. Generally, you will want to report tasks as
 // failed instead of exception. You should `reportException` if,
 //
-//   * The `task.payload` is invalid,
-//   * Non-existent resources are referenced,
-//   * Declared actions cannot be executed due to unavailable resources,
-//   * The worker had to shutdown prematurely,
-//   * The worker experienced an unknown error, or,
-//   * The task explicitly requested a retry.
+//   - The `task.payload` is invalid,
+//   - Non-existent resources are referenced,
+//   - Declared actions cannot be executed due to unavailable resources,
+//   - The worker had to shutdown prematurely,
+//   - The worker experienced an unknown error, or,
+//   - The task explicitly requested a retry.
 //
 // Do not use this to signal that some user-specified code crashed for any
 // reason specific to this code. If user-specific code hits a resource that
 // is temporarily unavailable worker should report task _failed_.
 //
 // Required scopes:
-//   queue:resolve-task:<taskId>/<runId>
+//
+//	queue:resolve-task:<taskId>/<runId>
 //
 // See #reportException
 func (queue *Queue) ReportException(taskId, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, error) {
@@ -581,7 +596,8 @@ func (queue *Queue) ReportException(taskId, runId string, payload *TaskException
 // artifacts can be set to expire a few days later.
 //
 // Required scopes:
-//   queue:create-artifact:<taskId>/<runId>
+//
+//	queue:create-artifact:<taskId>/<runId>
 //
 // See #createArtifact
 func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArtifactRequest) (*PostArtifactResponse, error) {
@@ -600,7 +616,8 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArti
 // (400).
 //
 // Required scopes:
-//   queue:create-artifact:<taskId>/<runId>
+//
+//	queue:create-artifact:<taskId>/<runId>
 //
 // See #finishArtifact
 func (queue *Queue) FinishArtifact(taskId, runId, name string, payload *FinishArtifactRequest) error {
@@ -659,7 +676,8 @@ func (queue *Queue) FinishArtifact(taskId, runId, name string, payload *FinishAr
 // * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
 //
 // Required scopes:
-//   For name in names each queue:get-artifact:<name>
+//
+//	For name in names each queue:get-artifact:<name>
 //
 // See #getArtifact
 func (queue *Queue) GetArtifact(taskId, runId, name string) (*GetArtifactResponse, error) {
@@ -671,7 +689,8 @@ func (queue *Queue) GetArtifact(taskId, runId, name string) (*GetArtifactRespons
 // Returns a signed URL for GetArtifact, valid for the specified duration.
 //
 // Required scopes:
-//   For name in names each queue:get-artifact:<name>
+//
+//	For name in names each queue:get-artifact:<name>
 //
 // See GetArtifact for more details.
 func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
@@ -698,7 +717,8 @@ func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration t
 // the latest run. Otherwise, just us the most convenient API end-point.
 //
 // Required scopes:
-//   For name in names each queue:get-artifact:<name>
+//
+//	For name in names each queue:get-artifact:<name>
 //
 // See #getLatestArtifact
 func (queue *Queue) GetLatestArtifact(taskId, name string) (*GetArtifactResponse, error) {
@@ -710,7 +730,8 @@ func (queue *Queue) GetLatestArtifact(taskId, name string) (*GetArtifactResponse
 // Returns a signed URL for GetLatestArtifact, valid for the specified duration.
 //
 // Required scopes:
-//   For name in names each queue:get-artifact:<name>
+//
+//	For name in names each queue:get-artifact:<name>
 //
 // See GetLatestArtifact for more details.
 func (queue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
@@ -729,7 +750,8 @@ func (queue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration ti
 // you may limit this with the query-string parameter `limit`.
 //
 // Required scopes:
-//   queue:list-artifacts:<taskId>:<runId>
+//
+//	queue:list-artifacts:<taskId>:<runId>
 //
 // See #listArtifacts
 func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string) (*ListArtifactsResponse, error) {
@@ -748,7 +770,8 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 // Returns a signed URL for ListArtifacts, valid for the specified duration.
 //
 // Required scopes:
-//   queue:list-artifacts:<taskId>:<runId>
+//
+//	queue:list-artifacts:<taskId>:<runId>
 //
 // See ListArtifacts for more details.
 func (queue *Queue) ListArtifacts_SignedURL(taskId, runId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -775,7 +798,8 @@ func (queue *Queue) ListArtifacts_SignedURL(taskId, runId, continuationToken, li
 // you may limit this with the query-string parameter `limit`.
 //
 // Required scopes:
-//   queue:list-artifacts:<taskId>
+//
+//	queue:list-artifacts:<taskId>
 //
 // See #listLatestArtifacts
 func (queue *Queue) ListLatestArtifacts(taskId, continuationToken, limit string) (*ListArtifactsResponse, error) {
@@ -794,7 +818,8 @@ func (queue *Queue) ListLatestArtifacts(taskId, continuationToken, limit string)
 // Returns a signed URL for ListLatestArtifacts, valid for the specified duration.
 //
 // Required scopes:
-//   queue:list-artifacts:<taskId>
+//
+//	queue:list-artifacts:<taskId>
 //
 // See ListLatestArtifacts for more details.
 func (queue *Queue) ListLatestArtifacts_SignedURL(taskId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -816,7 +841,8 @@ func (queue *Queue) ListLatestArtifacts_SignedURL(taskId, continuationToken, lim
 // Note that this method does *not* automatically follow link artifacts.
 //
 // Required scopes:
-//   queue:list-artifacts:<taskId>:<runId>
+//
+//	queue:list-artifacts:<taskId>:<runId>
 //
 // See #artifactInfo
 func (queue *Queue) ArtifactInfo(taskId, runId, name string) (*Artifact, error) {
@@ -828,7 +854,8 @@ func (queue *Queue) ArtifactInfo(taskId, runId, name string) (*Artifact, error) 
 // Returns a signed URL for ArtifactInfo, valid for the specified duration.
 //
 // Required scopes:
-//   queue:list-artifacts:<taskId>:<runId>
+//
+//	queue:list-artifacts:<taskId>:<runId>
 //
 // See ArtifactInfo for more details.
 func (queue *Queue) ArtifactInfo_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
@@ -843,7 +870,8 @@ func (queue *Queue) ArtifactInfo_SignedURL(taskId, runId, name string, duration 
 // Note that this method does *not* automatically follow link artifacts.
 //
 // Required scopes:
-//   queue:list-artifacts:<taskId>
+//
+//	queue:list-artifacts:<taskId>
 //
 // See #latestArtifactInfo
 func (queue *Queue) LatestArtifactInfo(taskId, name string) (*Artifact, error) {
@@ -855,7 +883,8 @@ func (queue *Queue) LatestArtifactInfo(taskId, name string) (*Artifact, error) {
 // Returns a signed URL for LatestArtifactInfo, valid for the specified duration.
 //
 // Required scopes:
-//   queue:list-artifacts:<taskId>
+//
+//	queue:list-artifacts:<taskId>
 //
 // See LatestArtifactInfo for more details.
 func (queue *Queue) LatestArtifactInfo_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
@@ -872,7 +901,8 @@ func (queue *Queue) LatestArtifactInfo_SignedURL(taskId, name string, duration t
 // for a link artifact.
 //
 // Required scopes:
-//   For name in names each queue:get-artifact:<name>
+//
+//	For name in names each queue:get-artifact:<name>
 //
 // See #artifact
 func (queue *Queue) Artifact(taskId, runId, name string) (*GetArtifactContentResponse, error) {
@@ -884,7 +914,8 @@ func (queue *Queue) Artifact(taskId, runId, name string) (*GetArtifactContentRes
 // Returns a signed URL for Artifact, valid for the specified duration.
 //
 // Required scopes:
-//   For name in names each queue:get-artifact:<name>
+//
+//	For name in names each queue:get-artifact:<name>
 //
 // See Artifact for more details.
 func (queue *Queue) Artifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
@@ -901,7 +932,8 @@ func (queue *Queue) Artifact_SignedURL(taskId, runId, name string, duration time
 // for a link artifact.
 //
 // Required scopes:
-//   For name in names each queue:get-artifact:<name>
+//
+//	For name in names each queue:get-artifact:<name>
 //
 // See #latestArtifact
 func (queue *Queue) LatestArtifact(taskId, name string) (*GetArtifactContentResponse, error) {
@@ -913,7 +945,8 @@ func (queue *Queue) LatestArtifact(taskId, name string) (*GetArtifactContentResp
 // Returns a signed URL for LatestArtifact, valid for the specified duration.
 //
 // Required scopes:
-//   For name in names each queue:get-artifact:<name>
+//
+//	For name in names each queue:get-artifact:<name>
 //
 // See LatestArtifact for more details.
 func (queue *Queue) LatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
@@ -935,7 +968,8 @@ func (queue *Queue) LatestArtifact_SignedURL(taskId, name string, duration time.
 // page. You may limit this with the query-string parameter `limit`.
 //
 // Required scopes:
-//   queue:list-provisioners
+//
+//	queue:list-provisioners
 //
 // See #listProvisioners
 func (queue *Queue) ListProvisioners(continuationToken, limit string) (*ListProvisionersResponse, error) {
@@ -954,7 +988,8 @@ func (queue *Queue) ListProvisioners(continuationToken, limit string) (*ListProv
 // Returns a signed URL for ListProvisioners, valid for the specified duration.
 //
 // Required scopes:
-//   queue:list-provisioners
+//
+//	queue:list-provisioners
 //
 // See ListProvisioners for more details.
 func (queue *Queue) ListProvisioners_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -978,7 +1013,8 @@ func (queue *Queue) ListProvisioners_SignedURL(continuationToken, limit string, 
 // provisioning activity.
 //
 // Required scopes:
-//   queue:get-provisioner:<provisionerId>
+//
+//	queue:get-provisioner:<provisionerId>
 //
 // See #getProvisioner
 func (queue *Queue) GetProvisioner(provisionerId string) (*ProvisionerResponse, error) {
@@ -990,7 +1026,8 @@ func (queue *Queue) GetProvisioner(provisionerId string) (*ProvisionerResponse, 
 // Returns a signed URL for GetProvisioner, valid for the specified duration.
 //
 // Required scopes:
-//   queue:get-provisioner:<provisionerId>
+//
+//	queue:get-provisioner:<provisionerId>
 //
 // See GetProvisioner for more details.
 func (queue *Queue) GetProvisioner_SignedURL(provisionerId string, duration time.Duration) (*url.URL, error) {
@@ -1012,7 +1049,8 @@ func (queue *Queue) GetProvisioner_SignedURL(provisionerId string, duration time
 // provisioning activity.
 //
 // Required scopes:
-//   For property in properties each queue:declare-provisioner:<provisionerId>#<property>
+//
+//	For property in properties each queue:declare-provisioner:<provisionerId>#<property>
 //
 // See #declareProvisioner
 func (queue *Queue) DeclareProvisioner(provisionerId string, payload *ProvisionerRequest) (*ProvisionerResponse, error) {
@@ -1029,7 +1067,8 @@ func (queue *Queue) DeclareProvisioner(provisionerId string, payload *Provisione
 // It is, however, a solid estimate of the number of pending tasks.
 //
 // Required scopes:
-//   queue:pending-count:<taskQueueId>
+//
+//	queue:pending-count:<taskQueueId>
 //
 // See #pendingTasks
 func (queue *Queue) PendingTasks(taskQueueId string) (*CountPendingTasksResponse, error) {
@@ -1041,7 +1080,8 @@ func (queue *Queue) PendingTasks(taskQueueId string) (*CountPendingTasksResponse
 // Returns a signed URL for PendingTasks, valid for the specified duration.
 //
 // Required scopes:
-//   queue:pending-count:<taskQueueId>
+//
+//	queue:pending-count:<taskQueueId>
 //
 // See PendingTasks for more details.
 func (queue *Queue) PendingTasks_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
@@ -1059,7 +1099,8 @@ func (queue *Queue) PendingTasks_SignedURL(taskQueueId string, duration time.Dur
 // page. You may limit this with the query-string parameter `limit`.
 //
 // Required scopes:
-//   queue:list-worker-types:<provisionerId>
+//
+//	queue:list-worker-types:<provisionerId>
 //
 // See #listWorkerTypes
 func (queue *Queue) ListWorkerTypes(provisionerId, continuationToken, limit string) (*ListWorkerTypesResponse, error) {
@@ -1078,7 +1119,8 @@ func (queue *Queue) ListWorkerTypes(provisionerId, continuationToken, limit stri
 // Returns a signed URL for ListWorkerTypes, valid for the specified duration.
 //
 // Required scopes:
-//   queue:list-worker-types:<provisionerId>
+//
+//	queue:list-worker-types:<provisionerId>
 //
 // See ListWorkerTypes for more details.
 func (queue *Queue) ListWorkerTypes_SignedURL(provisionerId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -1098,7 +1140,8 @@ func (queue *Queue) ListWorkerTypes_SignedURL(provisionerId, continuationToken, 
 // Get a worker-type from a provisioner.
 //
 // Required scopes:
-//   queue:get-worker-type:<provisionerId>/<workerType>
+//
+//	queue:get-worker-type:<provisionerId>/<workerType>
 //
 // See #getWorkerType
 func (queue *Queue) GetWorkerType(provisionerId, workerType string) (*WorkerTypeResponse, error) {
@@ -1110,7 +1153,8 @@ func (queue *Queue) GetWorkerType(provisionerId, workerType string) (*WorkerType
 // Returns a signed URL for GetWorkerType, valid for the specified duration.
 //
 // Required scopes:
-//   queue:get-worker-type:<provisionerId>/<workerType>
+//
+//	queue:get-worker-type:<provisionerId>/<workerType>
 //
 // See GetWorkerType for more details.
 func (queue *Queue) GetWorkerType_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
@@ -1128,7 +1172,8 @@ func (queue *Queue) GetWorkerType_SignedURL(provisionerId, workerType string, du
 // `queue:declare-worker-type:my-provisioner/highmem#description`.
 //
 // Required scopes:
-//   For property in properties each queue:declare-worker-type:<provisionerId>/<workerType>#<property>
+//
+//	For property in properties each queue:declare-worker-type:<provisionerId>/<workerType>#<property>
 //
 // See #declareWorkerType
 func (queue *Queue) DeclareWorkerType(provisionerId, workerType string, payload *WorkerTypeRequest) (*WorkerTypeResponse, error) {
@@ -1145,7 +1190,8 @@ func (queue *Queue) DeclareWorkerType(provisionerId, workerType string, payload 
 // page. You may limit this with the query-string parameter `limit`.
 //
 // Required scopes:
-//   queue:list-task-queues
+//
+//	queue:list-task-queues
 //
 // See #listTaskQueues
 func (queue *Queue) ListTaskQueues(continuationToken, limit string) (*ListTaskQueuesResponse, error) {
@@ -1164,7 +1210,8 @@ func (queue *Queue) ListTaskQueues(continuationToken, limit string) (*ListTaskQu
 // Returns a signed URL for ListTaskQueues, valid for the specified duration.
 //
 // Required scopes:
-//   queue:list-task-queues
+//
+//	queue:list-task-queues
 //
 // See ListTaskQueues for more details.
 func (queue *Queue) ListTaskQueues_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -1182,7 +1229,8 @@ func (queue *Queue) ListTaskQueues_SignedURL(continuationToken, limit string, du
 // Get a task queue.
 //
 // Required scopes:
-//   queue:get-task-queue:<taskQueueId>
+//
+//	queue:get-task-queue:<taskQueueId>
 //
 // See #getTaskQueue
 func (queue *Queue) GetTaskQueue(taskQueueId string) (*TaskQueueResponse, error) {
@@ -1194,7 +1242,8 @@ func (queue *Queue) GetTaskQueue(taskQueueId string) (*TaskQueueResponse, error)
 // Returns a signed URL for GetTaskQueue, valid for the specified duration.
 //
 // Required scopes:
-//   queue:get-task-queue:<taskQueueId>
+//
+//	queue:get-task-queue:<taskQueueId>
 //
 // See GetTaskQueue for more details.
 func (queue *Queue) GetTaskQueue_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
@@ -1216,7 +1265,8 @@ func (queue *Queue) GetTaskQueue_SignedURL(taskQueueId string, duration time.Dur
 // page. You may limit this with the query-string parameter `limit`.
 //
 // Required scopes:
-//   queue:list-workers:<provisionerId>/<workerType>
+//
+//	queue:list-workers:<provisionerId>/<workerType>
 //
 // See #listWorkers
 func (queue *Queue) ListWorkers(provisionerId, workerType, continuationToken, limit, quarantined string) (*ListWorkersResponse, error) {
@@ -1238,7 +1288,8 @@ func (queue *Queue) ListWorkers(provisionerId, workerType, continuationToken, li
 // Returns a signed URL for ListWorkers, valid for the specified duration.
 //
 // Required scopes:
-//   queue:list-workers:<provisionerId>/<workerType>
+//
+//	queue:list-workers:<provisionerId>/<workerType>
 //
 // See ListWorkers for more details.
 func (queue *Queue) ListWorkers_SignedURL(provisionerId, workerType, continuationToken, limit, quarantined string, duration time.Duration) (*url.URL, error) {
@@ -1261,7 +1312,8 @@ func (queue *Queue) ListWorkers_SignedURL(provisionerId, workerType, continuatio
 // Get a worker from a worker-type.
 //
 // Required scopes:
-//   queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
+//
+//	queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
 //
 // See #getWorker
 func (queue *Queue) GetWorker(provisionerId, workerType, workerGroup, workerId string) (*WorkerResponse, error) {
@@ -1273,7 +1325,8 @@ func (queue *Queue) GetWorker(provisionerId, workerType, workerGroup, workerId s
 // Returns a signed URL for GetWorker, valid for the specified duration.
 //
 // Required scopes:
-//   queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
+//
+//	queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
 //
 // See GetWorker for more details.
 func (queue *Queue) GetWorker_SignedURL(provisionerId, workerType, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {
@@ -1283,10 +1336,11 @@ func (queue *Queue) GetWorker_SignedURL(provisionerId, workerType, workerGroup, 
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Quarantine a worker
+// # Quarantine a worker
 //
 // Required scopes:
-//   queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
+//
+//	queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
 //
 // See #quarantineWorker
 func (queue *Queue) QuarantineWorker(provisionerId, workerType, workerGroup, workerId string, payload *QuarantineWorkerRequest) (*WorkerResponse, error) {
@@ -1303,7 +1357,8 @@ func (queue *Queue) QuarantineWorker(provisionerId, workerType, workerGroup, wor
 // possessed.
 //
 // Required scopes:
-//   For property in properties each queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>
+//
+//	For property in properties each queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>
 //
 // See #declareWorker
 func (queue *Queue) DeclareWorker(provisionerId, workerType, workerGroup, workerId string, payload *WorkerRequest) (*WorkerResponse, error) {

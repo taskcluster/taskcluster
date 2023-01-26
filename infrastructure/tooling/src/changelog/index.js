@@ -245,6 +245,8 @@ const check_pr = async (pr) => {
   const boringFiles = [
     /yarn\.lock$/,
     /package\.json$/,
+    /requirements\.txt$/,
+    /Cargo\.(lock|toml)$/,
     /^go\.(mod|sum)$/,
     /^\.yarn$/,
     /^README.md$/,

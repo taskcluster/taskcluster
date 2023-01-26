@@ -1,6 +1,6 @@
 [package]
 name = "taskcluster"
-version = "44.23.0"
+version = "47.0.3"
 authors = ["Wander Lairson Costa <wander.lairson@gmail.com>"]
 edition = "2018"
 license = "MPL-2.0"
@@ -10,14 +10,14 @@ repository = "https://github.com/taskcluster/taskcluster"
 [dependencies]
 anyhow = "1.0"
 reqwest = { version = "0.11", features = ["json"] }
-serde = { version = "1.0.104", features = ["derive"] }
-serde_json = "1.0.48"
-base64 = "0.13.0"
+serde = { version = "1.0.152", features = ["derive"] }
+serde_json = "1.0.91"
+base64 = "0.20.0"
 hawk = "4.0.0"
 backoff = "0.4.0"
 slugid = "1.0.0"
 percent-encoding = "2.1.0"
-tokio = { version = "1.2", features = ["macros", "time"] }
+tokio = { version = "1.23", features = ["macros", "time"] }
 chrono = { version = "0.4.11", features = ["serde"] }
 hmac-sha256 = "1.1.3"
 

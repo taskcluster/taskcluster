@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -18,7 +18,7 @@ func TestWrongAccessToken(t *testing.T) {
 	client := http.Client{}
 
 	// write something to start the GET server..
-	body := ioutil.NopCloser(strings.NewReader("hi"))
+	body := io.NopCloser(strings.NewReader("hi"))
 	req, err := http.NewRequest("PUT", fmt.Sprintf("http://127.0.0.1:%d/log", ts.PutPort()), body)
 	require.NoError(t, err)
 	res, err := client.Do(req)

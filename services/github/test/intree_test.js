@@ -233,7 +233,7 @@ suite(testing.suiteName(), function() {
       'tasks[0].task.extra.github.events': ['release'],
       'metadata.owner': 'test@test.com',
       scopes: [
-        'assume:repo:github.com/testorg/testrepo:release',
+        'assume:repo:github.com/testorg/testrepo:release:published',
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
@@ -249,7 +249,7 @@ suite(testing.suiteName(), function() {
       'tasks[0].task.extra.github.events': ['release'],
       'metadata.owner': 'test@test.com',
       scopes: [
-        'assume:repo:github.com/testorg/testrepo:release',
+        'assume:repo:github.com/testorg/testrepo:release:published',
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
@@ -454,7 +454,7 @@ suite(testing.suiteName(), function() {
       'tasks[0].task.metadata.owner': 'test@test.com',
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
       scopes: [
-        'assume:repo:github.com/testorg/testrepo:release',
+        'assume:repo:github.com/testorg/testrepo:release:published',
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
@@ -475,7 +475,7 @@ suite(testing.suiteName(), function() {
       'tasks[0].task.metadata.owner': 'test@test.com',
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
       scopes: [
-        'assume:repo:github.com/testorg/testrepo:release',
+        'assume:repo:github.com/testorg/testrepo:release:published',
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],

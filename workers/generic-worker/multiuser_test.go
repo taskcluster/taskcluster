@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/gwconfig"
 )
 
 // grantingDenying returns regexp strings that match the log lines for granting
@@ -42,7 +42,7 @@ func setConfigRunTasksAsCurrentUser(conf *gwconfig.Config) {
 
 // TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency
 func TestWhoAmI(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	payload := GenericWorkerPayload{
 		Command:    goRun("whoami.go", strconv.FormatBool(config.RunTasksAsCurrentUser)),

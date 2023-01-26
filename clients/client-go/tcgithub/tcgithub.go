@@ -18,23 +18,23 @@
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // First create a Github object:
 //
-//  github := tcgithub.New(nil)
+//	github := tcgithub.New(nil)
 //
 // and then call one or more of github's methods, e.g.:
 //
-//  err := github.Ping(.....)
+//	err := github.Ping(.....)
 //
 // handling any errors...
 //
-//  if err != nil {
-//  	// handle error...
-//  }
+//	if err != nil {
+//		// handle error...
+//	}
 //
-// Taskcluster Schema
+// # Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
 // <rootUrl>/references/github/v1/api.json together with the input and output schemas it references,
@@ -44,7 +44,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
 )
 
 type Github tcclient.Client
@@ -53,14 +53,14 @@ type Github tcclient.Client
 // nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  github := tcgithub.New(
-//      nil,                                      // client without authentication
-//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
-//  )
-//  err := github.Ping(.....)                     // for example, call the Ping(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
+//	github := tcgithub.New(
+//	    nil,                                      // client without authentication
+//	    "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//	)
+//	err := github.Ping(.....)                     // for example, call the Ping(.....) API endpoint (described further down)...
+//	if err != nil {
+//		// handle errors...
+//	}
 func New(credentials *tcclient.Credentials, rootURL string) *Github {
 	return &Github{
 		Credentials:  credentials,
@@ -79,9 +79,9 @@ func New(credentials *tcclient.Credentials, rootURL string) *Github {
 //
 // The credentials are taken from environment variables:
 //
-//  TASKCLUSTER_CLIENT_ID
-//  TASKCLUSTER_ACCESS_TOKEN
-//  TASKCLUSTER_CERTIFICATE
+//	TASKCLUSTER_CLIENT_ID
+//	TASKCLUSTER_ACCESS_TOKEN
+//	TASKCLUSTER_CERTIFICATE
 //
 // If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
 // disabled.
@@ -142,7 +142,8 @@ func (github *Github) GithubWebHookConsumer() error {
 // fields.
 //
 // Required scopes:
-//   github:list-builds
+//
+//	github:list-builds
 //
 // See #builds
 func (github *Github) Builds(continuationToken, limit, organization, repository, sha string) (*BuildsResponse, error) {
@@ -170,7 +171,8 @@ func (github *Github) Builds(continuationToken, limit, organization, repository,
 // Returns a signed URL for Builds, valid for the specified duration.
 //
 // Required scopes:
-//   github:list-builds
+//
+//	github:list-builds
 //
 // See Builds for more details.
 func (github *Github) Builds_SignedURL(continuationToken, limit, organization, repository, sha string, duration time.Duration) (*url.URL, error) {
@@ -200,7 +202,8 @@ func (github *Github) Builds_SignedURL(continuationToken, limit, organization, r
 // and returns corresponding badge svg.
 //
 // Required scopes:
-//   github:get-badge:<owner>:<repo>:<branch>
+//
+//	github:get-badge:<owner>:<repo>:<branch>
 //
 // See #badge
 func (github *Github) Badge(owner, repo, branch string) error {
@@ -212,7 +215,8 @@ func (github *Github) Badge(owner, repo, branch string) error {
 // Returns a signed URL for Badge, valid for the specified duration.
 //
 // Required scopes:
-//   github:get-badge:<owner>:<repo>:<branch>
+//
+//	github:get-badge:<owner>:<repo>:<branch>
 //
 // See Badge for more details.
 func (github *Github) Badge_SignedURL(owner, repo, branch string, duration time.Duration) (*url.URL, error) {
@@ -226,7 +230,8 @@ func (github *Github) Badge_SignedURL(owner, repo, branch string, duration time.
 // useful within Taskcluster related services.
 //
 // Required scopes:
-//   github:get-repository:<owner>:<repo>
+//
+//	github:get-repository:<owner>:<repo>
 //
 // See #repository
 func (github *Github) Repository(owner, repo string) (*RepositoryResponse, error) {
@@ -238,7 +243,8 @@ func (github *Github) Repository(owner, repo string) (*RepositoryResponse, error
 // Returns a signed URL for Repository, valid for the specified duration.
 //
 // Required scopes:
-//   github:get-repository:<owner>:<repo>
+//
+//	github:get-repository:<owner>:<repo>
 //
 // See Repository for more details.
 func (github *Github) Repository_SignedURL(owner, repo string, duration time.Duration) (*url.URL, error) {
@@ -253,7 +259,8 @@ func (github *Github) Repository_SignedURL(owner, repo string, duration time.Dur
 // Note: This is a redirect rather than a direct link.
 //
 // Required scopes:
-//   github:latest-status:<owner>:<repo>:<branch>
+//
+//	github:latest-status:<owner>:<repo>:<branch>
 //
 // See #latest
 func (github *Github) Latest(owner, repo, branch string) error {
@@ -265,7 +272,8 @@ func (github *Github) Latest(owner, repo, branch string) error {
 // Returns a signed URL for Latest, valid for the specified duration.
 //
 // Required scopes:
-//   github:latest-status:<owner>:<repo>:<branch>
+//
+//	github:latest-status:<owner>:<repo>:<branch>
 //
 // See Latest for more details.
 func (github *Github) Latest_SignedURL(owner, repo, branch string, duration time.Duration) (*url.URL, error) {
@@ -281,7 +289,8 @@ func (github *Github) Latest_SignedURL(owner, repo, branch string, duration time
 // made of a custom title and link.
 //
 // Required scopes:
-//   github:create-status:<owner>/<repo>
+//
+//	github:create-status:<owner>/<repo>
 //
 // See #createStatus
 func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatusRequest) error {
@@ -293,7 +302,8 @@ func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatu
 // For a given Issue or Pull Request of a repository, this will write a new message.
 //
 // Required scopes:
-//   github:create-comment:<owner>/<repo>
+//
+//	github:create-comment:<owner>/<repo>
 //
 // See #createComment
 func (github *Github) CreateComment(owner, repo, number string, payload *CreateCommentRequest) error {

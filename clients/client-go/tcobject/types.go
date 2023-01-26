@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
 )
 
 type (
@@ -19,12 +19,31 @@ type (
 		Expires tcclient.Time `json:"expires"`
 
 		// Hashes of the content of this object.  These values will be verified by
-		// well-behaved downloaders.  The format is `{alogrithm: value}`.  Multiple
-		// calls to `createUpload` for the same object can specify additional hashes,
-		// but existing hashes cannot be changed; this allows "amending" an upload
-		// with hashes after the data has been transferred, for example.  Omitting
-		// this property is the same as specifying `hashes: {}`.
-		Hashes ObjectContentHashes `json:"hashes,omitempty"`
+		// well-behaved downloaders.  The format is `{alogrithm: value}`.
+		//
+		// Multiple calls to `createUpload` or `finishUpload` for the same object
+		// can specify additional hashes, but existing hashes cannot be changed;
+		// this allows "amending" an upload with hashes after the data has been
+		// transferred, for example.
+		//
+		// At least one non-deprecated algorithm must be included, preferably the
+		// most advanced (SHA512).  Deprecated algorithms may also be included.
+		//
+		// Defined properties:
+		//
+		//  struct {
+		//
+		//  	// Syntax:     ^[a-z0-9]{64}$
+		//  	//
+		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//
+		//  	// Syntax:     ^[a-z0-9]{128}$
+		//  	//
+		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//  }
+		//
+		// Additional properties allowed
+		Hashes json.RawMessage `json:"hashes,omitempty"`
 
 		// Project identifier.
 		//
@@ -94,17 +113,37 @@ type (
 	//
 	// One of:
 	//   * SimpleDownloadResponse
+	//   * GetURLDownloadResponse
 	DownloadObjectResponse json.RawMessage
 
 	FinishUploadRequest struct {
 
 		// Hashes of the content of this object.  These values will be verified by
-		// well-behaved downloaders.  The format is `{alogrithm: value}`.  Multiple
-		// calls to `createUpload` for the same object can specify additional hashes,
-		// but existing hashes cannot be changed; this allows "amending" an upload
-		// with hashes after the data has been transferred, for example.  Omitting
-		// this property is the same as specifying `hashes: {}`.
-		Hashes ObjectContentHashes `json:"hashes,omitempty"`
+		// well-behaved downloaders.  The format is `{alogrithm: value}`.
+		//
+		// Multiple calls to `createUpload` or `finishUpload` for the same object
+		// can specify additional hashes, but existing hashes cannot be changed;
+		// this allows "amending" an upload with hashes after the data has been
+		// transferred, for example.
+		//
+		// At least one non-deprecated algorithm must be included, preferably the
+		// most advanced (SHA512).  Deprecated algorithms may also be included.
+		//
+		// Defined properties:
+		//
+		//  struct {
+		//
+		//  	// Syntax:     ^[a-z0-9]{64}$
+		//  	//
+		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//
+		//  	// Syntax:     ^[a-z0-9]{128}$
+		//  	//
+		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//  }
+		//
+		// Additional properties allowed
+		Hashes json.RawMessage `json:"hashes,omitempty"`
 
 		// Project identifier.
 		//
@@ -119,30 +158,127 @@ type (
 		UploadID string `json:"uploadId"`
 	}
 
-	// Hashes of the content of this object.  These values will be verified by
-	// well-behaved downloaders.  The format is `{alogrithm: value}`.  Multiple
-	// calls to `createUpload` for the same object can specify additional hashes,
-	// but existing hashes cannot be changed; this allows "amending" an upload
-	// with hashes after the data has been transferred, for example.  Omitting
-	// this property is the same as specifying `hashes: {}`.
-	ObjectContentHashes struct {
+	// This download method returns a URL from which the data may be fetched with an HTTP GET request.
+	//
+	// The client should begin a GET request as soon as possible after receiving the reponse.
+	// The server will respond with a 200 OK containing the data, or with a 4xx or 5xx error response.
+	// It will _not_ redirect to another URL (3xx), and the client should not follow any such redirects.
+	//
+	// The client can use standard Range requests to download portions of the object or to resume an interrupted download.
+	// Per the HTTP standard, servers may return more data than requested by the Range header.
+	//
+	// If retrying a failed or interrupted download, and the `expires` field is in the past, the client should call `startDownload` again to get an updated `url`.
+	// The client can assume that the object data and `hashes` will be the same for all calls to `startDownload`.
+	//
+	// The client can use standard Accept-Encoding headers to indicate the encodings it can accept.
+	// However, in a deviation from standard HTTP, the client _must_ accept at least `identity` and `gzip` encodings.
+	// If the HTTP response has a `Content-Encoding` header, the client should decode the body before verifying its hashes and returning it to the application.
+	//
+	// The client _must_ verify that the resulting data matches the supplied hashes.
+	// The object service does not, itself, validate object data and relies on clients to do so.
+	GetURLDownloadResponse struct {
 
-		// Syntax:     ^[a-z0-9]{64}$
-		Sha256 string `json:"sha256,omitempty"`
+		// The time after which `url` is no longer valid.
+		// If the client wishes to begin an HTTP GET request after this time, it should first call `startDownload` again to get a fresh URL.
+		Expires tcclient.Time `json:"expires"`
 
-		// Syntax:     ^[a-z0-9]{128}$
-		Sha512 string `json:"sha512,omitempty"`
+		// Hashes of the content of this object.  The caller should verify all
+		// hashes present for recognized algorithms, and verify that at least one
+		// non-deprecated hash is present.
+		//
+		// Defined properties:
+		//
+		//  struct {
+		//
+		//  	// Syntax:     ^[a-z0-9]{64}$
+		//  	//
+		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//
+		//  	// Syntax:     ^[a-z0-9]{128}$
+		//  	//
+		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//  }
+		//
+		// Additional properties allowed
+		Hashes json.RawMessage `json:"hashes"`
+
+		// Constant value: "getUrl"
+		Method string `json:"method"`
+
+		// The URL to which the client should make a GET request.
+		URL string `json:"url"`
 	}
+
+	// Hashes of the content of this object.  These values will be verified by
+	// well-behaved downloaders.  The format is `{alogrithm: value}`.
+	//
+	// Multiple calls to `createUpload` or `finishUpload` for the same object
+	// can specify additional hashes, but existing hashes cannot be changed;
+	// this allows "amending" an upload with hashes after the data has been
+	// transferred, for example.
+	//
+	// At least one non-deprecated algorithm must be included, preferably the
+	// most advanced (SHA512).  Deprecated algorithms may also be included.
+	//
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Syntax:     ^[a-z0-9]{64}$
+	//  	//
+	//	//  	Sha256 string `json:"sha256,omitempty"`
+	//
+	//  	// Syntax:     ^[a-z0-9]{128}$
+	//  	//
+	//	//  	Sha512 string `json:"sha512,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	ObjectContentHashes json.RawMessage
+
+	// Hashes of the content of this object.  The caller should verify all
+	// hashes present for recognized algorithms, and verify that at least one
+	// non-deprecated hash is present.
+	//
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Syntax:     ^[a-z0-9]{64}$
+	//  	//
+	//	//  	Sha256 string `json:"sha256,omitempty"`
+	//
+	//  	// Syntax:     ^[a-z0-9]{128}$
+	//  	//
+	//	//  	Sha512 string `json:"sha512,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	ObjectContentHashesForDownload json.RawMessage
 
 	// Metadata about an object.
 	ObjectMetadata struct {
 		Expires tcclient.Time `json:"expires"`
 
-		// Hashes of the content of this object, in the format `{alogrithm: value}`.  See
-		// the `createUpload` request for the list of supported hash algorithms.
+		// Hashes of the content of this object.  The caller should verify all
+		// hashes present for recognized algorithms, and verify that at least one
+		// non-deprecated hash is present.
 		//
-		// Map entries:
-		Hashes map[string]string `json:"hashes"`
+		// Defined properties:
+		//
+		//  struct {
+		//
+		//  	// Syntax:     ^[a-z0-9]{64}$
+		//  	//
+		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//
+		//  	// Syntax:     ^[a-z0-9]{128}$
+		//  	//
+		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//  }
+		//
+		// Additional properties allowed
+		Hashes json.RawMessage `json:"hashes"`
 
 		// Syntax:     ^([a-zA-Z0-9._/-]*)$
 		// Min length: 1
@@ -229,6 +365,9 @@ type (
 	SupportedDownloadMethods struct {
 
 		// Constant value: %!q(bool=true)
+		GetURL bool `json:"getUrl,omitempty"`
+
+		// Constant value: %!q(bool=true)
 		Simple bool `json:"simple,omitempty"`
 	}
 )
@@ -244,6 +383,38 @@ func (this *DownloadObjectResponse) MarshalJSON() ([]byte, error) {
 func (this *DownloadObjectResponse) UnmarshalJSON(data []byte) error {
 	if this == nil {
 		return errors.New("DownloadObjectResponse: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// ObjectContentHashes is of type json.RawMessage...
+func (this *ObjectContentHashes) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *ObjectContentHashes) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("ObjectContentHashes: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// ObjectContentHashesForDownload is of type json.RawMessage...
+func (this *ObjectContentHashesForDownload) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *ObjectContentHashesForDownload) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("ObjectContentHashesForDownload: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil

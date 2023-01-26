@@ -55,6 +55,7 @@ next-task-user.json
 /workers/generic-worker/generic-worker-*
 /workers/generic-worker/generic-worker
 /workers/generic-worker/testdata/Test*
+/workers/generic-worker/downloads
 /tools/worker-runner/start-worker
 /tools/worker-runner/start-worker-*-*
 /tools/worker-runner/fake.exe
@@ -78,3 +79,6 @@ __pycache__
 # docker-compose artifacts
 /docker/buckets
 docker-compose.override.yml
+
+dist/
+.DS_Store

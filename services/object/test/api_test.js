@@ -442,6 +442,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256: badSha256 } }),
         err => err.statusCode === 409);
     });
+
+    test('completes an upload, even if there are no hashes for the object', async function() {
+      const uploadId = await makeUpload('foo/bar');
+      await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
+      const res = await helper.apiClient.object('foo/bar');
+      assert.deepEqual(res.hashes, { });
+    });
+
   });
 
   suite('object method', function() {

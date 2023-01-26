@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
 )
 
 func TestPublicDirectoryArtifact(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -56,7 +56,7 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 }
 
 func TestConflictingFileArtifactsInPayload(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -110,7 +110,7 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 }
 
 func TestFileArtifactTwiceInPayload(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -141,7 +141,7 @@ func TestFileArtifactTwiceInPayload(t *testing.T) {
 }
 
 func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -195,7 +195,7 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 
 func TestFileArtifactHasNoExpiry(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	payload := GenericWorkerPayload{
 		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
@@ -233,7 +233,7 @@ func TestFileArtifactHasNoExpiry(t *testing.T) {
 
 func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	payload := GenericWorkerPayload{
 		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
@@ -267,4 +267,25 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 		}
 	}
 	t.Fatalf("Could not find artifact public/build/X.txt in task run 0 of task %v", taskID)
+}
+
+func TestObjectArtifact(t *testing.T) {
+
+	setup(t)
+	config.CreateObjectArtifacts = true
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("object-test"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "object-test",
+				Type: "file",
+				Name: "object-test.txt",
+			},
+		},
+	}
+
+	td := testTask(t)
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }

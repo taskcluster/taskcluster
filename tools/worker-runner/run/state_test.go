@@ -1,14 +1,14 @@
 package run
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
 
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
-	taskcluster "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	taskcluster "github.com/taskcluster/taskcluster/v47/clients/client-go"
 )
 
 func makeState() State {
@@ -104,7 +104,7 @@ func TestReadCacheFile(t *testing.T) {
 			var state State
 			cachePath := filepath.Join(dir, "cache-badperms.json")
 
-			err := ioutil.WriteFile(cachePath, []byte(`{"RootURL":"foo"}`), 0644)
+			err := os.WriteFile(cachePath, []byte(`{"RootURL":"foo"}`), 0644)
 			require.NoError(t, err)
 
 			found, err := ReadCacheFile(&state, cachePath)

@@ -4,7 +4,7 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
 
-VERSION = '44.23.0'
+VERSION = '47.0.3'
 
 tests_require = [
     'pytest',
@@ -19,7 +19,6 @@ tests_require = [
     'hypothesis',
     'tox',
     'coverage',
-    'python-dateutil',
     'aiofiles',
     'httptest',
 ]
@@ -29,6 +28,7 @@ tests_require = [
 install_requires = [
     'requests>=2.4.3',
     'mohawk>=0.3.4',
+    'python-dateutil>=2.8.2',
     'slugid>=2',
     'taskcluster-urls>=12.1.0',
     'aiohttp>=3.7.4',

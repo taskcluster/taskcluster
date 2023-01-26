@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"go/build"
 	"go/format"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,8 +14,8 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/kr/text"
-	"github.com/taskcluster/taskcluster/v44/internal/jsontest"
-	"github.com/taskcluster/taskcluster/v44/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v47/internal/jsontest"
+	"github.com/taskcluster/taskcluster/v47/tools/jsonschema2go"
 )
 
 func main() {
@@ -83,7 +82,7 @@ func generateFunctions(ymlFile string) []byte {
 		return []byte{}
 	}
 	ymlFile = ymlFile[7:]
-	data, err := ioutil.ReadFile(ymlFile)
+	data, err := os.ReadFile(ymlFile)
 	if err != nil {
 		log.Fatalf("ERROR: Problem reading from file '%v' - %s", ymlFile, err)
 	}
@@ -129,7 +128,7 @@ func formatSourceAndSave(sourceCode []byte, sourceFile string) error {
 	var fixedFixedImports []byte
 	if err == nil {
 		importFixer := regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`)
-		fixedFixedImports = importFixer.ReplaceAll(fixedImports, []byte("github.com/taskcluster/taskcluster/v44/"))
+		fixedFixedImports = importFixer.ReplaceAll(fixedImports, []byte("github.com/taskcluster/taskcluster/v47/"))
 	}
 
 	// only perform general format, if that worked...
@@ -143,8 +142,8 @@ func formatSourceAndSave(sourceCode []byte, sourceFile string) error {
 	// more easily...
 	if err != nil {
 		// no need to handle error as we exit below anyway
-		_ = ioutil.WriteFile(sourceFile, sourceCode, 0644)
+		_ = os.WriteFile(sourceFile, sourceCode, 0644)
 		return err
 	}
-	return ioutil.WriteFile(sourceFile, formattedContent, 0644)
+	return os.WriteFile(sourceFile, formattedContent, 0644)
 }

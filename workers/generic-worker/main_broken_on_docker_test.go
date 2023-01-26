@@ -12,7 +12,7 @@ import (
 )
 
 func TestAbortAfterMaxRunTime(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 
 	// Include a writable directory cache, to test that caches can be unmounted
 	// when a task aborts prematurely.
@@ -68,7 +68,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 //
 // See https://bugzil.la/1479415
 func TestNonExistentCommandFailsTask(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command:    singleCommandNoArgs(slugid.Nice()),
 		MaxRunTime: 10,

@@ -11,23 +11,23 @@
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // First create a Hooks object:
 //
-//  hooks := tchooks.New(nil)
+//	hooks := tchooks.New(nil)
 //
 // and then call one or more of hooks's methods, e.g.:
 //
-//  err := hooks.Ping(.....)
+//	err := hooks.Ping(.....)
 //
 // handling any errors...
 //
-//  if err != nil {
-//  	// handle error...
-//  }
+//	if err != nil {
+//		// handle error...
+//	}
 //
-// Taskcluster Schema
+// # Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
 // <rootUrl>/references/hooks/v1/api.json together with the input and output schemas it references,
@@ -37,7 +37,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
 )
 
 type Hooks tcclient.Client
@@ -46,14 +46,14 @@ type Hooks tcclient.Client
 // nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  hooks := tchooks.New(
-//      nil,                                      // client without authentication
-//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
-//  )
-//  err := hooks.Ping(.....)                      // for example, call the Ping(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
+//	hooks := tchooks.New(
+//	    nil,                                      // client without authentication
+//	    "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//	)
+//	err := hooks.Ping(.....)                      // for example, call the Ping(.....) API endpoint (described further down)...
+//	if err != nil {
+//		// handle errors...
+//	}
 func New(credentials *tcclient.Credentials, rootURL string) *Hooks {
 	return &Hooks{
 		Credentials:  credentials,
@@ -72,9 +72,9 @@ func New(credentials *tcclient.Credentials, rootURL string) *Hooks {
 //
 // The credentials are taken from environment variables:
 //
-//  TASKCLUSTER_CLIENT_ID
-//  TASKCLUSTER_ACCESS_TOKEN
-//  TASKCLUSTER_CERTIFICATE
+//	TASKCLUSTER_CLIENT_ID
+//	TASKCLUSTER_ACCESS_TOKEN
+//	TASKCLUSTER_CERTIFICATE
 //
 // If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
 // disabled.
@@ -123,7 +123,8 @@ func (hooks *Hooks) Version() error {
 // This endpoint will return a list of all hook groups with at least one hook.
 //
 // Required scopes:
-//   hooks:list-hooks:
+//
+//	hooks:list-hooks:
 //
 // See #listHookGroups
 func (hooks *Hooks) ListHookGroups() (*HookGroups, error) {
@@ -135,7 +136,8 @@ func (hooks *Hooks) ListHookGroups() (*HookGroups, error) {
 // Returns a signed URL for ListHookGroups, valid for the specified duration.
 //
 // Required scopes:
-//   hooks:list-hooks:
+//
+//	hooks:list-hooks:
 //
 // See ListHookGroups for more details.
 func (hooks *Hooks) ListHookGroups_SignedURL(duration time.Duration) (*url.URL, error) {
@@ -147,7 +149,8 @@ func (hooks *Hooks) ListHookGroups_SignedURL(duration time.Duration) (*url.URL, 
 // given hook group.
 //
 // Required scopes:
-//   hooks:list-hooks:<hookGroupId>
+//
+//	hooks:list-hooks:<hookGroupId>
 //
 // See #listHooks
 func (hooks *Hooks) ListHooks(hookGroupId string) (*HookList, error) {
@@ -159,7 +162,8 @@ func (hooks *Hooks) ListHooks(hookGroupId string) (*HookList, error) {
 // Returns a signed URL for ListHooks, valid for the specified duration.
 //
 // Required scopes:
-//   hooks:list-hooks:<hookGroupId>
+//
+//	hooks:list-hooks:<hookGroupId>
 //
 // See ListHooks for more details.
 func (hooks *Hooks) ListHooks_SignedURL(hookGroupId string, duration time.Duration) (*url.URL, error) {
@@ -171,7 +175,8 @@ func (hooks *Hooks) ListHooks_SignedURL(hookGroupId string, duration time.Durati
 // and hookId.
 //
 // Required scopes:
-//   hooks:get:<hookGroupId>:<hookId>
+//
+//	hooks:get:<hookGroupId>:<hookId>
 //
 // See #hook
 func (hooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, error) {
@@ -183,7 +188,8 @@ func (hooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, error) {
 // Returns a signed URL for Hook, valid for the specified duration.
 //
 // Required scopes:
-//   hooks:get:<hookGroupId>:<hookId>
+//
+//	hooks:get:<hookGroupId>:<hookId>
 //
 // See Hook for more details.
 func (hooks *Hooks) Hook_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
@@ -199,7 +205,8 @@ func (hooks *Hooks) Hook_SignedURL(hookGroupId, hookId string, duration time.Dur
 // This method is deprecated in favor of listLastFires.
 //
 // Required scopes:
-//   hooks:status:<hookGroupId>/<hookId>
+//
+//	hooks:status:<hookGroupId>/<hookId>
 //
 // See #getHookStatus
 func (hooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusResponse, error) {
@@ -211,7 +218,8 @@ func (hooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusRespon
 // Returns a signed URL for GetHookStatus, valid for the specified duration.
 //
 // Required scopes:
-//   hooks:status:<hookGroupId>/<hookId>
+//
+//	hooks:status:<hookGroupId>/<hookId>
 //
 // See GetHookStatus for more details.
 func (hooks *Hooks) GetHookStatus_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
@@ -226,9 +234,10 @@ func (hooks *Hooks) GetHookStatus_SignedURL(hookGroupId, hookId string, duration
 // necessary scopes to add the task to the queue.
 //
 // Required scopes:
-//   All of:
-//   * hooks:modify-hook:<hookGroupId>/<hookId>
-//   * assume:hook-id:<hookGroupId>/<hookId>
+//
+//	All of:
+//	* hooks:modify-hook:<hookGroupId>/<hookId>
+//	* assume:hook-id:<hookGroupId>/<hookId>
 //
 // See #createHook
 func (hooks *Hooks) CreateHook(hookGroupId, hookId string, payload *HookCreationRequest) (*HookDefinition, error) {
@@ -241,9 +250,10 @@ func (hooks *Hooks) CreateHook(hookGroupId, hookId string, payload *HookCreation
 // `hookGroupId` and `hookId` can be modified.
 //
 // Required scopes:
-//   All of:
-//   * hooks:modify-hook:<hookGroupId>/<hookId>
-//   * assume:hook-id:<hookGroupId>/<hookId>
+//
+//	All of:
+//	* hooks:modify-hook:<hookGroupId>/<hookId>
+//	* assume:hook-id:<hookGroupId>/<hookId>
 //
 // See #updateHook
 func (hooks *Hooks) UpdateHook(hookGroupId, hookId string, payload *HookCreationRequest) (*HookDefinition, error) {
@@ -255,7 +265,8 @@ func (hooks *Hooks) UpdateHook(hookGroupId, hookId string, payload *HookCreation
 // This endpoint will remove a hook definition.
 //
 // Required scopes:
-//   hooks:modify-hook:<hookGroupId>/<hookId>
+//
+//	hooks:modify-hook:<hookGroupId>/<hookId>
 //
 // See #removeHook
 func (hooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
@@ -271,7 +282,8 @@ func (hooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 // task template.
 //
 // Required scopes:
-//   hooks:trigger-hook:<hookGroupId>/<hookId>
+//
+//	hooks:trigger-hook:<hookGroupId>/<hookId>
 //
 // See #triggerHook
 func (hooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerHookRequest) (*TriggerHookResponse, error) {
@@ -284,7 +296,8 @@ func (hooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerHook
 // token can be deactivated with `resetTriggerToken`.
 //
 // Required scopes:
-//   hooks:get-trigger-token:<hookGroupId>/<hookId>
+//
+//	hooks:get-trigger-token:<hookGroupId>/<hookId>
 //
 // See #getTriggerToken
 func (hooks *Hooks) GetTriggerToken(hookGroupId, hookId string) (*TriggerTokenResponse, error) {
@@ -296,7 +309,8 @@ func (hooks *Hooks) GetTriggerToken(hookGroupId, hookId string) (*TriggerTokenRe
 // Returns a signed URL for GetTriggerToken, valid for the specified duration.
 //
 // Required scopes:
-//   hooks:get-trigger-token:<hookGroupId>/<hookId>
+//
+//	hooks:get-trigger-token:<hookGroupId>/<hookId>
 //
 // See GetTriggerToken for more details.
 func (hooks *Hooks) GetTriggerToken_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
@@ -308,7 +322,8 @@ func (hooks *Hooks) GetTriggerToken_SignedURL(hookGroupId, hookId string, durati
 // may have been issued via getTriggerToken with a new token.
 //
 // Required scopes:
-//   hooks:reset-trigger-token:<hookGroupId>/<hookId>
+//
+//	hooks:reset-trigger-token:<hookGroupId>/<hookId>
 //
 // See #resetTriggerToken
 func (hooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerTokenResponse, error) {
@@ -333,25 +348,43 @@ func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payl
 // This endpoint will return information about the the last few times this hook has been
 // fired, including whether the hook was fired successfully or not
 //
+// By default this endpoint will return up to 1000 most recent fires in one request.
+//
 // Required scopes:
-//   hooks:list-last-fires:<hookGroupId>/<hookId>
+//
+//	hooks:list-last-fires:<hookGroupId>/<hookId>
 //
 // See #listLastFires
-func (hooks *Hooks) ListLastFires(hookGroupId, hookId string) (*LastFiresList, error) {
+func (hooks *Hooks) ListLastFires(hookGroupId, hookId, continuationToken, limit string) (*LastFiresList, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", new(LastFiresList), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", new(LastFiresList), v)
 	return responseObject.(*LastFiresList), err
 }
 
 // Returns a signed URL for ListLastFires, valid for the specified duration.
 //
 // Required scopes:
-//   hooks:list-last-fires:<hookGroupId>/<hookId>
+//
+//	hooks:list-last-fires:<hookGroupId>/<hookId>
 //
 // See ListLastFires for more details.
-func (hooks *Hooks) ListLastFires_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
+func (hooks *Hooks) ListLastFires_SignedURL(hookGroupId, hookId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
 	cd := tcclient.Client(*hooks)
-	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", nil, duration)
+	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", v, duration)
 }
 
 // Respond with a service heartbeat.

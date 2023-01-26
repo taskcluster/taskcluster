@@ -1,16 +1,11 @@
 package main
 
 import (
-	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"log"
 	"mime"
 	"net"
-	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -20,8 +15,9 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
+	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/artifacts"
 )
 
 var (
@@ -34,260 +30,13 @@ var (
 	}
 )
 
-type (
-	// TaskArtifact is the interface that all artifact types implement
-	// (S3Artifact, RedirectArtifact, ErrorArtifact), for publishing artifacts
-	// according to the tcqueue.CreateArtifact docs.
-	TaskArtifact interface {
-
-		// RequestObject returns a pointer to a go type containing the data for
-		// marshaling into tcqueue.PostArtifactRequest for passing to
-		// tcqueue.CreateArtifact.
-		//
-		// For example, this is a *tcqueue.S3ArtifactRequest for type
-		// S3Artifact.
-		RequestObject() interface{}
-
-		// ResponseObject returns a pointer to an empty go type for
-		// unmarshaling the result of a tcqueue.CreateArtifact API call into.
-		//
-		// For example, this would be new(tcqueue.RedirectArtifactRequest) for
-		// RedirectArtifact.
-		ResponseObject() interface{}
-
-		// ProcessResponse is a callback for performing actions after
-		// tcqueue.CreateArtifact API is called. response is the object
-		// returned by ResponseObject(), but populated with the result of
-		// tcqueue.CreateArtifact.
-		//
-		// For example, ProcessResponse for S3Artifact uploads the artifact to
-		// S3, since the tcqueue.CreateArtifact API call only informs the Queue
-		// that the artifact exists without uploading it.
-		//
-		// ProcessResponse can be an empty method if no post
-		// tcqueue.CreateArtifact steps are required.
-		ProcessResponse(response interface{}, task *TaskRun) error
-
-		// Base returns a *BaseArtifact which stores the properties common to
-		// all implementations
-		Base() *BaseArtifact
-	}
-
-	// Common properties across all implementations.
-	BaseArtifact struct {
-		Name    string
-		Expires tcclient.Time
-	}
-
-	S3Artifact struct {
-		*BaseArtifact
-		Path            string
-		ContentEncoding string
-		ContentType     string
-	}
-
-	RedirectArtifact struct {
-		*BaseArtifact
-		URL         string
-		ContentType string
-	}
-
-	LinkArtifact struct {
-		*BaseArtifact
-		Artifact    string
-		ContentType string
-	}
-
-	ErrorArtifact struct {
-		*BaseArtifact
-		Path    string
-		Message string
-		Reason  string
-	}
-)
-
-func (base *BaseArtifact) Base() *BaseArtifact {
-	return base
-}
-
-func (redirectArtifact *RedirectArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
-	task.Infof("Uploading redirect artifact %v to URL %v with mime type %q and expiry %v", redirectArtifact.Name, redirectArtifact.URL, redirectArtifact.ContentType, redirectArtifact.Expires)
-	// nothing to do
-	return nil
-}
-
-func (redirectArtifact *RedirectArtifact) RequestObject() interface{} {
-	return &tcqueue.RedirectArtifactRequest{
-		ContentType: redirectArtifact.ContentType,
-		Expires:     redirectArtifact.Expires,
-		StorageType: "reference",
-		URL:         redirectArtifact.URL,
-	}
-}
-
-func (redirectArtifact *RedirectArtifact) ResponseObject() interface{} {
-	return new(tcqueue.RedirectArtifactResponse)
-}
-
-func (linkArtifact *LinkArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
-	task.Infof("Uploading link artifact %v to artifact %v with expiry %v", linkArtifact.Name, linkArtifact.Artifact, linkArtifact.Expires)
-	// nothing to do
-	return nil
-}
-
-func (linkArtifact *LinkArtifact) RequestObject() interface{} {
-	return &tcqueue.LinkArtifactRequest{
-		Expires:     linkArtifact.Expires,
-		StorageType: "link",
-		ContentType: linkArtifact.ContentType,
-		Artifact:    linkArtifact.Artifact,
-	}
-}
-
-func (linkArtifact *LinkArtifact) ResponseObject() interface{} {
-	return new(tcqueue.LinkArtifactResponse)
-}
-
-func (errArtifact *ErrorArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
-	task.Errorf("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", errArtifact.Name, errArtifact.Path, errArtifact.Message, errArtifact.Reason, errArtifact.Expires)
-	// TODO: process error response
-	return nil
-}
-
-func (errArtifact *ErrorArtifact) RequestObject() interface{} {
-	return &tcqueue.ErrorArtifactRequest{
-		Expires:     errArtifact.Expires,
-		Message:     errArtifact.Message,
-		Reason:      errArtifact.Reason,
-		StorageType: "error",
-	}
-}
-
-func (errArtifact *ErrorArtifact) ResponseObject() interface{} {
-	return new(tcqueue.ErrorArtifactResponse)
-}
-
-func (errArtifact *ErrorArtifact) String() string {
-	return fmt.Sprintf("%v", *errArtifact)
-}
-
-// createTempFileForPUTBody gzip-compresses the file at path rawContentFile and writes
-// it to a temporary file. The file path of the generated temporary file is returned.
-// It is the responsibility of the caller to delete the temporary file.
-func (s3Artifact *S3Artifact) CreateTempFileForPUTBody() string {
-	rawContentFile := filepath.Join(taskContext.TaskDir, s3Artifact.Path)
-	baseName := filepath.Base(rawContentFile)
-	tmpFile, err := ioutil.TempFile("", baseName)
-	if err != nil {
-		panic(err)
-	}
-	defer tmpFile.Close()
-	var target io.Writer = tmpFile
-	if s3Artifact.ContentEncoding == "gzip" {
-		gzipLogWriter := gzip.NewWriter(tmpFile)
-		defer gzipLogWriter.Close()
-		gzipLogWriter.Name = baseName
-		target = gzipLogWriter
-	}
-	source, err := os.Open(rawContentFile)
-	if err != nil {
-		panic(err)
-	}
-	defer source.Close()
-	_, _ = io.Copy(target, source)
-	return tmpFile.Name()
-}
-
-func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (err error) {
-	response := resp.(*tcqueue.S3ArtifactResponse)
-
-	task.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", s3Artifact.Name, s3Artifact.Path, s3Artifact.ContentEncoding, s3Artifact.ContentType, s3Artifact.Expires)
-
-	transferContentFile := s3Artifact.CreateTempFileForPUTBody()
-	defer os.Remove(transferContentFile)
-
-	// perform http PUT to upload to S3...
-	httpClient := &http.Client{}
-	httpCall := func() (putResp *http.Response, tempError error, permError error) {
-		var transferContent *os.File
-		transferContent, permError = os.Open(transferContentFile)
-		if permError != nil {
-			return
-		}
-		defer transferContent.Close()
-		var transferContentFileInfo os.FileInfo
-		transferContentFileInfo, permError = transferContent.Stat()
-		if permError != nil {
-			return
-		}
-		transferContentLength := transferContentFileInfo.Size()
-
-		var httpRequest *http.Request
-		httpRequest, permError = http.NewRequest("PUT", response.PutURL, transferContent)
-		if permError != nil {
-			return
-		}
-		httpRequest.Header.Set("Content-Type", response.ContentType)
-		httpRequest.ContentLength = transferContentLength
-		if enc := s3Artifact.ContentEncoding; enc != "" {
-			httpRequest.Header.Set("Content-Encoding", enc)
-		}
-		requestHeaders, dumpError := httputil.DumpRequestOut(httpRequest, false)
-		if dumpError != nil {
-			log.Print("Could not dump request, never mind...")
-		} else {
-			log.Print("Request")
-			log.Print(string(requestHeaders))
-		}
-		putResp, tempError = httpClient.Do(httpRequest)
-		if tempError != nil {
-			return
-		}
-		// bug 1394557: s3 incorrectly returns HTTP 400 for connection inactivity,
-		// which can/should be retried, so explicitly handle...
-		if putResp.StatusCode == 400 {
-			tempError = fmt.Errorf("S3 returned status code 400 which could be an intermittent issue - see https://bugzilla.mozilla.org/show_bug.cgi?id=1394557")
-		}
-		return
-	}
-	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
-	log.Printf("%v put requests issued to %v", putAttempts, response.PutURL)
-	if putResp != nil {
-		defer putResp.Body.Close()
-		respBody, dumpError := httputil.DumpResponse(putResp, true)
-		if dumpError != nil {
-			log.Print("Could not dump response output, never mind...")
-		} else {
-			log.Print("Response")
-			log.Print(string(respBody))
-		}
-	}
-	return err
-}
-
-func (s3Artifact *S3Artifact) RequestObject() interface{} {
-	return &tcqueue.S3ArtifactRequest{
-		ContentType: s3Artifact.ContentType,
-		Expires:     s3Artifact.Expires,
-		StorageType: "s3",
-	}
-}
-
-func (s3Artifact *S3Artifact) ResponseObject() interface{} {
-	return new(tcqueue.S3ArtifactResponse)
-}
-
-func (s3Artifact *S3Artifact) String() string {
-	return fmt.Sprintf("S3 Artifact - Name: '%v', Path: '%v', Expires: %v, Content Encoding: '%v', MIME Type: '%v'", s3Artifact.Name, s3Artifact.Path, s3Artifact.Expires, s3Artifact.ContentEncoding, s3Artifact.ContentType)
-}
-
 // PayloadArtifacts returns the artifacts as listed in the payload of the task (note this does
 // not include log files)
-func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
-	artifacts := make([]TaskArtifact, 0)
+func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
+	payloadArtifacts := make([]artifacts.TaskArtifact, 0)
 	for _, artifact := range task.Payload.Artifacts {
 		basePath := artifact.Path
-		base := &BaseArtifact{
+		base := &artifacts.BaseArtifact{
 			Name:    artifact.Name,
 			Expires: artifact.Expires,
 		}
@@ -301,10 +50,10 @@ func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 		}
 		switch artifact.Type {
 		case "file":
-			artifacts = append(artifacts, resolve(base, "file", basePath, artifact.ContentType, artifact.ContentEncoding))
+			payloadArtifacts = append(payloadArtifacts, resolve(base, "file", basePath, artifact.ContentType, artifact.ContentEncoding))
 		case "directory":
 			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType, artifact.ContentEncoding); errArtifact != nil {
-				artifacts = append(artifacts, errArtifact)
+				payloadArtifacts = append(payloadArtifacts, errArtifact)
 				continue
 			}
 			walkFn := func(path string, info os.FileInfo, incomingErr error) error {
@@ -322,24 +71,24 @@ func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 					panic(err)
 				}
 				subName := filepath.Join(base.Name, relativePath)
-				b := &BaseArtifact{
+				b := &artifacts.BaseArtifact{
 					Name:    canonicalPath(subName),
 					Expires: base.Expires,
 				}
 				switch {
 				case info.IsDir():
 					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType, artifact.ContentEncoding); errArtifact != nil {
-						artifacts = append(artifacts, errArtifact)
+						payloadArtifacts = append(payloadArtifacts, errArtifact)
 					}
 				default:
-					artifacts = append(artifacts, resolve(b, "file", subPath, artifact.ContentType, artifact.ContentEncoding))
+					payloadArtifacts = append(payloadArtifacts, resolve(b, "file", subPath, artifact.ContentType, artifact.ContentEncoding))
 				}
 				return nil
 			}
 			_ = filepath.Walk(filepath.Join(taskContext.TaskDir, basePath), walkFn)
 		}
 	}
-	return artifacts
+	return payloadArtifacts
 }
 
 // File should be resolved as an S3Artifact if file exists as file and is
@@ -351,12 +100,12 @@ func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 // ErrorArtifact, otherwise if it exists as a file, as
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
-func resolve(base *BaseArtifact, artifactType string, path string, contentType string, contentEncoding string) TaskArtifact {
+func resolve(base *artifacts.BaseArtifact, artifactType string, path string, contentType string, contentEncoding string) artifacts.TaskArtifact {
 	fullPath := filepath.Join(taskContext.TaskDir, path)
 	fileReader, err := os.Open(fullPath)
 	if err != nil {
 		// cannot read file/dir, create an error artifact
-		return &ErrorArtifact{
+		return &artifacts.ErrorArtifact{
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("Could not read %s '%s'", artifactType, fullPath),
 			Reason:       "file-missing-on-worker",
@@ -367,7 +116,7 @@ func resolve(base *BaseArtifact, artifactType string, path string, contentType s
 	// ok it exists, but is it right type?
 	fileinfo, err := fileReader.Stat()
 	if err != nil {
-		return &ErrorArtifact{
+		return &artifacts.ErrorArtifact{
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("Could not stat %s '%s'", artifactType, fullPath),
 			Reason:       "invalid-resource-on-worker",
@@ -375,7 +124,7 @@ func resolve(base *BaseArtifact, artifactType string, path string, contentType s
 		}
 	}
 	if artifactType == "file" && fileinfo.IsDir() {
-		return &ErrorArtifact{
+		return &artifacts.ErrorArtifact{
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("File artifact '%s' exists as a directory, not a file, on the worker", fullPath),
 			Reason:       "invalid-resource-on-worker",
@@ -383,7 +132,7 @@ func resolve(base *BaseArtifact, artifactType string, path string, contentType s
 		}
 	}
 	if artifactType == "directory" && !fileinfo.IsDir() {
-		return &ErrorArtifact{
+		return &artifacts.ErrorArtifact{
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("Directory artifact '%s' exists as a file, not a directory, on the worker", fullPath),
 			Reason:       "invalid-resource-on-worker",
@@ -415,6 +164,7 @@ func resolve(base *BaseArtifact, artifactType string, path string, contentType s
 		SkipCompressionExtensions := map[string]bool{
 			".7z":    true,
 			".bz2":   true,
+			".deb":   true,
 			".dmg":   true,
 			".flv":   true,
 			".gif":   true,
@@ -440,13 +190,7 @@ func resolve(base *BaseArtifact, artifactType string, path string, contentType s
 			contentEncoding = "gzip"
 		}
 	}
-	s3Artifact := &S3Artifact{
-		BaseArtifact:    base,
-		Path:            path,
-		ContentType:     contentType,
-		ContentEncoding: contentEncoding,
-	}
-	return s3Artifact
+	return createDataArtifact(base, path, contentType, contentEncoding)
 }
 
 // The Queue expects paths to use a forward slash, so let's make sure we have a
@@ -458,22 +202,52 @@ func canonicalPath(path string) string {
 	return strings.Replace(path, string(os.PathSeparator), "/", -1)
 }
 
+// createDataArtifact creates a TaskArtifact for the given data, according to
+// the CreateObjectArtifacts configuration.
+//
+// The contentEncoding is a suggestion as to the encoding to use for the data.
+// The data in the file at 'path' must _not_ already have this encoding applied.
+func createDataArtifact(
+	base *artifacts.BaseArtifact,
+	path string,
+	contentType string,
+	contentEncoding string,
+) artifacts.TaskArtifact {
+	if config.CreateObjectArtifacts {
+		// note that contentEncoding is currently ignored for object artifacts
+		return &artifacts.ObjectArtifact{
+			BaseArtifact:   base,
+			Path:           path,
+			RawContentFile: filepath.Join(taskContext.TaskDir, path),
+			ContentType:    contentType,
+		}
+	}
+
+	return &artifacts.S3Artifact{
+		BaseArtifact:    base,
+		Path:            path,
+		RawContentFile:  filepath.Join(taskContext.TaskDir, path),
+		ContentType:     contentType,
+		ContentEncoding: contentEncoding,
+	}
+}
+
 func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 	return task.uploadArtifact(
-		&S3Artifact{
-			BaseArtifact: &BaseArtifact{
+		createDataArtifact(
+			&artifacts.BaseArtifact{
 				Name: name,
 				// logs expire when task expires
 				Expires: task.Definition.Expires,
 			},
-			ContentType:     "text/plain; charset=utf-8",
-			Path:            path,
-			ContentEncoding: "gzip",
-		},
+			path,
+			"text/plain; charset=utf-8",
+			"gzip",
+		),
 	)
 }
 
-func (task *TaskRun) uploadArtifact(artifact TaskArtifact) *CommandExecutionError {
+func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExecutionError {
 	task.Artifacts[artifact.Base().Name] = artifact
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {
@@ -538,10 +312,17 @@ func (task *TaskRun) uploadArtifact(artifact TaskArtifact) *CommandExecutionErro
 	if e != nil {
 		panic(e)
 	}
-	e = artifact.ProcessResponse(resp, task)
+	e = artifact.ProcessResponse(resp, task, serviceFactory, config)
 	if e != nil {
 		task.Errorf("Error uploading artifact: %v", e)
+		return ResourceUnavailable(e)
 	}
-	// note: ResourceUnavailable(nil) returns nil, so this only returns an error if e != nil
-	return ResourceUnavailable(e)
+
+	e = artifact.FinishArtifact(resp, task.Queue, task.TaskID, strconv.Itoa(int(task.RunID)), artifact.Base().Name)
+	if e != nil {
+		task.Errorf("Error finishing artifact: %v", e)
+		return ResourceUnavailable(e)
+	}
+
+	return nil
 }

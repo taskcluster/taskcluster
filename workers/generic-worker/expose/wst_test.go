@@ -2,7 +2,7 @@ package expose
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -14,9 +14,9 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v44/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v44/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/wsproxy"
+	"github.com/taskcluster/taskcluster/v47/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v47/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v47/tools/websocktunnel/wsproxy"
 )
 
 const WST_WORKER_GROUP = "expose-tests"
@@ -129,7 +129,7 @@ func TestBasicWSTExposeHTTP(t *testing.T) {
 	}
 	assert.Equal(t, 200, res.StatusCode, "got 200 response via proxy")
 
-	greeting, err := ioutil.ReadAll(res.Body)
+	greeting, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		t.Fatal(err)

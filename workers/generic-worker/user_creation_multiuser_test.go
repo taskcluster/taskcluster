@@ -3,7 +3,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -15,7 +15,7 @@ func TestRunAfterUserCreation(t *testing.T) {
 	// IMPORTANT - see https://bugzil.la/1559210 - this test is independent of
 	// whether config.RunTasksAsCurrentUser is true or false.
 
-	defer setup(t)()
+	setup(t)
 	script := "run-after-user.sh"
 	if runtime.GOOS == "windows" {
 		script = "run-after-user.bat"
@@ -28,7 +28,7 @@ func TestRunAfterUserCreation(t *testing.T) {
 			t.Fatalf("Problem deleting old tasks: %v", err)
 		}
 	}()
-	fileContents, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, "run-after-user.txt"))
+	fileContents, err := os.ReadFile(filepath.Join(taskContext.TaskDir, "run-after-user.txt"))
 	if err != nil {
 		t.Fatalf("Got error when looking for file run-after-user.txt: %v", err)
 	}

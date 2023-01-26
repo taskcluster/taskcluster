@@ -1,6 +1,6 @@
 # jsonschema2go
 [![Build Status](https://secure.travis-ci.org/taskcluster/jsonschema2go.png)](http://travis-ci.org/taskcluster/jsonschema2go)
-[![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v44/tools/jsonschema2go?status.png)](https://pkg.go.dev/github.com/taskcluster/taskcluster/v44/tools/jsonschema2go)
+[![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v47/tools/jsonschema2go?status.png)](https://pkg.go.dev/github.com/taskcluster/taskcluster/v47/tools/jsonschema2go)
 # Overview
 Are you writing a service in go that needs to interpret json data, and you already have a json schema definition for the format of the json?
 
@@ -499,7 +499,7 @@ import (
     "io/ioutil"
     "log"
 
-    "github.com/taskcluster/taskcluster/v44/tools/jsonschema2go"
+    "github.com/taskcluster/taskcluster/v47/tools/jsonschema2go"
 )
 
 func main() {
@@ -516,7 +516,7 @@ func main() {
     if err != nil {
         log.Fatalf("Could not generate go types from given json schemas...", err)
     }
-    err = ioutil.WriteFile("generatedcode.go", result.SourceCode, 0644)
+    err = os.WriteFile("generatedcode.go", result.SourceCode, 0644)
     if err != nil {
         log.Fatalf("Could not write source code to file system...", err)
     }

@@ -4,7 +4,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -13,7 +12,7 @@ import (
 
 func TestMounts(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	taskID1 := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
 	taskID2 := CreateArtifactFromFile(t, "mozharness.zip", "public/build/mozharness.zip")
@@ -181,7 +180,7 @@ func TestMounts(t *testing.T) {
 }
 
 func TestCachesCanBeModified(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	// We're going to run three consecutive tasks here. The first will create
 	// a file called `counter` in the cache and the contents of the file will
 	// be `1`. The next task will overwrite this file with the number `2`. The
@@ -209,7 +208,7 @@ func TestCachesCanBeModified(t *testing.T) {
 
 	getCounter := func() int {
 		counterFile := filepath.Join(directoryCaches["test-modifications"].Location, "counter")
-		bytes, err := ioutil.ReadFile(counterFile)
+		bytes, err := os.ReadFile(counterFile)
 		if err != nil {
 			t.Fatalf("Error when trying to read cache file: %v", err)
 		}
@@ -235,7 +234,7 @@ func TestCachesCanBeModified(t *testing.T) {
 // TestCacheMoved tests that if a test mounts a cache, and then moves it to a
 // different location, that the test fails, and the worker doesn't crash.
 func TestCacheMoved(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
 	// whether permission is granted to task user depends if running under windows or not
@@ -316,7 +315,7 @@ func TestCacheMoved(t *testing.T) {
 
 func TestMountFileAndDirSameLocation(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
 	// whether permission is granted to task user depends if running under windows or not
@@ -395,7 +394,7 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 
 func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
 	mounts := []MountEntry{

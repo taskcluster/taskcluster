@@ -3,7 +3,7 @@ package wsmux
 import (
 	"bufio"
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v47/tools/websocktunnel/util"
 )
 
 type wrapStream struct {
@@ -45,7 +45,7 @@ func TestGet(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +86,7 @@ func TestPost(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,7 +131,7 @@ func TestMultiplePost(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		b, err := ioutil.ReadAll(resp.Body)
+		b, err := io.ReadAll(resp.Body)
 		if err != nil {
 			panic(err)
 		}

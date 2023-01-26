@@ -507,6 +507,7 @@ ALTER TABLE workers
 CREATE INDEX azure_queue_messages_inserted ON azure_queue_messages USING btree (queue_name, inserted);
 CREATE INDEX github_builds_organization_repository_sha_idx ON github_builds USING btree (organization, repository, sha);
 CREATE INDEX github_checks_check_suite_id_check_run_id_idx ON github_checks USING btree (check_suite_id, check_run_id);
+CREATE INDEX hooks_last_fires_time ON hooks_last_fires USING btree (hook_group_id, hook_id, task_create_time);
 CREATE INDEX sha512_index_namespaces_idx ON index_namespaces USING btree (public.sha512(parent), name);
 CREATE INDEX sha512_indexed_tasks_idx ON indexed_tasks USING btree (public.sha512(namespace), name);
 CREATE INDEX task_dependencies_dependent_task_id_idx ON task_dependencies USING btree (dependent_task_id) WHERE (NOT satisfied);

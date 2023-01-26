@@ -2,15 +2,15 @@ package tcproxy
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"runtime"
 	"testing"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v44/internal/scopes"
-	"github.com/taskcluster/taskcluster/v44/internal/testrooturl"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
+	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v47/internal/scopes"
+	"github.com/taskcluster/taskcluster/v47/internal/testrooturl"
 )
 
 func TestTcProxy(t *testing.T) {
@@ -45,7 +45,7 @@ func TestTcProxy(t *testing.T) {
 		t.Fatalf("Could not hit url to download artifact using taskcluster-proxy: %v", err)
 	}
 	defer res.Body.Close()
-	data, err := ioutil.ReadAll(res.Body)
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatalf("Could not read artifact using taskcluster-proxy: %v", err)
 	}

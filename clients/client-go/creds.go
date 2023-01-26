@@ -15,7 +15,7 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v44/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v47/tools/jsonschema2go/text"
 )
 
 // Credentials represents the set of credentials required to access protected
@@ -211,9 +211,9 @@ func (creds *Credentials) Cert() (cert *Certificate, err error) {
 // CredentialsFromEnvVars creates and returns Taskcluster credentials
 // initialised from the values of environment variables:
 //
-//  TASKCLUSTER_CLIENT_ID
-//  TASKCLUSTER_ACCESS_TOKEN
-//  TASKCLUSTER_CERTIFICATE
+//	TASKCLUSTER_CLIENT_ID
+//	TASKCLUSTER_ACCESS_TOKEN
+//	TASKCLUSTER_CERTIFICATE
 //
 // No validation is performed on the assigned values, and unset environment
 // variables will result in empty string values.

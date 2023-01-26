@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -10,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
+	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcworkermanager"
 )
 
 func gitRevision(dir string) string {
@@ -37,7 +36,7 @@ func main() {
 	workerType := filepath.Base(absFile)
 	workerPoolId := os.Getenv("PROVISIONER_ID") + "/" + workerType
 
-	files, err := ioutil.ReadDir(workerTypeDir)
+	files, err := os.ReadDir(workerTypeDir)
 	if err != nil {
 		log.Fatalf("File/directory '%v' (%v) could not be read due to '%s'", workerTypeDir, absFile, err)
 	}

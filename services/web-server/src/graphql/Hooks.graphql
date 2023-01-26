@@ -103,12 +103,22 @@ type HookLastFire {
   error: String!,
 }
 
+type HookLastFireConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [HookLastFireEdge]
+}
+
+type HookLastFireEdge implements Edge {
+  cursor: String
+  node: HookLastFire
+}
+
 extend type Query {
   hookGroups(filter: JSON): [HookGroup]
   hooks(hookGroupId: ID!, filter: JSON): [Hook]
   hook(hookGroupId: ID!, hookId: ID!): Hook
   hookStatus(hookGroupId: ID!, hookId: ID!): HookStatus
-  hookLastFires(hookGroupId: ID!, hookId: ID!, filter: JSON): [HookLastFire]
+  hookLastFires(hookGroupId: ID!, hookId: ID!, filter: JSON, connection: PageConnection): HookLastFireConnection
 }
 
 extend type Mutation {

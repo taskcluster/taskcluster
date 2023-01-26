@@ -72,9 +72,16 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
-        'FROM busybox', // We use busybox rather than scratch to have `/tmp` and such things
+        'FROM ubuntu:latest AS certs',
+        'RUN apt-get update',
+        'RUN apt-get upgrade -y',
+        'RUN apt-get install -y ca-certificates',
+        'RUN mkdir /empty',
+        'FROM scratch',
         'EXPOSE 60023',
         'EXPOSE 60022',
+        'COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
+        'COPY --from=certs /empty /tmp',
         'COPY version.json /app/version.json',
         'COPY livelog /livelog',
         'ENTRYPOINT ["/livelog"]',

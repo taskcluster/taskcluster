@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 
@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	yml, err := ioutil.ReadAll(os.Stdin)
+	yml, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		log.Fatalf("Could not read from standard in: %v", err)
 	}

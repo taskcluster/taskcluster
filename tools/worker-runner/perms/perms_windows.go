@@ -4,7 +4,6 @@ package perms
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"golang.org/x/sys/windows"
@@ -55,7 +54,7 @@ func ReadPrivateFile(filename string) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	return ioutil.ReadFile(filename)
+	return os.ReadFile(filename)
 }
 
 // MakePrivateToOwner ensures that the given file is private to the

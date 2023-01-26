@@ -6,9 +6,9 @@ package kc
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/host"
 )
 
 var (
@@ -49,7 +49,7 @@ func SetAutoLogin(user string, password []byte) (err error) {
 		return fmt.Errorf("Error setting autoLoginUserScreenLocked: %v", err)
 	}
 	encodedPassword := Encode(password)
-	return ioutil.WriteFile("/etc/kcpassword", encodedPassword, 0600)
+	return os.WriteFile("/etc/kcpassword", encodedPassword, 0600)
 }
 
 func AutoLoginUser() (user string, password []byte, err error) {
@@ -71,7 +71,7 @@ func AutoLoginUsername() (user string, err error) {
 }
 
 func AutoLoginPassword() (password []byte, err error) {
-	encodedPassword, err := ioutil.ReadFile("/etc/kcpassword")
+	encodedPassword, err := os.ReadFile("/etc/kcpassword")
 	if err != nil {
 		return nil, err
 	}

@@ -3,12 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
 )
 
 type RoutesTest struct {
@@ -43,13 +43,13 @@ func TestCredentialsUpdate(t *testing.T) {
 
 	response = routes.request("PUT", []byte("{\"badJS0n!"))
 	if response.Code != 400 {
-		content, _ := ioutil.ReadAll(response.Body)
+		content, _ := io.ReadAll(response.Body)
 		t.Fatalf("Request error %d: %s", response.Code, string(content))
 	}
 
 	response = routes.request("PUT", body)
 	if response.Code != 200 {
-		content, _ := ioutil.ReadAll(response.Body)
+		content, _ := io.ReadAll(response.Body)
 		t.Fatalf("Request error %d: %s", response.Code, string(content))
 	}
 

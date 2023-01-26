@@ -8,7 +8,6 @@ import (
 
 	// "crypto/tls"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -22,9 +21,9 @@ import (
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/client"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v47/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v47/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v47/tools/websocktunnel/wsmux"
 )
 
 var upgrader = websocket.Upgrader{
@@ -205,7 +204,7 @@ func TestProxyRequest(t *testing.T) {
 		t.Log(resp)
 		t.Fatalf("bad status code on get request")
 	}
-	reply, err := ioutil.ReadAll(resp.Body)
+	reply, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -221,7 +220,7 @@ func TestProxyRequest(t *testing.T) {
 	if resp.StatusCode != 200 {
 		t.Fatalf("bad status code on post request")
 	}
-	reply, err = ioutil.ReadAll(resp.Body)
+	reply, err = io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -928,7 +927,7 @@ func TestResponseStream(t *testing.T) {
 		}
 	}
 	close(done)
-	buf, err = ioutil.ReadAll(res.Body)
+	buf, err = io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1093,7 +1092,7 @@ func TestGetRequestWithClient(t *testing.T) {
 		}
 	}
 
-	data, err = ioutil.ReadAll(res.Body)
+	data, err = io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1313,7 +1312,7 @@ func TestProxyVersion(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, 200, resp.StatusCode)
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	require.Equal(t, `{"version": "1.2.3"}`, string(body))
 }

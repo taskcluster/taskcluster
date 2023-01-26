@@ -9,8 +9,9 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
+	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/artifacts"
 )
 
 var (
@@ -22,7 +23,7 @@ var (
 func validateArtifacts(
 	t *testing.T,
 	payloadArtifacts []Artifact,
-	expected []TaskArtifact) {
+	expected []artifacts.TaskArtifact) {
 
 	// to test, create a dummy task run with given artifacts
 	// and then call Artifacts() method to see what
@@ -38,16 +39,27 @@ func validateArtifacts(
 	for i := range payloadArtifacts {
 		tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts[i])
 	}
-	artifacts := tr.PayloadArtifacts()
+	got := tr.PayloadArtifacts()
 
-	if !reflect.DeepEqual(artifacts, expected) {
-		t.Fatalf("Expected different artifacts to be generated...\nExpected:\n%q\nActual:\n%q", expected, artifacts)
+	// RawContentFile contains a full path that depends on the specific
+	// task directory, so empty that value out before comparing.
+	for _, a := range got {
+		if s3a, ok := a.(*artifacts.S3Artifact); ok {
+			s3a.RawContentFile = ""
+		}
+		if obja, ok := a.(*artifacts.ObjectArtifact); ok {
+			obja.RawContentFile = ""
+		}
+	}
+
+	if !reflect.DeepEqual(got, expected) {
+		t.Fatalf("Expected different artifacts to be generated...\nExpected:\n%q\nActual:\n%q", expected, got)
 	}
 }
 
 func TestFileArtifactWithNames(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -61,9 +73,9 @@ func TestFileArtifactWithNames(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/build/firefox.exe",
 					Expires: inAnHour,
 				},
@@ -76,7 +88,7 @@ func TestFileArtifactWithNames(t *testing.T) {
 
 func TestFileArtifactWithContentType(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -91,9 +103,9 @@ func TestFileArtifactWithContentType(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/build/firefox.exe",
 					Expires: inAnHour,
 				},
@@ -104,8 +116,38 @@ func TestFileArtifactWithContentType(t *testing.T) {
 		})
 }
 
+func TestFileArtifactAsObjectWithContentType(t *testing.T) {
+
+	setup(t)
+	config.CreateObjectArtifacts = true
+	validateArtifacts(t,
+
+		// what appears in task payload
+		[]Artifact{
+			{
+				Expires:     inAnHour,
+				Path:        "SampleArtifacts/_/X.txt",
+				Type:        "file",
+				Name:        "public/build/firefox.exe",
+				ContentType: "application/octet-stream",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]artifacts.TaskArtifact{
+			&artifacts.ObjectArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
+					Name:    "public/build/firefox.exe",
+					Expires: inAnHour,
+				},
+				ContentType: "application/octet-stream",
+				Path:        "SampleArtifacts/_/X.txt",
+			},
+		})
+}
+
 func TestFileArtifactWithContentEncoding(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -159,9 +201,9 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -169,8 +211,8 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            "SampleArtifacts/_/X.txt",
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -178,8 +220,8 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            "SampleArtifacts/b/c/d.jpg",
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -187,8 +229,8 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            "SampleArtifacts/_/X.txt",
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -196,8 +238,8 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            "SampleArtifacts/b/c/d.jpg",
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -205,8 +247,8 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            "SampleArtifacts/_/X.txt",
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -219,7 +261,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 
 func TestDirectoryArtifactWithNames(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -233,9 +275,9 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/%%%/v/X",
 					Expires: inAnHour,
 				},
@@ -243,8 +285,8 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -252,8 +294,8 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -266,7 +308,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 
 func TestDirectoryArtifactWithContentType(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -281,9 +323,9 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/%%%/v/X",
 					Expires: inAnHour,
 				},
@@ -291,8 +333,8 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -300,8 +342,8 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -314,7 +356,7 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 
 func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -338,9 +380,9 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 		},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/%%%/v/X",
 					Expires: inAnHour,
 				},
@@ -348,8 +390,8 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -357,8 +399,8 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -366,8 +408,8 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "identity",
 				Path:            filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/%%%/v/X",
 					Expires: inAnHour,
 				},
@@ -375,8 +417,8 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -384,8 +426,8 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -402,7 +444,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 // artifacts.
 func TestDirectoryArtifacts(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -413,9 +455,9 @@ func TestDirectoryArtifacts(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/%%%/v/X",
 					Expires: inAnHour,
 				},
@@ -423,8 +465,8 @@ func TestDirectoryArtifacts(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/_/X.txt",
 					Expires: inAnHour,
 				},
@@ -432,8 +474,8 @@ func TestDirectoryArtifacts(t *testing.T) {
 				ContentEncoding: "gzip",
 				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -447,7 +489,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 // Task payload specifies a file artifact which doesn't exist on worker
 func TestMissingFileArtifact(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -458,9 +500,9 @@ func TestMissingFileArtifact(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&ErrorArtifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.ErrorArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    t.Name() + "/no_such_file",
 					Expires: inAnHour,
 				},
@@ -474,7 +516,7 @@ func TestMissingFileArtifact(t *testing.T) {
 // Task payload specifies a directory artifact which doesn't exist on worker
 func TestMissingDirectoryArtifact(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -485,9 +527,9 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&ErrorArtifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.ErrorArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    t.Name() + "/no_such_dir",
 					Expires: inAnHour,
 				},
@@ -501,7 +543,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 // Task payload specifies a file artifact which is actually a directory on worker
 func TestFileArtifactIsDirectory(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -512,9 +554,9 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&ErrorArtifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.ErrorArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/b/c",
 					Expires: inAnHour,
 				},
@@ -528,7 +570,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 // TestDefaultArtifactExpiry tests that when providing no artifact expiry, task expiry is used
 func TestDefaultArtifactExpiry(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -538,9 +580,9 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&S3Artifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -555,7 +597,7 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 // Task payload specifies a directory artifact which is a regular file on worker
 func TestDirectoryArtifactIsFile(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -567,9 +609,9 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 		}},
 
 		// what we expect to discover on file system
-		[]TaskArtifact{
-			&ErrorArtifact{
-				BaseArtifact: &BaseArtifact{
+		[]artifacts.TaskArtifact{
+			&artifacts.ErrorArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "SampleArtifacts/b/c/d.jpg",
 					Expires: inAnHour,
 				},
@@ -582,7 +624,7 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 
 func TestMissingArtifactFailsTest(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -605,7 +647,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 
 func TestInvalidContentEncoding(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -638,7 +680,7 @@ func TestInvalidContentEncoding(t *testing.T) {
 
 func TestInvalidContentEncodingBlacklisted(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -671,7 +713,7 @@ func TestInvalidContentEncodingBlacklisted(t *testing.T) {
 
 func TestEmptyContentEncoding(t *testing.T) {
 
-	defer setup(t)()
+	setup(t)
 
 	td := testTask(t)
 	td.Payload = json.RawMessage(`

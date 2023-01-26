@@ -3,6 +3,288 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v47.0.3
+
+### GENERAL
+
+▶ [patch]
+Go update from 1.19.4 to 1.19.5.
+
+▶ [patch] [#5266](https://github.com/taskcluster/taskcluster/issues/5266)
+This patch fetches `https://go.dev/dl/?mode=json` in order to automatically update the sha256 values of each of the go binaries used in the `workers/generic-worker/gw-decision-task/tasks.yml` file.
+
+▶ [patch]
+Upgrade `git` to latest version to address the security vulnerabilities affecting versions 2.39 and older.
+
+[Announcement on GitHub](https://github.blog/2023-01-17-git-security-vulnerabilities-announced-2/)
+
+## v47.0.2
+
+### GENERAL
+
+▶ [patch]
+Small fix to dockerignore and release process.
+
+## v47.0.1
+
+### GENERAL
+
+▶ [patch]
+Reduce docker image size by ignoring .git folder.
+
+## v47.0.0
+
+### GENERAL
+
+▶ [patch]
+Add preinstall hook to install clients/client dependency to avoid inconsistent installs.
+Removes "heroku-(pre|post)build" commands.
+
+▶ [patch]
+Adds caching for static UI assets.
+UI web server will return 404 for /api/* and /graphql endpoints.
+
+▶ [patch] [#5941](https://github.com/taskcluster/taskcluster/issues/5941)
+Azure certificates updates.
+
+▶ [patch]
+Upgrade some major version dependency bumps using `pmac` tool:
+
+`pmac add 5748 5811 5902 5903`
+
+▶ [patch]
+Upgrades to latest `lts/gallium` Node version, v16.19.0
+
+### ADMINS
+
+▶ [MAJOR] [#5518](https://github.com/taskcluster/taskcluster/issues/5518)
+Assumes different role for github pre-release event: `assume:repo:github.com/<owner>/<repo>:release:<action>`, where `action` is one of the [release actions](https://docs.github.com/developers/webhooks-and-events/webhooks/webhook-events-and-payloads?actionType=published#release)
+
+### DEVELOPERS
+
+▶ [patch]
+Reduce monoimage size by excluding unnecessary files.
+
+▶ [patch] [#4950](https://github.com/taskcluster/taskcluster/issues/4950)
+Remove auto-generated `actions.json` which is not properly configured and is not used in this repo.
+
+▶ [patch] [#5938](https://github.com/taskcluster/taskcluster/issues/5938)
+Upgrade json-e to 4.5.0.
+
+▶ [patch]
+This patch updates the GitHub Dependabot auto-merge workflow to use the recommended solution for approving/auto-merging minor and patch Dependabot PRs.
+
+[GitHub Documentation Link](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions#enable-auto-merge-on-a-pull-request)
+
+## v46.1.1
+
+### GENERAL
+
+▶ [patch] [#5844](https://github.com/taskcluster/taskcluster/issues/5844)
+Filter debug logging information for failed registerWorker calls.
+
+▶ [patch] [#5890](https://github.com/taskcluster/taskcluster/issues/5890)
+Fix provisioners endpoint returning non-unique workers for the queue view.
+
+▶ [patch] [#5851](https://github.com/taskcluster/taskcluster/issues/5851)
+Improve error reporting for github api calls.
+
+▶ [patch]
+Minor and patch version bumps via Dependabot using `pmac`:
+
+`pmac add 5887 5881 5880 5879 5878 5876 5874 5873 5872`
+
+### DEVELOPERS
+
+▶ [patch]
+The Rust client now correctly base64-encodes `ext` hawk values with the STANDARD alphabet instead of URL_SAFE. This may fix intermittent generation of invalid temporary credentials.
+
+▶ [patch]
+This patch makes it so the taskcluster shell client (cli) is built with `goreleaser`.
+
+`goreleaser` also will automatically keep our [homebrew-tap](https://github.com/taskcluster/homebrew-tap/blob/main/Formula/taskcluster.rb) formula up-to-date during the release process.
+
+GitHub releases will now also contain zipped Windows executables of this cli supporting both amd64 and arm64. arm64 binaries for linux have been added as well.
+
+The darwin and linux binaries are now tarballs.
+
+## v46.1.0
+
+### GENERAL
+
+▶ [patch] [#5851](https://github.com/taskcluster/taskcluster/issues/5851)
+Fix incorrect status reported by github service for unknown branches.
+
+▶ [patch] [#5844](https://github.com/taskcluster/taskcluster/issues/5844)
+Log extra debug information for failed worker registration attempts.
+
+▶ [patch]
+Patch python client tests to allow lint script.
+
+▶ [patch]
+Update 46.0.0 release notes that incorrectly linked issue #2791 instead of #5791.
+
+▶ [patch]
+Go update from 1.19.3 to 1.19.4. Also updates the git version for generic worker decision tasks from `git2.37.1` to `git2.39.0`.
+
+▶ [patch]
+This patch cleans up some of the python client and client test code of deprecation warnings.
+
+▶ [patch]
+Use updated gw-ci-macos-10-14 worker pool.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#5836](https://github.com/taskcluster/taskcluster/issues/5836)
+Add worker runner for windows/386 to release artifacts (previously broken).
+
+### DEVELOPERS
+
+▶ [minor] [#4624](https://github.com/taskcluster/taskcluster/issues/4624)
+All language clients now use the getUrl download method to download objects,
+including verifying hashes provided when the objects were uploaded.  However,
+note that 's3' artifacts are still not verified -- the deployment must use
+'object' artifacts to benefit from hash verification.
+
+▶ [patch]
+This patch switches running CI tasks on generic-worker-windows2012r2 worker pool to the new, windows 2022 worker pool.
+
+## v46.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrade `taskcluster-taskgraph` version to v4.0.0 as well as upgrade other python packages.
+
+### USERS
+
+▶ [minor] [#5804](https://github.com/taskcluster/taskcluster/issues/5804)
+Adds pagination to the hooks last fires api call.
+
+This prevents loading all last fires for the hooks that have thousands of records, which results in 500 errors.
+Changes the behaviour of the existing `get_last_fires` function by using a different sort column - creation time instead of task_id.
+
+▶ [patch] [#5804](https://github.com/taskcluster/taskcluster/issues/5804)
+Fix empty error message for hooks last fire.
+
+▶ [patch] [#5804](https://github.com/taskcluster/taskcluster/issues/5804)
+Fix graphql endpoint for hook without last fires.
+
+### DEVELOPERS
+
+▶ [MAJOR] [#5791](https://github.com/taskcluster/taskcluster/issues/5791)
+Hashes for object upload and download are now more precisely defined: uploaders
+should supply all acceptable hash algorithms, and downloaders should verify all
+recognized algorihtms and ensure that at least one is present.  This has the
+effect of a breaking change in the Go client types, leading to this change's
+designation as major.
+
+▶ [patch] [#4624](https://github.com/taskcluster/taskcluster/issues/4624)
+The `startDownload` method now accepts `getUrl` as a download method.
+
+▶ [patch]
+This patch switches running CI tasks on generic-worker-ubuntu-18-04 worker pool to the new, 22-04 worker pool.
+
+## v45.0.1
+
+### GENERAL
+
+▶ [patch]
+Minor and patch version bumps via Dependabot using `pmac`:
+
+`pmac add 5822 5821 5819 5818 5817 5816 5815 5814 5813 5790 5789`
+
+### USERS
+
+▶ [patch] [bug 1803745](http://bugzil.la/1803745)
+Docker-worker and generic-worker now skip gzipping artifacts with a `.deb` extension.
+
+## v45.0.0
+
+### GENERAL
+
+▶ [minor] [#1955](https://github.com/taskcluster/taskcluster/issues/1955)
+Adds timing statistics to the Task Group page: durations for each task, totals, median and shows distribution graph.
+
+▶ [minor] [#5379](https://github.com/taskcluster/taskcluster/issues/5379)
+MUI tables are now more responsive to smaller width screens. The worker manager page, no longer has the emails of the task owner displayed.
+
+▶ [patch]
+Go upgrade from 1.18.5 to 1.19.3. Also upgrades golangci-lint version to 1.50.1 for go1.19 support.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#4605](https://github.com/taskcluster/taskcluster/issues/4605)
+Generic-worker can now create object artifacts instead of s3 artifacts if the
+`createObjectArtifacts` worker configuration parameter is true.
+
+▶ [patch] [#5634](https://github.com/taskcluster/taskcluster/issues/5634)
+The livelog docker image used by docker-worker now is not based on busybox, but
+contains only the livelog binary, /etc/ssl/certs/ca-certificates.crt and an
+empty /tmp directory. This effectively reverses the change from #3866.
+
+### USERS
+
+▶ [MAJOR] [#5799](https://github.com/taskcluster/taskcluster/issues/5799)
+Docker Worker no longer supports the `disableSeccomp` capability (added in Docker Worker 44.22.0, but turned out to be unneeded).
+
+Since this is technically a breaking change, a major version bump is necessary. However, as far as we know, nothing needed this feature.
+
+▶ [minor] [#4624](https://github.com/taskcluster/taskcluster/issues/4624)
+The object service now supports an additional download method, `getUrl`, which handles gzipped content and requires that hashes be validated.
+This method is not yet supported by the client libraries (but such support will be added soon).
+
+▶ [patch] [#5779](https://github.com/taskcluster/taskcluster/issues/5779)
+Fix `View logs in Taskcluster` link in GitHub Checks UI to default to a run ID of 0 to prevent it from being undefined and getting a 400 Bad Response while accessing this link.
+
+▶ [patch]
+Updated livelog link in GitHub checks UI to points to a streaming livelog. Previous link would only render the logs once the task was complete.
+
+### DEVELOPERS
+
+▶ [patch]
+Upgrades some rust crates and bumps rust version from 1.60.0 to 1.65.0.
+
+### OTHER
+
+▶ Additional changes not described here: [#5781](https://github.com/taskcluster/taskcluster/issues/5781), [#5795](https://github.com/taskcluster/taskcluster/issues/5795).
+
+## v44.23.4
+
+### GENERAL
+
+▶ [patch]
+Upgrades to latest Node version, v16.18.1.
+
+## v44.23.3
+
+### GENERAL
+
+▶ [patch]
+Minor and patch version bumps via Dependabot using `pmac`:
+
+`pmac add 5746 5747 5749 5750 5751`
+
+▶ [patch]
+Upgrades taskgraph from v1.2.0 to v3.4.0.
+
+## v44.23.2
+
+### GENERAL
+
+▶ [patch] [#5737](https://github.com/taskcluster/taskcluster/issues/5737)
+Fix React props handling for TaskGroup page in production mode.
+
+## v44.23.1
+
+### GENERAL
+
+▶ [patch] [#5728](https://github.com/taskcluster/taskcluster/issues/5728)
+Adds auto release lock functionality to queued locks to prevent some GitHub handlers to run forever and keep the queue locked.
+
+▶ [patch] [#5737](https://github.com/taskcluster/taskcluster/issues/5737)
+Persist task group filter in URL, so navigating back restores filtered state.
+
 ## v44.23.0
 
 ### GENERAL

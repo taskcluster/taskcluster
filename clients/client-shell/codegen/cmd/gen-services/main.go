@@ -1,10 +1,10 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
+	"os"
 
-	"github.com/taskcluster/taskcluster/v44/clients/client-shell/codegen"
+	"github.com/taskcluster/taskcluster/v47/clients/client-shell/codegen"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 		log.Fatalln("error: failed to format services.go: ", err)
 	}
 
-	err = ioutil.WriteFile("services.go", source, 0664)
+	err = os.WriteFile("services.go", source, 0664)
 	if err != nil {
 		log.Fatalln("error: failed to save services.go: ", err)
 	}

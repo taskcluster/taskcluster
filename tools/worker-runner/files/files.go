@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -58,7 +57,7 @@ func (f File) extractFile() error {
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile(f.Path, data, 0777)
+		return os.WriteFile(f.Path, data, 0777)
 	default:
 		return errors.New("Unsupported encoding " + f.Encoding + " for worker file")
 	}

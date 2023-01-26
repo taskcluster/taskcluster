@@ -7,16 +7,16 @@ transforms:
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
-job-defaults:
+task-defaults:
   run:
     using: bare
   worker:
     max-run-time: 3600
 
-jobs:
+tasks:
   windows-worker-runner:
     description: 'test worker-runner under windows as well'
-    worker-type: gw-ci-windows2012r2-amd64
+    worker-type: gw-ci-windows-2022
     worker:
       mounts:
         - content:
@@ -24,7 +24,7 @@ jobs:
           directory: '{go_version}'
           format: zip
         - content:
-            url: 'https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip'
+            url: 'https://github.com/git-for-windows/git/releases/download/v2.39.1.windows.1/MinGit-2.39.1-64-bit.zip'
           directory: 'git'
           format: zip
     run:
@@ -45,7 +45,7 @@ jobs:
         - go test -v ./...
   decision-task:
     description: 'decision task for generic-worker tasks'
-    worker-type: gw-ci-ubuntu-18-04
+    worker-type: gw-ci-ubuntu-22-04
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
