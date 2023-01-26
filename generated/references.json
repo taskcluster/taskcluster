@@ -8823,6 +8823,9 @@
           "type": "array"
         },
         "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
           "description": "Example: ```\n{\n  \"PATH\": '/borked/path'\n  \"ENV_NAME\": \"VALUE\"\n}\n```",
           "title": "Environment variable mappings.",
           "type": "object"

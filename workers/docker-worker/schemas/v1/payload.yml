@@ -148,6 +148,8 @@ properties:
       }
       ```
     type: object
+    additionalProperties:
+      type: string
   maxRunTime:
     type: number
     title: Maximum run time in seconds
