@@ -5657,10 +5657,10 @@ pg-pool@^3.5.2:
   resolved "https://registry.yarnpkg.com/pg-pool/-/pg-pool-3.5.2.tgz#ed1bed1fb8d79f1c6fd5fb1c99e990fbf9ddf178"
   integrity sha512-His3Fh17Z4eg7oANLob6ZvH8xIVen3phEZh2QuyrIl4dQSDVEabNducv6ysROKpDNPSD+12tONZVWfSgMvDD9w==
 
-pg-protocol@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/pg-protocol/-/pg-protocol-1.5.0.tgz#b5dd452257314565e2d54ab3c132adc46565a6a0"
-  integrity sha512-muRttij7H8TqRNu/DxrAJQITO4Ac7RmX3Klyr/9mJEOBeIpgnF8f9jAfRz5d3XwQZl5qBjF9gLsUtMPJE0vezQ==
+pg-protocol@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/pg-protocol/-/pg-protocol-1.6.0.tgz#4c91613c0315349363af2084608db843502f8833"
+  integrity sha512-M+PDm637OY5WM307051+bsDia5Xej6d9IR4GwJse1qA1DIhiKlksvrneZOYQq42OM+spubpcNYEo2FcKQrDk+Q==
 
 pg-types@^2.1.0:
   version "2.2.0"
@@ -5674,15 +5674,15 @@ pg-types@^2.1.0:
     postgres-interval "^1.1.0"
 
 pg@^8.8.0:
-  version "8.8.0"
-  resolved "https://registry.yarnpkg.com/pg/-/pg-8.8.0.tgz#a77f41f9d9ede7009abfca54667c775a240da686"
-  integrity sha512-UXYN0ziKj+AeNNP7VDMwrehpACThH7LUl/p8TDFpEUuSejCUIwGSfxpHsPvtM6/WXFy6SU4E5RG4IJV/TZAGjw==
+  version "8.9.0"
+  resolved "https://registry.yarnpkg.com/pg/-/pg-8.9.0.tgz#73c5d77a854d36b0e185450dacb8b90c669e040b"
+  integrity sha512-ZJM+qkEbtOHRuXjmvBtOgNOXOtLSbxiMiUVMgE4rV6Zwocy03RicCVvDXgx8l4Biwo8/qORUnEqn2fdQzV7KCg==
   dependencies:
     buffer-writer "2.0.0"
     packet-reader "1.0.0"
     pg-connection-string "^2.5.0"
     pg-pool "^3.5.2"
-    pg-protocol "^1.5.0"
+    pg-protocol "^1.6.0"
     pg-types "^2.1.0"
     pgpass "1.x"
 
@@ -5725,7 +5725,7 @@ postgres-array@~2.0.0:
 postgres-bytea@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/postgres-bytea/-/postgres-bytea-1.0.0.tgz#027b533c0aa890e26d172d47cf9ccecc521acd35"
-  integrity sha1-AntTPAqokOJtFy1Hz5zOzFIazTU=
+  integrity sha512-xy3pmLuQqRBZBXDULy7KbaitYqLcmxigw14Q5sj8QBVLqEwXfeybIKVWiqAXTlcvdvb0+xkOtDbfQMOf4lST1w==
 
 postgres-date@~1.0.4:
   version "1.0.7"
@@ -6786,7 +6786,7 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "47.0.2"
+  version "47.0.3"
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
@@ -6796,37 +6796,37 @@ tar-stream@^2.0.0:
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-db@link:db":
-  version "47.0.2"
+  version "47.0.3"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "47.0.2"
+  version "47.0.3"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "47.0.2"
+  version "47.0.3"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "47.0.2"
+  version "47.0.3"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "47.0.2"
+  version "47.0.3"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "47.0.2"
+  version "47.0.3"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "47.0.2"
+  version "47.0.3"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "47.0.2"
+  version "47.0.3"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "47.0.2"
+  version "47.0.3"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "47.0.2"
+  version "47.0.3"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "47.0.2"
+  version "47.0.3"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6836,7 +6836,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "47.0.2"
+  version "47.0.3"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6844,7 +6844,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "47.0.2"
+  version "47.0.3"
 
 test-exclude@^6.0.0:
   version "6.0.0"
