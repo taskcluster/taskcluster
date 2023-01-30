@@ -4,7 +4,7 @@
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "16.19.0",
+    "node": "18.13.0",
     "yarn": "^1.22.19"
   },
   "workspaces": [
@@ -179,7 +179,7 @@
     "release": "node infrastructure/tooling/src/main.js release",
     "staging-release": "node infrastructure/tooling/src/main.js staging-release",
     "release:publish": "node infrastructure/tooling/src/main.js release:publish",
-    "generate": "node infrastructure/tooling/src/main.js generate",
+    "generate": "export NODE_OPTIONS=--dns-result-order=ipv4first && node infrastructure/tooling/src/main.js generate",
     "minify": "node infrastructure/tooling/src/main.js minify",
     "changelog": "node infrastructure/tooling/src/main.js changelog",
     "changelog:show": "node infrastructure/tooling/src/main.js changelog:show",
