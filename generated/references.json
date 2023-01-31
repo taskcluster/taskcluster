@@ -8762,6 +8762,9 @@
           "type": "object"
         },
         "cache": {
+          "additionalProperties": {
+            "type": "string"
+          },
           "description": "Caches are mounted within the docker container at the mount point specified. Example: ```{ \"CACHE NAME\": \"/mount/path/in/container\" }```",
           "title": "Caches to mount point mapping.",
           "type": "object"
