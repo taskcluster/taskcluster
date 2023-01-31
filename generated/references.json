@@ -8972,12 +8972,12 @@
           "type": "string"
         },
         "maxRunTime": {
-          "description": "Maximum time the task container can run in seconds.  Maximum is one week, as a sanity-check.  A task that takes so long is unlikely to succeed!",
-          "maximum": 604800,
+          "description": "Maximum time the task container can run in seconds.",
+          "maximum": 86400,
           "minimum": 1,
           "multipleOf": 1,
           "title": "Maximum run time in seconds",
-          "type": "number"
+          "type": "integer"
         },
         "onExitStatus": {
           "additionalProperties": false,
