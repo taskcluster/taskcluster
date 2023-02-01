@@ -17,7 +17,7 @@ hawk = "4.0.0"
 backoff = "0.4.0"
 slugid = "1.0.0"
 percent-encoding = "2.1.0"
-tokio = { version = "1.23", features = ["macros", "time"] }
+tokio = { version = "1.25", features = ["macros", "time"] }
 chrono = { version = "0.4.11", features = ["serde"] }
 hmac-sha256 = "1.1.3"
 
