@@ -176,7 +176,7 @@ properties:
         type: array
         items:
           title: Exit statuses
-          type: number
+          type: integer
       purgeCaches:
         title: Purge caches exit status
         description: >-
@@ -185,7 +185,7 @@ properties:
         type: array
         items:
           title: Exit statuses
-          type: number
+          type: integer
     required: []
     additionalProperties: false
   artifacts:
