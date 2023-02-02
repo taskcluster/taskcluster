@@ -12,9 +12,7 @@ exports.tasks = [{
   provides: ['target-go-version'],
   run: async (requirements, utils) => {
     const goVersion = (await readRepoFile('.go-version')).trim();
-    const goVersionMajor = goVersion.replace(/^go([0-9]+)\.[0-9]+\.[0-9]+$/, '$1');
-    const goVersionMinor = goVersion.replace(/^go[0-9]+\.([0-9]+)\.[0-9]+$/, '$1');
-    const goVersionBugfix = goVersion.replace(/^go[0-9]+\.[0-9]+\.([0-9]+)$/, '$1');
+    const [goVersionMajor, goVersionMinor, goVersionBugfix = ''] = goVersion.substring(2).split('.');
     utils.step({ title: 'Checking go version' });
 
     const errmsg = `'yarn generate' requires ${goVersion}.  Consider using https://github.com/moovweb/gvm.`;
@@ -67,15 +65,21 @@ exports.tasks = [{
         `MIN_GO_MINOR_VERSION=${goVersionMinor}`));
 
     utils.status({ message: 'workers/generic-worker/gw-decision-task/tasks.yml' });
+    const previousGoVersion = (await readRepoFile('workers/generic-worker/gw-decision-task/tasks.yml')).match(/go[0-9.]+/)[0].substring(2).split('.');
+    const prevGoVersionBugfix = previousGoVersion[2] || '';
     await modifyRepoFile('workers/generic-worker/gw-decision-task/tasks.yml',
       contents => contents.replace(
-        /go [0-9]+\.[0-9]+\.[0-9]+/g,
-        `go ${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,
+        /go [0-9.]+/g,
+        goVersionBugfix ?
+          `go ${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}` :
+          `go ${goVersionMajor}.${goVersionMinor}`,
       ).replace(
-        /gopath[0-9]+\.[0-9]+\.[0-9]+/g,
-        `gopath${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,
+        /gopath[0-9.]+/g,
+        goVersionBugfix ?
+          `gopath${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}` :
+          `gopath${goVersionMajor}.${goVersionMinor}`,
       ).replace(
-        /go[0-9]+\.[0-9]+\.[0-9]+/g,
+        prevGoVersionBugfix ? /go[0-9]+\.[0-9]+\.[0-9]+/g : /go[0-9]+\.[0-9]+/g,
         `${goVersion}`));
     const goDownloadsJson = await (await fetch('https://go.dev/dl/?mode=json&include=all')).json();
     const goFilesArr = goDownloadsJson.find(el => el.version === goVersion).files;
@@ -107,8 +111,10 @@ ${contents}`,
     utils.status({ message: 'generic-worker.Dockerfile' });
     await modifyRepoFile('generic-worker.Dockerfile',
       contents => contents.replace(
-        /FROM golang:[0-9]+\.[0-9]+\.[0-9]+/,
-        `FROM golang:${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,
+        /FROM golang:[0-9.]+/,
+        goVersionBugfix ?
+          `FROM golang:${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}` :
+          `FROM golang:${goVersionMajor}.${goVersionMinor}`,
       ));
   },
 }];
