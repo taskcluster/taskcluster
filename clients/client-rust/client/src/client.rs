@@ -522,7 +522,7 @@ mod tests {
             GeneralPurposeConfig::new().with_decode_padding_mode(DecodePaddingMode::Indifferent),
         );
 
-        let ext = engine.decode(ext, &engine)?;
+        let ext = engine.decode(ext)?;
 
         #[derive(serde::Deserialize)]
         #[serde(rename_all = "camelCase")]
