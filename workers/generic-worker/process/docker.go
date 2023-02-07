@@ -56,7 +56,12 @@ func (c *Command) Execute() (r *Result) {
 		podmanPath = "/usr/bin/podman"
 		log.Printf("Could not find podman in PATH, defaulting to %v", podmanPath)
 	}
-	image := "ubuntu"
+	// Frozen version specified, since we hit the issue:
+	//  unsupported docker v2s2 media type: "application/vnd.oci.image.manifest.v1+json"
+	// when ubuntu:latest was pointed at ubuntu:jammy-20230126. This is the previous
+	// version, which worked without issue. Note, docker engine is soon to be deprecated
+	// and isn't used anywhere in production, so freezing here should be fine.
+	image := "ubuntu:jammy-20221130"
 
 	// TODO scary injection potential here
 	cmd := exec.CommandContext(c.ctx, podmanPath, append([]string{"run", image}, c.cmd...)...)
