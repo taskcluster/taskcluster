@@ -38,7 +38,7 @@ ARG DOCKER_FLOW_VERSION
 RUN if [ -n "${DOCKER_FLOW_VERSION}" ]; then \
     echo "${DOCKER_FLOW_VERSION}" > /version.json; \
 else \
-    echo \{\"version\": \"47.0.3\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > /version.json; \
+    echo \{\"version\": \"47.1.0\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > /version.json; \
 fi
 
 VOLUME /etc/generic-worker/config.json

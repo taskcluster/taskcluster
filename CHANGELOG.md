@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v47.1.0
+
+### GENERAL
+
+▶ [minor]
+This upgrades Node.js to the latest LTS version available, v18.13.0. Previous version was v16.19.0 and it was scheduled to hit EoL later this year.
+
+View the release schedule [here](https://github.com/nodejs/release#release-schedule).
+
+▶ [patch]
+Docker worker json schema payload has been tweaked for cleaner go code generation. No functional impact anticipated.
+
+▶ [patch]
+Minor and patch version bumps via Dependabot using `pmac`:
+
+`pmac add 6040 6039 6038 6036 6035 6034 6032 6030 6029 6028 6027 6026 6025 6024 6023`
+
+### USERS
+
+▶ [patch] [#6014](https://github.com/taskcluster/taskcluster/issues/6014)
+Bug fix: docker worker no longer accepts non-strings for env var values in task payloads.
+
+▶ [patch] [#6021](https://github.com/taskcluster/taskcluster/issues/6021)
+Docker Worker payload has been tightened to enforce that Docker Worker caches are string to string mappings, rather than string to anything mappings.
+
 ## v47.0.3
 
 ### GENERAL
