@@ -4,6 +4,7 @@ const libUrls = require('taskcluster-lib-urls');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { makeDebug } = require('./utils');
 const { POLICIES } = require('./policies');
+const { GITHUB_TASKS_FOR } = require('../constants');
 
 /**
  * If a .taskcluster.yml exists, attempt to turn it into a taskcluster
@@ -157,7 +158,7 @@ async function jobHandler(message) {
         debug(`This user is not a collaborator on ${organization}/${repository} and can't make PR@${sha}. Exiting...`);
         return;
       } else if (repoPolicy === POLICIES.PUBLIC_RESTRICTED) {
-        message.payload.tasks_for = "github-pull-request-untrusted";
+        message.payload.tasks_for = GITHUB_TASKS_FOR.PULL_REQUEST_UNTRUSTED;
       }
     }
   }

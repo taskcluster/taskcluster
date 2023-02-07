@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "46.1.1",
+  "version": "47.0.3",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "16.19.0",
+    "node": "18.13.0",
     "yarn": "^1.22.19"
   },
   "workspaces": [
@@ -153,7 +153,7 @@
     "mockdate": "^3.0.2",
     "moment": "^2.29.4",
     "mz": "^2.7.0",
-    "nock": "13.2.9",
+    "nock": "13.3.0",
     "open-editor": "^3.0.0",
     "qlobber": "^5.0.3",
     "semver": "^7.3.2",
@@ -179,7 +179,7 @@
     "release": "node infrastructure/tooling/src/main.js release",
     "staging-release": "node infrastructure/tooling/src/main.js staging-release",
     "release:publish": "node infrastructure/tooling/src/main.js release:publish",
-    "generate": "node infrastructure/tooling/src/main.js generate",
+    "generate": "export NODE_OPTIONS=--dns-result-order=ipv4first && node infrastructure/tooling/src/main.js generate",
     "minify": "node infrastructure/tooling/src/main.js minify",
     "changelog": "node infrastructure/tooling/src/main.js changelog",
     "changelog:show": "node infrastructure/tooling/src/main.js changelog:show",

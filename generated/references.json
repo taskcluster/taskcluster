@@ -8762,6 +8762,9 @@
           "type": "object"
         },
         "cache": {
+          "additionalProperties": {
+            "type": "string"
+          },
           "description": "Caches are mounted within the docker container at the mount point specified. Example: ```{ \"CACHE NAME\": \"/mount/path/in/container\" }```",
           "title": "Caches to mount point mapping.",
           "type": "object"
@@ -8823,6 +8826,9 @@
           "type": "array"
         },
         "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
           "description": "Example: ```\n{\n  \"PATH\": '/borked/path'\n  \"ENV_NAME\": \"VALUE\"\n}\n```",
           "title": "Environment variable mappings.",
           "type": "object"
@@ -8966,12 +8972,12 @@
           "type": "string"
         },
         "maxRunTime": {
-          "description": "Maximum time the task container can run in seconds.  Maximum is one week, as a sanity-check.  A task that takes so long is unlikely to succeed!",
-          "maximum": 604800,
+          "description": "Maximum time the task container can run in seconds.",
+          "maximum": 86400,
           "minimum": 1,
           "multipleOf": 1,
           "title": "Maximum run time in seconds",
-          "type": "number"
+          "type": "integer"
         },
         "onExitStatus": {
           "additionalProperties": false,
@@ -8981,7 +8987,7 @@
               "description": "If the task exists with a purge caches exit status, all caches associated with the task will be purged.",
               "items": {
                 "title": "Exit statuses",
-                "type": "number"
+                "type": "integer"
               },
               "title": "Purge caches exit status",
               "type": "array"
@@ -8990,7 +8996,7 @@
               "description": "If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.",
               "items": {
                 "title": "Exit statuses",
-                "type": "number"
+                "type": "integer"
               },
               "title": "Retriable exit statuses",
               "type": "array"
@@ -15511,7 +15517,7 @@
             "taskId"
           ],
           "category": "Tasks",
-          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed. It will schedule a task that is _unscheduled_\nregardless of the state of its dependencies.\n\nThis method is deprecated in favour of creating a new task with the same\ntask definition (but with a new taskId).\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent: if it is invoked for a task that\nis `pending` or `running`, it will just return the current task status.",
+          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed. It will schedule a task that is _unscheduled_\nregardless of the state of its dependencies.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent: if it is invoked for a task that\nis `pending` or `running`, it will just return the current task status.",
           "method": "post",
           "name": "rerunTask",
           "output": "v1/task-status-response.json#",

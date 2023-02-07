@@ -2,6 +2,7 @@ use crate::retry::Backoff;
 use crate::util::collect_scopes;
 use crate::{Credentials, Retry};
 use anyhow::{anyhow, bail, Context, Error, Result};
+use base64::Engine;
 use reqwest::header::HeaderValue;
 use serde_json::json;
 use serde_json::Value;
@@ -189,7 +190,7 @@ impl Client {
 
         let ext = if let Some(ext) = ext_json {
             let ext_str = serde_json::to_string(&ext)?;
-            Some(base64::encode(ext_str))
+            Some(base64::engine::general_purpose::STANDARD.encode(ext_str))
         } else {
             None
         };
@@ -513,15 +514,15 @@ mod tests {
         };
 
         use base64::engine::{
-            fast_portable::{FastPortable, FastPortableConfig},
+            general_purpose::{GeneralPurpose, GeneralPurposeConfig},
             DecodePaddingMode,
         };
-        let engine = FastPortable::from(
+        let engine = GeneralPurpose::new(
             &base64::alphabet::STANDARD,
-            FastPortableConfig::new().with_decode_padding_mode(DecodePaddingMode::Indifferent),
+            GeneralPurposeConfig::new().with_decode_padding_mode(DecodePaddingMode::Indifferent),
         );
 
-        let ext = base64::decode_engine(ext, &engine)?;
+        let ext = engine.decode(ext)?;
 
         #[derive(serde::Deserialize)]
         #[serde(rename_all = "camelCase")]

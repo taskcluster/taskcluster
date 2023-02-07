@@ -4,7 +4,7 @@ import (
 	"log"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/win32"
 )
 
 func freeDiskSpaceBytes(dir string) (uint64, error) {

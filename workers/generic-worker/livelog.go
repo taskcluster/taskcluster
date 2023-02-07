@@ -7,12 +7,12 @@ import (
 	"os"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
-	"github.com/taskcluster/taskcluster/v46/internal/scopes"
-	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/livelog"
-	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
+	"github.com/taskcluster/taskcluster/v47/internal/scopes"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/livelog"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/process"
 )
 
 var (

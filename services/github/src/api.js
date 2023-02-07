@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const _ = require('lodash');
-const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS } = require('./constants');
+const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS, GITHUB_TASKS_FOR } = require('./constants');
 const { shouldSkipCommit, shouldSkipPullRequest } = require('./utils');
 
 // Strips/replaces undesirable characters which GitHub allows in
@@ -293,7 +293,7 @@ builder.declare({
         msg.details = getPullRequestDetails(body);
         msg.installationId = installationId;
         publisherKey = PUBLISHERS.PULL_REQUEST;
-        msg.tasks_for = 'github-pull-request';
+        msg.tasks_for = GITHUB_TASKS_FOR.PULL_REQUEST;
         msg.branch = body.pull_request.head.ref;
         break;
 
@@ -309,7 +309,7 @@ builder.declare({
         msg.details = getPushDetails(body);
         msg.installationId = installationId;
         publisherKey = PUBLISHERS.PUSH;
-        msg.tasks_for = 'github-push';
+        msg.tasks_for = GITHUB_TASKS_FOR.PUSH;
         msg.branch = body.ref.split('/').slice(2).join('/');
         break;
 
@@ -321,7 +321,7 @@ builder.declare({
         msg.details = getReleaseDetails(body);
         msg.installationId = installationId;
         publisherKey = PUBLISHERS.RELEASE;
-        msg.tasks_for = 'github-release';
+        msg.tasks_for = GITHUB_TASKS_FOR.RELEASE;
         msg.branch = body.release.target_commitish;
         break;
 
@@ -354,7 +354,7 @@ builder.declare({
         publisherKey = PUBLISHERS.RERUN;
         msg.organization = sanitizeGitHubField(body.repository.owner.login);
         msg.details = getRerunDetails(body);
-        msg.tasks_for = 'github-push';
+        msg.tasks_for = GITHUB_TASKS_FOR.PUSH;
         msg.installationId = installationId;
         msg.checkRunId = body.check_run.id;
         msg.checkSuiteId = body.check_run.check_suite.id;

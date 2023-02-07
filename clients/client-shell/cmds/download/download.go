@@ -1,7 +1,7 @@
 package download
 
 import (
-	"github.com/taskcluster/taskcluster/v46/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v47/clients/client-shell/cmds/root"
 
 	"github.com/spf13/cobra"
 )

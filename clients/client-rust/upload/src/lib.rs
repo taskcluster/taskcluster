@@ -19,6 +19,7 @@ Users for whom the supplied convenience functions are inadequate can add their o
 
  */
 use anyhow::{bail, Context as ErrorContext, Result};
+use base64::Engine;
 use reqwest::Body;
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -139,7 +140,7 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
         let mut buf = vec![];
         let mut reader = reader_factory.get_reader().await?;
         reader.read_to_end(&mut buf).await?;
-        let data_b64 = base64::encode(buf);
+        let data_b64 = base64::engine::general_purpose::STANDARD.encode(buf);
         proposed_upload_methods["dataInline"] = json!({
             "contentType": content_type,
             "objectData": data_b64,
@@ -474,7 +475,7 @@ mod test {
             format!("create some/object {} proj {}", expires, upload_id),
             format!(
                 "dataInline application/binary {}",
-                base64::encode(b"hello world")
+                base64::engine::general_purpose::STANDARD.encode(b"hello world")
             ),
             format!("finish some/object proj {}", upload_id),
         ]);

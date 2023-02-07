@@ -3,6 +3,79 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v47.0.3
+
+### GENERAL
+
+▶ [patch]
+Go update from 1.19.4 to 1.19.5.
+
+▶ [patch] [#5266](https://github.com/taskcluster/taskcluster/issues/5266)
+This patch fetches `https://go.dev/dl/?mode=json` in order to automatically update the sha256 values of each of the go binaries used in the `workers/generic-worker/gw-decision-task/tasks.yml` file.
+
+▶ [patch]
+Upgrade `git` to latest version to address the security vulnerabilities affecting versions 2.39 and older.
+
+[Announcement on GitHub](https://github.blog/2023-01-17-git-security-vulnerabilities-announced-2/)
+
+## v47.0.2
+
+### GENERAL
+
+▶ [patch]
+Small fix to dockerignore and release process.
+
+## v47.0.1
+
+### GENERAL
+
+▶ [patch]
+Reduce docker image size by ignoring .git folder.
+
+## v47.0.0
+
+### GENERAL
+
+▶ [patch]
+Add preinstall hook to install clients/client dependency to avoid inconsistent installs.
+Removes "heroku-(pre|post)build" commands.
+
+▶ [patch]
+Adds caching for static UI assets.
+UI web server will return 404 for /api/* and /graphql endpoints.
+
+▶ [patch] [#5941](https://github.com/taskcluster/taskcluster/issues/5941)
+Azure certificates updates.
+
+▶ [patch]
+Upgrade some major version dependency bumps using `pmac` tool:
+
+`pmac add 5748 5811 5902 5903`
+
+▶ [patch]
+Upgrades to latest `lts/gallium` Node version, v16.19.0
+
+### ADMINS
+
+▶ [MAJOR] [#5518](https://github.com/taskcluster/taskcluster/issues/5518)
+Assumes different role for github pre-release event: `assume:repo:github.com/<owner>/<repo>:release:<action>`, where `action` is one of the [release actions](https://docs.github.com/developers/webhooks-and-events/webhooks/webhook-events-and-payloads?actionType=published#release)
+
+### DEVELOPERS
+
+▶ [patch]
+Reduce monoimage size by excluding unnecessary files.
+
+▶ [patch] [#4950](https://github.com/taskcluster/taskcluster/issues/4950)
+Remove auto-generated `actions.json` which is not properly configured and is not used in this repo.
+
+▶ [patch] [#5938](https://github.com/taskcluster/taskcluster/issues/5938)
+Upgrade json-e to 4.5.0.
+
+▶ [patch]
+This patch updates the GitHub Dependabot auto-merge workflow to use the recommended solution for approving/auto-merging minor and patch Dependabot PRs.
+
+[GitHub Documentation Link](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions#enable-auto-merge-on-a-pull-request)
+
 ## v46.1.1
 
 ### GENERAL

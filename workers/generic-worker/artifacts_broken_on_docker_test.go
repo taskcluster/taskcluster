@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v46/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
 )
 
 func TestPublicDirectoryArtifact(t *testing.T) {
