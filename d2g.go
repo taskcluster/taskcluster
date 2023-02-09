@@ -93,6 +93,9 @@ func command(payload *dockerworker.DockerWorkerPayload, gwArtifacts []genericwor
 func podmanRunCommand(containerName string, payload *dockerworker.DockerWorkerPayload, wdcs []genericworker.WritableDirectoryCache) string {
 	command := strings.Builder{}
 	command.WriteString("podman run --name " + containerName)
+	if payload.Capabilities.Privileged {
+		command.WriteString(" --privileged")
+	}
 	command.WriteString(createVolumeMountsString(payload.Cache, wdcs))
 	command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
 	command.WriteString(podmanEnvMappings(payload.Env))
