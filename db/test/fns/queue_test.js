@@ -644,6 +644,42 @@ suite(testing.suiteName(), function() {
       });
     });
 
+    suite('cancel_task_group', function() {
+      helper.dbTest('no such task group', async function(db) {
+        const res = await db.fns.cancel_task_group(taskId, 'because');
+        assert.deepEqual(res, []);
+      });
+
+      for (let state of ['exception', 'completed']) {
+        helper.dbTest(`task with ${state} run`, async function(db) {
+          const taskGroupId = slugid.v4();
+          const taskId = slugid.v4();
+          await create(db, { taskId, taskGroupId });
+          await setTaskRuns(db, [{ state }]);
+          const res = await db.fns.cancel_task_group(taskGroupId, 'because');
+          assert.equal(res.length, 1);
+          const task = fixRuns(await db.fns.get_task_projid(taskId));
+          assert.deepEqual(task[0].runs, [{ state: 'exception', reasonCreated: 'exception', reasonResolved: 'because', resolved: 'date', scheduled: 'date' }]);
+        });
+      }
+
+      helper.dbTest('task with existing run', async function(db) {
+        const taskGroupId = slugid.v4();
+        const taskIds = [slugid.v4(), slugid.v4()];
+        await Promise.all(taskIds.map(taskId => create(db, { taskId, taskGroupId })));
+        await setTaskRuns(db, [{ state: 'running' }]);
+        await setTaskTakenUntil(db, new Date());
+        const res = fixRuns(await db.fns.cancel_task_group(taskGroupId, 'because'));
+        assert.deepEqual(res[0].runs, [{
+          reasonCreated: 'exception', reasonResolved: 'because', resolved: 'date', scheduled: 'date', state: 'exception',
+        }]);
+        taskIds.forEach(async (taskId) => {
+          const task = fixRuns(await db.fns.get_task_projid(taskId));
+          assert.deepEqual(task[0].runs, res[0].runs);
+        });
+      });
+    });
+
     suite('claim_task', function() {
       const takenUntil = new Date();
 

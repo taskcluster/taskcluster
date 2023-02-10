@@ -202,6 +202,18 @@ Happily, this is easy.
 In the root directory of the repository, run `yarn generate`.
 It will change a few files, and you should include those changes in your Git commit.
 
+Generation requires database to be running in order to properly generate schema migrations. You can start it using `docker compose`:
+
+```sh
+# start the database and initialize it
+docker compose up -d postgres pg_int_db
+
+# export test database that can be used for generation
+export TEST_DB_URL=postgresql://postgres@localhost:5432/taskcluster-test
+
+yarn generate
+```
+
 ## Running Services Locally
 
 We generally depend on tests to ensure that services are behaving correctly.

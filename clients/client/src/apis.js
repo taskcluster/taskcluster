@@ -2231,6 +2231,28 @@ module.exports = {
           "args": [
             "taskGroupId"
           ],
+          "category": "Tasks",
+          "description": "This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)\nwith the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.\n\n**Remark** a cancelled task may continue to run with valid credentials on a worker for\nseveral minutes after being cancelled, potentially creating new tasks. These tasks\nwill not be subject to cancellation, and therefore multiple calls may be required to\ncancel the additional tasks too.",
+          "method": "post",
+          "name": "cancelTaskGroup",
+          "output": "v1/cancel-task-group-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/cancel",
+          "scopes": {
+            "AnyOf": [
+              "queue:cancel-task-group:<schedulerId>/<taskGroupId>",
+              "queue:cancel-task-in-project:<projectId>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Cancel Task Group",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
           "category": "Task Groups",
           "description": "Get task group information by `taskGroupId`.\n\nThis will return meta-information associated with the task group.\nIt contains information about task group expiry date or if it is sealed.\n\nIf you also want to see which tasks belong to this task group, you can call\n`listTaskGroup` method.",
           "method": "get",

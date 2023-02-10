@@ -4684,6 +4684,53 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/cancel-task-group-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response from a `cancelTaskGroup` request.\n",
+      "properties": {
+        "cancelledCount": {
+          "description": "Total number of tasks that were cancelled with this call.\nIt includes all non-resolved tasks.\n",
+          "minimum": 0,
+          "title": "Total number of cancelled tasks",
+          "type": "integer"
+        },
+        "taskGroupId": {
+          "description": "Identifier for the task-group being listed.\n",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Task-Group Identifier",
+          "type": "string"
+        },
+        "taskGroupSize": {
+          "description": "Current count of tasks in the task group.\n",
+          "minimum": 0,
+          "title": "Task-Group size",
+          "type": "integer"
+        },
+        "taskIds": {
+          "description": "List of `taskIds` cancelled by this call.\n",
+          "items": {
+            "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+            "type": "string"
+          },
+          "title": "List of task IDs",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "taskGroupId",
+        "taskGroupSize",
+        "cancelledCount",
+        "taskIds"
+      ],
+      "title": "Cancel Task-Group Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/cancel-task-group-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/artifact-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -14909,6 +14956,19 @@
           "version": 1
         },
         {
+          "description": "All non-resolved tasks within given task group have been cancelled.",
+          "fields": {
+            "cancelledCount": "Total count of tasks whose state was changed",
+            "taskGroupId": "The task group id.",
+            "taskGroupSize": "Total count of tasks in group at the moment of cancellation"
+          },
+          "level": "notice",
+          "name": "taskGroupCancelled",
+          "title": "Task Group Cancelled",
+          "type": "task-group-cancelled",
+          "version": 1
+        },
+        {
           "description": "Task group was sealed and will no longer allow creation of tasks.",
           "fields": {
             "expires": "Date and time of task group expiration",
@@ -15655,6 +15715,28 @@
           "scopes": "queue:list-task-group:<taskGroupId>",
           "stability": "stable",
           "title": "List Task Group",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
+          "category": "Tasks",
+          "description": "This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)\nwith the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.\n\n**Remark** a cancelled task may continue to run with valid credentials on a worker for\nseveral minutes after being cancelled, potentially creating new tasks. These tasks\nwill not be subject to cancellation, and therefore multiple calls may be required to\ncancel the additional tasks too.",
+          "method": "post",
+          "name": "cancelTaskGroup",
+          "output": "v1/cancel-task-group-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/cancel",
+          "scopes": {
+            "AnyOf": [
+              "queue:cancel-task-group:<schedulerId>/<taskGroupId>",
+              "queue:cancel-task-in-project:<projectId>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Cancel Task Group",
           "type": "function"
         },
         {

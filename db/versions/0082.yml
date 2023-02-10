@@ -1,0 +1,54 @@
+version: 82
+description: cancel multiple tasks for a given taskGroupId
+methods:
+  cancel_task_group:
+    description: |-
+      This cancels all non-resolved tasks for the given task group
+      by calling existing cancel_task() procedure.
+    mode: write
+    serviceName: queue
+    args: task_group_id_in text, reason text
+    returns: |-
+      table(
+        task_id text,
+        task_queue_id text,
+        project_id text,
+        scheduler_id text,
+        task_group_id text,
+        deadline timestamptz,
+        expires timestamptz,
+        retries_left integer,
+        runs jsonb,
+        taken_until timestamptz
+      )
+    body: |-
+      declare
+        task_record RECORD;
+      begin
+        FOR task_record IN (
+          SELECT tasks.task_id
+          FROM tasks
+          WHERE tasks.task_group_id = task_group_id_in
+          FOR UPDATE
+        )
+        LOOP
+          -- call cancel which will check status and create an exception run
+          PERFORM cancel_task(task_record.task_id, reason);
+
+          RETURN QUERY
+            SELECT
+              tasks.task_id,
+              tasks.task_queue_id,
+              tasks.project_id,
+              tasks.scheduler_id,
+              tasks.task_group_id,
+              tasks.deadline,
+              tasks.expires,
+              tasks.retries_left,
+              tasks.runs,
+              tasks.taken_until
+            FROM tasks
+            WHERE tasks.task_id = task_record.task_id;
+        END LOOP;
+
+      end

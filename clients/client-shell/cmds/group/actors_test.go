@@ -27,7 +27,7 @@ func (suite *FakeServerSuite) SetupSuite() {
 	// set up a fake server that knows how to answer the `task()` method
 	handler := http.NewServeMux()
 
-	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/cancel", cancelHandler)
+	handler.HandleFunc("/api/queue/v1/task-group/"+fakeGroupID+"/cancel", cancelGroupHandler)
 	handler.HandleFunc("/api/queue/v1/task-group/"+fakeGroupID+"/list", listTaskGroupHandler)
 
 	suite.testServer = httptest.NewServer(handler)
@@ -46,19 +46,12 @@ func TestFakeServerSuite(t *testing.T) {
 }
 
 // returns the test status on request
-func cancelHandler(w http.ResponseWriter, _ *http.Request) {
+func cancelGroupHandler(w http.ResponseWriter, _ *http.Request) {
 	status := `{
-				  "status": {
-				    "state": "cancelled",
-				    "runs": [
-				      {
-				        "runId": 0,
-				        "state": "cancelled",
-				        "reasonCreated": "scheduled",
-				        "reasonResolved": "cancelled"
-				      }
-				    ]
-				  }
+				  "taskGroupSize": 1,
+				  "cancelledCount": 1,
+				  "taskGroupId": "e4WPJRJeSdaSdKxeWzDlNQ",
+					"taskIds": ["ANnmjMocTymeTID0tlNJAw"]
 				}`
 	_, _ = io.WriteString(w, status)
 }
@@ -122,7 +115,7 @@ func (suite *FakeServerSuite) TestRunCancel() {
 	args := []string{fakeGroupID}
 	assert.NoError(suite.T(), runCancel(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
-	suite.Equal("cancelling task ANnmjMocTymeTID0tlNJAw\n", buf.String())
+	suite.Equal("Tasks cancelled: 1 out of 1\nCancelled task ANnmjMocTymeTID0tlNJAw\n", buf.String())
 }
 
 func (suite *FakeServerSuite) TestRunStatus() {

@@ -94,6 +94,21 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'taskGroupCancelled',
+  title: 'Task Group Cancelled',
+  type: 'task-group-cancelled',
+  version: 1,
+  level: 'notice',
+  description: `
+    All non-resolved tasks within given task group have been cancelled.`,
+  fields: {
+    taskGroupId: 'The task group id.',
+    taskGroupSize: 'Total count of tasks in group at the moment of cancellation',
+    cancelledCount: 'Total count of tasks whose state was changed',
+  },
+});
+
+MonitorManager.register({
   name: 'taskException',
   title: 'Task Exception',
   type: 'task-exception',

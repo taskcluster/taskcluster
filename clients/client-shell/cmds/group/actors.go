@@ -1,12 +1,10 @@
 package group
 
 import (
-	"context"
 	"fmt"
 	"html/template"
 	"io"
 	"strings"
-	"sync"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -108,65 +106,17 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 		return nil
 	}
 
-	// Here we use a waitgroup to ensure that we return once all the tasks have
-	// been completed.
-	wg := &sync.WaitGroup{}
-	// The context allows us to exit early if any of the cancellation fails.
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	// errChan allows the first request that panics to propagate the error message
-	// up to us.
-	errChan := make(chan error, 1)
-
-	for _, taskID := range tasks {
-		wg.Add(1)
-		go func(taskID string) {
-			// If we panicked on the way out, abort all the other tasks.
-			defer func() {
-				//recover from panic and abort
-				if err := recover(); err != nil {
-					if e, ok := err.(error); ok {
-						errChan <- e
-					} else {
-						errChan <- fmt.Errorf("%v", err)
-					}
-					cancel()
-				}
-			}()
-
-			fmt.Fprintf(out, "cancelling task %s\n", taskID)
-			c := make(chan error, 1)
-			go func() { _, err := q.CancelTask(taskID); c <- err }()
-
-			// we select the first that returns or closes:
-			// - ctx.Done() if we aborted;
-			// - c if we got a completed cancellation.
-			select {
-			case <-ctx.Done():
-				// nothing because we can't cancel the existing requests.
-			case err := <-c:
-				if err != nil {
-					panic(fmt.Errorf("could not cancel task %s: %v", taskID, err))
-				}
-			}
-			// if we exited normally, we indicate that we completed.
-			wg.Done()
-		}(taskID)
+	res, cancelError := q.CancelTaskGroup(groupID)
+	if cancelError != nil {
+		panic(fmt.Errorf("Could not cancel task group %s: %v", groupID, cancelError))
 	}
-	// change the semantics of waitgroup to close a channel instead of blocking
-	// the main thread.
-	regularExit := make(chan bool)
-	go func() { wg.Wait(); close(regularExit) }()
 
-	// We select the first that closes:
-	// - ctx.Done() if we aborted;
-	// - regularExit if all the goroutine exited manually.
-	select {
-	case <-ctx.Done():
-		return fmt.Errorf("could not cancel all tasks: %v", <-errChan)
-	case <-regularExit:
-		return nil
+	fmt.Fprintf(out, "Tasks cancelled: %d out of %d\n", res.CancelledCount, res.TaskGroupSize)
+	for _, taskID := range res.TaskIds {
+		fmt.Fprintf(out, "Cancelled task %s\n", taskID)
 	}
+
+	return nil
 }
 
 // filterTask takes a task and returns whether or not this task should be
