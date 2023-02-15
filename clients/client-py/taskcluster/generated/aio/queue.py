@@ -151,6 +151,20 @@ class Queue(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["listTaskGroup"], *args, **kwargs)
 
+    async def sealTaskGroup(self, *args, **kwargs):
+        """
+        Seal Task Group
+
+        Seal task group to prevent creation of new tasks.
+
+        Task group can be sealed once and is irreversible. Calling it multiple times
+        will return same result and will not update it again.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["sealTaskGroup"], *args, **kwargs)
+
     async def listDependentTasks(self, *args, **kwargs):
         """
         List Dependent Tasks
@@ -207,6 +221,10 @@ class Queue(AsyncBaseClient):
         **Scopes**: Note that the scopes required to complete this API call depend
         on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
         `provisionerId`, and `workerType` properties of the task definition.
+
+        If the task group was sealed, this end-point will return `409` reporting
+        `RequestConflict` to indicate that it is no longer possible to add new tasks
+        for this `taskGroupId`.
 
         This method is ``stable``
         """
@@ -1146,6 +1164,14 @@ class Queue(AsyncBaseClient):
             'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/schedule',
             'stability': 'stable',
+        },
+        "sealTaskGroup": {
+            'args': ['taskGroupId'],
+            'method': 'post',
+            'name': 'sealTaskGroup',
+            'output': 'v1/seal-task-group-response.json#',
+            'route': '/task-group/<taskGroupId>/seal',
+            'stability': 'experimental',
         },
         "status": {
             'args': ['taskId'],

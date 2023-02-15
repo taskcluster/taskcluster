@@ -1,0 +1,25 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Task Group Sealed Message"
+description: |
+  Message written once a task group has been sealed.
+type:               object
+properties:
+  version:    {$const: message-version}
+  taskGroupId:
+    title:          "Task-Group Identifier"
+    description: |
+      Identifier for the task-group being listed.
+    type:           string
+    pattern:        {$const: slugid-pattern}
+  schedulerId:
+    title:          "Scheduler Identifier"
+    description: |
+      Identifier for the scheduler that created this task-group.
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+required:
+ - taskGroupId
+ - schedulerId
+additionalProperties: false

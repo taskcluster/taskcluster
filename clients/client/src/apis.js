@@ -2229,6 +2229,36 @@ module.exports = {
         },
         {
           "args": [
+            "taskGroupId"
+          ],
+          "category": "Tasks",
+          "description": "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times \nwill return same result and will not update it again.",
+          "method": "post",
+          "name": "sealTaskGroup",
+          "output": "v1/seal-task-group-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/seal",
+          "scopes": {
+            "AnyOf": [
+              "queue:seal-task-group:<taskGroupId>",
+              {
+                "AllOf": [
+                  {
+                    "each": "queue:seal-task-group-in-project:<projectId>",
+                    "for": "projectId",
+                    "in": "projectIds"
+                  }
+                ]
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Seal Task Group",
+          "type": "function"
+        },
+        {
+          "args": [
             "taskId"
           ],
           "category": "Tasks",
@@ -2251,7 +2281,7 @@ module.exports = {
             "taskId"
           ],
           "category": "Tasks",
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice that artifacts created by a task must expire before the\ntask's expiration.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific\nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key:\n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.",
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice that artifacts created by a task must expire before the\ntask's expiration.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific\nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key:\n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.\n\nIf the task group was sealed, this end-point will return `409` reporting\n`RequestConflict` to indicate that it is no longer possible to add new tasks\nfor this `taskGroupId`.",
           "input": "v1/create-task-request.json#",
           "method": "put",
           "name": "createTask",
@@ -3541,6 +3571,41 @@ module.exports = {
           ],
           "schema": "v1/task-group-resolved.json#",
           "title": "Task Group Resolved Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "A message is published on task-group-sealed whenever task group is sealed.\nThis task group will no longer allow creation of new tasks.",
+          "exchange": "task-group-sealed",
+          "name": "taskGroupSealed",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskGroupId",
+              "required": true,
+              "summary": "`taskGroupId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": false,
+              "name": "schedulerId",
+              "required": true,
+              "summary": "`schedulerId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/task-group-sealed.json#",
+          "title": "Task Group Sealed Messages",
           "type": "topic-exchange"
         }
       ],

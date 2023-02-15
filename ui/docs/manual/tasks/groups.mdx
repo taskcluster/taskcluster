@@ -1,0 +1,26 @@
+---
+filename: tasks/groups.mdx
+title: Task Groups
+order: 50
+---
+
+# Task Groups
+
+Task Groups are a way to group tasks together based on their `taskGroupId`.
+When multiple tasks are being created at once, they often have the same `taskGroupId`.
+This is useful in situations such as when tasks are created for a Github
+push event with a [decision task](/docs/manual/design/conventions/decision-task).
+
+Tasks from the same Task Group might have different `projectIds`.
+
+## Sealing Task Gropus
+
+Sometimes, it may be necessary to block the entire task group from accepting new tasks.
+For example, if multiple push events occur on the same branch in Github
+and create separate task groups, we can stop previous runs and seal the entire
+task group to prevent currently running decision tasks from adding new ones.
+This can help to save resources.
+
+To seal a task group, you can use the `queue.sealTaskGroup` method.
+Once a task group is sealed, it will no longer accept new tasks and will throw
+an error if new task is being added to it.

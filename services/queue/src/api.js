@@ -4,7 +4,7 @@ const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
 const taskCreds = require('./task-creds');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const { Task, Worker, TaskQueue, Provisioner } = require('./data');
+const { Task, Worker, TaskQueue, Provisioner, TaskGroup } = require('./data');
 const { addSplitFields, useOnlyTaskQueueId, joinTaskQueueId, splitTaskQueueId } = require('./utils');
 
 // Maximum number runs allowed
@@ -266,7 +266,7 @@ builder.declare({
     taskGroups,
     { continuationToken, rows },
   ] = await Promise.all([
-    this.db.fns.get_task_group(taskGroupId),
+    this.db.fns.get_task_group2(taskGroupId),
     paginateResults({
       query: req.query,
       fetch: (size, offset) => this.db.fns.get_tasks_by_task_group_projid(taskGroupId, size, offset),
@@ -298,6 +298,68 @@ builder.declare({
   }
 
   return res.reply(result);
+});
+
+/** Seal Task Group */
+builder.declare({
+  method: 'post',
+  route: '/task-group/:taskGroupId/seal',
+  name: 'sealTaskGroup',
+  scopes: {
+    AnyOf: [
+      'queue:seal-task-group:<taskGroupId>',
+      {
+        AllOf: [{
+          for: 'projectId',
+          in: 'projectIds',
+          each: 'queue:seal-task-group-in-project:<projectId>',
+        }],
+      },
+    ],
+  },
+  stability: APIBuilder.stability.experimental,
+  category: 'Tasks',
+  input: undefined,
+  output: 'seal-task-group-response.yml',
+  title: 'Seal Task Group',
+  description: [
+    'Seal task group to prevent creation of new tasks.',
+    '',
+    'Task group can be sealed once and is irreversible. Calling it multiple times ',
+    'will return same result and will not update it again.',
+  ].join('\n'),
+}, async function (req, res) {
+  const taskGroupId = req.params.taskGroupId;
+
+  const taskGroup = await TaskGroup.get(this.db, taskGroupId);
+  if (!taskGroup) {
+    return res.reportError('ResourceNotFound',
+      'No task-group with taskGroupId: `{{taskGroupId}}`', {
+        taskGroupId,
+      });
+  }
+
+  // fetch project ids to construct scopes: `queue:seal-task-group:<taskGroupId>`
+  let projectIds = await taskGroup.getProjectIds(this.db);
+
+  await req.authorize({
+    taskGroupId,
+    projectIds,
+  });
+
+  const updated = TaskGroup.fromDbRows(await this.db.fns.seal_task_group(taskGroupId));
+
+  await this.publisher.taskGroupSealed({
+    taskGroupId,
+    schedulerId: updated.schedulerId,
+  }, []);
+
+  this.monitor.log.taskGroupSealed({
+    taskGroupId,
+    schedulerId: updated.schedulerId,
+  });
+
+  return res.reply(updated.serialize());
 });
 
 /** List tasks dependents */
@@ -496,6 +558,14 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
     return false;
   }
 
+  const [isSealed] = await ctx.db.fns.is_task_group_sealed(taskGroupId);
+  if (isSealed?.is_task_group_sealed) {
+    res.reportError(
+      'RequestConflict',
+      'Task group `{{taskGroupId}}` is sealed and does not accept new tasks.',
+      { taskGroupId });
+  }
+
   return true;
 };
 
@@ -550,6 +620,10 @@ builder.declare({
     '**Scopes**: Note that the scopes required to complete this API call depend',
     'on the content of the `scopes`, `routes`, `schedulerId`, `priority`,',
     '`provisionerId`, and `workerType` properties of the task definition.',
+    '',
+    'If the task group was sealed, this end-point will return `409` reporting',
+    '`RequestConflict` to indicate that it is no longer possible to add new tasks',
+    'for this `taskGroupId`.',
   ].join('\n'),
 }, async function(req, res) {
   let taskId = req.params.taskId;

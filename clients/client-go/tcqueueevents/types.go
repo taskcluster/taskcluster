@@ -351,6 +351,28 @@ type (
 		Version int64 `json:"version,omitempty"`
 	}
 
+	// Message written once a task group has been sealed.
+	TaskGroupSealedMessage struct {
+
+		// Identifier for the scheduler that created this task-group.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		SchedulerID string `json:"schedulerId"`
+
+		// Identifier for the task-group being listed.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskGroupID string `json:"taskGroupId"`
+
+		// Message version
+		//
+		// Possible values:
+		//   * 1
+		Version int64 `json:"version,omitempty"`
+	}
+
 	// Required task metadata
 	TaskMetadata struct {
 

@@ -1,0 +1,113 @@
+version: 81
+description: seal task group to prevent new tasks from being added to it
+migrationScript: |-
+  begin
+    alter table task_groups add column sealed timestamptz null;
+  end
+downgradeScript: |-
+  begin
+    alter table task_groups drop column sealed;
+  end
+methods:
+  get_task_group:
+    deprecated: true
+  get_task_group2:
+    description: |-
+      Get a task group with sealed column.
+    mode: read
+    serviceName: queue
+    args: task_group_id_in text
+    returns: |-
+      table(
+        task_group_id text,
+        scheduler_id text,
+        expires timestamptz,
+        sealed timestamptz
+      )
+    body: |-
+      begin
+        return query
+        select
+          task_groups.task_group_id,
+          task_groups.scheduler_id,
+          task_groups.expires,
+          task_groups.sealed
+        from task_groups
+        where task_groups.task_group_id = task_group_id_in;
+      end
+  get_task_group_project_ids:
+    description: |-
+      Get unique projectIds of the tasks in the task group
+    mode: read
+    serviceName: queue
+    args: task_group_id_in text
+    returns: table (project_id text)
+    body: |-
+      begin
+        return query
+        select distinct tasks.project_id
+        from tasks
+        where tasks.task_group_id = task_group_id_in;
+      end
+  is_task_group_sealed:
+    description: |-
+      Return true if task group was sealed.
+    mode: read
+    serviceName: queue
+    args: task_group_id_in text
+    returns: boolean
+    body: |-
+      begin
+        perform 1
+        from task_groups
+        where
+          task_groups.task_group_id = task_group_id_in and
+          task_groups.sealed is not null
+        limit 1;
+        return found;
+      end
+  seal_task_group:
+    description: |-
+      Marks task group as sealed by adding sealed timestamp to it.
+    mode: write
+    serviceName: queue
+    args: task_group_id_in text
+    returns: |-
+      table(
+        task_group_id text,
+        scheduler_id text,
+        expires timestamptz,
+        sealed timestamptz
+      )
+    body: |-
+      declare
+        updated_row task_groups%ROWTYPE;
+      begin
+        UPDATE task_groups
+        SET sealed = NOW()
+        WHERE task_groups.task_group_id = task_group_id_in
+        AND task_groups.sealed IS NULL
+        RETURNING
+          task_groups.task_group_id,
+          task_groups.scheduler_id,
+          task_groups.expires,
+          task_groups.sealed
+        INTO updated_row;
+
+        IF FOUND THEN
+          return query select
+            updated_row.task_group_id,
+            updated_row.scheduler_id,
+            updated_row.expires,
+            updated_row.sealed;
+        ELSE
+            -- If no rows were updated, return the existing row
+            return query SELECT
+              task_groups.task_group_id,
+              task_groups.scheduler_id,
+              task_groups.expires,
+              task_groups.sealed
+            FROM task_groups
+            WHERE task_groups.task_group_id = task_group_id_in;
+        END IF;
+      end

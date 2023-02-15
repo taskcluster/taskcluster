@@ -36,6 +36,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/auth:/app/services/auth
@@ -48,6 +49,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/auth:/app/services/auth
@@ -64,6 +66,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/built-in-workers:/app/services/built-in-workers
@@ -76,6 +79,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/github:/app/services/github
@@ -88,6 +92,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/github:/app/services/github
@@ -104,6 +109,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/github:/app/services/github
@@ -120,6 +126,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/hooks:/app/services/hooks
@@ -132,6 +139,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/hooks:/app/services/hooks
@@ -148,6 +156,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/hooks:/app/services/hooks
@@ -164,6 +173,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/hooks:/app/services/hooks
@@ -180,6 +190,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/index:/app/services/index
@@ -192,6 +203,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/index:/app/services/index
@@ -208,6 +220,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/index:/app/services/index
@@ -224,6 +237,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/notify:/app/services/notify
@@ -236,6 +250,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/notify:/app/services/notify
@@ -252,6 +267,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/object:/app/services/object
@@ -264,6 +280,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/object:/app/services/object
@@ -280,6 +297,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/purge-cache:/app/services/purge-cache
@@ -292,6 +310,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/purge-cache:/app/services/purge-cache
@@ -308,6 +327,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/queue:/app/services/queue
@@ -320,6 +340,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/queue:/app/services/queue
@@ -336,6 +357,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/queue:/app/services/queue
@@ -352,6 +374,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/queue:/app/services/queue
@@ -368,6 +391,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/queue:/app/services/queue
@@ -384,6 +408,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/queue:/app/services/queue
@@ -400,6 +425,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/queue:/app/services/queue
@@ -416,6 +442,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/queue:/app/services/queue
@@ -432,6 +459,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/queue:/app/services/queue
@@ -448,6 +476,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/queue:/app/services/queue
@@ -464,6 +493,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/secrets:/app/services/secrets
@@ -476,6 +506,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/secrets:/app/services/secrets
@@ -492,6 +523,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/web-server:/app/services/web-server
@@ -504,6 +536,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/web-server:/app/services/web-server
@@ -520,6 +553,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/web-server:/app/services/web-server
@@ -536,6 +570,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/web-server:/app/services/web-server
@@ -552,6 +587,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/worker-manager:/app/services/worker-manager
@@ -564,6 +600,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/worker-manager:/app/services/worker-manager
@@ -580,6 +617,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/worker-manager:/app/services/worker-manager
@@ -596,6 +634,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/worker-manager:/app/services/worker-manager
@@ -612,6 +651,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/worker-manager:/app/services/worker-manager
@@ -628,6 +668,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/worker-manager:/app/services/worker-manager
@@ -644,6 +685,7 @@ services:
       DEBUG: '*'
     volumes:
       - ./db:/app/db
+      - ./generated:/app/generated
       - ./clients:/app/clients
       - ./libraries:/app/libraries
       - ./services/worker-manager:/app/services/worker-manager

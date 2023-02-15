@@ -257,6 +257,7 @@
     "task_groups": {
       "expires": "timestamp with time zone not null",
       "scheduler_id": "text not null",
+      "sealed": "timestamp with time zone",
       "task_group_id": "text not null"
     },
     "task_queues": {
@@ -6433,6 +6434,53 @@
         }
       },
       "version": 80
+    },
+    {
+      "description": "seal task group to prevent new tasks from being added to it",
+      "downgradeScript": "begin\n  alter table task_groups drop column sealed;\nend",
+      "methods": {
+        "get_task_group": {
+          "deprecated": true
+        },
+        "get_task_group2": {
+          "args": "task_group_id_in text",
+          "body": "begin\n  return query\n  select\n    task_groups.task_group_id,\n    task_groups.scheduler_id,\n    task_groups.expires,\n    task_groups.sealed\n  from task_groups\n  where task_groups.task_group_id = task_group_id_in;\nend",
+          "deprecated": false,
+          "description": "Get a task group with sealed column.",
+          "mode": "read",
+          "returns": "table(\n  task_group_id text,\n  scheduler_id text,\n  expires timestamptz,\n  sealed timestamptz\n)",
+          "serviceName": "queue"
+        },
+        "get_task_group_project_ids": {
+          "args": "task_group_id_in text",
+          "body": "begin\n  return query\n  select distinct tasks.project_id\n  from tasks\n  where tasks.task_group_id = task_group_id_in;\nend",
+          "deprecated": false,
+          "description": "Get unique projectIds of the tasks in the task group",
+          "mode": "read",
+          "returns": "table (project_id text)",
+          "serviceName": "queue"
+        },
+        "is_task_group_sealed": {
+          "args": "task_group_id_in text",
+          "body": "begin\n  perform 1\n  from task_groups\n  where\n    task_groups.task_group_id = task_group_id_in and\n    task_groups.sealed is not null\n  limit 1;\n  return found;\nend",
+          "deprecated": false,
+          "description": "Return true if task group was sealed.",
+          "mode": "read",
+          "returns": "boolean",
+          "serviceName": "queue"
+        },
+        "seal_task_group": {
+          "args": "task_group_id_in text",
+          "body": "declare\n  updated_row task_groups%ROWTYPE;\nbegin\n  UPDATE task_groups\n  SET sealed = NOW()\n  WHERE task_groups.task_group_id = task_group_id_in\n  AND task_groups.sealed IS NULL\n  RETURNING\n    task_groups.task_group_id,\n    task_groups.scheduler_id,\n    task_groups.expires,\n    task_groups.sealed\n  INTO updated_row;\n\n  IF FOUND THEN\n    return query select\n      updated_row.task_group_id,\n      updated_row.scheduler_id,\n      updated_row.expires,\n      updated_row.sealed;\n  ELSE\n      -- If no rows were updated, return the existing row\n      return query SELECT\n        task_groups.task_group_id,\n        task_groups.scheduler_id,\n        task_groups.expires,\n        task_groups.sealed\n      FROM task_groups\n      WHERE task_groups.task_group_id = task_group_id_in;\n  END IF;\nend",
+          "deprecated": false,
+          "description": "Marks task group as sealed by adding sealed timestamp to it.",
+          "mode": "write",
+          "returns": "table(\n  task_group_id text,\n  scheduler_id text,\n  expires timestamptz,\n  sealed timestamptz\n)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  alter table task_groups add column sealed timestamptz null;\nend",
+      "version": 81
     }
   ]
 }

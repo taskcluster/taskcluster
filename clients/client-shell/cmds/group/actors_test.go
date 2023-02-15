@@ -29,6 +29,7 @@ func (suite *FakeServerSuite) SetupSuite() {
 
 	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/cancel", cancelHandler)
 	handler.HandleFunc("/api/queue/v1/task-group/"+fakeGroupID+"/list", listTaskGroupHandler)
+	handler.HandleFunc("/api/queue/v1/task-group/"+fakeGroupID+"/seal", sealHandler)
 
 	suite.testServer = httptest.NewServer(handler)
 
@@ -105,6 +106,17 @@ func listTaskGroupHandler(w http.ResponseWriter, _ *http.Request) {
 	_, _ = io.WriteString(w, list)
 }
 
+// returns the test status on request
+func sealHandler(w http.ResponseWriter, _ *http.Request) {
+	status := `{
+		"schedulerId": "test-scheduler",
+		"taskGroupId": "e4WPAAeSdaSdKxeWzDCBA",
+		"expires": "2023-01-30T15:49:31.389Z",
+		"sealed": "2023-01-30T16:49:31.389Z"
+	}`
+	_, _ = io.WriteString(w, status)
+}
+
 func setUpCommand() (*bytes.Buffer, *cobra.Command) {
 	buf := &bytes.Buffer{}
 	cmd := &cobra.Command{}
@@ -123,6 +135,18 @@ func (suite *FakeServerSuite) TestRunCancel() {
 	assert.NoError(suite.T(), runCancel(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("cancelling task ANnmjMocTymeTID0tlNJAw\n", buf.String())
+}
+
+func (suite *FakeServerSuite) TestRunSeal() {
+	// set up to run a command and capture output
+	buf, cmd := setUpCommand()
+	cmd.Flags().Bool("force", true, "")
+
+	// run the command
+	args := []string{fakeGroupID}
+	assert.NoError(suite.T(), runSeal(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
+
+	suite.Equal("Task Group sealed:\ntaskGroupId: e4WPAAeSdaSdKxeWzDCBA\nschedulerId: test-scheduler\nexpires:     2023-01-30T15:49:31.389Z\nsealed:      2023-01-30T16:49:31.389Z\n", buf.String())
 }
 
 func (suite *FakeServerSuite) TestRunStatus() {

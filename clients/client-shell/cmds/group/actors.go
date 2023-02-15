@@ -36,6 +36,16 @@ func init() {
 
 	Command.AddCommand(statusCmd)
 
+	sealCmd := &cobra.Command{
+		Use:   "seal <taskGroupId>",
+		Short: "Seal the task group to disallow addition of new tasks",
+		Long:  "This operation is irreversible and calling it multiple times will only seal it once.",
+		RunE:  executeHelperE(runSeal),
+	}
+	sealCmd.Flags().BoolP("force", "f", false, "Skip sealing confirmation.")
+
+	Command.AddCommand(sealCmd)
+
 	listCmd := &cobra.Command{
 		Use:   "list <taskGroupId>",
 		Short: "List task details: ID and label",
@@ -296,4 +306,49 @@ func filterListTask(status tcqueue.TaskStatusStructure, flags *pflag.FlagSet) bo
 		return true
 	}
 	return false
+}
+
+// confirmSealing displays task group and prompts to confirm sealing
+func confirmSealing(groupID string, out io.Writer) bool {
+	fmt.Fprintf(out, "The following task group %s will be cancelled.\n", groupID)
+
+	for {
+		fmt.Fprint(out, "Are you sure you want to seal this group and prevent new tasks from being added to it? [y/n] ")
+
+		var c string
+		fmt.Scanf("%s", &c)
+
+		if c == "y" || c == "Y" {
+			return true
+		} else if c == "n" || c == "N" {
+			return false
+		}
+		// otherwise reloop to ask again
+	}
+}
+
+// runSeal performs task group sealing
+func runSeal(credentials *tcclient.Credentials, args []string, out io.Writer, flags *pflag.FlagSet) error {
+	q := makeQueue(credentials)
+	groupID := args[0]
+
+	// ask for confirmation before cancellation
+	if force, _ := flags.GetBool("force"); !force && !confirmSealing(groupID, out) {
+		fmt.Fprintln(out, "Sealing of task group aborted.")
+		return nil
+	}
+
+	updated, err := q.SealTaskGroup(groupID)
+	if err != nil {
+		return fmt.Errorf("could not seal task group %s: %v", groupID, err)
+	}
+
+	fmt.Fprintf(out, `Task Group sealed:
+taskGroupId: %s
+schedulerId: %s
+expires:     %s
+sealed:      %s
+`, updated.TaskGroupID, updated.SchedulerID, updated.Expires, updated.Sealed)
+
+	return nil
 }

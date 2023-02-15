@@ -89,7 +89,7 @@ suite(testing.suiteName(), function() {
       });
     });
 
-    suite('ensure_task_group/get_task_group', function() {
+    suite('ensure_task_group/get_task_group2', function() {
       helper.dbTest('ensure_task_group in parallel with the same scheduler_id', async function(db) {
         const expires = taskcluster.fromNow('1 hour');
         await Promise.all([
@@ -99,7 +99,7 @@ suite(testing.suiteName(), function() {
           db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched', expires),
         ]);
 
-        const tgs = await db.fns.get_task_group('0cM7dCL2Rpaz0wdnDG4LLg');
+        const tgs = await db.fns.get_task_group2('0cM7dCL2Rpaz0wdnDG4LLg');
         assert.equal(tgs.length, 1);
         assert.equal(tgs[0].task_group_id, '0cM7dCL2Rpaz0wdnDG4LLg');
         assert.equal(tgs[0].scheduler_id, 'sched');
@@ -113,7 +113,7 @@ suite(testing.suiteName(), function() {
           () => db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched2', expires),
           err => err.code === UNIQUE_VIOLATION);
 
-        const tgs = await db.fns.get_task_group('0cM7dCL2Rpaz0wdnDG4LLg');
+        const tgs = await db.fns.get_task_group2('0cM7dCL2Rpaz0wdnDG4LLg');
         assert.equal(tgs.length, 1);
         assert.equal(tgs[0].task_group_id, '0cM7dCL2Rpaz0wdnDG4LLg');
         assert.equal(tgs[0].scheduler_id, 'sched1');
@@ -125,11 +125,36 @@ suite(testing.suiteName(), function() {
         await db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched', expires);
         await db.fns.ensure_task_group('jcy-h6_7SFuRuKLPByiFTg', 'sched', expires);
 
-        const tgs = await db.fns.get_task_group('jcy-h6_7SFuRuKLPByiFTg');
+        const tgs = await db.fns.get_task_group2('jcy-h6_7SFuRuKLPByiFTg');
         assert.equal(tgs.length, 1);
         assert.equal(tgs[0].task_group_id, 'jcy-h6_7SFuRuKLPByiFTg');
         assert.equal(tgs[0].scheduler_id, 'sched');
         assert(tgs[0].expires > expires);
+      });
+    });
+
+    suite('seal task groups', function () {
+      helper.dbTest('seal_task_group', async function (db) {
+        const taskGroupId = '111111L2Rpaz0wdnDG4LLg';
+        await db.fns.ensure_task_group(taskGroupId, 'sched1', taskcluster.fromNow('1 hour'));
+
+        const [tg1] = await db.fns.get_task_group2(taskGroupId);
+        assert.equal(tg1.sealed, null);
+
+        const isSealed = await db.fns.is_task_group_sealed(taskGroupId);
+        assert.equal(false, isSealed[0].is_task_group_sealed);
+
+        const [tg2] = await db.fns.seal_task_group(taskGroupId);
+        assert.equal(tg2.task_group_id, taskGroupId);
+        assert.notEqual(tg2.sealed, null);
+
+        const isSealed2 = await db.fns.is_task_group_sealed(taskGroupId);
+        assert.equal(true, isSealed2[0].is_task_group_sealed);
+
+        // multiple calls should not change sealed timestamp
+        await db.fns.seal_task_group(taskGroupId);
+        const [tg3] = await db.fns.get_task_group2(taskGroupId);
+        assert.deepEqual(tg3, tg2);
       });
     });
 
@@ -146,10 +171,10 @@ suite(testing.suiteName(), function() {
         const res = await db.fns.expire_task_groups(new Date());
         assert.deepEqual(res, [{ expire_task_groups: 2 }]);
 
-        assert.equal((await db.fns.get_task_group('11111112Rpaz0wdnDG4LLg')).length, 0);
-        assert.equal((await db.fns.get_task_group('222222L2Rpaz0wdnDG4LLg')).length, 1);
-        assert.equal((await db.fns.get_task_group('333333L2Rpaz0wdnDG4LLg')).length, 0);
-        assert.equal((await db.fns.get_task_group('444444L2Rpaz0wdnDG4LLg')).length, 1);
+        assert.equal((await db.fns.get_task_group2('11111112Rpaz0wdnDG4LLg')).length, 0);
+        assert.equal((await db.fns.get_task_group2('222222L2Rpaz0wdnDG4LLg')).length, 1);
+        assert.equal((await db.fns.get_task_group2('333333L2Rpaz0wdnDG4LLg')).length, 0);
+        assert.equal((await db.fns.get_task_group2('444444L2Rpaz0wdnDG4LLg')).length, 1);
       });
 
       helper.dbTest('ensure_task_group twice with different scheduler_id', async function(db) {
@@ -159,7 +184,7 @@ suite(testing.suiteName(), function() {
           () => db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched2', expires),
           err => err.code === UNIQUE_VIOLATION);
 
-        const tgs = await db.fns.get_task_group('0cM7dCL2Rpaz0wdnDG4LLg');
+        const tgs = await db.fns.get_task_group2('0cM7dCL2Rpaz0wdnDG4LLg');
         assert.equal(tgs.length, 1);
         assert.equal(tgs[0].task_group_id, '0cM7dCL2Rpaz0wdnDG4LLg');
         assert.equal(tgs[0].scheduler_id, 'sched1');
@@ -171,7 +196,7 @@ suite(testing.suiteName(), function() {
         await db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched', expires);
         await db.fns.ensure_task_group('jcy-h6_7SFuRuKLPByiFTg', 'sched', expires);
 
-        const tgs = await db.fns.get_task_group('jcy-h6_7SFuRuKLPByiFTg');
+        const tgs = await db.fns.get_task_group2('jcy-h6_7SFuRuKLPByiFTg');
         assert.equal(tgs.length, 1);
         assert.equal(tgs[0].task_group_id, 'jcy-h6_7SFuRuKLPByiFTg');
         assert.equal(tgs[0].scheduler_id, 'sched');

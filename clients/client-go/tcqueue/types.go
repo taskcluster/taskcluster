@@ -883,6 +883,37 @@ type (
 		StorageType string `json:"storageType"`
 	}
 
+	// Response from a `sealTaskGroup` request.
+	SealTaskGroupResponse struct {
+
+		// Date and time when task group expires.
+		Expires tcclient.Time `json:"expires"`
+
+		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
+		//
+		// * it can represent the entity that created the task;
+		// * it can limit addition of new tasks to a task group: the caller of
+		//     `createTask` must have a scope related to the `schedulerId` of the task
+		//     group;
+		// * it controls who can manipulate tasks, again by requiring
+		//     `schedulerId`-related scopes; and
+		// * it appears in the routing key for Pulse messages about the task.
+		//
+		// Default:    "-"
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		SchedulerID string `json:"schedulerId"`
+
+		// Date and time when task group was sealed.
+		Sealed tcclient.Time `json:"sealed"`
+
+		// Identifier for the task-group being sealed.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskGroupID string `json:"taskGroupId"`
+	}
+
 	TaskClaim struct {
 
 		// Temporary credentials granting `task.scopes` and the scope:

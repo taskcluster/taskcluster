@@ -16,6 +16,7 @@ export default class Queue extends Client {
     this.task.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"task","output":true,"query":[],"route":"/task/<taskId>","scopes":"queue:get-task:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.status.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"status","output":true,"query":[],"route":"/task/<taskId>/status","scopes":"queue:status:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listTaskGroup.entry = {"args":["taskGroupId"],"category":"Tasks","method":"get","name":"listTaskGroup","output":true,"query":["continuationToken","limit"],"route":"/task-group/<taskGroupId>/list","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.sealTaskGroup.entry = {"args":["taskGroupId"],"category":"Tasks","method":"post","name":"sealTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>/seal","scopes":{"AnyOf":["queue:seal-task-group:<taskGroupId>",{"AllOf":[{"each":"queue:seal-task-group-in-project:<projectId>","for":"projectId","in":"projectIds"}]}]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.listDependentTasks.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"listDependentTasks","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/dependents","scopes":"queue:list-dependent-tasks:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createTask.entry = {"args":["taskId"],"category":"Tasks","input":true,"method":"put","name":"createTask","output":true,"query":[],"route":"/task/<taskId>","scopes":{"AllOf":[{"each":"<scope>","for":"scope","in":"scopes"},{"each":"queue:route:<route>","for":"route","in":"routes"},"queue:create-task:project:<projectId>","queue:scheduler-id:<schedulerId>",{"AnyOf":[{"each":"queue:create-task:<priority>:<provisionerId>/<workerType>","for":"priority","in":"priorities"}]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.scheduleTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"scheduleTask","output":true,"query":[],"route":"/task/<taskId>/schedule","scopes":{"AnyOf":["queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>","queue:schedule-task-in-project:<projectId>",{"AllOf":["queue:schedule-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
@@ -118,6 +119,16 @@ export default class Queue extends Client {
     return this.request(this.listTaskGroup.entry, args);
   }
   /* eslint-disable max-len */
+  // Seal task group to prevent creation of new tasks.
+  // Task group can be sealed once and is irreversible. Calling it multiple times
+  // will return same result and will not update it again.
+  /* eslint-enable max-len */
+  sealTaskGroup(...args) {
+    this.validate(this.sealTaskGroup.entry, args);
+
+    return this.request(this.sealTaskGroup.entry, args);
+  }
+  /* eslint-disable max-len */
   // List tasks that depend on the given `taskId`.
   // As many tasks from different task-groups may dependent on a single tasks,
   // this end-point may return a `continuationToken`. To continue listing
@@ -159,6 +170,9 @@ export default class Queue extends Client {
   // **Scopes**: Note that the scopes required to complete this API call depend
   // on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
   // `provisionerId`, and `workerType` properties of the task definition.
+  // If the task group was sealed, this end-point will return `409` reporting
+  // `RequestConflict` to indicate that it is no longer possible to add new tasks
+  // for this `taskGroupId`.
   /* eslint-enable max-len */
   createTask(...args) {
     this.validate(this.createTask.entry, args);

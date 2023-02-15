@@ -270,6 +270,26 @@ func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limi
 	return (&cd).SignedURL("/task-group/"+url.QueryEscape(taskGroupId)+"/list", v, duration)
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// Seal task group to prevent creation of new tasks.
+//
+// Task group can be sealed once and is irreversible. Calling it multiple times
+// will return same result and will not update it again.
+//
+// Required scopes:
+//
+//	Any of:
+//	- queue:seal-task-group:<taskGroupId>
+//	- For projectId in projectIds each queue:seal-task-group-in-project:<projectId>
+//
+// See #sealTaskGroup
+func (queue *Queue) SealTaskGroup(taskGroupId string) (*SealTaskGroupResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task-group/"+url.QueryEscape(taskGroupId)+"/seal", new(SealTaskGroupResponse), nil)
+	return responseObject.(*SealTaskGroupResponse), err
+}
+
 // List tasks that depend on the given `taskId`.
 //
 // As many tasks from different task-groups may dependent on a single tasks,
@@ -350,6 +370,10 @@ func (queue *Queue) ListDependentTasks_SignedURL(taskId, continuationToken, limi
 // **Scopes**: Note that the scopes required to complete this API call depend
 // on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
 // `provisionerId`, and `workerType` properties of the task definition.
+//
+// If the task group was sealed, this end-point will return `409` reporting
+// `RequestConflict` to indicate that it is no longer possible to add new tasks
+// for this `taskGroupId`.
 //
 // Required scopes:
 //

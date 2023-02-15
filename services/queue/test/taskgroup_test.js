@@ -236,4 +236,70 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assert(err.statusCode === 409, 'Expected a 409 error');
     });
   });
+
+  suite('task group sealing', function () {
+    test('sealing empty task group', async () => {
+      let taskGroupId = slugid.v4();
+      await helper.queue.sealTaskGroup(taskGroupId).then(() => {
+        assert(false, 'expected an error');
+      }, err => {
+        assert(err.statusCode === 404, 'Expected a 404 error');
+      });
+    });
+
+    test('sealing task group', async () => {
+      let taskIdA = slugid.v4();
+      let taskIdB = slugid.v4();
+      let taskGroupId = slugid.v4();
+
+      debug('### Creating taskA');
+      await helper.queue.createTask(taskIdA, _.defaults({
+        taskGroupId,
+      }, taskDef));
+
+      debug('### Seal task-group');
+      const res = await helper.queue.sealTaskGroup(taskGroupId);
+
+      assert(res.taskGroupId === taskGroupId);
+      assert(res.sealed, 'Group not sealed');
+
+      debug('### Creating taskB on a sealed group');
+      await helper.queue.createTask(taskIdB, _.defaults({
+        taskGroupId,
+      }, taskDef)).then(() => { assert(false, 'expected an error'); }, err => {
+        assert(err.statusCode === 409, 'Expected a 409 error');
+      });
+    });
+
+    test('sealing permissions', async () => {
+      let taskIdA = slugid.v4();
+      let taskGroupId = slugid.v4();
+
+      debug('### Creating taskA');
+      await helper.queue.createTask(taskIdA, _.defaults({
+        taskGroupId,
+        projectId: 'prj1',
+      }, taskDef));
+
+      debug('### checking InsufficientScopes');
+      helper.scopes('none');
+      await assert.rejects(
+        () => helper.queue.sealTaskGroup(taskGroupId),
+        err => err.code === 'InsufficientScopes');
+
+      debug('### Seal task-group with seal scope');
+      helper.scopes(`queue:seal-task-group:${taskGroupId}`);
+      await helper.queue.sealTaskGroup(taskGroupId);
+
+      debug('### Seal task-group with incorrect project scope');
+      helper.scopes('queue:seal-task-group-in-project:wrong-projectid');
+      await assert.rejects(
+        () => helper.queue.sealTaskGroup(taskGroupId),
+        err => err.code === 'InsufficientScopes');
+
+      debug('### Seal task-group with project scope');
+      helper.scopes('queue:seal-task-group-in-project:prj1');
+      await helper.queue.sealTaskGroup(taskGroupId);
+    });
+  });
 });

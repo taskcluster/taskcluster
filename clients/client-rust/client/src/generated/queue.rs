@@ -286,6 +286,28 @@ impl Queue {
         (path, query)
     }
 
+    /// Seal Task Group
+    ///
+    /// Seal task group to prevent creation of new tasks.
+    ///
+    /// Task group can be sealed once and is irreversible. Calling it multiple times
+    /// will return same result and will not update it again.
+    pub async fn sealTaskGroup(&self, taskGroupId: &str) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::sealTaskGroup_details(taskGroupId);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for sealTaskGroup
+    fn sealTaskGroup_details<'a>(taskGroupId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-group/{}/seal", urlencode(taskGroupId));
+        let query = None;
+
+        (path, query)
+    }
+
     /// List Dependent Tasks
     ///
     /// List tasks that depend on the given `taskId`.
@@ -366,6 +388,10 @@ impl Queue {
     /// **Scopes**: Note that the scopes required to complete this API call depend
     /// on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
     /// `provisionerId`, and `workerType` properties of the task definition.
+    ///
+    /// If the task group was sealed, this end-point will return `409` reporting
+    /// `RequestConflict` to indicate that it is no longer possible to add new tasks
+    /// for this `taskGroupId`.
     pub async fn createTask(&self, taskId: &str, payload: &Value) -> Result<Value, Error> {
         let method = "PUT";
         let (path, query) = Self::createTask_details(taskId);
