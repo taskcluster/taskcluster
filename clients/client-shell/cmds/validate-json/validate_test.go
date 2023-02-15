@@ -65,7 +65,7 @@ var allTests = []validateTest{
 				Valid: true,
 				Data: []byte(`{
 				  "image": "dolore cillum eu",
-				  "maxRunTime": 240064,
+				  "maxRunTime": 86400,
 				  "capabilities": {
 					"devices": {
 					  "kvm": false,
