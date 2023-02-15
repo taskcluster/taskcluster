@@ -1377,7 +1377,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "sealTaskGroup",
 				Title:       "Seal Task Group",
-				Description: "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times \nwill return same result and will not update it again.",
+				Description: "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/task-group/<taskGroupId>/seal",

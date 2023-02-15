@@ -325,7 +325,7 @@ builder.declare({
   description: [
     'Seal task group to prevent creation of new tasks.',
     '',
-    'Task group can be sealed once and is irreversible. Calling it multiple times ',
+    'Task group can be sealed once and is irreversible. Calling it multiple times',
     'will return same result and will not update it again.',
   ].join('\n'),
 }, async function (req, res) {

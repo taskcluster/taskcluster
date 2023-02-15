@@ -15554,7 +15554,7 @@
             "taskGroupId"
           ],
           "category": "Tasks",
-          "description": "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times \nwill return same result and will not update it again.",
+          "description": "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.",
           "method": "post",
           "name": "sealTaskGroup",
           "output": "v1/seal-task-group-response.json#",
