@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v46/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/win32"
 	"golang.org/x/sys/windows/registry"
 )
 

@@ -1,18 +1,46 @@
+# build specific
 **/node_modules
 .eslintcache
+**/.coverage
+**/coverage.report
+__pycache__
+
 **.log
-.idea
 **/user-config.yml
-dev-config.yml
-artifacts
 **/.nyc_output
+
+# IDE stuff
+.idea
+.vscode
+
+# top level files that should not be inside the container
+cloudbuild.yaml
+docker-compose*.yml
+netlify.toml
+generic-worker.Dockerfile
+dev-config.yml
+
+# top level folders that are not needed
+# docker files specific to local development
+docker
+# dev docs
+dev-docs
+# ci config
+taskcluster
+test
+artifacts
+
 clients/client-rust/target
+
 ui/build
-temp
+dist
+
+# generic worker artifacts
 workers/generic-worker/generic-worker-*
 workers/generic-worker/generic-worker
 workers/generic-worker/testdata/Test*
 tools/worker-runner/start-worker
 tools/worker-runner/start-worker-*-*
 tools/taskcluster-proxy/taskcluster-proxy
+tools/taskcluster-proxy/target
 tools/livelog/livelog

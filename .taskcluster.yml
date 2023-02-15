@@ -123,7 +123,7 @@ tasks:
                 name: Decision Task (${tasks_for})
                 description: Load, transform, optimize, and submit other tasks
               provisionerId: proj-taskcluster
-              workerType: ci
+              workerType: gw-ubuntu-22-04
               scopes:
                   # `https://` is 8 characters so, ${repoUrl[8:]} is the repository without the protocol.
                   $if: 'tasks_for == "github-push" && event["ref"][:11] != "refs/tags/v"'
@@ -149,6 +149,7 @@ tasks:
               retries: 5
 
               payload:
+
                   env:
                       # run-task uses these to check out the source; the inputs
                       # to `mach taskgraph decision` are all on the command line.
@@ -167,40 +168,62 @@ tasks:
                                 TASKCLUSTER_PULL_REQUEST_NUMBER: '${event.pull_request.number}'
                   features:
                       taskclusterProxy: true
-                  # Note: This task is built server side without the context or tooling that
-                  # exist in tree so we must hard code the hash
-                  image:
-                      mozillareleases/taskgraph:decision-d1ddb5593679cec9d7d2cdd8e9b8e2228b14ebe9b844411276cc3cfe37d189aa@sha256:b236321d98367f9cdbbd28c47bad7c0df34884897b75d266185d2e9e569ac0fa
 
                   maxRunTime: 600
 
+                  # Note: This task is built server side without the context or tooling that
+                  # exist in tree so we must hard code the hash of the mozillareleases/taskgraph-decision docker image
                   command:
-                      - run-task
-                      - '--taskcluster-checkout=/builds/worker/checkouts/src'
-                      - '--task-cwd=/builds/worker/checkouts/src'
-                      - '--'
-                      - bash
-                      - -cx
-                      - >
-                        ln -s /builds/worker/artifacts artifacts &&
-                        ~/.local/bin/taskgraph decision
-                        --pushlog-id='0'
-                        --pushdate='0'
-                        --project='${project}'
-                        --message=""
-                        --owner='${ownerEmail}'
-                        --level='${level}'
-                        --repository-type=git
-                        --target-tasks-method=taskcluster-branches
-                        --tasks-for='${tasks_for}'
-                        --base-repository='${baseRepoUrl}'
-                        --base-ref='${base_ref}'
-                        --head-repository='${repoUrl}'
-                        --head-ref='${head_ref}'
-                        --head-rev='${head_sha}'
-                        --head-tag='${head_tag}'
+                      - - bash
+                        - "-cx"
+                        - |-
+                          podman run --name taskcontainer --add-host=taskcluster:127.0.0.1 --net=host \
+                              -e "REPOSITORIES=$${REPOSITORIES}" \
+                              -e "RUN_ID=$${RUN_ID}" \
+                              -e "TASKCLUSTER_BASE_REF=$${TASKCLUSTER_BASE_REF}" \
+                              -e "TASKCLUSTER_BASE_REPOSITORY=$${TASKCLUSTER_BASE_REPOSITORY}" \
+                              -e "TASKCLUSTER_HEAD_REF=$${TASKCLUSTER_HEAD_REF}" \
+                              -e "TASKCLUSTER_HEAD_REPOSITORY=$${TASKCLUSTER_HEAD_REPOSITORY}" \
+                              -e "TASKCLUSTER_HEAD_REV=$${TASKCLUSTER_HEAD_REV}" \
+                              -e "TASKCLUSTER_HEAD_TAG=$${TASKCLUSTER_HEAD_TAG}" \
+                              -e "TASKCLUSTER_PIP_REQUIREMENTS=$${TASKCLUSTER_PIP_REQUIREMENTS}" \
+                              -e "TASKCLUSTER_PROXY_URL=$${TASKCLUSTER_PROXY_URL}" \
+                              -e "TASKCLUSTER_PULL_REQUEST_NUMBER=$${TASKCLUSTER_PULL_REQUEST_NUMBER}" \
+                              -e "TASKCLUSTER_REPOSITORY_TYPE=$${TASKCLUSTER_REPOSITORY_TYPE}" \
+                              -e "TASKCLUSTER_ROOT_URL=$${TASKCLUSTER_ROOT_URL}" \
+                              -e "TASKCLUSTER_WORKER_LOCATION=$${TASKCLUSTER_WORKER_LOCATION}" \
+                              -e "TASK_ID=$${TASK_ID}" \
+                              "mozillareleases/taskgraph:decision-d1ddb5593679cec9d7d2cdd8e9b8e2228b14ebe9b844411276cc3cfe37d189aa@sha256:b236321d98367f9cdbbd28c47bad7c0df34884897b75d266185d2e9e569ac0fa" \
+                              run-task \
+                                  --taskcluster-checkout=/builds/worker/checkouts/src \
+                                  --task-cwd=/builds/worker/checkouts/src \
+                                  -- \
+                                  bash -cx '
+                                      ln -s /builds/worker/artifacts artifacts
+                                      ~/.local/bin/taskgraph decision \
+                                          --pushlog-id='\''0'\'' \
+                                          --pushdate='\''0'\'' \
+                                          --project='\''${project}'\'' \
+                                          --message="" \
+                                          --owner='\''${ownerEmail}'\'' \
+                                          --level='\''${level}'\'' \
+                                          --repository-type=git \
+                                          --target-tasks-method=taskcluster-branches \
+                                          --tasks-for='\''${tasks_for}'\'' \
+                                          --base-repository='\''${baseRepoUrl}'\'' \
+                                          --base-ref='\''${base_ref}'\'' \
+                                          --head-repository='\''${repoUrl}'\'' \
+                                          --head-ref='\''${head_ref}'\'' \
+                                          --head-rev='\''${head_sha}'\'' \
+                                          --head-tag='\''${head_tag}'\''
+                                      rm artifacts/actions.json # taskcluster is not using actions.json
+                                  '
+                              exit_code=$?
+                              podman cp 'taskcontainer:/builds/worker/artifacts' artifact0
+                              podman rm taskcontainer
+                              exit "$${exit_code}"
                   artifacts:
-                      'public':
-                          type: 'directory'
-                          path: '/builds/worker/artifacts'
-                          expires: {$fromNow: '1 year'}
+                      - name: 'public'
+                        type: 'directory'
+                        path: 'artifact0'
+                        expires: {$fromNow: '1 year'}

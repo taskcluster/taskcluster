@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-purge-cache",
-  "version": "46.1.1",
+  "version": "47.1.0",
   "private": true,
   "scripts": {
     "coverage": "c8 yarn test",
