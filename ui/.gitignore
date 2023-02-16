@@ -13,3 +13,13 @@ src/static/env.js
 coverage
 test/e2e/cypress/screenshots/
 test/e2e/cypress/videos/
+
+
+# yarn package manager
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

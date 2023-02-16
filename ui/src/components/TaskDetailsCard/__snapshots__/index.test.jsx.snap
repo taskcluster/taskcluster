@@ -51,6 +51,42 @@ exports[`should render TaskDetailsCard 1`] = `
             class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-24 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
+            title="taskId (Copy)"
+          >
+            <div
+              class="MuiListItemText-root MuiListItemText-multiline"
+            >
+              <span
+                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+              >
+                Task ID
+              </span>
+              <p
+                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+              >
+                taskId
+              </p>
+            </div>
+            <svg
+              class="mdi-icon "
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+            >
+              <path
+                d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </div>
+          <div
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-24 MuiListItem-gutters MuiListItem-button"
+            role="button"
+            tabindex="0"
             title="2022-02-15T12:00:00.000Z (Copy)"
           >
             <div
