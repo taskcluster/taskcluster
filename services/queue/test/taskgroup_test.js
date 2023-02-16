@@ -336,16 +336,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       debug('### Seal task-group with seal scope');
       helper.scopes(`queue:seal-task-group:${taskGroupId}`);
       await helper.queue.sealTaskGroup(taskGroupId);
-
-      debug('### Seal task-group with incorrect project scope');
-      helper.scopes('queue:seal-task-group-in-project:wrong-projectid');
-      await assert.rejects(
-        () => helper.queue.sealTaskGroup(taskGroupId),
-        err => err.code === 'InsufficientScopes');
-
-      debug('### Seal task-group with project scope');
-      helper.scopes('queue:seal-task-group-in-project:prj1');
-      await helper.queue.sealTaskGroup(taskGroupId);
     });
   });
 });

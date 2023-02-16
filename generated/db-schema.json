@@ -6451,15 +6451,6 @@
           "returns": "table(\n  task_group_id text,\n  scheduler_id text,\n  expires timestamptz,\n  sealed timestamptz\n)",
           "serviceName": "queue"
         },
-        "get_task_group_project_ids": {
-          "args": "task_group_id_in text",
-          "body": "begin\n  return query\n  select distinct tasks.project_id\n  from tasks\n  where tasks.task_group_id = task_group_id_in;\nend",
-          "deprecated": false,
-          "description": "Get unique projectIds of the tasks in the task group",
-          "mode": "read",
-          "returns": "table (project_id text)",
-          "serviceName": "queue"
-        },
         "is_task_group_sealed": {
           "args": "task_group_id_in text",
           "body": "begin\n  perform 1\n  from task_groups\n  where\n    task_groups.task_group_id = task_group_id_in and\n    task_groups.sealed is not null\n  limit 1;\n  return found;\nend",

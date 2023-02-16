@@ -564,17 +564,14 @@ class TaskGroup {
     );
   }
 
-  async getProjectIds(db) {
-    const rows = await db.fns.get_task_group_project_ids(this.taskGroupId);
-    return rows.map(({ project_id: projectId }) => projectId);
-  }
-
   serialize() {
     return {
       taskGroupId: this.taskGroupId,
       schedulerId: this.schedulerId,
       expires: this.expires.toJSON(),
-      sealed: this.sealed?.toJSON(),
+      ...(this.sealed ? {
+        sealed: this.sealed.toJSON(),
+      } : {}),
     };
   }
 }

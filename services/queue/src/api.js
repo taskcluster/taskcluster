@@ -317,7 +317,7 @@ builder.declare({
     'It contains information about task group expiry date or if it is sealed.',
   ].join('\n'),
 }, async function (req, res) {
-  let taskGroupId = req.params.taskGroupId;
+  const taskGroupId = req.params.taskGroupId;
 
   const taskGroup = await TaskGroup.get(this.db, taskGroupId);
   if (!taskGroup) {
@@ -327,14 +327,6 @@ builder.declare({
       });
   }
 
-  // fetch project ids to construct scopes: `queue:seal-task-group:<taskGroupId>`
-  let projectIds = await taskGroup.getProjectIds(this.db);
-
-  await req.authorize({
-    taskGroupId,
-    projectIds,
-  });
-
   return res.reply(taskGroup.serialize());
 });
 
@@ -343,18 +335,7 @@ builder.declare({
   method: 'post',
   route: '/task-group/:taskGroupId/seal',
   name: 'sealTaskGroup',
-  scopes: {
-    AnyOf: [
-      'queue:seal-task-group:<taskGroupId>',
-      {
-        AllOf: [{
-          for: 'projectId',
-          in: 'projectIds',
-          each: 'queue:seal-task-group-in-project:<projectId>',
-        }],
-      },
-    ],
-  },
+  scopes: 'queue:seal-task-group:<taskGroupId>',
   stability: APIBuilder.stability.experimental,
   category: 'Tasks',
   input: undefined,
@@ -376,14 +357,6 @@ builder.declare({
         taskGroupId,
       });
   }
-
-  // fetch project ids to construct scopes: `queue:seal-task-group:<taskGroupId>`
-  let projectIds = await taskGroup.getProjectIds(this.db);
-
-  await req.authorize({
-    taskGroupId,
-    projectIds,
-  });
 
   const updated = TaskGroup.fromDbRows(await this.db.fns.seal_task_group(taskGroupId));
   const out = updated.serialize();

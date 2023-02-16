@@ -2256,20 +2256,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task-group/<taskGroupId>/seal",
-          "scopes": {
-            "AnyOf": [
-              "queue:seal-task-group:<taskGroupId>",
-              {
-                "AllOf": [
-                  {
-                    "each": "queue:seal-task-group-in-project:<projectId>",
-                    "for": "projectId",
-                    "in": "projectIds"
-                  }
-                ]
-              }
-            ]
-          },
+          "scopes": "queue:seal-task-group:<taskGroupId>",
           "stability": "experimental",
           "title": "Seal Task Group",
           "type": "function"

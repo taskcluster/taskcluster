@@ -93,7 +93,6 @@
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
-   * [`get_task_group_project_ids`](#get_task_group_project_ids)
    * [`get_task_group2`](#get_task_group2)
    * [`get_task_projid`](#get_task_projid)
    * [`get_task_queue`](#get_task_queue)
@@ -1246,7 +1245,6 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
-* [`get_task_group_project_ids`](#get_task_group_project_ids)
 * [`get_task_group2`](#get_task_group2)
 * [`get_task_projid`](#get_task_projid)
 * [`get_task_queue`](#get_task_queue)
@@ -1663,17 +1661,6 @@ by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify
 where the page of results should begin, and must all be specified if any
 are specified.  Typically these values would be drawn from the last item
 in the previous page.
-
-### get_task_group_project_ids
-
-* *Mode*: read
-* *Arguments*:
-  * `task_group_id_in text`
-* *Returns*: `table`
-  * `project_id text`
-* *Last defined on version*: 81
-
-Get unique projectIds of the tasks in the task group
 
 ### get_task_group2
 

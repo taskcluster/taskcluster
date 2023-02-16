@@ -307,9 +307,7 @@ func (queue *Queue) GetTaskGroup_SignedURL(taskGroupId string, duration time.Dur
 //
 // Required scopes:
 //
-//	Any of:
-//	- queue:seal-task-group:<taskGroupId>
-//	- For projectId in projectIds each queue:seal-task-group-in-project:<projectId>
+//	queue:seal-task-group:<taskGroupId>
 //
 // See #sealTaskGroup
 func (queue *Queue) SealTaskGroup(taskGroupId string) (*TaskGroupResponse, error) {
