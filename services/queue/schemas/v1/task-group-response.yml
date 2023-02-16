@@ -1,7 +1,7 @@
 $schema: "/schemas/common/metaschema.json#"
-title:              "Seal Task-Group Response"
+title:              "Task-Group Response"
 description: |
-  Response from a `sealTaskGroup` request.
+  Response containing information about a task group.
 type:               object
 properties:
   taskGroupId:
@@ -27,6 +27,5 @@ properties:
 additionalProperties: false
 required:
  - taskGroupId
- - sealed
  - expires
  - schedulerId

@@ -1,0 +1,8 @@
+mutation SealTaskGroup($taskGroupId: ID!) {
+  sealTaskGroup(taskGroupId: $taskGroupId) {
+    taskGroupId
+    schedulerId
+    expires
+    sealed
+  }
+}

@@ -270,6 +270,34 @@ func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limi
 	return (&cd).SignedURL("/task-group/"+url.QueryEscape(taskGroupId)+"/list", v, duration)
 }
 
+// Get task group information by `taskGroupId`.
+//
+// This will return meta-information associated with the task group.
+// It contains information about task group expiry date or if it is sealed.
+//
+// Required scopes:
+//
+//	queue:list-task-group:<taskGroupId>
+//
+// See #getTaskGroup
+func (queue *Queue) GetTaskGroup(taskGroupId string) (*TaskGroupResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-group/"+url.QueryEscape(taskGroupId), new(TaskGroupResponse), nil)
+	return responseObject.(*TaskGroupResponse), err
+}
+
+// Returns a signed URL for GetTaskGroup, valid for the specified duration.
+//
+// Required scopes:
+//
+//	queue:list-task-group:<taskGroupId>
+//
+// See GetTaskGroup for more details.
+func (queue *Queue) GetTaskGroup_SignedURL(taskGroupId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task-group/"+url.QueryEscape(taskGroupId), nil, duration)
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Seal task group to prevent creation of new tasks.
@@ -284,10 +312,10 @@ func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limi
 //	- For projectId in projectIds each queue:seal-task-group-in-project:<projectId>
 //
 // See #sealTaskGroup
-func (queue *Queue) SealTaskGroup(taskGroupId string) (*SealTaskGroupResponse, error) {
+func (queue *Queue) SealTaskGroup(taskGroupId string) (*TaskGroupResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/task-group/"+url.QueryEscape(taskGroupId)+"/seal", new(SealTaskGroupResponse), nil)
-	return responseObject.(*SealTaskGroupResponse), err
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task-group/"+url.QueryEscape(taskGroupId)+"/seal", new(TaskGroupResponse), nil)
+	return responseObject.(*TaskGroupResponse), err
 }
 
 // List tasks that depend on the given `taskId`.

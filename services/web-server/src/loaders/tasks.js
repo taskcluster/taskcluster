@@ -30,10 +30,12 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
   );
   const taskGroup = new ConnectionLoader(
     async ({ taskGroupId, options, filter }) => {
+      const taskGroup = await queue.getTaskGroup(taskGroupId);
       const raw = await queue.listTaskGroup(taskGroupId, options);
       const tasks = sift(filter, raw.tasks);
 
       return {
+        taskGroup,
         ...raw,
         items: tasks.map(
           ({ task, status }) => new Task(status.taskId, status, task),

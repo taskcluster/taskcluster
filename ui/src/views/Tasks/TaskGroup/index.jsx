@@ -46,7 +46,34 @@ import notify from '../../../utils/notify';
 import logoFailed from '../../../images/logoFailed.png';
 import logoCompleted from '../../../images/logoCompleted.png';
 import TaskGroupStats from '../../../components/TaskGroupStats';
+import CopyToClipboardListItem from '../../../components/CopyToClipboardListItem';
+import DateDistance from '../../../components/DateDistance';
+import sealTaskGroupQuery from './sealTaskGroup.graphql';
 
+const initialTaskGroupActions = [
+  {
+    name: 'sealTaskGroup',
+    title: 'Seal Task Group',
+  },
+];
+const initialActionData = {
+  sealTaskGroup: {
+    action: {
+      name: 'sealTaskGroup',
+      title: 'Seal Task Group',
+      description: `### Seal Task Group
+  This operation will seal Task Group.
+  It would no longer be possible to add new tasks after.
+
+  This operation is irreversible.
+      `,
+      schema: false,
+    },
+  },
+};
+const initialActionInputs = {
+  sealTaskGroup: '',
+};
 const updateTaskGroupIdHistory = id => {
   if (!VALID_TASK.test(id)) {
     return;
@@ -120,9 +147,9 @@ export default class TaskGroup extends Component {
   static getDerivedStateFromProps(props, state) {
     const { taskGroupId } = props.match.params;
     const { taskActions, taskGroup } = props.data;
-    const groupActions = [];
-    const actionInputs = state.actionInputs || {};
-    const actionData = state.actionData || {};
+    const groupActions = initialTaskGroupActions;
+    const actionInputs = state.actionInputs || initialActionInputs;
+    const actionData = state.actionData || initialActionData;
     const taskGroupLoaded = taskGroup && !taskGroup.pageInfo.hasNextPage;
     // Make sure data is not from another task group which
     // can happen when a user searches for a different task group
@@ -182,10 +209,10 @@ export default class TaskGroup extends Component {
     filter: null,
     // eslint-disable-next-line react/no-unused-state
     previousTaskGroupId: '',
-    groupActions: [],
+    groupActions: initialTaskGroupActions,
     actionLoading: false,
-    actionInputs: {},
-    actionData: {},
+    actionInputs: initialActionInputs,
+    actionData: initialActionData,
     dialogOpen: false,
     selectedAction: null,
     dialogError: null,
@@ -196,7 +223,17 @@ export default class TaskGroup extends Component {
     previousNotifyPreferences: INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES,
     taskGroupWasRunningOnPageLoad: false,
     statsOpen: false,
+    taskGroupInfo: false,
   };
+
+  get taskGroupInfo() {
+    const {
+      data: { taskGroup },
+    } = this.props;
+    const { taskGroupInfo } = this.state;
+
+    return taskGroupInfo || taskGroup?.taskGroup;
+  }
 
   async componentDidMount() {
     const groupNotifyTaskFailed =
@@ -333,6 +370,18 @@ export default class TaskGroup extends Component {
     };
   };
 
+  groupActionDisabled(name) {
+    const { taskGroupInfo } = this;
+
+    switch (name) {
+      case 'sealTaskGroup':
+        return !taskGroupInfo || !!taskGroupInfo.sealed;
+
+      default:
+        return false;
+    }
+  }
+
   componentDidUpdate(prevProps) {
     const {
       data: { taskGroup, subscribeToMore },
@@ -384,6 +433,28 @@ export default class TaskGroup extends Component {
   handleActionSubmit = ({ name }) => async () => {
     this.preRunningAction();
 
+    const apolloClient = this.props.client;
+
+    if (name === 'sealTaskGroup') {
+      const {
+        data: { taskGroup },
+      } = this.props;
+      const {
+        data: { sealTaskGroup },
+      } = await apolloClient.mutate({
+        mutation: sealTaskGroupQuery,
+        variables: {
+          taskGroupId: taskGroup.taskGroup.taskGroupId,
+        },
+      });
+
+      this.setState({
+        taskGroupInfo: sealTaskGroup,
+      });
+
+      return null;
+    }
+
     const { taskActions, task } = this.props.data;
     const { actionInputs, actionData } = this.state;
     const form = actionInputs[name];
@@ -393,14 +464,16 @@ export default class TaskGroup extends Component {
       taskActions,
       form,
       action,
-      apolloClient: this.props.client,
+      apolloClient,
     });
 
     return taskId;
   };
 
   handleActionTaskComplete = taskId => {
-    this.props.history.push(`/tasks/${taskId}`);
+    if (taskId) {
+      this.props.history.push(`/tasks/${taskId}`);
+    }
   };
 
   handleFormChange = (value, name) =>
@@ -659,6 +732,10 @@ export default class TaskGroup extends Component {
       title.push(task?.metadata?.name);
     }
 
+    // taskGroupInfo would be set after task group actions were executed
+    // and would contain updated info
+    const tgInfo = this.taskGroupInfo;
+
     return (
       <Dashboard
         title={title.join(' - ')}
@@ -672,14 +749,36 @@ export default class TaskGroup extends Component {
         }>
         <ErrorPanel fixed error={graphqlError} warning={Boolean(taskGroup)} />
         {taskGroup && (
-          <TaskGroupProgress
-            taskGroupId={taskGroupId}
-            taskGroupLoaded={taskGroupLoaded}
-            taskGroup={taskGroup}
-            filter={filter}
-            onStatusClick={this.handleStatusClick}
-            onUpdate={this.handleCountUpdate}
-          />
+          <React.Fragment>
+            <TaskGroupProgress
+              taskGroupId={taskGroupId}
+              taskGroupLoaded={taskGroupLoaded}
+              taskGroup={taskGroup}
+              filter={filter}
+              onStatusClick={this.handleStatusClick}
+              onUpdate={this.handleCountUpdate}
+            />
+            <Grid container className={classes.firstGrid}>
+              <Grid item xs={6}>
+                <CopyToClipboardListItem
+                  tooltipTitle={tgInfo.expires}
+                  textToCopy={tgInfo.expires}
+                  primary="Task Group Expires"
+                  secondary={<DateDistance from={tgInfo.expires} />}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                {tgInfo.sealed && (
+                  <CopyToClipboardListItem
+                    tooltipTitle={tgInfo.sealed}
+                    textToCopy={tgInfo.sealed}
+                    primary="Task Group Sealed"
+                    secondary={<DateDistance from={tgInfo.sealed} />}
+                  />
+                )}
+              </Grid>
+            </Grid>
+          </React.Fragment>
         )}
         {!loading && taskGroup && (
           <Grid container>
@@ -745,7 +844,8 @@ export default class TaskGroup extends Component {
                 tooltipOpen
                 key={action.title}
                 FabProps={{
-                  disabled: actionLoading,
+                  disabled:
+                    actionLoading || this.groupActionDisabled(action.name),
                 }}
                 icon={<HammerIcon />}
                 tooltipTitle={action.title}

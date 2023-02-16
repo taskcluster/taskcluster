@@ -237,6 +237,52 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
+  suite('get task group', function () {
+    test('get task-group -- doesn\'t exist', async () => {
+      let taskGroupId = slugid.v4();
+      await helper.queue.getTaskGroup(taskGroupId).then(
+        () => assert(false, 'Expected and error'),
+        err => assert(err.code === 'ResourceNotFound', 'err != ResourceNotFound'),
+      );
+    });
+    test('get existing task-group', async () => {
+      let taskGroupId = slugid.v4();
+      let taskIdA = slugid.v4();
+
+      debug('### Creating taskA');
+      await helper.queue.createTask(taskIdA, _.defaults({
+        taskGroupId,
+        schedulerId: 'sched-01',
+      }, taskDef));
+
+      const res = await helper.queue.getTaskGroup(taskGroupId);
+      assert(res.taskGroupId === taskGroupId);
+      assert(res.schedulerId === 'sched-01');
+      assert(typeof res.sealed === 'undefined', 'Group should not be sealed yet');
+
+      debug('### Sealing task-group');
+      const res2 = await helper.queue.sealTaskGroup(taskGroupId);
+      assert(res.expires, res2.expires);
+      assert(typeof res2.sealed !== 'undefined');
+    });
+    test('checks permissions', async () => {
+      let taskIdA = slugid.v4();
+      let taskGroupId = slugid.v4();
+
+      debug('### Creating taskA');
+      await helper.queue.createTask(taskIdA, _.defaults({
+        taskGroupId,
+        projectId: 'prj1',
+      }, taskDef));
+
+      debug('### checking InsufficientScopes');
+      helper.scopes('none');
+      await assert.rejects(
+        () => helper.queue.getTaskGroup(taskGroupId),
+        err => err.code === 'InsufficientScopes');
+    });
+  });
+
   suite('task group sealing', function () {
     test('sealing empty task group', async () => {
       let taskGroupId = slugid.v4();

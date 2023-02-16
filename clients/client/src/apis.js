@@ -2232,10 +2232,27 @@ module.exports = {
             "taskGroupId"
           ],
           "category": "Tasks",
+          "description": "Get task group information by `taskGroupId`.\n\nThis will return meta-information associated with the task group.\nIt contains information about task group expiry date or if it is sealed.",
+          "method": "get",
+          "name": "getTaskGroup",
+          "output": "v1/task-group-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>",
+          "scopes": "queue:list-task-group:<taskGroupId>",
+          "stability": "stable",
+          "title": "Get Task Group",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
+          "category": "Tasks",
           "description": "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.",
           "method": "post",
           "name": "sealTaskGroup",
-          "output": "v1/seal-task-group-response.json#",
+          "output": "v1/task-group-response.json#",
           "query": [
           ],
           "route": "/task-group/<taskGroupId>/seal",

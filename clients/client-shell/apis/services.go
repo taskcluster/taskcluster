@@ -1375,6 +1375,19 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "getTaskGroup",
+				Title:       "Get Task Group",
+				Description: "Get task group information by `taskGroupId`.\n\nThis will return meta-information associated with the task group.\nIt contains information about task group expiry date or if it is sealed.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/task-group/<taskGroupId>",
+				Args: []string{
+					"taskGroupId",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "sealTaskGroup",
 				Title:       "Seal Task Group",
 				Description: "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.",

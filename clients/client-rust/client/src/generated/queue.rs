@@ -286,6 +286,40 @@ impl Queue {
         (path, query)
     }
 
+    /// Get Task Group
+    ///
+    /// Get task group information by `taskGroupId`.
+    ///
+    /// This will return meta-information associated with the task group.
+    /// It contains information about task group expiry date or if it is sealed.
+    pub async fn getTaskGroup(&self, taskGroupId: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::getTaskGroup_details(taskGroupId);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the getTaskGroup endpoint
+    pub fn getTaskGroup_url(&self, taskGroupId: &str) -> Result<String, Error> {
+        let (path, query) = Self::getTaskGroup_details(taskGroupId);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the getTaskGroup endpoint
+    pub fn getTaskGroup_signed_url(&self, taskGroupId: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::getTaskGroup_details(taskGroupId);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for getTaskGroup
+    fn getTaskGroup_details<'a>(taskGroupId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-group/{}", urlencode(taskGroupId));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Seal Task Group
     ///
     /// Seal task group to prevent creation of new tasks.

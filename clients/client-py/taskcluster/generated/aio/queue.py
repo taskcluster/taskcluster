@@ -151,6 +151,20 @@ class Queue(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["listTaskGroup"], *args, **kwargs)
 
+    async def getTaskGroup(self, *args, **kwargs):
+        """
+        Get Task Group
+
+        Get task group information by `taskGroupId`.
+
+        This will return meta-information associated with the task group.
+        It contains information about task group expiry date or if it is sealed.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["getTaskGroup"], *args, **kwargs)
+
     async def sealTaskGroup(self, *args, **kwargs):
         """
         Seal Task Group
@@ -966,6 +980,14 @@ class Queue(AsyncBaseClient):
             'route': '/provisioners/<provisionerId>',
             'stability': 'deprecated',
         },
+        "getTaskGroup": {
+            'args': ['taskGroupId'],
+            'method': 'get',
+            'name': 'getTaskGroup',
+            'output': 'v1/task-group-response.json#',
+            'route': '/task-group/<taskGroupId>',
+            'stability': 'stable',
+        },
         "getTaskQueue": {
             'args': ['taskQueueId'],
             'method': 'get',
@@ -1169,7 +1191,7 @@ class Queue(AsyncBaseClient):
             'args': ['taskGroupId'],
             'method': 'post',
             'name': 'sealTaskGroup',
-            'output': 'v1/seal-task-group-response.json#',
+            'output': 'v1/task-group-response.json#',
             'route': '/task-group/<taskGroupId>/seal',
             'stability': 'experimental',
         },

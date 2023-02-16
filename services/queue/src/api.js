@@ -300,6 +300,44 @@ builder.declare({
   return res.reply(result);
 });
 
+/** Get task group info */
+builder.declare({
+  method: 'get',
+  route: '/task-group/:taskGroupId',
+  name: 'getTaskGroup',
+  scopes: 'queue:list-task-group:<taskGroupId>',
+  stability: APIBuilder.stability.stable,
+  category: 'Tasks',
+  output: 'task-group-response.yml',
+  title: 'Get Task Group',
+  description: [
+    'Get task group information by `taskGroupId`.',
+    '',
+    'This will return meta-information associated with the task group.',
+    'It contains information about task group expiry date or if it is sealed.',
+  ].join('\n'),
+}, async function (req, res) {
+  let taskGroupId = req.params.taskGroupId;
+
+  const taskGroup = await TaskGroup.get(this.db, taskGroupId);
+  if (!taskGroup) {
+    return res.reportError('ResourceNotFound',
+      'No task-group with taskGroupId: `{{taskGroupId}}`', {
+        taskGroupId,
+      });
+  }
+
+  // fetch project ids to construct scopes: `queue:seal-task-group:<taskGroupId>`
+  let projectIds = await taskGroup.getProjectIds(this.db);
+
+  await req.authorize({
+    taskGroupId,
+    projectIds,
+  });
+
+  return res.reply(taskGroup.serialize());
+});
+
 /** Seal Task Group */
 builder.declare({
   method: 'post',
@@ -320,7 +358,7 @@ builder.declare({
   stability: APIBuilder.stability.experimental,
   category: 'Tasks',
   input: undefined,
-  output: 'seal-task-group-response.yml',
+  output: 'task-group-response.yml',
   title: 'Seal Task Group',
   description: [
     'Seal task group to prevent creation of new tasks.',

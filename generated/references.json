@@ -3094,6 +3094,46 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/task-group-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response containing information about a task group.\n",
+      "properties": {
+        "expires": {
+          "description": "Date and time when task group expires.\n",
+          "format": "date-time",
+          "title": "Task group expiry date",
+          "type": "string"
+        },
+        "schedulerId": {
+          "$ref": "task.json#/properties/schedulerId",
+          "default": "-"
+        },
+        "sealed": {
+          "description": "Date and time when task group was sealed.\n",
+          "format": "date-time",
+          "title": "Sealing timestamp",
+          "type": "string"
+        },
+        "taskGroupId": {
+          "description": "Identifier for the task-group being sealed.\n",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Task-Group Identifier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskGroupId",
+        "expires",
+        "schedulerId"
+      ],
+      "title": "Task-Group Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/task-group-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/task-group-resolved.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -3485,47 +3525,6 @@
       "type": "object"
     },
     "filename": "schemas/queue/v1/task-claim-request.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/queue/v1/seal-task-group-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Response from a `sealTaskGroup` request.\n",
-      "properties": {
-        "expires": {
-          "description": "Date and time when task group expires.\n",
-          "format": "date-time",
-          "title": "Task group expiry date",
-          "type": "string"
-        },
-        "schedulerId": {
-          "$ref": "task.json#/properties/schedulerId",
-          "default": "-"
-        },
-        "sealed": {
-          "description": "Date and time when task group was sealed.\n",
-          "format": "date-time",
-          "title": "Sealing timestamp",
-          "type": "string"
-        },
-        "taskGroupId": {
-          "description": "Identifier for the task-group being sealed.\n",
-          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
-          "title": "Task-Group Identifier",
-          "type": "string"
-        }
-      },
-      "required": [
-        "taskGroupId",
-        "sealed",
-        "expires",
-        "schedulerId"
-      ],
-      "title": "Seal Task-Group Response",
-      "type": "object"
-    },
-    "filename": "schemas/queue/v1/seal-task-group-response.json"
   },
   {
     "content": {
@@ -15554,10 +15553,27 @@
             "taskGroupId"
           ],
           "category": "Tasks",
+          "description": "Get task group information by `taskGroupId`.\n\nThis will return meta-information associated with the task group.\nIt contains information about task group expiry date or if it is sealed.",
+          "method": "get",
+          "name": "getTaskGroup",
+          "output": "v1/task-group-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>",
+          "scopes": "queue:list-task-group:<taskGroupId>",
+          "stability": "stable",
+          "title": "Get Task Group",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
+          "category": "Tasks",
           "description": "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.",
           "method": "post",
           "name": "sealTaskGroup",
-          "output": "v1/seal-task-group-response.json#",
+          "output": "v1/task-group-response.json#",
           "query": [
           ],
           "route": "/task-group/<taskGroupId>/seal",
