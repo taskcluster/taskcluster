@@ -77,7 +77,7 @@ exports.tasks = [{
       ).replace(
         /go[0-9]+\.[0-9]+\.[0-9]+/g,
         `${goVersion}`));
-    const goDownloadsJson = await (await fetch('https://go.dev/dl/?mode=json')).json();
+    const goDownloadsJson = await (await fetch('https://go.dev/dl/?mode=json&include=all')).json();
     const goFilesArr = goDownloadsJson.find(el => el.version === goVersion).files;
     await modifyRepoYAML('workers/generic-worker/gw-decision-task/tasks.yml',
       contents => {
