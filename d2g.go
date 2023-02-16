@@ -113,7 +113,7 @@ func podmanCopyArtifacts(containerName string, payload *dockerworker.DockerWorke
 }
 
 func env(env map[string]string) map[string]string {
-	return env
+	return map[string]string{}
 }
 
 func features(features *dockerworker.FeatureFlags) genericworker.FeatureFlags {
@@ -161,24 +161,27 @@ func createVolumeMountsString(payloadCache map[string]string, wdcs []genericwork
 	return volumeMounts.String()
 }
 
-func podmanEnvMapping(envVar string) string {
-	return ` -e "` + envVar + "=${" + envVar + `}"`
+func podmanEnvSetting(envVarName, envVarValue string) string {
+	return ` -e "` + envVarName + "=" + envVarValue + `"`
 }
 
 func podmanEnvMappings(payloadEnv map[string]string) string {
-	env := strings.Builder{}
-	envVars := make([]string, len(payloadEnv)+len(dwManagedEnvVars))
+	envStrBuilder := strings.Builder{}
+	envVarNames := make([]string, len(payloadEnv)+len(dwManagedEnvVars))
+	env := make(map[string]string, len(envVarNames))
 	i := 0
-	for envVar := range payloadEnv {
-		envVars[i] = envVar
+	for envVarName, envVarValue := range payloadEnv {
+		envVarNames[i] = envVarName
+		env[envVarName] = envVarValue
 		i++
 	}
-	for j, envVar := range dwManagedEnvVars {
-		envVars[i+j] = envVar
+	for j, envVarName := range dwManagedEnvVars {
+		envVarNames[i+j] = envVarName
+		env[envVarName] = "${" + envVarName + "}"
 	}
-	sort.Strings(envVars)
-	for _, envVar := range envVars {
-		env.WriteString(podmanEnvMapping(envVar))
+	sort.Strings(envVarNames)
+	for _, envVarName := range envVarNames {
+		envStrBuilder.WriteString(podmanEnvSetting(envVarName, env[envVarName]))
 	}
-	return env.String()
+	return envStrBuilder.String()
 }
