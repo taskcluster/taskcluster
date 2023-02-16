@@ -154,6 +154,8 @@ MonitorManager.register({
   fields: {
     taskGroupId: 'Task group ID',
     schedulerId: 'Id of the reclaiming worker.',
+    expires: 'Date and time of task group expiration',
+    sealed: 'Date and time when task group was sealed',
   },
 });
 

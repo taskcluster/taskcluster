@@ -386,18 +386,12 @@ builder.declare({
   });
 
   const updated = TaskGroup.fromDbRows(await this.db.fns.seal_task_group(taskGroupId));
+  const out = updated.serialize();
 
-  await this.publisher.taskGroupSealed({
-    taskGroupId,
-    schedulerId: updated.schedulerId,
-  }, []);
+  await this.publisher.taskGroupSealed(Object.assign({}, out), []);
+  this.monitor.log.taskGroupSealed(out);
 
-  this.monitor.log.taskGroupSealed({
-    taskGroupId,
-    schedulerId: updated.schedulerId,
-  });
-
-  return res.reply(updated.serialize());
+  return res.reply(out);
 });
 
 /** List tasks dependents */

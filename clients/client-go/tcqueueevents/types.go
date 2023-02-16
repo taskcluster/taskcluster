@@ -354,12 +354,18 @@ type (
 	// Message written once a task group has been sealed.
 	TaskGroupSealedMessage struct {
 
+		// Date and time when task group expires.
+		Expires tcclient.Time `json:"expires"`
+
 		// Identifier for the scheduler that created this task-group.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
 		SchedulerID string `json:"schedulerId"`
+
+		// Date and time when task group was sealed.
+		Sealed tcclient.Time `json:"sealed,omitempty"`
 
 		// Identifier for the task-group being listed.
 		//

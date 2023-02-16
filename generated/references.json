@@ -3061,12 +3061,24 @@
       "additionalProperties": false,
       "description": "Message written once a task group has been sealed.\n",
       "properties": {
+        "expires": {
+          "description": "Date and time when task group expires.\n",
+          "format": "date-time",
+          "title": "Task group expiry date",
+          "type": "string"
+        },
         "schedulerId": {
           "description": "Identifier for the scheduler that created this task-group.\n",
           "maxLength": 38,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
           "title": "Scheduler Identifier",
+          "type": "string"
+        },
+        "sealed": {
+          "description": "Date and time when task group was sealed.\n",
+          "format": "date-time",
+          "title": "Sealing timestamp",
           "type": "string"
         },
         "taskGroupId": {
@@ -3085,7 +3097,8 @@
       },
       "required": [
         "taskGroupId",
-        "schedulerId"
+        "schedulerId",
+        "expires"
       ],
       "title": "Task Group Sealed Message",
       "type": "object"
@@ -14804,7 +14817,9 @@
         {
           "description": "Task group was sealed and will no longer allow creation of tasks.",
           "fields": {
+            "expires": "Date and time of task group expiration",
             "schedulerId": "Id of the reclaiming worker.",
+            "sealed": "Date and time when task group was sealed",
             "taskGroupId": "Task group ID"
           },
           "level": "notice",

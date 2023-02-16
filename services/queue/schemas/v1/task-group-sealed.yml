@@ -19,7 +19,20 @@ properties:
     minLength:      {$const: identifier-min-length}
     maxLength:      {$const: identifier-max-length}
     pattern:        {$const: identifier-pattern}
+  sealed:
+    type:           string
+    format:         date-time
+    title:          "Sealing timestamp"
+    description: |
+      Date and time when task group was sealed.
+  expires:
+    type:           string
+    format:         date-time
+    title:          "Task group expiry date"
+    description: |
+      Date and time when task group expires.
 required:
  - taskGroupId
  - schedulerId
+ - expires
 additionalProperties: false
