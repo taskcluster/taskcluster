@@ -153,19 +153,9 @@ tasks:
                   env:
                       # run-task uses these to check out the source; the inputs
                       # to `mach taskgraph decision` are all on the command line.
-                      $merge:
-                          - TASKCLUSTER_BASE_REPOSITORY: '${baseRepoUrl}'
-                            TASKCLUSTER_BASE_REF: '${base_ref}'
-                            TASKCLUSTER_HEAD_REPOSITORY: '${repoUrl}'
-                            TASKCLUSTER_HEAD_REF: '${head_ref}'
-                            TASKCLUSTER_HEAD_REV: '${head_sha}'
-                            TASKCLUSTER_HEAD_TAG: '${head_tag}'
-                            TASKCLUSTER_PIP_REQUIREMENTS: taskcluster/requirements.txt
-                            TASKCLUSTER_REPOSITORY_TYPE: git
-                            REPOSITORIES: {$json: {taskcluster: "taskcluster"}}
-                          - $if: 'isPullRequest'
-                            then:
-                                TASKCLUSTER_PULL_REQUEST_NUMBER: '${event.pull_request.number}'
+                      $if: 'isPullRequest'
+                      then:
+                          TASKCLUSTER_PULL_REQUEST_NUMBER: '${event.pull_request.number}'
                   features:
                       taskclusterProxy: true
 
@@ -178,18 +168,18 @@ tasks:
                         - "-cx"
                         - |-
                           podman run --name taskcontainer --add-host=taskcluster:127.0.0.1 --net=host \
-                              -e "REPOSITORIES=$${REPOSITORIES}" \
+                              -e "REPOSITORIES={\"taskcluster\":\"taskcluster\"}" \
                               -e "RUN_ID=$${RUN_ID}" \
-                              -e "TASKCLUSTER_BASE_REF=$${TASKCLUSTER_BASE_REF}" \
-                              -e "TASKCLUSTER_BASE_REPOSITORY=$${TASKCLUSTER_BASE_REPOSITORY}" \
-                              -e "TASKCLUSTER_HEAD_REF=$${TASKCLUSTER_HEAD_REF}" \
-                              -e "TASKCLUSTER_HEAD_REPOSITORY=$${TASKCLUSTER_HEAD_REPOSITORY}" \
-                              -e "TASKCLUSTER_HEAD_REV=$${TASKCLUSTER_HEAD_REV}" \
-                              -e "TASKCLUSTER_HEAD_TAG=$${TASKCLUSTER_HEAD_TAG}" \
-                              -e "TASKCLUSTER_PIP_REQUIREMENTS=$${TASKCLUSTER_PIP_REQUIREMENTS}" \
+                              -e "TASKCLUSTER_BASE_REF=${base_ref}" \
+                              -e "TASKCLUSTER_BASE_REPOSITORY=${baseRepoUrl}" \
+                              -e "TASKCLUSTER_HEAD_REF=${head_ref}" \
+                              -e "TASKCLUSTER_HEAD_REPOSITORY=${repoUrl}" \
+                              -e "TASKCLUSTER_HEAD_REV=${head_sha}" \
+                              -e "TASKCLUSTER_HEAD_TAG=${head_tag}" \
+                              -e "TASKCLUSTER_PIP_REQUIREMENTS=taskcluster/requirements.txt" \
                               -e "TASKCLUSTER_PROXY_URL=$${TASKCLUSTER_PROXY_URL}" \
                               -e "TASKCLUSTER_PULL_REQUEST_NUMBER=$${TASKCLUSTER_PULL_REQUEST_NUMBER}" \
-                              -e "TASKCLUSTER_REPOSITORY_TYPE=$${TASKCLUSTER_REPOSITORY_TYPE}" \
+                              -e "TASKCLUSTER_REPOSITORY_TYPE=git" \
                               -e "TASKCLUSTER_ROOT_URL=$${TASKCLUSTER_ROOT_URL}" \
                               -e "TASKCLUSTER_WORKER_LOCATION=$${TASKCLUSTER_WORKER_LOCATION}" \
                               -e "TASK_ID=$${TASK_ID}" \
