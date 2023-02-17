@@ -160,6 +160,12 @@ export default class TaskDetailsCard extends Component {
                 />
               </ListItem>
               <CopyToClipboardListItem
+                tooltipTitle={task.taskId}
+                textToCopy={task.taskId}
+                primary="Task ID"
+                secondary={task.taskId}
+              />
+              <CopyToClipboardListItem
                 tooltipTitle={task.created}
                 textToCopy={task.created}
                 primary="Created"
