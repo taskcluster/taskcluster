@@ -135,6 +135,7 @@ func writableDirectoryCaches(caches map[string]string) []genericworker.WritableD
 			CacheName: cacheName,
 			Directory: "cache" + strconv.Itoa(i),
 		}
+		i++
 	}
 	return wdcs
 }
