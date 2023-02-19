@@ -1792,7 +1792,13 @@ Return true if the task has remaining un-satisfied dependencies.
 * *Returns*: `boolean`
 * *Last defined on version*: 28
 
-temp, removed in next commit
+Determine whether a task group is currently active.  An "active" task
+group is one with one or more tasks that has never been resolved.
+
+An unsealed, inactive task group can become active if a new task is
+added, so this value may change from tue to false or false to true at any
+time unless a task group is sealed.
+
 
 ### mark_task_ever_resolved
 
