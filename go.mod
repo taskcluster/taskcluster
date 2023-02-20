@@ -13,7 +13,6 @@ require (
 	github.com/elastic/go-sysinfo v1.9.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/getsentry/raven-go v0.2.0
-	github.com/ghodss/yaml v1.0.0
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.0
@@ -47,6 +46,7 @@ require (
 	golang.org/x/tools v0.5.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
+	sigs.k8s.io/yaml v1.3.0
 )
 
 require (

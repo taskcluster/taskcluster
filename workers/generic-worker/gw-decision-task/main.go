@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
 	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
+	"sigs.k8s.io/yaml"
 )
 
 // Data types that map to sections of tasks.yml
