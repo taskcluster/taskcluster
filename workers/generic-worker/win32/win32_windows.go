@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strings"
 	"syscall"
@@ -156,6 +157,8 @@ type ProfileInfo struct {
 
 var (
 	isWindows8OrGreater *bool
+	minWin10Build uint32 = 0
+	maxWin10Build uint32 = math.MaxUint32
 )
 
 func boolToUint32(src bool) uint32 {
@@ -179,6 +182,34 @@ func CloseHandle(handle syscall.Handle) (err error) {
 		log.Printf("Error when closing handle: %v", err)
 	}
 	return
+}
+
+func IsWindows10BuildOrGreater(build uint32) bool {
+	if minWin10Build >= build {
+		return true
+	}
+
+	if build >= maxWin10Build {
+		return false
+	}
+	cm := VerSetConditionMask(0, VER_MAJORVERSION, VER_GREATER_EQUAL)
+
+	cm = VerSetConditionMask(cm, VER_MINORVERSION, VER_GREATER_EQUAL)
+	cm = VerSetConditionMask(cm, VER_BUILDNUMBER, VER_GREATER_EQUAL)
+	cm = VerSetConditionMask(cm, VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL)
+	cm = VerSetConditionMask(cm, VER_SERVICEPACKMINOR, VER_GREATER_EQUAL)
+	r, _ := VerifyWindowsInfoW(OSVersionInfoEx{
+		MajorVersion: 10,
+		MinorVersion: 0,
+		BuildNumber: build
+	}, VER_MAJORVERSION|VER_MINORVERSION|VER_BUILDNUMBER|VER_SERVICEPACKMAJOR|VER_SERVICEPACKMINOR, cm)
+	if r {
+		minWin10Build = build
+		return true
+	}
+
+	maxWin10Build = build
+	return false
 }
 
 func IsWindows8OrGreater() bool {

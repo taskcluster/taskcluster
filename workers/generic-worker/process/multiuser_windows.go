@@ -37,6 +37,24 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 	// TODO: we should probably change this to the logon SID of the user
 	sid := "S-1-1-0"
 	GrantSIDWinstaAccess(sid, pd)
+
+	isWindows8OrGreater := win32.IsWindows8OrGreater()
+	if  !isWindows8OrGreater {
+		return
+	}
+
+	// Add ALL APPLICATION PACKAGES SID on Windows 8 or later
+	sid := "S-1-15-2-1"
+	GrantSIDWinstaAccess(sid, pd)
+
+	isWindows10Build14393OrGreater := win32.IsWindows10BuildOrGreater(14393)
+	if  !isWindows10Build14393OrGreater {
+		return
+	}
+
+	// Add ALL RESTRICTED APPLICATION PACKAGES SID on Windows 10 build 14393 or later
+	sid := "S-1-15-2-2"
+	GrantSIDWinstaAccess(sid, pd)
 	return
 }
 
