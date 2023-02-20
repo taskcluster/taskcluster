@@ -12,10 +12,10 @@ import (
 
 	"golang.org/x/tools/imports"
 
-	"github.com/ghodss/yaml"
 	"github.com/kr/text"
 	"github.com/taskcluster/taskcluster/v47/internal/jsontest"
 	"github.com/taskcluster/taskcluster/v47/tools/jsonschema2go"
+	"sigs.k8s.io/yaml"
 )
 
 func main() {

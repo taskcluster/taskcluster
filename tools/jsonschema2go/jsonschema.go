@@ -100,8 +100,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"github.com/taskcluster/taskcluster/v47/tools/jsonschema2go/text"
+	"sigs.k8s.io/yaml"
 )
 
 type (

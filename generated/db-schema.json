@@ -3587,7 +3587,7 @@
           "args": "task_group_id_in text",
           "body": "begin\n  perform true\n  from tasks\n  where\n    task_group_id = task_group_id_in and\n    not ever_resolved\n  limit 1;\n  return found;\nend",
           "deprecated": false,
-          "description": "temp, removed in next commit",
+          "description": "Determine whether a task group is currently active.  An \"active\" task\ngroup is one with one or more tasks that has never been resolved.\n\nAn unsealed, inactive task group can become active if a new task is\nadded, so this value may change from tue to false or false to true at any\ntime unless a task group is sealed.\n",
           "mode": "read",
           "returns": "boolean",
           "serviceName": "queue"
