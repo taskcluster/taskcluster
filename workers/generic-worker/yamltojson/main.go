@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/ghodss/yaml"
+	"sigs.k8s.io/yaml"
 )
 
 func main() {
