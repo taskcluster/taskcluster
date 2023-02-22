@@ -225,11 +225,12 @@ exports.dockerImages = async ({ baseDir }) => {
  */
 exports.dockerRegistryCheck = async ({ tag }) => {
   const [repo, imagetag] = tag.split(/:/);
+
   try {
     // Access the registry API directly to see if this tag already exists, and do not push if so.
     const res = await got(`https://hub.docker.com/v2/repositories/taskcluster/${repo}/tags`, { responseType: 'json' });
     if (!res.body) {
-      throw new Error('invalid response from index.docker.io');
+      throw new Error('invalid response from hub.docker.com');
     }
     if (res.body.map(l => l.name).includes(imagetag)) {
       return true;
