@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v47.1.2
+
+### GENERAL
+
+▶ [patch]
+Add error handling for docker image release process.
+
 ## v47.1.1
 
 ### GENERAL
