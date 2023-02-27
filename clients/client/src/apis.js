@@ -3573,7 +3573,7 @@ module.exports = {
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "v1/task-group-resolved.json#",
+          "schema": "v1/task-group-changed-message.json#",
           "title": "Task Group Resolved Messages",
           "type": "topic-exchange"
         },
@@ -3608,7 +3608,7 @@ module.exports = {
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "v1/task-group-sealed.json#",
+          "schema": "v1/task-group-changed-message.json#",
           "title": "Task Group Sealed Messages",
           "type": "topic-exchange"
         }

@@ -280,10 +280,10 @@ func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limi
 //	queue:list-task-group:<taskGroupId>
 //
 // See #getTaskGroup
-func (queue *Queue) GetTaskGroup(taskGroupId string) (*TaskGroupResponse, error) {
+func (queue *Queue) GetTaskGroup(taskGroupId string) (*TaskGroupDefinitionResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-group/"+url.QueryEscape(taskGroupId), new(TaskGroupResponse), nil)
-	return responseObject.(*TaskGroupResponse), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-group/"+url.QueryEscape(taskGroupId), new(TaskGroupDefinitionResponse), nil)
+	return responseObject.(*TaskGroupDefinitionResponse), err
 }
 
 // Returns a signed URL for GetTaskGroup, valid for the specified duration.
@@ -310,10 +310,10 @@ func (queue *Queue) GetTaskGroup_SignedURL(taskGroupId string, duration time.Dur
 //	queue:seal-task-group:<taskGroupId>
 //
 // See #sealTaskGroup
-func (queue *Queue) SealTaskGroup(taskGroupId string) (*TaskGroupResponse, error) {
+func (queue *Queue) SealTaskGroup(taskGroupId string) (*TaskGroupDefinitionResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/task-group/"+url.QueryEscape(taskGroupId)+"/seal", new(TaskGroupResponse), nil)
-	return responseObject.(*TaskGroupResponse), err
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task-group/"+url.QueryEscape(taskGroupId)+"/seal", new(TaskGroupDefinitionResponse), nil)
+	return responseObject.(*TaskGroupDefinitionResponse), err
 }
 
 // List tasks that depend on the given `taskId`.

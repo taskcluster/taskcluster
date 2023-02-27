@@ -3056,57 +3056,6 @@
   },
   {
     "content": {
-      "$id": "/schemas/queue/v1/task-group-sealed.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Message written once a task group has been sealed.\n",
-      "properties": {
-        "expires": {
-          "description": "Date and time when task group expires.\n",
-          "format": "date-time",
-          "title": "Task group expiry date",
-          "type": "string"
-        },
-        "schedulerId": {
-          "description": "Identifier for the scheduler that created this task-group.\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "title": "Scheduler Identifier",
-          "type": "string"
-        },
-        "sealed": {
-          "description": "Date and time when task group was sealed.\n",
-          "format": "date-time",
-          "title": "Sealing timestamp",
-          "type": "string"
-        },
-        "taskGroupId": {
-          "description": "Identifier for the task-group being listed.\n",
-          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
-          "title": "Task-Group Identifier",
-          "type": "string"
-        },
-        "version": {
-          "description": "Message version",
-          "enum": [
-            1
-          ],
-          "type": "integer"
-        }
-      },
-      "required": [
-        "taskGroupId",
-        "schedulerId",
-        "expires"
-      ],
-      "title": "Task Group Sealed Message",
-      "type": "object"
-    },
-    "filename": "schemas/queue/v1/task-group-sealed.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/queue/v1/task-group-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -3119,17 +3068,16 @@
           "type": "string"
         },
         "schedulerId": {
-          "$ref": "task.json#/properties/schedulerId",
-          "default": "-"
+          "$ref": "task.json#/properties/schedulerId"
         },
         "sealed": {
-          "description": "Date and time when task group was sealed.\n",
+          "description": "Empty or date and time when task group was sealed.\n",
           "format": "date-time",
           "title": "Sealing timestamp",
           "type": "string"
         },
         "taskGroupId": {
-          "description": "Identifier for the task-group being sealed.\n",
+          "description": "Identifier for the task-group.\n",
           "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
           "title": "Task-Group Identifier",
           "type": "string"
@@ -3137,34 +3085,32 @@
       },
       "required": [
         "taskGroupId",
-        "expires",
-        "schedulerId"
+        "schedulerId",
+        "expires"
       ],
-      "title": "Task-Group Response",
+      "title": "Task Group Definition Response",
       "type": "object"
     },
     "filename": "schemas/queue/v1/task-group-response.json"
   },
   {
     "content": {
-      "$id": "/schemas/queue/v1/task-group-resolved.json#",
+      "$id": "/schemas/queue/v1/task-group-changed-message.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "Message written once a task group has no tasks to be run. It is\npossible for a task group to later have another task added, in which\ncase this message will be sent again once it finishes.\n",
+      "description": "Message written once a task group has been sealed or resolved.\n",
       "properties": {
+        "expires": {
+          "$ref": "task-group-response.json#/properties/expires"
+        },
         "schedulerId": {
-          "description": "Identifier for the scheduler that created this task-group.\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "title": "Scheduler Identifier",
-          "type": "string"
+          "$ref": "task-group-response.json#/properties/schedulerId"
+        },
+        "sealed": {
+          "$ref": "task-group-response.json#/properties/sealed"
         },
         "taskGroupId": {
-          "description": "Identifier for the task-group being listed.\n",
-          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
-          "title": "Task-Group Identifier",
-          "type": "string"
+          "$ref": "task-group-response.json#/properties/taskGroupId"
         },
         "version": {
           "description": "Message version",
@@ -3175,13 +3121,15 @@
         }
       },
       "required": [
+        "version",
         "taskGroupId",
-        "schedulerId"
+        "schedulerId",
+        "expires"
       ],
-      "title": "Task Group Resolved Message",
+      "title": "Task Group Changed Message",
       "type": "object"
     },
-    "filename": "schemas/queue/v1/task-group-resolved.json"
+    "filename": "schemas/queue/v1/task-group-changed-message.json"
   },
   {
     "content": {
@@ -15416,7 +15364,7 @@
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "v1/task-group-resolved.json#",
+          "schema": "v1/task-group-changed-message.json#",
           "title": "Task Group Resolved Messages",
           "type": "topic-exchange"
         },
@@ -15451,7 +15399,7 @@
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "v1/task-group-sealed.json#",
+          "schema": "v1/task-group-changed-message.json#",
           "title": "Task Group Sealed Messages",
           "type": "topic-exchange"
         }

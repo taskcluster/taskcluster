@@ -1,5 +1,5 @@
 audience: users
-level: minor
+level: major
 reference: issue 6059
 ---
 

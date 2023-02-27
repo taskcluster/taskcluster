@@ -708,7 +708,7 @@ class QueueEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'v1/task-group-resolved.json#',
+            'schema': 'v1/task-group-changed-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -752,7 +752,7 @@ class QueueEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'v1/task-group-sealed.json#',
+            'schema': 'v1/task-group-changed-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 

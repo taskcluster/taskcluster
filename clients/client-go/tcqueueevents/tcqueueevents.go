@@ -349,7 +349,7 @@ func (binding TaskGroupResolved) ExchangeName() string {
 }
 
 func (binding TaskGroupResolved) NewPayloadObject() interface{} {
-	return new(TaskGroupResolvedMessage)
+	return new(TaskGroupChangedMessage)
 }
 
 // A message is published on task-group-sealed whenever task group is sealed.
@@ -372,7 +372,7 @@ func (binding TaskGroupSealed) ExchangeName() string {
 }
 
 func (binding TaskGroupSealed) NewPayloadObject() interface{} {
-	return new(TaskGroupSealedMessage)
+	return new(TaskGroupChangedMessage)
 }
 
 func generateRoutingKey(x interface{}) string {

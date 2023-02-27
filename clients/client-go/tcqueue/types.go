@@ -1483,7 +1483,7 @@ type (
 	}
 
 	// Response containing information about a task group.
-	TaskGroupResponse struct {
+	TaskGroupDefinitionResponse struct {
 
 		// Date and time after the last expiration of any task in the task group.
 		// For the unsealed task group this could change to a later date.
@@ -1505,10 +1505,10 @@ type (
 		// Max length: 38
 		SchedulerID string `json:"schedulerId"`
 
-		// Date and time when task group was sealed.
+		// Empty or date and time when task group was sealed.
 		Sealed tcclient.Time `json:"sealed,omitempty"`
 
-		// Identifier for the task-group being sealed.
+		// Identifier for the task-group.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupID string `json:"taskGroupId"`

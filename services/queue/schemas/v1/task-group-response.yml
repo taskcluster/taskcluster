@@ -1,5 +1,5 @@
 $schema: "/schemas/common/metaschema.json#"
-title:              "Task-Group Response"
+title:              "Task Group Definition Response"
 description: |
   Response containing information about a task group.
 type:               object
@@ -7,15 +7,16 @@ properties:
   taskGroupId:
     title:          "Task-Group Identifier"
     description: |
-      Identifier for the task-group being sealed.
+      Identifier for the task-group.
     type:           string
     pattern:        {$const: slugid-pattern}
+  schedulerId:      {$ref: "task.json#/properties/schedulerId"}
   sealed:
     type:           string
     format:         date-time
     title:          "Sealing timestamp"
     description: |
-      Date and time when task group was sealed.
+      Empty or date and time when task group was sealed.
   expires:
     type:           string
     format:         date-time
@@ -23,10 +24,8 @@ properties:
     description: |
       Date and time after the last expiration of any task in the task group.
       For the unsealed task group this could change to a later date.
-  schedulerId: {$ref: "task.json#/properties/schedulerId", default: '-'}
-
 additionalProperties: false
 required:
  - taskGroupId
- - expires
  - schedulerId
+ - expires
