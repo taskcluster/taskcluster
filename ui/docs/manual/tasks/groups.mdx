@@ -11,7 +11,24 @@ When multiple tasks are created simultaneously, they often have the same `taskGr
 This is useful in situations where tasks are created for a Github
 push event with a [decision task](/docs/manual/design/conventions/decision-task).
 
-Tasks from the same Task Group might have different `projectIds`.
+In most cases, all of the tasks in a task group are linked by dependency relations,
+so it is common to refer to a task group as a "task graph".
+The Queue service provides an API method to list all tasks with a specific `taskGroupId`,
+and task manipulation can be limited by `taskGroupId`.
+
+Tasks also have a `schedulerId`. All tasks in a task group must have the same
+`schedulerId`. This is used for several purposes:
+
+ * it can represent the entity that created the task;
+
+ * it can limit addition of new tasks to a task group: the caller of
+   `createTask` must have a scope related to the `schedulerId` of the task
+   group (more about scopes later); and
+
+ * it can control who can [manipulate tasks](manipulating), again by requiring
+   `schedulerId`-related scopes, although this is more easily accomplished
+   with `projectId`.
+
 
 ## Sealing Task Gropus
 

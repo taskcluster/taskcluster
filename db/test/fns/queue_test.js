@@ -89,6 +89,50 @@ suite(testing.suiteName(), function() {
       });
     });
 
+    suite('ensure_task_group/get_task_group', function () {
+      helper.dbTest('ensure_task_group in parallel with the same scheduler_id', async function (db) {
+        const expires = taskcluster.fromNow('1 hour');
+        await Promise.all([
+          db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched', expires),
+          db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched', expires),
+          db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched', expires),
+          db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched', expires),
+        ]);
+
+        const tgs = await db.deprecatedFns.get_task_group('0cM7dCL2Rpaz0wdnDG4LLg');
+        assert.equal(tgs.length, 1);
+        assert.equal(tgs[0].task_group_id, '0cM7dCL2Rpaz0wdnDG4LLg');
+        assert.equal(tgs[0].scheduler_id, 'sched');
+        assert(tgs[0].expires > expires);
+      });
+
+      helper.dbTest('ensure_task_group twice with different scheduler_id', async function (db) {
+        const expires = taskcluster.fromNow('1 hour');
+        await db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched1', expires);
+        await assert.rejects(
+          () => db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched2', expires),
+          err => err.code === UNIQUE_VIOLATION);
+
+        const tgs = await db.deprecatedFns.get_task_group('0cM7dCL2Rpaz0wdnDG4LLg');
+        assert.equal(tgs.length, 1);
+        assert.equal(tgs[0].task_group_id, '0cM7dCL2Rpaz0wdnDG4LLg');
+        assert.equal(tgs[0].scheduler_id, 'sched1');
+        assert(tgs[0].expires > expires);
+      });
+
+      helper.dbTest('ensure_task_group twice with different task_group_id and scheduler_id', async function (db) {
+        const expires = taskcluster.fromNow('1 hour');
+        await db.fns.ensure_task_group('0cM7dCL2Rpaz0wdnDG4LLg', 'sched', expires);
+        await db.fns.ensure_task_group('jcy-h6_7SFuRuKLPByiFTg', 'sched', expires);
+
+        const tgs = await db.deprecatedFns.get_task_group('jcy-h6_7SFuRuKLPByiFTg');
+        assert.equal(tgs.length, 1);
+        assert.equal(tgs[0].task_group_id, 'jcy-h6_7SFuRuKLPByiFTg');
+        assert.equal(tgs[0].scheduler_id, 'sched');
+        assert(tgs[0].expires > expires);
+      });
+    });
+
     suite('ensure_task_group/get_task_group2', function() {
       helper.dbTest('ensure_task_group in parallel with the same scheduler_id', async function(db) {
         const expires = taskcluster.fromNow('1 hour');

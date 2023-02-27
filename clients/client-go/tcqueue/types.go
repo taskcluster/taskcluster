@@ -1485,7 +1485,8 @@ type (
 	// Response containing information about a task group.
 	TaskGroupResponse struct {
 
-		// Date and time when task group expires.
+		// Date and time after the last expiration of any task in the task group.
+		// For the unsealed task group this could change to a later date.
 		Expires tcclient.Time `json:"expires"`
 
 		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
