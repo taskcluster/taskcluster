@@ -146,6 +146,9 @@ class Queue(BaseClient):
         If you are not interested in listing all the members at once, you may
         use the query-string option `limit` to return fewer.
 
+        If you only want to to fetch task group metadata without the tasks,
+        you can call the `getTaskGroup` method.
+
         This method is ``stable``
         """
 
@@ -159,6 +162,9 @@ class Queue(BaseClient):
 
         This will return meta-information associated with the task group.
         It contains information about task group expiry date or if it is sealed.
+
+        If you also want to see which tasks belong to this task group, you can call
+        `listTaskGroup` method.
 
         This method is ``stable``
         """

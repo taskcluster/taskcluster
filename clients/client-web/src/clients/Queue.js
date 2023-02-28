@@ -15,9 +15,9 @@ export default class Queue extends Client {
     this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.task.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"task","output":true,"query":[],"route":"/task/<taskId>","scopes":"queue:get-task:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.status.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"status","output":true,"query":[],"route":"/task/<taskId>/status","scopes":"queue:status:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listTaskGroup.entry = {"args":["taskGroupId"],"category":"Tasks","method":"get","name":"listTaskGroup","output":true,"query":["continuationToken","limit"],"route":"/task-group/<taskGroupId>/list","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.getTaskGroup.entry = {"args":["taskGroupId"],"category":"Tasks","method":"get","name":"getTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.sealTaskGroup.entry = {"args":["taskGroupId"],"category":"Tasks","method":"post","name":"sealTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>/seal","scopes":"queue:seal-task-group:<taskGroupId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listTaskGroup.entry = {"args":["taskGroupId"],"category":"Task Groups","method":"get","name":"listTaskGroup","output":true,"query":["continuationToken","limit"],"route":"/task-group/<taskGroupId>/list","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.getTaskGroup.entry = {"args":["taskGroupId"],"category":"Task Groups","method":"get","name":"getTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.sealTaskGroup.entry = {"args":["taskGroupId"],"category":"Task Groups","method":"post","name":"sealTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>/seal","scopes":"queue:seal-task-group:<taskGroupId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listDependentTasks.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"listDependentTasks","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/dependents","scopes":"queue:list-dependent-tasks:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createTask.entry = {"args":["taskId"],"category":"Tasks","input":true,"method":"put","name":"createTask","output":true,"query":[],"route":"/task/<taskId>","scopes":{"AllOf":[{"each":"<scope>","for":"scope","in":"scopes"},{"each":"queue:route:<route>","for":"route","in":"routes"},"queue:create-task:project:<projectId>","queue:scheduler-id:<schedulerId>",{"AnyOf":[{"each":"queue:create-task:<priority>:<provisionerId>/<workerType>","for":"priority","in":"priorities"}]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.scheduleTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"scheduleTask","output":true,"query":[],"route":"/task/<taskId>/schedule","scopes":{"AnyOf":["queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>","queue:schedule-task-in-project:<projectId>",{"AllOf":["queue:schedule-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
@@ -113,6 +113,8 @@ export default class Queue extends Client {
   // get a result without a `continuationToken`.
   // If you are not interested in listing all the members at once, you may
   // use the query-string option `limit` to return fewer.
+  // If you only want to to fetch task group metadata without the tasks,
+  // you can call the `getTaskGroup` method.
   /* eslint-enable max-len */
   listTaskGroup(...args) {
     this.validate(this.listTaskGroup.entry, args);
@@ -123,6 +125,8 @@ export default class Queue extends Client {
   // Get task group information by `taskGroupId`.
   // This will return meta-information associated with the task group.
   // It contains information about task group expiry date or if it is sealed.
+  // If you also want to see which tasks belong to this task group, you can call
+  // `listTaskGroup` method.
   /* eslint-enable max-len */
   getTaskGroup(...args) {
     this.validate(this.getTaskGroup.entry, args);

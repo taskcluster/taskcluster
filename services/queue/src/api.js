@@ -237,7 +237,7 @@ builder.declare({
   name: 'listTaskGroup',
   scopes: 'queue:list-task-group:<taskGroupId>',
   stability: APIBuilder.stability.stable,
-  category: 'Tasks',
+  category: 'Task Groups',
   output: 'list-task-group-response.yml',
   title: 'List Task Group',
   description: [
@@ -257,6 +257,9 @@ builder.declare({
     '',
     'If you are not interested in listing all the members at once, you may',
     'use the query-string option `limit` to return fewer.',
+    '',
+    'If you only want to to fetch task group metadata without the tasks,',
+    'you can call the `getTaskGroup` method.',
   ].join('\n'),
 }, async function(req, res) {
   let taskGroupId = req.params.taskGroupId;
@@ -313,7 +316,7 @@ builder.declare({
   name: 'getTaskGroup',
   scopes: 'queue:list-task-group:<taskGroupId>',
   stability: APIBuilder.stability.stable,
-  category: 'Tasks',
+  category: 'Task Groups',
   output: 'task-group-response.yml',
   title: 'Get Task Group',
   description: [
@@ -321,6 +324,9 @@ builder.declare({
     '',
     'This will return meta-information associated with the task group.',
     'It contains information about task group expiry date or if it is sealed.',
+    '',
+    'If you also want to see which tasks belong to this task group, you can call',
+    '`listTaskGroup` method.',
   ].join('\n'),
 }, async function (req, res) {
   const taskGroupId = req.params.taskGroupId;
@@ -343,7 +349,7 @@ builder.declare({
   name: 'sealTaskGroup',
   scopes: 'queue:seal-task-group:<taskGroupId>',
   stability: APIBuilder.stability.experimental,
-  category: 'Tasks',
+  category: 'Task Groups',
   input: undefined,
   output: 'task-group-response.yml',
   title: 'Seal Task Group',
