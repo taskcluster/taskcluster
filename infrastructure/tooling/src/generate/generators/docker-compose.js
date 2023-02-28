@@ -240,6 +240,7 @@ exports.tasks.push({
       },
       volumes: [
         './db:/app/db', // in case of new migrations
+        './generated:/app/generated', // db schema
         './clients:/app/clients',
         './libraries:/app/libraries',
         `./services/${name}:/app/services/${name}`, // service should only care about own code

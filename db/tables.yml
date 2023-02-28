@@ -186,6 +186,7 @@ task_groups:
   expires: timestamp with time zone not null
   scheduler_id: text not null
   task_group_id: text not null
+  sealed: timestamp with time zone
 task_dependencies:
   dependent_task_id: text not null
   required_task_id: text not null

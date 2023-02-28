@@ -233,6 +233,9 @@ func (queue *Queue) Status_SignedURL(taskId string, duration time.Duration) (*ur
 // If you are not interested in listing all the members at once, you may
 // use the query-string option `limit` to return fewer.
 //
+// If you only want to to fetch task group metadata without the tasks,
+// you can call the `getTaskGroup` method.
+//
 // Required scopes:
 //
 //	queue:list-task-group:<taskGroupId>
@@ -268,6 +271,55 @@ func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limi
 	}
 	cd := tcclient.Client(*queue)
 	return (&cd).SignedURL("/task-group/"+url.QueryEscape(taskGroupId)+"/list", v, duration)
+}
+
+// Get task group information by `taskGroupId`.
+//
+// This will return meta-information associated with the task group.
+// It contains information about task group expiry date or if it is sealed.
+//
+// If you also want to see which tasks belong to this task group, you can call
+// `listTaskGroup` method.
+//
+// Required scopes:
+//
+//	queue:list-task-group:<taskGroupId>
+//
+// See #getTaskGroup
+func (queue *Queue) GetTaskGroup(taskGroupId string) (*TaskGroupDefinitionResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-group/"+url.QueryEscape(taskGroupId), new(TaskGroupDefinitionResponse), nil)
+	return responseObject.(*TaskGroupDefinitionResponse), err
+}
+
+// Returns a signed URL for GetTaskGroup, valid for the specified duration.
+//
+// Required scopes:
+//
+//	queue:list-task-group:<taskGroupId>
+//
+// See GetTaskGroup for more details.
+func (queue *Queue) GetTaskGroup_SignedURL(taskGroupId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task-group/"+url.QueryEscape(taskGroupId), nil, duration)
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Seal task group to prevent creation of new tasks.
+//
+// Task group can be sealed once and is irreversible. Calling it multiple times
+// will return same result and will not update it again.
+//
+// Required scopes:
+//
+//	queue:seal-task-group:<taskGroupId>
+//
+// See #sealTaskGroup
+func (queue *Queue) SealTaskGroup(taskGroupId string) (*TaskGroupDefinitionResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task-group/"+url.QueryEscape(taskGroupId)+"/seal", new(TaskGroupDefinitionResponse), nil)
+	return responseObject.(*TaskGroupDefinitionResponse), err
 }
 
 // List tasks that depend on the given `taskId`.
@@ -350,6 +402,10 @@ func (queue *Queue) ListDependentTasks_SignedURL(taskId, continuationToken, limi
 // **Scopes**: Note that the scopes required to complete this API call depend
 // on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
 // `provisionerId`, and `workerType` properties of the task definition.
+//
+// If the task group was sealed, this end-point will return `409` reporting
+// `RequestConflict` to indicate that it is no longer possible to add new tasks
+// for this `taskGroupId`.
 //
 // Required scopes:
 //

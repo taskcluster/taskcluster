@@ -216,9 +216,13 @@ class DependencyTracker {
     const [{ is_task_group_active }] = await this.db.fns.is_task_group_active(taskGroupId);
 
     if (!is_task_group_active) {
+      const [{ sealed, expires }] = await this.db.fns.get_task_group2(taskGroupId);
+
       await this.publisher.taskGroupResolved({
         taskGroupId,
         schedulerId,
+        expires: expires?.toJSON() || undefined,
+        sealed: sealed?.toJSON() || undefined,
       }, []);
     }
   }

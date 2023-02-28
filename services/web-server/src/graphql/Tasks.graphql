@@ -197,6 +197,21 @@ type TasksConnection implements Connection {
   edges: [TasksEdge]
 }
 
+type TaskGroupInfo {
+  taskGroupId: String!
+  schedulerId: String!
+  expires: DateTime!
+  sealed: DateTime
+}
+
+type TaskGroupConnection implements Connection {
+  # Task group attributes
+  taskGroup: TaskGroupInfo
+  # tasks in the group with the pagination
+  pageInfo: PageInfo
+  edges: [TasksEdge]
+}
+
 type TaskActionsJson {
   actions: [JSON]!
   variables: JSON!
@@ -249,7 +264,7 @@ extend type Query {
   # It **may return less**, even if more tasks are available.
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
-  taskGroup(taskGroupId: ID!, connection: PageConnection, filter: JSON): TasksConnection
+  taskGroup(taskGroupId: ID!, connection: PageConnection, filter: JSON): TaskGroupConnection
 
   # Actions exposed by the decision task defined in the public/actions.json artifact.
   taskActions(taskGroupId: ID!, filter: JSON): TaskActionsJson
@@ -296,6 +311,9 @@ extend type Mutation {
   # is not either `failed` or `completed`, this operation will just return
   # the current task status.'  rerunTask(taskId: ID!): TaskStat
   rerunTask(taskId: ID!): TaskStatus
+
+  # This method seals task group
+  sealTaskGroup(taskGroupId: ID!): TaskGroupInfo
 }
 
 extend type Subscription {

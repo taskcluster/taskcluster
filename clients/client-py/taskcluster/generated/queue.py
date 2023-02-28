@@ -146,10 +146,44 @@ class Queue(BaseClient):
         If you are not interested in listing all the members at once, you may
         use the query-string option `limit` to return fewer.
 
+        If you only want to to fetch task group metadata without the tasks,
+        you can call the `getTaskGroup` method.
+
         This method is ``stable``
         """
 
         return self._makeApiCall(self.funcinfo["listTaskGroup"], *args, **kwargs)
+
+    def getTaskGroup(self, *args, **kwargs):
+        """
+        Get Task Group
+
+        Get task group information by `taskGroupId`.
+
+        This will return meta-information associated with the task group.
+        It contains information about task group expiry date or if it is sealed.
+
+        If you also want to see which tasks belong to this task group, you can call
+        `listTaskGroup` method.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["getTaskGroup"], *args, **kwargs)
+
+    def sealTaskGroup(self, *args, **kwargs):
+        """
+        Seal Task Group
+
+        Seal task group to prevent creation of new tasks.
+
+        Task group can be sealed once and is irreversible. Calling it multiple times
+        will return same result and will not update it again.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["sealTaskGroup"], *args, **kwargs)
 
     def listDependentTasks(self, *args, **kwargs):
         """
@@ -207,6 +241,10 @@ class Queue(BaseClient):
         **Scopes**: Note that the scopes required to complete this API call depend
         on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
         `provisionerId`, and `workerType` properties of the task definition.
+
+        If the task group was sealed, this end-point will return `409` reporting
+        `RequestConflict` to indicate that it is no longer possible to add new tasks
+        for this `taskGroupId`.
 
         This method is ``stable``
         """
@@ -948,6 +986,14 @@ class Queue(BaseClient):
             'route': '/provisioners/<provisionerId>',
             'stability': 'deprecated',
         },
+        "getTaskGroup": {
+            'args': ['taskGroupId'],
+            'method': 'get',
+            'name': 'getTaskGroup',
+            'output': 'v1/task-group-response.json#',
+            'route': '/task-group/<taskGroupId>',
+            'stability': 'stable',
+        },
         "getTaskQueue": {
             'args': ['taskQueueId'],
             'method': 'get',
@@ -1146,6 +1192,14 @@ class Queue(BaseClient):
             'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/schedule',
             'stability': 'stable',
+        },
+        "sealTaskGroup": {
+            'args': ['taskGroupId'],
+            'method': 'post',
+            'name': 'sealTaskGroup',
+            'output': 'v1/task-group-response.json#',
+            'route': '/task-group/<taskGroupId>/seal',
+            'stability': 'experimental',
         },
         "status": {
             'args': ['taskId'],

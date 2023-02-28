@@ -1310,6 +1310,20 @@
   },
   {
     "element": "h1",
+    "id": "task-groups",
+    "path": "/manual/tasks/groups",
+    "subtitle": null,
+    "title": "Task Groups"
+  },
+  {
+    "element": "h2",
+    "id": "sealing-task-gropus",
+    "path": "/manual/tasks/groups",
+    "subtitle": "Sealing Task Gropus",
+    "title": "Task Groups"
+  },
+  {
+    "element": "h1",
     "id": "manipulating-tasks",
     "path": "/manual/tasks/manipulating",
     "subtitle": null,

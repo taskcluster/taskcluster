@@ -151,6 +151,10 @@ module.exports = {
 
       return new TaskStatus(taskId, status);
     },
+    async sealTaskGroup(parent, { taskGroupId }, { clients }) {
+      const taskGroup = await clients.queue.sealTaskGroup(taskGroupId);
+      return taskGroup;
+    },
   },
   Subscription: {
     // by taskGroupId

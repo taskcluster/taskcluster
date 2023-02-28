@@ -252,6 +252,9 @@ impl Queue {
     ///
     /// If you are not interested in listing all the members at once, you may
     /// use the query-string option `limit` to return fewer.
+    ///
+    /// If you only want to to fetch task group metadata without the tasks,
+    /// you can call the `getTaskGroup` method.
     pub async fn listTaskGroup(&self, taskGroupId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
         let (path, query) = Self::listTaskGroup_details(taskGroupId, continuationToken, limit);
@@ -282,6 +285,65 @@ impl Queue {
         if let Some(q) = limit {
             query.get_or_insert_with(Vec::new).push(("limit", q));
         }
+
+        (path, query)
+    }
+
+    /// Get Task Group
+    ///
+    /// Get task group information by `taskGroupId`.
+    ///
+    /// This will return meta-information associated with the task group.
+    /// It contains information about task group expiry date or if it is sealed.
+    ///
+    /// If you also want to see which tasks belong to this task group, you can call
+    /// `listTaskGroup` method.
+    pub async fn getTaskGroup(&self, taskGroupId: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::getTaskGroup_details(taskGroupId);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the getTaskGroup endpoint
+    pub fn getTaskGroup_url(&self, taskGroupId: &str) -> Result<String, Error> {
+        let (path, query) = Self::getTaskGroup_details(taskGroupId);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the getTaskGroup endpoint
+    pub fn getTaskGroup_signed_url(&self, taskGroupId: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::getTaskGroup_details(taskGroupId);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for getTaskGroup
+    fn getTaskGroup_details<'a>(taskGroupId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-group/{}", urlencode(taskGroupId));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Seal Task Group
+    ///
+    /// Seal task group to prevent creation of new tasks.
+    ///
+    /// Task group can be sealed once and is irreversible. Calling it multiple times
+    /// will return same result and will not update it again.
+    pub async fn sealTaskGroup(&self, taskGroupId: &str) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::sealTaskGroup_details(taskGroupId);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for sealTaskGroup
+    fn sealTaskGroup_details<'a>(taskGroupId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-group/{}/seal", urlencode(taskGroupId));
+        let query = None;
 
         (path, query)
     }
@@ -366,6 +428,10 @@ impl Queue {
     /// **Scopes**: Note that the scopes required to complete this API call depend
     /// on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
     /// `provisionerId`, and `workerType` properties of the task definition.
+    ///
+    /// If the task group was sealed, this end-point will return `409` reporting
+    /// `RequestConflict` to indicate that it is no longer possible to add new tasks
+    /// for this `taskGroupId`.
     pub async fn createTask(&self, taskId: &str, payload: &Value) -> Result<Value, Error> {
         let method = "PUT";
         let (path, query) = Self::createTask_details(taskId);

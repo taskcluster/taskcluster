@@ -385,7 +385,8 @@ ALTER TABLE task_dependencies
 CREATE TABLE task_groups (
     task_group_id text NOT NULL,
     scheduler_id text NOT NULL,
-    expires timestamp with time zone NOT NULL
+    expires timestamp with time zone NOT NULL,
+    sealed timestamp with time zone
 );
 ALTER TABLE task_groups
     ADD CONSTRAINT task_groups_pkey PRIMARY KEY (task_group_id);

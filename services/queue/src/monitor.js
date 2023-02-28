@@ -144,6 +144,22 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'taskGroupSealed',
+  title: 'Task Group Sealed',
+  type: 'task-group-sealed',
+  version: 1,
+  level: 'notice',
+  description: `
+    Task group was sealed and will no longer allow creation of tasks.`,
+  fields: {
+    taskGroupId: 'Task group ID',
+    schedulerId: 'Id of the reclaiming worker.',
+    expires: 'Date and time of task group expiration',
+    sealed: 'Date and time when task group was sealed',
+  },
+});
+
+MonitorManager.register({
   name: 'hintPoller',
   title: 'Hint Poller Report',
   type: 'hint-poller',

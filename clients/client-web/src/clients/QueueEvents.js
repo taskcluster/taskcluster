@@ -113,7 +113,16 @@ export default class QueueEvents extends Client {
   // be submitted against an already resolved task group.
   /* eslint-enable max-len */
   taskGroupResolved(pattern) {
-    const entry = {"exchange":"task-group-resolved","name":"taskGroupResolved","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-group-resolved.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {"exchange":"task-group-resolved","name":"taskGroupResolved","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-group-changed-message.json#","type":"topic-exchange"}; // eslint-disable-line
+
+    return this.normalizePattern(entry, pattern);
+  }
+  /* eslint-disable max-len */
+  // A message is published on task-group-sealed whenever task group is sealed.
+  // This task group will no longer allow creation of new tasks.
+  /* eslint-enable max-len */
+  taskGroupSealed(pattern) {
+    const entry = {"exchange":"task-group-sealed","name":"taskGroupSealed","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-group-changed-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
