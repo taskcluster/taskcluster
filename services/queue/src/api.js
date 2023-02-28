@@ -282,9 +282,15 @@ builder.declare({
     );
   }
 
+  const taskGroup = TaskGroup.fromDbRows(taskGroups);
+
   // Build result
   let result = {
     taskGroupId,
+    schedulerId: taskGroup.schedulerId,
+    expires: taskGroup.expires.toJSON(),
+    sealed: taskGroup.sealed?.toJSON() || undefined,
+
     tasks: rows.map(row => {
       const task = Task.fromDb(row);
       return {

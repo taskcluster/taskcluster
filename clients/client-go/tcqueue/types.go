@@ -424,7 +424,30 @@ type (
 		// until you get a result without a `continuationToken`.
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
-		// Identifier for the task-group being listed.
+		// Date and time after the last expiration of any task in the task group.
+		// For the unsealed task group this could change to a later date.
+		Expires tcclient.Time `json:"expires"`
+
+		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
+		//
+		// * it can represent the entity that created the task;
+		// * it can limit addition of new tasks to a task group: the caller of
+		//     `createTask` must have a scope related to the `schedulerId` of the task
+		//     group;
+		// * it controls who can manipulate tasks, again by requiring
+		//     `schedulerId`-related scopes; and
+		// * it appears in the routing key for Pulse messages about the task.
+		//
+		// Default:    "-"
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		SchedulerID string `json:"schedulerId"`
+
+		// Empty or date and time when task group was sealed.
+		Sealed tcclient.Time `json:"sealed,omitempty"`
+
+		// Identifier for the task-group.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupID string `json:"taskGroupId"`

@@ -4253,11 +4253,17 @@
           "title": "Continuation Token",
           "type": "string"
         },
+        "expires": {
+          "$ref": "task-group-response.json#/properties/expires"
+        },
+        "schedulerId": {
+          "$ref": "task-group-response.json#/properties/schedulerId"
+        },
+        "sealed": {
+          "$ref": "task-group-response.json#/properties/sealed"
+        },
         "taskGroupId": {
-          "description": "Identifier for the task-group being listed.\n",
-          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
-          "title": "Task-Group Identifier",
-          "type": "string"
+          "$ref": "task-group-response.json#/properties/taskGroupId"
         },
         "tasks": {
           "description": "List of tasks in this task-group.\n",
@@ -4271,6 +4277,8 @@
       },
       "required": [
         "taskGroupId",
+        "schedulerId",
+        "expires",
         "tasks"
       ],
       "title": "List Task-Group Response",
