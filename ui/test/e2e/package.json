@@ -8,6 +8,6 @@
   },
   "license": "MPL-2.0",
   "dependencies": {
-    "cypress": "^9.4.1"
+    "cypress": "^12.7.0"
   }
 }
