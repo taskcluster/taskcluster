@@ -39,7 +39,7 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 	GrantSIDWinstaAccess(sid, pd)
 
 	isWindows8OrGreater := win32.IsWindows8OrGreater()
-	if  !isWindows8OrGreater {
+	if !isWindows8OrGreater {
 		return
 	}
 
@@ -48,7 +48,7 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 	GrantSIDWinstaAccess(sid, pd)
 
 	isWindows10Build14393OrGreater := win32.IsWindows10BuildOrGreater(14393)
-	if  !isWindows10Build14393OrGreater {
+	if !isWindows10Build14393OrGreater {
 		return
 	}
 

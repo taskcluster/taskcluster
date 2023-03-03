@@ -157,8 +157,8 @@ type ProfileInfo struct {
 
 var (
 	isWindows8OrGreater *bool
-	minWin10Build uint32 = 0
-	maxWin10Build uint32 = math.MaxUint32
+	minWin10Build       uint32 = 0
+	maxWin10Build       uint32 = math.MaxUint32
 )
 
 func boolToUint32(src bool) uint32 {
@@ -201,7 +201,7 @@ func IsWindows10BuildOrGreater(build uint32) bool {
 	r, _ := VerifyWindowsInfoW(OSVersionInfoEx{
 		MajorVersion: 10,
 		MinorVersion: 0,
-		BuildNumber: build,
+		BuildNumber:  build,
 	}, VER_MAJORVERSION|VER_MINORVERSION|VER_BUILDNUMBER|VER_SERVICEPACKMAJOR|VER_SERVICEPACKMINOR, cm)
 	if r {
 		minWin10Build = build
