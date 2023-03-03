@@ -44,7 +44,7 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 	}
 
 	// Add ALL APPLICATION PACKAGES SID on Windows 8 or later
-	sid := "S-1-15-2-1"
+	sid = "S-1-15-2-1"
 	GrantSIDWinstaAccess(sid, pd)
 
 	isWindows10Build14393OrGreater := win32.IsWindows10BuildOrGreater(14393)
@@ -53,7 +53,7 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 	}
 
 	// Add ALL RESTRICTED APPLICATION PACKAGES SID on Windows 10 build 14393 or later
-	sid := "S-1-15-2-2"
+	sid = "S-1-15-2-2"
 	GrantSIDWinstaAccess(sid, pd)
 	return
 }

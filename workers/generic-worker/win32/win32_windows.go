@@ -71,6 +71,8 @@ const (
 	CREATE_NEW_CONSOLE        = 0x00000010
 	CREATE_NEW_PROCESS_GROUP  = 0x00000200
 
+	// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow
+	VER_BUILDNUMBER      = 0x0000004
 	VER_MAJORVERSION     = 0x0000002
 	VER_MINORVERSION     = 0x0000001
 	VER_SERVICEPACKMAJOR = 0x0000020
