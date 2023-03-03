@@ -185,13 +185,36 @@
             },
             "name": "projectId",
             "next": {
-              "path": "manual/tasks/manipulating",
-              "title": "Manipulating Tasks"
+              "path": "manual/tasks/groups",
+              "title": "Task Groups"
             },
             "path": "manual/tasks/projectId",
             "prev": {
               "path": "manual/tasks/taskgroupid-schedulerid",
               "title": "The taskGroupId and schedulerId properties"
+            },
+            "up": {
+              "path": "manual/tasks",
+              "title": "Tasks"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "filename": "tasks/groups.mdx",
+              "order": 50,
+              "title": "Task Groups"
+            },
+            "name": "groups",
+            "next": {
+              "path": "manual/tasks/manipulating",
+              "title": "Manipulating Tasks"
+            },
+            "path": "manual/tasks/groups",
+            "prev": {
+              "path": "manual/tasks/projectId",
+              "title": "The projectId property"
             },
             "up": {
               "path": "manual/tasks",
@@ -213,8 +236,8 @@
             },
             "path": "manual/tasks/manipulating",
             "prev": {
-              "path": "manual/tasks/projectId",
-              "title": "The projectId property"
+              "path": "manual/tasks/groups",
+              "title": "Task Groups"
             },
             "up": {
               "path": "manual/tasks",

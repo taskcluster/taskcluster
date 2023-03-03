@@ -912,6 +912,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "AmineVolk",
+      "name": "HamdiAmine",
+      "avatar_url": "https://avatars.githubusercontent.com/u/37228315?v=4",
+      "profile": "http://aminehamdi.dev",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

@@ -353,7 +353,23 @@ exchanges.declare({
     'be submitted against an already resolved task group.',
   ].join('\n'),
   routingKey: buildTaskGroupRoutingKey(),
-  schema: 'task-group-resolved.json#',
+  schema: 'task-group-changed-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: taskGroupRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
+});
+
+/** Task group sealed exchange */
+exchanges.declare({
+  exchange: 'task-group-sealed',
+  name: 'taskGroupSealed',
+  title: 'Task Group Sealed Messages',
+  description: [
+    'A message is published on task-group-sealed whenever task group is sealed.',
+    'This task group will no longer allow creation of new tasks.',
+  ].join('\n'),
+  routingKey: buildTaskGroupRoutingKey(),
+  schema: 'task-group-changed-message.json#',
   messageBuilder: commonMessageBuilder,
   routingKeyBuilder: taskGroupRoutingKeyBuilder,
   CCBuilder: commonCCBuilder,

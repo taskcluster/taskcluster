@@ -349,7 +349,30 @@ func (binding TaskGroupResolved) ExchangeName() string {
 }
 
 func (binding TaskGroupResolved) NewPayloadObject() interface{} {
-	return new(TaskGroupResolvedMessage)
+	return new(TaskGroupChangedMessage)
+}
+
+// A message is published on task-group-sealed whenever task group is sealed.
+// This task group will no longer allow creation of new tasks.
+//
+// See #taskGroupSealed
+type TaskGroupSealed struct {
+	RoutingKeyKind string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding TaskGroupSealed) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding TaskGroupSealed) ExchangeName() string {
+	return "exchange/taskcluster-queue/v1/task-group-sealed"
+}
+
+func (binding TaskGroupSealed) NewPayloadObject() interface{} {
+	return new(TaskGroupChangedMessage)
 }
 
 func generateRoutingKey(x interface{}) string {

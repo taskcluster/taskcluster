@@ -537,3 +537,43 @@ class Worker {
 
 // Export Worker
 exports.Worker = Worker;
+
+class TaskGroup {
+  constructor(props) {
+    Object.assign(this, props);
+  }
+
+  static fromDb(row) {
+    return new TaskGroup({
+      taskGroupId: row.task_group_id,
+      schedulerId: row.scheduler_id,
+      expires: row.expires,
+      sealed: row.sealed,
+    });
+  }
+
+  static fromDbRows(rows) {
+    if (rows.length === 1) {
+      return TaskGroup.fromDb(rows[0]);
+    }
+  }
+
+  static async get(db, taskGroupId) {
+    return TaskGroup.fromDbRows(
+      await db.fns.get_task_group2(taskGroupId),
+    );
+  }
+
+  serialize() {
+    return {
+      taskGroupId: this.taskGroupId,
+      schedulerId: this.schedulerId,
+      expires: this.expires.toJSON(),
+      ...(this.sealed ? {
+        sealed: this.sealed.toJSON(),
+      } : {}),
+    };
+  }
+}
+
+exports.TaskGroup = TaskGroup;

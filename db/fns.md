@@ -93,13 +93,14 @@
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
-   * [`get_task_group`](#get_task_group)
+   * [`get_task_group2`](#get_task_group2)
    * [`get_task_projid`](#get_task_projid)
    * [`get_task_queue`](#get_task_queue)
    * [`get_task_queues`](#get_task_queues)
    * [`get_tasks_by_task_group_projid`](#get_tasks_by_task_group_projid)
    * [`is_task_blocked`](#is_task_blocked)
    * [`is_task_group_active`](#is_task_group_active)
+   * [`is_task_group_sealed`](#is_task_group_sealed)
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
    * [`quarantine_queue_worker_with_last_date_active`](#quarantine_queue_worker_with_last_date_active)
    * [`queue_artifact_present`](#queue_artifact_present)
@@ -113,6 +114,7 @@
    * [`resolve_task_at_deadline`](#resolve_task_at_deadline)
    * [`satisfy_task_dependency`](#satisfy_task_dependency)
    * [`schedule_task`](#schedule_task)
+   * [`seal_task_group`](#seal_task_group)
    * [`task_queue_seen`](#task_queue_seen)
    * [`update_queue_artifact_2`](#update_queue_artifact_2)
  * [secrets functions](#secrets)
@@ -1243,13 +1245,14 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
-* [`get_task_group`](#get_task_group)
+* [`get_task_group2`](#get_task_group2)
 * [`get_task_projid`](#get_task_projid)
 * [`get_task_queue`](#get_task_queue)
 * [`get_task_queues`](#get_task_queues)
 * [`get_tasks_by_task_group_projid`](#get_tasks_by_task_group_projid)
 * [`is_task_blocked`](#is_task_blocked)
 * [`is_task_group_active`](#is_task_group_active)
+* [`is_task_group_sealed`](#is_task_group_sealed)
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
 * [`quarantine_queue_worker_with_last_date_active`](#quarantine_queue_worker_with_last_date_active)
 * [`queue_artifact_present`](#queue_artifact_present)
@@ -1263,6 +1266,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`resolve_task_at_deadline`](#resolve_task_at_deadline)
 * [`satisfy_task_dependency`](#satisfy_task_dependency)
 * [`schedule_task`](#schedule_task)
+* [`seal_task_group`](#seal_task_group)
 * [`task_queue_seen`](#task_queue_seen)
 * [`update_queue_artifact_2`](#update_queue_artifact_2)
 
@@ -1658,7 +1662,7 @@ where the page of results should begin, and must all be specified if any
 are specified.  Typically these values would be drawn from the last item
 in the previous page.
 
-### get_task_group
+### get_task_group2
 
 * *Mode*: read
 * *Arguments*:
@@ -1666,10 +1670,11 @@ in the previous page.
 * *Returns*: `table`
   * `   task_group_id text`
   * `  scheduler_id text`
-  * `  expires timestamptz `
-* *Last defined on version*: 28
+  * `  expires timestamptz`
+  * `  sealed timestamptz `
+* *Last defined on version*: 81
 
-Get a task group.
+Get a task group with sealed column.
 
 ### get_task_projid
 
@@ -1799,6 +1804,16 @@ An unsealed, inactive task group can become active if a new task is
 added, so this value may change from tue to false or false to true at any
 time unless a task group is sealed.
 
+
+### is_task_group_sealed
+
+* *Mode*: read
+* *Arguments*:
+  * `task_group_id_in text`
+* *Returns*: `boolean`
+* *Last defined on version*: 81
+
+Return true if task group was sealed.
 
 ### mark_task_ever_resolved
 
@@ -2010,6 +2025,20 @@ Schedule the initial run for a task, moving the task from "unscheduled" to "pend
 This returns the task's updated status, or nothing if the current status was not
 as expected.
 
+### seal_task_group
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+* *Returns*: `table`
+  * `   task_group_id text`
+  * `  scheduler_id text`
+  * `  expires timestamptz`
+  * `  sealed timestamptz `
+* *Last defined on version*: 81
+
+Marks task group as sealed by adding sealed timestamp to it.
+
 ### task_queue_seen
 
 * *Mode*: write
@@ -2051,6 +2080,10 @@ client side.
 
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
+
+### deprecated methods
+
+* `get_task_group(task_group_id_in text)` (compatibility guaranteed until v49.0.0)
 
 ## secrets
 

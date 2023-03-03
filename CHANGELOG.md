@@ -3,6 +3,32 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v47.1.2
+
+### GENERAL
+
+▶ [patch]
+Add error handling for docker image release process.
+
+## v47.1.1
+
+### GENERAL
+
+▶ [patch]
+This upgrades Node.js to the latest LTS version available, v18.14.1. This is a security release.
+
+### DEVELOPERS
+
+▶ [patch]
+Replace `github.com/ghodss/yaml` with `sigs.k8s.io/yaml`
+
+▶ [patch]
+This patch fixes the `yarn generate` command from failing from trying to fetch an older version of go that's not incluced in the https://go.dev/dl/?mode=json API.
+
+### OTHER
+
+▶ Additional change not described here: [#1753249](https://github.com/taskcluster/taskcluster/issues/1753249).
+
 ## v47.1.0
 
 ### GENERAL

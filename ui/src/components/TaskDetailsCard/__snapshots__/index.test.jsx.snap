@@ -208,54 +208,94 @@ exports[`should render TaskDetailsCard 1`] = `
                       class="MuiListItemText-root"
                     >
                       <div
-                        class="MuiTypography-root MuiTypography-body1"
+                        class="MuiGrid-root MuiGrid-container"
                       >
-                        <label
-                          class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
+                        <div
+                          class="MuiTypography-root MuiTypography-body1"
                         >
-                          <div
-                            class="MuiGrid-root MuiGrid-item"
+                          <label
+                            class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
                           >
-                            JSON
-                          </div>
-                          <div
-                            class="MuiGrid-root MuiGrid-item"
-                          >
-                            <span
-                              class="MuiSwitch-root"
+                            <div
+                              class="MuiGrid-root MuiGrid-item"
+                            >
+                              JSON
+                            </div>
+                            <div
+                              class="MuiGrid-root MuiGrid-item"
                             >
                               <span
-                                aria-disabled="false"
-                                class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-25 MuiSwitch-switchBase MuiSwitch-colorSecondary"
+                                class="MuiSwitch-root"
                               >
                                 <span
-                                  class="MuiIconButton-label"
+                                  aria-disabled="false"
+                                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-25 MuiSwitch-switchBase MuiSwitch-colorSecondary"
                                 >
-                                  <input
-                                    class="PrivateSwitchBase-input-28 MuiSwitch-input"
-                                    name="yaml_json_switch"
-                                    type="checkbox"
-                                    value=""
-                                  />
                                   <span
-                                    class="MuiSwitch-thumb"
+                                    class="MuiIconButton-label"
+                                  >
+                                    <input
+                                      class="PrivateSwitchBase-input-28 MuiSwitch-input"
+                                      name="yaml_json_switch"
+                                      type="checkbox"
+                                      value=""
+                                    />
+                                    <span
+                                      class="MuiSwitch-thumb"
+                                    />
+                                  </span>
+                                  <span
+                                    class="MuiTouchRipple-root"
                                   />
                                 </span>
                                 <span
-                                  class="MuiTouchRipple-root"
+                                  class="MuiSwitch-track"
                                 />
                               </span>
-                              <span
-                                class="MuiSwitch-track"
-                              />
-                            </span>
-                          </div>
+                            </div>
+                            <div
+                              class="MuiGrid-root MuiGrid-item"
+                            >
+                              YAML
+                            </div>
+                          </label>
+                        </div>
+                        <div
+                          class="MuiGrid-root MuiGrid-item"
+                        >
                           <div
-                            class="MuiGrid-root MuiGrid-item"
+                            aria-disabled="false"
+                            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-24 MuiListItem-gutters MuiListItem-button"
+                            role="button"
+                            tabindex="0"
+                            title=" (Copy)"
                           >
-                            YAML
+                            <div
+                              class="MuiListItemText-root MuiListItemText-multiline"
+                            >
+                              <span
+                                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                              />
+                              <p
+                                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                              />
+                            </div>
+                            <svg
+                              class="mdi-icon "
+                              fill="currentColor"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              width="24"
+                            >
+                              <path
+                                d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+                              />
+                            </svg>
+                            <span
+                              class="MuiTouchRipple-root"
+                            />
                           </div>
-                        </label>
+                        </div>
                       </div>
                       <pre
                         class="language-json TaskDetailsCard-payload-9"

@@ -57,8 +57,14 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
       const imageLocal = (await dockerImages({ baseDir }))
         .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
-      const imageOnRegistry = await dockerRegistryCheck({ tag });
-      utils.status({ message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry` });
+
+      let imageOnRegistry;
+      try {
+        imageOnRegistry = await dockerRegistryCheck({ tag });
+        utils.status({ message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry` });
+      } catch (err) {
+        utils.status({ message: `Error fetching image on registry: ${err.message}` });
+      }
 
       const provides = {
         'monoimage-docker-image': tag,
@@ -120,7 +126,14 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
       const imageLocal = (await dockerImages({ baseDir }))
         .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
-      const imageOnRegistry = await dockerRegistryCheck({ tag });
+
+      let imageOnRegistry;
+      try {
+        imageOnRegistry = await dockerRegistryCheck({ tag });
+        utils.status({ message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry` });
+      } catch (err) {
+        utils.status({ message: `Error fetching image on registry: ${err.message}` });
+      }
       utils.status({ message: `Image does ${imageOnRegistry ? '' : 'not '} exist on registry` });
 
       const provides = {
