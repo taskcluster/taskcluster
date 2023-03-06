@@ -6,7 +6,7 @@ class Estimator {
 
   async simple({ workerPoolId, minCapacity, maxCapacity, scalingRatio = 1.0, workerInfo }) {
     const { pendingTasks } = await this.queue.pendingTasks(workerPoolId);
-    const { existingCapacity, requestedCapacity = 0 } = workerInfo;
+    const { existingCapacity, stoppingCapacity = 0, requestedCapacity = 0 } = workerInfo;
 
     // First we find the amount of capacity we want. This is a very simple approximation
     // We add existingCapacity here to represent existing workers and subtract it later.
@@ -27,6 +27,7 @@ class Estimator {
       existingCapacity,
       desiredCapacity,
       requestedCapacity,
+      stoppingCapacity,
     };
 
     // This 1.25 factor is picked arbitrarily. Ideally this never triggers unless
@@ -48,9 +49,17 @@ class Estimator {
       this.monitor.reportError(new Error('Estimated existing capacity (pending and running) is much greater than max capacity'), estimatorInfo);
     }
 
+    // due to the fact that workers could fail to start on azure, deprovisioning will take significant amount of time
+    // and on the next provision loop, those workers wouldn't be considered as requested or existing capacity
+    // so worker manager would try to provision for this pool again
+    // workers in stopping state would keep growing, and deprovisioning takes many calls, even though it wasn't created
+    // to avoid this situation we would take into account stopping capacity and don't allow worker pool
+    // to have existing + stopping capacity > max capacity to prevent affected pool start extra instances
+    const totalNonStopped = existingCapacity + stoppingCapacity;
+
     // Workers turn themselves off so we just return a positive number for
     // how many extra we want if we do want any
-    const toSpawn = Math.max(0, desiredCapacity - existingCapacity);
+    const toSpawn = Math.max(0, desiredCapacity - totalNonStopped);
 
     // subtract the instances that are starting up from that number to spawn
     // if the value is <= 0, than we don't need to spawn any new instance

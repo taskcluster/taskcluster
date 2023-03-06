@@ -81,33 +81,33 @@ class Provisioner {
       // from the list of previous provider IDs
       const providersByPool = new Map();
       const seen = worker => {
-        // don't count capacity for stopping workers
-        if (worker.state === Worker.states.STOPPING) {
-          return;
-        }
-
-        // compute the number of instances that have not yet called "registerWorker"
-        const isRequested = worker.state === Worker.states.REQUESTED;
-        const requestedCapacity = isRequested ? worker.capacity : 0;
-
-        // check for quarantined workers and do not consider them in the existing
-        // capacity
-        const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
-        const existingCapacity = isQuarantined ? 0 : worker.capacity;
-
         let v = providersByPool.get(worker.workerPoolId);
         if (!v) {
           v = {
             providers: new Set([]),
             existingCapacity: 0,
             requestedCapacity: 0,
+            stoppingCapacity: 0,
           };
           providersByPool.set(worker.workerPoolId, v);
         }
-
         v.providers.add(worker.providerId);
-        v.existingCapacity += existingCapacity;
-        v.requestedCapacity += requestedCapacity;
+
+        if (worker.state === Worker.states.STOPPING) {
+          v.stoppingCapacity += worker.capacity;
+        } else {
+          // compute the number of instances that have not yet called "registerWorker"
+          const isRequested = worker.state === Worker.states.REQUESTED;
+          const requestedCapacity = isRequested ? worker.capacity : 0;
+
+          // check for quarantined workers and do not consider them in the existing
+          // capacity
+          const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
+          const existingCapacity = isQuarantined ? 0 : worker.capacity;
+
+          v.existingCapacity += existingCapacity;
+          v.requestedCapacity += requestedCapacity;
+        }
       };
 
       // Check the state of workers (state is updated by worker-scanner)
@@ -150,12 +150,14 @@ class Provisioner {
           providers: new Set(),
           existingCapacity: 0,
           requestedCapacity: 0,
+          stoppingCapacity: 0,
         };
 
         try {
           const workerInfo = {
             existingCapacity: providerByPool.existingCapacity,
             requestedCapacity: providerByPool.requestedCapacity,
+            stoppingCapacity: providerByPool.stoppingCapacity,
           };
           await provider.provision({ workerPool, workerInfo });
         } catch (err) {

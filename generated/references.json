@@ -13321,13 +13321,14 @@
             "pendingTasks": "The number of tasks the queue reports are pending for this worker pool",
             "requestedCapacity": "Amount of capacity that this estimator thinks we should add",
             "scalingRatio": "The ratio of workers to spawn per pending task for this worker pool.",
+            "stoppingCapacity": "Amount of capacity being stopped",
             "workerPoolId": "The worker pool name"
           },
           "level": "any",
           "name": "simpleEstimate",
           "title": "Simple Estimate Provided",
           "type": "simple-estimate",
-          "version": 3
+          "version": 4
         },
         {
           "description": "A simple timekeeper for measuring arbitrary time spans.",
