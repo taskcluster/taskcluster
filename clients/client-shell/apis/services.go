@@ -1377,7 +1377,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "cancelTaskGroup",
 				Title:       "Cancel Task Group",
-				Description: "This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)\nwith the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.\n\n**Remark** a cancelled task may continue to run with valid credentials on a worker for\nseveral minutes after being cancelled, potentially creating new tasks. These tasks\nwill not be subject to cancellation, and therefore multiple calls may be required to\ncancel the additional tasks too.",
+				Description: "This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)\nwith the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.\n\nIt is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.\nIf the task group is not sealed, this method will return a 409 response.\n\nEvery task that was canceled with will trigger a `task-exception` message.",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/task-group/<taskGroupId>/cancel",

@@ -314,12 +314,7 @@ builder.declare({
   method: 'post',
   route: '/task-group/:taskGroupId/cancel',
   name: 'cancelTaskGroup',
-  scopes: {
-    AnyOf: [
-      'queue:cancel-task-group:<schedulerId>/<taskGroupId>',
-      'queue:cancel-task-in-project:<projectId>',
-    ],
-  },
+  scopes: 'queue:cancel-task-group:<schedulerId>/<taskGroupId>',
   stability: APIBuilder.stability.experimental,
   category: 'Tasks',
   input: undefined,
@@ -329,15 +324,15 @@ builder.declare({
     'This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)',
     'with the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.',
     '',
-    '**Remark** a cancelled task may continue to run with valid credentials on a worker for',
-    'several minutes after being cancelled, potentially creating new tasks. These tasks',
-    'will not be subject to cancellation, and therefore multiple calls may be required to',
-    'cancel the additional tasks too.',
+    'It is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.',
+    'If the task group is not sealed, this method will return a 409 response.',
+    '',
+    'Every task that was canceled with will trigger a `task-exception` message.',
   ].join('\n'),
 }, async function(req, res) {
   const taskGroupId = req.params.taskGroupId;
 
-  const [taskGroup] = await this.db.fns.get_task_group(taskGroupId);
+  const taskGroup = await TaskGroup.get(this.db, taskGroupId);
   if (!taskGroup) {
     return res.reportError('ResourceNotFound',
       'No task-group with taskGroupId: `{{taskGroupId}}`', {
@@ -345,14 +340,9 @@ builder.declare({
       },
     );
   }
-
-  // in order to authorize call we would need to fetch a task to retrieve schedulerId and projectId
-  const someTaskInGroup = Task.fromDbRows(
-    await this.db.fns.get_tasks_by_task_group_projid(taskGroupId, 1, 0),
-  );
-  if (!someTaskInGroup) {
-    return res.reportError('ResourceNotFound',
-      'No tasks found for task-group with taskGroupId: `{{taskGroupId}}`', {
+  if (!taskGroup.sealed) {
+    return res.reportError('RequestConflict',
+      'Cannot cancel unsealed task group: `{{taskGroupId}}`', {
         taskGroupId,
       },
     );
@@ -360,9 +350,11 @@ builder.declare({
 
   await req.authorize({
     taskGroupId,
-    schedulerId: someTaskInGroup.schedulerId,
-    projectId: someTaskInGroup.projectId,
+    schedulerId: taskGroup.schedulerId,
   });
+
+  // Check deadline of each task independently??
+  // how many times to send taskException Message
 
   // this will iterate and cancel all tasks that can be canceled and return all tasks
   const allTasks = await this.db.fns.cancel_task_group(taskGroupId, 'canceled');

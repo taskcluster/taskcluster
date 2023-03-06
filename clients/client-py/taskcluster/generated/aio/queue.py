@@ -161,10 +161,10 @@ class Queue(AsyncBaseClient):
         This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)
         with the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.
 
-        **Remark** a cancelled task may continue to run with valid credentials on a worker for
-        several minutes after being cancelled, potentially creating new tasks. These tasks
-        will not be subject to cancellation, and therefore multiple calls may be required to
-        cancel the additional tasks too.
+        It is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.
+        If the task group is not sealed, this method will return a 409 response.
+
+        Every task that was canceled with will trigger a `task-exception` message.
 
         This method is ``experimental``
         """

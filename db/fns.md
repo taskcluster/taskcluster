@@ -1406,6 +1406,7 @@ status, or nothing if the current status was not as expected.
   * `  deadline timestamptz`
   * `  expires timestamptz`
   * `  retries_left integer`
+  * `  routes jsonb`
   * `  runs jsonb`
   * `  taken_until timestamptz `
 * *Last defined on version*: 82

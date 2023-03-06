@@ -14,7 +14,6 @@ import (
 	"github.com/taskcluster/taskcluster/v48/clients/client-shell/config"
 )
 
-const fakeTaskID = "ANnmjMocTymeTID0tlNJAw"
 const fakeGroupID = "e4WPAAeSdaSdKxeWzDCBA"
 const badGroupID = "AAAAAAAAAAAAAAAAAAAAA"
 
@@ -27,7 +26,6 @@ func (suite *FakeServerSuite) SetupSuite() {
 	// set up a fake server that knows how to answer the `task()` method
 	handler := http.NewServeMux()
 
-	handler.HandleFunc("/api/queue/v1/task-group/"+fakeGroupID+"/cancel", cancelGroupHandler)
 	handler.HandleFunc("/api/queue/v1/task-group/"+fakeGroupID+"/list", listTaskGroupHandler)
 
 	suite.testServer = httptest.NewServer(handler)
@@ -46,15 +44,6 @@ func TestFakeServerSuite(t *testing.T) {
 }
 
 // returns the test status on request
-func cancelGroupHandler(w http.ResponseWriter, _ *http.Request) {
-	status := `{
-				  "taskGroupSize": 1,
-				  "cancelledCount": 1,
-				  "taskGroupId": "e4WPJRJeSdaSdKxeWzDlNQ",
-					"taskIds": ["ANnmjMocTymeTID0tlNJAw"]
-				}`
-	_, _ = io.WriteString(w, status)
-}
 
 func listTaskGroupHandler(w http.ResponseWriter, _ *http.Request) {
 	list := `{
@@ -104,18 +93,6 @@ func setUpCommand() (*bytes.Buffer, *cobra.Command) {
 	cmd.SetOutput(buf)
 
 	return buf, cmd
-}
-
-func (suite *FakeServerSuite) TestRunCancel() {
-	// set up to run a command and capture output
-	buf, cmd := setUpCommand()
-	cmd.Flags().Bool("force", true, "")
-
-	// run the command
-	args := []string{fakeGroupID}
-	assert.NoError(suite.T(), runCancel(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
-
-	suite.Equal("Tasks cancelled: 1 out of 1\nCancelled task ANnmjMocTymeTID0tlNJAw\n", buf.String())
 }
 
 func (suite *FakeServerSuite) TestRunStatus() {

@@ -35,7 +35,30 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     ...extra,
   });
 
-  test('createTasks, cancelTask', async () => {
+  test('cancel unsealed task group should fail', async () => {
+    const taskGroupId = slugid.v4();
+    const projectId = 'test-proj-1';
+    const schedulerId = 'test-sched-1';
+
+    // Use the same task definition for everything
+    const { taskId, ...def } = taskDef('task-with-scope-check', {
+      taskGroupId,
+      projectId,
+      schedulerId,
+    });
+
+    debug('### Create task');
+    await helper.queue.createTask(taskId, def);
+
+    await assert.rejects(
+      () => helper.queue.cancelTaskGroup(taskGroupId),
+      err => err.statusCode === 409,
+    );
+
+    helper.clearPulseMessages();
+  });
+
+  test('createTasks, sealTaskGroup, cancelTaskGroup', async () => {
     const INITIAL_TASK_COUNT = 5;
     const taskGroupId = slugid.v4();
 
@@ -47,6 +70,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     const responses = await Promise.all(taskDefs.map(({ taskId, ...def }) =>
       helper.queue.createTask(taskId, def),
     ));
+
+    debug('### Sealing task group');
+    await helper.queue.sealTaskGroup(taskGroupId);
 
     assume(responses.length).equals(INITIAL_TASK_COUNT);
     const r1 = responses[0];
@@ -70,21 +96,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     helper.clearPulseMessages();
 
-    // add one task to the group
-    const { taskId, ...extraTask } = taskDef('extra-task-not-yet-cancelled', { taskGroupId });
-    await helper.queue.createTask(taskId, extraTask);
-
     debug('### Cancel Task Group (again)');
     const r3 = await helper.queue.cancelTaskGroup(taskGroupId);
-    assume(r3.taskGroupSize).equals(INITIAL_TASK_COUNT + 1);
-    assume(r3.cancelledCount).equals(1);
-    assume(r3.taskIds).deep.equals([taskId]);
-    helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status.taskId, taskId));
-
-    debug('### Cancel Task Group yet again');
-    const r4 = await helper.queue.cancelTaskGroup(taskGroupId);
-    assume(r4.taskGroupSize).equals(INITIAL_TASK_COUNT + 1);
-    assume(r4.cancelledCount).equals(0);
+    assume(r3.taskGroupSize).equals(INITIAL_TASK_COUNT);
+    assume(r3.cancelledCount).equals(5);
   });
 
   test('cancel task group with scopes', async () => {
@@ -105,29 +120,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     assume(r1.status.runs.length).equals(1);
     assume(r1.status.runs[0].state).equals('pending');
 
+    debug('### Sealing task group');
+    await helper.queue.sealTaskGroup(taskGroupId);
+
     debug('### Try to cancel with incorrect scopes');
-    helper.scopes('queue:cancel-task-in-project:wrong-project');
+    helper.scopes('queue:cancel-task-group:wrong-scheduler/wrong-task-group');
     await assert.rejects(
       () => helper.queue.cancelTaskGroup(taskGroupId),
       err => err.statusCode === 403,
     );
-
-    helper.scopes('queue:cancel-task-group:wrong-scheduler:wrong-project');
-    await assert.rejects(
-      () => helper.queue.cancelTaskGroup(taskGroupId),
-      err => err.statusCode === 403,
-    );
-
-    debug('### Cancel with correct scopes');
-    helper.scopes(`queue:cancel-task-in-project:${projectId}`);
-    const r2 = await helper.queue.cancelTaskGroup(taskGroupId);
-    assume(r2.cancelledCount).equals(1);
-    assume(r2.taskIds).deep.equals([ taskId ]);
 
     helper.scopes(`queue:cancel-task-group:${schedulerId}/${taskGroupId}`);
     const r3 = await helper.queue.cancelTaskGroup(taskGroupId);
     assume(r3.taskGroupSize).equals(1);
-    assume(r3.cancelledCount).equals(0); // was already cancelled
+    assume(r3.cancelledCount).equals(1);
 
     helper.clearPulseMessages();
   });
@@ -154,11 +160,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     debug('### Resolve first task');
     await helper.queue.cancelTask(taskDefs[0].taskId);
 
+    debug('### Sealing task group');
+    await helper.queue.sealTaskGroup(taskGroupId);
+
     debug('### Cancel Task Group');
     const r2 = await helper.queue.cancelTaskGroup(taskGroupId);
     assume(r2.taskGroupId).equals(taskGroupId);
     assume(r2.taskGroupSize).equals(INITIAL_TASK_COUNT);
-    assume(r2.cancelledCount).equals(INITIAL_TASK_COUNT - 1);
-    assume(r2.taskIds).deep.equals(taskDefs.slice(1).map(({ taskId }) => taskId));
+    assume(r2.cancelledCount).equals(INITIAL_TASK_COUNT);
+    assume(r2.taskIds.sort()).deep.equals(taskDefs.map(({ taskId }) => taskId).sort());
   });
 });

@@ -18,6 +18,7 @@ methods:
         deadline timestamptz,
         expires timestamptz,
         retries_left integer,
+        routes jsonb,
         runs jsonb,
         taken_until timestamptz
       )
@@ -45,6 +46,7 @@ methods:
               tasks.deadline,
               tasks.expires,
               tasks.retries_left,
+              tasks.routes,
               tasks.runs,
               tasks.taken_until
             FROM tasks
