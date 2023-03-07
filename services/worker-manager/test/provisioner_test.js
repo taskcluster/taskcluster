@@ -77,6 +77,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
               workerInfo: {
                 existingCapacity: wp.existingCapacity,
                 requestedCapacity: msg.Fields.workerInfo.requestedCapacity,
+                stoppingCapacity: wp.stoppingCapacity || 0,
               },
             },
             Severity: LEVELS.notice,
@@ -160,6 +161,39 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         {
           workerPoolId: 'ff/ee',
           existingCapacity: 0, // quarantined worker is not considered "existing"
+          input: {
+            providerId: 'testing1',
+            description: 'bar',
+            config: {},
+            owner: 'example@example.com',
+            emailOnError: false,
+          },
+        },
+      ],
+    }));
+
+    test('single worker pool (with stopping worker)', () => testCase({
+      workers: [
+        {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'test-stopping',
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+          state: Worker.states.STOPPING,
+          providerData: {},
+          quarantineUntil: taskcluster.fromNow('1 hour'),
+        },
+      ],
+      workerPools: [
+        {
+          workerPoolId: 'ff/ee',
+          existingCapacity: 0,
+          stoppingCapacity: 1,
           input: {
             providerId: 'testing1',
             description: 'bar',
@@ -421,6 +455,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             workerInfo: {
               existingCapacity: 0,
               requestedCapacity: 0,
+              stoppingCapacity: 0,
             },
           },
           Severity: LEVELS.notice,
@@ -466,6 +501,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             workerInfo: {
               existingCapacity: 0,
               requestedCapacity: 0,
+              stoppingCapacity: 0,
             },
           },
           Severity: LEVELS.notice,
@@ -495,6 +531,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             workerInfo: {
               existingCapacity: 0,
               requestedCapacity: 0,
+              stoppingCapacity: 0,
             },
           },
           Severity: LEVELS.notice,
