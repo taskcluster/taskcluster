@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	assert "github.com/stretchr/testify/require"
-	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
 )
 
 func TestStatusString(t *testing.T) {
