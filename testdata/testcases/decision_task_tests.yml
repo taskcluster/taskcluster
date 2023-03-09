@@ -48,7 +48,7 @@ testSuite:
         features:
           chainOfTrust: true
           taskclusterProxy: true
-          allowPtrace: true
+          dockerSave: true
         log: apple/banana.log
         capabilities:
           privileged: true
@@ -69,11 +69,15 @@ testSuite:
             name: public/docker-contexts
             path: artifact1
             type: directory
+          - expires: '0001-01-01T00:00:00.000Z'
+            name: public/dockerImage.tar.gz
+            path: image.tar.gz
+            type: file
         command:
           - - bash
             - '-cx'
             - >-
-              podman run --name taskcontainer --privileged --cap-add=SYS_PTRACE -v
+              podman run --name taskcontainer --privileged -v
               "$(pwd)/cache0:/builds/worker/checkouts"
               --add-host=taskcluster:127.0.0.1 --net=host -e
               "GECKO_BASE_REPOSITORY=https://hg.mozilla.org/mozilla-unified" -e
@@ -113,6 +117,10 @@ testSuite:
               podman cp
               'taskcontainer:/builds/worker/checkouts/gecko/docker-contexts'
               artifact1
+
+              podman commit taskcontainer taskcontainer
+
+              podman save taskcontainer | gzip > image.tar.gz
 
               podman rm taskcontainer
 

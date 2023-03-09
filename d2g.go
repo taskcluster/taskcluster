@@ -93,11 +93,11 @@ func mounts(gwWritableDirectoryCaches []genericworker.WritableDirectoryCache, gw
 	return
 }
 
-func artifacts(artifacts map[string]dockerworker.Artifact) []genericworker.Artifact {
-	gwArtifacts := make([]genericworker.Artifact, len(artifacts))
-	names := make([]string, len(artifacts))
+func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Artifact {
+	gwArtifacts := make([]genericworker.Artifact, len(dwPayload.Artifacts))
+	names := make([]string, len(dwPayload.Artifacts))
 	i := 0
-	for name := range artifacts {
+	for name := range dwPayload.Artifacts {
 		names[i] = name
 		i++
 	}
@@ -106,22 +106,34 @@ func artifacts(artifacts map[string]dockerworker.Artifact) []genericworker.Artif
 		gwArt := new(genericworker.Artifact)
 		defaults.SetDefaults(gwArt)
 
-		gwArt.Expires = artifacts[name].Expires
+		gwArt.Expires = dwPayload.Artifacts[name].Expires
 		gwArt.Name = name
 		gwArt.Path = "artifact" + strconv.Itoa(i)
-		gwArt.Type = artifacts[name].Type
+		gwArt.Type = dwPayload.Artifacts[name].Type
 
 		gwArtifacts[i] = *gwArt
 	}
+
+	if dwPayload.Features.DockerSave {
+		gwArt := new(genericworker.Artifact)
+		defaults.SetDefaults(gwArt)
+
+		gwArt.Name = "public/dockerImage.tar.gz"
+		gwArt.Path = "image.tar.gz"
+		gwArt.Type = "file"
+
+		gwArtifacts = append(gwArtifacts, *gwArt)
+	}
+
 	return gwArtifacts
 }
 
-func command(payload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
+func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
 	containerName := "taskcontainer"
 
 	podmanPrepareCommands := dwImage.PrepareCommands()
 
-	podmanRunString, err := podmanRunCommand(containerName, payload, dwImage, gwWritableDirectoryCaches)
+	podmanRunString, err := podmanRunCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches)
 	if err != nil {
 		return nil, fmt.Errorf("could not form podman run command: %w", err)
 	}
@@ -133,8 +145,15 @@ func command(payload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifac
 	)
 	commands = append(
 		commands,
-		podmanCopyArtifacts(containerName, payload, gwArtifacts)...,
+		podmanCopyArtifacts(containerName, dwPayload, gwArtifacts)...,
 	)
+	if dwPayload.Features.DockerSave {
+		commands = append(
+			commands,
+			"podman commit "+containerName+" "+containerName,
+			"podman save "+containerName+" | gzip > image.tar.gz",
+		)
+	}
 	commands = append(
 		commands,
 		"podman rm "+containerName,
@@ -150,31 +169,41 @@ func command(payload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifac
 	}, nil
 }
 
-func podmanRunCommand(containerName string, payload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache) (string, error) {
+func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache) (string, error) {
 	command := strings.Builder{}
 	command.WriteString("podman run --name " + containerName)
-	if payload.Capabilities.Privileged {
+	if dwPayload.Capabilities.Privileged {
 		command.WriteString(" --privileged")
 	}
-	if payload.Features.AllowPtrace {
+	if dwPayload.Features.AllowPtrace {
 		command.WriteString(" --cap-add=SYS_PTRACE")
 	}
-	command.WriteString(createVolumeMountsString(payload.Cache, wdcs))
+	command.WriteString(createVolumeMountsString(dwPayload.Cache, wdcs))
 	command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
-	command.WriteString(podmanEnvMappings(payload.Env))
+	command.WriteString(podmanEnvMappings(dwPayload.Env))
 	dockerImageString, err := dwImage.String()
 	if err != nil {
 		return "", fmt.Errorf("could not form docker image string: %w", err)
 	}
 	command.WriteString(" " + dockerImageString)
-	command.WriteString(" " + shell.Escape(payload.Command...))
+	command.WriteString(" " + shell.Escape(dwPayload.Command...))
 	return command.String(), nil
 }
 
-func podmanCopyArtifacts(containerName string, payload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) []string {
-	commands := make([]string, len(gwArtifacts))
+func podmanCopyArtifacts(containerName string, dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) []string {
+	commands := []string{}
 	for i := range gwArtifacts {
-		commands[i] = "podman cp '" + containerName + ":" + payload.Artifacts[gwArtifacts[i].Name].Path + "' " + gwArtifacts[i].Path
+		// An image artifact will be in the generic worker payload
+		// when dockerSave is enabled. That artifact will not be
+		// found in either the docker worker payload or the container
+		// after the podman run command is complete, so no podman cp
+		// command is needed for it.
+		// The image artifact is created after the podman run
+		// command is complete.
+		if _, ok := dwPayload.Artifacts[gwArtifacts[i].Name]; !ok {
+			continue
+		}
+		commands = append(commands, "podman cp '"+containerName+":"+dwPayload.Artifacts[gwArtifacts[i].Name].Path+"' "+gwArtifacts[i].Path)
 	}
 	return commands
 }
@@ -185,7 +214,7 @@ func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generic
 }
 
 func setArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
-	gwPayload.Artifacts = artifacts(dwPayload.Artifacts)
+	gwPayload.Artifacts = artifacts(dwPayload)
 }
 
 func setCommand(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, dwImage Image, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) (err error) {
