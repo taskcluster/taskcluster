@@ -2,6 +2,7 @@ package d2g
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -19,34 +20,75 @@ var dwManagedEnvVars = []string{
 	"TASKCLUSTER_WORKER_LOCATION",
 }
 
+type (
+	DockerImageName     string
+	IndexedDockerImage  dockerworker.IndexedDockerImage
+	NamedDockerImage    dockerworker.NamedDockerImage
+	DockerImageArtifact dockerworker.DockerImageArtifact
+	Image               interface {
+		PrepareCommands() []string
+		FileMounts() ([]genericworker.FileMount, error)
+		String() (string, error)
+	}
+)
+
 // Dev notes: https://docs.google.com/document/d/1QNfHVpxtzXAlLWqZNz3b5mvbQWOrtsWpvadJHiMNbRc/edit#heading=h.uib8l9zhaz1n
 
-func Convert(payload *dockerworker.DockerWorkerPayload) *genericworker.GenericWorkerPayload {
-	gwArtifacts := artifacts(payload.Artifacts)
-	gwWritableDirectoryCaches := writableDirectoryCaches(payload.Cache)
-	return &genericworker.GenericWorkerPayload{
-		Artifacts:     gwArtifacts,
-		Command:       command(payload, gwArtifacts, gwWritableDirectoryCaches),
-		Env:           env(payload.Env),
-		Features:      features(&payload.Features),
-		MaxRunTime:    maxRunTime(payload.MaxRunTime),
-		Mounts:        mounts(gwWritableDirectoryCaches),
-		OnExitStatus:  onExitStatus(&payload.OnExitStatus),
-		OSGroups:      osGroups(),
-		SupersederURL: supersederURL(payload.SupersederURL),
+func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericworker.GenericWorkerPayload, err error) {
+	gwArtifacts := artifacts(dwPayload.Artifacts)
+	gwWritableDirectoryCaches := writableDirectoryCaches(dwPayload.Cache)
+	dwImage, err := imageObject(&dwPayload.Image)
+	if err != nil {
+		return
 	}
+	gwFileMounts, err := dwImage.FileMounts()
+	if err != nil {
+		return
+	}
+	var gwCommand [][]string
+	gwCommand, err = command(dwPayload, dwImage, gwArtifacts, gwWritableDirectoryCaches)
+	if err != nil {
+		return
+	}
+	var gwMounts []json.RawMessage
+	gwMounts, err = mounts(gwWritableDirectoryCaches, gwFileMounts)
+	if err != nil {
+		return
+	}
+
+	gwPayload = &genericworker.GenericWorkerPayload{
+		Artifacts:     gwArtifacts,
+		Command:       gwCommand,
+		Env:           env(dwPayload.Env),
+		Features:      features(&dwPayload.Features),
+		MaxRunTime:    maxRunTime(dwPayload.MaxRunTime),
+		Mounts:        gwMounts,
+		OnExitStatus:  onExitStatus(&dwPayload.OnExitStatus),
+		OSGroups:      osGroups(),
+		SupersederURL: supersederURL(dwPayload.SupersederURL),
+	}
+
+	return
 }
 
-func mounts(gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) []json.RawMessage {
-	result := make([]json.RawMessage, len(gwWritableDirectoryCaches))
-	for i, wdc := range gwWritableDirectoryCaches {
-		bytes, err := json.Marshal(wdc)
+func mounts(gwWritableDirectoryCaches []genericworker.WritableDirectoryCache, gwFileMounts []genericworker.FileMount) (result []json.RawMessage, err error) {
+	result = make([]json.RawMessage, 0, len(gwWritableDirectoryCaches)+len(gwFileMounts))
+	marshalAndAddToSlice := func(i interface{}) {
+		var bytes []byte
+		bytes, err = json.Marshal(i)
 		if err != nil {
-			panic("Bug - cannot convert a genericworker.WritableDirectoryCache to json: " + err.Error())
+			err = fmt.Errorf("cannot convert a genericworker.WritableDirectoryCache to json: %w", err)
+			return
 		}
-		result[i] = json.RawMessage(bytes)
+		result = append(result, json.RawMessage(bytes))
 	}
-	return result
+	for _, wdc := range gwWritableDirectoryCaches {
+		marshalAndAddToSlice(wdc)
+	}
+	for _, fm := range gwFileMounts {
+		marshalAndAddToSlice(fm)
+	}
+	return
 }
 
 func artifacts(artifacts map[string]dockerworker.Artifact) []genericworker.Artifact {
@@ -69,28 +111,41 @@ func artifacts(artifacts map[string]dockerworker.Artifact) []genericworker.Artif
 	return gwArtifacts
 }
 
-func command(payload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) [][]string {
+func command(payload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
 	containerName := "taskcontainer"
-	commands := []string{
-		podmanRunCommand(containerName, payload, gwWritableDirectoryCaches),
-		"exit_code=$?",
+
+	podmanPrepareCommands := dwImage.PrepareCommands()
+
+	podmanRunString, err := podmanRunCommand(containerName, payload, dwImage, gwWritableDirectoryCaches)
+	if err != nil {
+		return nil, fmt.Errorf("could not form podman run command: %w", err)
 	}
-	commands = append(commands, podmanCopyArtifacts(containerName, payload, gwArtifacts)...)
+
+	commands := append(
+		podmanPrepareCommands,
+		podmanRunString,
+		"exit_code=$?",
+	)
+	commands = append(
+		commands,
+		podmanCopyArtifacts(containerName, payload, gwArtifacts)...,
+	)
 	commands = append(
 		commands,
 		"podman rm "+containerName,
 		`exit "${exit_code}"`,
 	)
+
 	return [][]string{
 		{
 			"bash",
 			"-cx",
 			strings.Join(commands, "\n"),
 		},
-	}
+	}, nil
 }
 
-func podmanRunCommand(containerName string, payload *dockerworker.DockerWorkerPayload, wdcs []genericworker.WritableDirectoryCache) string {
+func podmanRunCommand(containerName string, payload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache) (string, error) {
 	command := strings.Builder{}
 	command.WriteString("podman run --name " + containerName)
 	if payload.Capabilities.Privileged {
@@ -99,9 +154,13 @@ func podmanRunCommand(containerName string, payload *dockerworker.DockerWorkerPa
 	command.WriteString(createVolumeMountsString(payload.Cache, wdcs))
 	command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
 	command.WriteString(podmanEnvMappings(payload.Env))
-	command.WriteString(" " + string(payload.Image))
+	dockerImageString, err := dwImage.String()
+	if err != nil {
+		return "", fmt.Errorf("could not form docker image string: %w", err)
+	}
+	command.WriteString(" " + dockerImageString)
 	command.WriteString(" " + shell.Escape(payload.Command...))
-	return command.String()
+	return command.String(), nil
 }
 
 func podmanCopyArtifacts(containerName string, payload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) []string {
@@ -164,6 +223,38 @@ func createVolumeMountsString(payloadCache map[string]string, wdcs []genericwork
 
 func podmanEnvSetting(envVarName, envVarValue string) string {
 	return ` -e "` + envVarName + "=" + envVarValue + `"`
+}
+
+func imageObject(payloadImage *json.RawMessage) (Image, error) {
+	var parsed interface{}
+	err := json.Unmarshal(*payloadImage, &parsed)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse docker image: %w", err)
+	}
+	switch val := parsed.(type) {
+	case string:
+		din := DockerImageName(val)
+		return &din, nil
+	case map[string]interface{}: // NamedDockerImage|IndexedDockerImage|DockerImageArtifact
+		switch val["type"] {
+		case "docker-image": // NamedDockerImage
+			namedDockerImage := NamedDockerImage{}
+			err = json.Unmarshal(*payloadImage, &namedDockerImage)
+			return &namedDockerImage, err
+		case "indexed-image": // IndexedDockerImage
+			indexDockerImage := IndexedDockerImage{}
+			err = json.Unmarshal(*payloadImage, &indexDockerImage)
+			return &indexDockerImage, err
+		case "task-image": // DockerImageArtifact
+			dockerImageArtifact := DockerImageArtifact{}
+			err = json.Unmarshal(*payloadImage, &dockerImageArtifact)
+			return &dockerImageArtifact, err
+		default:
+			return nil, fmt.Errorf("parsed docker image %#v is not of a supported type: %w", val, err)
+		}
+	default:
+		return nil, fmt.Errorf("parsed docker image is not of a supported type: %w", err)
+	}
 }
 
 func podmanEnvMappings(payloadEnv map[string]string) string {

@@ -20,7 +20,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to convert input to a docker worker payload definition: %v", err)
 	}
-	gwPayload := d2g.Convert(&dwPayload)
+	gwPayload, err := d2g.Convert(&dwPayload)
+	if err != nil {
+		log.Fatal(err)
+	}
 	formattedActualGWPayload, err := json.MarshalIndent(*gwPayload, "", "  ")
 	if err != nil {
 		log.Fatalf("Cannot convert Generic Worker payload %#v to JSON: %s", *gwPayload, err)

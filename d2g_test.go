@@ -59,9 +59,9 @@ func TestDecisionTask(t *testing.T) {
 	      "chainOfTrust": true,
 	      "taskclusterProxy": true
 	    },
-		"capabilities": {
-			"privileged": true
-		},
+	    "capabilities": {
+	      "privileged": true
+	    },
 	    "image": "mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06",
 	    "maxRunTime": 3600
 	  }
@@ -87,7 +87,7 @@ func TestDecisionTask(t *testing.T) {
 	      [
 	        "bash",
 	        "-cx",
-	        "podman run --name taskcontainer --privileged -v \"$(pwd)/cache0:/builds/worker/checkouts\" --add-host=taskcluster:127.0.0.1 --net=host -e \"GECKO_BASE_REPOSITORY=https://hg.mozilla.org/mozilla-unified\" -e \"GECKO_BASE_REV=330c69218a931b3504d44c867539ed6083521be5\" -e \"GECKO_HEAD_REF=ca2873779214f6109ffe1b23e1455350294ac325\" -e \"GECKO_HEAD_REPOSITORY=https://hg.mozilla.org/mozilla-central\" -e \"GECKO_HEAD_REV=ca2873779214f6109ffe1b23e1455350294ac325\" -e \"HG_STORE_PATH=/builds/worker/checkouts/hg-store\" -e \"MOZ_AUTOMATION=1\" -e \"PYTHONDONTWRITEBYTECODE=1\" -e \"RUN_ID=${RUN_ID}\" -e \"TASKCLUSTER_CACHES=/builds/worker/checkouts\" -e \"TASKCLUSTER_PROXY_URL=${TASKCLUSTER_PROXY_URL}\" -e \"TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}\" -e \"TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}\" -e \"TASK_ID=${TASK_ID}\" \"mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06\" /builds/worker/bin/run-task --gecko-checkout=/builds/worker/checkouts/gecko --gecko-sparse-profile=build/sparse-profiles/taskgraph -- bash -cx 'cd /builds/worker/checkouts/gecko \u0026\u0026 ln -s /builds/worker/artifacts artifacts \u0026\u0026 ./mach --log-no-times taskgraph decision --pushlog-id='\\''40334'\\'' --pushdate='\\''1666263365'\\'' --project='\\''mozilla-central'\\'' --owner='\\''ctuns@mozilla.com'\\'' --level='\\''3'\\'' --tasks-for='\\''hg-push'\\'' --repository-type=hg --base-repository=\"$GECKO_BASE_REPOSITORY\" --base-rev=\"$GECKO_BASE_REV\" --head-repository=\"$GECKO_HEAD_REPOSITORY\" --head-ref=\"$GECKO_HEAD_REF\" --head-rev=\"$GECKO_HEAD_REV\" \n'\nexit_code=$?\npodman cp 'taskcontainer:/builds/worker/artifacts' artifact0\npodman cp 'taskcontainer:/builds/worker/checkouts/gecko/docker-contexts' artifact1\npodman rm taskcontainer\nexit \"${exit_code}\""
+	        "podman run --name taskcontainer --privileged -v \"$(pwd)/cache0:/builds/worker/checkouts\" --add-host=taskcluster:127.0.0.1 --net=host -e \"GECKO_BASE_REPOSITORY=https://hg.mozilla.org/mozilla-unified\" -e \"GECKO_BASE_REV=330c69218a931b3504d44c867539ed6083521be5\" -e \"GECKO_HEAD_REF=ca2873779214f6109ffe1b23e1455350294ac325\" -e \"GECKO_HEAD_REPOSITORY=https://hg.mozilla.org/mozilla-central\" -e \"GECKO_HEAD_REV=ca2873779214f6109ffe1b23e1455350294ac325\" -e \"HG_STORE_PATH=/builds/worker/checkouts/hg-store\" -e \"MOZ_AUTOMATION=1\" -e \"PYTHONDONTWRITEBYTECODE=1\" -e \"RUN_ID=${RUN_ID}\" -e \"TASKCLUSTER_CACHES=/builds/worker/checkouts\" -e \"TASKCLUSTER_PROXY_URL=${TASKCLUSTER_PROXY_URL}\" -e \"TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}\" -e \"TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}\" -e \"TASK_ID=${TASK_ID}\" 'mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06' /builds/worker/bin/run-task --gecko-checkout=/builds/worker/checkouts/gecko --gecko-sparse-profile=build/sparse-profiles/taskgraph -- bash -cx 'cd /builds/worker/checkouts/gecko \u0026\u0026 ln -s /builds/worker/artifacts artifacts \u0026\u0026 ./mach --log-no-times taskgraph decision --pushlog-id='\\''40334'\\'' --pushdate='\\''1666263365'\\'' --project='\\''mozilla-central'\\'' --owner='\\''ctuns@mozilla.com'\\'' --level='\\''3'\\'' --tasks-for='\\''hg-push'\\'' --repository-type=hg --base-repository=\"$GECKO_BASE_REPOSITORY\" --base-rev=\"$GECKO_BASE_REV\" --head-repository=\"$GECKO_HEAD_REPOSITORY\" --head-ref=\"$GECKO_HEAD_REF\" --head-rev=\"$GECKO_HEAD_REV\" \n'\nexit_code=$?\npodman cp 'taskcontainer:/builds/worker/artifacts' artifact0\npodman cp 'taskcontainer:/builds/worker/checkouts/gecko/docker-contexts' artifact1\npodman rm taskcontainer\nexit \"${exit_code}\""
 	      ]
 	    ],
 	    "features": {
@@ -119,7 +119,10 @@ func TestDecisionTask(t *testing.T) {
 		t.Fatalf("Invalid json in test!\n%v\n%v", expectedRawGWPayload, err)
 	}
 
-	actualGWPayload := d2g.Convert(&dwPayload)
+	actualGWPayload, err := d2g.Convert(&dwPayload)
+	if err != nil {
+		t.Fatalf("Cannot convert Docker Worker payload %#v to Generic Worker payload: %s", dwPayload, err)
+	}
 
 	formattedActualGWPayload, err := json.MarshalIndent(*actualGWPayload, "", "  ")
 	if err != nil {
