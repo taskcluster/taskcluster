@@ -36,9 +36,7 @@ func validateArtifacts(
 			Expires: inAnHour,
 		},
 	}
-	for i := range payloadArtifacts {
-		tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts[i])
-	}
+	tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts...)
 	got := tr.PayloadArtifacts()
 
 	// RawContentFile contains a full path that depends on the specific
