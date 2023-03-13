@@ -190,7 +190,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType string, path string, con
 			contentEncoding = "gzip"
 		}
 	}
-	return createDataArtifact(base, path, contentType, contentEncoding)
+	return createDataArtifact(base, path, fullPath, contentType, contentEncoding)
 }
 
 // The Queue expects paths to use a forward slash, so let's make sure we have a
@@ -210,6 +210,7 @@ func canonicalPath(path string) string {
 func createDataArtifact(
 	base *artifacts.BaseArtifact,
 	path string,
+	fullPath string,
 	contentType string,
 	contentEncoding string,
 ) artifacts.TaskArtifact {
@@ -218,7 +219,7 @@ func createDataArtifact(
 		return &artifacts.ObjectArtifact{
 			BaseArtifact:   base,
 			Path:           path,
-			RawContentFile: filepath.Join(taskContext.TaskDir, path),
+			RawContentFile: fullPath,
 			ContentType:    contentType,
 		}
 	}
@@ -226,13 +227,13 @@ func createDataArtifact(
 	return &artifacts.S3Artifact{
 		BaseArtifact:    base,
 		Path:            path,
-		RawContentFile:  filepath.Join(taskContext.TaskDir, path),
+		RawContentFile:  fullPath,
 		ContentType:     contentType,
 		ContentEncoding: contentEncoding,
 	}
 }
 
-func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
+func (task *TaskRun) uploadLog(name, fullPath string) *CommandExecutionError {
 	return task.uploadArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{
@@ -240,7 +241,8 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 				// logs expire when task expires
 				Expires: task.Definition.Expires,
 			},
-			path,
+			task.BackingLogName(),
+			fullPath,
 			"text/plain; charset=utf-8",
 			"gzip",
 		),

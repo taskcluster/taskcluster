@@ -8,6 +8,7 @@ it('should render TaskRunsCard', () => {
     <MemoryRouter keyLength={0}>
       <TaskRunsCard
         taskQueueId="task/queueId"
+        livelogName="apple/banana.log"
         task={{
           taskId: 'taskId',
           status: {
@@ -37,7 +38,7 @@ it('should render TaskRunsCard', () => {
           },
           extra: {},
         }}
-        selectedRunId=""
+        selectedRunId={0}
         runs={[
           {
             taskId: 'eR1kMya2SruyMaRMZguROg',
@@ -79,7 +80,7 @@ it('should render TaskRunsCard', () => {
                 },
                 {
                   node: {
-                    name: 'public/logs/live.log',
+                    name: 'apple/banana.log',
                     contentType: 'text/plain; charset=utf-8',
                     __typename: 'Artifact',
                   },

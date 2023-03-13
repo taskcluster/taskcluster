@@ -59,8 +59,7 @@ var (
 	configFile     *gwconfig.File
 	Features       []Feature
 
-	logName   = "public/logs/live_backing.log"
-	logPath   = filepath.Join("generic-worker", "live_backing.log")
+	logPath   string
 	debugInfo map[string]string
 
 	version  = internal.Version
@@ -573,10 +572,8 @@ func ClaimWork() *TaskRun {
 			Queue:             taskQueue,
 			TaskClaimResponse: tcqueue.TaskClaimResponse(taskResponse),
 			Artifacts:         map[string]artifacts.TaskArtifact{},
-			featureArtifacts: map[string]string{
-				logName: "Native Log",
-			},
-			LocalClaimTime: localClaimTime,
+			featureArtifacts:  map[string]string{},
+			LocalClaimTime:    localClaimTime,
 		}
 		task.StatusManager = NewTaskStatusManager(task)
 		return task
@@ -845,14 +842,14 @@ func (task *TaskRun) kill() {
 }
 
 func (task *TaskRun) createLogFile() *os.File {
-	absLogFile := filepath.Join(taskContext.TaskDir, logPath)
-	logFileHandle, err := os.Create(absLogFile)
+	logFileHandle, err := os.CreateTemp("", "task.log")
 	if err != nil {
 		panic(err)
 	}
 	task.logMux.Lock()
 	defer task.logMux.Unlock()
 	task.logWriter = logFileHandle
+	logPath = logFileHandle.Name()
 	return logFileHandle
 }
 
@@ -901,7 +898,9 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 			defer panic(r)
 		}
 		task.closeLog(logHandle)
-		err.add(task.uploadLog(logName, logPath))
+		if task.Payload.Features.BackingLog == nil || *task.Payload.Features.BackingLog {
+			err.add(task.uploadLog(task.BackingLogName(), logPath))
+		}
 	}()
 
 	task.logHeader()
@@ -947,6 +946,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 				continue
 			}
 			reservedArtifacts := taskFeature.ReservedArtifacts()
+			task.featureArtifacts[task.BackingLogName()] = "Backing log"
 			for _, a := range reservedArtifacts {
 				if f := task.featureArtifacts[a]; f != "" {
 					err.add(MalformedPayloadError(fmt.Errorf("Feature %q wishes to publish artifact %v but feature %v has already reserved this artifact name", feature.Name(), a, f)))
@@ -1097,16 +1097,7 @@ func (task *TaskRun) closeLog(logHandle io.WriteCloser) {
 func PrepareTaskEnvironment() (reboot bool) {
 	// I've discovered windows has a limit of 20 chars
 	taskDirName := fmt.Sprintf("task_%v", time.Now().UnixNano())[:20]
-	if PlatformTaskEnvironmentSetup(taskDirName) {
-		return true
-	}
-	logDir := filepath.Join(taskContext.TaskDir, filepath.Dir(logPath))
-	err := os.MkdirAll(logDir, 0700)
-	if err != nil {
-		panic(err)
-	}
-	log.Printf("Created dir: %v", logDir)
-	return false
+	return PlatformTaskEnvironmentSetup(taskDirName)
 }
 
 func taskDirsIn(parentDir string) ([]string, error) {

@@ -214,6 +214,24 @@ properties:
           [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
 
           Since: generic-worker 10.6.0
+      liveLog:
+        type: boolean
+        title: Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)
+        description: |-
+          The live log feature streams the combined stderr and stdout to a task artifact
+          so that the output is available while the task is running.
+
+          Since: generic-worker 48.1.0
+        default: true
+      backingLog:
+        type: boolean
+        title: Enable backing log
+        description: |-
+          The backing log feature publishes a task artifact containing the complete
+          stderr and stdout of the task.
+
+          Since: generic-worker 48.1.0
+        default: true
   mounts:
     type: array
     description: |-
@@ -269,6 +287,34 @@ properties:
           title: Exit codes
           type: integer
           minimum: 1
+  logs:
+    title: Logs
+    description: |-
+      Configuration for task logs.
+
+      Since: generic-worker 48.1.0
+    type: object
+    additionalProperties: false
+    required: []
+    properties:
+      live:
+        title: Live log artifact name
+        description: |-
+          Specifies a custom name for the live log artifact.
+          This is only used if `features.liveLog` is `true`.
+
+          Since: generic-worker 48.1.0
+        type: string
+        default: public/logs/live.log
+      backing:
+        title: Backing log artifact name
+        description: |-
+          Specifies a custom name for the backing log artifact.
+          This is only used if `features.backingLog` is `true`.
+
+          Since: generic-worker 48.1.0
+        type: string
+        default: public/logs/live_backing.log
 definitions:
   mount:
     title: Mount

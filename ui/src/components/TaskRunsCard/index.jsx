@@ -151,6 +151,11 @@ export default class TaskRunsCard extends Component {
      * Execute a function to load new artifacts when paging through them.
      */
     onArtifactsPageChange: func.isRequired,
+    /**
+     * A custom livelog name given in the task.payload.log field.
+     * Defaults to `public/logs/live.log`.
+     */
+    livelogName: string,
   };
 
   state = {
@@ -231,8 +236,9 @@ export default class TaskRunsCard extends Component {
   };
 
   getLiveLogArtifactFromRun = run => {
+    const { livelogName = 'public/logs/live.log' } = this.props;
     const artifact = run?.artifacts?.edges?.find(
-      ({ node: { name } }) => name === 'public/logs/live.log'
+      ({ node: { name } }) => name === livelogName
     );
 
     if (!artifact) {
