@@ -38,6 +38,23 @@ let builder = new APIBuilder({
 
 module.exports = builder;
 
+// Some methods mistakenly had a path with an extra colon,
+// `/workers/<workerPoolId>:/...`. This wraps such methods to also generate an
+// un-published method at that path, for backward compatibility. See #6109.
+const declareWithTrailingColon = (options, handler) => {
+  // declare with the colon included
+  const colonOptions = {
+    ...options,
+    route: options.route.replace("/workers/:workerPoolId/", "/workers/:workerPoolId:/"),
+    name: options.name + 'WithColon',
+    noPublish: true,
+  };
+  builder.declare(colonOptions, handler);
+
+  // declare the un-modified version
+  builder.declare(options, handler);
+};
+
 builder.declare({
   method: 'get',
   route: '/providers',
@@ -387,9 +404,9 @@ builder.declare({
   });
 });
 
-builder.declare({
+declareWithTrailingColon({
   method: 'get',
-  route: '/workers/:workerPoolId:/:workerGroup',
+  route: '/workers/:workerPoolId/:workerGroup',
   query: paginateResults.query,
   name: 'listWorkersForWorkerGroup',
   scopes: 'worker-manager:list-workers:<workerPoolId>/<workerGroup>',
@@ -420,9 +437,9 @@ builder.declare({
   });
 });
 
-builder.declare({
+declareWithTrailingColon({
   method: 'get',
-  route: '/workers/:workerPoolId:/:workerGroup/:workerId',
+  route: '/workers/:workerPoolId/:workerGroup/:workerId',
   name: 'worker',
   scopes: 'worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>',
   title: 'Get a Worker',
@@ -449,9 +466,9 @@ let cleanCreatePayload = payload => {
   return payload;
 };
 
-builder.declare({
+declareWithTrailingColon({
   method: 'put',
-  route: '/workers/:workerPoolId:/:workerGroup/:workerId',
+  route: '/workers/:workerPoolId/:workerGroup/:workerId',
   name: 'createWorker',
   title: 'Create a Worker',
   category: 'Workers',
@@ -514,9 +531,9 @@ builder.declare({
   return res.reply(worker.serializable({ removeQueueData: true }));
 });
 
-builder.declare({
+declareWithTrailingColon({
   method: 'post',
-  route: '/workers/:workerPoolId:/:workerGroup/:workerId',
+  route: '/workers/:workerPoolId/:workerGroup/:workerId',
   name: 'updateWorker',
   title: 'Update an existing Worker',
   category: 'Workers',

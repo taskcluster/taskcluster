@@ -3975,7 +3975,7 @@ module.exports = {
             "continuationToken",
             "limit"
           ],
-          "route": "/workers/<workerPoolId>:/<workerGroup>",
+          "route": "/workers/<workerPoolId>/<workerGroup>",
           "scopes": "worker-manager:list-workers:<workerPoolId>/<workerGroup>",
           "stability": "stable",
           "title": "Workers in a specific Worker Group in a Worker Pool",
@@ -3994,7 +3994,7 @@ module.exports = {
           "output": "v1/worker-full.json#",
           "query": [
           ],
-          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>",
           "scopes": "worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Get a Worker",
@@ -4014,7 +4014,7 @@ module.exports = {
           "output": "v1/worker-full.json#",
           "query": [
           ],
-          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>",
           "scopes": "worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Create a Worker",
@@ -4034,7 +4034,7 @@ module.exports = {
           "output": "v1/worker-full.json#",
           "query": [
           ],
-          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>",
           "scopes": "worker-manager:update-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Update an existing Worker",

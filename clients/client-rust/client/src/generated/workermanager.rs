@@ -389,7 +389,7 @@ impl WorkerManager {
 
     /// Determine the HTTP request details for listWorkersForWorkerGroup
     fn listWorkersForWorkerGroup_details<'a>(workerPoolId: &'a str, workerGroup: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("workers/{}:/{}", urlencode(workerPoolId), urlencode(workerGroup));
+        let path = format!("workers/{}/{}", urlencode(workerPoolId), urlencode(workerGroup));
         let mut query = None;
         if let Some(q) = continuationToken {
             query.get_or_insert_with(Vec::new).push(("continuationToken", q));
@@ -426,7 +426,7 @@ impl WorkerManager {
 
     /// Determine the HTTP request details for worker
     fn worker_details<'a>(workerPoolId: &'a str, workerGroup: &'a str, workerId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("workers/{}:/{}/{}", urlencode(workerPoolId), urlencode(workerGroup), urlencode(workerId));
+        let path = format!("workers/{}/{}/{}", urlencode(workerPoolId), urlencode(workerGroup), urlencode(workerId));
         let query = None;
 
         (path, query)
@@ -450,7 +450,7 @@ impl WorkerManager {
 
     /// Determine the HTTP request details for createWorker
     fn createWorker_details<'a>(workerPoolId: &'a str, workerGroup: &'a str, workerId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("workers/{}:/{}/{}", urlencode(workerPoolId), urlencode(workerGroup), urlencode(workerId));
+        let path = format!("workers/{}/{}/{}", urlencode(workerPoolId), urlencode(workerGroup), urlencode(workerId));
         let query = None;
 
         (path, query)
@@ -475,7 +475,7 @@ impl WorkerManager {
 
     /// Determine the HTTP request details for updateWorker
     fn updateWorker_details<'a>(workerPoolId: &'a str, workerGroup: &'a str, workerId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("workers/{}:/{}/{}", urlencode(workerPoolId), urlencode(workerGroup), urlencode(workerId));
+        let path = format!("workers/{}/{}/{}", urlencode(workerPoolId), urlencode(workerGroup), urlencode(workerId));
         let query = None;
 
         (path, query)
