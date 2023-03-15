@@ -18,5 +18,8 @@ suite(testing.suiteName(), function() {
 
     const res = await db.fns.cancel_task_group(taskGroupId, 'because');
     assert.equal(res.length, 0);
+
+    const res2 = await db.fns.get_task_group_size(taskGroupId);
+    assert.equal(res2[0].get_task_group_size, 0);
   });
 });

@@ -99,7 +99,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     debug('### Cancel Task Group (again)');
     const r3 = await helper.queue.cancelTaskGroup(taskGroupId);
     assume(r3.taskGroupSize).equals(INITIAL_TASK_COUNT);
-    assume(r3.cancelledCount).equals(5);
+    assume(r3.cancelledCount).equals(0);
   });
 
   test('cancel task group with scopes', async () => {
@@ -157,7 +157,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     assume(r1.status.runs.length).equals(1);
     assume(r1.status.runs[0].state).equals('pending');
 
-    debug('### Resolve first task');
+    debug('### Cancel first task');
     await helper.queue.cancelTask(taskDefs[0].taskId);
 
     debug('### Sealing task group');
@@ -167,7 +167,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     const r2 = await helper.queue.cancelTaskGroup(taskGroupId);
     assume(r2.taskGroupId).equals(taskGroupId);
     assume(r2.taskGroupSize).equals(INITIAL_TASK_COUNT);
-    assume(r2.cancelledCount).equals(INITIAL_TASK_COUNT);
-    assume(r2.taskIds.sort()).deep.equals(taskDefs.map(({ taskId }) => taskId).sort());
+    assume(r2.cancelledCount).equals(2);
+    assume(r2.taskIds.sort()).deep.equals(taskDefs.slice(1).map(({ taskId }) => taskId).sort());
   });
 });

@@ -94,6 +94,7 @@
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+   * [`get_task_group_size`](#get_task_group_size)
    * [`get_task_group2`](#get_task_group2)
    * [`get_task_projid`](#get_task_projid)
    * [`get_task_queue`](#get_task_queue)
@@ -1247,6 +1248,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+* [`get_task_group_size`](#get_task_group_size)
 * [`get_task_group2`](#get_task_group2)
 * [`get_task_projid`](#get_task_projid)
 * [`get_task_queue`](#get_task_queue)
@@ -1412,7 +1414,8 @@ status, or nothing if the current status was not as expected.
 * *Last defined on version*: 82
 
 This cancels all non-resolved tasks for the given task group
-by calling existing cancel_task() procedure.
+by calling existing cancel_task() procedure. It will return
+only the tasks that were cancelled with this call.
 
 ### check_task_claim
 
@@ -1686,6 +1689,17 @@ by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify
 where the page of results should begin, and must all be specified if any
 are specified.  Typically these values would be drawn from the last item
 in the previous page.
+
+### get_task_group_size
+
+* *Mode*: read
+* *Arguments*:
+  * `task_group_id_in text`
+* *Returns*: `integer`
+* *Last defined on version*: 82
+
+Return number of tasks that exist in the current task group
+at the moment of the call.
 
 ### get_task_group2
 

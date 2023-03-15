@@ -165,6 +165,9 @@ class Queue(BaseClient):
         If the task group is not sealed, this method will return a 409 response.
 
         Every task that was canceled with will trigger a `task-exception` message.
+        It is possible to rerun cancelled task which will result in a new run.
+        Calling `cancelTaskGroup` again in this case will only cancel the new run.
+        Other tasks that were already cancelled would not be canceled again.
 
         This method is ``experimental``
         """

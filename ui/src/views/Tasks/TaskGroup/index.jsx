@@ -49,11 +49,16 @@ import TaskGroupStats from '../../../components/TaskGroupStats';
 import CopyToClipboardListItem from '../../../components/CopyToClipboardListItem';
 import DateDistance from '../../../components/DateDistance';
 import sealTaskGroupQuery from './sealTaskGroup.graphql';
+import cancelTaskGroupQuery from './cancelTaskGroup.graphql';
 
 const initialTaskGroupActions = [
   {
     name: 'sealTaskGroup',
     title: 'Seal Task Group',
+  },
+  {
+    name: 'cancelTaskGroup',
+    title: 'Cancel Task Group',
   },
 ];
 const initialActionData = {
@@ -70,9 +75,23 @@ const initialActionData = {
       schema: false,
     },
   },
+  cancelTaskGroup: {
+    action: {
+      name: 'cancelTaskGroup',
+      title: 'Cancel Task Group',
+      description: `### Cancel Task Group
+  This operation will cancel Task Group.
+  All non-resolved tasks would be cancelled.
+
+  Task Group has to be sealed before.
+      `,
+      schema: false,
+    },
+  },
 };
 const initialActionInputs = {
   sealTaskGroup: '',
+  cancelTaskGroup: '',
 };
 const updateTaskGroupIdHistory = id => {
   if (!VALID_TASK.test(id)) {
@@ -375,6 +394,9 @@ export default class TaskGroup extends Component {
       case 'sealTaskGroup':
         return !taskGroupInfo || !!taskGroupInfo.sealed;
 
+      case 'cancelTaskGroup':
+        return !taskGroupInfo || !taskGroupInfo.sealed;
+
       default:
         return false;
     }
@@ -432,11 +454,11 @@ export default class TaskGroup extends Component {
     this.preRunningAction();
 
     const apolloClient = this.props.client;
+    const {
+      data: { taskGroup },
+    } = this.props;
 
     if (name === 'sealTaskGroup') {
-      const {
-        data: { taskGroup },
-      } = this.props;
       const {
         data: { sealTaskGroup },
       } = await apolloClient.mutate({
@@ -446,9 +468,22 @@ export default class TaskGroup extends Component {
         },
       });
 
-      this.setState({
-        taskGroupInfo: sealTaskGroup,
+      this.setState({ taskGroupInfo: sealTaskGroup });
+
+      return null;
+    }
+
+    if (name === 'cancelTaskGroup') {
+      const {
+        data: { cancelTaskGroup },
+      } = await apolloClient.mutate({
+        mutation: cancelTaskGroupQuery,
+        variables: {
+          taskGroupId: taskGroup.taskGroup.taskGroupId,
+        },
       });
+
+      console.log('cancelled', cancelTaskGroup);
 
       return null;
     }
