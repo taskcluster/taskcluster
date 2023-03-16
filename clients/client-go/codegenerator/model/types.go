@@ -269,13 +269,13 @@ type (
 		Constant string `json:"constant,omitempty"`
 
 		// True, if key may contain dots, which AMQP will consider as words. This determines if `#` or `*` should be used in client libraries
-		MultipleWords bool `json:"multipleWords"`
+		MultipleWords *bool `json:"multipleWords"`
 
 		// Identifier usable in client libraries
 		Name string `json:"name"`
 
 		// True, if the key is always present, if `false` the value `_` will be used in place when no appropriate value is available for the key.
-		Required bool `json:"required"`
+		Required *bool `json:"required"`
 
 		// Short description of key in markdown
 		Summary string `json:"summary"`

@@ -110,7 +110,7 @@ type (
 	RepositoryResponse struct {
 
 		// True if integration is installed, False otherwise.
-		Installed bool `json:"installed"`
+		Installed *bool `json:"installed"`
 	}
 
 	// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'

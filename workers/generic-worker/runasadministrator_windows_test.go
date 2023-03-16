@@ -4,6 +4,9 @@ import (
 	"testing"
 )
 
+// useful for when we need an explicit pointer to the `false` value
+var _false = false
+
 func TestRunAsAdministratorDisabled(t *testing.T) {
 	setup(t)
 	if config.RunTasksAsCurrentUser {
@@ -39,7 +42,7 @@ func TestRunAsAdministratorEnabledMissingScopes(t *testing.T) {
 		},
 		MaxRunTime: 10,
 		Features: FeatureFlags{
-			RunAsAdministrator: true,
+			RunAsAdministrator: &_true,
 		},
 		OSGroups: []string{
 			"Administrators",
@@ -69,7 +72,7 @@ func TestRunAsAdministratorMissingOSGroup(t *testing.T) {
 		MaxRunTime: 10,
 		OSGroups:   []string{}, // Administrators not included!
 		Features: FeatureFlags{
-			RunAsAdministrator: true,
+			RunAsAdministrator: &_true,
 		},
 	}
 	td := testTask(t)
@@ -95,8 +98,8 @@ func TestChainOfTrustWithRunAsAdministrator(t *testing.T) {
 		MaxRunTime: 5,
 		OSGroups:   []string{"Administrators"},
 		Features: FeatureFlags{
-			ChainOfTrust:       true,
-			RunAsAdministrator: true,
+			ChainOfTrust:       &_true,
+			RunAsAdministrator: &_true,
 		},
 	}
 	td := testTask(t)
@@ -129,8 +132,8 @@ func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
 		MaxRunTime: 5,
 		OSGroups:   []string{"Administrators"},
 		Features: FeatureFlags{
-			ChainOfTrust:       true,
-			RunAsAdministrator: false, // FALSE !!!!
+			ChainOfTrust:       &_true,
+			RunAsAdministrator: &_false, // FALSE !!!!
 		},
 	}
 	td := testTask(t)
@@ -170,7 +173,7 @@ func TestRunAsAdministratorEnabled(t *testing.T) {
 		},
 		MaxRunTime: 10,
 		Features: FeatureFlags{
-			RunAsAdministrator: true,
+			RunAsAdministrator: &_true,
 		},
 		OSGroups: []string{
 			"Administrators",

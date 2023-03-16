@@ -9,6 +9,7 @@ if [ -n "${unformatted_files}" ]; then
 fi
 
 echo "Running golangci-lint.."
+set -x
 golangci-lint run --build-tags multiuser
 golangci-lint run --build-tags simple
 golangci-lint run --build-tags docker
