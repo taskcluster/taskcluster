@@ -159,14 +159,14 @@ type (
 		// for the artifacts produced by the task and the environment it ran in.
 		//
 		// Since: generic-worker 5.3.0
-		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+		ChainOfTrust *bool `json:"chainOfTrust,omitempty"`
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
 		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
 		//
 		// Since: generic-worker 10.6.0
-		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
+		TaskclusterProxy *bool `json:"taskclusterProxy,omitempty"`
 	}
 
 	FileMount struct {

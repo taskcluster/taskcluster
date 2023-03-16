@@ -158,7 +158,7 @@ type (
 		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
 		//
 		// Since: generic-worker 10.6.0
-		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
+		TaskclusterProxy *bool `json:"taskclusterProxy,omitempty"`
 	}
 
 	FileMount struct {
