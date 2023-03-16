@@ -142,7 +142,7 @@ type (
 		// Whether to email the owner on an error creating the task.
 		//
 		// Default:    true
-		EmailOnError bool `json:"emailOnError,omitempty"`
+		EmailOnError *bool `json:"emailOnError,omitempty"`
 
 		// Human readable name of the hook
 		//
