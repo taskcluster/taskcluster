@@ -156,7 +156,6 @@ module.exports = {
       return taskGroup;
     },
     async cancelTaskGroup(parent, { taskGroupId }, { clients }) {
-      console.log('>>>>>>>>>>>>>>>>>>>>>>> cancelTaskGroup', taskGroupId);
       const taskGroup = await clients.queue.cancelTaskGroup(taskGroupId);
       return taskGroup;
     },

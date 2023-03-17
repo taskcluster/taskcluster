@@ -309,6 +309,41 @@ builder.declare({
   return res.reply(result);
 });
 
+const cancelSingleTask = async (task, ctx) => {
+  // Get the last run, there should always be one
+  let run = _.last(task.runs);
+  if (!run) {
+    let err = new Error('There should exist a run after cancelTask!');
+    err.taskId = task.taskId;
+    err.status = task.status();
+    ctx.monitor.reportError(err);
+  }
+
+  // Construct status object
+  let status = task.status();
+
+  // If the last run was canceled, resolve dependencies and publish message
+  if (run.state === 'exception' && run.reasonResolved === 'canceled') {
+    // Update dependency tracker
+    await ctx.queueService.putResolvedMessage(
+      task.taskId,
+      task.taskGroupId,
+      task.schedulerId,
+      'exception',
+    );
+
+    // Publish message about the exception
+    const runId = task.runs.length - 1;
+    await ctx.publisher.taskException(_.defaults({
+      status,
+      runId,
+    }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
+    ctx.monitor.log.taskException({ taskId: task.taskId, runId });
+  }
+
+  return status;
+};
+
 /** Cancel all tasks in a group */
 builder.declare({
   method: 'post',
@@ -371,40 +406,9 @@ builder.declare({
 
   for (let task of allTasks) {
     task = Task.fromDb(task);
-
-    // Get the last run, there should always be one
-    let run = _.last(task.runs);
-    if (!run) {
-      let err = new Error('There should exist a run after cancelTask!');
-      err.taskId = task.taskId;
-      err.status = task.status();
-      this.monitor.reportError(err);
-    }
-
-    // Construct status object
-    let status = task.status();
-
-    // If the last run was canceled, resolve dependencies and publish message
-    if (run.state === 'exception' && run.reasonResolved === 'canceled') {
-      response.cancelledCount++;
-      response.taskIds.push(task.taskId);
-
-      // Update dependency tracker
-      await this.queueService.putResolvedMessage(
-        task.taskId,
-        task.taskGroupId,
-        task.schedulerId,
-        'exception',
-      );
-
-      // Publish message about the exception
-      const runId = task.runs.length - 1;
-      await this.publisher.taskException(_.defaults({
-        status,
-        runId,
-      }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
-      this.monitor.log.taskException({ taskId: task.taskId, runId });
-    }
+    await cancelSingleTask(task, this);
+    response.cancelledCount++;
+    response.taskIds.push(task.taskId);
   }
 
   this.monitor.log.taskGroupCancelled({
@@ -1121,36 +1125,7 @@ builder.declare({
     task = await Task.get(this.db, taskId);
   }
 
-  // Get the last run, there should always be one
-  let run = _.last(task.runs);
-  if (!run) {
-    let err = new Error('There should exist a run after cancelTask!');
-    err.taskId = task.taskId;
-    err.status = task.status();
-    this.monitor.reportError(err);
-  }
-
-  // Construct status object
-  let status = task.status();
-
-  // If the last run was canceled, resolve dependencies and publish message
-  if (run.state === 'exception' && run.reasonResolved === 'canceled') {
-    // Update dependency tracker
-    await this.queueService.putResolvedMessage(
-      taskId,
-      task.taskGroupId,
-      task.schedulerId,
-      'exception',
-    );
-
-    // Publish message about the exception
-    const runId = task.runs.length - 1;
-    await this.publisher.taskException(_.defaults({
-      status,
-      runId,
-    }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
-    this.monitor.log.taskException({ taskId, runId });
-  }
+  const status = await cancelSingleTask(task, this);
 
   return res.reply({ status });
 });
