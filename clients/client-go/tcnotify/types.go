@@ -92,7 +92,7 @@ type (
 		//   * "fullscreen"
 		//
 		// Default:    "simple"
-		Template string `json:"template,omitempty"`
+		Template string `json:"template,omitempty" default:"simple"`
 	}
 
 	// Request to send a Matrix notice. Many of these fields are better understood by
@@ -120,7 +120,7 @@ type (
 		//   * "m.emote"
 		//
 		// Default:    "m.notice"
-		Msgtype string `json:"msgtype,omitempty"`
+		Msgtype string `json:"msgtype,omitempty" default:"m.notice"`
 
 		// The fully qualified room name, such as `!whDRjjSmICCgrhFHsQ:mozilla.org`
 		// If you are using riot, you can find this under the advanced settings for a room.

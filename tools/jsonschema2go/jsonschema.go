@@ -1078,8 +1078,19 @@ func (s *Properties) AsStruct(disableNested bool, extraPackages StringSet, rawMe
 			if !s.Properties[j].IsRequired {
 				jsonStructTagOptions = ",omitempty"
 			}
+			defaultStructTag := ""
+			if def := s.Properties[j].Default; def != nil {
+				switch (*def).(type) {
+				// for now, let's keep this simple, and limit support to types
+				// that currently have a default; we can expand on this if and
+				// when more types are needed
+				case string, bool:
+					defaultStructTag = fmt.Sprintf(` default:"%v"`, *def)
+
+				}
+			}
 			// struct member name and type, as part of struct definition
-			typ += text.Indent(fmt.Sprintf("%v%v %v `json:\"%v%v\"`", subComment, subMember, subType, j, jsonStructTagOptions), "\t") + "\n"
+			typ += text.Indent(fmt.Sprintf("%v%v %v `json:\"%v%v\"%v`", subComment, subMember, subType, j, jsonStructTagOptions, defaultStructTag), "\t") + "\n"
 		}
 	}
 	typ += "}"

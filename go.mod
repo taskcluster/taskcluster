@@ -19,6 +19,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/johncgriffin/overflow v0.0.0-20211019200055-46fa312c352c
 	github.com/kr/text v0.2.0
+	github.com/mcuadros/go-defaults v1.2.0
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mozilla-services/go-mozlogrus v2.0.0+incompatible
