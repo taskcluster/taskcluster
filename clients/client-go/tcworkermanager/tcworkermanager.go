@@ -358,7 +358,7 @@ func (workerManager *WorkerManager) ListWorkersForWorkerGroup(workerPoolId, work
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup), new(WorkerListInAGivenWorkerPool), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup), new(WorkerListInAGivenWorkerPool), v)
 	return responseObject.(*WorkerListInAGivenWorkerPool), err
 }
 
@@ -378,7 +378,7 @@ func (workerManager *WorkerManager) ListWorkersForWorkerGroup_SignedURL(workerPo
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup), v, duration)
+	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup), v, duration)
 }
 
 // Get a single worker.
@@ -390,7 +390,7 @@ func (workerManager *WorkerManager) ListWorkersForWorkerGroup_SignedURL(workerPo
 // See #worker
 func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId string) (*WorkerFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
 	return responseObject.(*WorkerFullDefinition), err
 }
 
@@ -403,7 +403,7 @@ func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId s
 // See Worker for more details.
 func (workerManager *WorkerManager) Worker_SignedURL(workerPoolId, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, duration)
+	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, duration)
 }
 
 // Create a new worker.  This is only useful for worker pools where the provider
@@ -420,7 +420,7 @@ func (workerManager *WorkerManager) Worker_SignedURL(workerPoolId, workerGroup, 
 // See #createWorker
 func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, workerId string, payload *WorkerCreationUpdateRequest) (*WorkerFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
 	return responseObject.(*WorkerFullDefinition), err
 }
 
@@ -439,7 +439,7 @@ func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, work
 // See #updateWorker
 func (workerManager *WorkerManager) UpdateWorker(workerPoolId, workerGroup, workerId string, payload *WorkerCreationUpdateRequest) (*WorkerFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/workers/"+url.QueryEscape(workerPoolId)+":/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
 	return responseObject.(*WorkerFullDefinition), err
 }
 

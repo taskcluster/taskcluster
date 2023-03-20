@@ -330,7 +330,7 @@ class WorkerManager(AsyncBaseClient):
             'method': 'put',
             'name': 'createWorker',
             'output': 'v1/worker-full.json#',
-            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
+            'route': '/workers/<workerPoolId>/<workerGroup>/<workerId>',
             'stability': 'stable',
         },
         "createWorkerPool": {
@@ -414,7 +414,7 @@ class WorkerManager(AsyncBaseClient):
             'name': 'listWorkersForWorkerGroup',
             'output': 'v1/worker-list.json#',
             'query': ['continuationToken', 'limit'],
-            'route': '/workers/<workerPoolId>:/<workerGroup>',
+            'route': '/workers/<workerPoolId>/<workerGroup>',
             'stability': 'stable',
         },
         "listWorkersForWorkerPool": {
@@ -473,7 +473,7 @@ class WorkerManager(AsyncBaseClient):
             'method': 'post',
             'name': 'updateWorker',
             'output': 'v1/worker-full.json#',
-            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
+            'route': '/workers/<workerPoolId>/<workerGroup>/<workerId>',
             'stability': 'stable',
         },
         "updateWorkerPool": {
@@ -497,7 +497,7 @@ class WorkerManager(AsyncBaseClient):
             'method': 'get',
             'name': 'worker',
             'output': 'v1/worker-full.json#',
-            'route': '/workers/<workerPoolId>:/<workerGroup>/<workerId>',
+            'route': '/workers/<workerPoolId>/<workerGroup>/<workerId>',
             'stability': 'stable',
         },
         "workerPool": {
