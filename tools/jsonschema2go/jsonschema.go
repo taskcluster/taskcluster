@@ -430,7 +430,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 	case "integer":
 		typ = "int64"
 	case "boolean":
-		typ = "*bool"
+		typ = "bool"
 	// json type string maps to go type string, so only need to test case of when
 	// string is a json date-time, so we can convert to go type Time...
 	case "string":

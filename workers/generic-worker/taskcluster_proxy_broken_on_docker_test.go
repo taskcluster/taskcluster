@@ -25,8 +25,6 @@ func TestTaskclusterProxy(t *testing.T) {
 		[]byte("TASKCLUSTER_PROXY_URL/queue/v1/task/" + taskID + "/artifacts/SampleArtifacts%2F_%2FX.txt"),
 	)
 
-	_true := true
-
 	payload := GenericWorkerPayload{
 		Command: append(
 			append(
@@ -42,7 +40,7 @@ func TestTaskclusterProxy(t *testing.T) {
 		MaxRunTime: 180,
 		Env:        map[string]string{},
 		Features: FeatureFlags{
-			TaskclusterProxy: &_true,
+			TaskclusterProxy: true,
 		},
 	}
 	for _, envVar := range []string{

@@ -342,8 +342,6 @@ import (
 	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
 )
 
-var _false = false
-
 // *********************************************************
 // These type definitions are copied from:
 // https://github.com/taskcluster/generic-worker/blob/5cb2876624ce43974b1e1f96205535b037d63953/generated_windows.go#L11-L377
@@ -745,7 +743,7 @@ func main() {
 		},
 		Env: env,
 		Features: FeatureFlags{
-			ChainOfTrust: &_false,
+			ChainOfTrust: false,
 		},
 		MaxRunTime: 60,
 		Mounts:     []json.RawMessage{},

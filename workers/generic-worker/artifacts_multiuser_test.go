@@ -15,9 +15,6 @@ import (
 	"golang.org/x/crypto/ed25519"
 )
 
-// useful for when we need an explicit pointer to the `true` value
-var _true = true
-
 func TestChainOfTrustUpload(t *testing.T) {
 
 	setup(t)
@@ -45,7 +42,7 @@ func TestChainOfTrustUpload(t *testing.T) {
 			},
 		},
 		Features: FeatureFlags{
-			ChainOfTrust: &_true,
+			ChainOfTrust: true,
 		},
 	}
 	td := testTask(t)
@@ -273,7 +270,7 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 			},
 		},
 		Features: FeatureFlags{
-			ChainOfTrust: &_true,
+			ChainOfTrust: true,
 		},
 	}
 	td := testTask(t)

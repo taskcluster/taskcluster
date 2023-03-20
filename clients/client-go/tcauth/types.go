@@ -164,7 +164,7 @@ type (
 		// it cannot be used for authentication in that state.
 		//
 		// Default:    false
-		DeleteOnExpiration *bool `json:"deleteOnExpiration,omitempty"`
+		DeleteOnExpiration bool `json:"deleteOnExpiration,omitempty"`
 
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
@@ -206,7 +206,7 @@ type (
 		// If `true`, the service may delete this client after it has expired.  If
 		// `false`, the client will remain after expiration, although it cannot be
 		// used for authentication in that state.
-		DeleteOnExpiration *bool `json:"deleteOnExpiration"`
+		DeleteOnExpiration bool `json:"deleteOnExpiration"`
 
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
@@ -216,7 +216,7 @@ type (
 
 		// If true, this client is disabled and cannot be used.  This usually occurs when the
 		// scopes available to the user owning the client no longer satisfy the client.
-		Disabled *bool `json:"disabled"`
+		Disabled bool `json:"disabled"`
 
 		// List of scopes granted to this client by matching roles, including the
 		// client's scopes and the implicit role `client-id:<clientId>`.
@@ -335,7 +335,7 @@ type (
 		// If `true`, the service may delete this client after it has expired.  If
 		// `false`, the client will remain after expiration, although it cannot be
 		// used for authentication in that state.
-		DeleteOnExpiration *bool `json:"deleteOnExpiration"`
+		DeleteOnExpiration bool `json:"deleteOnExpiration"`
 
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
@@ -345,7 +345,7 @@ type (
 
 		// If true, this client is disabled and cannot be used.  This usually occurs when the
 		// scopes available to the user owning the client no longer satisfy the client.
-		Disabled *bool `json:"disabled"`
+		Disabled bool `json:"disabled"`
 
 		// List of scopes granted to this client by matching roles.  Scopes must be
 		// composed of printable ASCII characters and spaces.

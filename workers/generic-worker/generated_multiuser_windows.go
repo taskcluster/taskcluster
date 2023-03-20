@@ -158,7 +158,7 @@ type (
 		// for the artifacts produced by the task and the environment it ran in.
 		//
 		// Since: generic-worker 5.3.0
-		ChainOfTrust *bool `json:"chainOfTrust,omitempty"`
+		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 
 		// Runs commands with UAC elevation. Only set to true when UAC is
 		// enabled on the worker and Administrative privileges are required by
@@ -178,14 +178,14 @@ type (
 		// `generic-worker:run-as-administrator:<provisionerId>/<workerType>`.
 		//
 		// Since: generic-worker 10.11.0
-		RunAsAdministrator *bool `json:"runAsAdministrator,omitempty"`
+		RunAsAdministrator bool `json:"runAsAdministrator,omitempty"`
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
 		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
 		//
 		// Since: generic-worker 10.6.0
-		TaskclusterProxy *bool `json:"taskclusterProxy,omitempty"`
+		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
 	}
 
 	FileMount struct {

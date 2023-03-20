@@ -23,7 +23,7 @@ func (feature *RunAsAdministratorFeature) PersistState() error {
 }
 
 func (feature *RunAsAdministratorFeature) IsEnabled(task *TaskRun) bool {
-	return task.Payload.Features.RunAsAdministrator != nil && *task.Payload.Features.RunAsAdministrator
+	return task.Payload.Features.RunAsAdministrator
 }
 
 type RunAsAdministratorTask struct {
