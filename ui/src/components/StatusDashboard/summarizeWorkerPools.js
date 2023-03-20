@@ -1,14 +1,14 @@
 import format from './format';
 
-export default workerPools => {
+export default (workerPools, metrics) => {
   let totalPools = 0;
   let poolsWithWorkers = 0;
   let pendingTasks = 0;
-  let requestedCount = 0;
   let stoppedCount = 0;
   let runningCount = 0;
   let requestedCapacity = 0;
   let runningCapacity = 0;
+  let stoppingCapacity = 0;
   const providers = new Set();
 
   if (!workerPools.error && !workerPools.loading) {
@@ -27,10 +27,10 @@ export default workerPools => {
 
         pendingTasks += node.pendingTasks;
         runningCount += node.runningCount;
-        requestedCount += node.requestedCount;
         requestedCapacity += node.requestedCapacity;
         runningCapacity += node.runningCapacity;
         stoppedCount += node.stoppedCount;
+        stoppingCapacity += node.stoppingCapacity;
       }
     );
   }
@@ -44,6 +44,7 @@ export default workerPools => {
       link,
       error: workerPools.error?.message,
       loading: workerPools.loading,
+      metrics: 'stats',
     },
     {
       title: 'Total Pools',
@@ -51,6 +52,7 @@ export default workerPools => {
       link,
       error: workerPools.error?.message,
       loading: workerPools.loading,
+      metrics: 'stats',
     },
     {
       title: 'Total Pools with Workers',
@@ -58,6 +60,7 @@ export default workerPools => {
       link,
       error: workerPools.error?.message,
       loading: workerPools.loading,
+      metrics: 'stats',
     },
     {
       title: 'Workers Running',
@@ -65,13 +68,7 @@ export default workerPools => {
       link,
       error: workerPools.error?.message,
       loading: workerPools.loading,
-    },
-    {
-      title: 'Workers Requested',
-      value: format(requestedCount),
-      link,
-      error: workerPools.error?.message,
-      loading: workerPools.loading,
+      metrics: 'stats',
     },
     {
       title: 'Stopped Workers',
@@ -79,6 +76,7 @@ export default workerPools => {
       link,
       error: workerPools.error?.message,
       loading: workerPools.loading,
+      metrics: 'stats',
     },
     {
       title: 'Pending Tasks',
@@ -87,14 +85,7 @@ export default workerPools => {
       error: workerPools.error?.message,
       loading: workerPools.loading,
       altColor: true,
-    },
-    {
-      title: 'Running Capacity',
-      value: format(runningCapacity),
-      link,
-      error: workerPools.error?.message,
-      loading: workerPools.loading,
-      altColor: true,
+      metrics: 'provisioning',
     },
     {
       title: 'Requested Capacity',
@@ -103,6 +94,25 @@ export default workerPools => {
       error: workerPools.error?.message,
       loading: workerPools.loading,
       altColor: true,
+      metrics: 'provisioning',
     },
-  ];
+    {
+      title: 'Running Capacity',
+      value: format(runningCapacity),
+      link,
+      error: workerPools.error?.message,
+      loading: workerPools.loading,
+      altColor: true,
+      metrics: 'provisioning',
+    },
+    {
+      title: 'Stopping Capacity',
+      value: format(stoppingCapacity),
+      link,
+      error: workerPools.error?.message,
+      loading: workerPools.loading,
+      altColor: true,
+      metrics: 'provisioning',
+    },
+  ].filter(item => !metrics || item.metrics === metrics);
 };
