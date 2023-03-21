@@ -199,6 +199,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 				Expires: feature.task.Definition.Expires,
 			},
 			ed25519SignedCertPath,
+			ed25519SignedCert,
 			"application/octet-stream",
 			"gzip",
 		),

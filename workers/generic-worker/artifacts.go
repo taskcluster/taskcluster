@@ -241,7 +241,7 @@ func (task *TaskRun) uploadLog(name, fullPath string) *CommandExecutionError {
 				// logs expire when task expires
 				Expires: task.Definition.Expires,
 			},
-			task.BackingLogName(),
+			task.Payload.Logs.Backing,
 			fullPath,
 			"text/plain; charset=utf-8",
 			"gzip",

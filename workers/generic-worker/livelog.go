@@ -31,8 +31,7 @@ func (feature *LiveLogFeature) PersistState() error {
 }
 
 func (feature *LiveLogFeature) IsEnabled(task *TaskRun) bool {
-	// nil means not specified, which implies true [default]
-	return task.Payload.Features.LiveLog == nil || *task.Payload.Features.LiveLog
+	return task.Payload.Features.LiveLog
 }
 
 type LiveLogTask struct {
@@ -50,13 +49,8 @@ func (l *LiveLogTask) ReservedArtifacts() []string {
 }
 
 func (feature *LiveLogFeature) NewTaskFeature(task *TaskRun) TaskFeature {
-	artifactName := "public/logs/live.log"
-	if name := task.Payload.Logs.Live; name != "" {
-		artifactName = name
-	}
-
 	return &LiveLogTask{
-		artifactName: artifactName,
+		artifactName: task.Payload.Logs.Live,
 		task:         task,
 	}
 }
@@ -130,8 +124,8 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 		// no need to raise an exception
 		log.Printf("WARNING: could not terminate livelog writer: %s", errTerminate)
 	}
-	if l.task.Payload.Features.BackingLog == nil || *l.task.Payload.Features.BackingLog {
-		log.Printf("Linking %v to %v", l.artifactName, l.task.BackingLogName())
+	if l.task.Payload.Features.BackingLog {
+		log.Printf("Linking %v to %v", l.artifactName, l.task.Payload.Logs.Backing)
 		err.add(l.task.uploadArtifact(
 			&artifacts.LinkArtifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -140,7 +134,7 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 					Expires: l.task.Definition.Expires,
 				},
 				ContentType: "text/plain; charset=utf-8",
-				Artifact:    l.task.BackingLogName(),
+				Artifact:    l.task.Payload.Logs.Backing,
 			},
 		))
 	}

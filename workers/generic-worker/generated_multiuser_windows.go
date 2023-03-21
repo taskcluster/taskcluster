@@ -158,7 +158,7 @@ type (
 		// Since: generic-worker 48.1.0
 		//
 		// Default:    true
-		BackingLog *bool `json:"backingLog,omitempty"`
+		BackingLog bool `json:"backingLog,omitempty" default:"true"`
 
 		// Artifacts named `public/chain-of-trust.json` and
 		// `public/chain-of-trust.json.sig` should be generated which will
@@ -174,7 +174,7 @@ type (
 		// Since: generic-worker 48.1.0
 		//
 		// Default:    true
-		LiveLog *bool `json:"liveLog,omitempty"`
+		LiveLog bool `json:"liveLog,omitempty" default:"true"`
 
 		// Runs commands with UAC elevation. Only set to true when UAC is
 		// enabled on the worker and Administrative privileges are required by
@@ -362,7 +362,7 @@ type (
 		// Since: generic-worker 48.1.0
 		//
 		// Default:    "public/logs/live_backing.log"
-		Backing string `json:"backing,omitempty"`
+		Backing string `json:"backing,omitempty" default:"public/logs/live_backing.log"`
 
 		// Specifies a custom name for the live log artifact.
 		// This is only used if `features.liveLog` is `true`.
@@ -370,7 +370,7 @@ type (
 		// Since: generic-worker 48.1.0
 		//
 		// Default:    "public/logs/live.log"
-		Live string `json:"live,omitempty"`
+		Live string `json:"live,omitempty" default:"public/logs/live.log"`
 	}
 
 	// Byte-for-byte literal inline content of file/archive, up to 64KB in size.

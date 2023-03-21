@@ -898,8 +898,11 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 			defer panic(r)
 		}
 		task.closeLog(logHandle)
-		if task.Payload.Features.BackingLog == nil || *task.Payload.Features.BackingLog {
-			err.add(task.uploadLog(task.BackingLogName(), logPath))
+		if task.Payload.Features.BackingLog {
+			err.add(task.uploadLog(task.Payload.Logs.Backing, logPath))
+		}
+		if config.CleanUpTaskDirs {
+			_ = os.Remove(logPath)
 		}
 	}()
 
@@ -946,7 +949,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 				continue
 			}
 			reservedArtifacts := taskFeature.ReservedArtifacts()
-			task.featureArtifacts[task.BackingLogName()] = "Backing log"
+			task.featureArtifacts[task.Payload.Logs.Backing] = "Backing log"
 			for _, a := range reservedArtifacts {
 				if f := task.featureArtifacts[a]; f != "" {
 					err.add(MalformedPayloadError(fmt.Errorf("Feature %q wishes to publish artifact %v but feature %v has already reserved this artifact name", feature.Name(), a, f)))
