@@ -1086,7 +1086,6 @@ func (s *Properties) AsStruct(disableNested bool, extraPackages StringSet, rawMe
 				// when more types are needed
 				case string, bool:
 					defaultStructTag = fmt.Sprintf(` default:"%v"`, *def)
-
 				}
 			}
 			// struct member name and type, as part of struct definition
