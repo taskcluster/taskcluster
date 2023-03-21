@@ -123,11 +123,10 @@ func (feature *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 }
 
 func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
-	logFile := filepath.Join(taskContext.TaskDir, logPath)
 	certifiedLogFile := filepath.Join(taskContext.TaskDir, certifiedLogPath)
 	unsignedCert := filepath.Join(taskContext.TaskDir, unsignedCertPath)
 	ed25519SignedCert := filepath.Join(taskContext.TaskDir, ed25519SignedCertPath)
-	copyErr := copyFileContents(logFile, certifiedLogFile)
+	copyErr := copyFileContents(logPath, certifiedLogFile)
 	if copyErr != nil {
 		panic(copyErr)
 	}
