@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v48.1.0
+
+### GENERAL
+
+▶ [minor]
+jsonschema2go: jsonschema default values are encoded into struct tags of generated go types for use with github.com/mcuadros/go-defaults.
+
+In order to utilise this new features, callers should call `defaults.SetDefaults(&val)` before calling `json.Unmarshal(data, &val)`.
+
+▶ [patch]
+Go upgrade from 1.19.5 to 1.19.7. Also upgraded golangci-lint from 1.50.1 to 1.51.2.
+
+Node.js upgrade from 18.14.1 to 18.15.0.
+
+### USERS
+
+▶ [patch]
+Dashboard displays worker manager provisioning stats separately. Values are being automatically reloaded every 30 seconds.
+
+▶ [patch] [#6109](https://github.com/taskcluster/taskcluster/issues/6109)
+The worker-manager methods `createWorker`, `listWorkersForWorkerGroup`,
+`updateWorker`, and `worker` had an extraneous colon (`:`) character in their
+URL path.  This colon has been removed.  The old paths (containing the colon)
+will continue to work, but the new paths are preferred.
+
 ## v48.0.0
 
 ### DEPLOYERS
