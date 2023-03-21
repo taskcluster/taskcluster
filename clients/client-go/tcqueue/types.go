@@ -1141,7 +1141,7 @@ type (
 		//   * "normal"
 		//
 		// Default:    "lowest"
-		Priority string `json:"priority,omitempty"`
+		Priority string `json:"priority,omitempty" default:"lowest"`
 
 		// The name for the "project" with which this task is associated.  This
 		// value can be used to control permission to manipulate tasks as well as
@@ -1153,7 +1153,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9._/-]*)$
 		// Min length: 1
 		// Max length: 500
-		ProjectID string `json:"projectId,omitempty"`
+		ProjectID string `json:"projectId,omitempty" default:"none"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
@@ -1175,7 +1175,7 @@ type (
 		//   * "all-resolved"
 		//
 		// Default:    "all-completed"
-		Requires string `json:"requires,omitempty"`
+		Requires string `json:"requires,omitempty" default:"all-completed"`
 
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
@@ -1216,7 +1216,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		SchedulerID string `json:"schedulerId,omitempty"`
+		SchedulerID string `json:"schedulerId,omitempty" default:"-"`
 
 		// List of scopes that the task is authorized to use during its execution.
 		//
@@ -1334,7 +1334,7 @@ type (
 		//   * "normal"
 		//
 		// Default:    "lowest"
-		Priority string `json:"priority"`
+		Priority string `json:"priority" default:"lowest"`
 
 		// The name for the "project" with which this task is associated.  This
 		// value can be used to control permission to manipulate tasks as well as
@@ -1346,7 +1346,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9._/-]*)$
 		// Min length: 1
 		// Max length: 500
-		ProjectID string `json:"projectId,omitempty"`
+		ProjectID string `json:"projectId,omitempty" default:"none"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
@@ -1368,7 +1368,7 @@ type (
 		//   * "all-resolved"
 		//
 		// Default:    "all-completed"
-		Requires string `json:"requires"`
+		Requires string `json:"requires" default:"all-completed"`
 
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
@@ -1409,7 +1409,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		SchedulerID string `json:"schedulerId"`
+		SchedulerID string `json:"schedulerId" default:"-"`
 
 		// List of scopes that the task is authorized to use during its execution.
 		//
@@ -1759,7 +1759,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		SchedulerID string `json:"schedulerId"`
+		SchedulerID string `json:"schedulerId" default:"-"`
 
 		// State of this task. This is just an auxiliary property derived from state
 		// of latests run, or `unscheduled` if none.

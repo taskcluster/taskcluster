@@ -26,6 +26,7 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
+	"github.com/mcuadros/go-defaults"
 	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
 	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v48/internal"
@@ -626,6 +627,7 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		// complete code.
 		return MalformedPayloadError(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
 	}
+	defaults.SetDefaults(&task.Payload)
 	err = json.Unmarshal(jsonPayload, &task.Payload)
 	if err != nil {
 		return MalformedPayloadError(err)

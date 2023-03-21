@@ -76,11 +76,10 @@ func (object *Object) getUrlDownload(rawResponse *DownloadObjectResponse, name s
 		// if the URL has expired, fetch a new one, verifying that each response
 		// is used at least once to avoid infinitely re-fetching
 		if responseUsed && time.Time(downloadResponse.Expires).Before(time.Now()) {
-			_true := true
 			rawResponse, err = object.StartDownload(
 				name,
 				&DownloadObjectRequest{
-					AcceptDownloadMethods: SupportedDownloadMethods{GetURL: &_true},
+					AcceptDownloadMethods: SupportedDownloadMethods{GetURL: true},
 				},
 			)
 			if err != nil {
@@ -202,12 +201,11 @@ func verifyHashes(hashingWriter *hashingWriteSeeker, expectedHashes map[string]s
 // writes it to writeSeeker, retrying if intermittent errors occur. Returns
 // the Content-Type and Content-Length of the downloaded object.
 func (object *Object) DownloadToWriteSeeker(name string, writeSeeker io.WriteSeeker) (contentType string, contentLength int64, err error) {
-	_true := true
 	downloadObjectResponse, err := object.StartDownload(
 		name,
 		&DownloadObjectRequest{
 			AcceptDownloadMethods: SupportedDownloadMethods{
-				GetURL: &_true,
+				GetURL: true,
 			},
 		},
 	)

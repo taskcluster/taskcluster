@@ -344,7 +344,7 @@ type (
 		// Indication that the data has been uploaded.
 		//
 		// Constant value: %!q(bool=true)
-		DataInline *bool `json:"dataInline,omitempty"`
+		DataInline bool `json:"dataInline,omitempty"`
 
 		// Response containing a URL to which to PUT the data.
 		PutURL PutURLUploadResponse `json:"putUrl,omitempty"`
@@ -365,10 +365,10 @@ type (
 	SupportedDownloadMethods struct {
 
 		// Constant value: %!q(bool=true)
-		GetURL *bool `json:"getUrl,omitempty"`
+		GetURL bool `json:"getUrl,omitempty"`
 
 		// Constant value: %!q(bool=true)
-		Simple *bool `json:"simple,omitempty"`
+		Simple bool `json:"simple,omitempty"`
 	}
 )
 

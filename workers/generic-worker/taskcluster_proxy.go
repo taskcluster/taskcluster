@@ -28,7 +28,7 @@ func (feature *TaskclusterProxyFeature) PersistState() error {
 }
 
 func (feature *TaskclusterProxyFeature) IsEnabled(task *TaskRun) bool {
-	return task.Payload.Features.TaskclusterProxy != nil && *task.Payload.Features.TaskclusterProxy
+	return task.Payload.Features.TaskclusterProxy
 }
 
 type TaskclusterProxyTask struct {

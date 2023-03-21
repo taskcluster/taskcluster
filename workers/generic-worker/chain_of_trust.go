@@ -86,7 +86,7 @@ func (feature *ChainOfTrustFeature) Initialise() (err error) {
 }
 
 func (feature *ChainOfTrustFeature) IsEnabled(task *TaskRun) bool {
-	return task.Payload.Features.ChainOfTrust != nil && *task.Payload.Features.ChainOfTrust
+	return task.Payload.Features.ChainOfTrust
 }
 
 func (feature *ChainOfTrustFeature) NewTaskFeature(task *TaskRun) TaskFeature {

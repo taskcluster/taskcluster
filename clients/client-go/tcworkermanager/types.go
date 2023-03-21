@@ -616,7 +616,7 @@ type (
 		Description string `json:"description"`
 
 		// If true, the owner should be emailed on provisioning errors
-		EmailOnError *bool `json:"emailOnError"`
+		EmailOnError bool `json:"emailOnError"`
 
 		// An email address to notify when there are provisioning errors for this
 		// worker pool.
@@ -655,7 +655,7 @@ type (
 		Description string `json:"description"`
 
 		// If true, the owner should be emailed on provisioning errors
-		EmailOnError *bool `json:"emailOnError"`
+		EmailOnError bool `json:"emailOnError"`
 
 		// Ignored on update
 		LastModified tcclient.Time `json:"lastModified,omitempty"`
@@ -752,7 +752,7 @@ type (
 		Description string `json:"description"`
 
 		// If true, the owner should be emailed on provisioning errors
-		EmailOnError *bool `json:"emailOnError"`
+		EmailOnError bool `json:"emailOnError"`
 
 		// Date and time when this worker pool was last updated
 		LastModified tcclient.Time `json:"lastModified"`

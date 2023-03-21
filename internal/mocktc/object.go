@@ -38,8 +38,7 @@ func (object *Object) CreateUpload(name string, payload *tcobject.CreateUploadRe
 
 	um := tcobject.SelectedUploadMethodOrNone{}
 	if payload.ProposedUploadMethods.DataInline.ContentType != "" {
-		_true := true
-		um.DataInline = &_true
+		um.DataInline = true
 	} else {
 		um.PutURL = tcobject.PutURLUploadResponse{
 			Expires: tcclient.Time(time.Now().Add(1 * time.Hour)),
@@ -103,7 +102,7 @@ func (object *Object) StartDownload(name string, payload *tcobject.DownloadObjec
 	var dor tcobject.DownloadObjectResponse
 	var resp interface{}
 	switch {
-	case payload.AcceptDownloadMethods.Simple != nil && *payload.AcceptDownloadMethods.Simple:
+	case payload.AcceptDownloadMethods.Simple:
 		if o.onMockS3 {
 			resp = tcobject.SimpleDownloadResponse{
 				Method: "simple",
@@ -116,7 +115,7 @@ func (object *Object) StartDownload(name string, payload *tcobject.DownloadObjec
 				URL:    object.baseURL + "/simple",
 			}
 		}
-	case payload.AcceptDownloadMethods.GetURL != nil && *payload.AcceptDownloadMethods.GetURL:
+	case payload.AcceptDownloadMethods.GetURL:
 		resp = tcobject.GetURLDownloadResponse{
 			Method: "getUrl",
 			// return a URL pointing to the mockS3 server

@@ -109,7 +109,7 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 	}()
 
 	switch {
-	case uploadResp.UploadMethod.DataInline != nil && *uploadResp.UploadMethod.DataInline:
+	case uploadResp.UploadMethod.DataInline:
 		// data is already uploaded -- nothing to do
 		return nil
 	case uploadResp.UploadMethod.PutURL.URL != "":
