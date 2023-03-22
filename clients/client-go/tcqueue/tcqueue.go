@@ -281,7 +281,6 @@ func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limi
 // It is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.
 // If the task group is not sealed, this method will return a 409 response.
 //
-// Every task that was canceled with will trigger a `task-exception` message.
 // It is possible to rerun a canceled task which will result in a new run.
 // Calling `cancelTaskGroup` again in this case will only cancel the new run.
 // Other tasks that were already canceled would not be canceled again.
