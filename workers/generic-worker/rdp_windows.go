@@ -100,7 +100,7 @@ func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
 				// RDP info expires one day after task
 				Expires: tcclient.Time(time.Now().Add(time.Hour * 24)),
 			},
-			rdpInfoPath,
+			filepath.Join(taskContext.TaskDir, rdpInfoPath),
 			"application/json",
 			"gzip",
 		),
