@@ -1086,6 +1086,11 @@ func (s *Properties) AsStruct(disableNested bool, extraPackages StringSet, rawMe
 				// when more types are needed
 				case string, bool:
 					defaultStructTag = fmt.Sprintf(` default:"%v"`, *def)
+					// remove omitempty since a default value is provided
+					// if user provides an empty string or false,
+					// json.Marshal will disregard the default value if
+					// omitempty is present
+					jsonStructTagOptions = ""
 				}
 			}
 			// struct member name and type, as part of struct definition

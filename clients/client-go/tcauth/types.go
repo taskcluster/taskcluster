@@ -164,7 +164,7 @@ type (
 		// it cannot be used for authentication in that state.
 		//
 		// Default:    false
-		DeleteOnExpiration bool `json:"deleteOnExpiration,omitempty" default:"false"`
+		DeleteOnExpiration bool `json:"deleteOnExpiration" default:"false"`
 
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.

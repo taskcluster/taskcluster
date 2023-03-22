@@ -38,12 +38,15 @@ func TestCustomLogPaths(t *testing.T) {
 	}
 }
 
-func TestDefaultLogPaths(t *testing.T) {
+func TestDisableLiveLogFeature(t *testing.T) {
 	setup(t)
 
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
 		MaxRunTime: 30,
+		Features: FeatureFlags{
+			LiveLog: false,
+		},
 	}
 	td := testTask(t)
 
@@ -55,6 +58,7 @@ func TestDefaultLogPaths(t *testing.T) {
 		t.Fatalf("Was expecting backing log file to contain 'goodbye world!' but it doesn't")
 	}
 
+	// TODO: this should be a 404, handle
 	bytes = getArtifactContent(t, taskID, "public/logs/live.log")
 	logtext = string(bytes)
 	if !strings.Contains(logtext, "hello world!") {

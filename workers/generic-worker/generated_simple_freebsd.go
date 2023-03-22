@@ -159,7 +159,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    true
-		BackingLog bool `json:"backingLog,omitempty" default:"true"`
+		BackingLog bool `json:"backingLog" default:"true"`
 
 		// The live log feature streams the combined stderr and stdout to a task artifact
 		// so that the output is available while the task is running.
@@ -167,7 +167,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    true
-		LiveLog bool `json:"liveLog,omitempty" default:"true"`
+		LiveLog bool `json:"liveLog" default:"true"`
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
@@ -296,7 +296,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live_backing.log"
-		Backing string `json:"backing,omitempty" default:"public/logs/live_backing.log"`
+		Backing string `json:"backing" default:"public/logs/live_backing.log"`
 
 		// Specifies a custom name for the live log artifact.
 		// This is only used if `features.liveLog` is `true`.
@@ -304,7 +304,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live.log"
-		Live string `json:"live,omitempty" default:"public/logs/live.log"`
+		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
 	// Byte-for-byte literal inline content of file/archive, up to 64KB in size.
