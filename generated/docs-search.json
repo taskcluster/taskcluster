@@ -1317,9 +1317,9 @@
   },
   {
     "element": "h2",
-    "id": "canceling-task-groups",
+    "id": "cancelling-task-groups",
     "path": "/manual/tasks/groups",
-    "subtitle": "Canceling Task Groups",
+    "subtitle": "Cancelling Task Groups",
     "title": "Task Groups"
   },
   {
