@@ -901,7 +901,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 			defer panic(r)
 		}
 		task.closeLog(logHandle)
-		err.add(task.uploadLog(logName, logPath))
+		err.add(task.uploadLog(logName, filepath.Join(taskContext.TaskDir, logPath)))
 	}()
 
 	task.logHeader()
