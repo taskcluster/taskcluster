@@ -969,6 +969,9 @@ export default class ViewTask extends Component {
                   runs={task.status.runs}
                   taskQueueId={task.taskQueueId}
                   onArtifactsPageChange={this.handleArtifactsPageChange}
+                  // docker worker uses `task.payload.log` while
+                  // generic worker uses `task.payload.logs.live`
+                  liveLogName={task.payload?.logs?.live || task.payload?.log}
                 />
               </Grid>
             </Grid>
