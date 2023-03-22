@@ -15,10 +15,6 @@ import (
 	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/process"
 )
 
-var (
-	livelogName = "public/logs/live.log"
-)
-
 type LiveLogFeature struct {
 }
 
@@ -34,13 +30,13 @@ func (feature *LiveLogFeature) PersistState() error {
 	return nil
 }
 
-// livelog is always enabled
 func (feature *LiveLogFeature) IsEnabled(task *TaskRun) bool {
-	return true
+	return task.Payload.Features.LiveLog
 }
 
 type LiveLogTask struct {
 	liveLog        *livelog.LiveLog
+	artifactName   string
 	exposure       expose.Exposure
 	task           *TaskRun
 	backingLogFile *os.File
@@ -48,13 +44,14 @@ type LiveLogTask struct {
 
 func (l *LiveLogTask) ReservedArtifacts() []string {
 	return []string{
-		livelogName,
+		l.artifactName,
 	}
 }
 
 func (feature *LiveLogFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &LiveLogTask{
-		task: task,
+		artifactName: task.Payload.Logs.Live,
+		task:         task,
 	}
 }
 
@@ -127,18 +124,20 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 		// no need to raise an exception
 		log.Printf("WARNING: could not terminate livelog writer: %s", errTerminate)
 	}
-	log.Printf("Linking %v to %v", livelogName, logName)
-	err.add(l.task.uploadArtifact(
-		&artifacts.LinkArtifact{
-			BaseArtifact: &artifacts.BaseArtifact{
-				Name: livelogName,
-				// same expiry as underlying log it points to
-				Expires: l.task.Definition.Expires,
+	if l.task.Payload.Features.BackingLog {
+		log.Printf("Linking %v to %v", l.artifactName, l.task.Payload.Logs.Backing)
+		err.add(l.task.uploadArtifact(
+			&artifacts.LinkArtifact{
+				BaseArtifact: &artifacts.BaseArtifact{
+					Name: l.artifactName,
+					// same expiry as underlying log it points to
+					Expires: l.task.Definition.Expires,
+				},
+				ContentType: "text/plain; charset=utf-8",
+				Artifact:    l.task.Payload.Logs.Backing,
 			},
-			ContentType: "text/plain; charset=utf-8",
-			Artifact:    logName,
-		},
-	))
+		))
+	}
 
 	if l.exposure != nil {
 		closeErr := l.exposure.Close()
@@ -181,7 +180,7 @@ func (l *LiveLogTask) uploadLiveLogArtifact() error {
 	uploadErr := l.task.uploadArtifact(
 		&artifacts.RedirectArtifact{
 			BaseArtifact: &artifacts.BaseArtifact{
-				Name:    livelogName,
+				Name:    l.artifactName,
 				Expires: tcclient.Time(expires),
 			},
 			ContentType: "text/plain; charset=utf-8",
