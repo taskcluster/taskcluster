@@ -161,7 +161,7 @@ async function statusHandler(message) {
     output.addText(markdownAnchor(CHECKRUN_TEXT, taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)));
     output.addText(markdownAnchor(
       CHECKLOGS_TEXT,
-      taskLogUI(this.context.cfg.taskcluster.rootUrl, runId, taskId, taskDefinition.payload?.log),
+      taskLogUI(this.context.cfg.taskcluster.rootUrl, runId, taskId, taskDefinition.payload?.logs?.live),
     ));
     if (customCheckRunText) {
       output.addText(customCheckRunText);

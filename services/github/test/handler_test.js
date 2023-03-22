@@ -122,11 +122,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           case CUSTOM_LIVELOG_NAME_TASKID:
             return Promise.resolve({
               metadata: {
-                name: 'Task with custom livelog path',
+                name: 'Task with custom live log path',
                 description: 'Task Description',
               },
               payload: {
-                log: 'apple/banana.log',
+                logs: {
+                  live: 'apple/banana.log',
+                },
               },
             });
 

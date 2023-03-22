@@ -8,7 +8,7 @@ it('should render TaskRunsCard', () => {
     <MemoryRouter keyLength={0}>
       <TaskRunsCard
         taskQueueId="task/queueId"
-        livelogName="apple/banana.log"
+        liveLogName="apple/banana.log"
         task={{
           taskId: 'taskId',
           status: {
