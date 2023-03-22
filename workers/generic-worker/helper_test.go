@@ -169,7 +169,7 @@ func ensureResolution(t *testing.T, taskID, state, reason string) {
 }
 
 func LogText(t *testing.T) string {
-	bytes, err := os.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
+	bytes, err := os.ReadFile(logPath)
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}

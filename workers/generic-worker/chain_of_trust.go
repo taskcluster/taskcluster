@@ -25,11 +25,8 @@ const (
 )
 
 var (
-	certifiedLogPath      = filepath.Join("generic-worker", "certified.log")
 	certifiedLogName      = "public/logs/certified.log"
-	unsignedCertPath      = filepath.Join("generic-worker", "chain-of-trust.json")
 	unsignedCertName      = "public/chain-of-trust.json"
-	ed25519SignedCertPath = filepath.Join("generic-worker", "chain-of-trust.json.sig")
 	ed25519SignedCertName = "public/chain-of-trust.json.sig"
 )
 
@@ -123,15 +120,19 @@ func (feature *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 }
 
 func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
-	logFile := filepath.Join(taskContext.TaskDir, logPath)
-	certifiedLogFile := filepath.Join(taskContext.TaskDir, certifiedLogPath)
-	unsignedCert := filepath.Join(taskContext.TaskDir, unsignedCertPath)
-	ed25519SignedCert := filepath.Join(taskContext.TaskDir, ed25519SignedCertPath)
-	copyErr := copyFileContents(logFile, certifiedLogFile)
+	parentDirArtifacts := filepath.Join(taskContext.TaskDir, "generic-worker")
+	mkdirErr := os.MkdirAll(parentDirArtifacts, 0700)
+	if mkdirErr != nil {
+		panic(mkdirErr)
+	}
+	certifiedLogPath := filepath.Join(parentDirArtifacts, "certified.log")
+	unsignedCertPath := filepath.Join(parentDirArtifacts, "chain-of-trust.json")
+	ed25519SignedCertPath := filepath.Join(parentDirArtifacts, "chain-of-trust.json.sig")
+	copyErr := copyFileContents(logPath, certifiedLogPath)
 	if copyErr != nil {
 		panic(copyErr)
 	}
-	err.add(feature.task.uploadLog(certifiedLogName, filepath.Join(taskContext.TaskDir, certifiedLogPath)))
+	err.add(feature.task.uploadLog(certifiedLogName, certifiedLogPath))
 	artifactHashes := map[string]ArtifactHash{}
 	for _, artifact := range feature.task.Artifacts {
 		// make sure SHA256 is calculated
@@ -180,15 +181,15 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 		panic(e)
 	}
 	// create unsigned chain-of-trust.json
-	e = os.WriteFile(unsignedCert, certBytes, 0644)
+	e = os.WriteFile(unsignedCertPath, certBytes, 0644)
 	if e != nil {
 		panic(e)
 	}
-	err.add(feature.task.uploadLog(unsignedCertName, filepath.Join(taskContext.TaskDir, unsignedCertPath)))
+	err.add(feature.task.uploadLog(unsignedCertName, unsignedCertPath))
 
 	// create detached ed25519 chain-of-trust.json.sig
 	sig := ed25519.Sign(feature.ed25519PrivKey, certBytes)
-	e = os.WriteFile(ed25519SignedCert, sig, 0644)
+	e = os.WriteFile(ed25519SignedCertPath, sig, 0644)
 	if e != nil {
 		panic(e)
 	}
@@ -198,7 +199,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 				Name:    ed25519SignedCertName,
 				Expires: feature.task.Definition.Expires,
 			},
-			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),
+			ed25519SignedCertPath,
 			"application/octet-stream",
 			"gzip",
 		),

@@ -9,8 +9,9 @@ import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
 
 ## Creating Artifacts
 
-Most workers automatically produce a conventional `public/logs/live.log`
-artifact containing the main log of the artifact.
+Workers conventionally create a `public/logs/live.log`
+artifact containing the main task log. This default path can be overridden
+in Generic Worker and Docker Worker task payloads using the `log` property.
 
 Workers also generally provide a way to specify, in the task description, the
 files and directories that should be uploaded as artifacts after the task

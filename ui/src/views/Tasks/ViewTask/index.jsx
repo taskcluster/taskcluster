@@ -969,6 +969,7 @@ export default class ViewTask extends Component {
                   runs={task.status.runs}
                   taskQueueId={task.taskQueueId}
                   onArtifactsPageChange={this.handleArtifactsPageChange}
+                  liveLogName={task.payload?.logs?.live}
                 />
               </Grid>
             </Grid>

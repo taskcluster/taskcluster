@@ -1,3 +1,4 @@
+const path = require('path');
 const libUrls = require('taskcluster-lib-urls');
 const { CHECK_RUN_STATES } = require('../constants');
 
@@ -5,9 +6,8 @@ const taskUI = (rootUrl, taskGroupId, taskId) =>
   libUrls.ui(rootUrl, rootUrl === 'https://taskcluster.net' ? `/groups/${taskGroupId}/tasks/${taskId}/details` : `/tasks/${taskId}`);
 const taskGroupUI = (rootUrl, taskGroupId) =>
   libUrls.ui(rootUrl, `${rootUrl === 'https://taskcluster.net' ? '' : '/tasks'}/groups/${taskGroupId}`);
-const taskLogUI = (rootUrl, runId, taskId) =>
-  libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/logs/live/public/logs/live.log`);
-
+const taskLogUI = (rootUrl, runId, taskId, liveLogName = 'public/logs/live.log') =>
+  libUrls.ui(rootUrl, path.join(`/tasks/${taskId}/runs/${runId}/logs/live/`, liveLogName));
 let debugCounter = 0;
 
 /**
