@@ -41,3 +41,16 @@ This can help to save resources.
 To seal a task group, you can use the `queue.sealTaskGroup` method.
 Once a task group is sealed, it will no longer accept new tasks and will throw
 an error if new task is being added to it.
+
+
+## Canceling Task Groups
+
+To cancel all tasks within a single task group, utilize the queue.cancelTaskGroup method.
+This method cancels all tasks that are yet to be resolved,
+while tasks that have already expired will remain unchanged.
+It is important to note that this operation is only possible when the task group has been sealed.
+
+It is safe to call this endpoint multiple times, and each call will only cancel
+tasks that have not already been canceled.
+While new tasks cannot be added after the task group has been sealed,
+existing tasks may be rerun if required.

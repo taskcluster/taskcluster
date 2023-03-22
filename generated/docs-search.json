@@ -1317,6 +1317,13 @@
   },
   {
     "element": "h2",
+    "id": "canceling-task-groups",
+    "path": "/manual/tasks/groups",
+    "subtitle": "Canceling Task Groups",
+    "title": "Task Groups"
+  },
+  {
+    "element": "h2",
     "id": "sealing-task-gropus",
     "path": "/manual/tasks/groups",
     "subtitle": "Sealing Task Gropus",
