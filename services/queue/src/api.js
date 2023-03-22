@@ -458,7 +458,7 @@ builder.declare({
   method: 'post',
   route: '/task-group/:taskGroupId/seal',
   name: 'sealTaskGroup',
-  scopes: 'queue:seal-task-group:<taskGroupId>',
+  scopes: 'queue:seal-task-group:<schedulerId>/<taskGroupId>',
   stability: APIBuilder.stability.experimental,
   category: 'Task Groups',
   input: undefined,
@@ -480,6 +480,11 @@ builder.declare({
         taskGroupId,
       });
   }
+
+  await req.authorize({
+    taskGroupId,
+    schedulerId: taskGroup.schedulerId,
+  });
 
   const updated = TaskGroup.fromDbRows(await this.db.fns.seal_task_group(taskGroupId));
   const out = updated.serialize();
