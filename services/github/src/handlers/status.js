@@ -159,7 +159,17 @@ async function statusHandler(message) {
     });
     const output = githubCheck.output;
     output.addText(markdownAnchor(CHECKRUN_TEXT, taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)));
-    output.addText(markdownAnchor(CHECKLOGS_TEXT, taskLogUI(this.context.cfg.taskcluster.rootUrl, runId, taskId)));
+    output.addText(markdownAnchor(
+      CHECKLOGS_TEXT,
+      taskLogUI(
+        this.context.cfg.taskcluster.rootUrl,
+        runId,
+        taskId,
+        // docker worker uses `task.payload.log` while
+        // generic worker uses `task.payload.logs.live`
+        taskDefinition.payload?.logs?.live || taskDefinition.payload?.log,
+      ),
+    ));
     if (customCheckRunText) {
       output.addText(customCheckRunText);
     }

@@ -21,6 +21,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
   const CUSTOM_CHECKRUN_TASKID = 'apple';
+  const CUSTOM_LIVELOG_NAME_TASKID = 'banana';
   const CUSTOM_CHECKRUN_TEXT = 'Hi there! This is your custom text';
   const LIVE_LOG_TEXT = 'Hi there! This is your live log';
   const CUSTOM_CHECKRUN_ANNOTATIONS = JSON.stringify([
@@ -114,6 +115,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
                   customCheckRun: {
                     textArtifactName: 'public/text.md',
                   },
+                },
+              },
+            });
+
+          case CUSTOM_LIVELOG_NAME_TASKID:
+            return Promise.resolve({
+              metadata: {
+                name: 'Task with custom live log path',
+                description: 'Task Description',
+              },
+              payload: {
+                logs: {
+                  live: 'apple/banana.log',
                 },
               },
             });
@@ -990,6 +1004,37 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.strictEqual(
         args.output.text,
         `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log)\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
+      );
+      /* eslint-enable comma-dangle */
+      sinon.restore();
+    });
+
+    test('successfully adds live log text from an artifact with a custom livelog name', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
+      sinon.restore();
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({ status: 200, text: LIVE_LOG_TEXT })
+        .onSecondCall()
+        .returns({ status: 404 })
+        .onThirdCall()
+        .returns({ status: 404 });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_LIVELOG_NAME_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+      });
+
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      let [args] = github.inst(9988).checks.update.firstCall.args;
+      /* eslint-disable comma-dangle */
+      assert.strictEqual(
+        args.output.text,
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}/runs/0/logs/live/apple/banana.log)\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
       );
       /* eslint-enable comma-dangle */
       sinon.restore();
