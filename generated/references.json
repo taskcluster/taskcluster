@@ -7563,13 +7563,13 @@
           "properties": {
             "backingLog": {
               "default": true,
-              "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.1.0",
+              "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",
               "title": "Enable backing log",
               "type": "boolean"
             },
             "liveLog": {
               "default": true,
-              "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.1.0",
+              "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
               "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
               "type": "boolean"
             },
@@ -7586,17 +7586,17 @@
         },
         "logs": {
           "additionalProperties": false,
-          "description": "Configuration for task logs.\n\nSince: generic-worker 48.1.0",
+          "description": "Configuration for task logs.\n\nSince: generic-worker 48.2.0",
           "properties": {
             "backing": {
               "default": "public/logs/live_backing.log",
-              "description": "Specifies a custom name for the backing log artifact.\nThis is only used if `features.backingLog` is `true`.\n\nSince: generic-worker 48.1.0",
+              "description": "Specifies a custom name for the backing log artifact.\nThis is only used if `features.backingLog` is `true`.\n\nSince: generic-worker 48.2.0",
               "title": "Backing log artifact name",
               "type": "string"
             },
             "live": {
               "default": "public/logs/live.log",
-              "description": "Specifies a custom name for the live log artifact.\nThis is only used if `features.liveLog` is `true`.\n\nSince: generic-worker 48.1.0",
+              "description": "Specifies a custom name for the live log artifact.\nThis is only used if `features.liveLog` is `true`.\n\nSince: generic-worker 48.2.0",
               "title": "Live log artifact name",
               "type": "string"
             }
@@ -7962,7 +7962,7 @@
           "properties": {
             "backingLog": {
               "default": true,
-              "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.1.0",
+              "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",
               "title": "Enable backing log",
               "type": "boolean"
             },
@@ -7973,7 +7973,7 @@
             },
             "liveLog": {
               "default": true,
-              "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.1.0",
+              "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
               "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
               "type": "boolean"
             },
@@ -7995,17 +7995,17 @@
         },
         "logs": {
           "additionalProperties": false,
-          "description": "Configuration for task logs.\n\nSince: generic-worker 48.1.0",
+          "description": "Configuration for task logs.\n\nSince: generic-worker 48.2.0",
           "properties": {
             "backing": {
               "default": "public/logs/live_backing.log",
-              "description": "Specifies a custom name for the backing log artifact.\nThis is only used if `features.backingLog` is `true`.\n\nSince: generic-worker 48.1.0",
+              "description": "Specifies a custom name for the backing log artifact.\nThis is only used if `features.backingLog` is `true`.\n\nSince: generic-worker 48.2.0",
               "title": "Backing log artifact name",
               "type": "string"
             },
             "live": {
               "default": "public/logs/live.log",
-              "description": "Specifies a custom name for the live log artifact.\nThis is only used if `features.liveLog` is `true`.\n\nSince: generic-worker 48.1.0",
+              "description": "Specifies a custom name for the live log artifact.\nThis is only used if `features.liveLog` is `true`.\n\nSince: generic-worker 48.2.0",
               "title": "Live log artifact name",
               "type": "string"
             }
@@ -8380,7 +8380,7 @@
           "properties": {
             "backingLog": {
               "default": true,
-              "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.1.0",
+              "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",
               "title": "Enable backing log",
               "type": "boolean"
             },
@@ -8391,7 +8391,7 @@
             },
             "liveLog": {
               "default": true,
-              "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.1.0",
+              "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
               "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
               "type": "boolean"
             },
@@ -8408,17 +8408,17 @@
         },
         "logs": {
           "additionalProperties": false,
-          "description": "Configuration for task logs.\n\nSince: generic-worker 48.1.0",
+          "description": "Configuration for task logs.\n\nSince: generic-worker 48.2.0",
           "properties": {
             "backing": {
               "default": "public/logs/live_backing.log",
-              "description": "Specifies a custom name for the backing log artifact.\nThis is only used if `features.backingLog` is `true`.\n\nSince: generic-worker 48.1.0",
+              "description": "Specifies a custom name for the backing log artifact.\nThis is only used if `features.backingLog` is `true`.\n\nSince: generic-worker 48.2.0",
               "title": "Backing log artifact name",
               "type": "string"
             },
             "live": {
               "default": "public/logs/live.log",
-              "description": "Specifies a custom name for the live log artifact.\nThis is only used if `features.liveLog` is `true`.\n\nSince: generic-worker 48.1.0",
+              "description": "Specifies a custom name for the live log artifact.\nThis is only used if `features.liveLog` is `true`.\n\nSince: generic-worker 48.2.0",
               "title": "Live log artifact name",
               "type": "string"
             }
@@ -8789,7 +8789,7 @@
           "properties": {
             "backingLog": {
               "default": true,
-              "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.1.0",
+              "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",
               "title": "Enable backing log",
               "type": "boolean"
             },
@@ -8800,7 +8800,7 @@
             },
             "liveLog": {
               "default": true,
-              "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.1.0",
+              "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
               "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
               "type": "boolean"
             },
@@ -8817,17 +8817,17 @@
         },
         "logs": {
           "additionalProperties": false,
-          "description": "Configuration for task logs.\n\nSince: generic-worker 48.1.0",
+          "description": "Configuration for task logs.\n\nSince: generic-worker 48.2.0",
           "properties": {
             "backing": {
               "default": "public/logs/live_backing.log",
-              "description": "Specifies a custom name for the backing log artifact.\nThis is only used if `features.backingLog` is `true`.\n\nSince: generic-worker 48.1.0",
+              "description": "Specifies a custom name for the backing log artifact.\nThis is only used if `features.backingLog` is `true`.\n\nSince: generic-worker 48.2.0",
               "title": "Backing log artifact name",
               "type": "string"
             },
             "live": {
               "default": "public/logs/live.log",
-              "description": "Specifies a custom name for the live log artifact.\nThis is only used if `features.liveLog` is `true`.\n\nSince: generic-worker 48.1.0",
+              "description": "Specifies a custom name for the live log artifact.\nThis is only used if `features.liveLog` is `true`.\n\nSince: generic-worker 48.2.0",
               "title": "Live log artifact name",
               "type": "string"
             }

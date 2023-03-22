@@ -34,7 +34,6 @@ func (feature *RDPFeature) IsEnabled(task *TaskRun) bool {
 type RDPTask struct {
 	task        *TaskRun
 	info        *RDPInfo
-	rdpInfoPath string
 	rdpInfoFile string
 }
 
@@ -81,8 +80,7 @@ func (l *RDPTask) createRDPArtifact() {
 		Username: taskContext.User.Name,
 		Password: taskContext.User.Password,
 	}
-	l.rdpInfoPath = filepath.Join("generic-worker", "rdp.json")
-	l.rdpInfoFile = filepath.Join(taskContext.TaskDir, l.rdpInfoPath)
+	l.rdpInfoFile = filepath.Join(taskContext.TaskDir, "generic-worker", "rdp.json")
 	err := fileutil.WriteToFileAsJSON(l.info, l.rdpInfoFile)
 	// if we can't write this, something seriously wrong, so cause worker to
 	// report an internal-error to sentry and crash!
@@ -99,7 +97,6 @@ func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
 				// RDP info expires one day after task
 				Expires: tcclient.Time(time.Now().Add(time.Hour * 24)),
 			},
-			l.rdpInfoPath,
 			l.rdpInfoFile,
 			"application/json",
 			"gzip",

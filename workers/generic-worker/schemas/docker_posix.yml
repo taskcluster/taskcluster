@@ -209,7 +209,7 @@ properties:
           The live log feature streams the combined stderr and stdout to a task artifact
           so that the output is available while the task is running.
 
-          Since: generic-worker 48.1.0
+          Since: generic-worker 48.2.0
         default: true
       backingLog:
         type: boolean
@@ -218,7 +218,7 @@ properties:
           The backing log feature publishes a task artifact containing the complete
           stderr and stdout of the task.
 
-          Since: generic-worker 48.1.0
+          Since: generic-worker 48.2.0
         default: true
   mounts:
     type: array
@@ -280,7 +280,7 @@ properties:
     description: |-
       Configuration for task logs.
 
-      Since: generic-worker 48.1.0
+      Since: generic-worker 48.2.0
     type: object
     additionalProperties: false
     required: []
@@ -291,7 +291,7 @@ properties:
           Specifies a custom name for the live log artifact.
           This is only used if `features.liveLog` is `true`.
 
-          Since: generic-worker 48.1.0
+          Since: generic-worker 48.2.0
         type: string
         default: public/logs/live.log
       backing:
@@ -300,7 +300,7 @@ properties:
           Specifies a custom name for the backing log artifact.
           This is only used if `features.backingLog` is `true`.
 
-          Since: generic-worker 48.1.0
+          Since: generic-worker 48.2.0
         type: string
         default: public/logs/live_backing.log
 definitions:

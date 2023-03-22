@@ -156,7 +156,7 @@ type (
 		// The backing log feature publishes a task artifact containing the complete
 		// stderr and stdout of the task.
 		//
-		// Since: generic-worker 48.1.0
+		// Since: generic-worker 48.2.0
 		//
 		// Default:    true
 		BackingLog bool `json:"backingLog,omitempty" default:"true"`
@@ -172,7 +172,7 @@ type (
 		// The live log feature streams the combined stderr and stdout to a task artifact
 		// so that the output is available while the task is running.
 		//
-		// Since: generic-worker 48.1.0
+		// Since: generic-worker 48.2.0
 		//
 		// Default:    true
 		LiveLog bool `json:"liveLog,omitempty" default:"true"`
@@ -264,7 +264,7 @@ type (
 
 		// Configuration for task logs.
 		//
-		// Since: generic-worker 48.1.0
+		// Since: generic-worker 48.2.0
 		Logs Logs `json:"logs,omitempty"`
 
 		// Maximum time the task container can run in seconds.
@@ -307,13 +307,13 @@ type (
 
 	// Configuration for task logs.
 	//
-	// Since: generic-worker 48.1.0
+	// Since: generic-worker 48.2.0
 	Logs struct {
 
 		// Specifies a custom name for the backing log artifact.
 		// This is only used if `features.backingLog` is `true`.
 		//
-		// Since: generic-worker 48.1.0
+		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live_backing.log"
 		Backing string `json:"backing,omitempty" default:"public/logs/live_backing.log"`
@@ -321,7 +321,7 @@ type (
 		// Specifies a custom name for the live log artifact.
 		// This is only used if `features.liveLog` is `true`.
 		//
-		// Since: generic-worker 48.1.0
+		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live.log"
 		Live string `json:"live,omitempty" default:"public/logs/live.log"`
@@ -733,7 +733,7 @@ func taskPayloadSchema() string {
       "properties": {
         "backingLog": {
           "default": true,
-          "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.1.0",
+          "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",
           "title": "Enable backing log",
           "type": "boolean"
         },
@@ -744,7 +744,7 @@ func taskPayloadSchema() string {
         },
         "liveLog": {
           "default": true,
-          "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.1.0",
+          "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
           "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
           "type": "boolean"
         },
@@ -760,17 +760,17 @@ func taskPayloadSchema() string {
     },
     "logs": {
       "additionalProperties": false,
-      "description": "Configuration for task logs.\n\nSince: generic-worker 48.1.0",
+      "description": "Configuration for task logs.\n\nSince: generic-worker 48.2.0",
       "properties": {
         "backing": {
           "default": "public/logs/live_backing.log",
-          "description": "Specifies a custom name for the backing log artifact.\nThis is only used if ` + "`" + `features.backingLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.1.0",
+          "description": "Specifies a custom name for the backing log artifact.\nThis is only used if ` + "`" + `features.backingLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
           "title": "Backing log artifact name",
           "type": "string"
         },
         "live": {
           "default": "public/logs/live.log",
-          "description": "Specifies a custom name for the live log artifact.\nThis is only used if ` + "`" + `features.liveLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.1.0",
+          "description": "Specifies a custom name for the live log artifact.\nThis is only used if ` + "`" + `features.liveLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
           "title": "Live log artifact name",
           "type": "string"
         }

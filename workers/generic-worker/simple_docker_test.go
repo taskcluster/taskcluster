@@ -53,6 +53,6 @@ func TestNewTaskDirectoryForEachTask(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 	if taskDirs != config.NumberOfTasksToRun {
-		t.Fatalf("Expected to find %v backing logs, but found %v", config.NumberOfTasksToRun, taskDirs)
+		t.Fatalf("Expected to find %v task directories, but found %v", config.NumberOfTasksToRun, taskDirs)
 	}
 }
