@@ -313,7 +313,7 @@ const cancelSingleTask = async (task, ctx) => {
   // Get the last run, there should always be one
   let run = _.last(task.runs);
   if (!run) {
-    let err = new Error('There should exist a run after cancelTask!');
+    let err = new Error('There should exist a run after cancelSingleTask!');
     err.taskId = task.taskId;
     err.status = task.status();
     ctx.monitor.reportError(err);
@@ -323,7 +323,7 @@ const cancelSingleTask = async (task, ctx) => {
   let status = task.status();
 
   // If the last run was canceled, resolve dependencies and publish message
-  if (run.state === 'exception' && run.reasonResolved === 'canceled') {
+  if (run && run.state === 'exception' && run.reasonResolved === 'canceled') {
     // Update dependency tracker
     await ctx.queueService.putResolvedMessage(
       task.taskId,
