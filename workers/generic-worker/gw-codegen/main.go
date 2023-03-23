@@ -65,6 +65,7 @@ func generateTypes(input, output, constraint string) []byte {
 		URLs:                 []string{input},
 		SkipCodeGen:          false,
 		DisableNestedStructs: true,
+		EnableDefaults:       true,
 	}
 	result, err := job.Execute()
 	if err != nil {

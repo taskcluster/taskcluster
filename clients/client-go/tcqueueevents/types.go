@@ -512,7 +512,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		SchedulerID string `json:"schedulerId" default:"-"`
+		SchedulerID string `json:"schedulerId"`
 
 		// State of this task. This is just an auxiliary property derived from state
 		// of latests run, or `unscheduled` if none.
