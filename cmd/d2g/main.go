@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/d2g"
 	"github.com/taskcluster/d2g/dockerworker"
 )
@@ -13,14 +14,15 @@ import (
 func main() {
 	log.SetFlags(0)
 	log.SetPrefix("d2g: ")
-	var dwPayload dockerworker.DockerWorkerPayload
+	dwPayload := new(dockerworker.DockerWorkerPayload)
+	defaults.SetDefaults(dwPayload)
 	decoder := json.NewDecoder(os.Stdin)
 	decoder.DisallowUnknownFields()
 	err := decoder.Decode(&dwPayload)
 	if err != nil {
 		log.Fatalf("Failed to convert input to a docker worker payload definition: %v", err)
 	}
-	gwPayload, err := d2g.Convert(&dwPayload)
+	gwPayload, err := d2g.Convert(dwPayload)
 	if err != nil {
 		log.Fatal(err)
 	}

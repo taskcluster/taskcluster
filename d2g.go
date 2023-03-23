@@ -41,9 +41,17 @@ type (
 // Dev notes: https://docs.google.com/document/d/1QNfHVpxtzXAlLWqZNz3b5mvbQWOrtsWpvadJHiMNbRc/edit#heading=h.uib8l9zhaz1n
 
 func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericworker.GenericWorkerPayload, err error) {
-	gwArtifacts := artifacts(dwPayload.Artifacts)
+	gwPayload = new(genericworker.GenericWorkerPayload)
+	defaults.SetDefaults(gwPayload)
+
+	setArtifacts(dwPayload, gwPayload)
+
 	gwWritableDirectoryCaches := writableDirectoryCaches(dwPayload.Cache)
 	dwImage, err := imageObject(&dwPayload.Image)
+	if err != nil {
+		return
+	}
+	err = setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches)
 	if err != nil {
 		return
 	}
@@ -51,30 +59,16 @@ func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericwor
 	if err != nil {
 		return
 	}
-	var gwCommand [][]string
-	gwCommand, err = command(dwPayload, dwImage, gwArtifacts, gwWritableDirectoryCaches)
-	if err != nil {
-		return
-	}
-	var gwMounts []json.RawMessage
-	gwMounts, err = mounts(gwWritableDirectoryCaches, gwFileMounts)
+	err = setMounts(gwPayload, gwWritableDirectoryCaches, gwFileMounts)
 	if err != nil {
 		return
 	}
 
-	gwPayload = new(genericworker.GenericWorkerPayload)
-	defaults.SetDefaults(gwPayload)
-
-	gwPayload.Artifacts = gwArtifacts
-	gwPayload.Command = gwCommand
-	gwPayload.Env = env(dwPayload.Env)
 	setFeatures(dwPayload, gwPayload)
 	setLogs(dwPayload, gwPayload)
-	gwPayload.MaxRunTime = maxRunTime(dwPayload.MaxRunTime)
-	gwPayload.Mounts = gwMounts
-	gwPayload.OnExitStatus = onExitStatus(&dwPayload.OnExitStatus)
-	gwPayload.OSGroups = osGroups()
-	gwPayload.SupersederURL = supersederURL(dwPayload.SupersederURL)
+	setMaxRunTime(dwPayload, gwPayload)
+	setOnExitStatus(dwPayload, gwPayload)
+	setSupersederURL(dwPayload, gwPayload)
 
 	return
 }
@@ -109,12 +103,15 @@ func artifacts(artifacts map[string]dockerworker.Artifact) []genericworker.Artif
 	}
 	sort.Strings(names)
 	for i, name := range names {
-		gwArtifacts[i] = genericworker.Artifact{
-			Expires: artifacts[name].Expires,
-			Name:    name,
-			Path:    "artifact" + strconv.Itoa(i),
-			Type:    artifacts[name].Type,
-		}
+		gwArt := new(genericworker.Artifact)
+		defaults.SetDefaults(gwArt)
+
+		gwArt.Expires = artifacts[name].Expires
+		gwArt.Name = name
+		gwArt.Path = "artifact" + strconv.Itoa(i)
+		gwArt.Type = artifacts[name].Type
+
+		gwArtifacts[i] = *gwArt
 	}
 	return gwArtifacts
 }
@@ -179,47 +176,56 @@ func podmanCopyArtifacts(containerName string, payload *dockerworker.DockerWorke
 	return commands
 }
 
-func env(env map[string]string) map[string]string {
-	return map[string]string{}
-}
-
 func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.Features.ChainOfTrust = dwPayload.Features.ChainOfTrust
 	gwPayload.Features.TaskclusterProxy = dwPayload.Features.TaskclusterProxy
 }
 
-func maxRunTime(maxRunTime int64) int64 {
-	return maxRunTime
+func setArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
+	gwPayload.Artifacts = artifacts(dwPayload.Artifacts)
+}
+
+func setCommand(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, dwImage Image, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) (err error) {
+	gwPayload.Command, err = command(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches)
+	return
+}
+
+func setMounts(gwPayload *genericworker.GenericWorkerPayload, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache, gwFileMounts []genericworker.FileMount) (err error) {
+	gwPayload.Mounts, err = mounts(gwWritableDirectoryCaches, gwFileMounts)
+	return
+}
+
+func setMaxRunTime(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
+	gwPayload.MaxRunTime = dwPayload.MaxRunTime
+}
+
+func setOnExitStatus(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
+	gwPayload.OnExitStatus.Retry = dwPayload.OnExitStatus.Retry
+}
+
+func setSupersederURL(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
+	gwPayload.SupersederURL = dwPayload.SupersederURL
 }
 
 func writableDirectoryCaches(caches map[string]string) []genericworker.WritableDirectoryCache {
 	wdcs := make([]genericworker.WritableDirectoryCache, len(caches))
 	i := 0
 	for cacheName := range caches {
-		wdcs[i] = genericworker.WritableDirectoryCache{
-			CacheName: cacheName,
-			Directory: "cache" + strconv.Itoa(i),
-		}
+		wdc := new(genericworker.WritableDirectoryCache)
+		defaults.SetDefaults(wdc)
+
+		wdc.CacheName = cacheName
+		wdc.Directory = "cache" + strconv.Itoa(i)
+
+		wdcs[i] = *wdc
 		i++
 	}
 	return wdcs
 }
 
-func onExitStatus(onExitStatus *dockerworker.ExitStatusHandling) genericworker.ExitCodeHandling {
-	return genericworker.ExitCodeHandling{
-		Retry: onExitStatus.Retry,
-	}
-}
-
-func osGroups() []string {
-	return nil
-}
-
 func setLogs(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
-	if dwPayload.Log != "" {
-		gwPayload.Logs.Live = dwPayload.Log
-		gwPayload.Logs.Backing = createBackingLogName(dwPayload.Log)
-	}
+	gwPayload.Logs.Live = dwPayload.Log
+	gwPayload.Logs.Backing = createBackingLogName(dwPayload.Log)
 }
 
 func createBackingLogName(log string) string {
@@ -228,10 +234,6 @@ func createBackingLogName(log string) string {
 
 func fileNameWithoutExtension(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
-}
-
-func supersederURL(supersederURL string) string {
-	return supersederURL
 }
 
 func createVolumeMountsString(payloadCache map[string]string, wdcs []genericworker.WritableDirectoryCache) string {
