@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v48.1.1
+
+### USERS
+
+▶ [patch] [#6124](https://github.com/taskcluster/taskcluster/issues/6124)
+Fix a bug in UI where TaskGroup page would show "Malformed query" warning.
+This was due to the `sift` library getting upgraded which changed the behaviour of filters.
+
 ## v48.1.0
 
 ### GENERAL
