@@ -7,10 +7,12 @@ package d2g
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/d2g/dockerworker"
 	"github.com/taskcluster/d2g/genericworker"
 	"github.com/taskcluster/shell"
@@ -60,17 +62,19 @@ func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericwor
 		return
 	}
 
-	gwPayload = &genericworker.GenericWorkerPayload{
-		Artifacts:     gwArtifacts,
-		Command:       gwCommand,
-		Env:           env(dwPayload.Env),
-		Features:      features(&dwPayload.Features),
-		MaxRunTime:    maxRunTime(dwPayload.MaxRunTime),
-		Mounts:        gwMounts,
-		OnExitStatus:  onExitStatus(&dwPayload.OnExitStatus),
-		OSGroups:      osGroups(),
-		SupersederURL: supersederURL(dwPayload.SupersederURL),
-	}
+	gwPayload = new(genericworker.GenericWorkerPayload)
+	defaults.SetDefaults(gwPayload)
+
+	gwPayload.Artifacts = gwArtifacts
+	gwPayload.Command = gwCommand
+	gwPayload.Env = env(dwPayload.Env)
+	setFeatures(dwPayload, gwPayload)
+	setLogs(dwPayload, gwPayload)
+	gwPayload.MaxRunTime = maxRunTime(dwPayload.MaxRunTime)
+	gwPayload.Mounts = gwMounts
+	gwPayload.OnExitStatus = onExitStatus(&dwPayload.OnExitStatus)
+	gwPayload.OSGroups = osGroups()
+	gwPayload.SupersederURL = supersederURL(dwPayload.SupersederURL)
 
 	return
 }
@@ -179,11 +183,9 @@ func env(env map[string]string) map[string]string {
 	return map[string]string{}
 }
 
-func features(features *dockerworker.FeatureFlags) genericworker.FeatureFlags {
-	return genericworker.FeatureFlags{
-		ChainOfTrust:     features.ChainOfTrust,
-		TaskclusterProxy: features.TaskclusterProxy,
-	}
+func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
+	gwPayload.Features.ChainOfTrust = dwPayload.Features.ChainOfTrust
+	gwPayload.Features.TaskclusterProxy = dwPayload.Features.TaskclusterProxy
 }
 
 func maxRunTime(maxRunTime int64) int64 {
@@ -211,6 +213,21 @@ func onExitStatus(onExitStatus *dockerworker.ExitStatusHandling) genericworker.E
 
 func osGroups() []string {
 	return nil
+}
+
+func setLogs(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
+	if dwPayload.Log != "" {
+		gwPayload.Logs.Live = dwPayload.Log
+		gwPayload.Logs.Backing = createBackingLogName(dwPayload.Log)
+	}
+}
+
+func createBackingLogName(log string) string {
+	return filepath.Join(filepath.Dir(log), fileNameWithoutExtension(filepath.Base(log))+"_backing"+filepath.Ext(log))
+}
+
+func fileNameWithoutExtension(fileName string) string {
+	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
 
 func supersederURL(supersederURL string) string {

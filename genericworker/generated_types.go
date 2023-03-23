@@ -150,6 +150,14 @@ type (
 	// Since: generic-worker 5.3.0
 	FeatureFlags struct {
 
+		// The backing log feature publishes a task artifact containing the complete
+		// stderr and stdout of the task.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    true
+		BackingLog bool `json:"backingLog,omitempty" default:"true"`
+
 		// Artifacts named `public/chain-of-trust.json` and
 		// `public/chain-of-trust.json.sig` should be generated which will
 		// include information for downstream tasks to build a level of trust
@@ -157,6 +165,14 @@ type (
 		//
 		// Since: generic-worker 5.3.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+
+		// The live log feature streams the combined stderr and stdout to a task artifact
+		// so that the output is available while the task is running.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    true
+		LiveLog bool `json:"liveLog,omitempty" default:"true"`
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
@@ -243,6 +259,11 @@ type (
 		// Since: generic-worker 5.3.0
 		Features FeatureFlags `json:"features,omitempty"`
 
+		// Configuration for task logs.
+		//
+		// Since: generic-worker 48.2.0
+		Logs Logs `json:"logs,omitempty"`
+
 		// Maximum time the task container can run in seconds.
 		//
 		// Since: generic-worker 0.0.1
@@ -279,6 +300,28 @@ type (
 
 		// This property is allowed for backward compatibility, but is unused.
 		SupersederURL string `json:"supersederUrl,omitempty"`
+	}
+
+	// Configuration for task logs.
+	//
+	// Since: generic-worker 48.2.0
+	Logs struct {
+
+		// Specifies a custom name for the backing log artifact.
+		// This is only used if `features.backingLog` is `true`.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    "public/logs/live_backing.log"
+		Backing string `json:"backing,omitempty" default:"public/logs/live_backing.log"`
+
+		// Specifies a custom name for the live log artifact.
+		// This is only used if `features.liveLog` is `true`.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    "public/logs/live.log"
+		Live string `json:"live,omitempty" default:"public/logs/live.log"`
 	}
 
 	// Byte-for-byte literal inline content of file/archive, up to 64KB in size.

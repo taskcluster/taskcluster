@@ -28,7 +28,7 @@ type (
 		// Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.
 		//
 		// Default:    false
-		Privileged bool `json:"privileged,omitempty"`
+		Privileged bool `json:"privileged,omitempty" default:"false"`
 	}
 
 	// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
@@ -104,8 +104,10 @@ type (
 		//   * DockerImageArtifact
 		Image json.RawMessage `json:"image"`
 
-		// Specifies a custom location for the livelog artifact
-		Log string `json:"log,omitempty"`
+		// Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with `_backing` appended, prior to the file extension (if present). For example, `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt` and backing log artifact `apple/banana.log_backing.txt`. Defaults to `public/logs/live.log`.
+		//
+		// Default:    "public/logs/live.log"
+		Log string `json:"log,omitempty" default:"public/logs/live.log"`
 
 		// Maximum time the task container can run in seconds.
 		//
