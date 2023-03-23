@@ -19,6 +19,13 @@ func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinit
 			ContentType:     "text/plain; charset=utf-8",
 			ContentEncoding: "gzip",
 		},
+		"public/logs/live.log": {
+			Extracts: []string{
+				ChainOfTrustKeyNotSecureMessage,
+			},
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+		},
 	}
 
 	expectedArtifacts.Validate(t, taskID, 0)
