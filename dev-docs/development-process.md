@@ -10,7 +10,7 @@ You will probably be working on only one of these pieces, so read carefully belo
 ### Node
 
 <!-- the next line is automatically edited; do not change -->
-You will need Node version 18.14.1 installed.
+You will need Node version 18.15.0 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
 We use `yarn` to run most development commands, so [install that as well](https://classic.yarnpkg.com/en/docs/install/#debian-stable).
@@ -18,7 +18,7 @@ We use `yarn` to run most development commands, so [install that as well](https:
 ### Go
 
 <!-- the next line is automatically edited; do not change -->
-Go version go1.19.5 is required for some development tasks, in particular to run `yarn generate`.
+Go version go1.19.7 is required for some development tasks, in particular to run `yarn generate`.
 For new contributors not familiar with Go, it's probably safe to skip installing Go for now -- you will see a helpful error if and when it is needed.
 We recommend using https://github.com/moovweb/gvm to support installing multiple Go versions.
 
@@ -85,6 +85,48 @@ We recommend installing [pre-commit](https://pre-commit.com/index.html) for smal
 These checks will help keep the code clean and will potentially save CI resources if issues are caught pre-commit.
 
 ## Hacking on the UI
+
+To be able to run the UI locally, you will need to set up a Taskcluster deployment to point to.
+This can either be a local deployment using [docker compose](#development-mode) or a remote deployment such as [community-tc](https://community-tc.services.mozilla.com/).
+
+If you just want to change the UI without changing the backend or graphql API, then you will only need the [latest node](#node) version and `yarn` installed:
+
+```sh
+cd ui
+# install dependencies if needed
+yarn
+# set the Taskcluster deployment to point to
+export TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com
+# start the UI
+yarn start
+```
+
+You will can now open the UI at <http://localhost:5080>. It will automatically reload when you make changes to the code.
+All API calls would be proxied to the Taskcluster deployment you specified in `TASKCLUSTER_ROOT_URL`.
+
+If your changes require updating API or graphQL resolvers, you can start the services locally using `docker`:
+
+```sh
+# from the root project directory
+# this will pull latest images if they are not available and start containers in development mode
+yarn start
+# start few services in development mode to be able to make changes to the services
+yarn dev:start queue-web web-server-web
+```
+
+Please check the instructions on how to run the [development mode](#development-mode) for more details.
+
+  Please be aware that running all services locally will take a lot of resources and will be slower than running the UI against a remote Taskcluster deployment.
+
+Now you should be able to run the UI with services locally:
+
+```sh
+cd ui
+export TASKCLUSTER_ROOT_URL=http://localhost:5080
+yarn start
+```
+
+## Hacking on the UI (old approach)
 
 Taskcluster requires a Linux-like environment for development.
 If you are developing on a Windows system, you will need to either

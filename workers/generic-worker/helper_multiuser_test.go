@@ -5,7 +5,7 @@ package main
 import (
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
 )
 
 func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
@@ -13,6 +13,13 @@ func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinit
 
 	expectedArtifacts := ExpectedArtifacts{
 		"public/logs/live_backing.log": {
+			Extracts: []string{
+				ChainOfTrustKeyNotSecureMessage,
+			},
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+		},
+		"public/logs/live.log": {
 			Extracts: []string{
 				ChainOfTrustKeyNotSecureMessage,
 			},

@@ -17,6 +17,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const workerInfo = {
       existingCapacity: 0,
       requestedCapacity: 0,
+      stoppingCapacity: 0,
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
@@ -35,6 +36,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const workerInfo = {
       existingCapacity: 0,
       requestedCapacity: 0,
+      stoppingCapacity: 0,
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
@@ -52,6 +54,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const workerInfo = {
       existingCapacity: 0,
       requestedCapacity: 1,
+      stoppingCapacity: 0,
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
@@ -69,6 +72,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const workerInfo = {
       existingCapacity: 0,
       requestedCapacity: 0,
+      stoppingCapacity: 0,
     };
     helper.queue.setPending('foo/bar', 100);
     const estimate = await estimator.simple({
@@ -88,6 +92,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const workerInfo = {
       existingCapacity: 0,
       requestedCapacity: 0,
+      stoppingCapacity: 0,
     };
     helper.queue.setPending('foo/bar', 100);
     const estimate = await estimator.simple({
@@ -107,6 +112,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const workerInfo = {
       existingCapacity: 0,
       requestedCapacity: 0,
+      stoppingCapacity: 0,
     };
     helper.queue.setPending('foo/bar', 100);
     const estimate = await estimator.simple({
@@ -126,6 +132,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const workerInfo = {
       existingCapacity: 25,
       requestedCapacity: 0,
+      stoppingCapacity: 0,
     };
     helper.queue.setPending('foo/bar', 100);
     const estimate = await estimator.simple({
@@ -145,6 +152,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const workerInfo = {
       existingCapacity: 50,
       requestedCapacity: 0,
+      stoppingCapacity: 0,
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
@@ -169,6 +177,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const workerInfo = {
       existingCapacity: 5,
       requestedCapacity: 0,
+      stoppingCapacity: 0,
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
@@ -181,5 +190,61 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.strictEqual(monitor.manager.messages.length, 1);
     assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
     monitor.manager.reset();
+  });
+
+  test('empty estimation', async function () {
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 0,
+      stoppingCapacity: 0,
+    };
+    const estimate = await estimator.simple({
+      workerPoolId: 'foo/bar',
+      maxCapacity: 0,
+      minCapacity: 0,
+      scalingRatio: 1,
+      workerInfo,
+    });
+
+    assert.strictEqual(estimate, 0);
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
+  });
+
+  test('stopping capacity non zero', async function () {
+    const workerInfo = {
+      existingCapacity: 10,
+      requestedCapacity: 10,
+      stoppingCapacity: 10,
+    };
+    const estimate = await estimator.simple({
+      workerPoolId: 'foo/bar',
+      maxCapacity: 50,
+      minCapacity: 0,
+      scalingRatio: 1,
+      workerInfo,
+    });
+
+    assert.strictEqual(estimate, 20);
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
+  });
+  test('stopping capacity exceeds max capacity', async function () {
+    const workerInfo = {
+      existingCapacity: 10,
+      requestedCapacity: 10,
+      stoppingCapacity: 100,
+    };
+    const estimate = await estimator.simple({
+      workerPoolId: 'foo/bar',
+      maxCapacity: 50,
+      minCapacity: 0,
+      scalingRatio: 1,
+      workerInfo,
+    });
+
+    assert.strictEqual(estimate, 0);
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
 });

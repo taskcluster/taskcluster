@@ -80,7 +80,7 @@ MonitorManager.register({
   name: 'simpleEstimate',
   title: 'Simple Estimate Provided',
   type: 'simple-estimate',
-  version: 3,
+  version: 4,
   level: 'any',
   description: 'The simple estimator has decided that we need some number of instances.',
   fields: {
@@ -92,6 +92,7 @@ MonitorManager.register({
     existingCapacity: 'Amount of currently requested and available capacity',
     desiredCapacity: 'Amount of capacity that this estimator thinks we should have',
     requestedCapacity: 'Amount of capacity that this estimator thinks we should add',
+    stoppingCapacity: 'Amount of capacity being stopped',
   },
 });
 

@@ -25,7 +25,8 @@ exclude: |
         ^clients/client-rust/integration_tests/src/lib.rs|
         ^ui/src/components/AuthConsent/__snapshots__/|
         ^ui/src/components/TaskDetailsCard/__snapshots__/|
-        ^services/worker-manager/test/fixtures/
+        ^services/worker-manager/test/fixtures/|
+        ^ui/src/components/TaskRunsCard/__snapshots__
     )
 
 ci:

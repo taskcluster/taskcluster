@@ -9,11 +9,11 @@ Types:
     Name: Build/test generic-worker (${ENGINE} engine) on ${PLATFORM}
     Description: This builds and tests the ${ARCH} version of generic-worker (${ENGINE} engine) on ${PLATFORM}
     Mounts:
-      - go1.19.5
+      - go1.19.7
       - git2.39.0
       - jq1.6
       - ci-creds
-      - golangci-lint-1.50.1
+      - golangci-lint-1.51.2
     Command: BuildAndTest
     Features:
       taskclusterProxy: true
@@ -22,7 +22,7 @@ Types:
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
     Artifacts:
       - Name: public/build/generic-worker-${OS}-${ARCH}${EXTENSION}
-        Path: gopath1.19.5/bin/generic-worker${EXTENSION}
+        Path: gopath1.19.7/bin/generic-worker${EXTENSION}
         Type: file
     MaxRunTime: 3600
   FormatSource:
@@ -36,7 +36,7 @@ Types:
       * `go fmt` to ensure that go source code is formatted
       * `goimports` to ensure that imports are specified in their canonical form
     Mounts:
-      - go1.19.5
+      - go1.19.7
     Command: FormatSource
     MaxRunTime: 3600
 Tasks:
@@ -97,7 +97,7 @@ Commands:
           export CGO_ENABLED=0
           # The next line is edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.19.5/go"
+          export GOROOT="$(pwd)/go1.19.7/go"
           export PATH="${GOROOT}/bin:${PATH}"
           go version
           go env
@@ -149,8 +149,8 @@ Commands:
 
           # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
           #   DO NOT CHANGE HERE!
-          export GOROOT="$(pwd)/go1.19.5/go"
-          export GOPATH="$(pwd)/gopath1.19.5"
+          export GOROOT="$(pwd)/go1.19.7/go"
+          export GOPATH="$(pwd)/gopath1.19.7"
 
           export PATH="${GOPATH}/bin:${GOROOT}/bin:$(pwd)/bin:${PATH}"
           git --version
@@ -186,13 +186,13 @@ Commands:
             cp "${TASK_USER_CREDENTIALS}" next-task-user.json
             # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
             # otherwise tests that call `go run ....` will write go object files to .cache as root
-            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v47/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} .
+            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} .
           fi
-          GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v47/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} ./...
+          GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} ./...
 
           # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
           #   DO NOT CHANGE HERE!
-          ../../../golangci-lint/golangci-lint-1.50.1-*/golangci-lint run --build-tags "${ENGINE}" --timeout=15m
+          ../../../golangci-lint/golangci-lint-1.51.2-*/golangci-lint run --build-tags "${ENGINE}" --timeout=15m
     Windows:
       - |
         :: go test: -race and -msan are only supported on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64
@@ -209,8 +209,8 @@ Commands:
         :: find.exe may have exited with exit code 1, so need to explicitly exit with 0
         exit /b 0
       - set CGO_ENABLED=0
-      - set GOROOT=%CD%\go1.19.5\go
-      - set GOPATH=%CD%\gopath1.19.5
+      - set GOROOT=%CD%\go1.19.7\go
+      - set GOPATH=%CD%\gopath1.19.7
       - |
         :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
         set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%CD%\bin;%PATH%;C:\cygwin\bin
@@ -254,47 +254,47 @@ Commands:
       - set GORACE=history_size=7
       - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
       - set GW_TESTS_RUN_AS_CURRENT_USER=true
-      - go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v47/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% .
+      - go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% .
       - set GW_TESTS_RUN_AS_CURRENT_USER=
-      - go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v47/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
+      - go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
       - |
         :: assumption here is that if something inside the if fails, we'll get a non zero exit code
         :: i've also made it an if/else so that one of them has to run, as there should always be a
         :: linter
-        if exist ..\..\..\golangci-lint\golangci-lint-1.50.1-windows-amd64 (
-          ..\..\..\golangci-lint\golangci-lint-1.50.1-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
+        if exist ..\..\..\golangci-lint\golangci-lint-1.51.2-windows-amd64 (
+          ..\..\..\golangci-lint\golangci-lint-1.51.2-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
         ) else (
-          ..\..\..\golangci-lint\golangci-lint-1.50.1-windows-386\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
+          ..\..\..\golangci-lint\golangci-lint-1.51.2-windows-386\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=15m
         )
 Mounts:
-  go1.19.5:
-    directory: go1.19.5
+  go1.19.7:
+    directory: go1.19.7
     content:
       darwin:
         amd64:
-          url: https://storage.googleapis.com/golang/go1.19.5.darwin-amd64.tar.gz
-          sha256: 23d22bb6571bbd60197bee8aaa10e702f9802786c2e2ddce5c84527e86b66aa0
+          url: https://storage.googleapis.com/golang/go1.19.7.darwin-amd64.tar.gz
+          sha256: a38938b939c078a16b01ec5a11396f1a4c87f55f8c18256deba94974d7caad84
           format: tar.gz
         arm64:
-          url: https://storage.googleapis.com/golang/go1.19.5.darwin-arm64.tar.gz
-          sha256: 4a67f2bf0601afe2177eb58f825adf83509511d77ab79174db0712dc9efa16c8
+          url: https://storage.googleapis.com/golang/go1.19.7.darwin-arm64.tar.gz
+          sha256: be85d929f390351212d1fde21c460102983b6341349811bc449bd278fe8f8180
       linux:
         armv6l:
-          url: https://storage.googleapis.com/golang/go1.19.5.linux-armv6l.tar.gz
-          sha256: ec14f04bdaf4a62bdcf8b55b9b6434cc27c2df7d214d0bb7076a7597283b026a
+          url: https://storage.googleapis.com/golang/go1.19.7.linux-armv6l.tar.gz
+          sha256: 93b1f621ddfc2c2b4e383e185fa7801e80f8b546918cb96afea2723677928312
           format: tar.gz
         amd64:
-          url: https://storage.googleapis.com/golang/go1.19.5.linux-amd64.tar.gz
-          sha256: 36519702ae2fd573c9869461990ae550c8c0d955cd28d2827a6b159fda81ff95
+          url: https://storage.googleapis.com/golang/go1.19.7.linux-amd64.tar.gz
+          sha256: 7a75720c9b066ae1750f6bcc7052aba70fa3813f4223199ee2a2315fd3eb533d
           format: tar.gz
       windows:
         '386':
-          url: https://storage.googleapis.com/golang/go1.19.5.windows-386.zip
-          sha256: 8873f5871d996106b701febd979c5af022e6ea58bdbbb3817a28ab948b22c286
+          url: https://storage.googleapis.com/golang/go1.19.7.windows-386.zip
+          sha256: 0837e0869817f5fd7096b62e890fe50c1dcd1c951e301e2afdb81c43ffca212b
           format: zip
         amd64:
-          url: https://storage.googleapis.com/golang/go1.19.5.windows-amd64.zip
-          sha256: 167db91a2e40aeb453d3e59d213ecab06f62e1c4a84d13a06ccda1d999961caa
+          url: https://storage.googleapis.com/golang/go1.19.7.windows-amd64.zip
+          sha256: 2fd57332bc55f6d8c4860afa22301d0a2439ad63ba91e3d96b69c03c824df217
           format: zip
   git2.39.0:
     directory: git
@@ -324,33 +324,33 @@ Mounts:
       windows:
         all:
           url: http://localhost/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds
-  golangci-lint-1.50.1:
+  golangci-lint-1.51.2:
     directory: golangci-lint
     content:
       darwin:
         amd64:
-          url: https://github.com/golangci/golangci-lint/releases/download/v1.50.1/golangci-lint-1.50.1-darwin-amd64.tar.gz
-          sha256: 0f615fb8c364f6e4a213f2ed2ff7aa1fc2b208addf29511e89c03534067bbf57
+          url: https://github.com/golangci/golangci-lint/releases/download/v1.51.2/golangci-lint-1.51.2-darwin-amd64.tar.gz
+          sha256: 0549cbaa2df451cf3a2011a9d73a9cb127784d26749d9cd14c9f4818af104d44
           format: tar.gz
         arm64:
-          url: https://github.com/golangci/golangci-lint/releases/download/v1.50.1/golangci-lint-1.50.1-darwin-arm64.tar.gz
-          sha256: 3ca9753d7804b34f9165427fbe339dbea69bd80be8a10e3f02c6037393b2e1c4
+          url: https://github.com/golangci/golangci-lint/releases/download/v1.51.2/golangci-lint-1.51.2-darwin-arm64.tar.gz
+          sha256: 36e69882205a0e42a63ad57ec3015639c11051e03f0beb9cf7949c6451408960
           format: tar.gz
       linux:
         armv6l:
-          url: https://github.com/golangci/golangci-lint/releases/download/v1.50.1/golangci-lint-1.50.1-linux-armv6.tar.gz
-          sha256: 980832f12fbdd0a8e636666839b168c2bbf0ca573ff50b042d3977f65c4987d7
+          url: https://github.com/golangci/golangci-lint/releases/download/v1.51.2/golangci-lint-1.51.2-linux-armv6.tar.gz
+          sha256: e4a8877a3ba9f1f7db8549f0c1f3a1fab32099a83126c5a4006012213d238021
           format: tar.gz
         amd64:
-          url: https://github.com/golangci/golangci-lint/releases/download/v1.50.1/golangci-lint-1.50.1-linux-amd64.tar.gz
-          sha256: 4ba1dc9dbdf05b7bdc6f0e04bdfe6f63aa70576f51817be1b2540bbce017b69a
+          url: https://github.com/golangci/golangci-lint/releases/download/v1.51.2/golangci-lint-1.51.2-linux-amd64.tar.gz
+          sha256: 4de479eb9d9bc29da51aec1834e7c255b333723d38dbd56781c68e5dddc6a90b
           format: tar.gz
       windows:
         '386':
-          url: https://github.com/golangci/golangci-lint/releases/download/v1.50.1/golangci-lint-1.50.1-windows-386.zip
-          sha256: 6d11fb6ed91ba3aecbf2ea8e1a95dce16cf0449d54aa77c607ac4e75cc43213a
+          url: https://github.com/golangci/golangci-lint/releases/download/v1.51.2/golangci-lint-1.51.2-windows-386.zip
+          sha256: 5513ebc938dec5dc7d227ee35dbc30539a4b0dedd293c31a85a4fb8d11746845
           format: zip
         amd64:
-          url: https://github.com/golangci/golangci-lint/releases/download/v1.50.1/golangci-lint-1.50.1-windows-amd64.zip
-          sha256: 8c2da214884db02fb7f3d929672c515ae3b9d10defad4dd661c4ab365a316d68
+          url: https://github.com/golangci/golangci-lint/releases/download/v1.51.2/golangci-lint-1.51.2-windows-amd64.zip
+          sha256: aac163d9bf3f79457399c2852cfae550cd250f23df9b324966f9c54e767ff42d
           format: zip

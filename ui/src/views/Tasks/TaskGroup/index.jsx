@@ -96,9 +96,7 @@ const updateTaskGroupIdHistory = id => {
         kind: {
           $in: ACTIONS_JSON_KNOWN_KINDS,
         },
-        context: {
-          $or: [{ $size: 0 }, { $size: 1 }],
-        },
+        $or: [{ context: { $size: 0 } }, { context: { $size: 1 } }],
       },
     },
   }),
@@ -520,9 +518,7 @@ export default class TaskGroup extends Component {
           kind: {
             $in: ACTIONS_JSON_KNOWN_KINDS,
           },
-          context: {
-            $or: [{ $size: 0 }, { $size: 1 }],
-          },
+          $or: [{ context: { $size: 0 } }, { context: { $size: 1 } }],
         },
       },
       updateQuery: (previousResult = {}, { fetchMoreResult, variables }) => {

@@ -3,7 +3,7 @@
 //go:generate go run ../codegen/cmd/gen-services
 package apis
 
-import "github.com/taskcluster/taskcluster/v47/clients/client-shell/apis/definitions"
+import "github.com/taskcluster/taskcluster/v48/clients/client-shell/apis/definitions"
 
 var services = map[string]definitions.Service{
 	"Auth": definitions.Service{
@@ -2163,7 +2163,7 @@ var services = map[string]definitions.Service{
 				Description: "Get the list of all the existing workers in a given group in a given worker pool.",
 				Stability:   "stable",
 				Method:      "get",
-				Route:       "/workers/<workerPoolId>:/<workerGroup>",
+				Route:       "/workers/<workerPoolId>/<workerGroup>",
 				Args: []string{
 					"workerPoolId",
 					"workerGroup",
@@ -2180,7 +2180,7 @@ var services = map[string]definitions.Service{
 				Description: "Get a single worker.",
 				Stability:   "stable",
 				Method:      "get",
-				Route:       "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+				Route:       "/workers/<workerPoolId>/<workerGroup>/<workerId>",
 				Args: []string{
 					"workerPoolId",
 					"workerGroup",
@@ -2195,7 +2195,7 @@ var services = map[string]definitions.Service{
 				Description: "Create a new worker.  This is only useful for worker pools where the provider\ndoes not create workers automatically, such as those with a `static` provider\ntype.  Providers that do not support creating workers will return a 400 error.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
 				Stability:   "stable",
 				Method:      "put",
-				Route:       "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+				Route:       "/workers/<workerPoolId>/<workerGroup>/<workerId>",
 				Args: []string{
 					"workerPoolId",
 					"workerGroup",
@@ -2210,7 +2210,7 @@ var services = map[string]definitions.Service{
 				Description: "Update an existing worker in-place.  Like `createWorker`, this is only useful for\nworker pools where the provider does not create workers automatically.\nThis method allows updating all fields in the schema unless otherwise indicated\nin the provider documentation.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
 				Stability:   "stable",
 				Method:      "post",
-				Route:       "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+				Route:       "/workers/<workerPoolId>/<workerGroup>/<workerId>",
 				Args: []string{
 					"workerPoolId",
 					"workerGroup",

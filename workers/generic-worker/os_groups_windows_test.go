@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/mcuadros/go-defaults"
 )
 
 func TestMissingScopesOSGroups(t *testing.T) {
@@ -13,6 +15,7 @@ func TestMissingScopesOSGroups(t *testing.T) {
 		MaxRunTime: 30,
 		OSGroups:   []string{"abc", "def"},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	// don't set any scopes
@@ -31,6 +34,7 @@ func TestOSGroupsRespected(t *testing.T) {
 		MaxRunTime: 30,
 		OSGroups:   []string{"abc", "def"},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{
 		"generic-worker:os-group:" + td.ProvisionerID + "/" + td.WorkerType + "/abc",

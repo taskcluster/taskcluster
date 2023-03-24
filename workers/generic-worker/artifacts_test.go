@@ -8,10 +8,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
-	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/artifacts"
+	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
+	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/artifacts"
 )
 
 var (
@@ -25,32 +26,22 @@ func validateArtifacts(
 	payloadArtifacts []Artifact,
 	expected []artifacts.TaskArtifact) {
 
+	payload := GenericWorkerPayload{
+		Artifacts: []Artifact{},
+	}
+	defaults.SetDefaults(&payload)
+
 	// to test, create a dummy task run with given artifacts
 	// and then call Artifacts() method to see what
 	// artifacts would get uploaded...
 	tr := &TaskRun{
-		Payload: GenericWorkerPayload{
-			Artifacts: []Artifact{},
-		},
+		Payload: payload,
 		Definition: tcqueue.TaskDefinitionResponse{
 			Expires: inAnHour,
 		},
 	}
-	for i := range payloadArtifacts {
-		tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts[i])
-	}
+	tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts...)
 	got := tr.PayloadArtifacts()
-
-	// RawContentFile contains a full path that depends on the specific
-	// task directory, so empty that value out before comparing.
-	for _, a := range got {
-		if s3a, ok := a.(*artifacts.S3Artifact); ok {
-			s3a.RawContentFile = ""
-		}
-		if obja, ok := a.(*artifacts.ObjectArtifact); ok {
-			obja.RawContentFile = ""
-		}
-	}
 
 	if !reflect.DeepEqual(got, expected) {
 		t.Fatalf("Expected different artifacts to be generated...\nExpected:\n%q\nActual:\n%q", expected, got)
@@ -81,7 +72,7 @@ func TestFileArtifactWithNames(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
-				Path:            "SampleArtifacts/_/X.txt",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 		})
 }
@@ -111,7 +102,7 @@ func TestFileArtifactWithContentType(t *testing.T) {
 				},
 				ContentType:     "application/octet-stream",
 				ContentEncoding: "gzip",
-				Path:            "SampleArtifacts/_/X.txt",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 		})
 }
@@ -141,7 +132,7 @@ func TestFileArtifactAsObjectWithContentType(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType: "application/octet-stream",
-				Path:        "SampleArtifacts/_/X.txt",
+				Path:        filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 		})
 }
@@ -209,7 +200,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
-				Path:            "SampleArtifacts/_/X.txt",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -218,7 +209,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "identity",
-				Path:            "SampleArtifacts/b/c/d.jpg",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -227,7 +218,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "identity",
-				Path:            "SampleArtifacts/_/X.txt",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -236,7 +227,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "identity",
-				Path:            "SampleArtifacts/b/c/d.jpg",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -245,7 +236,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
-				Path:            "SampleArtifacts/_/X.txt",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -254,7 +245,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "gzip",
-				Path:            "SampleArtifacts/b/c/d.jpg",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
 }
@@ -283,7 +274,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 				},
 				ContentType:     "application/octet-stream",
 				ContentEncoding: "gzip",
-				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "%%%", "v", "X"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -292,7 +283,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
-				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -301,7 +292,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "identity",
-				Path:            filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
 }
@@ -331,7 +322,7 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
-				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "%%%", "v", "X"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -340,7 +331,7 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
-				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -349,7 +340,7 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "identity",
-				Path:            filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
 }
@@ -388,7 +379,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "identity",
-				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "%%%", "v", "X"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -397,7 +388,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "identity",
-				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -406,7 +397,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "identity",
-				Path:            filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -415,7 +406,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
-				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "%%%", "v", "X"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -424,7 +415,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
-				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -433,7 +424,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
-				Path:            filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
 }
@@ -463,7 +454,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 				},
 				ContentType:     "application/octet-stream",
 				ContentEncoding: "gzip",
-				Path:            filepath.Join("SampleArtifacts", "%%%", "v", "X"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "%%%", "v", "X"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -472,7 +463,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
-				Path:            filepath.Join("SampleArtifacts", "_", "X.txt"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -481,7 +472,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "identity",
-				Path:            filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
 }
@@ -588,7 +579,7 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "identity",
-				Path:            "SampleArtifacts/b/c/d.jpg",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		},
 	)
@@ -639,6 +630,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 
@@ -667,6 +659,7 @@ func TestInvalidContentEncoding(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -700,6 +693,7 @@ func TestInvalidContentEncodingBlacklisted(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")

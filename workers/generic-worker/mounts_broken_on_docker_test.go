@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"testing"
+
+	"github.com/mcuadros/go-defaults"
 )
 
 func TestMounts(t *testing.T) {
@@ -123,6 +125,7 @@ func TestMounts(t *testing.T) {
 		},
 		MaxRunTime: 180,
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 	td.Dependencies = []string{
@@ -199,6 +202,7 @@ func TestCachesCanBeModified(t *testing.T) {
 		Command:    incrementCounterInCache(),
 		MaxRunTime: 180,
 	}
+	defaults.SetDefaults(&payload)
 
 	execute := func() {
 		td := testTask(t)
@@ -277,6 +281,12 @@ func TestCacheMoved(t *testing.T) {
 		`Could not unmount task `+taskID+` artifact public/build/unknown_issuer_app_1.zip due to: 'Could not persist cache "banana-cache" due to .*'`,
 	)
 
+	payload := GenericWorkerPayload{
+		Command:    goRun("move-file.go", t.Name(), "MovedCache"),
+		MaxRunTime: 100,
+	}
+	defaults.SetDefaults(&payload)
+
 	LogTest(
 		&MountsLoggingTestCase{
 			Test: t,
@@ -295,11 +305,8 @@ func TestCacheMoved(t *testing.T) {
 			Dependencies: []string{
 				taskID,
 			},
-			Scopes: []string{"generic-worker:cache:banana-cache"},
-			Payload: &GenericWorkerPayload{
-				Command:    goRun("move-file.go", t.Name(), "MovedCache"),
-				MaxRunTime: 180,
-			},
+			Scopes:                 []string{"generic-worker:cache:banana-cache"},
+			Payload:                &payload,
 			TaskRunResolutionState: "failed",
 			TaskRunReasonResolved:  "failed",
 			PerTaskRunLogExcerpts: [][]string{
@@ -419,6 +426,7 @@ func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
 		Command:    helloGoodbye(),
 		MaxRunTime: 180,
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 	td.Dependencies = []string{
@@ -443,6 +451,7 @@ func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
 		Command:    helloGoodbye(),
 		MaxRunTime: 180,
 	}
+	defaults.SetDefaults(&payload)
 
 	td = testTask(t)
 	td.Scopes = []string{

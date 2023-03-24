@@ -1,4 +1,4 @@
-module github.com/taskcluster/taskcluster/v47
+module github.com/taskcluster/taskcluster/v48
 
 // DO NOT MODIFY THIS LINE - automatically updated by infrastructure/tooling/src/generate/generators/go-version.js
 go 1.19
@@ -19,6 +19,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/johncgriffin/overflow v0.0.0-20211019200055-46fa312c352c
 	github.com/kr/text v0.2.0
+	github.com/mcuadros/go-defaults v1.2.0
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mozilla-services/go-mozlogrus v2.0.0+incompatible
@@ -43,7 +44,7 @@ require (
 	golang.org/x/crypto v0.6.0
 	golang.org/x/net v0.7.0
 	golang.org/x/sys v0.5.0
-	golang.org/x/tools v0.5.0
+	golang.org/x/tools v0.6.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/yaml v1.3.0
@@ -70,7 +71,7 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	golang.org/x/mod v0.7.0 // indirect
+	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	howett.net/plist v1.0.0 // indirect
 	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect

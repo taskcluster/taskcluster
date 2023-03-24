@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useQuery } from 'react-apollo';
 import StatusDashboard from '.';
 import clientsQuery from './clients.graphql';
@@ -15,6 +15,16 @@ export default function StatsFetcher() {
   const clients = useQuery(clientsQuery);
   const roles = useQuery(rolesQuery);
   const secrets = useQuery(secretsQuery);
+  const refreshInterval = 30 * 1000;
+  const intervalRef = useRef();
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      workerPools.refetch();
+    }, refreshInterval);
+
+    return () => clearInterval(intervalRef.current);
+  }, [workerPools, refreshInterval]);
 
   return (
     <StatusDashboard

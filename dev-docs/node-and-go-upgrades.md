@@ -23,8 +23,8 @@ To update the node version:
 
 To update the go version:
 
-* Install the new go version: `gvm install go1.19.5`
-* Use the new go version (--default to set permanently): `gvm use go1.19.5`
+* Install the new go version: `gvm install go1.19.7`
+* Use the new go version (--default to set permanently): `gvm use go1.19.7`
 * Download modules with `go mod download`
 * Update `.go-version`
 * Run `yarn generate`. Some `go` errors may occur, for example on major version updates.
@@ -34,8 +34,6 @@ To update the go version:
 * Run `"$(go env GOPATH)/bin/goimports" -w .` (or non-bash equivalent)
 * Run `yarn generate` again, should finish cleanly.
 * Create a changelog file and commit
-* Update the package hashes in `workers/generic-worker/gw-decision-task/tasks.yml`
-  with the hashes on the [go downloads page](https://go.dev/dl/)
 * If you update the `.golangci-lint-version` file, run `yarn generate` again
   and update the package hashes in `workers/generic-worker/gw-decision-task/tasks.yml`
   with the hashes on the `golangci-lint-<X.Y.Z>-checksums.txt` file from the

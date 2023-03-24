@@ -1173,9 +1173,9 @@
     tslib "^1.9.3"
 
 "@xmldom/xmldom@^0.7.0":
-  version "0.7.6"
-  resolved "https://registry.yarnpkg.com/@xmldom/xmldom/-/xmldom-0.7.6.tgz#6f55073fa73e65776bd85826958b98c8cd1457b5"
-  integrity sha512-HHXP9hskkFQHy8QxxUXkS7946FFIhYVfGqsk0WLwllmexN9x/+R4UBLvurHEuyXRfVEObVR8APuQehykLviwSQ==
+  version "0.7.9"
+  resolved "https://registry.yarnpkg.com/@xmldom/xmldom/-/xmldom-0.7.9.tgz#7f9278a50e737920e21b297b8a35286e9942c056"
+  integrity sha512-yceMpm/xd4W2a85iqZyO09gTnHvXF6pyiWjD2jcOJs7hRoZtNNOO1eJlhHj1ixA+xip2hOyGn+LgcvLCMo5zXA==
 
 "@yarnpkg/lockfile@1.1.0":
   version "1.1.0"
@@ -6522,10 +6522,10 @@ side-channel@^1.0.4:
     get-intrinsic "^1.0.2"
     object-inspect "^1.9.0"
 
-sift@^13.5.0:
-  version "13.5.4"
-  resolved "https://registry.yarnpkg.com/sift/-/sift-13.5.4.tgz#7b2a67f724c8b2fca121fcfdef4011bb1ea4e3ef"
-  integrity sha512-J/d0r/MJlD7vG3j6FZI3/KnN+MxEmPUx2nyKNawysbl2ktisEnAWI5j0AgHM19p4xFA2vDXve4i8TQYYfi9O6Q==
+sift@^17.0.0:
+  version "17.0.1"
+  resolved "https://registry.yarnpkg.com/sift/-/sift-17.0.1.tgz#70abec7e615923b45ce1b34e4795706d9233178c"
+  integrity sha512-10rmPF5nuz5UdKuhhxgfS7Vz1aIRGmb+kn5Zy6bntCgNwkbZc0a7Z2dUw2Y9wSoRrBzf7Oim81SUsYdOkVnI8Q==
 
 signal-exit@^3.0.0, signal-exit@^3.0.2, signal-exit@^3.0.3:
   version "3.0.7"
@@ -6871,7 +6871,7 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "47.1.2"
+  version "48.0.0"
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
@@ -6881,37 +6881,37 @@ tar-stream@^2.0.0:
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-db@link:db":
-  version "47.1.2"
+  version "48.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "47.1.2"
+  version "48.0.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "47.1.2"
+  version "48.0.0"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "47.1.2"
+  version "48.0.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "47.1.2"
+  version "48.0.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "47.1.2"
+  version "48.0.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "47.1.2"
+  version "48.0.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "47.1.2"
+  version "48.0.0"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "47.1.2"
+  version "48.0.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "47.1.2"
+  version "48.0.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "47.1.2"
+  version "48.0.0"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6921,7 +6921,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "47.1.2"
+  version "48.0.0"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6929,7 +6929,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "47.1.2"
+  version "48.0.0"
 
 test-exclude@^6.0.0:
   version "6.0.0"

@@ -4,20 +4,17 @@ import (
 	"fmt"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
-	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v47/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
+	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v48/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/gwconfig"
 )
 
 type ObjectArtifact struct {
 	*BaseArtifact
-	// Path is the task-directory-relative path to the file (as given in
-	// the task description, for example)
-	Path string
-	// RawContentFile is the filename of the file containing the data
+	// Path is the filename of the file containing the data
 	// for this artifact.
-	RawContentFile string
+	Path string
 	// ContentType is used in the Content-Type header.
 	ContentType string
 }
@@ -49,7 +46,7 @@ func (a *ObjectArtifact) ProcessResponse(resp interface{}, logger Logger, servic
 		a.ContentType,
 		time.Time(a.Expires),
 		response.UploadID,
-		a.RawContentFile,
+		a.Path,
 	)
 }
 
@@ -62,10 +59,9 @@ func (a *ObjectArtifact) FinishArtifact(resp interface{}, queue tc.Queue, taskID
 }
 
 func (a *ObjectArtifact) String() string {
-	return fmt.Sprintf("Object Artifact - Name: '%v', Path: '%v', RawContentFile: '%v', Expires: %v, Content-Type: '%v'",
+	return fmt.Sprintf("Object Artifact - Name: '%v', Path: '%v', Expires: %v, Content-Type: '%v'",
 		a.Name,
 		a.Path,
-		a.RawContentFile,
 		a.Expires,
 		a.ContentType,
 	)

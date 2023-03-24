@@ -8,8 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/gwconfig"
 )
 
 func TestMissingScopes(t *testing.T) {
@@ -39,6 +40,7 @@ func TestMissingScopes(t *testing.T) {
 		Command:    helloGoodbye(),
 		MaxRunTime: 180,
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 	td.Dependencies = []string{
@@ -80,6 +82,7 @@ func TestMissingMountsDependency(t *testing.T) {
 		Command:    helloGoodbye(),
 		MaxRunTime: 180,
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 	td.Scopes = []string{
@@ -128,6 +131,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 		Command:    helloGoodbye(),
 		MaxRunTime: 180,
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 	td.Dependencies = []string{
@@ -175,6 +179,7 @@ func TestNonExistentArtifact(t *testing.T) {
 		Command:    helloGoodbye(),
 		MaxRunTime: 180,
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 	td.Dependencies = []string{
@@ -218,6 +223,7 @@ func LogTest(m *MountsLoggingTestCase) {
 			Command:    helloGoodbye(),
 			MaxRunTime: 180,
 		}
+		defaults.SetDefaults(payload)
 	}
 	payload.Mounts = toMountArray(m.Test, &m.Mounts)
 
@@ -550,6 +556,7 @@ func TestHardLinksInArchive(t *testing.T) {
 		Command:    helloGoodbye(),
 		MaxRunTime: 180,
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 

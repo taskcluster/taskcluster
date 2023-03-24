@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
-	"github.com/taskcluster/taskcluster/v47/internal/scopes"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
+	"github.com/taskcluster/taskcluster/v48/internal/scopes"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/fileutil"
 )
 
 var (
@@ -100,7 +100,7 @@ func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
 				// RDP info expires one day after task
 				Expires: tcclient.Time(time.Now().Add(time.Hour * 24)),
 			},
-			rdpInfoPath,
+			filepath.Join(taskContext.TaskDir, rdpInfoPath),
 			"application/json",
 			"gzip",
 		),

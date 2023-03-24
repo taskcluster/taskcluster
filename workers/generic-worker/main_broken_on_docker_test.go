@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
 )
 
@@ -33,6 +34,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 		),
 		MaxRunTime: 5,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{"generic-worker:cache:banana-cache"}
 
@@ -73,6 +75,7 @@ func TestNonExistentCommandFailsTask(t *testing.T) {
 		Command:    singleCommandNoArgs(slugid.Nice()),
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")

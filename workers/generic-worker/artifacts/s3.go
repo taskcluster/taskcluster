@@ -11,29 +11,26 @@ import (
 	"path/filepath"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v47/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v48/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/gwconfig"
 )
 
 type S3Artifact struct {
 	*BaseArtifact
-	// Path is the task-directory-relative path to the file (as given in
-	// the task description, for example)
-	Path string
-	// RawContentFile is the filename of the file containing the data
+	// Path is the filename of the file containing the data
 	// for this artifact.
-	RawContentFile  string
+	Path            string
 	ContentEncoding string
 	ContentType     string
 }
 
-// createTempFileForPUTBody gzip-compresses the file at RawContentFile and
+// createTempFileForPUTBody gzip-compresses the file at Path and
 // writes it to a temporary file in the same directory. The file path of the
 // generated temporary file is returned.  It is the responsibility of the
 // caller to delete the temporary file.
 func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
-	baseName := filepath.Base(s3Artifact.RawContentFile)
+	baseName := filepath.Base(s3Artifact.Path)
 	tmpFile, err := os.CreateTemp("", baseName)
 	if err != nil {
 		panic(err)
@@ -46,7 +43,7 @@ func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
 		gzipLogWriter.Name = baseName
 		target = gzipLogWriter
 	}
-	source, err := os.Open(s3Artifact.RawContentFile)
+	source, err := os.Open(s3Artifact.Path)
 	if err != nil {
 		panic(err)
 	}
@@ -135,10 +132,9 @@ func (s3Artifact *S3Artifact) ResponseObject() interface{} {
 }
 
 func (s3Artifact *S3Artifact) String() string {
-	return fmt.Sprintf("S3 Artifact - Name: '%v', Path: '%v', RawContentFile: '%v', Expires: %v, Content Encoding: '%v', MIME Type: '%v'",
+	return fmt.Sprintf("S3 Artifact - Name: '%v', Path: '%v', Expires: %v, Content Encoding: '%v', MIME Type: '%v'",
 		s3Artifact.Name,
 		s3Artifact.Path,
-		s3Artifact.RawContentFile,
 		s3Artifact.Expires,
 		s3Artifact.ContentEncoding,
 		s3Artifact.ContentType,

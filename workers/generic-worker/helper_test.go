@@ -18,14 +18,15 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mcuadros/go-defaults"
 	"github.com/pborman/uuid"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
-	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v47/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
+	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v48/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/gwconfig"
 )
 
 var (
@@ -277,6 +278,7 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 							},
 						},
 					}
+					defaults.SetDefaults(&payload)
 					td := testTask(t)
 					// Set 6 month expiry
 					td.Expires = tcclient.Time(time.Now().AddDate(0, 6, 0))

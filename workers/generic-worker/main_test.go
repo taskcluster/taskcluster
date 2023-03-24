@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,6 +21,7 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 		Command:    returnExitCode(1),
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
@@ -50,7 +52,7 @@ func TestRevisionNumberStored(t *testing.T) {
 		// The version number in this error message is automatically updated on release by infrastructure/tooling/src/release/tasks.js
 
 		t.Fatalf("Git revision could not be determined - got '%v' but expected to match regular expression '^[0-9a-f](40)$'\n"+
-			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v47/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
+			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
 			"Try building generic-worker using the /workers/generic-worker/build.(sh|cmd) script in the taskcluster monorepo.", revision)
 	}
 	t.Logf("Git revision successfully retrieved: %v", revision)
@@ -154,6 +156,7 @@ func TestNonExecutableBinaryFailsTask(t *testing.T) {
 		Command:    commands,
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")

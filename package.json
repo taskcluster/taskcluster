@@ -1,10 +1,10 @@
 {
   "name": "taskcluster",
-  "version": "47.1.2",
+  "version": "48.1.1",
   "private": true,
   "engine-strict": true,
   "engines": {
-    "node": "18.14.1",
+    "node": "18.15.0",
     "yarn": "^1.22.19"
   },
   "workspaces": [
@@ -96,7 +96,7 @@
     "rimraf": "^3.0.0",
     "sanitize-html": "^2.8.1",
     "sentry-api": "^0.2.0",
-    "sift": "^13.5.0",
+    "sift": "^17.0.0",
     "slugid": "^2.0.0",
     "subscriptions-transport-ws": "^0.9.7",
     "superagent": "^6.0.0",

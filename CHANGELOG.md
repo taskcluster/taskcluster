@@ -3,6 +3,72 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v48.1.1
+
+### USERS
+
+▶ [patch] [#6124](https://github.com/taskcluster/taskcluster/issues/6124)
+Fix a bug in UI where TaskGroup page would show "Malformed query" warning.
+This was due to the `sift` library getting upgraded which changed the behaviour of filters.
+
+## v48.1.0
+
+### GENERAL
+
+▶ [minor]
+jsonschema2go: jsonschema default values are encoded into struct tags of generated go types for use with github.com/mcuadros/go-defaults.
+
+In order to utilise this new features, callers should call `defaults.SetDefaults(&val)` before calling `json.Unmarshal(data, &val)`.
+
+▶ [patch]
+Go upgrade from 1.19.5 to 1.19.7. Also upgraded golangci-lint from 1.50.1 to 1.51.2.
+
+Node.js upgrade from 18.14.1 to 18.15.0.
+
+### USERS
+
+▶ [patch]
+Dashboard displays worker manager provisioning stats separately. Values are being automatically reloaded every 30 seconds.
+
+▶ [patch] [#6109](https://github.com/taskcluster/taskcluster/issues/6109)
+The worker-manager methods `createWorker`, `listWorkersForWorkerGroup`,
+`updateWorker`, and `worker` had an extraneous colon (`:`) character in their
+URL path.  This colon has been removed.  The old paths (containing the colon)
+will continue to work, but the new paths are preferred.
+
+## v48.0.0
+
+### DEPLOYERS
+
+▶ [patch] [#6067](https://github.com/taskcluster/taskcluster/issues/6067)
+Worker-manager now considers `stoppingCapacity` when estimating the required number of workers to start, preventing failed to start workers from growing beyond `maxCapacity` and slowing down the scanner loop.
+
+### USERS
+
+▶ [MAJOR] [#6059](https://github.com/taskcluster/taskcluster/issues/6059)
+It is now possible to seal a task group which is an operation to prevent additional tasks from being added.
+
+New APIs:
+
+* HTTP API `queue.sealTaskGroup` to seal task group and prevent addition of new tasks to it. This operation is irreversible.
+* HTTP API `queue.getTaskGroup` to return task group information without tasks (use `queue.listTaskGroup` to return information with tasks)
+* Pulse exchange `exchange/taskcluster-queue/v1/task-group-sealed` reports when a task group is sealed.
+
+Updated APIs:
+
+* HTTP API `queue.createTask` returns HTTP `409` error if task group was sealed.
+* HTTP API `queue.listTaskGroup` returns extra fields `schedulerId`, `expires`, `sealed`.
+* Pulse exchange `exchange/taskcluster-queue/v1/task-group-resolved` publishes extra fields `schedulerId`, `expires`, `sealed`.
+
+UI updates:
+
+* Task group view displays expiration and sealing time.
+* Task group view actions includes seal task group action.
+
+### OTHER
+
+▶ Additional change not described here: [#6052](https://github.com/taskcluster/taskcluster/issues/6052).
+
 ## v47.1.2
 
 ### GENERAL

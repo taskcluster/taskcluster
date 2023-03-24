@@ -26,20 +26,21 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
-	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
-	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v47/internal"
-	"github.com/taskcluster/taskcluster/v47/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v47/internal/scopes"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/errorreport"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v47/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v47/workers/generic-worker/runtime"
+	"github.com/mcuadros/go-defaults"
+	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
+	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v48/internal"
+	"github.com/taskcluster/taskcluster/v48/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v48/internal/scopes"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/errorreport"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v48/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -58,7 +59,6 @@ var (
 	configFile     *gwconfig.File
 	Features       []Feature
 
-	logName   = "public/logs/live_backing.log"
 	logPath   = filepath.Join("generic-worker", "live_backing.log")
 	debugInfo map[string]string
 
@@ -572,10 +572,8 @@ func ClaimWork() *TaskRun {
 			Queue:             taskQueue,
 			TaskClaimResponse: tcqueue.TaskClaimResponse(taskResponse),
 			Artifacts:         map[string]artifacts.TaskArtifact{},
-			featureArtifacts: map[string]string{
-				logName: "Native Log",
-			},
-			LocalClaimTime: localClaimTime,
+			featureArtifacts:  map[string]string{},
+			LocalClaimTime:    localClaimTime,
 		}
 		task.StatusManager = NewTaskStatusManager(task)
 		return task
@@ -626,6 +624,7 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		// complete code.
 		return MalformedPayloadError(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
 	}
+	defaults.SetDefaults(&task.Payload)
 	err = json.Unmarshal(jsonPayload, &task.Payload)
 	if err != nil {
 		return MalformedPayloadError(err)
@@ -899,7 +898,12 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 			defer panic(r)
 		}
 		task.closeLog(logHandle)
-		err.add(task.uploadLog(logName, logPath))
+		if task.Payload.Features.BackingLog {
+			err.add(task.uploadLog(task.Payload.Logs.Backing, filepath.Join(taskContext.TaskDir, logPath)))
+		}
+		if config.CleanUpTaskDirs {
+			_ = os.Remove(filepath.Join(taskContext.TaskDir, logPath))
+		}
 	}()
 
 	task.logHeader()
@@ -945,6 +949,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 				continue
 			}
 			reservedArtifacts := taskFeature.ReservedArtifacts()
+			task.featureArtifacts[task.Payload.Logs.Backing] = "Backing log"
 			for _, a := range reservedArtifacts {
 				if f := task.featureArtifacts[a]; f != "" {
 					err.add(MalformedPayloadError(fmt.Errorf("Feature %q wishes to publish artifact %v but feature %v has already reserved this artifact name", feature.Name(), a, f)))

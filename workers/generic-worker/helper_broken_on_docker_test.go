@@ -14,9 +14,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
-	"github.com/taskcluster/taskcluster/v47/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
+	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
 )
 
 func checkSHA256(t *testing.T, sha256Hex string, file string) {
@@ -42,6 +43,7 @@ func CancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 		Command:    command,
 		MaxRunTime: 300,
 	}
+	defaults.SetDefaults(&payload)
 	fullCreds := config.Credentials()
 	td = testTask(t)
 	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/"+t.Name(), time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")
@@ -84,46 +86,49 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 		t.Fatalf("Error listing artifacts: %v", err)
 	}
 
-	actualArtifacts := make(map[string]struct {
-		ContentType string        `json:"contentType"`
-		Expires     tcclient.Time `json:"expires"`
-		Name        string        `json:"name"`
-		StorageType string        `json:"storageType"`
-	}, len(artifacts.Artifacts))
+	// Artifacts we find that we were not expecting, mapped by artifact name. Initially set to all artifacts
+	// found, and then later remove all of the ones we were expecting.
+	unexpectedArtifacts := make(map[string]tcqueue.Artifact, len(artifacts.Artifacts))
 
 	for _, actualArtifact := range artifacts.Artifacts {
-		actualArtifacts[actualArtifact.Name] = actualArtifact
+		unexpectedArtifacts[actualArtifact.Name] = actualArtifact
 	}
 
-	for artifact, expected := range expectedArtifacts {
-		if actual, ok := actualArtifacts[artifact]; ok {
-			// link artifacts do not have content types
-			if actual.StorageType != "link" {
-				if actual.ContentType != expected.ContentType {
-					t.Errorf("Artifact %s should have mime type '%v' but has '%s'", artifact, expected.ContentType, actual.ContentType)
-				}
-			}
-			if !time.Time(expected.Expires).IsZero() {
-				if actual.Expires.String() != expected.Expires.String() {
-					t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, expected.Expires, actual.Expires)
-				}
-			}
-		} else {
-			t.Errorf("Artifact '%s' not created", artifact)
+	for artifactName, expected := range expectedArtifacts {
+		if _, ok := unexpectedArtifacts[artifactName]; !ok {
+			t.Errorf("Artifact '%s' not created", artifactName)
+			continue
 		}
-		b, rawResp, resp, url := getArtifactContentWithResponses(t, taskID, artifact)
+		actual := unexpectedArtifacts[artifactName]
+		// link artifacts do not have content types
+		if actual.StorageType != "link" {
+			if actual.ContentType != expected.ContentType {
+				t.Errorf("Artifact %s should have mime type '%v' but has '%s'", artifactName, expected.ContentType, actual.ContentType)
+			}
+		}
+		if !time.Time(expected.Expires).IsZero() {
+			if actual.Expires.String() != expected.Expires.String() {
+				t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifactName, expected.Expires, actual.Expires)
+			}
+		}
+		b, rawResp, resp, url := getArtifactContentWithResponses(t, taskID, artifactName)
 		defer resp.Body.Close()
 		for _, requiredSubstring := range expected.Extracts {
 			if !strings.Contains(string(b), requiredSubstring) {
-				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifact, requiredSubstring, string(b))
+				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifactName, requiredSubstring, string(b))
 			}
 		}
 		if actualContentEncoding := rawResp.Header.Get("Content-Encoding"); actualContentEncoding != expected.ContentEncoding {
-			t.Fatalf("Expected Content-Encoding %q but got Content-Encoding %q for artifact %q from url %v", expected.ContentEncoding, actualContentEncoding, artifact, url)
+			t.Errorf("Expected Content-Encoding %q but got Content-Encoding %q for artifact %q from url %v", expected.ContentEncoding, actualContentEncoding, artifactName, url)
 		}
 		if actualContentType := resp.Header.Get("Content-Type"); actualContentType != expected.ContentType {
-			t.Fatalf("Content-Type in Signed URL %v response (%v) does not match Content-Type of artifact (%v)", url, actualContentType, expected.ContentType)
+			t.Errorf("Content-Type in Signed URL %v response (%v) does not match Content-Type of artifact (%v)", url, actualContentType, expected.ContentType)
 		}
+		delete(unexpectedArtifacts, artifactName) // artifact expected, so remove from unexpected artifacts map
+	}
+
+	if len(unexpectedArtifacts) > 0 {
+		t.Errorf("%v unexpected aritfacts found: %#v", len(unexpectedArtifacts), unexpectedArtifacts)
 	}
 }
 

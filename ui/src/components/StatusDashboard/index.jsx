@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { object } from 'prop-types';
 import { Grid, Paper, withStyles, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -16,26 +16,35 @@ const Item = ({
   hint,
   error,
   altColor = false,
-}) => (
-  <Paper className={classMain}>
-    <Typography variant="h5">
-      {title}
-      {hint && (
-        <abbr title={hint} style={{ marginLeft: 5 }}>
-          ?
-        </abbr>
-      )}
-    </Typography>
-    <abbr title={error}>
-      <Typography
-        className={classValue}
-        style={altColor ? { color: '#51e9f1' } : {}}
-        variant={getLength(value) < 10 ? 'h2' : 'h4'}>
-        {value}
+}) => {
+  const [styles, setStyles] = useState({});
+
+  useEffect(() => {
+    setStyles({ backgroundColor: '#A459D1' });
+    setTimeout(() => setStyles({}), 2000);
+  }, [value]);
+
+  return (
+    <Paper className={classMain} style={styles}>
+      <Typography variant="h5">
+        {title}
+        {hint && (
+          <abbr title={hint} style={{ marginLeft: 5 }}>
+            ?
+          </abbr>
+        )}
       </Typography>
-    </abbr>
-  </Paper>
-);
+      <abbr title={error}>
+        <Typography
+          className={classValue}
+          style={altColor ? { color: '#51e9f1' } : {}}
+          variant={getLength(value) < 10 ? 'h2' : 'h4'}>
+          {value}
+        </Typography>
+      </abbr>
+    </Paper>
+  );
+};
 
 @withStyles(theme => ({
   grid: {
@@ -50,6 +59,7 @@ const Item = ({
       theme.palette.type === 'dark'
         ? theme.palette.text.primary
         : theme.palette.text.secondary,
+    transition: 'all 0.8s ease-in-out',
   },
   itemValue: {
     color: theme.palette.warning.main,
@@ -91,8 +101,11 @@ export default class StatusDashboard extends Component {
     const filterAvailable = items =>
       items.filter(item => !item.loading && !item.error);
     const widgets = {
+      'Worker Manager Provisioning': filterAvailable(
+        summarizeWorkerPools(workerPools, 'provisioning')
+      ),
       'Worker Manager Stats': filterAvailable(
-        summarizeWorkerPools(workerPools)
+        summarizeWorkerPools(workerPools, 'stats')
       ),
       'Worker Provisioners': filterAvailable(
         summarizeProvisioners(provisioners)
@@ -113,7 +126,7 @@ export default class StatusDashboard extends Component {
                 <Typography variant="h5">{group}</Typography>
               </Grid>
               {widgets[group].map(props => (
-                <Grid item xs={12} sm={6} md={4} key={props.title}>
+                <Grid item xs={12} sm={6} md={3} key={props.title}>
                   {props.link ? (
                     <Link to={props.link}>
                       <Item

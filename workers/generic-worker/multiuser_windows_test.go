@@ -5,6 +5,8 @@ package main
 import (
 	"os"
 	"testing"
+
+	"github.com/mcuadros/go-defaults"
 )
 
 // Test APPDATA / LOCALAPPDATA folder are not shared between tasks
@@ -34,6 +36,7 @@ func TestAppDataNotShared(t *testing.T) {
 		},
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload1)
 	td1 := testTask(t)
 
 	_ = submitAndAssert(t, td1, payload1, "completed", "completed")
@@ -52,6 +55,7 @@ func TestAppDataNotShared(t *testing.T) {
 		},
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload2)
 	td2 := testTask(t)
 
 	_ = submitAndAssert(t, td2, payload2, "completed", "completed")
@@ -91,6 +95,7 @@ func TestNoCreateFileMappingError(t *testing.T) {
 		},
 		MaxRunTime: 120,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
@@ -116,6 +121,7 @@ func TestDesktopResizeAndMovePointer(t *testing.T) {
 			"PATH": os.Getenv("PATH"),
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")

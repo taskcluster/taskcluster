@@ -26,9 +26,17 @@ definitions:
       - path
 properties:
   log:
-    title: Custom log location
-    description: Specifies a custom location for the livelog artifact
+    title: Livelog artifact name
+    description: >-
+      Specifies a custom name for the livelog artifact. Note that this is
+      also used in determining the name of the backing log artifact name.
+      Backing log artifact name matches livelog artifact name with `_backing`
+      appended, prior to the file extension (if present). For example,
+      `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt`
+      and backing log artifact `apple/banana.log_backing.txt`.
+      Defaults to `public/logs/live.log`.
     type: string
+    default: public/logs/live.log
   image:
     title: Docker image.
     description: >-

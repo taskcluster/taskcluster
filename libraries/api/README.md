@@ -114,6 +114,9 @@ To declare an API method, call `builder.declare(options, handler)` with the foll
  * `skipOutputValidation` - if `true`, don't do output validation (but include the schema in documentation)
  * `cleanPayload` - a function taking and returning a payload, which will "clean" any values that should
    not appear in error messages (for example, removing secrets)
+ * `noPublish` - if true, the endpoint will not be included in API references, meaning it cannot
+   be called from client libraries and is not documented. This is typically used for
+   backward-compatibility shims.
 
 The `handler` parameter is a normal Express request handler, with some extra
 features; see "Request Handlers" below.

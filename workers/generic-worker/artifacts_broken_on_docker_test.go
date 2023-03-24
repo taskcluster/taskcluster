@@ -6,7 +6,8 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v47/clients/client-go"
+	"github.com/mcuadros/go-defaults"
+	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
 )
 
 func TestPublicDirectoryArtifact(t *testing.T) {
@@ -28,6 +29,7 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
@@ -40,7 +42,7 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 	}
 
 	if l := len(artifacts.Artifacts); l != 3 {
-		t.Fatalf("Was expecting 3 artifacts, but got %v", l)
+		t.Fatalf("Was expecting 3 artifacts, but got %v: %#v", l, artifacts)
 	}
 
 	// use the artifact names as keys in a map, so we can look up that each key exists
@@ -82,6 +84,7 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	taskID := submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -94,7 +97,7 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 	}
 
 	if l := len(artifacts.Artifacts); l != 3 {
-		t.Fatalf("Was expecting 3 artifacts, but got %v", l)
+		t.Fatalf("Was expecting 3 artifacts, but got %v: %#v", l, artifacts)
 	}
 
 	// use the artifact names as keys in a map, so we can look up that each key exists
@@ -135,6 +138,7 @@ func TestFileArtifactTwiceInPayload(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -166,6 +170,7 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
@@ -178,7 +183,7 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 	}
 
 	if l := len(artifacts.Artifacts); l != 3 {
-		t.Fatalf("Was expecting 3 artifacts, but got %v", l)
+		t.Fatalf("Was expecting 3 artifacts, but got %v: %#v", l, artifacts)
 	}
 
 	// use the artifact names as keys in a map, so we can look up that each key exists
@@ -208,6 +213,7 @@ func TestFileArtifactHasNoExpiry(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 
@@ -246,6 +252,7 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 
@@ -285,6 +292,7 @@ func TestObjectArtifact(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
