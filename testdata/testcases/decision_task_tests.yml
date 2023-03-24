@@ -48,6 +48,7 @@ testSuite:
         features:
           chainOfTrust: true
           taskclusterProxy: true
+        log: apple/banana.log
         capabilities:
           privileged: true
         image: >-
@@ -114,6 +115,11 @@ testSuite:
         features:
           chainOfTrust: true
           taskclusterProxy: true
+          liveLog: true
+          backingLog: true
+        logs:
+          live: apple/banana.log
+          backing: apple/banana_backing.log
         maxRunTime: 3600
         mounts:
           - cacheName: gecko-level-3-checkouts-sparse-v3
