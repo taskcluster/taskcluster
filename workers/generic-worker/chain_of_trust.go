@@ -10,12 +10,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"golang.org/x/crypto/ed25519"
-
 	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v48/internal/scopes"
 	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/fileutil"
+	"golang.org/x/crypto/ed25519"
 )
 
 const (
@@ -63,6 +62,7 @@ type ChainOfTrustData struct {
 type ChainOfTrustTaskFeature struct {
 	task           *TaskRun
 	ed25519PrivKey ed25519.PrivateKey
+	disabled       bool
 }
 
 func (feature *ChainOfTrustFeature) Name() string {
@@ -117,12 +117,16 @@ func (feature *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 	// runTasksAsCurrentUser enabled).
 	err := feature.ensureTaskUserCantReadPrivateCotKey()
 	if err != nil {
+		feature.disabled = true
 		return MalformedPayloadError(err)
 	}
 	return nil
 }
 
 func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
+	if feature.disabled {
+		return
+	}
 	logFile := filepath.Join(taskContext.TaskDir, logPath)
 	certifiedLogFile := filepath.Join(taskContext.TaskDir, certifiedLogPath)
 	unsignedCert := filepath.Join(taskContext.TaskDir, unsignedCertPath)

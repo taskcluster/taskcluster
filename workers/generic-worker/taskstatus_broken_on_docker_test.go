@@ -29,6 +29,7 @@ func TestReclaimCancelledTask(t *testing.T) {
 	td.Scopes = []string{"generic-worker:cache:banana-cache"}
 	payload.Command = append(payload.Command, sleep(300)...)
 	payload.Mounts = toMountArray(t, &mounts)
+	payload.Features.LiveLog = false
 	reclaimEvery5Seconds = true
 	defer func() {
 		reclaimEvery5Seconds = false

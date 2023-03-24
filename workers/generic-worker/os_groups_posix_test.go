@@ -5,6 +5,8 @@ package main
 import (
 	"strings"
 	"testing"
+
+	"github.com/mcuadros/go-defaults"
 )
 
 func TestEmptyOSGroups(t *testing.T) {
@@ -14,6 +16,7 @@ func TestEmptyOSGroups(t *testing.T) {
 		MaxRunTime: 30,
 		OSGroups:   []string{},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
@@ -26,6 +29,7 @@ func TestNonEmptyOSGroups(t *testing.T) {
 		MaxRunTime: 30,
 		OSGroups:   []string{"abc"},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")

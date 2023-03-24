@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
 	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
@@ -25,13 +26,16 @@ func validateArtifacts(
 	payloadArtifacts []Artifact,
 	expected []artifacts.TaskArtifact) {
 
+	payload := GenericWorkerPayload{
+		Artifacts: []Artifact{},
+	}
+	defaults.SetDefaults(&payload)
+
 	// to test, create a dummy task run with given artifacts
 	// and then call Artifacts() method to see what
 	// artifacts would get uploaded...
 	tr := &TaskRun{
-		Payload: GenericWorkerPayload{
-			Artifacts: []Artifact{},
-		},
+		Payload: payload,
 		Definition: tcqueue.TaskDefinitionResponse{
 			Expires: inAnHour,
 		},
@@ -626,6 +630,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 
@@ -654,6 +659,7 @@ func TestInvalidContentEncoding(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -687,6 +693,7 @@ func TestInvalidContentEncodingBlacklisted(t *testing.T) {
 			},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")

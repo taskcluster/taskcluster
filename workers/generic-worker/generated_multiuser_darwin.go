@@ -153,6 +153,14 @@ type (
 	// Since: generic-worker 5.3.0
 	FeatureFlags struct {
 
+		// The backing log feature publishes a task artifact containing the complete
+		// stderr and stdout of the task.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    true
+		BackingLog bool `json:"backingLog" default:"true"`
+
 		// Artifacts named `public/chain-of-trust.json` and
 		// `public/chain-of-trust.json.sig` should be generated which will
 		// include information for downstream tasks to build a level of trust
@@ -160,6 +168,14 @@ type (
 		//
 		// Since: generic-worker 5.3.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+
+		// The live log feature streams the combined stderr and stdout to a task artifact
+		// so that the output is available while the task is running.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    true
+		LiveLog bool `json:"liveLog" default:"true"`
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
@@ -246,6 +262,11 @@ type (
 		// Since: generic-worker 5.3.0
 		Features FeatureFlags `json:"features,omitempty"`
 
+		// Configuration for task logs.
+		//
+		// Since: generic-worker 48.2.0
+		Logs Logs `json:"logs,omitempty"`
+
 		// Maximum time the task container can run in seconds.
 		//
 		// Since: generic-worker 0.0.1
@@ -282,6 +303,28 @@ type (
 
 		// This property is allowed for backward compatibility, but is unused.
 		SupersederURL string `json:"supersederUrl,omitempty"`
+	}
+
+	// Configuration for task logs.
+	//
+	// Since: generic-worker 48.2.0
+	Logs struct {
+
+		// Specifies a custom name for the backing log artifact.
+		// This is only used if `features.backingLog` is `true`.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    "public/logs/live_backing.log"
+		Backing string `json:"backing" default:"public/logs/live_backing.log"`
+
+		// Specifies a custom name for the live log artifact.
+		// This is only used if `features.liveLog` is `true`.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    "public/logs/live.log"
+		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
 	// Byte-for-byte literal inline content of file/archive, up to 64KB in size.
@@ -688,9 +731,21 @@ func taskPayloadSchema() string {
       "additionalProperties": false,
       "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
       "properties": {
+        "backingLog": {
+          "default": true,
+          "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",
+          "title": "Enable backing log",
+          "type": "boolean"
+        },
         "chainOfTrust": {
           "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
           "title": "Enable generation of signed Chain of Trust artifacts",
+          "type": "boolean"
+        },
+        "liveLog": {
+          "default": true,
+          "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
+          "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
           "type": "boolean"
         },
         "taskclusterProxy": {
@@ -701,6 +756,27 @@ func taskPayloadSchema() string {
       },
       "required": [],
       "title": "Feature flags",
+      "type": "object"
+    },
+    "logs": {
+      "additionalProperties": false,
+      "description": "Configuration for task logs.\n\nSince: generic-worker 48.2.0",
+      "properties": {
+        "backing": {
+          "default": "public/logs/live_backing.log",
+          "description": "Specifies a custom name for the backing log artifact.\nThis is only used if ` + "`" + `features.backingLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+          "title": "Backing log artifact name",
+          "type": "string"
+        },
+        "live": {
+          "default": "public/logs/live.log",
+          "description": "Specifies a custom name for the live log artifact.\nThis is only used if ` + "`" + `features.liveLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+          "title": "Live log artifact name",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "Logs",
       "type": "object"
     },
     "maxRunTime": {

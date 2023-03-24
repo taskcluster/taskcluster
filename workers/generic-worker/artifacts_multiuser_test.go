@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mcuadros/go-defaults"
 	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
 	"golang.org/x/crypto/ed25519"
 )
@@ -45,6 +46,7 @@ func TestChainOfTrustUpload(t *testing.T) {
 			ChainOfTrust: true,
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	// Chain of trust is not allowed when running as current user
@@ -273,6 +275,7 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 			ChainOfTrust: true,
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	// Chain of trust is not allowed when running as current user

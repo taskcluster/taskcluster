@@ -213,6 +213,7 @@ type (
 		SkipCodeGen          bool
 		TypeNameBlacklist    StringSet
 		DisableNestedStructs bool
+		EnableDefaults       bool
 	}
 
 	Result struct {
@@ -268,12 +269,12 @@ func (subSchema JsonSubSchema) String() string {
 	return string(b)
 }
 
-func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel bool, extraPackages StringSet, rawMessageTypes StringSet) (comment, typ string) {
+func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDefaults bool, topLevel bool, extraPackages StringSet, rawMessageTypes StringSet) (comment, typ string) {
 	// Ignore all other properties if this has a $ref, and only redirect to the referened schema.
 	// See https://tools.ietf.org/html/draft-handrews-json-schema-01#section-8.3:
 	//   `All other properties in a "$ref" object MUST be ignored.`
 	if p := jsonSubSchema.RefSubSchema; p != nil {
-		return p.typeDefinition(disableNested, topLevel, extraPackages, rawMessageTypes)
+		return p.typeDefinition(disableNested, enableDefaults, topLevel, extraPackages, rawMessageTypes)
 	}
 	comment = "\n"
 	if d := jsonSubSchema.Description; d != nil {
@@ -371,7 +372,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 	case "array":
 		typ = "[]interface{}"
 		if jsonSubSchema.Items != nil {
-			arrayComment, arrayType := jsonSubSchema.Items.typeDefinition(disableNested, false, extraPackages, rawMessageTypes)
+			arrayComment, arrayType := jsonSubSchema.Items.typeDefinition(disableNested, enableDefaults, false, extraPackages, rawMessageTypes)
 			typ = "[]" + arrayType
 			// only add array comments if target schema is a primitive type
 			if jsonSubSchema.Items.TargetSchema().TypeName == "" {
@@ -392,13 +393,13 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 			if !topLevel && disableNested {
 				typ = jsonSubSchema.getTypeName()
 			} else {
-				typ = jsonSubSchema.Properties.AsStruct(disableNested, extraPackages, rawMessageTypes)
+				typ = jsonSubSchema.Properties.AsStruct(disableNested, enableDefaults, extraPackages, rawMessageTypes)
 			}
 		} else if ap != nil && ap.Properties != nil && jsonSubSchema.Properties == nil {
 			// In the special case no properties have been specified, but
 			// additionalProperties is an object, we can create a
 			// map[string]<additionalProperties definition>.
-			subComment, subType := ap.Properties.typeDefinition(disableNested, false, extraPackages, rawMessageTypes)
+			subComment, subType := ap.Properties.typeDefinition(disableNested, enableDefaults, false, extraPackages, rawMessageTypes)
 			typ = "map[string]" + subType
 			// only add subcomments if target schema is a primitive type
 			if ap.Properties.TargetSchema().TypeName == "" {
@@ -413,11 +414,11 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 			// both listed properties and additional properties.
 			if s := jsonSubSchema.Properties; s != nil {
 				comment += "//\n// Defined properties:\n//\n"
-				comment += text.Indent(s.AsStruct(disableNested, extraPackages, rawMessageTypes), "//  ") + "\n"
+				comment += text.Indent(s.AsStruct(disableNested, enableDefaults, extraPackages, rawMessageTypes), "//  ") + "\n"
 			}
 			if ap != nil && ap.Properties != nil {
 				comment += "//\n// Additional properties:\n"
-				subComment, subType := ap.Properties.typeDefinition(disableNested, true, extraPackages, rawMessageTypes)
+				subComment, subType := ap.Properties.typeDefinition(disableNested, enableDefaults, true, extraPackages, rawMessageTypes)
 				comment += text.Indent(subComment, "//  ")
 				comment += text.Indent(subType, "//  ") + "\n"
 			} else {
@@ -933,7 +934,7 @@ func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
 // Returns the generated code content, and a map of keys of extra packages to import, e.g.
 // a generated type might use time.Time, so if not imported, this would have to be added.
 // using a map of strings -> bool to simulate a set - true => include
-func generateGoTypes(disableNested bool, schemaSet *SchemaSet) (string, StringSet, StringSet) {
+func generateGoTypes(disableNested bool, enableDefaults bool, schemaSet *SchemaSet) (string, StringSet, StringSet) {
 	extraPackages := make(StringSet)
 	rawMessageTypes := make(StringSet)
 	content := "type (" // intentionally no \n here since each type starts with one already
@@ -943,7 +944,7 @@ func generateGoTypes(disableNested bool, schemaSet *SchemaSet) (string, StringSe
 	for _, i := range schemaSet.used {
 		log.Printf("Type name: '%v' - %v", i.getTypeName(), i.SourceURL)
 		var newComment, newType string
-		newComment, newType = i.typeDefinition(disableNested, true, extraPackages, rawMessageTypes)
+		newComment, newType = i.typeDefinition(disableNested, enableDefaults, true, extraPackages, rawMessageTypes)
 		typeDefinitions[i.TypeName] = text.Indent(newComment+i.TypeName+" "+newType, "\t")
 		typeNames = append(typeNames, i.getTypeName())
 	}
@@ -1001,7 +1002,7 @@ func (job *Job) Execute() (*Result, error) {
 	if job.SkipCodeGen {
 		return job.result, err
 	}
-	types, extraPackages, rawMessageTypes := generateGoTypes(job.DisableNestedStructs, job.result.SchemaSet)
+	types, extraPackages, rawMessageTypes := generateGoTypes(job.DisableNestedStructs, job.EnableDefaults, job.result.SchemaSet)
 	content := `// This source code file is AUTO-GENERATED by github.com/taskcluster/jsonschema2go
 
 package ` + job.Package + `
@@ -1066,26 +1067,31 @@ func jsonRawMessageImplementors(rawMessageTypes StringSet) string {
 	return content
 }
 
-func (s *Properties) AsStruct(disableNested bool, extraPackages StringSet, rawMessageTypes StringSet) (typ string) {
+func (s *Properties) AsStruct(disableNested bool, enableDefaults bool, extraPackages StringSet, rawMessageTypes StringSet) (typ string) {
 	typ = "struct {\n"
 	if s != nil {
 		for _, j := range s.SortedPropertyNames {
 			// recursive call to build structs inside structs
 			var subComment, subType string
 			subMember := s.MemberNames[j]
-			subComment, subType = s.Properties[j].typeDefinition(disableNested, false, extraPackages, rawMessageTypes)
+			subComment, subType = s.Properties[j].typeDefinition(disableNested, enableDefaults, false, extraPackages, rawMessageTypes)
 			jsonStructTagOptions := ""
 			if !s.Properties[j].IsRequired {
 				jsonStructTagOptions = ",omitempty"
 			}
 			defaultStructTag := ""
-			if def := s.Properties[j].Default; def != nil {
+			if def := s.Properties[j].Default; enableDefaults && (def != nil) {
 				switch (*def).(type) {
 				// for now, let's keep this simple, and limit support to types
 				// that currently have a default; we can expand on this if and
 				// when more types are needed
 				case string, bool:
 					defaultStructTag = fmt.Sprintf(` default:"%v"`, *def)
+					// remove omitempty since a default value is provided
+					// if user provides an empty string or false,
+					// json.Marshal will disregard the default value if
+					// omitempty is present
+					jsonStructTagOptions = ""
 				}
 			}
 			// struct member name and type, as part of struct definition

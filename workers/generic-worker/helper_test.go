@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mcuadros/go-defaults"
 	"github.com/pborman/uuid"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
@@ -277,6 +278,7 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 							},
 						},
 					}
+					defaults.SetDefaults(&payload)
 					td := testTask(t)
 					// Set 6 month expiry
 					td.Expires = tcclient.Time(time.Now().AddDate(0, 6, 0))

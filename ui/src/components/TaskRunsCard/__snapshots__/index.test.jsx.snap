@@ -39,7 +39,7 @@ exports[`should render TaskRunsCard 1`] = `
             class="MuiMobileStepper-dots"
           >
             <div
-              class="MuiMobileStepper-dot"
+              class="MuiMobileStepper-dot MuiMobileStepper-dotActive"
             />
           </div>
           <button
@@ -69,35 +69,634 @@ exports[`should render TaskRunsCard 1`] = `
         <h5
           class="MuiTypography-root TaskRunsCard-headline-1 MuiTypography-h5"
         >
-          Task Run
+          Task Run 0
         </h5>
-        <div
-          class="TaskRunsCard-boxVariant-9"
+        <ul
+          class="MuiList-root MuiList-padding"
         >
-          <svg
-            class="TaskRunsCard-boxVariantIcon-8"
-            height="24px"
-            version="1.1"
-            viewBox="0 0 24 24"
-            width="24px"
-            xmlns="http://www.w3.org/2000/svg"
+          <li
+            class="MuiListItem-root MuiListItem-gutters"
           >
-            <path
-              d="M2,10.96C1.5,10.68 1.35,10.07 1.63,9.59L3.13,7C3.24,6.8 3.41,6.66 3.6,6.58L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.66,6.72 20.82,6.88 20.91,7.08L22.36,9.6C22.64,10.08 22.47,10.69 22,10.96L21,11.54V16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V10.96C2.7,11.13 2.32,11.14 2,10.96M12,4.15V4.15L12,10.85V10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.21V15.91M19,15.91V12.69L14,15.59C13.67,15.77 13.3,15.76 13,15.6V19.29L19,15.91M13.85,13.36L20.13,9.73L19.55,8.72L13.27,12.35L13.85,13.36Z"
-              fill="rgba(0, 0, 0, 0.87)"
-              opacity="0.05"
+            <div
+              class="MuiListItemText-root MuiListItemText-multiline"
+            >
+              <span
+                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+              >
+                State
+              </span>
+              <p
+                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+              >
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-success-25 Label-disabled-23 Mui-disabled"
+                  disabled=""
+                  tabindex="-1"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label"
+                  >
+                    COMPLETED
+                  </span>
+                </button>
+              </p>
+            </div>
+          </li>
+          <a
+            href="/tasks/eR1kMya2SruyMaRMZguROg/runs/0/logs/apple/banana.log"
+          >
+            <div
+              aria-disabled="false"
+              class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-4 MuiListItem-gutters MuiListItem-button"
+              role="button"
+              tabindex="0"
+            >
+              <div
+                class="MuiListItemText-root MuiListItemText-multiline"
+              >
+                <span
+                  class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                >
+                  View Live Log 
+                  <button
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-liveLogLabel-15 Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-info-28 Label-disabled-23 Mui-disabled"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
+                  >
+                    <span
+                      class="MuiButton-label"
+                    >
+                      LOG
+                    </span>
+                  </button>
+                </span>
+                <p
+                  class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                >
+                  apple/banana.log
+                </p>
+              </div>
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+              >
+                <path
+                  d="M3.9,12C3.9,10.29 5.29,8.9 7,8.9H11V7H7A5,5 0 0,0 2,12A5,5 0 0,0 7,17H11V15.1H7C5.29,15.1 3.9,13.71 3.9,12M8,13H16V11H8V13M17,7H13V8.9H17C18.71,8.9 20.1,10.29 20.1,12C20.1,13.71 18.71,15.1 17,15.1H13V17H17A5,5 0 0,0 22,12A5,5 0 0,0 17,7Z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </div>
+          </a>
+          <div
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-4 MuiListItem-gutters MuiListItem-button"
+            role="button"
+            tabindex="0"
+          >
+            <div
+              class="MuiListItemText-root"
+            >
+              <span
+                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+              >
+                Artifacts (3)
+              </span>
+            </div>
+            <span
+              class="MuiTouchRipple-root"
             />
-          </svg>
-          <h6
-            class="MuiTypography-root TaskRunsCard-boxVariantText-10 MuiTypography-h6"
+          </div>
+          <div
+            class="MuiCollapse-root MuiCollapse-entered"
+            style="min-height: 0px;"
           >
-            No Runs
-          </h6>
-          <p
-            class="MuiTypography-root TaskRunsCard-boxVariantText-10 MuiTypography-body2"
+            <div
+              class="MuiCollapse-wrapper"
+            >
+              <div
+                class="MuiCollapse-wrapperInner"
+              >
+                <div
+                  class="MuiList-root"
+                >
+                  <div
+                    class="MuiListItem-root TaskRunsCard-artifactsListItemContainer-7"
+                  >
+                    <div
+                      class="ConnectionDataTable-tableWrapper-31"
+                    >
+                      <table
+                        class="MuiTable-root"
+                      >
+                        <tbody
+                          class="MuiTableBody-root"
+                        >
+                          <tr
+                            class="MuiTableRow-root TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 MuiTableRow-hover"
+                          >
+                            <td
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
+                            >
+                              <a
+                                class="TaskRunsCard-artifactLink-11"
+                                href="/tasks/eR1kMya2SruyMaRMZguROg/runs/0/logs/public/logs/live_backing.log"
+                              >
+                                <div
+                                  class="TaskRunsCard-iconDiv-18"
+                                >
+                                  <svg
+                                    class="mdi-icon "
+                                    fill="currentColor"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    width="24"
+                                  >
+                                    <path
+                                      d="M13,9H18.5L13,3.5V9M6,2H14L20,8V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V4C4,2.89 4.89,2 6,2M15,18V16H6V18H15M18,14V12H6V14H18Z"
+                                    />
+                                  </svg>
+                                </div>
+                                <div
+                                  class="TaskRunsCard-artifactNameWrapper-13"
+                                >
+                                  <button
+                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-logButton-6 Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-info-28 Label-disabled-23 Mui-disabled"
+                                    disabled=""
+                                    tabindex="-1"
+                                    type="button"
+                                  >
+                                    <span
+                                      class="MuiButton-label"
+                                    >
+                                      LOG
+                                    </span>
+                                  </button>
+                                  <div
+                                    class="TaskRunsCard-artifactName-14"
+                                  >
+                                    public/logs/live_backing.log
+                                  </div>
+                                </div>
+                                <div>
+                                  <svg
+                                    class="mdi-icon "
+                                    fill="currentColor"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    width="24"
+                                  >
+                                    <path
+                                      d="M3.9,12C3.9,10.29 5.29,8.9 7,8.9H11V7H7A5,5 0 0,0 2,12A5,5 0 0,0 7,17H11V15.1H7C5.29,15.1 3.9,13.71 3.9,12M8,13H16V11H8V13M17,7H13V8.9H17C18.71,8.9 20.1,10.29 20.1,12C20.1,13.71 18.71,15.1 17,15.1H13V17H17A5,5 0 0,0 22,12A5,5 0 0,0 17,7Z"
+                                    />
+                                  </svg>
+                                </div>
+                              </a>
+                            </td>
+                            <td
+                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard-copyButton-19 MuiTableCell-sizeSmall"
+                            >
+                              <svg
+                                class="mdi-icon "
+                                fill="currentColor"
+                                height="24"
+                                title="Artifact URL (Copied!)"
+                                viewBox="0 0 24 24"
+                                width="24"
+                              >
+                                <path
+                                  d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+                                />
+                              </svg>
+                            </td>
+                          </tr>
+                          <tr
+                            class="MuiTableRow-root TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 MuiTableRow-hover"
+                          >
+                            <td
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
+                            >
+                              <a
+                                class="TaskRunsCard-artifactLink-11"
+                                href="https://taskcluster.net/api/queue/v1/task/eR1kMya2SruyMaRMZguROg/runs/0/artifacts/public%2Fcoverage-final.json"
+                                rel="noopener noreferrer"
+                                target="_blank"
+                              >
+                                <div
+                                  class="TaskRunsCard-iconDiv-18"
+                                >
+                                  <svg
+                                    class="mdi-icon "
+                                    fill="currentColor"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    width="24"
+                                  >
+                                    <path
+                                      d="M13,9H18.5L13,3.5V9M6,2H14L20,8V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V4C4,2.89 4.89,2 6,2M6.12,15.5L9.86,19.24L11.28,17.83L8.95,15.5L11.28,13.17L9.86,11.76L6.12,15.5M17.28,15.5L13.54,11.76L12.12,13.17L14.45,15.5L12.12,17.83L13.54,19.24L17.28,15.5Z"
+                                    />
+                                  </svg>
+                                </div>
+                                <div
+                                  class="TaskRunsCard-artifactNameWrapper-13"
+                                >
+                                  <div
+                                    class="TaskRunsCard-artifactName-14"
+                                  >
+                                    public/coverage-final.json
+                                  </div>
+                                </div>
+                                <div>
+                                  <svg
+                                    class="mdi-icon "
+                                    fill="currentColor"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    width="24"
+                                  >
+                                    <path
+                                      d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"
+                                    />
+                                  </svg>
+                                </div>
+                              </a>
+                            </td>
+                            <td
+                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard-copyButton-19 MuiTableCell-sizeSmall"
+                            >
+                              <svg
+                                class="mdi-icon "
+                                fill="currentColor"
+                                height="24"
+                                title="Artifact URL (Copied!)"
+                                viewBox="0 0 24 24"
+                                width="24"
+                              >
+                                <path
+                                  d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+                                />
+                              </svg>
+                            </td>
+                          </tr>
+                          <tr
+                            class="MuiTableRow-root TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 MuiTableRow-hover"
+                          >
+                            <td
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
+                            >
+                              <a
+                                class="TaskRunsCard-artifactLink-11"
+                                href="/tasks/eR1kMya2SruyMaRMZguROg/runs/0/logs/apple/banana.log"
+                              >
+                                <div
+                                  class="TaskRunsCard-iconDiv-18"
+                                >
+                                  <svg
+                                    class="mdi-icon "
+                                    fill="currentColor"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    width="24"
+                                  >
+                                    <path
+                                      d="M13,9H18.5L13,3.5V9M6,2H14L20,8V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V4C4,2.89 4.89,2 6,2M15,18V16H6V18H15M18,14V12H6V14H18Z"
+                                    />
+                                  </svg>
+                                </div>
+                                <div
+                                  class="TaskRunsCard-artifactNameWrapper-13"
+                                >
+                                  <button
+                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-logButton-6 Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-info-28 Label-disabled-23 Mui-disabled"
+                                    disabled=""
+                                    tabindex="-1"
+                                    type="button"
+                                  >
+                                    <span
+                                      class="MuiButton-label"
+                                    >
+                                      LOG
+                                    </span>
+                                  </button>
+                                  <div
+                                    class="TaskRunsCard-artifactName-14"
+                                  >
+                                    apple/banana.log
+                                  </div>
+                                </div>
+                                <div>
+                                  <svg
+                                    class="mdi-icon "
+                                    fill="currentColor"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    width="24"
+                                  >
+                                    <path
+                                      d="M3.9,12C3.9,10.29 5.29,8.9 7,8.9H11V7H7A5,5 0 0,0 2,12A5,5 0 0,0 7,17H11V15.1H7C5.29,15.1 3.9,13.71 3.9,12M8,13H16V11H8V13M17,7H13V8.9H17C18.71,8.9 20.1,10.29 20.1,12C20.1,13.71 18.71,15.1 17,15.1H13V17H17A5,5 0 0,0 22,12A5,5 0 0,0 17,7Z"
+                                    />
+                                  </svg>
+                                </div>
+                              </a>
+                            </td>
+                            <td
+                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard-copyButton-19 MuiTableCell-sizeSmall"
+                            >
+                              <svg
+                                class="mdi-icon "
+                                fill="currentColor"
+                                height="24"
+                                title="Artifact URL (Copied!)"
+                                viewBox="0 0 24 24"
+                                width="24"
+                              >
+                                <path
+                                  d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+                                />
+                              </svg>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <hr
+                      class="MuiDivider-root"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <li
+            class="MuiListItem-root MuiListItem-gutters"
           >
-            A run will be created when the task gets scheduled.
-          </p>
+            <div
+              class="MuiListItemText-root MuiListItemText-multiline"
+            >
+              <span
+                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+              >
+                Reason Resolved
+              </span>
+              <p
+                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+              >
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-default-27 Label-disabled-23 Mui-disabled"
+                  disabled=""
+                  tabindex="-1"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label"
+                  >
+                    COMPLETED
+                  </span>
+                </button>
+              </p>
+            </div>
+          </li>
+          <div
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-35 MuiListItem-gutters MuiListItem-button"
+            role="button"
+            tabindex="0"
+            title="2022-02-03T14:41:19.706Z (Copy)"
+          >
+            <div
+              class="MuiListItemText-root MuiListItemText-multiline"
+            >
+              <span
+                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+              >
+                Scheduled
+              </span>
+              <p
+                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+              >
+                14 days ago
+              </p>
+            </div>
+            <svg
+              class="mdi-icon "
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+            >
+              <path
+                d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </div>
+          <div
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-35 MuiListItem-gutters MuiListItem-button"
+            role="button"
+            tabindex="0"
+            title="2022-02-03T14:43:54.086Z (Copy)"
+          >
+            <div
+              class="MuiListItemText-root MuiListItemText-multiline"
+            >
+              <span
+                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+              >
+                Started
+              </span>
+              <p
+                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+              >
+                14 days ago (3 minutes later)
+              </p>
+            </div>
+            <svg
+              class="mdi-icon "
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+            >
+              <path
+                d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </div>
+          <div
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-35 MuiListItem-gutters MuiListItem-button"
+            role="button"
+            tabindex="0"
+            title="2022-02-03T14:45:28.396Z (Copy)"
+          >
+            <div
+              class="MuiListItemText-root MuiListItemText-multiline"
+            >
+              <span
+                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+              >
+                Resolved
+              </span>
+              <p
+                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+              >
+                14 days ago (2 minutes later)
+              </p>
+            </div>
+            <svg
+              class="mdi-icon "
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+            >
+              <path
+                d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </div>
+        </ul>
+        <div
+          class="MuiList-root"
+        >
+          <li
+            class="MuiListItem-root MuiListItem-gutters"
+          >
+            <div
+              class="MuiListItemText-root MuiListItemText-multiline"
+            >
+              <span
+                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+              >
+                Reason Created
+              </span>
+              <p
+                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+              >
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-default-27 Label-disabled-23 Mui-disabled"
+                  disabled=""
+                  tabindex="-1"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label"
+                  >
+                    SCHEDULED
+                  </span>
+                </button>
+              </p>
+            </div>
+          </li>
+          <li
+            class="MuiListItem-root MuiListItem-gutters"
+          >
+            <div
+              class="MuiListItemText-root MuiListItemText-multiline"
+            >
+              <span
+                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+              >
+                Worker Group
+              </span>
+              <p
+                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+              >
+                us-east1
+              </p>
+            </div>
+          </li>
+          <a
+            href="/provisioners/task/worker-types/queueId/workers/us-east1/7421215367664916236"
+          >
+            <div
+              aria-disabled="false"
+              class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-4 MuiListItem-gutters MuiListItem-button"
+              role="button"
+              tabindex="0"
+              title="View Worker"
+            >
+              <div
+                class="MuiListItemText-root MuiListItemText-multiline"
+              >
+                <span
+                  class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                >
+                  Worker ID
+                </span>
+                <p
+                  class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                >
+                  7421215367664916236
+                </p>
+              </div>
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+              >
+                <path
+                  d="M3.9,12C3.9,10.29 5.29,8.9 7,8.9H11V7H7A5,5 0 0,0 2,12A5,5 0 0,0 7,17H11V15.1H7C5.29,15.1 3.9,13.71 3.9,12M8,13H16V11H8V13M17,7H13V8.9H17C18.71,8.9 20.1,10.29 20.1,12C20.1,13.71 18.71,15.1 17,15.1H13V17H17A5,5 0 0,0 22,12A5,5 0 0,0 17,7Z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </div>
+          </a>
+          <div
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-35 MuiListItem-gutters MuiListItem-button"
+            role="button"
+            tabindex="0"
+            title="2022-02-03T15:03:54.082Z (Copy)"
+          >
+            <div
+              class="MuiListItemText-root MuiListItemText-multiline"
+            >
+              <span
+                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+              >
+                Taken Until
+              </span>
+              <p
+                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+              >
+                14 days ago
+              </p>
+            </div>
+            <svg
+              class="mdi-icon "
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+            >
+              <path
+                d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -59,7 +59,6 @@ var (
 	configFile     *gwconfig.File
 	Features       []Feature
 
-	logName   = "public/logs/live_backing.log"
 	logPath   = filepath.Join("generic-worker", "live_backing.log")
 	debugInfo map[string]string
 
@@ -573,10 +572,8 @@ func ClaimWork() *TaskRun {
 			Queue:             taskQueue,
 			TaskClaimResponse: tcqueue.TaskClaimResponse(taskResponse),
 			Artifacts:         map[string]artifacts.TaskArtifact{},
-			featureArtifacts: map[string]string{
-				logName: "Native Log",
-			},
-			LocalClaimTime: localClaimTime,
+			featureArtifacts:  map[string]string{},
+			LocalClaimTime:    localClaimTime,
 		}
 		task.StatusManager = NewTaskStatusManager(task)
 		return task
@@ -901,7 +898,12 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 			defer panic(r)
 		}
 		task.closeLog(logHandle)
-		err.add(task.uploadLog(logName, filepath.Join(taskContext.TaskDir, logPath)))
+		if task.Payload.Features.BackingLog {
+			err.add(task.uploadLog(task.Payload.Logs.Backing, filepath.Join(taskContext.TaskDir, logPath)))
+		}
+		if config.CleanUpTaskDirs {
+			_ = os.Remove(filepath.Join(taskContext.TaskDir, logPath))
+		}
 	}()
 
 	task.logHeader()
@@ -947,6 +949,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 				continue
 			}
 			reservedArtifacts := taskFeature.ReservedArtifacts()
+			task.featureArtifacts[task.Payload.Logs.Backing] = "Backing log"
 			for _, a := range reservedArtifacts {
 				if f := task.featureArtifacts[a]; f != "" {
 					err.add(MalformedPayloadError(fmt.Errorf("Feature %q wishes to publish artifact %v but feature %v has already reserved this artifact name", feature.Name(), a, f)))
