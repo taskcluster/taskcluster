@@ -2,6 +2,8 @@ package main
 
 import (
 	"testing"
+
+	"github.com/mcuadros/go-defaults"
 )
 
 func TestRunAsAdministratorDisabled(t *testing.T) {
@@ -19,6 +21,7 @@ func TestRunAsAdministratorDisabled(t *testing.T) {
 		},
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
@@ -45,6 +48,7 @@ func TestRunAsAdministratorEnabledMissingScopes(t *testing.T) {
 			"Administrators",
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{
 		"generic-worker:os-group:" + td.ProvisionerID + "/" + td.WorkerType + "/Administrators",
@@ -72,6 +76,7 @@ func TestRunAsAdministratorMissingOSGroup(t *testing.T) {
 			RunAsAdministrator: true,
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{
 		"generic-worker:run-as-administrator:" + td.ProvisionerID + "/" + td.WorkerType,
@@ -99,6 +104,7 @@ func TestChainOfTrustWithRunAsAdministrator(t *testing.T) {
 			RunAsAdministrator: true,
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{
 		"generic-worker:run-as-administrator:" + td.ProvisionerID + "/" + td.WorkerType,
@@ -133,6 +139,7 @@ func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
 			RunAsAdministrator: false, // FALSE !!!!
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{
 		"generic-worker:run-as-administrator:" + td.ProvisionerID + "/" + td.WorkerType,
@@ -176,6 +183,7 @@ func TestRunAsAdministratorEnabled(t *testing.T) {
 			"Administrators",
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{
 		"generic-worker:run-as-administrator:" + td.ProvisionerID + "/" + td.WorkerType,

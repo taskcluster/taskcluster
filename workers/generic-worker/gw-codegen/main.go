@@ -10,11 +10,10 @@ import (
 	"regexp"
 	"strings"
 
-	"golang.org/x/tools/imports"
-
 	"github.com/kr/text"
 	"github.com/taskcluster/taskcluster/v48/internal/jsontest"
 	"github.com/taskcluster/taskcluster/v48/tools/jsonschema2go"
+	"golang.org/x/tools/imports"
 	"sigs.k8s.io/yaml"
 )
 

@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/mcuadros/go-defaults"
 )
 
 // Note we don't want to set config.NumberOfTasksToRun on multiuser engine
@@ -20,6 +22,7 @@ func TestNewTaskDirectoryForEachTask(t *testing.T) {
 		Command:    returnExitCode(0),
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	for i := uint(0); i < config.NumberOfTasksToRun; i++ {
 		_ = scheduleTask(t, td, payload)

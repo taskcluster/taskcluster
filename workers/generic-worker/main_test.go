@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,6 +21,7 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 		Command:    returnExitCode(1),
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
@@ -154,6 +156,7 @@ func TestNonExecutableBinaryFailsTask(t *testing.T) {
 		Command:    commands,
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")

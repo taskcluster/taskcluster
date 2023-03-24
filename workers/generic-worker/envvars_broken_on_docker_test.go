@@ -4,6 +4,8 @@ package main
 
 import (
 	"testing"
+
+	"github.com/mcuadros/go-defaults"
 )
 
 func TestWorkerLocation(t *testing.T) {
@@ -41,6 +43,7 @@ func TestWorkerLocation(t *testing.T) {
 		),
 		MaxRunTime: 180,
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 

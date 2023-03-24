@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/gwconfig"
 )
@@ -48,6 +49,7 @@ func TestWhoAmI(t *testing.T) {
 		Command:    goRun("whoami.go", strconv.FormatBool(config.RunTasksAsCurrentUser)),
 		MaxRunTime: 180,
 	}
+	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
 

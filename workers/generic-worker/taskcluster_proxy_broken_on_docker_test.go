@@ -6,6 +6,8 @@ import (
 	"encoding/base64"
 	"os"
 	"testing"
+
+	"github.com/mcuadros/go-defaults"
 )
 
 func TestTaskclusterProxy(t *testing.T) {
@@ -43,6 +45,12 @@ func TestTaskclusterProxy(t *testing.T) {
 			TaskclusterProxy: true,
 		},
 	}
+	defaults.SetDefaults(&payload)
+
+	// need to set _after_ setting defaults, since this is the zero value
+	// so setting it before would cause SetDefaults to change it to true
+	payload.Features.LiveLog = false
+
 	for _, envVar := range []string{
 		"PATH",
 		"GOPATH",

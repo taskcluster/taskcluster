@@ -3,6 +3,8 @@ package main
 import (
 	"strings"
 	"testing"
+
+	"github.com/mcuadros/go-defaults"
 )
 
 // Exit codes specified in OnExitStatus should resolve as itermittent
@@ -15,6 +17,7 @@ func TestIntermittentCodeCommandIntermittent(t *testing.T) {
 			Retry: []int64{123},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "intermittent-task")
@@ -33,6 +36,7 @@ func TestIntermittentCodeCommandFailure(t *testing.T) {
 			Retry: []int64{123},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
@@ -48,6 +52,7 @@ func TestIntermittentCodeCommandSuccess(t *testing.T) {
 			Retry: []int64{780},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
@@ -63,6 +68,7 @@ func TestIntermittentListCommandIntermittent(t *testing.T) {
 			Retry: []int64{780, 10, 2},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "intermittent-task")
@@ -81,6 +87,7 @@ func TestIntermittentEmptyListCommandSuccess(t *testing.T) {
 			Retry: []int64{},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
@@ -96,6 +103,7 @@ func TestIntermittentEmptyListCommandFailure(t *testing.T) {
 			Retry: []int64{},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
@@ -111,6 +119,7 @@ func TestIntermittentNegativeExitCode(t *testing.T) {
 			Retry: []int64{-1},
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")

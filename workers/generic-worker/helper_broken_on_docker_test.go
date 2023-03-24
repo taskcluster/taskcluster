@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/httpbackoff/v3"
 	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
 	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
@@ -42,6 +43,7 @@ func CancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 		Command:    command,
 		MaxRunTime: 300,
 	}
+	defaults.SetDefaults(&payload)
 	fullCreds := config.Credentials()
 	td = testTask(t)
 	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/"+t.Name(), time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")
