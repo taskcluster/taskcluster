@@ -49,12 +49,20 @@ async function deprecatedStatusHandler(message) {
     } while (params.continuationToken && state === 'success');
   } else if ([exchangeNames.taskException, exchangeNames.taskFailed].includes(message.exchange)) {
     state = 'failure';
-  } else if (message.exchange === exchangeNames.taskRunning && build.state !== 'pending') {
+  } else if (message.exchange === exchangeNames.taskRunning) {
     // if build is not pending, it means it was already resolved as success or failure
     // seeing a running task means it was retried, so we should set the status back to pending
-    state = 'pending';
+    if (build.state !== 'pending') {
+      state = 'pending';
+    } else {
+      // no need to update state at this point, as we need the final status
+      debug(`Not updating status for ${taskGroupId} as it is still pending`);
+      return;
+    }
   } else {
+    // this shouldn't happen .. but just in case
     debug(`Cannot determine state from message exchange: ${message.exchange}`);
+    return;
   }
 
   await this.context.db.fns.set_github_build_state(taskGroupId, state);

@@ -838,6 +838,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await assertStatusUpdate('pending');
       await assertBuildState('pending');
     });
+    test('task running not changing state if it is pending', async function() {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-running',
+        routingKey: 'route.statuses',
+        runId: 0,
+        state: 'running',
+      });
+      assert(github.inst(9988).repos.createCommitStatus.calledOnce === false);
+      await assertBuildState('pending');
+    });
   });
 
   suite('Checks API: result status handler', function () {
