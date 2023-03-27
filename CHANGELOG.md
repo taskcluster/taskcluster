@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v48.2.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6130](https://github.com/taskcluster/taskcluster/issues/6130)
+This patch ensures that the worker pool ID passed to generic worker contains a slash (`/`) and will error out describing the issue as opposed to panicing when an `index out of range` error.
+
+### USERS
+
+▶ [patch] [bug 1590886](http://bugzil.la/1590886)
+Fix Github statuses: skip unnecessary API updates when task starts running.
+
 ## v48.2.0
 
 ### USERS
