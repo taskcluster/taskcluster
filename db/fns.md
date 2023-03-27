@@ -1698,8 +1698,7 @@ in the previous page.
 * *Returns*: `integer`
 * *Last defined on version*: 82
 
-Return number of tasks that exist in the current task group
-at the moment of the call.
+Return number of tasks that exist in the current task group.
 
 ### get_task_group2
 

@@ -29,7 +29,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     metadata: {
       name,
       description: 'Task created during unit tests',
-      owner: 'jonsafj@mozilla.com',
+      owner: 'tceng@taskcluster.net',
       source: 'https://github.com/taskcluster/taskcluster',
     },
     ...extra,

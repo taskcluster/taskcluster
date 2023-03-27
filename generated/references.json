@@ -14960,7 +14960,7 @@
           "fields": {
             "cancelledCount": "Total count of tasks whose state was changed",
             "taskGroupId": "The task group id.",
-            "taskGroupSize": "Total count of tasks in group at the moment of cancellation"
+            "taskGroupSize": "Total count of tasks in group"
           },
           "level": "notice",
           "name": "taskGroupCancelled",

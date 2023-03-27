@@ -48,7 +48,8 @@ an error if new task is being added to it.
 To cancel all tasks within a single task group, utilize the queue.cancelTaskGroup method.
 This method cancels all tasks that are yet to be resolved,
 while tasks that have already expired will remain unchanged.
-It is important to note that this operation is only possible when the task group has been sealed.
+It is important to note that this operation is only possible once the task group
+has been sealed by calling the `queue.sealTaskGroup` method
 
 It is safe to call this endpoint multiple times, and each call will only cancel
 tasks that have not already been canceled.

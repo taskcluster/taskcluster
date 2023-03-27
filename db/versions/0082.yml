@@ -60,8 +60,7 @@ methods:
       end
   get_task_group_size:
     description: |-
-      Return number of tasks that exist in the current task group
-      at the moment of the call.
+      Return number of tasks that exist in the current task group.
     mode: read
     serviceName: queue
     args: task_group_id_in text

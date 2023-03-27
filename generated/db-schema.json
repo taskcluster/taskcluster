@@ -6489,7 +6489,7 @@
           "args": "task_group_id_in text",
           "body": "begin\n  return (select count(*)\n  from tasks\n  where tasks.task_group_id = task_group_id_in);\nend",
           "deprecated": false,
-          "description": "Return number of tasks that exist in the current task group\nat the moment of the call.",
+          "description": "Return number of tasks that exist in the current task group.",
           "mode": "read",
           "returns": "integer",
           "serviceName": "queue"
