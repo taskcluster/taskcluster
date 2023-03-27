@@ -65,6 +65,8 @@ class Handlers {
     this.queueClient = null;
 
     this.handlersCount = {};
+
+    this.exchangeNames = {};
   }
 
   /**
@@ -103,6 +105,15 @@ class Handlers {
     const schedulerId = this.context.cfg.taskcluster.schedulerId;
     const queueEvents = new taskcluster.QueueEvents({ rootUrl: this.rootUrl });
 
+    this.exchangeNames = {
+      taskDefined: queueEvents.taskDefined().exchange,
+      taskFailed: queueEvents.taskFailed().exchange,
+      taskException: queueEvents.taskException().exchange,
+      taskCompleted: queueEvents.taskCompleted().exchange,
+      taskRunning: queueEvents.taskRunning().exchange,
+      taskGroupResolved: queueEvents.taskGroupResolved().exchange,
+    };
+
     // Listen for state changes of tasks and update check runs on github
     const taskStatusBindings = [
       queueEvents.taskDefined(`route.${this.context.cfg.app.checkTaskRoute}`),
@@ -117,6 +128,7 @@ class Handlers {
     // tasks. We wait for the entire group to be resolved before checking
     // for success.
     const deprecatedResultStatusBindings = [
+      queueEvents.taskRunning(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskFailed(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskException(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskGroupResolved({ schedulerId }),

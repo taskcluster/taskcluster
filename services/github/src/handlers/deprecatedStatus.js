@@ -24,9 +24,11 @@ async function deprecatedStatusHandler(message) {
     installationId: build.installation_id,
   });
 
+  const { exchangeNames } = this;
+
   let state = 'success';
 
-  if (message.exchange.endsWith('task-group-resolved')) {
+  if (message.exchange === exchangeNames.taskGroupResolved) {
     let params = {};
     do {
       let group = await this.queueClient.listTaskGroup(message.payload.taskGroupId, params);
@@ -45,10 +47,14 @@ async function deprecatedStatusHandler(message) {
         }
       }
     } while (params.continuationToken && state === 'success');
-  }
-
-  if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
+  } else if ([exchangeNames.taskException, exchangeNames.taskFailed].includes(message.exchange)) {
     state = 'failure';
+  } else if (message.exchange === exchangeNames.taskRunning && build.state !== 'pending') {
+    // if build is not pending, it means it was already resolved as success or failure
+    // seeing a running task means it was retried, so we should set the status back to pending
+    state = 'pending';
+  } else {
+    debug(`Cannot determine state from message exchange: ${message.exchange}`);
   }
 
   await this.context.db.fns.set_github_build_state(taskGroupId, state);
