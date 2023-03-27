@@ -156,6 +156,9 @@ func podmanRunCommand(containerName string, payload *dockerworker.DockerWorkerPa
 	if payload.Capabilities.Privileged {
 		command.WriteString(" --privileged")
 	}
+	if payload.Features.AllowPtrace {
+		command.WriteString(" --cap-add=SYS_PTRACE")
+	}
 	command.WriteString(createVolumeMountsString(payload.Cache, wdcs))
 	command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
 	command.WriteString(podmanEnvMappings(payload.Env))
