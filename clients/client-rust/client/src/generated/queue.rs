@@ -289,6 +289,33 @@ impl Queue {
         (path, query)
     }
 
+    /// Cancel Task Group
+    ///
+    /// This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)
+    /// with the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.
+    ///
+    /// It is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.
+    /// If the task group is not sealed, this method will return a 409 response.
+    ///
+    /// It is possible to rerun a canceled task which will result in a new run.
+    /// Calling `cancelTaskGroup` again in this case will only cancel the new run.
+    /// Other tasks that were already canceled would not be canceled again.
+    pub async fn cancelTaskGroup(&self, taskGroupId: &str) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::cancelTaskGroup_details(taskGroupId);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for cancelTaskGroup
+    fn cancelTaskGroup_details<'a>(taskGroupId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-group/{}/cancel", urlencode(taskGroupId));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Get Task Group
     ///
     /// Get task group information by `taskGroupId`.

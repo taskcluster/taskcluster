@@ -204,6 +204,13 @@ type TaskGroupInfo {
   sealed: DateTime
 }
 
+type CancelTaskGroupInfo {
+  taskGroupId: String!
+  taskGroupSize: Int!
+  cancelledCount: Int!
+  taskIds: [String]!
+}
+
 type TaskGroupConnection implements Connection {
   # Task group attributes
   taskGroup: TaskGroupInfo
@@ -314,6 +321,9 @@ extend type Mutation {
 
   # This method seals task group
   sealTaskGroup(taskGroupId: ID!): TaskGroupInfo
+
+  # cancel all unresolved tasks in task group
+  cancelTaskGroup(taskGroupId: ID!): CancelTaskGroupInfo
 }
 
 extend type Subscription {

@@ -1,0 +1,73 @@
+version: 82
+description: cancel multiple tasks for a given taskGroupId
+methods:
+  cancel_task_group:
+    description: |-
+      This cancels all non-resolved tasks for the given task group
+      by calling existing cancel_task() procedure. It will return
+      only the tasks that were cancelled with this call.
+    mode: write
+    serviceName: queue
+    args: task_group_id_in text, reason text
+    returns: |-
+      table(
+        task_id text,
+        task_queue_id text,
+        project_id text,
+        scheduler_id text,
+        task_group_id text,
+        deadline timestamptz,
+        expires timestamptz,
+        retries_left integer,
+        routes jsonb,
+        runs jsonb,
+        taken_until timestamptz
+      )
+    body: |-
+      declare
+        task_record RECORD;
+        cancellation_result RECORD;
+      begin
+        FOR task_record IN (
+          SELECT tasks.task_id, tasks.deadline
+          FROM tasks
+          WHERE tasks.task_group_id = task_group_id_in
+            AND tasks.deadline > now()
+          FOR UPDATE
+        )
+        LOOP
+          -- call cancel which will check status and create an exception run
+          SELECT cancel_task(task_record.task_id, reason) INTO cancellation_result;
+          -- only return result if task was cancelled
+          IF cancellation_result IS NOT NULL THEN
+            RETURN QUERY
+              SELECT
+                tasks.task_id,
+                tasks.task_queue_id,
+                tasks.project_id,
+                tasks.scheduler_id,
+                tasks.task_group_id,
+                tasks.deadline,
+                tasks.expires,
+                tasks.retries_left,
+                tasks.routes,
+                tasks.runs,
+                tasks.taken_until
+              FROM tasks
+              WHERE tasks.task_id = task_record.task_id;
+          END IF;
+        END LOOP;
+      end
+  get_task_group_size:
+    description: |-
+      Return number of tasks that exist in the current task group.
+    mode: read
+    serviceName: queue
+    args: task_group_id_in text
+    returns: integer
+    body: |-
+      begin
+        return (select count(*)
+        from tasks
+        where tasks.task_group_id = task_group_id_in);
+      end

@@ -1,0 +1,40 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Cancel Task-Group Response"
+description: |
+  Response from a `cancelTaskGroup` request.
+type:               object
+properties:
+  taskGroupId:
+    title:          "Task-Group Identifier"
+    description: |
+      Identifier for the task-group being listed.
+    type:           string
+    pattern:        {$const: slugid-pattern}
+  taskGroupSize:
+    type:           integer
+    minimum:        0
+    title:          "Task-Group size"
+    description: |
+      Current count of tasks in the task group.
+  cancelledCount:
+    type:           integer
+    minimum:        0
+    title:          "Total number of cancelled tasks"
+    description: |
+      Total number of tasks that were cancelled with this call.
+      It includes all non-resolved tasks.
+  taskIds:
+    type:           array
+    title:          "List of task IDs"
+    description: |
+      List of `taskIds` cancelled by this call.
+    uniqueItems: true
+    items:
+      type:         string
+      pattern:      {$const: slugid-pattern}
+additionalProperties: false
+required:
+ - taskGroupId
+ - taskGroupSize
+ - cancelledCount
+ - taskIds

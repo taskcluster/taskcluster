@@ -155,6 +155,10 @@ module.exports = {
       const taskGroup = await clients.queue.sealTaskGroup(taskGroupId);
       return taskGroup;
     },
+    async cancelTaskGroup(parent, { taskGroupId }, { clients }) {
+      const taskGroup = await clients.queue.cancelTaskGroup(taskGroupId);
+      return taskGroup;
+    },
   },
   Subscription: {
     // by taskGroupId

@@ -6472,6 +6472,30 @@
       },
       "migrationScript": "begin\n  alter table task_groups add column sealed timestamptz null;\nend",
       "version": 81
+    },
+    {
+      "description": "cancel multiple tasks for a given taskGroupId",
+      "methods": {
+        "cancel_task_group": {
+          "args": "task_group_id_in text, reason text",
+          "body": "declare\n  task_record RECORD;\n  cancellation_result RECORD;\nbegin\n  FOR task_record IN (\n    SELECT tasks.task_id, tasks.deadline\n    FROM tasks\n    WHERE tasks.task_group_id = task_group_id_in\n      AND tasks.deadline > now()\n    FOR UPDATE\n  )\n  LOOP\n    -- call cancel which will check status and create an exception run\n    SELECT cancel_task(task_record.task_id, reason) INTO cancellation_result;\n    -- only return result if task was cancelled\n    IF cancellation_result IS NOT NULL THEN\n      RETURN QUERY\n        SELECT\n          tasks.task_id,\n          tasks.task_queue_id,\n          tasks.project_id,\n          tasks.scheduler_id,\n          tasks.task_group_id,\n          tasks.deadline,\n          tasks.expires,\n          tasks.retries_left,\n          tasks.routes,\n          tasks.runs,\n          tasks.taken_until\n        FROM tasks\n        WHERE tasks.task_id = task_record.task_id;\n    END IF;\n  END LOOP;\nend",
+          "deprecated": false,
+          "description": "This cancels all non-resolved tasks for the given task group\nby calling existing cancel_task() procedure. It will return\nonly the tasks that were cancelled with this call.",
+          "mode": "write",
+          "returns": "table(\n  task_id text,\n  task_queue_id text,\n  project_id text,\n  scheduler_id text,\n  task_group_id text,\n  deadline timestamptz,\n  expires timestamptz,\n  retries_left integer,\n  routes jsonb,\n  runs jsonb,\n  taken_until timestamptz\n)",
+          "serviceName": "queue"
+        },
+        "get_task_group_size": {
+          "args": "task_group_id_in text",
+          "body": "begin\n  return (select count(*)\n  from tasks\n  where tasks.task_group_id = task_group_id_in);\nend",
+          "deprecated": false,
+          "description": "Return number of tasks that exist in the current task group.",
+          "mode": "read",
+          "returns": "integer",
+          "serviceName": "queue"
+        }
+      },
+      "version": 82
     }
   ]
 }

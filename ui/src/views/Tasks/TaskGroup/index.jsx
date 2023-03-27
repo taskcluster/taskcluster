@@ -27,6 +27,7 @@ import HelpView from '../../../components/HelpView';
 import TaskGroupProgress from '../../../components/TaskGroupProgress';
 import TaskGroupTable from '../../../components/TaskGroupTable';
 import TaskActionForm from '../../../components/TaskActionForm';
+import Snackbar from '../../../components/Snackbar';
 import {
   TASK_GROUP_PAGE_SIZE,
   VALID_TASK,
@@ -49,11 +50,16 @@ import TaskGroupStats from '../../../components/TaskGroupStats';
 import CopyToClipboardListItem from '../../../components/CopyToClipboardListItem';
 import DateDistance from '../../../components/DateDistance';
 import sealTaskGroupQuery from './sealTaskGroup.graphql';
+import cancelTaskGroupQuery from './cancelTaskGroup.graphql';
 
 const initialTaskGroupActions = [
   {
     name: 'sealTaskGroup',
     title: 'Seal Task Group',
+  },
+  {
+    name: 'cancelTaskGroup',
+    title: 'Cancel Task Group',
   },
 ];
 const initialActionData = {
@@ -70,9 +76,23 @@ const initialActionData = {
       schema: false,
     },
   },
+  cancelTaskGroup: {
+    action: {
+      name: 'cancelTaskGroup',
+      title: 'Cancel Task Group',
+      description: `### Cancel Task Group
+  This operation will cancel Task Group.
+  All non-resolved tasks would be cancelled.
+
+  Task Group has to be sealed before.
+      `,
+      schema: false,
+    },
+  },
 };
 const initialActionInputs = {
   sealTaskGroup: '',
+  cancelTaskGroup: '',
 };
 const updateTaskGroupIdHistory = id => {
   if (!VALID_TASK.test(id)) {
@@ -222,6 +242,11 @@ export default class TaskGroup extends Component {
     taskGroupWasRunningOnPageLoad: false,
     statsOpen: false,
     taskGroupInfo: false,
+    snackbar: {
+      message: '',
+      variant: 'success',
+      open: false,
+    },
   };
 
   get taskGroupInfo() {
@@ -375,6 +400,9 @@ export default class TaskGroup extends Component {
       case 'sealTaskGroup':
         return !taskGroupInfo || !!taskGroupInfo.sealed;
 
+      case 'cancelTaskGroup':
+        return !taskGroupInfo || !taskGroupInfo.sealed;
+
       default:
         return false;
     }
@@ -432,11 +460,11 @@ export default class TaskGroup extends Component {
     this.preRunningAction();
 
     const apolloClient = this.props.client;
+    const {
+      data: { taskGroup },
+    } = this.props;
 
     if (name === 'sealTaskGroup') {
-      const {
-        data: { taskGroup },
-      } = this.props;
       const {
         data: { sealTaskGroup },
       } = await apolloClient.mutate({
@@ -446,8 +474,28 @@ export default class TaskGroup extends Component {
         },
       });
 
-      this.setState({
-        taskGroupInfo: sealTaskGroup,
+      this.setState({ taskGroupInfo: sealTaskGroup });
+      this.handleSnackbarOpen({
+        message: 'Task Group sealed',
+        open: true,
+      });
+
+      return null;
+    }
+
+    if (name === 'cancelTaskGroup') {
+      const {
+        data: { cancelTaskGroup },
+      } = await apolloClient.mutate({
+        mutation: cancelTaskGroupQuery,
+        variables: {
+          taskGroupId: taskGroup.taskGroup.taskGroupId,
+        },
+      });
+
+      this.handleSnackbarOpen({
+        message: `Tasks cancelled: ${cancelTaskGroup.cancelledCount} out of ${cancelTaskGroup.taskGroupSize}.`,
+        open: true,
       });
 
       return null;
@@ -495,6 +543,20 @@ export default class TaskGroup extends Component {
     }
 
     this.props.history.push(`/tasks/groups/${taskGroupId}`);
+  };
+
+  handleSnackbarOpen = ({ message, variant = 'success', open }) => {
+    this.setState({ snackbar: { message, variant, open } });
+  };
+
+  handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    this.setState({
+      snackbar: { message: '', variant: 'success', open: false },
+    });
   };
 
   fetchMoreTasks = () => {
@@ -696,6 +758,7 @@ export default class TaskGroup extends Component {
       notifyDialogOpen,
       notifyPreferences,
       statsOpen,
+      snackbar,
     } = this.state;
     const bellIconSize = 16;
     const {
@@ -904,6 +967,7 @@ export default class TaskGroup extends Component {
             </FormControl>
           }
         />
+        <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Dashboard>
     );
   }

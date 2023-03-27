@@ -21,7 +21,12 @@ func init() {
 	cancelCmd := &cobra.Command{
 		Use:   "cancel <taskGroupId>",
 		Short: "Cancel a whole group by taskGroupId.",
-		RunE:  executeHelperE(runCancel),
+		Long: "This method fetches all tasks in the given task group, and cancels\n" +
+			"all tasks with respect to worker-type filter if given.\n\n" +
+			"Note that there is a more efficient way to cancel a task group with API:\n\n" +
+			"taskcluster api queue sealTaskGroup <taskGroupId> # seal task group is required before calling cancelTaskGroup \n" +
+			"taskcluster api queue cancelTaskGroup <taskGroupId> # cancel all at once\n",
+		RunE: executeHelperE(runCancel),
 	}
 	cancelCmd.Flags().StringP("worker-type", "w", "", "Only cancel tasks with a certain worker type.")
 	cancelCmd.Flags().BoolP("force", "f", false, "Skip cancellation confirmation.")

@@ -309,6 +309,116 @@ builder.declare({
   return res.reply(result);
 });
 
+const cancelSingleTask = async (task, ctx) => {
+  // Get the last run, there should always be one
+  let run = _.last(task.runs);
+  if (!run) {
+    let err = new Error('There should exist a run after cancelSingleTask!');
+    err.taskId = task.taskId;
+    err.status = task.status();
+    ctx.monitor.reportError(err);
+  }
+
+  // Construct status object
+  let status = task.status();
+
+  // If the last run was canceled, resolve dependencies and publish message
+  if (run && run.state === 'exception' && run.reasonResolved === 'canceled') {
+    // Update dependency tracker
+    await ctx.queueService.putResolvedMessage(
+      task.taskId,
+      task.taskGroupId,
+      task.schedulerId,
+      'exception',
+    );
+
+    // Publish message about the exception
+    const runId = task.runs.length - 1;
+    await ctx.publisher.taskException(_.defaults({
+      status,
+      runId,
+    }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
+    ctx.monitor.log.taskException({ taskId: task.taskId, runId });
+  }
+
+  return status;
+};
+
+/** Cancel all tasks in a group */
+builder.declare({
+  method: 'post',
+  route: '/task-group/:taskGroupId/cancel',
+  name: 'cancelTaskGroup',
+  scopes: 'queue:cancel-task-group:<schedulerId>/<taskGroupId>',
+  stability: APIBuilder.stability.experimental,
+  category: 'Tasks',
+  input: undefined,
+  output: 'cancel-task-group-response.yml',
+  title: 'Cancel Task Group',
+  description: [
+    'This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)',
+    'with the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.',
+    '',
+    'It is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.',
+    'If the task group is not sealed, this method will return a 409 response.',
+    '',
+    'It is possible to rerun a canceled task which will result in a new run.',
+    'Calling `cancelTaskGroup` again in this case will only cancel the new run.',
+    'Other tasks that were already canceled would not be canceled again.',
+  ].join('\n'),
+}, async function(req, res) {
+  const taskGroupId = req.params.taskGroupId;
+
+  const taskGroup = await TaskGroup.get(this.db, taskGroupId);
+  if (!taskGroup) {
+    return res.reportError('ResourceNotFound',
+      'No task-group with taskGroupId: `{{taskGroupId}}`', {
+        taskGroupId,
+      },
+    );
+  }
+  if (!taskGroup.sealed) {
+    return res.reportError('RequestConflict',
+      'Cannot cancel unsealed task group: `{{taskGroupId}}`', {
+        taskGroupId,
+      },
+    );
+  }
+
+  await req.authorize({
+    taskGroupId,
+    schedulerId: taskGroup.schedulerId,
+  });
+
+  // this will iterate and cancel all tasks that can be canceled and return all tasks
+  const [allTasks, taskGroupSize] = await Promise.all([
+    this.db.fns.cancel_task_group(taskGroupId, 'canceled'),
+    this.db.fns.get_task_group_size(taskGroupId),
+  ]);
+
+  const response = {
+    taskGroupSize: taskGroupSize[0].get_task_group_size,
+    taskIds: [],
+    cancelledCount: 0,
+    taskGroupId,
+  };
+
+  for (let task of allTasks) {
+    task = Task.fromDb(task);
+    await cancelSingleTask(task, this);
+    response.cancelledCount++;
+    response.taskIds.push(task.taskId);
+  }
+
+  this.monitor.log.taskGroupCancelled({
+    taskGroupId,
+    taskGroupSize: response.taskGroupSize,
+    cancelledCount: response.cancelledCount,
+  });
+
+  return res.reply(response);
+});
+
 /** Get task group info */
 builder.declare({
   method: 'get',
@@ -347,7 +457,7 @@ builder.declare({
   method: 'post',
   route: '/task-group/:taskGroupId/seal',
   name: 'sealTaskGroup',
-  scopes: 'queue:seal-task-group:<taskGroupId>',
+  scopes: 'queue:seal-task-group:<schedulerId>/<taskGroupId>',
   stability: APIBuilder.stability.experimental,
   category: 'Task Groups',
   input: undefined,
@@ -369,6 +479,11 @@ builder.declare({
         taskGroupId,
       });
   }
+
+  await req.authorize({
+    taskGroupId,
+    schedulerId: taskGroup.schedulerId,
+  });
 
   const updated = TaskGroup.fromDbRows(await this.db.fns.seal_task_group(taskGroupId));
   const out = updated.serialize();
@@ -1014,36 +1129,7 @@ builder.declare({
     task = await Task.get(this.db, taskId);
   }
 
-  // Get the last run, there should always be one
-  let run = _.last(task.runs);
-  if (!run) {
-    let err = new Error('There should exist a run after cancelTask!');
-    err.taskId = task.taskId;
-    err.status = task.status();
-    this.monitor.reportError(err);
-  }
-
-  // Construct status object
-  let status = task.status();
-
-  // If the last run was canceled, resolve dependencies and publish message
-  if (run.state === 'exception' && run.reasonResolved === 'canceled') {
-    // Update dependency tracker
-    await this.queueService.putResolvedMessage(
-      taskId,
-      task.taskGroupId,
-      task.schedulerId,
-      'exception',
-    );
-
-    // Publish message about the exception
-    const runId = task.runs.length - 1;
-    await this.publisher.taskException(_.defaults({
-      status,
-      runId,
-    }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
-    this.monitor.log.taskException({ taskId, runId });
-  }
+  const status = await cancelSingleTask(task, this);
 
   return res.reply({ status });
 });

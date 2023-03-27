@@ -120,6 +120,32 @@ type (
 		StorageType string `json:"storageType"`
 	}
 
+	// Response from a `cancelTaskGroup` request.
+	CancelTaskGroupResponse struct {
+
+		// Total number of tasks that were cancelled with this call.
+		// It includes all non-resolved tasks.
+		//
+		// Mininum:    0
+		CancelledCount int64 `json:"cancelledCount"`
+
+		// Identifier for the task-group being listed.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskGroupID string `json:"taskGroupId"`
+
+		// Current count of tasks in the task group.
+		//
+		// Mininum:    0
+		TaskGroupSize int64 `json:"taskGroupSize"`
+
+		// List of `taskIds` cancelled by this call.
+		//
+		// Array items:
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskIds []string `json:"taskIds"`
+	}
+
 	// Request to claim a task for a worker to process.
 	ClaimWorkRequest struct {
 

@@ -4684,6 +4684,53 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/cancel-task-group-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response from a `cancelTaskGroup` request.\n",
+      "properties": {
+        "cancelledCount": {
+          "description": "Total number of tasks that were cancelled with this call.\nIt includes all non-resolved tasks.\n",
+          "minimum": 0,
+          "title": "Total number of cancelled tasks",
+          "type": "integer"
+        },
+        "taskGroupId": {
+          "description": "Identifier for the task-group being listed.\n",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Task-Group Identifier",
+          "type": "string"
+        },
+        "taskGroupSize": {
+          "description": "Current count of tasks in the task group.\n",
+          "minimum": 0,
+          "title": "Task-Group size",
+          "type": "integer"
+        },
+        "taskIds": {
+          "description": "List of `taskIds` cancelled by this call.\n",
+          "items": {
+            "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+            "type": "string"
+          },
+          "title": "List of task IDs",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "taskGroupId",
+        "taskGroupSize",
+        "cancelledCount",
+        "taskIds"
+      ],
+      "title": "Cancel Task-Group Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/cancel-task-group-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/artifact-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -14909,6 +14956,19 @@
           "version": 1
         },
         {
+          "description": "All non-resolved tasks within given task group have been cancelled.",
+          "fields": {
+            "cancelledCount": "Total count of tasks whose state was changed",
+            "taskGroupId": "The task group id.",
+            "taskGroupSize": "Total count of tasks in group"
+          },
+          "level": "notice",
+          "name": "taskGroupCancelled",
+          "title": "Task Group Cancelled",
+          "type": "task-group-cancelled",
+          "version": 1
+        },
+        {
           "description": "Task group was sealed and will no longer allow creation of tasks.",
           "fields": {
             "expires": "Date and time of task group expiration",
@@ -15661,6 +15721,23 @@
           "args": [
             "taskGroupId"
           ],
+          "category": "Tasks",
+          "description": "This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)\nwith the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.\n\nIt is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.\nIf the task group is not sealed, this method will return a 409 response.\n\nIt is possible to rerun a canceled task which will result in a new run.\nCalling `cancelTaskGroup` again in this case will only cancel the new run.\nOther tasks that were already canceled would not be canceled again.",
+          "method": "post",
+          "name": "cancelTaskGroup",
+          "output": "v1/cancel-task-group-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/cancel",
+          "scopes": "queue:cancel-task-group:<schedulerId>/<taskGroupId>",
+          "stability": "experimental",
+          "title": "Cancel Task Group",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
           "category": "Task Groups",
           "description": "Get task group information by `taskGroupId`.\n\nThis will return meta-information associated with the task group.\nIt contains information about task group expiry date or if it is sealed.\n\nIf you also want to see which tasks belong to this task group, you can call\n`listTaskGroup` method.",
           "method": "get",
@@ -15686,7 +15763,7 @@
           "query": [
           ],
           "route": "/task-group/<taskGroupId>/seal",
-          "scopes": "queue:seal-task-group:<taskGroupId>",
+          "scopes": "queue:seal-task-group:<schedulerId>/<taskGroupId>",
           "stability": "experimental",
           "title": "Seal Task Group",
           "type": "function"

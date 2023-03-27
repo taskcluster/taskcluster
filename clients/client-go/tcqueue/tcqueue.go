@@ -273,6 +273,29 @@ func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limi
 	return (&cd).SignedURL("/task-group/"+url.QueryEscape(taskGroupId)+"/list", v, duration)
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)
+// with the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.
+//
+// It is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.
+// If the task group is not sealed, this method will return a 409 response.
+//
+// It is possible to rerun a canceled task which will result in a new run.
+// Calling `cancelTaskGroup` again in this case will only cancel the new run.
+// Other tasks that were already canceled would not be canceled again.
+//
+// Required scopes:
+//
+//	queue:cancel-task-group:<schedulerId>/<taskGroupId>
+//
+// See #cancelTaskGroup
+func (queue *Queue) CancelTaskGroup(taskGroupId string) (*CancelTaskGroupResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task-group/"+url.QueryEscape(taskGroupId)+"/cancel", new(CancelTaskGroupResponse), nil)
+	return responseObject.(*CancelTaskGroupResponse), err
+}
+
 // Get task group information by `taskGroupId`.
 //
 // This will return meta-information associated with the task group.
@@ -313,7 +336,7 @@ func (queue *Queue) GetTaskGroup_SignedURL(taskGroupId string, duration time.Dur
 //
 // Required scopes:
 //
-//	queue:seal-task-group:<taskGroupId>
+//	queue:seal-task-group:<schedulerId>/<taskGroupId>
 //
 // See #sealTaskGroup
 func (queue *Queue) SealTaskGroup(taskGroupId string) (*TaskGroupDefinitionResponse, error) {

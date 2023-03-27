@@ -77,6 +77,7 @@
    * [`azure_queue_put`](#azure_queue_put)
    * [`azure_queue_update`](#azure_queue_update)
    * [`cancel_task`](#cancel_task)
+   * [`cancel_task_group`](#cancel_task_group)
    * [`check_task_claim`](#check_task_claim)
    * [`claim_task`](#claim_task)
    * [`create_queue_artifact`](#create_queue_artifact)
@@ -93,6 +94,7 @@
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+   * [`get_task_group_size`](#get_task_group_size)
    * [`get_task_group2`](#get_task_group2)
    * [`get_task_projid`](#get_task_projid)
    * [`get_task_queue`](#get_task_queue)
@@ -1229,6 +1231,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`azure_queue_put`](#azure_queue_put)
 * [`azure_queue_update`](#azure_queue_update)
 * [`cancel_task`](#cancel_task)
+* [`cancel_task_group`](#cancel_task_group)
 * [`check_task_claim`](#check_task_claim)
 * [`claim_task`](#claim_task)
 * [`create_queue_artifact`](#create_queue_artifact)
@@ -1245,6 +1248,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+* [`get_task_group_size`](#get_task_group_size)
 * [`get_task_group2`](#get_task_group2)
 * [`get_task_projid`](#get_task_projid)
 * [`get_task_queue`](#get_task_queue)
@@ -1388,6 +1392,30 @@ If the current run is pending or running, mark it as exception with the given
 reason.  If the task is unscheduled, a run with that status is
 created to represent the cancellation.  This returns the task's updated
 status, or nothing if the current status was not as expected.
+
+### cancel_task_group
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `reason text`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  project_id text`
+  * `  scheduler_id text`
+  * `  task_group_id text`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  retries_left integer`
+  * `  routes jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz `
+* *Last defined on version*: 82
+
+This cancels all non-resolved tasks for the given task group
+by calling existing cancel_task() procedure. It will return
+only the tasks that were cancelled with this call.
 
 ### check_task_claim
 
@@ -1661,6 +1689,16 @@ by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify
 where the page of results should begin, and must all be specified if any
 are specified.  Typically these values would be drawn from the last item
 in the previous page.
+
+### get_task_group_size
+
+* *Mode*: read
+* *Arguments*:
+  * `task_group_id_in text`
+* *Returns*: `integer`
+* *Last defined on version*: 82
+
+Return number of tasks that exist in the current task group.
 
 ### get_task_group2
 
