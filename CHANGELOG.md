@@ -3,6 +3,23 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v48.2.0
+
+### USERS
+
+▶ [minor] [#3652](https://github.com/taskcluster/taskcluster/issues/3652)
+It is now possible to cancel a sealed task group by calling the `queue.cancelTaskGroup` API method.
+This will cancel all scheduled/pending/running tasks within given group.
+
+▶ [patch] [bug 1590886](http://bugzil.la/1590886)
+Github service update statuses back to pending when task is retried.
+
+### DEVELOPERS
+
+▶ [minor] [#5993](https://github.com/taskcluster/taskcluster/issues/5993)
+Adds the `liveLog` and `backingLog` feature flags to the generic worker payload so they can be disabled for a task. These are enabled by default.
+Adds the `logs` property to the generic worker payload allowing customization of the live and backing log artifact names.
+
 ## v48.1.1
 
 ### USERS

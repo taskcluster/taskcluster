@@ -44,7 +44,7 @@ var (
 
 	// VersionNumber is a formatted string with the version information. This is
 	// filled in by `yarn release`
-	VersionNumber = "48.1.1"
+	VersionNumber = "48.2.0"
 )
 
 var log = root.Logger
