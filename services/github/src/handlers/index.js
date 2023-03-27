@@ -65,6 +65,8 @@ class Handlers {
     this.queueClient = null;
 
     this.handlersCount = {};
+
+    this.exchangeNames = {};
   }
 
   /**
@@ -102,6 +104,15 @@ class Handlers {
 
     const schedulerId = this.context.cfg.taskcluster.schedulerId;
     const queueEvents = new taskcluster.QueueEvents({ rootUrl: this.rootUrl });
+
+    this.exchangeNames = {
+      taskDefined: queueEvents.taskDefined().exchange,
+      taskFailed: queueEvents.taskFailed().exchange,
+      taskException: queueEvents.taskException().exchange,
+      taskCompleted: queueEvents.taskCompleted().exchange,
+      taskRunning: queueEvents.taskRunning().exchange,
+      taskGroupResolved: queueEvents.taskGroupResolved().exchange,
+    };
 
     // Listen for state changes of tasks and update check runs on github
     const taskStatusBindings = [
