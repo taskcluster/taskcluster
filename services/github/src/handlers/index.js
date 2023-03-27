@@ -117,6 +117,7 @@ class Handlers {
     // tasks. We wait for the entire group to be resolved before checking
     // for success.
     const deprecatedResultStatusBindings = [
+      queueEvents.taskRunning(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskFailed(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskException(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskGroupResolved({ schedulerId }),

@@ -49,6 +49,10 @@ async function deprecatedStatusHandler(message) {
 
   if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
     state = 'failure';
+  } else if (message.exchange.endsWith('task-running') && build.state !== 'pending') {
+    // if build is not pending, it means it was already resolved as success or failure
+    // seeing a running task means it was retried, so we should set the status back to pending
+    state = 'pending';
   }
 
   await this.context.db.fns.set_github_build_state(taskGroupId, state);

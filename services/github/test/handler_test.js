@@ -814,6 +814,30 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await assertStatusUpdate('failure');
       await assertBuildState('failure');
     });
+    test('task rerun sets status back from success to pending', async function() {
+      await addBuild({ state: 'success', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-running',
+        routingKey: 'route.statuses',
+        runId: 0,
+        state: 'running',
+      });
+      await assertStatusUpdate('pending');
+      await assertBuildState('pending');
+    });
+    test('task rerun sets status back from failure to pending', async function() {
+      await addBuild({ state: 'failure', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-running',
+        routingKey: 'route.statuses',
+        runId: 0,
+        state: 'running',
+      });
+      await assertStatusUpdate('pending');
+      await assertBuildState('pending');
+    });
   });
 
   suite('Checks API: result status handler', function () {
