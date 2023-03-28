@@ -52,7 +52,7 @@ properties:
   quarantineDetails:
     title:       "Worker Quarantine Details"
     description: |
-      This is a list of changes to the worker's quarantine status. Each entry is a an object
+      This is a list of changes to the worker's quarantine status. Each entry is an object
       containing information about the time, clientId and reason for the change.
     type:        array
     uniqueItems: false
