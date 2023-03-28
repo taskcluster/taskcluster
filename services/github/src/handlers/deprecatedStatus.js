@@ -2,7 +2,7 @@ const { makeDebug, taskGroupUI } = require('./utils');
 
 /**
  * Post updates to GitHub, when the status of a task changes. Uses Statuses API
- * Taskcluster States: https://docs.taskcluster.net/reference/platform/queue/references/events
+ * Taskcluster States: https://docs.taskcluster.net/docs/reference/platform/queue/exchanges
  * GitHub Statuses: https://developer.github.com/v3/repos/statuses/
  **/
 async function deprecatedStatusHandler(message) {

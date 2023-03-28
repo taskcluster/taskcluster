@@ -348,7 +348,7 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 		return MalformedPayloadError(taskMount.payloadError)
 	}
 	// Check if any caches need to be purged. See:
-	//   https://docs.taskcluster.net/reference/core/purge-cache
+	//   https://docs.taskcluster.net/docs/reference/core/purge-cache
 	err := taskMount.purgeCaches()
 	// Two possible strategies if we can't reach purgecache service:
 	//
