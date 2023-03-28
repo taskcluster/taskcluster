@@ -222,6 +222,7 @@
       "expires": "timestamp with time zone not null",
       "first_claim": "timestamp with time zone not null",
       "last_date_active": "timestamp with time zone",
+      "quarantine_details": "jsonb",
       "quarantine_until": "timestamp with time zone not null",
       "recent_tasks": "jsonb not null",
       "task_queue_id": "text not null",
@@ -6496,6 +6497,38 @@
         }
       },
       "version": 82
+    },
+    {
+      "description": "Allow adding metadata to quarantined workers",
+      "downgradeScript": "begin\n  alter table queue_workers drop column quarantine_details;\nend",
+      "methods": {
+        "get_queue_worker_with_wm_join": {
+          "deprecated": true
+        },
+        "get_queue_worker_with_wm_join_2": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz",
+          "body": "begin\n  return query\n  select\n    queue_workers.task_queue_id as worker_pool_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.quarantine_details,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active,\n    workers.state,\n    workers.capacity,\n    workers.provider_id,\n    public.gen_random_uuid()\n  from queue_workers\n  full outer join workers on workers.worker_id = queue_workers.worker_id\n    and workers.worker_pool_id = queue_workers.task_queue_id\n    and workers.worker_group = queue_workers.worker_group\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in and\n    (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);\n  end",
+          "deprecated": false,
+          "description": "Get a non-expired queue worker by worker_pool_id, worker_group, and worker_id.\nWorkers are not considered expired until after their quarantine date expires.\nThis also performs an outer join with the worker_manager.worker table for more data.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, quarantine_until timestamptz, quarantine_details jsonb, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, state text, capacity int4, provider_id text, etag uuid)",
+          "serviceName": "worker_manager"
+        },
+        "quarantine_queue_worker_with_last_date_active": {
+          "deprecated": true
+        },
+        "quarantine_queue_worker_with_last_date_active_and_details": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz, quarantine_details_in jsonb",
+          "body": "begin\n  return query update queue_workers\n  set\n    quarantine_until = quarantine_until_in,\n    expires = greatest(queue_workers.expires, now() + interval '1 day'),\n    -- append new row to the quarantine details array if it exists or create new\n    quarantine_details = case\n      when queue_workers.quarantine_details is null then\n        jsonb_build_array(quarantine_details_in)\n      else\n        queue_workers.quarantine_details || quarantine_details_in\n    end\n  where\n    queue_workers.task_queue_id = task_queue_id_in and\n    queue_workers.worker_group = worker_group_in and\n    queue_workers.worker_id = worker_id_in\n  returning\n    queue_workers.task_queue_id,\n    queue_workers.worker_group,\n    queue_workers.worker_id,\n    queue_workers.quarantine_until,\n    queue_workers.expires,\n    queue_workers.first_claim,\n    queue_workers.recent_tasks,\n    queue_workers.last_date_active,\n    queue_workers.quarantine_details;\nend",
+          "deprecated": false,
+          "description": "Update the quarantine_until date for a worker.  The Queue service interprets a date in the past\nas \"not quarantined\".  This function also \"bumps\" the expiration of the worker so that un-quarantined\nworkers do not immediately expire.  Returns the worker row just as get_queue_worker would, or no rows if\nno such worker exists.\nAdditional metadata can be added to the worker to help identify the reason for the quarantine.\nWorker will keep a history of all quarantine details.",
+          "mode": "write",
+          "returns": "table(task_queue_id text, worker_group text, worker_id text, quarantine_until timestamptz, expires timestamptz, first_claim timestamptz, recent_tasks jsonb, last_date_active timestamptz, quarantine_details jsonb)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  alter table queue_workers add column quarantine_details jsonb;\nend",
+      "version": 83
     }
   ]
 }

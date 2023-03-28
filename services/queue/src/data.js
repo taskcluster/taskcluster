@@ -444,6 +444,7 @@ class Worker {
       workerGroup: row.worker_group,
       workerId: row.worker_id,
       quarantineUntil: row.quarantine_until,
+      quarantineDetails: row.quarantine_details || {},
       expires: row.expires,
       firstClaim: row.first_claim,
       recentTasks: row.recent_tasks,
@@ -470,6 +471,7 @@ class Worker {
       ...input,
       // convert to dates
       quarantineUntil: new Date(input.quarantineUntil),
+      quarantineDetails: input.quarantine_details || {},
       expires: new Date(input.expires),
       firstClaim: new Date(input.firstClaim),
       recentTasks: input.recentTasks || [],

@@ -43,9 +43,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     delete fetched.firstClaim;
     delete fetched.recentTasks;
     delete fetched.lastDateActive;
+    delete fetched.quarantineDetails;
     delete fetched._properties.firstClaim;
     delete fetched._properties.recentTasks;
     delete fetched._properties.lastDateActive;
+    delete fetched._properties.quarantineDetails;
+
     assert.deepEqual(fetched, w);
 
     // now we update the worker as if registerWorker happened

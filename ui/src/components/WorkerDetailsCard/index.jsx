@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { format, parseISO } from 'date-fns';
-import { List, ListItem, ListItemText } from '@material-ui/core';
+import { List, ListItem, ListItemText, Typography } from '@material-ui/core';
 import DateDistance from '../DateDistance';
 import Label from '../Label';
 import StatusLabel from '../StatusLabel';
@@ -21,7 +21,13 @@ export default class WorkerDetailsCard extends Component {
 
   render() {
     const {
-      worker: { quarantineUntil, firstClaim, lastDateActive, state },
+      worker: {
+        quarantineUntil,
+        quarantineDetails,
+        firstClaim,
+        lastDateActive,
+        state,
+      },
     } = this.props;
 
     return (
@@ -51,6 +57,41 @@ export default class WorkerDetailsCard extends Component {
               }
             />
           </ListItem>
+          {quarantineDetails?.length > 0 && (
+            <ListItem>
+              <ListItemText
+                primary="Quarantine History"
+                secondary={
+                  <ul>
+                    {quarantineDetails.map(
+                      ({
+                        clientId,
+                        updatedAt,
+                        quarantineUntil,
+                        quarantineInfo,
+                      }) => (
+                        <li key={updatedAt}>
+                          {clientId} on{' '}
+                          <em>
+                            {format(parseISO(updatedAt), 'yyyy/MM/dd HH:ii')}
+                          </em>
+                          {' | '}
+                          Until:{' '}
+                          {format(
+                            parseISO(quarantineUntil),
+                            'yyyy/MM/dd'
+                          )}:{' '}
+                          <Typography variant="body2" component="em">
+                            {quarantineInfo}
+                          </Typography>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                }
+              />
+            </ListItem>
+          )}
           <ListItem>
             <ListItemText
               primary="Worker State"
