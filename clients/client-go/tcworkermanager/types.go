@@ -892,7 +892,7 @@ type (
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
 
-		// This is a list of changes to the worker's quarantine status. Each entry is a an object
+		// This is a list of changes to the worker's quarantine status. Each entry is an object
 		// containing information about the time, clientId and reason for the change.
 		QuarantineDetails []QuarantineDetails `json:"quarantineDetails,omitempty"`
 

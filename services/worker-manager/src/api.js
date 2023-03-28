@@ -918,7 +918,6 @@ builder.declare({
         capacity: worker.capacity || 0,
         providerId: worker.providerId || 'none',
         quarantineUntil: worker.quarantineUntil?.toJSON(),
-        quarantineDetails: worker.quarantineDetails,
       };
       if (worker.recentTasks.length > 0) {
         entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];

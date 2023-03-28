@@ -321,7 +321,7 @@ class Worker {
   // Get a queue worker from the DB, or undefined if it does not exist.
   static async getQueueWorker(db, workerPoolId, workerGroup, workerId, expires) {
     return Worker.fromDbRows(
-      await db.fns.get_queue_worker_with_wm_join2(
+      await db.fns.get_queue_worker_with_wm_join_2(
         workerPoolId,
         workerGroup,
         workerId,

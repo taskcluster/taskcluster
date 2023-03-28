@@ -101,7 +101,7 @@
           "$ref": "task.json#/properties/provisionerId"
         },
         "quarantineDetails": {
-          "description": "This is a list of changes to the worker's quarantine status. Each entry is a an object\ncontaining information about the time, clientId and reason for the change.\n",
+          "description": "This is a list of changes to the worker's quarantine status. Each entry is an object\ncontaining information about the time, clientId and reason for the change.\n",
           "items": {
             "additionalProperties": false,
             "description": "Information about when and why a worker was quarantined.\n",
@@ -2242,7 +2242,7 @@
           "$ref": "task.json#/properties/provisionerId"
         },
         "quarantineDetails": {
-          "description": "This is a list of changes to the worker's quarantine status. Each entry is a an object\ncontaining information about the time, clientId and reason for the change.\n",
+          "description": "This is a list of changes to the worker's quarantine status. Each entry is an object\ncontaining information about the time, clientId and reason for the change.\n",
           "items": {
             "additionalProperties": false,
             "description": "Information about when and why a worker was quarantined.\n",
