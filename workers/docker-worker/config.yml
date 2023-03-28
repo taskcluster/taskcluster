@@ -113,6 +113,9 @@ defaults:
     # Tasks should be removed from the queue if they have been dequeued a lot.
     # Possible signs that the task is bad
     dequeueCount: 15
+    # Maximum amount of time to wait for the task setup (e.g. downloading
+    # docker images), in seconds
+    maxSetupTime: 600
 
   taskQueue:
     # Task queue will be polled on a frequent interval for new pending tasks

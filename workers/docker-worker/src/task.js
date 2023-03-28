@@ -811,6 +811,13 @@ class Task extends EventEmitter {
       );
     }
 
+    let maxSetupTimeMS = this.runtime.task.maxSetupTime * 1000;
+    let setupTimeoutId = setTimeout(async function() {
+      await this.abortRun(fmtErrorLog(
+        'Task setup timeout after %d seconds. Aborting.',
+        this.runtime.task.maxSetupTime));
+    }.bind(this), maxSetupTimeMS);
+
     // Download the docker image needed for this task... This may fail in
     // unexpected ways and should be handled gracefully to indicate to the user
     // that their task has failed due to a image specific problem rather then
@@ -871,6 +878,8 @@ class Task extends EventEmitter {
     dockerProc.stdout.pipe(this.stream, {
       end: false,
     });
+
+    clearTimeout(setupTimeoutId);
 
     let runtimeTimeoutId = this.setRuntimeTimeout(this.task.payload.maxRunTime);
 
