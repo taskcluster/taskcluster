@@ -56,6 +56,7 @@ export default class ViewWorker extends Component {
         props.worker && props.worker.quarantineUntil
           ? parseISO(props.worker.quarantineUntil)
           : addYears(new Date(), 1000),
+      quarantineInfo: '',
     };
   }
 
@@ -87,6 +88,10 @@ export default class ViewWorker extends Component {
     this.setState({ quarantineUntilInput: parseISO(target.value) });
   };
 
+  handleQuarantineInfoChange = ({ target }) => {
+    this.setState({ quarantineInfo: target.value });
+  };
+
   handleQuarantineDialogSubmit = async () => {
     const {
       provisionerId,
@@ -108,6 +113,7 @@ export default class ViewWorker extends Component {
           quarantineUntil: new Date(
             this.state.quarantineUntilInput
           ).toISOString(),
+          quarantineInfo: this.state.quarantineInfo,
         },
       },
       refetchQueries: ['ViewWorker'],
@@ -214,6 +220,7 @@ export default class ViewWorker extends Component {
       selectedAction,
       actionLoading,
       quarantineUntilInput,
+      quarantineInfo,
       dialogError,
       terminateDialogError,
       terminateDialogOpen,
@@ -348,6 +355,15 @@ export default class ViewWorker extends Component {
                           type="date"
                           value={format(quarantineUntilInput, 'yyyy-MM-dd')}
                           onChange={this.handleQuarantineChange}
+                        />
+                        <br />
+                        <TextField
+                          id="info"
+                          label="Quarantine comment"
+                          type="text"
+                          fullWidth
+                          value={quarantineInfo}
+                          onChange={this.handleQuarantineInfoChange}
                         />
                       </Fragment>
                     }

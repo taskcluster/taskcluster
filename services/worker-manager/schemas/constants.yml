@@ -169,3 +169,38 @@ action-url-description: |
   | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
 
   _Note: The request needs to be signed with the user's Taskcluster credentials._
+
+quarantine-details-item:
+  type:       object
+  title:      "Quarantine Details"
+  description: |
+    Information about when and why a worker was quarantined.
+  properties:
+    clientId:
+      title:        "Quarantine ClientId"
+      description: |
+        The clientId of the client that made the request to quarantine the worker.
+      type:         string
+    quarantineUntil:
+      title:        "Quarantine Until"
+      description: |
+        Value of the worker's quarantineUntil property at the moment of the quarantine.
+      type:         string
+      format:       date-time
+    updatedAt:
+      title:        "Updated At"
+      description: |
+        Time when the quarantine was updated.
+      type:         string
+      format:       date-time
+    quarantineInfo:
+      title:        "Quarantine Info"
+      description: |
+        Usually a reason for the quarantine.
+      type:         string
+  required:
+    - clientId
+    - updatedAt
+    - quarantineUntil
+    - quarantineInfo
+  additionalProperties: false

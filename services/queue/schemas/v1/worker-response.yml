@@ -49,6 +49,47 @@ properties:
       somewhere in the past).
     type:         "string"
     format:       date-time
+  quarantineDetails:
+    title:       "Worker Quarantine Details"
+    description: |
+      This is a list of changes to the worker's quarantine status. Each entry is a an object
+      containing information about the time, clientId and reason for the change.
+    type:        array
+    uniqueItems: false
+    items:
+      type:       object
+      title:      "Quarantine Details"
+      description: |
+        Information about when and why a worker was quarantined.
+      properties:
+        clientId:
+          title:        "Quarantine ClientId"
+          description: |
+            The clientId of the client that made the request to quarantine the worker.
+          type:         string
+        quarantineUntil:
+          title:        "Quarantine Until"
+          description: |
+            Value of the worker's quarantineUntil property at the moment of the quarantine.
+          type:         string
+          format:       date-time
+        updatedAt:
+          title:        "Updated At"
+          description: |
+            Time when the quarantine was updated.
+          type:         string
+          format:       date-time
+        quarantineInfo:
+          title:        "Quarantine Info"
+          description: |
+            Usually a reason for the quarantine.
+          type:         string
+      required:
+        - clientId
+        - updatedAt
+        - quarantineUntil
+        - quarantineInfo
+      additionalProperties: false
   firstClaim:
     title:        "First task claimed"
     description: |

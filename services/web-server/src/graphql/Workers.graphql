@@ -4,6 +4,13 @@ type LatestTask {
   run: TaskRun
 }
 
+type QuarantineDetails {
+  updatedAt: DateTime!
+  clientId: String!
+  quarantineUntil: DateTime!
+  quarantineInfo: String!
+}
+
 type WorkerCompact {
   workerId: ID!
   workerGroup: String!
@@ -11,6 +18,7 @@ type WorkerCompact {
   firstClaim: DateTime!
   latestTask: LatestTask
   quarantineUntil: DateTime
+  quarantineDetails: [QuarantineDetails]
   provisionerId: String!
   workerType: String!
   state: String
@@ -45,6 +53,9 @@ type Worker {
   # Note that a quarantine can be lifted by setting quarantineUntil to the present time (or somewhere in the past).
   quarantineUntil: DateTime
 
+  # A history of changes to the quarantine status of this worker.
+  quarantineDetails: [QuarantineDetails]
+
   # Date of the first time this worker claimed a task.
   firstClaim: DateTime!
 
@@ -78,6 +89,7 @@ type Worker {
 
 input WorkerQuarantine {
   quarantineUntil: DateTime
+  quarantineInfo: String
 }
 
 type WorkersCompactEdge implements Edge {

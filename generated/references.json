@@ -100,6 +100,48 @@
         "provisionerId": {
           "$ref": "task.json#/properties/provisionerId"
         },
+        "quarantineDetails": {
+          "description": "This is a list of changes to the worker's quarantine status. Each entry is a an object\ncontaining information about the time, clientId and reason for the change.\n",
+          "items": {
+            "additionalProperties": false,
+            "description": "Information about when and why a worker was quarantined.\n",
+            "properties": {
+              "clientId": {
+                "description": "The clientId of the client that made the request to quarantine the worker.\n",
+                "title": "Quarantine ClientId",
+                "type": "string"
+              },
+              "quarantineInfo": {
+                "description": "Usually a reason for the quarantine.\n",
+                "title": "Quarantine Info",
+                "type": "string"
+              },
+              "quarantineUntil": {
+                "description": "Value of the worker's quarantineUntil property at the moment of the quarantine.\n",
+                "format": "date-time",
+                "title": "Quarantine Until",
+                "type": "string"
+              },
+              "updatedAt": {
+                "description": "Time when the quarantine was updated.\n",
+                "format": "date-time",
+                "title": "Updated At",
+                "type": "string"
+              }
+            },
+            "required": [
+              "clientId",
+              "updatedAt",
+              "quarantineUntil",
+              "quarantineInfo"
+            ],
+            "title": "Quarantine Details",
+            "type": "object"
+          },
+          "title": "Worker Quarantine Details",
+          "type": "array",
+          "uniqueItems": false
+        },
         "quarantineUntil": {
           "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",
           "format": "date-time",
@@ -2199,6 +2241,48 @@
         "provisionerId": {
           "$ref": "task.json#/properties/provisionerId"
         },
+        "quarantineDetails": {
+          "description": "This is a list of changes to the worker's quarantine status. Each entry is a an object\ncontaining information about the time, clientId and reason for the change.\n",
+          "items": {
+            "additionalProperties": false,
+            "description": "Information about when and why a worker was quarantined.\n",
+            "properties": {
+              "clientId": {
+                "description": "The clientId of the client that made the request to quarantine the worker.\n",
+                "title": "Quarantine ClientId",
+                "type": "string"
+              },
+              "quarantineInfo": {
+                "description": "Usually a reason for the quarantine.\n",
+                "title": "Quarantine Info",
+                "type": "string"
+              },
+              "quarantineUntil": {
+                "description": "Value of the worker's quarantineUntil property at the moment of the quarantine.\n",
+                "format": "date-time",
+                "title": "Quarantine Until",
+                "type": "string"
+              },
+              "updatedAt": {
+                "description": "Time when the quarantine was updated.\n",
+                "format": "date-time",
+                "title": "Updated At",
+                "type": "string"
+              }
+            },
+            "required": [
+              "clientId",
+              "updatedAt",
+              "quarantineUntil",
+              "quarantineInfo"
+            ],
+            "title": "Quarantine Details",
+            "type": "object"
+          },
+          "title": "Worker Quarantine Details",
+          "type": "array",
+          "uniqueItems": false
+        },
         "quarantineUntil": {
           "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",
           "format": "date-time",
@@ -3494,6 +3578,13 @@
       "additionalProperties": false,
       "description": "Request to update a worker's quarantineUntil property.\n",
       "properties": {
+        "quarantineInfo": {
+          "description": "A message to be included in the worker's quarantine details. This message will be\nappended to the existing quarantine details to keep a history of the worker's quarantine.\n",
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Worker Quarantine Info",
+          "type": "string"
+        },
         "quarantineUntil": {
           "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",
           "format": "date-time",

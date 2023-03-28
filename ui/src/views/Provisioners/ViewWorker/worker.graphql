@@ -5,6 +5,12 @@ query ViewWorker($provisionerId: String!, $workerType: String!, $workerGroup: St
     workerGroup
     workerId
     quarantineUntil
+    quarantineDetails  {
+      updatedAt
+      clientId
+      quarantineUntil
+      quarantineInfo
+    }
     expires
     firstClaim
     lastDateActive

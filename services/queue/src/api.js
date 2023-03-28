@@ -2251,14 +2251,22 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { provisionerId, workerType, workerGroup, workerId } = req.params;
-  const { quarantineUntil } = req.body;
+  const { quarantineUntil, quarantineInfo } = req.body;
   const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
-  const [result] = await this.db.fns.quarantine_queue_worker_with_last_date_active({
+  const quarantineDetails = {
+    clientId: await req.clientId() || 'unknown-client',
+    updatedAt: new Date().toJSON(),
+    quarantineUntil,
+    quarantineInfo: quarantineInfo || '[unspecified]',
+  };
+
+  const [result] = await this.db.fns.quarantine_queue_worker_with_last_date_active_and_details({
     task_queue_id_in: taskQueueId,
     worker_group_in: workerGroup,
     worker_id_in: workerId,
     quarantine_until_in: quarantineUntil,
+    quarantine_details_in: quarantineDetails,
   });
 
   if (!result) {

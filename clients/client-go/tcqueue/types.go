@@ -738,8 +738,31 @@ type (
 		Stability string `json:"stability"`
 	}
 
+	// Information about when and why a worker was quarantined.
+	QuarantineDetails struct {
+
+		// The clientId of the client that made the request to quarantine the worker.
+		ClientID string `json:"clientId"`
+
+		// Usually a reason for the quarantine.
+		QuarantineInfo string `json:"quarantineInfo"`
+
+		// Value of the worker's quarantineUntil property at the moment of the quarantine.
+		QuarantineUntil tcclient.Time `json:"quarantineUntil"`
+
+		// Time when the quarantine was updated.
+		UpdatedAt tcclient.Time `json:"updatedAt"`
+	}
+
 	// Request to update a worker's quarantineUntil property.
 	QuarantineWorkerRequest struct {
+
+		// A message to be included in the worker's quarantine details. This message will be
+		// appended to the existing quarantine details to keep a history of the worker's quarantine.
+		//
+		// Min length: 1
+		// Max length: 4000
+		QuarantineInfo string `json:"quarantineInfo,omitempty"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
@@ -1969,6 +1992,10 @@ type (
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
+
+		// This is a list of changes to the worker's quarantine status. Each entry is a an object
+		// containing information about the time, clientId and reason for the change.
+		QuarantineDetails []QuarantineDetails `json:"quarantineDetails,omitempty"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.

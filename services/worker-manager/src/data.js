@@ -282,6 +282,7 @@ class Worker {
       etag: row.etag,
       secret: row.secret,
       quarantineUntil: row.quarantine_until,
+      quarantineDetails: row.quarantine_details || [],
       firstClaim: row.first_claim,
       recentTasks: row.recent_tasks,
       lastDateActive: row.last_date_active,
@@ -320,7 +321,7 @@ class Worker {
   // Get a queue worker from the DB, or undefined if it does not exist.
   static async getQueueWorker(db, workerPoolId, workerGroup, workerId, expires) {
     return Worker.fromDbRows(
-      await db.fns.get_queue_worker_with_wm_join(
+      await db.fns.get_queue_worker_with_wm_join2(
         workerPoolId,
         workerGroup,
         workerId,
@@ -455,6 +456,7 @@ class Worker {
       recentTasks: _.cloneDeep(this.recentTasks),
       lastDateActive: this.lastDateActive?.toJSON(),
       quarantineUntil: this.quarantineUntil?.toJSON(),
+      quarantineDetails: this.quarantineDetails || [],
     };
 
     // Remove properties that should not be in this response schema.
@@ -465,6 +467,7 @@ class Worker {
       delete worker.recentTasks;
       delete worker.lastDateActive;
       delete worker.quarantineUntil;
+      delete worker.quarantineDetails;
     }
 
     // Remove properties that should not be in this response schema.
