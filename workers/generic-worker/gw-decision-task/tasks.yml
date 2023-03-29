@@ -44,6 +44,9 @@ Tasks:
     - WorkerPool: proj-taskcluster/gw-ci-macos-10-14
       Env:
         ENGINE: multiuser
+    - WorkerPool: proj-taskcluster/gw-ci-macos-13
+      Env:
+        ENGINE: multiuser
     - WorkerPool: proj-taskcluster/gw-ci-ubuntu-22-04
       Env:
         ENGINE: multiuser
@@ -64,6 +67,10 @@ WorkerPools:
     Platform: macOS Mojave 10.14
     OS: darwin
     Arch: amd64
+  proj-taskcluster/gw-ci-macos-13:
+    Platform: macOS Ventura 13 (arm64)
+    OS: darwin
+    Arch: arm64
   proj-taskcluster/gw-ci-raspbian-stretch:
     Platform: Raspbian GNU/Linux 9 (stretch)
     OS: linux
@@ -278,6 +285,7 @@ Mounts:
         arm64:
           url: https://storage.googleapis.com/golang/go1.19.7.darwin-arm64.tar.gz
           sha256: be85d929f390351212d1fde21c460102983b6341349811bc449bd278fe8f8180
+          format: tar.gz
       linux:
         armv6l:
           url: https://storage.googleapis.com/golang/go1.19.7.linux-armv6l.tar.gz
