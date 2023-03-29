@@ -140,7 +140,7 @@
           },
           "title": "Worker Quarantine Details",
           "type": "array",
-          "uniqueItems": false
+          "uniqueItems": true
         },
         "quarantineUntil": {
           "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",
@@ -2281,7 +2281,7 @@
           },
           "title": "Worker Quarantine Details",
           "type": "array",
-          "uniqueItems": false
+          "uniqueItems": true
         },
         "quarantineUntil": {
           "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",

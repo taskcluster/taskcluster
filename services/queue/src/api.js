@@ -2255,7 +2255,7 @@ builder.declare({
   const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
   const quarantineDetails = {
-    clientId: await req.clientId() || 'unknown-client',
+    clientId: await req.clientId(),
     updatedAt: new Date().toJSON(),
     quarantineUntil,
     quarantineInfo: quarantineInfo || '[unspecified]',
