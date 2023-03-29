@@ -747,6 +747,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
     });
+
+    test('using collaborators_quiet policy should not create comment', async function () {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development', // default branch
+        content: { version: 1, policy: { pullRequests: 'collaborators_quiet' } },
+      });
+      await simulateJobMessage({ user: 'not-a-collaborator', eventType: 'pull_request.opened' });
+
+      assert(github.inst(5828).repos.createCommitStatus.callCount === 0);
+      assert(github.inst(5828).issues.createComment.callCount === 0);
+    });
   });
 
   suite('Statuses API: result status handler', function () {

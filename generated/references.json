@@ -6644,7 +6644,8 @@
               "enum": [
                 "public",
                 "public_restricted",
-                "collaborators"
+                "collaborators",
+                "collaborators_quiet"
               ],
               "type": "string"
             }
