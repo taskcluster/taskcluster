@@ -41,7 +41,7 @@ The `pullRequests` policy controls this behavior:
   Please note that only user who *created* the pull request and the user owning the head repository are being checked, even if the event itself comes from the actions of another user.
   For example, if a collaborator modifies the assignee for or re-opens a PR filed by a non-collaborator, tasks will not be started.
 
-* `collaborators_quiet` -- tasks are created if the user who made the pull request is a collaborator on the repository. we don't make any comment on the pull request if the user is not a collaborator, which we are doing in **collaborators** policy.
+* `collaborators_quiet` -- this setting ensures that tasks are only generated when the pull request's author is a collaborator on the repository. In this mode, no comments will be added to the pull request if the author is not a collaborator, as handled by the **collaborators** policy. The purpose of this option is to maintain a quieter interaction when dealing with non-collaborator users while still enabling task creation for collaborators.
 
 Github [defines collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators) as "outside collaborators, organization members with access through team memberships, organization members with access through default organization permissions, and organization owners."
 
