@@ -42,6 +42,7 @@ module.exports = async function(queue, stream, taskId, artifactPath, destination
         method: 'GET',
         url: artifactUrl,
         gzip: true,
+        timeout: 60 * 1000,
       });
       req.on('response', (res) => {
         // measure the expected HTTP response body size and actual, to compare later
