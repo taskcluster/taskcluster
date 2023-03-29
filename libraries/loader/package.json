@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-lib-loader",
   "private": true,
-  "version": "48.2.1",
+  "version": "48.3.0",
   "description": "a component loader for taskcluster",
   "main": "src/index.js",
   "directories": {

@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v48.3.0
+
+### ADMINS
+
+▶ [minor] [#4343](https://github.com/taskcluster/taskcluster/issues/4343)
+Workers can be quarantined with an optional comment. `queue.quarantineWorker` accepts a `quarantineInfo` string.
+Quarantine details also include timestamp and clientId of the user who quarantined the worker.
+This information can be fetched with `worker-manager.getWorker`.
+`quarantineDetails` would be a list of all the quarantine requests made for the worker.
+UI shows this history and allows to specify a comment for quarantine request.
+
+### USERS
+
+▶ [patch]
+Enables missing `collaborators_quiet` policy to the schema validation of `.taskcluster.yml`.
+
+▶ [patch] [bug 1824937](http://bugzil.la/1824937)
+docker-worker no longer waits indefinitely when downloading an image artifact, and will retry if the connection is idle for 60s
+
 ## v48.2.1
 
 ### WORKER-DEPLOYERS
