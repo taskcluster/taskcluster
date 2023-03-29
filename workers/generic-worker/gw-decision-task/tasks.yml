@@ -41,9 +41,6 @@ Types:
     MaxRunTime: 3600
 Tasks:
   BuildAndTest:
-    - WorkerPool: proj-taskcluster/gw-ci-macos-10-14
-      Env:
-        ENGINE: multiuser
     - WorkerPool: proj-taskcluster/gw-ci-macos-13
       Env:
         ENGINE: multiuser
@@ -63,10 +60,6 @@ Tasks:
   FormatSource:
     - WorkerPool: proj-taskcluster/gw-ci-ubuntu-22-04
 WorkerPools:
-  proj-taskcluster/gw-ci-macos-10-14:
-    Platform: macOS Mojave 10.14
-    OS: darwin
-    Arch: amd64
   proj-taskcluster/gw-ci-macos-13:
     Platform: macOS Ventura 13 (arm64)
     OS: darwin
