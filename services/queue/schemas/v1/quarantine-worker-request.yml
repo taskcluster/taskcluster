@@ -13,5 +13,13 @@ properties:
       somewhere in the past).
     type:       "string"
     format:     date-time
+  quarantineInfo:
+    title:      "Worker Quarantine Info"
+    description: |
+      A message to be included in the worker's quarantine details. This message will be
+      appended to the existing quarantine details to keep a history of the worker's quarantine.
+    type:       string
+    minLength:  1
+    maxLength:  4000
 additionalProperties: false
 required: [quarantineUntil]

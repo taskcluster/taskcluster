@@ -104,7 +104,7 @@
    * [`is_task_group_active`](#is_task_group_active)
    * [`is_task_group_sealed`](#is_task_group_sealed)
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
-   * [`quarantine_queue_worker_with_last_date_active`](#quarantine_queue_worker_with_last_date_active)
+   * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
    * [`queue_artifact_present`](#queue_artifact_present)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -150,7 +150,7 @@
    * [`expire_worker_pools`](#expire_worker_pools)
    * [`expire_workers`](#expire_workers)
    * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
-   * [`get_queue_worker_with_wm_join`](#get_queue_worker_with_wm_join)
+   * [`get_queue_worker_with_wm_join_2`](#get_queue_worker_with_wm_join_2)
    * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
    * [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
    * [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
@@ -1258,7 +1258,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`is_task_group_active`](#is_task_group_active)
 * [`is_task_group_sealed`](#is_task_group_sealed)
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
-* [`quarantine_queue_worker_with_last_date_active`](#quarantine_queue_worker_with_last_date_active)
+* [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
 * [`queue_artifact_present`](#queue_artifact_present)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -1863,7 +1863,7 @@ Return true if task group was sealed.
 
 temp, removed in next commit
 
-### quarantine_queue_worker_with_last_date_active
+### quarantine_queue_worker_with_last_date_active_and_details
 
 * *Mode*: write
 * *Arguments*:
@@ -1871,6 +1871,7 @@ temp, removed in next commit
   * `worker_group_in text`
   * `worker_id_in text`
   * `quarantine_until_in timestamptz`
+  * `quarantine_details_in jsonb`
 * *Returns*: `table`
   * `task_queue_id text`
   * `worker_group text`
@@ -1880,12 +1881,15 @@ temp, removed in next commit
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
   * `last_date_active timestamptz`
-* *Last defined on version*: 72
+  * `quarantine_details jsonb`
+* *Last defined on version*: 83
 
 Update the quarantine_until date for a worker.  The Queue service interprets a date in the past
 as "not quarantined".  This function also "bumps" the expiration of the worker so that un-quarantined
 workers do not immediately expire.  Returns the worker row just as get_queue_worker would, or no rows if
 no such worker exists.
+Additional metadata can be added to the worker to help identify the reason for the quarantine.
+Worker will keep a history of all quarantine details.
 
 ### queue_artifact_present
 
@@ -2122,6 +2126,7 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
 ### deprecated methods
 
 * `get_task_group(task_group_id_in text)` (compatibility guaranteed until v49.0.0)
+* `quarantine_queue_worker_with_last_date_active(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz)` (compatibility guaranteed until v50.0.0)
 
 ## secrets
 
@@ -2412,7 +2417,7 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`expire_worker_pools`](#expire_worker_pools)
 * [`expire_workers`](#expire_workers)
 * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
-* [`get_queue_worker_with_wm_join`](#get_queue_worker_with_wm_join)
+* [`get_queue_worker_with_wm_join_2`](#get_queue_worker_with_wm_join_2)
 * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
 * [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
 * [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
@@ -2588,7 +2593,7 @@ worker is not quarantined, otherwise the date until which it is
 quaratined. `providers_filter_cond` and `providers_filter_value` used to
 filter `=` or `<>` provider by value.
 
-### get_queue_worker_with_wm_join
+### get_queue_worker_with_wm_join_2
 
 * *Mode*: read
 * *Arguments*:
@@ -2601,6 +2606,7 @@ filter `=` or `<>` provider by value.
   * `worker_group text`
   * `worker_id text`
   * `quarantine_until timestamptz`
+  * `quarantine_details jsonb`
   * `expires timestamptz`
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
@@ -2609,7 +2615,7 @@ filter `=` or `<>` provider by value.
   * `capacity int4`
   * `provider_id text`
   * `etag uuid`
-* *Last defined on version*: 80
+* *Last defined on version*: 83
 
 Get a non-expired queue worker by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
@@ -2997,3 +3003,7 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
+
+### deprecated methods
+
+* `get_queue_worker_with_wm_join(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v50.0.0)
