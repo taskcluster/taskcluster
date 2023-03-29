@@ -22,6 +22,7 @@ properties:
           - public
           - public_restricted
           - collaborators
+          - collaborators_quiet
     additionalProperties: false
     required: [pullRequests]
   reporting:
