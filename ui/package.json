@@ -132,6 +132,7 @@
     "jest-transform-graphql": "^2.1.0",
     "mocha": "^9.2.2",
     "neutrino": "^9.1.0",
+    "raw-loader": "^4.0.2",
     "react-addons-test-utils": "^15.6.2",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.2.3",

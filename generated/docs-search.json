@@ -1,6 +1,20 @@
 [
   {
     "element": "h1",
+    "id": "changelog-people-of-taskcluster",
+    "path": "/changelog",
+    "subtitle": null,
+    "title": "Changelog People of Taskcluster"
+  },
+  {
+    "element": "h2",
+    "id": "staff",
+    "path": "/changelog",
+    "subtitle": "Staff",
+    "title": "Changelog People of Taskcluster"
+  },
+  {
+    "element": "h1",
     "id": "taskcluster-manual",
     "path": "/manual",
     "subtitle": null,

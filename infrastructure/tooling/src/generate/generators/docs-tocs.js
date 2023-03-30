@@ -160,7 +160,7 @@ exports.tasks = [{
     const files = Object.assign({},
       ...Object.entries(filesWithExtensions)
         .map(([filename, value]) => ({ [filename.replace(/\.mdx?/, '')]: value })));
-    const [gettingStarted, resources, people] = ['README', 'resources', 'people'].map(fileName =>
+    const [gettingStarted, resources, people, changelog] = ['README', 'resources', 'people', 'changelog'].map(fileName =>
       Object.assign(files[fileName], {
         name: fileName,
         path: fileName,
@@ -178,6 +178,7 @@ exports.tasks = [{
       tutorial: makeToc({ rootPath: 'tutorial/', files }),
       resources,
       people,
+      changelog,
     };
 
     writeRepoJSON('generated/docs-table-of-contents.json', docsToc);
