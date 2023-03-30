@@ -317,7 +317,7 @@ class AwsProvider extends Provider {
     };
   }
 
-  async checkWorker({ worker }) {
+  async checkWorker({ worker, forceStop = false, removeReason = 'terminateAfter time exceeded' }) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     const monitor = this.workerMonitor({ worker });
 
@@ -352,8 +352,8 @@ class AwsProvider extends Provider {
             throw new Error(`Unknown state: ${is.InstanceState.Name} for ${is.InstanceId}`);
         }
       }
-      if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-        await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
+      if (forceStop || (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now())) {
+        await this.removeWorker({ worker, reason: removeReason });
       }
     } catch (e) {
       if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too

@@ -1,0 +1,52 @@
+version: 84
+description: Worker manager checks workers that are no longer seen to the queue
+methods:
+  get_running_workers_not_visible_to_queue:
+    description: |-
+      Get all running workers that are not visible to the queue.
+      This can happen when a worker stopped calling `claimWork` (or never did).
+      We assume that if a worker didn't become visible to the queue for 2 hours,
+      it should be stopped.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset `page_offset`.
+      `providers_filter_cond` and `providers_filter_value` used to
+      filter `=` or `<>` provider by value.
+    mode: read
+    serviceName: worker_manager
+    args: providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer
+    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          workers.worker_pool_id,
+          workers.worker_group,
+          workers.worker_id,
+          workers.provider_id,
+          workers.created,
+          workers.expires,
+          workers.state,
+          workers.provider_data,
+          workers.capacity,
+          workers.last_modified,
+          workers.last_checked,
+          workers.secret,
+          workers.etag
+        from
+          workers
+        where
+          (workers.state = 'running') and
+          (providers_filter_cond is null or providers_filter_value is null or
+            case
+              when providers_filter_cond = '='
+                then workers.provider_id = ANY(string_to_array(providers_filter_value, ','))
+              when providers_filter_cond = '<>'
+                then workers.provider_id <> ALL(string_to_array(providers_filter_value, ','))
+            end
+          )
+          and workers.last_modified < now() - interval '2 hours'
+          and workers.worker_id NOT IN (select queue_workers.worker_id from queue_workers)
+        order by worker_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end

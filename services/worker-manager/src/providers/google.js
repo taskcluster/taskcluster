@@ -356,7 +356,7 @@ class GoogleProvider extends Provider {
    * Called for every worker on a schedule so that we can update the state of
    * the worker locally
    */
-  async checkWorker({ worker }) {
+  async checkWorker({ worker, forceStop = false, removeReason = 'terminateAfter time exceeded' }) {
     const states = Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
@@ -375,8 +375,8 @@ class GoogleProvider extends Provider {
       if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
         this.seen[worker.workerPoolId] += worker.capacity || 1;
 
-        if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-          await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
+        if (forceStop || (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now())) {
+          await this.removeWorker({ worker, reason: removeReason });
         }
       } else if (['TERMINATED', 'STOPPED'].includes(status)) {
         await this._enqueue('query', () => this.compute.instances.delete({

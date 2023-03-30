@@ -86,6 +86,33 @@ class WorkerScanner {
       }
     }
 
+    // check all workers that should be force killed because they are not seen to the queue
+    const fetchZombies =
+      async (size, offset) => await this.db.fns.get_running_workers_not_visible_to_queue(
+        this.providersFilter.cond, this.providersFilter.value, size, offset);
+    for await (let row of paginatedIterator({ fetchZombies })) {
+      const worker = Worker.fromDb(row);
+      const provider = this.providers.get(worker.providerId);
+      if (provider) {
+        if (provider.setupFailed) {
+          continue;
+        }
+        try {
+          this.monitor.info(`Worker ${worker.workerGroup}/${worker.workerId} is not visible to the queue, force killing it...`);
+          await provider.checkWorker({
+            worker,
+            forceStop: true,
+            removeReason: 'worker not visible to the queue',
+          });
+        } catch (err) {
+          this.monitor.reportError(err);
+        }
+      } else {
+        this.monitor.info(
+          `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`);
+      }
+    }
+
     await this.providers.forAll(p => p.scanCleanup());
   }
 }

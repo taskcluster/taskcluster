@@ -6529,6 +6529,21 @@
       },
       "migrationScript": "begin\n  alter table queue_workers add column quarantine_details jsonb;\nend",
       "version": 83
+    },
+    {
+      "description": "Worker manager checks workers that are no longer seen to the queue",
+      "methods": {
+        "get_running_workers_not_visible_to_queue": {
+          "args": "providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.secret,\n    workers.etag\n  from\n    workers\n  where\n    (workers.state = 'running') and\n    (providers_filter_cond is null or providers_filter_value is null or\n      case\n        when providers_filter_cond = '='\n          then workers.provider_id = ANY(string_to_array(providers_filter_value, ','))\n        when providers_filter_cond = '<>'\n          then workers.provider_id <> ALL(string_to_array(providers_filter_value, ','))\n      end\n    )\n    and workers.last_modified < now() - interval '2 hours'\n    and workers.worker_id NOT IN (select queue_workers.worker_id from queue_workers)\n  order by worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get all running workers that are not visible to the queue.\nThis can happen when a worker stopped calling `claimWork` (or never did).\nWe assume that if a worker didn't become visible to the queue for 2 hours,\nit should be stopped.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset `page_offset`.\n`providers_filter_cond` and `providers_filter_value` used to\nfilter `=` or `<>` provider by value.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 84
     }
   ]
 }

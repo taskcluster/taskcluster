@@ -154,6 +154,7 @@
    * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
    * [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
    * [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
+   * [`get_running_workers_not_visible_to_queue`](#get_running_workers_not_visible_to_queue)
    * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
    * [`get_task_queues_wm`](#get_task_queues_wm)
    * [`get_worker_2`](#get_worker_2)
@@ -2421,6 +2422,7 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
 * [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
 * [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
+* [`get_running_workers_not_visible_to_queue`](#get_running_workers_not_visible_to_queue)
 * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
 * [`get_task_queues_wm`](#get_task_queues_wm)
 * [`get_worker_2`](#get_worker_2)
@@ -2706,6 +2708,39 @@ Workers are not considered expired until after their quarantine date expires.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 This also performs an outer join with the worker_manager.worker table for more data.
+
+### get_running_workers_not_visible_to_queue
+
+* *Mode*: read
+* *Arguments*:
+  * `providers_filter_cond text`
+  * `providers_filter_value text`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `worker_group text`
+  * `worker_id text`
+  * `provider_id text`
+  * `created timestamptz`
+  * `expires timestamptz`
+  * `state text`
+  * `provider_data jsonb`
+  * `capacity integer`
+  * `last_modified timestamptz`
+  * `last_checked timestamptz`
+  * `secret jsonb`
+  * `etag uuid`
+* *Last defined on version*: 84
+
+Get all running workers that are not visible to the queue.
+This can happen when a worker stopped calling `claimWork` (or never did).
+We assume that if a worker didn't become visible to the queue for 2 hours,
+it should be stopped.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset `page_offset`.
+`providers_filter_cond` and `providers_filter_value` used to
+filter `=` or `<>` provider by value.
 
 ### get_task_queue_wm_2
 

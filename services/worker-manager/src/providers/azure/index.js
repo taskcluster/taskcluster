@@ -1046,7 +1046,7 @@ class AzureProvider extends Provider {
     return { provisioningState, vmId };
   }
 
-  async checkWorker({ worker }) {
+  async checkWorker({ worker, forceStop = false, removeReason = 'terminateAfter time exceeded' }) {
     const monitor = this.workerMonitor({
       worker,
       extra: {
@@ -1077,9 +1077,8 @@ class AzureProvider extends Provider {
           this.seen[worker.workerPoolId] += worker.capacity || 1;
 
           // If the worker has not checked in recently enough, we consider it failed regardless of the Azure lifecycle
-          if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-            const reason = 'terminateAfter time exceeded';
-            await this.removeWorker({ worker, reason });
+          if (forceStop || (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now())) {
+            await this.removeWorker({ worker, reason: removeReason });
             break;
           }
 
