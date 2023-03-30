@@ -519,6 +519,7 @@ class Task extends EventEmitter {
    * @param {String} error - Option error to write to the stream prior to aborting
    */
   async abortRun(error = '') {
+    console.log(`abortRun ${error}`, new Error().stack);
     if (!this.isCanceled()) {
       this.taskState = 'aborted';
     }
@@ -812,11 +813,15 @@ class Task extends EventEmitter {
     }
 
     let maxSetupTimeMS = this.runtime.task.maxSetupTime * 1000;
-    let setupTimeoutId = setTimeout(async function() {
-      await this.abortRun(fmtErrorLog(
-        'Task setup timeout after %d seconds. Aborting.',
-        this.runtime.task.maxSetupTime));
-    }.bind(this), maxSetupTimeMS);
+    let setupTimeoutId = setTimeout(async () => {
+        console.log("setup timeout");
+        this.taskState = 'aborted';
+        if (this.dockerProcess) {this.dockerProcess.kill();}
+        this.stream.write(fmtErrorLog(
+          'Task setup timeout after %d seconds. Force killing container.',
+          this.runtime.task.maxSetupTime,
+        ));
+    }, maxSetupTimeMS);
 
     // Download the docker image needed for this task... This may fail in
     // unexpected ways and should be handled gracefully to indicate to the user
