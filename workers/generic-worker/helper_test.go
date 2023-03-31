@@ -33,6 +33,7 @@ var (
 	inAnHour       tcclient.Time
 	globalTestName string
 	testdataDir    = filepath.Join(cwd, "testdata")
+	cachesDir      = filepath.Join(cwd, "caches")
 )
 
 func setup(t *testing.T) {
@@ -166,6 +167,23 @@ func ensureResolution(t *testing.T, taskID, state, reason string) {
 		t.Log("")
 	} else {
 		t.Logf("Task %v resolved as %v/%v as required.", taskID, status.Status.Runs[0].State, status.Status.Runs[0].ReasonResolved)
+	}
+}
+
+func ensureDirContainsNFiles(t *testing.T, dir string, n int) {
+	d, err := os.Open(dir)
+	if err != nil {
+		t.Error(err)
+	}
+	defer d.Close()
+
+	files, err := d.ReadDir(0)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(files) != n {
+		t.Fatalf("Was expecting directory %v to contain %v file(s), but it contains %v", dir, n, len(files))
 	}
 }
 
@@ -324,7 +342,7 @@ func GWTest(t *testing.T) *Test {
 			AvailabilityZone: "outer-space",
 			// Need common caches directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
-			CachesDir:                      filepath.Join(cwd, "caches"),
+			CachesDir:                      cachesDir,
 			CheckForNewDeploymentEverySecs: 0,
 			CleanUpTaskDirs:                false,
 			ClientID:                       os.Getenv("TASKCLUSTER_CLIENT_ID"),
@@ -380,7 +398,7 @@ func GWTest(t *testing.T) *Test {
 	setConfigRunTasksAsCurrentUser(testConfig)
 	for _, dir := range []string{
 		filepath.Join(cwd, "downloads"),
-		filepath.Join(cwd, "caches"),
+		cachesDir,
 		filepath.Join(testdataDir, t.Name()),
 	} {
 		err := os.RemoveAll(dir)
