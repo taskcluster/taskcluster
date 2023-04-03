@@ -171,13 +171,7 @@ func ensureResolution(t *testing.T, taskID, state, reason string) {
 }
 
 func ensureDirContainsNFiles(t *testing.T, dir string, n int) {
-	d, err := os.Open(dir)
-	if err != nil {
-		t.Error(err)
-	}
-	defer d.Close()
-
-	files, err := d.ReadDir(0)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		t.Error(err)
 	}

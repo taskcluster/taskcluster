@@ -1133,12 +1133,7 @@ func PrepareTaskEnvironment() (reboot bool) {
 }
 
 func taskDirsIn(parentDir string) ([]string, error) {
-	taskDirsParent, err := os.Open(parentDir)
-	if err != nil {
-		return nil, err
-	}
-	defer taskDirsParent.Close()
-	fi, err := taskDirsParent.Readdir(-1)
+	fi, err := os.ReadDir(parentDir)
 	if err != nil {
 		return nil, err
 	}
