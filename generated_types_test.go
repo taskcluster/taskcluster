@@ -567,6 +567,15 @@ type (
 	// based on exit code of task commands.
 	ExitCodeHandling struct {
 
+		// If the task exists with a purge caches exit status, all caches
+		// associated with the task will be purged.
+		//
+		// Since: generic-worker 49.0.0
+		//
+		// Array items:
+		// Mininum:    1
+		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
+
 		// Exit codes for any command in the task payload to cause this task to
 		// be resolved as `exception/intermittent-task`. Typically the Queue
 		// will then schedule a new run of the existing `taskId` (rerun) if not
@@ -588,6 +597,19 @@ type (
 	//
 	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/onExitStatus
 	ExitCodeHandling1 struct {
+
+		// If the task exists with a purge caches exit status, all caches
+		// associated with the task will be purged.
+		//
+		// Since: generic-worker 49.0.0
+		//
+		// Array items:
+		// Mininum:    1
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/onExitStatus/properties/purgeCaches/items
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/onExitStatus/properties/purgeCaches
+		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
 
 		// Exit codes for any command in the task payload to cause this task to
 		// be resolved as `exception/intermittent-task`. Typically the Queue
@@ -946,140 +968,6 @@ type (
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
-	// This schema defines the structure of the `payload` property referred to in a
-	// Taskcluster Task definition.
-	//
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#
-	GenericWorkerPayload1 struct {
-
-		// Artifacts to be published.
-		//
-		// Since: generic-worker 1.0.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/artifacts
-		Artifacts []Artifact3 `json:"artifacts,omitempty"`
-
-		// One array per command (each command is an array of arguments). Several arrays
-		// for several commands.
-		//
-		// Since: generic-worker 0.0.1
-		//
-		// Array items:
-		// Array items:
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/command/items/items
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/command/items
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/command
-		Command [][]string `json:"command"`
-
-		// Env vars must be string to __string__ mappings (not number or boolean). For example:
-		// ```
-		// {
-		//   "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
-		//   "GOOS": "darwin",
-		//   "FOO_ENABLE": "true",
-		//   "BAR_TOTAL": "3"
-		// }
-		// ```
-		//
-		// Note, the following environment variables will automatically be set in the task
-		// commands, but may be overridden by environment variables in the task payload:
-		//   * `HOME` - the home directory of the task user
-		//   * `PATH` - `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`
-		//   * `USER` - the name of the task user
-		//
-		// The following environment variables will automatically be set in the task
-		// commands, and may not be overridden by environment variables in the task payload:
-		//   * `DISPLAY` - `:0` (Linux only)
-		//   * `TASK_ID` - the task ID of the currently running task
-		//   * `RUN_ID` - the run ID of the currently running task
-		//   * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment
-		//   * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
-		//      taskcluster authentication proxy for making unauthenticated taskcluster
-		//      API calls
-		//   * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
-		//     `true` in `generic-worker.config` file - the absolute file location of a
-		//     json file containing the current task OS user account name and password.
-		//     This is only useful for the generic-worker multiuser CI tasks, where
-		//     `runTasksAsCurrentUser` is set to `true`.
-		//   * `TASKCLUSTER_WORKER_LOCATION`. See
-		//     [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)
-		//     for details.
-		//
-		// Since: generic-worker 0.0.1
-		//
-		// Map entries:
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/env/additionalProperties
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/env
-		Env map[string]string `json:"env,omitempty"`
-
-		// Feature flags enable additional functionality.
-		//
-		// Since: generic-worker 5.3.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/features
-		Features FeatureFlags3 `json:"features,omitempty"`
-
-		// Configuration for task logs.
-		//
-		// Since: generic-worker 48.2.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/logs
-		Logs Logs1 `json:"logs,omitempty"`
-
-		// Maximum time the task container can run in seconds.
-		//
-		// Since: generic-worker 0.0.1
-		//
-		// Mininum:    1
-		// Maximum:    86400
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/maxRunTime
-		MaxRunTime int64 `json:"maxRunTime"`
-
-		// Directories and/or files to be mounted.
-		//
-		// Since: generic-worker 5.4.0
-		//
-		// Array items:
-		// One of:
-		//   * FileMount1
-		//   * WritableDirectoryCache1
-		//   * ReadOnlyDirectory1
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/mount
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/mounts
-		Mounts []json.RawMessage `json:"mounts,omitempty"`
-
-		// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
-		// if all task commands have a zero exit code, or `failed/failed` if any command has a
-		// non-zero exit code. This payload property allows customsation of the task resolution
-		// based on exit code of task commands.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/onExitStatus
-		OnExitStatus ExitCodeHandling1 `json:"onExitStatus,omitempty"`
-
-		// A list of OS Groups that the task user should be a member of. Not yet implemented on
-		// non-Windows platforms, therefore this optional property may only be an empty array if
-		// provided.
-		//
-		// Since: generic-worker 6.0.0
-		//
-		// Array items:
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/osGroups/items
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/osGroups
-		OSGroups []string `json:"osGroups,omitempty"`
-
-		// This property is allowed for backward compatibility, but is unused.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/supersederUrl
-		SupersederURL string `json:"supersederUrl,omitempty"`
-	}
-
 	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	IndexedDockerImage struct {
 		Namespace string `json:"namespace"`
@@ -1295,7 +1183,7 @@ type (
 		// Taskcluster Task definition.
 		//
 		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#
-		GenericWorkerTaskPayload GenericWorkerPayload1 `json:"genericWorkerTaskPayload"`
+		GenericWorkerTaskPayload Var `json:"genericWorkerTaskPayload"`
 
 		// Name for the test case
 		Name string `json:"name"`
@@ -1354,6 +1242,140 @@ type (
 		//
 		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[1]/properties/url
 		URL string `json:"url"`
+	}
+
+	// This schema defines the structure of the `payload` property referred to in a
+	// Taskcluster Task definition.
+	//
+	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#
+	Var struct {
+
+		// Artifacts to be published.
+		//
+		// Since: generic-worker 1.0.0
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/artifacts
+		Artifacts []Artifact3 `json:"artifacts,omitempty"`
+
+		// One array per command (each command is an array of arguments). Several arrays
+		// for several commands.
+		//
+		// Since: generic-worker 0.0.1
+		//
+		// Array items:
+		// Array items:
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/command/items/items
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/command/items
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/command
+		Command [][]string `json:"command"`
+
+		// Env vars must be string to __string__ mappings (not number or boolean). For example:
+		// ```
+		// {
+		//   "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+		//   "GOOS": "darwin",
+		//   "FOO_ENABLE": "true",
+		//   "BAR_TOTAL": "3"
+		// }
+		// ```
+		//
+		// Note, the following environment variables will automatically be set in the task
+		// commands, but may be overridden by environment variables in the task payload:
+		//   * `HOME` - the home directory of the task user
+		//   * `PATH` - `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`
+		//   * `USER` - the name of the task user
+		//
+		// The following environment variables will automatically be set in the task
+		// commands, and may not be overridden by environment variables in the task payload:
+		//   * `DISPLAY` - `:0` (Linux only)
+		//   * `TASK_ID` - the task ID of the currently running task
+		//   * `RUN_ID` - the run ID of the currently running task
+		//   * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment
+		//   * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
+		//      taskcluster authentication proxy for making unauthenticated taskcluster
+		//      API calls
+		//   * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
+		//     `true` in `generic-worker.config` file - the absolute file location of a
+		//     json file containing the current task OS user account name and password.
+		//     This is only useful for the generic-worker multiuser CI tasks, where
+		//     `runTasksAsCurrentUser` is set to `true`.
+		//   * `TASKCLUSTER_WORKER_LOCATION`. See
+		//     [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)
+		//     for details.
+		//
+		// Since: generic-worker 0.0.1
+		//
+		// Map entries:
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/env/additionalProperties
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/env
+		Env map[string]string `json:"env,omitempty"`
+
+		// Feature flags enable additional functionality.
+		//
+		// Since: generic-worker 5.3.0
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/features
+		Features FeatureFlags3 `json:"features,omitempty"`
+
+		// Configuration for task logs.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/logs
+		Logs Logs1 `json:"logs,omitempty"`
+
+		// Maximum time the task container can run in seconds.
+		//
+		// Since: generic-worker 0.0.1
+		//
+		// Mininum:    1
+		// Maximum:    86400
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/maxRunTime
+		MaxRunTime int64 `json:"maxRunTime"`
+
+		// Directories and/or files to be mounted.
+		//
+		// Since: generic-worker 5.4.0
+		//
+		// Array items:
+		// One of:
+		//   * FileMount1
+		//   * WritableDirectoryCache1
+		//   * ReadOnlyDirectory1
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/mount
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/mounts
+		Mounts []json.RawMessage `json:"mounts,omitempty"`
+
+		// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
+		// if all task commands have a zero exit code, or `failed/failed` if any command has a
+		// non-zero exit code. This payload property allows customsation of the task resolution
+		// based on exit code of task commands.
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/onExitStatus
+		OnExitStatus ExitCodeHandling1 `json:"onExitStatus,omitempty"`
+
+		// A list of OS Groups that the task user should be a member of. Not yet implemented on
+		// non-Windows platforms, therefore this optional property may only be an empty array if
+		// provided.
+		//
+		// Since: generic-worker 6.0.0
+		//
+		// Array items:
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/osGroups/items
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/osGroups
+		OSGroups []string `json:"osGroups,omitempty"`
+
+		// This property is allowed for backward compatibility, but is unused.
+		//
+		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/supersederUrl
+		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
 	WritableDirectoryCache struct {

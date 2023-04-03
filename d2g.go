@@ -204,6 +204,7 @@ func setMaxRunTime(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *gener
 
 func setOnExitStatus(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.OnExitStatus.Retry = dwPayload.OnExitStatus.Retry
+	gwPayload.OnExitStatus.PurgeCaches = dwPayload.OnExitStatus.PurgeCaches
 }
 
 func setSupersederURL(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {

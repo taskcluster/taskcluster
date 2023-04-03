@@ -131,6 +131,15 @@ type (
 	// based on exit code of task commands.
 	ExitCodeHandling struct {
 
+		// If the task exists with a purge caches exit status, all caches
+		// associated with the task will be purged.
+		//
+		// Since: generic-worker 49.0.0
+		//
+		// Array items:
+		// Mininum:    1
+		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
+
 		// Exit codes for any command in the task payload to cause this task to
 		// be resolved as `exception/intermittent-task`. Typically the Queue
 		// will then schedule a new run of the existing `taskId` (rerun) if not

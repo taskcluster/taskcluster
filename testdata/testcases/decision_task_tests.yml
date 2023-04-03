@@ -52,6 +52,10 @@ testSuite:
         log: apple/banana.log
         capabilities:
           privileged: true
+        onExitStatus:
+          purgeCaches:
+            - 123
+            - 456
         image: >-
           mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06
         maxRunTime: 3600
@@ -125,4 +129,7 @@ testSuite:
         mounts:
           - cacheName: gecko-level-3-checkouts-sparse-v3
             directory: cache0
-        onExitStatus: {}
+        onExitStatus:
+          purgeCaches:
+            - 123
+            - 456
