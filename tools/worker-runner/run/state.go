@@ -8,10 +8,10 @@ import (
 	"strings"
 	"sync"
 
-	taskcluster "github.com/taskcluster/taskcluster/v48/clients/client-go"
-	"github.com/taskcluster/taskcluster/v48/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v48/tools/worker-runner/files"
-	"github.com/taskcluster/taskcluster/v48/tools/worker-runner/perms"
+	taskcluster "github.com/taskcluster/taskcluster/v49/clients/client-go"
+	"github.com/taskcluster/taskcluster/v49/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v49/tools/worker-runner/files"
+	"github.com/taskcluster/taskcluster/v49/tools/worker-runner/perms"
 )
 
 // State represents the state of the worker run.  Its contents are built up

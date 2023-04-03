@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v49.0.0
+
+### GENERAL
+
+▶ [patch]
+Builds and tests generic worker (multiuser) on macOS Ventura 13 on new, arm64 machines.
+
+### USERS
+
+▶ [MAJOR]
+Remove python 3.6 support as it's past its end-of-life date.
+
+Add python 3.10 and python 3.11 support.
+
+▶ [minor] [#6147](https://github.com/taskcluster/taskcluster/issues/6147)
+Adds `task.payload.onExitStatus.purgeCaches` feature to generic worker to bring to parity with an existing docker worker feature.
+
+`purgeCaches` is an array of exit status code integers that the user wants all caches associated with the task to be purged.
+
 ## v48.3.0
 
 ### ADMINS

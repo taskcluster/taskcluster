@@ -136,7 +136,7 @@ if $TEST; then
 #   infrastructure/tooling/src/release/tasks.js
 # when a new major release is made.
 ####################################################################
-  CGO_ENABLED=1 GORACE="history_size=7" go test -tags simple -failfast -ldflags "-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" go test -tags simple -failfast -ldflags "-X github.com/taskcluster/taskcluster/v49/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   MYGOHOSTOS="$(go env GOHOSTOS)"
   if [ "${MYGOHOSTOS}" == "linux" ] || [ "${MYGOHOSTOS}" == "darwin" ]; then
 ####################################################################
@@ -144,7 +144,7 @@ if $TEST; then
 #   infrastructure/tooling/src/release/tasks.js
 # when a new major release is made.
 ####################################################################
-    CGO_ENABLED=1 GORACE="history_size=7" go test -tags docker -failfast -ldflags "-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+    CGO_ENABLED=1 GORACE="history_size=7" go test -tags docker -failfast -ldflags "-X github.com/taskcluster/taskcluster/v49/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   fi
   golint $(go list ./...) | sed "s*${PWD}/**"
   ineffassign .

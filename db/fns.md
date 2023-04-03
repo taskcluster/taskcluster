@@ -2125,7 +2125,6 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
 
 ### deprecated methods
 
-* `get_task_group(task_group_id_in text)` (compatibility guaranteed until v49.0.0)
 * `quarantine_queue_worker_with_last_date_active(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz)` (compatibility guaranteed until v50.0.0)
 
 ## secrets
