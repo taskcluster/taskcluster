@@ -12,5 +12,5 @@ func secure(configFile string) {
 }
 
 func MkdirAllTaskUser(dir string, perms os.FileMode) (err error) {
-	return nil
+	return os.MkdirAll(dir, perms)
 }

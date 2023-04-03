@@ -7,19 +7,19 @@ import "fmt"
 // favour of a resource with a lower rating.
 type Resource interface {
 	Rating() float64
-	Expunge(task *TaskRun) error
+	Evict(task *TaskRun) error
 }
 
 // Resources is a type that can be sorted in order to establish in which order
-// resources should be expunged.
+// resources should be evicted.
 type Resources []Resource
 
 func (r Resources) Empty() bool {
 	return len(r) == 0
 }
 
-func (r *Resources) ExpungeNext() error {
-	err := (*r)[0].Expunge(nil)
+func (r *Resources) EvictNext() error {
+	err := (*r)[0].Evict(nil)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func runGarbageCollection(r Resources) error {
 		if r.Empty() {
 			break
 		}
-		err = r.ExpungeNext()
+		err = r.EvictNext()
 		if err != nil {
 			return err
 		}

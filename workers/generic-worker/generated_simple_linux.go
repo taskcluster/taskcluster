@@ -134,6 +134,15 @@ type (
 	// based on exit code of task commands.
 	ExitCodeHandling struct {
 
+		// If the task exists with a purge caches exit status, all caches
+		// associated with the task will be purged.
+		//
+		// Since: generic-worker 49.0.0
+		//
+		// Array items:
+		// Mininum:    1
+		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
+
 		// Exit codes for any command in the task payload to cause this task to
 		// be resolved as `exception/intermittent-task`. Typically the Queue
 		// will then schedule a new run of the existing `taskId` (rerun) if not
@@ -775,6 +784,17 @@ func taskPayloadSchema() string {
       "additionalProperties": false,
       "description": "By default tasks will be resolved with ` + "`" + `state/reasonResolved` + "`" + `: ` + "`" + `completed/completed` + "`" + `\nif all task commands have a zero exit code, or ` + "`" + `failed/failed` + "`" + ` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
       "properties": {
+        "purgeCaches": {
+          "description": "If the task exists with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
+          "items": {
+            "minimum": 1,
+            "title": "Exit statuses",
+            "type": "integer"
+          },
+          "title": "Purge caches exit status",
+          "type": "array",
+          "uniqueItems": true
+        },
         "retry": {
           "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as ` + "`" + `exception/intermittent-task` + "`" + `. Typically the Queue\nwill then schedule a new run of the existing ` + "`" + `taskId` + "`" + ` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
           "items": {
