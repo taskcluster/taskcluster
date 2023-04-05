@@ -203,7 +203,7 @@ func podmanCopyArtifacts(containerName string, dwPayload *dockerworker.DockerWor
 		if _, ok := dwPayload.Artifacts[gwArtifacts[i].Name]; !ok {
 			continue
 		}
-		commands = append(commands, "podman cp '"+containerName+":"+dwPayload.Artifacts[gwArtifacts[i].Name].Path+"' "+gwArtifacts[i].Path)
+		commands = append(commands, fmt.Sprintf("podman cp '%s:%s' %s", containerName, dwPayload.Artifacts[gwArtifacts[i].Name].Path, gwArtifacts[i].Path))
 	}
 	return commands
 }
