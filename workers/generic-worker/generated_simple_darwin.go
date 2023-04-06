@@ -170,6 +170,13 @@ type (
 		// Default:    true
 		BackingLog bool `json:"backingLog" default:"true"`
 
+		// This allows you to interactively run commands from within the worker and
+		// attaches you to the stdin/stdout/stderr over a websocket. Can be used
+		// for SSH-like access to the running worker.
+		//
+		// Since: generic-worker 49.1.0
+		Interactive bool `json:"interactive,omitempty"`
+
 		// The live log feature streams the combined stderr and stdout to a task artifact
 		// so that the output is available while the task is running.
 		//
@@ -724,6 +731,11 @@ func taskPayloadSchema() string {
           "default": true,
           "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",
           "title": "Enable backing log",
+          "type": "boolean"
+        },
+        "interactive": {
+          "description": "This allows you to interactively run commands from within the worker and\nattaches you to the stdin/stdout/stderr over a websocket. Can be used\nfor SSH-like access to the running worker.\n\nSince: generic-worker 49.1.0",
+          "title": "Docker Exec Interactive",
           "type": "boolean"
         },
         "liveLog": {

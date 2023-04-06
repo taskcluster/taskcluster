@@ -349,6 +349,7 @@ func GWTest(t *testing.T) *Test {
 			IdleTimeoutSecs:           60,
 			InstanceID:                "test-instance-id",
 			InstanceType:              "p3.enormous",
+			InteractivePort:           53654,
 			LiveLogExecutable:         "livelog",
 			// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
 			// These ports are not exposed outside of the host. However, in CI they must differ from those of the

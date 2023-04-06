@@ -79,6 +79,7 @@ func persistFeaturesState() (err error) {
 func initialiseFeatures() (err error) {
 	Features = []Feature{
 		&LiveLogFeature{},
+		&InteractiveFeature{},
 		&TaskclusterProxyFeature{},
 		&OSGroupsFeature{},
 		&MountsFeature{},
@@ -206,6 +207,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			DisableReboots:                 false,
 			DownloadsDir:                   "downloads",
 			IdleTimeoutSecs:                0,
+			InteractivePort:                53654,
 			LiveLogExecutable:              "livelog",
 			LiveLogPortBase:                60098,
 			NumberOfTasksToRun:             0,

@@ -220,6 +220,15 @@ properties:
 
           Since: generic-worker 48.2.0
         default: true
+      interactive:
+        type: boolean
+        title: Docker Exec Interactive
+        description: |-
+          This allows you to interactively run commands from within the worker and
+          attaches you to the stdin/stdout/stderr over a websocket. Can be used
+          for SSH-like access to the running worker.
+
+          Since: generic-worker 49.1.0
   mounts:
     type: array
     description: |-

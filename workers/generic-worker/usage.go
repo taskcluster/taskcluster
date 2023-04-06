@@ -150,6 +150,10 @@ and reports back results to the queue.
                                             [default: 0]
           instanceID                        The EC2 instance ID of the worker. Used by chain of trust.
           instanceType                      The EC2 instance Type of the worker. Used by chain of trust.
+          interactivePort                   Set the port number for an interactive shell. This
+                                            is used to allow interactive access to the worker
+                                            while it is running.
+                                            [default: 53654]
           livelogExecutable                 Filepath of LiveLog executable to use; see
                                             https://github.com/taskcluster/livelog
                                             [default: "livelog"]

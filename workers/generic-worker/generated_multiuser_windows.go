@@ -177,6 +177,13 @@ type (
 		// Since: generic-worker 5.3.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 
+		// This allows you to interactively run commands from within the worker and
+		// attaches you to the stdin/stdout/stderr over a websocket. Can be used
+		// for SSH-like access to the running worker.
+		//
+		// Since: generic-worker 49.1.0
+		Interactive bool `json:"interactive,omitempty"`
+
 		// The live log feature streams the combined stderr and stdout to a task artifact
 		// so that the output is available while the task is running.
 		//
@@ -790,6 +797,11 @@ func taskPayloadSchema() string {
         "chainOfTrust": {
           "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
           "title": "Enable generation of signed Chain of Trust artifacts",
+          "type": "boolean"
+        },
+        "interactive": {
+          "description": "This allows you to interactively run commands from within the worker and\nattaches you to the stdin/stdout/stderr over a websocket. Can be used\nfor SSH-like access to the running worker.\n\nSince: generic-worker 49.1.0",
+          "title": "Docker Exec Interactive",
           "type": "boolean"
         },
         "liveLog": {
