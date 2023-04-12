@@ -2,6 +2,9 @@ package interactive
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gorilla/websocket"
@@ -15,13 +18,11 @@ func TestInteractive(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not create interactive session: %v", err)
 	}
-	done := make(chan error, 1)
-	go func() {
-		done <- interactive.ListenAndServe()
-	}()
+	server := httptest.NewServer(http.HandlerFunc(interactive.Handler))
+	defer server.Close()
 
 	// Make a WebSocket connection to the server
-	url := "ws://localhost:53654"
+	url := "ws" + strings.TrimPrefix(server.URL, "http") + "/"
 	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		t.Fatal("dial error:", err)
@@ -81,10 +82,5 @@ func TestInteractive(t *testing.T) {
 	err = interactive.Terminate()
 	if err != nil {
 		t.Fatal("terminate error:", err)
-	}
-
-	err = <-done
-	if err != nil {
-		t.Fatalf("listen and serve error: %v", err)
 	}
 }

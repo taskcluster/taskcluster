@@ -21,46 +21,24 @@ var upgrader = &websocket.Upgrader{
 
 type Interactive struct {
 	TCPPort      uint16
-	conn         connWrapper
+	conn         *websocket.Conn
+	connMutex    *sync.Mutex
 	stdin        io.WriteCloser
 	stdout       io.ReadCloser
 	stderr       io.ReadCloser
 	cmd          *exec.Cmd
 	done         chan struct{}
-	ioCopyErrors chan error
+	streamErrors chan error
 	ctx          context.Context
-}
-
-type connWrapper struct {
-	*websocket.Conn
-	mutex *sync.Mutex
-}
-
-func (cw connWrapper) Read(b []byte) (int, error) {
-	_, msg, err := cw.ReadMessage()
-	if err != nil {
-		return 0, err
-	}
-	copy(b, msg)
-	return len(msg), nil
-}
-
-func (cw connWrapper) Write(b []byte) (int, error) {
-	cw.mutex.Lock()
-	defer cw.mutex.Unlock()
-	err := cw.WriteMessage(websocket.TextMessage, b)
-	if err != nil {
-		return 0, err
-	}
-	return len(b), nil
 }
 
 func New(port uint16, ctx context.Context) (it *Interactive, err error) {
 	it = &Interactive{
-		TCPPort: port,
-		cmd:     exec.Command("bash"),
-		done:    make(chan struct{}),
-		ctx:     ctx,
+		TCPPort:      port,
+		cmd:          exec.Command("bash"),
+		done:         make(chan struct{}),
+		streamErrors: make(chan error, 2),
+		ctx:          ctx,
 	}
 
 	it.stdin, err = it.cmd.StdinPipe()
@@ -92,13 +70,14 @@ func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "WebSocket upgrade error", http.StatusInternalServerError)
 		return
 	}
-	it.conn = connWrapper{conn, &sync.Mutex{}}
+	it.conn = conn
+	it.connMutex = &sync.Mutex{}
 	defer func() {
-		log.Println("Closing WebSocket connection")
+		it.connMutex.Lock()
+		defer it.connMutex.Unlock()
 		if err := it.conn.Close(); err != nil {
 			log.Printf("WebSocket close error: %v", err)
 		}
-		log.Println("Handler finished")
 	}()
 
 	it.copyCommandOutputStreams()
@@ -109,14 +88,12 @@ func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msgChan := make(chan []byte)
+	msgChan := make(chan []byte, 1)
 	go it.handleWebsocketMessages(msgChan)
 
 	select {
 	case <-it.ctx.Done():
-		log.Println("Exiting out of interactive session")
 	case <-it.done:
-		log.Println("Exiting out of interactive session")
 	}
 }
 
@@ -126,30 +103,25 @@ func (it *Interactive) handleWebsocketMessages(msgChan chan []byte) {
 	for {
 		select {
 		case <-it.ctx.Done():
-			log.Println("Exiting out of websockerIOErrors")
 			return
-		case err := <-it.ioCopyErrors:
+		case err := <-it.streamErrors:
 			if err != nil {
 				if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-					log.Println("WebSocket closed normally")
+					return
 				} else {
-					log.Printf("io.Copy error: %v", err)
+					log.Printf("streamError occured: %v", err)
+					return
 				}
-				return
 			}
 		case msg := <-msgChan:
-			if err := it.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-				log.Printf("WriteMessage error: %v", err)
+			if _, err := it.stdin.Write(msg); err != nil {
+				log.Printf("Write error: %v", err)
 				return
 			}
 		default:
-			// ReadMessage blocks until a message is received.
-			// SetReadLimit to 0 for non-blocking read.
-			it.conn.SetReadLimit(0)
 			msgType, msg, err := it.conn.ReadMessage()
 			if err != nil {
 				if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-					log.Println("WebSocket closed normally")
 					return
 				} else {
 					log.Printf("ReadMessage error: %v", err)
@@ -165,27 +137,40 @@ func (it *Interactive) handleWebsocketMessages(msgChan chan []byte) {
 }
 
 func (it *Interactive) copyCommandOutputStreams() {
-	it.ioCopyErrors = make(chan error, 3)
-
 	go func() {
-		log.Println("io.Copy conn -> stdout started")
-		_, err := io.Copy(it.conn, it.stdout)
-		log.Println("io.Copy conn -> stdout finished")
-		it.ioCopyErrors <- err
+		buf := make([]byte, 1024)
+		for {
+			n, err := it.stdout.Read(buf)
+			if err != nil {
+				it.streamErrors <- err
+				return
+			}
+			it.connMutex.Lock()
+			if err := it.conn.WriteMessage(websocket.TextMessage, buf[:n]); err != nil {
+				it.connMutex.Unlock()
+				it.streamErrors <- err
+				return
+			}
+			it.connMutex.Unlock()
+		}
 	}()
 
 	go func() {
-		log.Println("io.Copy conn -> stderr started")
-		_, err := io.Copy(it.conn, it.stderr)
-		log.Println("io.Copy conn -> stderr finished")
-		it.ioCopyErrors <- err
-	}()
-
-	go func() {
-		log.Println("io.Copy stdin -> conn started")
-		_, err := io.Copy(it.stdin, it.conn)
-		log.Println("io.Copy stdin -> conn finished")
-		it.ioCopyErrors <- err
+		buf := make([]byte, 1024)
+		for {
+			n, err := it.stderr.Read(buf)
+			if err != nil {
+				it.streamErrors <- err
+				return
+			}
+			it.connMutex.Lock()
+			if err := it.conn.WriteMessage(websocket.TextMessage, buf[:n]); err != nil {
+				it.connMutex.Unlock()
+				it.streamErrors <- err
+				return
+			}
+			it.connMutex.Unlock()
+		}
 	}()
 }
 
@@ -208,9 +193,7 @@ func (it *Interactive) ListenAndServe() error {
 
 	select {
 	case <-it.ctx.Done():
-		log.Println("Server done, shutting down")
 	case <-it.done:
-		log.Println("Server done, shutting down")
 	}
 
 	if err := server.Shutdown(ctx); err != nil {
