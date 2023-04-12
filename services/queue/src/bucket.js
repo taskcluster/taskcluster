@@ -135,6 +135,7 @@ Bucket.prototype.deleteObject = function(prefix) {
 /** Delete a list of objects */
 Bucket.prototype.deleteObjects = function(prefixes) {
   assert(prefixes instanceof Array, 'prefixes must be an array');
+  assert(prefixes.length <= 1000, 'not more than 1000 prefixes can be deleted');
   return this.s3.deleteObjects({
     Delete: {
       Objects: prefixes.map(function(prefix) {

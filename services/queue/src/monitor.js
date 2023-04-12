@@ -187,3 +187,16 @@ MonitorManager.register({
     slept: 'If true, there were no hints to claim and the poller slept before claiming again.',
   },
 });
+
+MonitorManager.register({
+  name: 'expiredArtifactsRemoved',
+  title: 'Expired Artifacts Removed',
+  type: 'expired-artifacts-removed',
+  version: 1,
+  level: 'notice',
+  description: `Reports progress of expired artifacts removal.`,
+  fields: {
+    count: 'Count of artifacts removed.',
+    expires: 'Expiration date of artifacts removed.',
+  },
+});

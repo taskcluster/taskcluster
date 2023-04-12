@@ -83,6 +83,7 @@
    * [`create_queue_artifact`](#create_queue_artifact)
    * [`create_task_projid`](#create_task_projid)
    * [`delete_queue_artifact`](#delete_queue_artifact)
+   * [`delete_queue_artifacts`](#delete_queue_artifacts)
    * [`delete_queue_provisioner`](#delete_queue_provisioner)
    * [`delete_queue_worker_type`](#delete_queue_worker_type)
    * [`ensure_task_group`](#ensure_task_group)
@@ -92,6 +93,7 @@
    * [`expire_task_queues`](#expire_task_queues)
    * [`expire_tasks`](#expire_tasks)
    * [`get_dependent_tasks`](#get_dependent_tasks)
+   * [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
    * [`get_task_group_size`](#get_task_group_size)
@@ -1237,6 +1239,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`create_queue_artifact`](#create_queue_artifact)
 * [`create_task_projid`](#create_task_projid)
 * [`delete_queue_artifact`](#delete_queue_artifact)
+* [`delete_queue_artifacts`](#delete_queue_artifacts)
 * [`delete_queue_provisioner`](#delete_queue_provisioner)
 * [`delete_queue_worker_type`](#delete_queue_worker_type)
 * [`ensure_task_group`](#ensure_task_group)
@@ -1246,6 +1249,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`expire_task_queues`](#expire_task_queues)
 * [`expire_tasks`](#expire_tasks)
 * [`get_dependent_tasks`](#get_dependent_tasks)
+* [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
 * [`get_task_group_size`](#get_task_group_size)
@@ -1523,6 +1527,17 @@ for the status information.
 
 Delete a queue artifact.
 
+### delete_queue_artifacts
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_run_id_names jsonb`
+* *Returns*: `void`
+* *Last defined on version*: 84
+
+Delete multiple queue artifacts.
+Input is a jsonb array of objects with task_id, run_id, and name.
+
 ### delete_queue_provisioner
 
 * *Mode*: write
@@ -1641,6 +1656,30 @@ Only dependencies with `dependent_task_id > tasks_after_in` are returned.
 This supports paginated queries that are not susceptible to rows being
 added or removed.  Typically only one of `page_offset_in` and
 `tasks_after_in` are non-null.
+
+### get_expired_artifacts_for_deletion
+
+* *Mode*: read
+* *Arguments*:
+  * `expires_in timestamptz`
+  * `page_size_in integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `run_id integer`
+  * `name text`
+  * `storage_type text`
+  * `content_type text`
+  * `details jsonb`
+  * `present boolean`
+  * `expires timestamptz`
+* *Last defined on version*: 84
+
+Get existing queue artifacts with expiration date below given.
+Note that this method doesn't use ordering to avoid using
+complex and expensive table scans.
+As table is very big doing a sequential scan without ordering is faster.
+Expired entities are expected to be deleted right after as this function
+doesn't support pagination with offsets.
 
 ### get_queue_artifact
 

@@ -306,8 +306,8 @@ let load = loader({
           ignoreError: true,
           expires: now,
         });
-        // const count = await Artifact.expire(now);
         debug('Expired %s artifacts', count);
+        monitor.log.expiredArtifactsRemoved({ count, expires: now });
       });
     },
   },
