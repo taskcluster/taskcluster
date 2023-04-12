@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"time"
 
@@ -35,6 +36,7 @@ type InteractiveTask struct {
 	interactive  *interactive.Interactive
 	exposure     expose.Exposure
 	artifactName string
+	cancel       context.CancelFunc
 }
 
 func (feature *InteractiveFeature) NewTaskFeature(task *TaskRun) TaskFeature {
@@ -55,16 +57,23 @@ func (it *InteractiveTask) ReservedArtifacts() []string {
 }
 
 func (it *InteractiveTask) Start() *CommandExecutionError {
-	it.interactive = interactive.New(config.InteractivePort)
-
+	ctx, cancel := context.WithCancel(context.Background())
+	interactive, err := interactive.New(config.InteractivePort, ctx)
+	if err != nil {
+		log.Printf("WARNING: could not create interactive session: %v", err)
+		cancel()
+		return nil
+	}
+	it.interactive = interactive
+	it.cancel = cancel
 	done := make(chan error, 1)
 	go func() {
 		done <- it.interactive.ListenAndServe()
 	}()
 
-	err := it.uploadInteractiveArtifact()
+	err = it.uploadInteractiveArtifact()
 	if err != nil {
-		return err
+		log.Printf("WARNING: could not upload interactive artifact: %v", err)
 	}
 
 	select {
@@ -85,6 +94,8 @@ func (it *InteractiveTask) Stop(err *ExecutionErrors) {
 		return
 	}
 
+	it.cancel()
+
 	errTerminate := it.interactive.Terminate()
 	if errTerminate != nil {
 		// no need to raise an exception
@@ -100,17 +111,15 @@ func (it *InteractiveTask) Stop(err *ExecutionErrors) {
 	}
 }
 
-func (it *InteractiveTask) uploadInteractiveArtifact() *CommandExecutionError {
+func (it *InteractiveTask) uploadInteractiveArtifact() error {
 	var err error
 	it.exposure, err = exposer.ExposeHTTP(it.interactive.TCPPort)
 	if err != nil {
-		return &CommandExecutionError{
-			Cause: err,
-		}
+		return err
 	}
 
 	expires := time.Now().Add(time.Duration(it.task.Payload.MaxRunTime+900) * time.Second)
-	return it.task.uploadArtifact(
+	uploadErr := it.task.uploadArtifact(
 		&artifacts.RedirectArtifact{
 			BaseArtifact: &artifacts.BaseArtifact{
 				Name:    it.artifactName,
@@ -120,4 +129,10 @@ func (it *InteractiveTask) uploadInteractiveArtifact() *CommandExecutionError {
 			URL:         it.exposure.GetURL().String(),
 		},
 	)
+
+	if uploadErr != nil {
+		return uploadErr
+	}
+
+	return nil
 }

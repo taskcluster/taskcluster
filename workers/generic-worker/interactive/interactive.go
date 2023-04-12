@@ -9,21 +9,26 @@ import (
 	"net/http"
 	"os/exec"
 	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
 
+var upgrader = &websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
 type Interactive struct {
-	TCPPort  uint16
-	conn     connWrapper
-	upgrader *websocket.Upgrader
-	stdin    io.WriteCloser
-	stdout   io.ReadCloser
-	stderr   io.ReadCloser
-	mutex    sync.Mutex
-	cmd      *exec.Cmd
-	done     chan struct{}
+	TCPPort      uint16
+	conn         connWrapper
+	stdin        io.WriteCloser
+	stdout       io.ReadCloser
+	stderr       io.ReadCloser
+	cmd          *exec.Cmd
+	done         chan struct{}
+	ioCopyErrors chan error
+	ctx          context.Context
 }
 
 type connWrapper struct {
@@ -50,112 +55,138 @@ func (cw connWrapper) Write(b []byte) (int, error) {
 	return len(b), nil
 }
 
-func New(port uint16) *Interactive {
-	return &Interactive{
+func New(port uint16, ctx context.Context) (it *Interactive, err error) {
+	it = &Interactive{
 		TCPPort: port,
-		upgrader: &websocket.Upgrader{
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
-		},
-		cmd:  exec.Command("bash"),
-		done: make(chan (struct{})),
+		cmd:     exec.Command("bash"),
+		done:    make(chan struct{}),
+		ctx:     ctx,
 	}
+
+	it.stdin, err = it.cmd.StdinPipe()
+	if err != nil {
+		log.Printf("StdinPipe error: %v", err)
+		return nil, err
+	}
+
+	it.stdout, err = it.cmd.StdoutPipe()
+	if err != nil {
+		log.Printf("StdoutPipe error: %v", err)
+		return nil, err
+	}
+
+	it.stderr, err = it.cmd.StderrPipe()
+	if err != nil {
+		log.Printf("StderrPipe error: %v", err)
+		return nil, err
+	}
+
+	return
 }
 
 func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 	// Upgrade the incoming request to a WebSocket connection
-	conn, err := it.upgrader.Upgrade(w, r, nil)
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("WebSocket upgrade error:", err)
+		log.Printf("WebSocket upgrade error: %v", err)
+		http.Error(w, "WebSocket upgrade error", http.StatusInternalServerError)
 		return
 	}
 	it.conn = connWrapper{conn, &sync.Mutex{}}
 	defer func() {
+		log.Println("Closing WebSocket connection")
 		if err := it.conn.Close(); err != nil {
-			log.Println("WebSocket close error:", err)
+			log.Printf("WebSocket close error: %v", err)
 		}
+		log.Println("Handler finished")
 	}()
 
-	it.stdin, err = it.cmd.StdinPipe()
-	if err != nil {
-		log.Println("StdinPipe error: ", err)
-		return
-	}
-	defer func() {
-		if err := it.stdin.Close(); err != nil {
-			log.Println("StdinPipe close error:", err)
-		}
-	}()
-
-	it.stdout, err = it.cmd.StdoutPipe()
-	if err != nil {
-		log.Println("StdoutPipe error: ", err)
-		return
-	}
-	defer func() {
-		if err := it.stdout.Close(); err != nil {
-			log.Println("StdoutPipe close error:", err)
-		}
-	}()
-
-	it.stderr, err = it.cmd.StderrPipe()
-	if err != nil {
-		log.Println("StderrPipe error: ", err)
-		return
-	}
-	defer func() {
-		if err := it.stderr.Close(); err != nil {
-			log.Println("StderrPipe close error:", err)
-		}
-	}()
-
-	ioCopyError := make(chan error)
-	go func() {
-		_, err := io.Copy(it.conn, it.stdout)
-		ioCopyError <- err
-	}()
-
-	go func() {
-		_, err := io.Copy(it.conn, it.stderr)
-		ioCopyError <- err
-	}()
-
-	go func() {
-		_, err := io.Copy(it.stdin, it.conn)
-		ioCopyError <- err
-	}()
+	it.copyCommandOutputStreams()
 
 	if err := it.cmd.Start(); err != nil {
-		log.Println("Command start error: ", err)
+		log.Printf("Command start error: %v", err)
+		http.Error(w, "Command start error", http.StatusInternalServerError)
 		return
 	}
+
+	msgChan := make(chan []byte)
+	go it.handleWebsocketMessages(msgChan)
+
+	select {
+	case <-it.ctx.Done():
+		log.Println("Exiting out of interactive session")
+	case <-it.done:
+		log.Println("Exiting out of interactive session")
+	}
+}
+
+func (it *Interactive) handleWebsocketMessages(msgChan chan []byte) {
+	defer close(it.done)
 
 	for {
 		select {
-		case <-it.done:
-			log.Println("Exiting out of interactive session")
+		case <-it.ctx.Done():
+			log.Println("Exiting out of websockerIOErrors")
 			return
-		case err := <-ioCopyError:
+		case err := <-it.ioCopyErrors:
 			if err != nil {
-				log.Println("io.Copy error: ", err)
+				if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+					log.Println("WebSocket closed normally")
+				} else {
+					log.Printf("io.Copy error: %v", err)
+				}
+				return
+			}
+		case msg := <-msgChan:
+			if err := it.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+				log.Printf("WriteMessage error: %v", err)
 				return
 			}
 		default:
-			messageType, msg, err := it.conn.ReadMessage()
+			// ReadMessage blocks until a message is received.
+			// SetReadLimit to 0 for non-blocking read.
+			it.conn.SetReadLimit(0)
+			msgType, msg, err := it.conn.ReadMessage()
 			if err != nil {
-				log.Println("ReadMessage error: ", err)
-				return
+				if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+					log.Println("WebSocket closed normally")
+					return
+				} else {
+					log.Printf("ReadMessage error: %v", err)
+					return
+				}
 			}
-			if messageType != websocket.TextMessage {
+			if msgType != websocket.TextMessage {
 				continue
 			}
-			if _, err := it.stdin.Write(msg); err != nil {
-				log.Println("Write error: ", err)
-				return
-			}
+			msgChan <- msg
 		}
 	}
+}
+
+func (it *Interactive) copyCommandOutputStreams() {
+	it.ioCopyErrors = make(chan error, 3)
+
+	go func() {
+		log.Println("io.Copy conn -> stdout started")
+		_, err := io.Copy(it.conn, it.stdout)
+		log.Println("io.Copy conn -> stdout finished")
+		it.ioCopyErrors <- err
+	}()
+
+	go func() {
+		log.Println("io.Copy conn -> stderr started")
+		_, err := io.Copy(it.conn, it.stderr)
+		log.Println("io.Copy conn -> stderr finished")
+		it.ioCopyErrors <- err
+	}()
+
+	go func() {
+		log.Println("io.Copy stdin -> conn started")
+		_, err := io.Copy(it.stdin, it.conn)
+		log.Println("io.Copy stdin -> conn finished")
+		it.ioCopyErrors <- err
+	}()
 }
 
 func (it *Interactive) ListenAndServe() error {
@@ -166,16 +197,21 @@ func (it *Interactive) ListenAndServe() error {
 		Handler: mux,
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("ListenAndServe(): %v", err)
+			log.Printf("ListenAndServe() error: %v", err)
 		}
 	}()
 
-	<-it.done
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	select {
+	case <-it.ctx.Done():
+		log.Println("Server done, shutting down")
+	case <-it.done:
+		log.Println("Server done, shutting down")
+	}
 
 	if err := server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server shutdown failed: %v", err)
@@ -188,12 +224,20 @@ func (it *Interactive) ListenAndServe() error {
 }
 
 func (it *Interactive) Terminate() error {
-	it.mutex.Lock()
-	defer it.mutex.Unlock()
-	close(it.done)
+	if err := it.stdout.Close(); err != nil {
+		log.Printf("StdoutPipe close error: %v", err)
+	}
+	if err := it.stderr.Close(); err != nil {
+		log.Printf("StderrPipe close error: %v", err)
+	}
+	if err := it.stdin.Close(); err != nil {
+		log.Printf("StdinPipe close error: %v", err)
+	}
+
 	// no process is running, so there is nothing to terminate
 	if it.cmd.Process == nil {
 		return nil
 	}
+
 	return it.cmd.Process.Kill()
 }
