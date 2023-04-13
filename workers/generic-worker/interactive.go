@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"log"
+	"net/url"
+	"strconv"
 	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v49/clients/client-go"
@@ -42,7 +44,7 @@ type InteractiveTask struct {
 func (feature *InteractiveFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &InteractiveTask{
 		task:         task,
-		artifactName: "/private/generic-worker/shell.html", // TODO: make configurable?
+		artifactName: "private/generic-worker/shell.html", // TODO: make configurable?
 	}
 }
 
@@ -118,6 +120,21 @@ func (it *InteractiveTask) uploadInteractiveArtifact() error {
 		return err
 	}
 
+	// defined in ui/src/App/routes.jsx
+	path := "/shell/"
+	// query params required in ui/src/views/Shell/index.jsx
+	queryParams := url.Values{}
+	queryParams.Set("v", "2")
+	queryParams.Set("socketUrl", it.exposure.GetURL().String())
+	queryParams.Set("taskId", it.task.TaskID)
+	queryParams.Set("runId", strconv.FormatUint(uint64(it.task.RunID), 10))
+	u, err := url.Parse(config.RootURL + path)
+	if err != nil {
+		return err
+	}
+	u.RawQuery = queryParams.Encode()
+	url := u.String()
+
 	expires := time.Now().Add(time.Duration(it.task.Payload.MaxRunTime+900) * time.Second)
 	uploadErr := it.task.uploadArtifact(
 		&artifacts.RedirectArtifact{
@@ -126,7 +143,7 @@ func (it *InteractiveTask) uploadInteractiveArtifact() error {
 				Expires: tcclient.Time(expires),
 			},
 			ContentType: "text/html; charset=utf-8",
-			URL:         it.exposure.GetURL().String(),
+			URL:         url,
 		},
 	)
 

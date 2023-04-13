@@ -199,9 +199,6 @@ func (it *Interactive) ListenAndServe() error {
 	if err := server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server shutdown failed: %v", err)
 	}
-	if err := it.cmd.Process.Kill(); err != nil {
-		return fmt.Errorf("kill process failed: %v", err)
-	}
 
 	return nil
 }
