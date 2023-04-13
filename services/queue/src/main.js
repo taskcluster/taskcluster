@@ -303,7 +303,7 @@ let load = loader({
           publicBucket: publicArtifactBucket,
           privateBucket: privateArtifactBucket,
           monitor,
-          ignoreError: true,
+          ignoreError: false,
           expires: now,
         });
         debug('Expired %s artifacts', count);

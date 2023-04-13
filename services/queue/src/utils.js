@@ -88,11 +88,13 @@ const artifactUtils = {
                 prefix: obj.Key,
               })));
 
+              // this will likely be a soft error, so we'll just log it
               const err = new Error('Failed to delete s3 objects');
               err.entries = errors;
               monitor.reportError(err);
             }
           } catch (err) {
+            // and this is an api response error, most likely network issue or this needs to be retried
             monitor.debug('WARNING: Failed to delete expired artifacts: %s, %j', err, err);
             if (!ignoreError) {
               throw err;
@@ -109,7 +111,7 @@ const artifactUtils = {
 
       // only s3 artifacts need to be deleted
       // 'object' artifacts are deleted at expiration by the object service
-
+      // if this fails, we stop and don't delete the db entry
       await Promise.all([
         deleteObjects(publicBucket, s3public),
         deleteObjects(privateBucket, s3private),
@@ -121,17 +123,18 @@ const artifactUtils = {
       });
 
       try {
-        monitor.debug({
-          message: 'Deleting artifacts from db',
-          count: entries.length,
-        });
-
         // delete all the artifacts from the db
         await db.fns.delete_queue_artifacts(
-          JSON.stringify(entries.map(({ task_id, run_id, name }) => ({ task_id, run_id, name }))),
+          JSON.stringify(entries.map(({ taskId: task_id, runId: run_id, name }) =>
+            ({ task_id, run_id, name }))),
         );
 
         count += entries.length;
+        monitor.debug({
+          message: 'Deleted artifacts from db',
+          batch: entries.length,
+          total: count,
+        });
       } catch (err) {
         monitor.debug('WARNING: Failed to delete expired artifacts: %s, %j', err, err);
         // Rethrow error, if we're not supposed to ignore it.
