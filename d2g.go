@@ -211,6 +211,7 @@ func podmanCopyArtifacts(containerName string, dwPayload *dockerworker.DockerWor
 func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.Features.ChainOfTrust = dwPayload.Features.ChainOfTrust
 	gwPayload.Features.TaskclusterProxy = dwPayload.Features.TaskclusterProxy
+	gwPayload.Features.Interactive = dwPayload.Features.Interactive
 }
 
 func setArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
