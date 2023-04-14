@@ -456,32 +456,7 @@ suite(testing.suiteName(), function() {
     assert.deepEqual(rows.map(({ run_id }) => run_id), [0, 2, 4, 6, 8]);
   });
 
-  helper.dbTest('get_expired_artifacts_for_deletion', async function(db) {
-    const yesterday = taskcluster.fromNow('-1 day');
-    const tomorrow = taskcluster.fromNow('1 day');
-    const today = new Date();
-    const taskId = slugid.nice();
-    for (let i = 0; i < 10; i++) {
-      await db.fns.create_queue_artifact(
-        taskId,
-        i,
-        `name-${i}`,
-        'storage-type',
-        'content-type',
-        {},
-        false,
-        (i & 1) ? tomorrow : yesterday,
-      );
-    }
-
-    let rows = await db.fns.get_expired_artifacts_for_deletion({
-      expires_in: today,
-      page_size_in: 1000,
-    });
-    assert.deepEqual(rows.map(({ run_id }) => run_id), [0, 2, 4, 6, 8]);
-  });
-
-  helper.dbTest('delete_queue_artifacts', async function(db) {
+  helper.dbTest('get_expired_artifacts_for_deletion and delete_queue_artifacts', async function(db) {
     const yesterday = taskcluster.fromNow('-1 day');
     const tomorrow = taskcluster.fromNow('1 day');
     const today = new Date();
