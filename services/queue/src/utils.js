@@ -1,5 +1,4 @@
 let assert = require('assert');
-const debug = require('debug')('utils');
 
 const artifactUtils = {
   // Create a single instance, or undefined, from a set of rows containing zero
@@ -42,86 +41,113 @@ const artifactUtils = {
   async expire({ db, publicBucket, privateBucket, ignoreError, monitor, expires }) {
     let count = 0;
 
-    // Get all expired artifacts using a handler function, operating on one
-    // page of results at a time.  This does not use paginatedIterator because
-    // that would result in a much slower one-by-one expiration, instead of
-    // the parallel handling of each batch.
-    const getExpiredArtifacts = async (expires, handler) => {
-      let after_task_id_in = null;
-      let after_run_id_in = null;
-      let after_name_in = null;
-
-      while (true) {
-        const rows = await db.fns.get_queue_artifacts_paginated({
-          task_id_in: null,
-          run_id_in: null,
-          expires_in: expires,
-          page_size_in: 100,
-          after_task_id_in,
-          after_run_id_in,
-          after_name_in,
-        });
-
-        const entries = rows.map(exports.artifactUtils.fromDb);
-        await Promise.all(entries.map((item) => handler.call(item, item)));
-
-        if (!rows.length) {
-          break;
-        } else {
-          const lastRow = rows[rows.length - 1];
-          after_task_id_in = lastRow.task_id;
-          after_run_id_in = lastRow.run_id;
-          after_name_in = lastRow.name;
-        }
+    // Fetch all expired artifacts and batch delete the S3 ones
+    // then remove the entity from the database
+    // repeat until there are no more expired artifacts
+    while (true) {
+      const rows = await db.fns.get_expired_artifacts_for_deletion({
+        expires_in: expires,
+        page_size_in: 1000,
+      });
+      if (!rows.length) {
+        break;
       }
-    };
 
-    await getExpiredArtifacts(expires, async (artifact) => {
-      // Promise that deleted underlying artifact, and keep reference to context
-      let deleted = Promise.resolve();
+      const entries = rows.map(exports.artifactUtils.fromDb);
 
-      // Handle S3 artifacts
-      if (artifact.storageType === 's3') {
-        debug('Deleting expired s3 artifact from bucket: %s, prefix: %s',
-          artifact.details.bucket, artifact.details.prefix);
-        // Delete the right bucket
-        if (artifact.details.bucket === publicBucket.bucket) {
-          deleted = publicBucket.deleteObject(artifact.details.prefix);
-        } else if (artifact.details.bucket === privateBucket.bucket) {
-          deleted = privateBucket.deleteObject(artifact.details.prefix);
-        } else {
-          let err = new Error('Expiring artifact with bucket which isn\'t ' +
-            'configured for use. Please investigate!');
-          err.bucket = artifact.details.bucket;
-          err.taskId = artifact.taskId;
-          err.runId = artifact.runId;
-          monitor.reportError(err);
-          return;
+      const s3public = [];
+      const s3private = [];
+
+      for (const entry of entries) {
+        if (entry.storageType === 's3') {
+          if (entry.details.bucket === publicBucket.bucket) {
+            s3public.push(entry);
+          } else if (entry.details.bucket === privateBucket.bucket) {
+            s3private.push(entry);
+          } else {
+            let err = new Error('Expiring artifact with bucket which isn\'t ' +
+              'configured for use. Please investigate!');
+            err.bucket = entry.details.bucket;
+            err.taskId = entry.taskId;
+            err.runId = entry.runId;
+            monitor.reportError(err);
+            continue;
+          }
         }
       }
 
-      // note that 'object' artifacts are deleted at expiration by the object
-      // service, so nothing needs done here.
+      const errors = [];
+      const deleteObjects = async (bucket, entries) => {
+        if (entries.length) {
+          try {
+            const response = await bucket.deleteObjects(entries.map(entry => entry.details.prefix), true);
+            if (response.Errors && response.Errors.length) {
+              errors.push(response.Errors.map(obj => ({
+                code: obj.Code,
+                message: obj.Message,
+                prefix: obj.Key,
+              })));
 
-      // When underlying artifact is deleted (if any underlying artifact exists)
-      // we delete the artifact row.
+              // this will likely be a soft error, so we'll just log it
+              const err = new Error('Failed to delete s3 objects');
+              err.entries = errors;
+              monitor.reportError(err);
+            }
+          } catch (err) {
+            if (err.message === 'Error deleting objects' && err.stack?.includes('/mock-aws-s3/')) {
+              // ignoring for testing: aws-mock-s3 throws error here when file not found
+              // instead of returning normal response with Errors and Deleted, like real s3
+            } else {
+              // and this is an api response error, most likely network issue or this needs to be retried
+              monitor.debug('WARNING: Failed to delete expired artifacts: %s, %j', err, err);
+              if (!ignoreError) {
+                throw err;
+              }
+            }
+          }
+        }
+      };
+
+      monitor.debug({
+        message: 'Removing artifacts from buckets',
+        publicCount: s3public.length,
+        privateCount: s3private.length,
+      });
+
+      // only s3 artifacts need to be deleted
+      // 'object' artifacts are deleted at expiration by the object service
+      // if this fails, we stop and don't delete the db entry
+      await Promise.all([
+        deleteObjects(publicBucket, s3public),
+        deleteObjects(privateBucket, s3private),
+      ]);
+
+      monitor.debug({
+        message: 'Removed artifacts from buckets',
+        errors: errors,
+      });
+
       try {
-        await deleted;
+        // delete all the artifacts from the db
+        await db.fns.delete_queue_artifacts(
+          JSON.stringify(entries.map(({ taskId: task_id, runId: run_id, name }) =>
+            ({ task_id, run_id, name }))),
+        );
 
-        // Delete entity, if underlying resource was successfully deleted
-        await db.fns.delete_queue_artifact(artifact.taskId, artifact.runId, artifact.name);
-
-        count++;
+        count += entries.length;
+        monitor.debug({
+          message: 'Deleted artifacts from db',
+          batch: entries.length,
+          total: count,
+        });
       } catch (err) {
-        debug('WARNING: Failed to delete expired artifact: %j, details: %j ' +
-          'from taskId: %s, runId: %s with error: %s, as JSON: %j',
-        exports.artifactUtils.serialize(artifact), artifact.details, artifact.taskId, artifact.runId, err, err);
+        monitor.debug('WARNING: Failed to delete expired artifacts: %s, %j', err, err);
         // Rethrow error, if we're not supposed to ignore it.
         if (!ignoreError) {
           throw err;
         }
       }
-    });
+    }
 
     return count;
   },

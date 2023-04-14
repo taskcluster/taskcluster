@@ -14915,6 +14915,18 @@
           "version": 1
         },
         {
+          "description": "Reports progress of expired artifacts removal.",
+          "fields": {
+            "count": "Count of artifacts removed.",
+            "expires": "Expiration date of artifacts removed."
+          },
+          "level": "notice",
+          "name": "expiredArtifactsRemoved",
+          "title": "Expired Artifacts Removed",
+          "type": "expired-artifacts-removed",
+          "version": 1
+        },
+        {
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },

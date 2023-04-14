@@ -33,14 +33,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await request.put(url).send({ message: 'Hello' });
   });
 
-  // Test we can delete an object
-  test('deleteObject', async function() {
+  const uploadTestFile = async () => {
     const key = slugid.v4();
     const url = await bucket.createPutUrl(key, {
       contentType: 'application/json',
       expires: 60 * 10,
     });
     await request.put(url).send({ message: 'Hello' });
+    return { key, url };
+  };
+
+  // Test we can delete an object
+  test('deleteObject', async function() {
+    const { key } = await uploadTestFile();
     await bucket.deleteObject(key);
   });
 
@@ -48,6 +53,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('deleteObject (non-existing object)', async function() {
     const key = slugid.v4();
     await bucket.deleteObject(key);
+  });
+
+  // Test we can delete multiple objects
+  test('deleteObjects', async function () {
+    const { key: key1 } = await uploadTestFile();
+    const { key: key2 } = await uploadTestFile();
+
+    await bucket.deleteObjects([key1, key2]);
+  });
+  test('deleteObjects quiet', async function () {
+    const { key: key1 } = await uploadTestFile();
+    const { key: key2 } = await uploadTestFile();
+
+    await bucket.deleteObjects([key1, key2], true);
   });
 
   test('createGetUrl', async function() {

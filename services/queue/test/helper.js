@@ -63,7 +63,11 @@ exports.withS3 = (mock, skipping) => {
       exports.load.cfg('aws.accessKeyId', undefined);
       exports.load.cfg('aws.secretAccessKey', undefined);
 
-      const mock = new mockAwsS3.S3({});
+      const mock = new mockAwsS3.S3({
+        params: {
+          Bucket: 'fake-public',
+        },
+      });
       // emulate AWS's "promise" mode
       const makeAwsFunc = fn => (...args) => ({
         promise: () => fn.apply(mock, args),

@@ -303,11 +303,11 @@ let load = loader({
           publicBucket: publicArtifactBucket,
           privateBucket: privateArtifactBucket,
           monitor,
-          ignoreError: true,
+          ignoreError: false,
           expires: now,
         });
-        // const count = await Artifact.expire(now);
         debug('Expired %s artifacts', count);
+        monitor.log.expiredArtifactsRemoved({ count, expires: now });
       });
     },
   },
