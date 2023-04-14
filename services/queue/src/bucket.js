@@ -133,7 +133,7 @@ Bucket.prototype.deleteObject = function(prefix) {
 };
 
 /** Delete a list of objects */
-Bucket.prototype.deleteObjects = function(prefixes) {
+Bucket.prototype.deleteObjects = function(prefixes, quiet = false) {
   assert(prefixes instanceof Array, 'prefixes must be an array');
   // S3 API limit: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObjects.html
   assert(prefixes.length <= 1000, 'not more than 1000 prefixes can be deleted');
@@ -144,6 +144,7 @@ Bucket.prototype.deleteObjects = function(prefixes) {
           Key: prefix,
         };
       }),
+      ...(quiet ? { Quiet: true } : {} ),
     },
   }).promise();
 };

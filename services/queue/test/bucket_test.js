@@ -62,6 +62,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     await bucket.deleteObjects([key1, key2]);
   });
+  test('deleteObjects quiet', async function () {
+    const { key: key1 } = await uploadTestFile();
+    const { key: key2 } = await uploadTestFile();
+
+    await bucket.deleteObjects([key1, key2], true);
+  });
 
   test('createGetUrl', async function() {
     const key = slugid.v4();
