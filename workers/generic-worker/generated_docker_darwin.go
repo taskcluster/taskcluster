@@ -178,11 +178,17 @@ type (
 		// Since: generic-worker 5.3.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 
-		// This allows you to interactively run commands from within the worker and
-		// attaches you to the stdin/stdout/stderr over a websocket. Can be used
-		// for SSH-like access to the running worker.
+		// This allows you to interactively run commands from within the worker
+		// as the task user. This may be useful for debugging purposes.
+		// Can be used for SSH-like access to the running worker.
+		// Note that this feature works differently from the `interactive` feature
+		// in docker worker, which `docker exec`s into the running container.
+		// Since tasks on generic worker are not guaranteed to be running in a
+		// container, a bash shell is started on the task user's account.
+		// A user can then `docker exec` into the a running container, if there
+		// is one.
 		//
-		// Since: generic-worker 49.1.0
+		// Since: generic-worker 49.2.0
 		Interactive bool `json:"interactive,omitempty"`
 
 		// The live log feature streams the combined stderr and stdout to a task artifact
@@ -747,7 +753,7 @@ func taskPayloadSchema() string {
           "type": "boolean"
         },
         "interactive": {
-          "description": "This allows you to interactively run commands from within the worker and\nattaches you to the stdin/stdout/stderr over a websocket. Can be used\nfor SSH-like access to the running worker.\n\nSince: generic-worker 49.1.0",
+          "description": "This allows you to interactively run commands from within the worker\nas the task user. This may be useful for debugging purposes.\nCan be used for SSH-like access to the running worker.\nNote that this feature works differently from the ` + "`" + `interactive` + "`" + ` feature\nin docker worker, which ` + "`" + `docker exec` + "`" + `s into the running container.\nSince tasks on generic worker are not guaranteed to be running in a\ncontainer, a bash shell is started on the task user's account.\nA user can then ` + "`" + `docker exec` + "`" + ` into the a running container, if there\nis one.\n\nSince: generic-worker 49.2.0",
           "title": "Docker Exec Interactive",
           "type": "boolean"
         },
