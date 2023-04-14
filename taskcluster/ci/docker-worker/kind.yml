@@ -28,6 +28,16 @@ task-defaults:
     loopback-audio: true
     max-run-time: 10800
     docker-image: {taskcluster: worker-ci}
+    retry-exit-status:
+      - 1
+      - 4
+      - 8
+      - 10
+      - 11
+      - 12
+      - 14
+      - 16
+      - 17
     env:
       DEBUG: ""
       WORKER_CI: '1'
