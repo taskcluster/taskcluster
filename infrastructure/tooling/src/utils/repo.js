@@ -124,6 +124,6 @@ exports.readRepoYAML = async filename => {
 /**
  * Asynchronously write a yaml file to the current working copy
  */
-exports.writeRepoYAML = async (filename, data) => {
-  return await writeFile(filename, yaml.dump(data, { lineWidth: -1 }), { encoding: 'utf8' });
+exports.writeRepoYAML = async (filename, data, yamlOpts = {}) => {
+  return await writeFile(filename, yaml.dump(data, { ...yamlOpts, lineWidth: -1 }), { encoding: 'utf8' });
 };
