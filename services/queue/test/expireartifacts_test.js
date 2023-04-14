@@ -30,7 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         's3',
         'content-type',
         {
-          bucket: 'fake-public',
+          bucket: bucket.bucket,
           prefix: `${taskId}/${i}/log.log`,
         },
         false,
@@ -39,7 +39,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
       // create mock s3 object
       await bucket.s3.putObject({
-        Bucket: 'fake-public',
+        Bucket: bucket.bucket,
         Key: `${taskId}/${i}/log.log`,
         Body: 'hello',
       }).promise();
@@ -47,7 +47,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // check that the s3 objects exist
     let objects = await bucket.s3.listObjects({
-      Bucket: 'fake-public',
+      Bucket: bucket.bucket,
+      Prefix: `${taskId}/`,
     }).promise();
     assume(objects.Contents.length).equals(MAX_ARTIFACTS);
 
@@ -68,7 +69,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // check that the s3 objects are gone
     objects = await bucket.s3.listObjects({
-      Bucket: 'fake-public',
+      Bucket: bucket.bucket,
+      Prefix: `${taskId}/`,
     }).promise();
     assume(objects.Contents.length).equals(0);
   });
@@ -89,7 +91,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         's3',
         'content-type',
         {
-          bucket: 'fake-public',
+          bucket: bucket.bucket,
           prefix: `${taskId}/${i}/log.log`,
         },
         false,
@@ -99,7 +101,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       if (i < maxUploads) {
         // create mock s3 object
         await bucket.s3.putObject({
-          Bucket: 'fake-public',
+          Bucket: bucket.bucket,
           Key: `${taskId}/${i}/log.log`,
           Body: 'hello',
         }).promise();
@@ -108,7 +110,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // check that the s3 objects exist
     let objects = await bucket.s3.listObjects({
-      Bucket: 'fake-public',
+      Bucket: bucket.bucket,
+      Prefix: `${taskId}/`,
     }).promise();
     assume(objects.Contents.length).equals(maxUploads);
 
@@ -129,7 +132,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // check that the s3 objects are gone
     objects = await bucket.s3.listObjects({
-      Bucket: 'fake-public',
+      Bucket: bucket.bucket,
+      Prefix: `${taskId}/`,
     }).promise();
     assume(objects.Contents.length).equals(0);
   });
@@ -147,7 +151,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         'something-else',
         'content-type',
         {
-          bucket: 'fake-public',
+          bucket: 'some-nonexisting-bucket',
           prefix: `${taskId}/${i}/log.log`,
         },
         false,
