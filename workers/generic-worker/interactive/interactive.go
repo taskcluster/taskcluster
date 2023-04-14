@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"sync"
 
@@ -186,8 +187,20 @@ func (it *Interactive) ListenAndServe() error {
 	defer cancel()
 
 	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Printf("ListenAndServe() error: %v", err)
+		var err error
+		crtFile := os.Getenv("SERVER_CRT_FILE")
+		keyFile := os.Getenv("SERVER_KEY_FILE")
+		if crtFile != "" && keyFile != "" {
+			log.Printf("Output server listening... %s (with TLS)", server.Addr)
+			log.Printf("key %s ", keyFile)
+			log.Printf("crt %s ", crtFile)
+			err = server.ListenAndServeTLS(crtFile, keyFile)
+		} else {
+			log.Printf("Output server listening... %s (without TLS)", server.Addr)
+			err = server.ListenAndServe()
+		}
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe() error: %v", err)
 		}
 	}()
 

@@ -115,7 +115,7 @@ func (it *InteractiveTask) Stop(err *ExecutionErrors) {
 
 func (it *InteractiveTask) uploadInteractiveArtifact() error {
 	var err error
-	it.exposure, err = exposer.ExposeHTTP(it.interactive.TCPPort)
+	it.exposure, err = exposer.ExposeTCPPort(it.interactive.TCPPort)
 	if err != nil {
 		return err
 	}
