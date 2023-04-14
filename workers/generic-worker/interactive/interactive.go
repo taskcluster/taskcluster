@@ -2,6 +2,7 @@
 package interactive
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"io"
@@ -36,7 +37,7 @@ type Interactive struct {
 func New(port uint16, ctx context.Context) (it *Interactive, err error) {
 	it = &Interactive{
 		TCPPort:      port,
-		cmd:          exec.Command("bash"),
+		cmd:          exec.CommandContext(ctx, "bash"),
 		done:         make(chan struct{}),
 		streamErrors: make(chan error, 2),
 		ctx:          ctx,
@@ -81,7 +82,8 @@ func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	it.copyCommandOutputStreams()
+	go it.copyCommandOutputStream(it.stdout)
+	go it.copyCommandOutputStream(it.stderr)
 
 	if err := it.cmd.Start(); err != nil {
 		log.Printf("Command start error: %v", err)
@@ -137,42 +139,30 @@ func (it *Interactive) handleWebsocketMessages(msgChan chan []byte) {
 	}
 }
 
-func (it *Interactive) copyCommandOutputStreams() {
-	go func() {
-		buf := make([]byte, 1024)
-		for {
-			n, err := it.stdout.Read(buf)
+func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
+	reader := bufio.NewReader(stream)
+	for {
+		select {
+		case <-it.ctx.Done():
+			return
+		default:
+			msg, err := reader.ReadString('\n')
 			if err != nil {
+				if err == io.EOF {
+					continue
+				}
 				it.streamErrors <- err
 				return
 			}
 			it.connMutex.Lock()
-			if err := it.conn.WriteMessage(websocket.TextMessage, buf[:n]); err != nil {
+			if err := it.conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
 				it.connMutex.Unlock()
 				it.streamErrors <- err
 				return
 			}
 			it.connMutex.Unlock()
 		}
-	}()
-
-	go func() {
-		buf := make([]byte, 1024)
-		for {
-			n, err := it.stderr.Read(buf)
-			if err != nil {
-				it.streamErrors <- err
-				return
-			}
-			it.connMutex.Lock()
-			if err := it.conn.WriteMessage(websocket.TextMessage, buf[:n]); err != nil {
-				it.connMutex.Unlock()
-				it.streamErrors <- err
-				return
-			}
-			it.connMutex.Unlock()
-		}
-	}()
+	}
 }
 
 func (it *Interactive) ListenAndServe() error {
