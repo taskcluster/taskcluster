@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v49.1.0
+
+### ADMINS
+
+▶ [minor] [bug 1826417](http://bugzil.la/1826417)
+Changes the way `expire-artifacts` works. It uses a separate function to fetch all expired artifacts and then uses bulk delete to remove them from S3 and the database.
+
 ## v49.0.0
 
 ### GENERAL
