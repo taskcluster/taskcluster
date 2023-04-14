@@ -81,7 +81,14 @@ services:
     depends_on:
       s3:
         condition: service_healthy
-    entrypoint: /bin/sh -c "/usr/bin/mc config host rm local;/usr/bin/mc config host add --quiet --api s3v4 local http://s3:9000 minioadmin miniopassword;/usr/bin/mc rb --force local/public-bucket/;/usr/bin/mc mb --quiet local/public-bucket/;/usr/bin/mc policy set public local/public-bucket;/usr/bin/mc rb --force local/private-bucket/;/usr/bin/mc mb --quiet local/private-bucket/;/usr/bin/mc policy set public local/public-bucket;"
+    entrypoint: |-
+      /bin/sh -c "
+      /usr/bin/mc config host rm local;
+      /usr/bin/mc config host add --quiet --api s3v4 local http://s3:9000 minioadmin miniopassword;
+      (/usr/bin/mc ls local/public-bucket/ || /usr/bin/mc mb --quiet local/public-bucket/);
+      (/usr/bin/mc ls local/private-bucket/ || /usr/bin/mc mb --quiet local/private-bucket/);
+      /usr/bin/mc policy set public local/public-bucket;
+      "
     environment:
       MINIO_ENDPOINT: http://s3:9000
       MINIO_ROOT_USER: minioadmin
@@ -132,7 +139,10 @@ services:
       TASKCLUSTER_ROOT_URL: http://taskcluster
       TASKCLUSTER_CLIENT_ID: static/taskcluster/root
       TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-    entrypoint: /bin/sh -c " echo 'Applying config'; tc-admin apply ||true; "
+    entrypoint: |-
+      /bin/sh -c "
+      echo 'Applying config'; tc-admin apply ||true;
+      "
     depends_on:
       auth-web:
         condition: service_healthy
