@@ -10,6 +10,7 @@ import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
 import getPictureFromUser from '../../utils/getPictureFromUser';
+import username from '../../utils/username';
 
 @withAuth
 @withApollo
@@ -76,6 +77,8 @@ export default class UserMenuList extends Component {
       );
     }
 
+    const profileName = username(user);
+
     return (
       <Fragment>
         <List component="nav">
@@ -87,16 +90,14 @@ export default class UserMenuList extends Component {
             aria-label="user menu"
             onClick={onMenuClick}>
             {avatarSrc ? (
-              <Avatar alt={user.profile.displayName} src={avatarSrc} />
+              <Avatar alt={profileName} src={avatarSrc} />
             ) : (
-              <Avatar alt={user.profile.displayName}>
-                {user.profile.displayName[0]}
-              </Avatar>
+              <Avatar alt={profileName}>{profileName[0]}</Avatar>
             )}
             <ListItemText
-              primary={user.profile.displayName}
+              primary={profileName}
               primaryTypographyProps={{ className: classes.username }}
-              title={user.profile.displayName}
+              title={profileName}
             />
           </ListItem>
         </List>

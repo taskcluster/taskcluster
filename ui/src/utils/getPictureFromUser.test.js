@@ -1,6 +1,11 @@
 import getPictureFromUser from './getPictureFromUser';
 
 describe('get picture from user', () => {
+  it('should return empty when profile missing', () => {
+    expect(getPictureFromUser()).toEqual(null);
+    expect(getPictureFromUser({})).toEqual(null);
+    expect(getPictureFromUser({ profile: null })).toEqual(null);
+  });
   it('should fetch mozilla-auth', () => {
     const user = {
       identityProviderId: 'mozilla-auth0',
