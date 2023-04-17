@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { string } from 'prop-types';
-import { hterm, lib } from 'hterm-umd';
+import { hterm, lib } from 'hterm-umdjs';
 import { DockerExecClient } from 'docker-exec-websocket-client';
 import withAlertOnClose from '../../utils/withAlertOnClose';
 
 const DECODER = new TextDecoder('utf-8');
+const ENCODER = new TextEncoder('utf-8');
 const defaultCommand = [
   'sh',
   '-c',
@@ -56,8 +57,6 @@ export default class Shell extends Component {
         command: defaultCommand,
       };
 
-      io.sendString = d => this.client && this.client.stdin.write(d);
-      io.onVTKeystroke = io.sendString;
       io.onTerminalResize = () => null;
       terminal.setCursorPosition(0, 0);
       terminal.setCursorVisible(true);
@@ -70,33 +69,75 @@ export default class Shell extends Component {
 
       // Create a shell client, with interface similar to child_process
       // With an additional method client.resize(cols, rows) for TTY sizing.
-      if (version === '1') {
-        this.client = new DockerExecClient(options);
-        await this.client.execute();
+      switch (version) {
+        // docker worker
+        case '1':
+          io.sendString = d => this.client && this.client.stdin.write(d);
+          io.onVTKeystroke = io.sendString;
 
-        // Wrap client.resize to switch argument ordering
-        const { resize } = this.client;
+          this.client = new DockerExecClient(options);
+          await this.client.execute();
 
-        this.client.resize = (c, r) => resize.call(this.client, r, c);
-      } else {
-        io.writeUTF8(`inteactive shell API version ${version} not supported`);
+          this.client.resize.apply(this.client, [
+            terminal.screenSize.height,
+            terminal.screenSize.width,
+          ]);
+
+          this.client.on('exit', code => {
+            io.writeUTF8(`\r\nRemote shell exited: ${code}\r\n`);
+            terminal.uninstallKeyboard();
+            terminal.setCursorVisible(false);
+          });
+
+          this.client.resize(
+            terminal.screenSize.width,
+            terminal.screenSize.height
+          );
+          io.onTerminalResize = (c, r) => this.client.resize(c, r);
+          this.client.stdout.on('data', data =>
+            io.writeUTF8(DECODER.decode(data))
+          );
+          this.client.stderr.on('data', data =>
+            io.writeUTF8(DECODER.decode(data))
+          );
+          this.client.stdout.resume();
+          this.client.stderr.resume();
+
+          break;
+        // generic worker
+        case '2':
+          this.wsClient = new WebSocket(url);
+
+          io.sendString = d =>
+            this.wsClient && this.wsClient.send(ENCODER.encode(d));
+          io.onVTKeystroke = io.sendString;
+
+          this.wsClient.onmessage = ({ data }) =>
+            io.writeUTF8(DECODER.decode(data));
+
+          this.wsClient.onclose = () => {
+            io.writeUTF8(`\r\nRemote shell closed\r\n`);
+            terminal.uninstallKeyboard();
+            terminal.setCursorVisible(false);
+          };
+
+          this.wsClient.onerror = err => {
+            io.writeUTF8(`\r\nRemote shell error: ${err}\r\n`);
+            terminal.uninstallKeyboard();
+            terminal.setCursorVisible(false);
+          };
+
+          break;
+        default:
+          io.writeUTF8(
+            `Interactive shell API version ${version} not supported`
+          );
+
+          break;
       }
 
       terminal.installKeyboard();
       io.writeUTF8(`Connected to remote shell for taskId: ${taskId}\r\n`);
-
-      this.client.on('exit', code => {
-        io.writeUTF8(`\r\nRemote shell exited: ${code}\r\n`);
-        terminal.uninstallKeyboard();
-        terminal.setCursorVisible(false);
-      });
-
-      this.client.resize(terminal.screenSize.width, terminal.screenSize.height);
-      io.onTerminalResize = (c, r) => this.client.resize(c, r);
-      this.client.stdout.on('data', data => io.writeUTF8(DECODER.decode(data)));
-      this.client.stderr.on('data', data => io.writeUTF8(DECODER.decode(data)));
-      this.client.stdout.resume();
-      this.client.stderr.resume();
     };
 
     if (this.node) {

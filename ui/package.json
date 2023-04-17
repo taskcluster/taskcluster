@@ -53,7 +53,7 @@
     "fast-memoize": "^2.5.1",
     "graphql": "^15.0.0",
     "highlight.js": "^11.7.0",
-    "hterm-umd": "^1.0.1",
+    "hterm-umdjs": "^1.4.1",
     "is-absolute-url": "^4.0.1",
     "js-yaml": "^4.0.0",
     "json-e": "^4.0.0",
