@@ -827,7 +827,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await assertStatusUpdate('failure');
       await assertBuildState('failure');
     });
-    test('task rerun sets status back from success to pending', async function() {
+    test('task rerun sets status to pending from running', async function() {
       await addBuild({ state: 'success', taskGroupId: TASKGROUPID });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
@@ -835,6 +835,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         routingKey: 'route.statuses',
         runId: 0,
         state: 'running',
+      });
+      await assertStatusUpdate('pending');
+      await assertBuildState('pending');
+    });
+    test('task rerun sets status to pending', async function() {
+      await addBuild({ state: 'success', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-pending',
+        routingKey: 'route.statuses',
+        runId: 1,
+        state: 'pending',
       });
       await assertStatusUpdate('pending');
       await assertBuildState('pending');

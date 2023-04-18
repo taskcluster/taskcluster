@@ -110,6 +110,7 @@ class Handlers {
       taskFailed: queueEvents.taskFailed().exchange,
       taskException: queueEvents.taskException().exchange,
       taskCompleted: queueEvents.taskCompleted().exchange,
+      taskPending: queueEvents.taskPending().exchange,
       taskRunning: queueEvents.taskRunning().exchange,
       taskGroupResolved: queueEvents.taskGroupResolved().exchange,
     };
@@ -128,6 +129,7 @@ class Handlers {
     // tasks. We wait for the entire group to be resolved before checking
     // for success.
     const deprecatedResultStatusBindings = [
+      queueEvents.taskPending(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskRunning(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskFailed(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskException(`route.${this.context.cfg.app.statusTaskRoute}`),
