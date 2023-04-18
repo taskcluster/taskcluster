@@ -11,3 +11,6 @@ CREATE USER taskcluster_queue PASSWORD 'queue_password';
 CREATE USER taskcluster_secrets PASSWORD 'secrets_password';
 CREATE USER taskcluster_web_server PASSWORD 'web_server_password';
 CREATE USER taskcluster_worker_manager PASSWORD 'worker_manager_password';
+
+CREATE DATABASE "taskcluster-test";
+GRANT ALL ON DATABASE "taskcluster-test" TO taskcluster;

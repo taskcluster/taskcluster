@@ -644,6 +644,115 @@ suite(testing.suiteName(), function() {
       });
     });
 
+    suite('get_task_group_size', function () {
+      helper.dbTest('no such task group', async function (db) {
+        const res = await db.fns.get_task_group_size('noSuchTaskId');
+        assert.deepEqual(res.length, 1);
+        assert.equal(res[0].get_task_group_size, 0);
+      });
+
+      helper.dbTest(`task group with few tasks`, async function (db) {
+        const taskGroupId = slugid.v4();
+        await create(db, { taskId: slugid.v4(), taskGroupId });
+        const res = await db.fns.get_task_group_size(taskGroupId);
+        assert.equal(res.length, 1);
+        assert.equal(res[0].get_task_group_size, 1);
+
+        await create(db, { taskId: slugid.v4(), taskGroupId });
+        const res2 = await db.fns.get_task_group_size(taskGroupId);
+        assert.equal(res2.length, 1);
+        assert.equal(res2[0].get_task_group_size, 2);
+      });
+    });
+
+    suite('cancel_task_group', function() {
+      helper.dbTest('no such task group', async function(db) {
+        const res = await db.fns.cancel_task_group(taskId, 'because');
+        assert.deepEqual(res, []);
+      });
+
+      for (let state of ['exception', 'completed']) {
+        helper.dbTest(`task group with task with ${state} run`, async function(db) {
+          const taskGroupId = slugid.v4();
+          const taskId = slugid.v4();
+          await create(db, { taskId, taskGroupId });
+          await setTaskRuns(db, [{ state }]);
+          const res = await db.fns.cancel_task_group(taskGroupId, 'because');
+          assert.equal(res.length, 1);
+          const task = fixRuns(await db.fns.get_task_projid(taskId));
+          assert.deepEqual(task[0].runs, [{ state: 'exception', reasonCreated: 'exception', reasonResolved: 'because', resolved: 'date', scheduled: 'date' }]);
+
+          const res2 = await db.fns.get_task_group_size(taskGroupId);
+          assert.equal(res2[0].get_task_group_size, 1);
+        });
+      }
+
+      helper.dbTest('task group with existing run', async function(db) {
+        const taskGroupId = slugid.v4();
+        const taskIds = [slugid.v4(), slugid.v4()];
+        await Promise.all(taskIds.map(taskId => create(db, { taskId, taskGroupId })));
+        await setTaskRuns(db, [{ state: 'running' }]);
+        await setTaskTakenUntil(db, new Date());
+        const res = fixRuns(await db.fns.cancel_task_group(taskGroupId, 'because'));
+        assert.deepEqual(res[0].runs, [{
+          reasonCreated: 'exception', reasonResolved: 'because', resolved: 'date', scheduled: 'date', state: 'exception',
+        }]);
+        taskIds.forEach(async (taskId) => {
+          const task = fixRuns(await db.fns.get_task_projid(taskId));
+          assert.deepEqual(task[0].runs, res[0].runs);
+        });
+      });
+      helper.dbTest('task group should only cancel tasks once', async function(db) {
+        const taskGroupId = slugid.v4();
+        const taskIds = [slugid.v4(), slugid.v4()];
+        await Promise.all(taskIds.map(taskId => create(db, { taskId, taskGroupId })));
+        await setTaskRuns(db, [{ state: 'running' }]);
+        await setTaskTakenUntil(db, new Date());
+        const res = fixRuns(await db.fns.cancel_task_group(taskGroupId, 'because'));
+        assert.deepEqual(res[0].runs, [{
+          reasonCreated: 'exception', reasonResolved: 'because', resolved: 'date', scheduled: 'date', state: 'exception',
+        }]);
+        taskIds.forEach(async (taskId) => {
+          const task = fixRuns(await db.fns.get_task_projid(taskId));
+          assert.deepEqual(task[0].runs, res[0].runs);
+        });
+        const res2 = fixRuns(await db.fns.cancel_task_group(taskGroupId, 'because'));
+        assert.deepEqual(res2, []);
+
+        const newTaskId = slugid.v4();
+        await create(db, { taskId: newTaskId, taskGroupId });
+        await setTaskRuns(db, [{ state: 'running' }]);
+        await setTaskTakenUntil(db, new Date());
+        const res3 = fixRuns(await db.fns.cancel_task_group(taskGroupId, 'because'));
+        assert.equal(res3.length, 1);
+        assert.deepEqual(res3[0].runs, [{
+          reasonCreated: 'exception', reasonResolved: 'because', resolved: 'date', scheduled: 'date', state: 'exception',
+        }]);
+      });
+      helper.dbTest('task group with expired task', async function(db) {
+        const taskGroupId = slugid.v4();
+        const taskIds = [slugid.v4(), slugid.v4()];
+        await Promise.all(taskIds.map(taskId => create(db, { taskId, taskGroupId, deadline: new Date(0) })));
+        // one that is not expired
+        await create(db, { taskId, taskGroupId });
+        // await setTaskRuns(db, [{ state: 'running' }]);
+        await setTaskTakenUntil(db, new Date());
+        const res = fixRuns(await db.fns.cancel_task_group(taskGroupId, 'because'));
+        assert.equal(res.length, 1);
+        assert.deepEqual(res[0].runs, [{
+          reasonCreated: 'exception',
+          reasonResolved: 'because',
+          resolved: 'date',
+          scheduled: 'date',
+          state: 'exception',
+        }]);
+        taskIds.forEach(async (taskId) => {
+          const task = fixRuns(await db.fns.get_task_projid(taskId));
+          assert.deepEqual(task[0].runs, res[0].runs);
+        });
+      });
+    });
+
     suite('claim_task', function() {
       const takenUntil = new Date();
 
@@ -1120,11 +1229,12 @@ suite(testing.suiteName(), function() {
       });
 
       if (options.quarantineUntil) {
-        await db.fns.quarantine_queue_worker_with_last_date_active({
+        await db.fns.quarantine_queue_worker_with_last_date_active_and_details({
           task_queue_id_in: options.taskQueueId || 'prov/wt',
           worker_group_in: options.workerGroup || 'wg',
           worker_id_in: options.workerId || 'wi',
           quarantine_until_in: options.quarantineUntil,
+          quarantine_details_in: options.quarantineDetails || { details: 'details' },
         });
       }
 
@@ -1139,29 +1249,31 @@ suite(testing.suiteName(), function() {
     };
 
     helper.dbTest('no such queue worker', async function(db) {
-      const res = await db.fns.get_queue_worker_with_wm_join('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_worker_with_wm_join doesn\'t return expired workers', async function(db) {
+    helper.dbTest('get_queue_worker_with_wm_join_2 doesn\'t return expired workers', async function(db) {
       await create(db, {
         quarantineUntil: null,
         expires: taskcluster.fromNow('-2 hours'),
       });
-      const res = await db.fns.get_queue_worker_with_wm_join('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_queue_worker_with_wm_join returns expired but quarantined workers', async function(db) {
+    helper.dbTest('get_queue_worker_with_wm_join_2 returns expired but quarantined workers', async function(db) {
       await create(db, {
         expires: taskcluster.fromNow('-2 hours'),
         quarantineUntil: taskcluster.fromNow('2 hours'),
+        quarantineDetails: { a: 'b' },
       });
-      const res = await db.fns.get_queue_worker_with_wm_join('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.equal(res.length, 1);
       assert.equal(res[0].state, null);
       assert.equal(res[0].capacity, null);
       assert.equal(res[0].provider_id, null);
+      assert.deepEqual(res[0].quarantine_details, [{ a: 'b' }]);
     });
 
     helper.dbTest('get_queue_workers_with_wm_join empty', async function(db) {
@@ -1257,7 +1369,7 @@ suite(testing.suiteName(), function() {
         expires_in: expires,
       });
 
-      const res = await db.fns.get_queue_worker_with_wm_join('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.equal(res[0].worker_pool_id, 'prov/wt');
       assert.equal(res[0].worker_group, 'wg');
       assert(res[0].quarantine_until < new Date()); // defaults to in the past
@@ -1276,7 +1388,7 @@ suite(testing.suiteName(), function() {
         expires_in: expires,
       });
 
-      const res = await db.fns.get_queue_worker_with_wm_join('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.equal(res[0].worker_pool_id, 'prov/wt');
       assert.equal(res[0].worker_group, 'wg');
       assert(res[0].quarantine_until < new Date()); // defaults to in the past
@@ -1301,20 +1413,32 @@ suite(testing.suiteName(), function() {
         });
       }
 
-      const res = await db.fns.get_queue_worker_with_wm_join('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res[0].expires, expireses[1]);
     });
 
     helper.dbTest('quarantine_queue_worker_with_last_date_active does nothing on nonexistent worker', async function(db) {
-      const res = await db.fns.quarantine_queue_worker_with_last_date_active('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.quarantine_queue_worker_with_last_date_active('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('quarantine_queue_worker_with_last_date_active updates quarantine date + expires, returns row', async function(db) {
       await create(db);
       const quarantineUntil = taskcluster.fromNow('1 year');
-      const res = await db.fns.quarantine_queue_worker_with_last_date_active('prov/wt', 'wg', 'wi', quarantineUntil);
+      const res = await db.deprecatedFns.quarantine_queue_worker_with_last_date_active('prov/wt', 'wg', 'wi', quarantineUntil);
       assert.deepEqual(res[0].quarantine_until, quarantineUntil);
+      assert.equal(res[0].task_queue_id, 'prov/wt');
+      // expires should be 1 day from now, as a "bump"
+      helper.assertDateApproximately(res[0].expires, taskcluster.fromNow('1 day'));
+      assert.deepEqual(res[0].recent_tasks, [{ taskId: 'recent', runId: 0 }]);
+    });
+
+    helper.dbTest('quarantine_queue_worker_with_last_date_active_and_details updates quarantine date + expires, returns row', async function(db) {
+      await create(db);
+      const quarantineUntil = taskcluster.fromNow('1 year');
+      const res = await db.fns.quarantine_queue_worker_with_last_date_active_and_details('prov/wt', 'wg', 'wi', quarantineUntil, { reason: 'testing' });
+      assert.deepEqual(res[0].quarantine_until, quarantineUntil);
+      assert.deepEqual(res[0].quarantine_details, [{ reason: 'testing' }]);
       assert.equal(res[0].task_queue_id, 'prov/wt');
       // expires should be 1 day from now, as a "bump"
       helper.assertDateApproximately(res[0].expires, taskcluster.fromNow('1 day'));
@@ -1333,7 +1457,7 @@ suite(testing.suiteName(), function() {
 
       for (let task of tasks) {
         await db.fns.queue_worker_task_seen('prov/wt', 'wg', 'wi', task);
-        res = await db.fns.get_queue_worker_with_wm_join('prov/wt', 'wg', 'wi', new Date());
+        res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
         const recentTasks = res[0].recent_tasks;
         assert.deepEqual(recentTasks[recentTasks.length - 1], task);
       }

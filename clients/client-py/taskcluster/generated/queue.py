@@ -154,6 +154,25 @@ class Queue(BaseClient):
 
         return self._makeApiCall(self.funcinfo["listTaskGroup"], *args, **kwargs)
 
+    def cancelTaskGroup(self, *args, **kwargs):
+        """
+        Cancel Task Group
+
+        This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)
+        with the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.
+
+        It is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.
+        If the task group is not sealed, this method will return a 409 response.
+
+        It is possible to rerun a canceled task which will result in a new run.
+        Calling `cancelTaskGroup` again in this case will only cancel the new run.
+        Other tasks that were already canceled would not be canceled again.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["cancelTaskGroup"], *args, **kwargs)
+
     def getTaskGroup(self, *args, **kwargs):
         """
         Get Task Group
@@ -890,6 +909,14 @@ class Queue(BaseClient):
             'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/cancel',
             'stability': 'stable',
+        },
+        "cancelTaskGroup": {
+            'args': ['taskGroupId'],
+            'method': 'post',
+            'name': 'cancelTaskGroup',
+            'output': 'v1/cancel-task-group-response.json#',
+            'route': '/task-group/<taskGroupId>/cancel',
+            'stability': 'experimental',
         },
         "claimTask": {
             'args': ['taskId', 'runId'],

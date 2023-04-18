@@ -3,7 +3,7 @@
 //go:generate go run ../codegen/cmd/gen-services
 package apis
 
-import "github.com/taskcluster/taskcluster/v48/clients/client-shell/apis/definitions"
+import "github.com/taskcluster/taskcluster/v49/clients/client-shell/apis/definitions"
 
 var services = map[string]definitions.Service{
 	"Auth": definitions.Service{
@@ -1372,6 +1372,19 @@ var services = map[string]definitions.Service{
 					"continuationToken",
 					"limit",
 				},
+				Input: "",
+			},
+			definitions.Entry{
+				Name:        "cancelTaskGroup",
+				Title:       "Cancel Task Group",
+				Description: "This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)\nwith the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.\n\nIt is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.\nIf the task group is not sealed, this method will return a 409 response.\n\nIt is possible to rerun a canceled task which will result in a new run.\nCalling `cancelTaskGroup` again in this case will only cancel the new run.\nOther tasks that were already canceled would not be canceled again.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/task-group/<taskGroupId>/cancel",
+				Args: []string{
+					"taskGroupId",
+				},
+				Query: []string{},
 				Input: "",
 			},
 			definitions.Entry{

@@ -326,14 +326,11 @@ exports.tasks.push({
             '/bin/sh -c "',
             '/usr/bin/mc config host rm local;',
             '/usr/bin/mc config host add --quiet --api s3v4 local http://s3:9000 minioadmin miniopassword;',
-            '/usr/bin/mc rb --force local/public-bucket/;',
-            '/usr/bin/mc mb --quiet local/public-bucket/;',
-            '/usr/bin/mc policy set public local/public-bucket;',
-            '/usr/bin/mc rb --force local/private-bucket/;',
-            '/usr/bin/mc mb --quiet local/private-bucket/;',
+            '(/usr/bin/mc ls local/public-bucket/ || /usr/bin/mc mb --quiet local/public-bucket/);',
+            '(/usr/bin/mc ls local/private-bucket/ || /usr/bin/mc mb --quiet local/private-bucket/);',
             '/usr/bin/mc policy set public local/public-bucket;',
             '"',
-          ].join(""),
+          ].join('\n'),
           environment: {
             MINIO_ENDPOINT: 'http://s3:9000',
             MINIO_ROOT_USER: 'minioadmin',
@@ -372,7 +369,7 @@ exports.tasks.push({
             '/bin/sh -c "',
             'echo \'Applying config\'; tc-admin apply ||true;',
             '"',
-          ].join(' '),
+          ].join('\n'),
           depends_on: Object.fromEntries(
             ['auth-web', 'hooks-web', 'queue-web', 'worker-manager-web', 'secrets-web', 'taskcluster'].map(
               svc => ([svc, { condition: 'service_healthy' }]),
@@ -512,9 +509,14 @@ exports.tasks.push({
       });
     }
 
-    await writeRepoYAML(path.join('.', COMPOSE_FILENAME), dockerCompose);
-    await writeRepoYAML(path.join('.', PROD_COMPOSE_FILENAME), dockerComposeProd);
-    await writeRepoYAML(path.join('.', DEV_COMPOSE_FILENAME), dockerComposeDev);
+    const yamlOpts = {
+      styles: {
+        '!!str': '|',
+      },
+    };
+    await writeRepoYAML(path.join('.', COMPOSE_FILENAME), dockerCompose, yamlOpts);
+    await writeRepoYAML(path.join('.', PROD_COMPOSE_FILENAME), dockerComposeProd, yamlOpts);
+    await writeRepoYAML(path.join('.', DEV_COMPOSE_FILENAME), dockerComposeDev, yamlOpts);
 
     await Promise.all(
       Object.keys(envFiles)
@@ -596,7 +598,7 @@ http {
       proxy_set_header Upgrade $http_upgrade; # websocket
       proxy_set_header Connection "Upgrade"; # websocket
     }
-    location ~* /(public|private)-bucket/ {
+    location ~* /(public|private)-bucket {
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;

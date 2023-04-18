@@ -27,20 +27,20 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
-	"github.com/taskcluster/taskcluster/v48/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v48/internal"
-	"github.com/taskcluster/taskcluster/v48/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v48/internal/scopes"
-	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/errorreport"
-	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v48/workers/generic-worker/runtime"
+	tcclient "github.com/taskcluster/taskcluster/v49/clients/client-go"
+	"github.com/taskcluster/taskcluster/v49/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v49/internal"
+	"github.com/taskcluster/taskcluster/v49/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v49/internal/scopes"
+	"github.com/taskcluster/taskcluster/v49/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v49/workers/generic-worker/errorreport"
+	"github.com/taskcluster/taskcluster/v49/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v49/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v49/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v49/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v49/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v49/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v49/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -733,6 +733,24 @@ func (task *TaskRun) IsIntermittentExitCode(c int64) bool {
 	return false
 }
 
+func (task *TaskRun) purgeCachesIfRequested(c int64) {
+	for _, code := range task.Payload.OnExitStatus.PurgeCaches {
+		if c == code {
+			task.Infof("Purging caches as requested by exit code %v in task.Payload.OnExitStatus.PurgeCaches array", c)
+			task.purgeCaches()
+			break
+		}
+	}
+}
+
+func (task *TaskRun) purgeCaches() {
+	for _, cache := range directoryCaches {
+		if err := cache.Evict(task); err != nil {
+			task.Warnf("Failed to purge cache %v: %v", cache.Location, err)
+		}
+	}
+}
+
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	task.Infof("Executing command %v: %v", index, task.formatCommand(index))
 	log.Print("Executing command " + strconv.Itoa(index) + ": " + task.Commands[index].String())
@@ -745,6 +763,8 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 		return ae
 	}
 	task.Infof("%v", result)
+
+	task.purgeCachesIfRequested(int64(result.ExitCode()))
 
 	switch {
 	case result.Failed():
@@ -1113,12 +1133,7 @@ func PrepareTaskEnvironment() (reboot bool) {
 }
 
 func taskDirsIn(parentDir string) ([]string, error) {
-	taskDirsParent, err := os.Open(parentDir)
-	if err != nil {
-		return nil, err
-	}
-	defer taskDirsParent.Close()
-	fi, err := taskDirsParent.Readdir(-1)
+	fi, err := os.ReadDir(parentDir)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v49/clients/client-go"
 )
 
 type (
@@ -118,6 +118,32 @@ type (
 		//   * "link"
 		//   * "error"
 		StorageType string `json:"storageType"`
+	}
+
+	// Response from a `cancelTaskGroup` request.
+	CancelTaskGroupResponse struct {
+
+		// Total number of tasks that were cancelled with this call.
+		// It includes all non-resolved tasks.
+		//
+		// Mininum:    0
+		CancelledCount int64 `json:"cancelledCount"`
+
+		// Identifier for the task-group being listed.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskGroupID string `json:"taskGroupId"`
+
+		// Current count of tasks in the task group.
+		//
+		// Mininum:    0
+		TaskGroupSize int64 `json:"taskGroupSize"`
+
+		// List of `taskIds` cancelled by this call.
+		//
+		// Array items:
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskIds []string `json:"taskIds"`
 	}
 
 	// Request to claim a task for a worker to process.
@@ -712,8 +738,31 @@ type (
 		Stability string `json:"stability"`
 	}
 
+	// Information about when and why a worker was quarantined.
+	QuarantineDetails struct {
+
+		// The clientId of the client that made the request to quarantine the worker.
+		ClientID string `json:"clientId"`
+
+		// Usually a reason for the quarantine.
+		QuarantineInfo string `json:"quarantineInfo"`
+
+		// Value of the worker's quarantineUntil property at the moment of the quarantine.
+		QuarantineUntil tcclient.Time `json:"quarantineUntil"`
+
+		// Time when the quarantine was updated.
+		UpdatedAt tcclient.Time `json:"updatedAt"`
+	}
+
 	// Request to update a worker's quarantineUntil property.
 	QuarantineWorkerRequest struct {
+
+		// A message to be included in the worker's quarantine details. This message will be
+		// appended to the existing quarantine details to keep a history of the worker's quarantine.
+		//
+		// Min length: 1
+		// Max length: 4000
+		QuarantineInfo string `json:"quarantineInfo,omitempty"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
@@ -1943,6 +1992,10 @@ type (
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
 		ProvisionerID string `json:"provisionerId"`
+
+		// This is a list of changes to the worker's quarantine status. Each entry is an object
+		// containing information about the time, clientId and reason for the change.
+		QuarantineDetails []QuarantineDetails `json:"quarantineDetails,omitempty"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.

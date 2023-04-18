@@ -199,6 +199,7 @@ queue_workers:
   worker_id: text not null
   recent_tasks: jsonb not null
   quarantine_until: timestamp with time zone not null
+  quarantine_details: jsonb
   expires: timestamp with time zone not null
   first_claim: timestamp with time zone not null
   last_date_active: timestamp with time zone

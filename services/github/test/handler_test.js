@@ -747,6 +747,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
     });
+
+    test('using collaborators_quiet policy should not create comment', async function () {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development', // default branch
+        content: { version: 1, policy: { pullRequests: 'collaborators_quiet' } },
+      });
+      await simulateJobMessage({ user: 'not-a-collaborator', eventType: 'pull_request.opened' });
+
+      assert(github.inst(5828).repos.createCommitStatus.callCount === 0);
+      assert(github.inst(5828).issues.createComment.callCount === 0);
+    });
   });
 
   suite('Statuses API: result status handler', function () {
@@ -813,6 +826,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       await assertStatusUpdate('failure');
       await assertBuildState('failure');
+    });
+    test('task rerun sets status back from success to pending', async function() {
+      await addBuild({ state: 'success', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-running',
+        routingKey: 'route.statuses',
+        runId: 0,
+        state: 'running',
+      });
+      await assertStatusUpdate('pending');
+      await assertBuildState('pending');
+    });
+    test('task rerun sets status back from failure to pending', async function() {
+      await addBuild({ state: 'failure', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-running',
+        routingKey: 'route.statuses',
+        runId: 0,
+        state: 'running',
+      });
+      await assertStatusUpdate('pending');
+      await assertBuildState('pending');
+    });
+    test('task running not changing state if it is pending', async function() {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-running',
+        routingKey: 'route.statuses',
+        runId: 0,
+        state: 'running',
+      });
+      assert(github.inst(9988).repos.createCommitStatus.calledOnce === false);
+      await assertBuildState('pending');
     });
   });
 

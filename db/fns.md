@@ -77,11 +77,13 @@
    * [`azure_queue_put`](#azure_queue_put)
    * [`azure_queue_update`](#azure_queue_update)
    * [`cancel_task`](#cancel_task)
+   * [`cancel_task_group`](#cancel_task_group)
    * [`check_task_claim`](#check_task_claim)
    * [`claim_task`](#claim_task)
    * [`create_queue_artifact`](#create_queue_artifact)
    * [`create_task_projid`](#create_task_projid)
    * [`delete_queue_artifact`](#delete_queue_artifact)
+   * [`delete_queue_artifacts`](#delete_queue_artifacts)
    * [`delete_queue_provisioner`](#delete_queue_provisioner)
    * [`delete_queue_worker_type`](#delete_queue_worker_type)
    * [`ensure_task_group`](#ensure_task_group)
@@ -91,8 +93,10 @@
    * [`expire_task_queues`](#expire_task_queues)
    * [`expire_tasks`](#expire_tasks)
    * [`get_dependent_tasks`](#get_dependent_tasks)
+   * [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+   * [`get_task_group_size`](#get_task_group_size)
    * [`get_task_group2`](#get_task_group2)
    * [`get_task_projid`](#get_task_projid)
    * [`get_task_queue`](#get_task_queue)
@@ -102,7 +106,7 @@
    * [`is_task_group_active`](#is_task_group_active)
    * [`is_task_group_sealed`](#is_task_group_sealed)
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
-   * [`quarantine_queue_worker_with_last_date_active`](#quarantine_queue_worker_with_last_date_active)
+   * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
    * [`queue_artifact_present`](#queue_artifact_present)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -148,7 +152,7 @@
    * [`expire_worker_pools`](#expire_worker_pools)
    * [`expire_workers`](#expire_workers)
    * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
-   * [`get_queue_worker_with_wm_join`](#get_queue_worker_with_wm_join)
+   * [`get_queue_worker_with_wm_join_2`](#get_queue_worker_with_wm_join_2)
    * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
    * [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
    * [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
@@ -1229,11 +1233,13 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`azure_queue_put`](#azure_queue_put)
 * [`azure_queue_update`](#azure_queue_update)
 * [`cancel_task`](#cancel_task)
+* [`cancel_task_group`](#cancel_task_group)
 * [`check_task_claim`](#check_task_claim)
 * [`claim_task`](#claim_task)
 * [`create_queue_artifact`](#create_queue_artifact)
 * [`create_task_projid`](#create_task_projid)
 * [`delete_queue_artifact`](#delete_queue_artifact)
+* [`delete_queue_artifacts`](#delete_queue_artifacts)
 * [`delete_queue_provisioner`](#delete_queue_provisioner)
 * [`delete_queue_worker_type`](#delete_queue_worker_type)
 * [`ensure_task_group`](#ensure_task_group)
@@ -1243,8 +1249,10 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`expire_task_queues`](#expire_task_queues)
 * [`expire_tasks`](#expire_tasks)
 * [`get_dependent_tasks`](#get_dependent_tasks)
+* [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+* [`get_task_group_size`](#get_task_group_size)
 * [`get_task_group2`](#get_task_group2)
 * [`get_task_projid`](#get_task_projid)
 * [`get_task_queue`](#get_task_queue)
@@ -1254,7 +1262,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`is_task_group_active`](#is_task_group_active)
 * [`is_task_group_sealed`](#is_task_group_sealed)
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
-* [`quarantine_queue_worker_with_last_date_active`](#quarantine_queue_worker_with_last_date_active)
+* [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
 * [`queue_artifact_present`](#queue_artifact_present)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -1389,6 +1397,30 @@ reason.  If the task is unscheduled, a run with that status is
 created to represent the cancellation.  This returns the task's updated
 status, or nothing if the current status was not as expected.
 
+### cancel_task_group
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `reason text`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  project_id text`
+  * `  scheduler_id text`
+  * `  task_group_id text`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  retries_left integer`
+  * `  routes jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz `
+* *Last defined on version*: 82
+
+This cancels all non-resolved tasks for the given task group
+by calling existing cancel_task() procedure. It will return
+only the tasks that were cancelled with this call.
+
 ### check_task_claim
 
 * *Mode*: write
@@ -1494,6 +1526,17 @@ for the status information.
 * *Last defined on version*: 24
 
 Delete a queue artifact.
+
+### delete_queue_artifacts
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_run_id_names jsonb`
+* *Returns*: `void`
+* *Last defined on version*: 84
+
+Delete multiple queue artifacts.
+Input is a jsonb array of objects with task_id, run_id, and name.
 
 ### delete_queue_provisioner
 
@@ -1614,6 +1657,30 @@ This supports paginated queries that are not susceptible to rows being
 added or removed.  Typically only one of `page_offset_in` and
 `tasks_after_in` are non-null.
 
+### get_expired_artifacts_for_deletion
+
+* *Mode*: read
+* *Arguments*:
+  * `expires_in timestamptz`
+  * `page_size_in integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `run_id integer`
+  * `name text`
+  * `storage_type text`
+  * `content_type text`
+  * `details jsonb`
+  * `present boolean`
+  * `expires timestamptz`
+* *Last defined on version*: 84
+
+Get existing queue artifacts with expiration date below given.
+Note that this method doesn't use ordering to avoid using
+complex and expensive table scans.
+As table is very big doing a sequential scan without ordering is faster.
+Expired entities are expected to be deleted right after as this function
+doesn't support pagination with offsets.
+
 ### get_queue_artifact
 
 * *Mode*: read
@@ -1661,6 +1728,16 @@ by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify
 where the page of results should begin, and must all be specified if any
 are specified.  Typically these values would be drawn from the last item
 in the previous page.
+
+### get_task_group_size
+
+* *Mode*: read
+* *Arguments*:
+  * `task_group_id_in text`
+* *Returns*: `integer`
+* *Last defined on version*: 82
+
+Return number of tasks that exist in the current task group.
 
 ### get_task_group2
 
@@ -1825,7 +1902,7 @@ Return true if task group was sealed.
 
 temp, removed in next commit
 
-### quarantine_queue_worker_with_last_date_active
+### quarantine_queue_worker_with_last_date_active_and_details
 
 * *Mode*: write
 * *Arguments*:
@@ -1833,6 +1910,7 @@ temp, removed in next commit
   * `worker_group_in text`
   * `worker_id_in text`
   * `quarantine_until_in timestamptz`
+  * `quarantine_details_in jsonb`
 * *Returns*: `table`
   * `task_queue_id text`
   * `worker_group text`
@@ -1842,12 +1920,15 @@ temp, removed in next commit
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
   * `last_date_active timestamptz`
-* *Last defined on version*: 72
+  * `quarantine_details jsonb`
+* *Last defined on version*: 83
 
 Update the quarantine_until date for a worker.  The Queue service interprets a date in the past
 as "not quarantined".  This function also "bumps" the expiration of the worker so that un-quarantined
 workers do not immediately expire.  Returns the worker row just as get_queue_worker would, or no rows if
 no such worker exists.
+Additional metadata can be added to the worker to help identify the reason for the quarantine.
+Worker will keep a history of all quarantine details.
 
 ### queue_artifact_present
 
@@ -2083,7 +2164,7 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
 
 ### deprecated methods
 
-* `get_task_group(task_group_id_in text)` (compatibility guaranteed until v49.0.0)
+* `quarantine_queue_worker_with_last_date_active(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz)` (compatibility guaranteed until v50.0.0)
 
 ## secrets
 
@@ -2374,7 +2455,7 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`expire_worker_pools`](#expire_worker_pools)
 * [`expire_workers`](#expire_workers)
 * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
-* [`get_queue_worker_with_wm_join`](#get_queue_worker_with_wm_join)
+* [`get_queue_worker_with_wm_join_2`](#get_queue_worker_with_wm_join_2)
 * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
 * [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
 * [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
@@ -2550,7 +2631,7 @@ worker is not quarantined, otherwise the date until which it is
 quaratined. `providers_filter_cond` and `providers_filter_value` used to
 filter `=` or `<>` provider by value.
 
-### get_queue_worker_with_wm_join
+### get_queue_worker_with_wm_join_2
 
 * *Mode*: read
 * *Arguments*:
@@ -2563,6 +2644,7 @@ filter `=` or `<>` provider by value.
   * `worker_group text`
   * `worker_id text`
   * `quarantine_until timestamptz`
+  * `quarantine_details jsonb`
   * `expires timestamptz`
   * `first_claim timestamptz`
   * `recent_tasks jsonb`
@@ -2571,7 +2653,7 @@ filter `=` or `<>` provider by value.
   * `capacity int4`
   * `provider_id text`
   * `etag uuid`
-* *Last defined on version*: 80
+* *Last defined on version*: 83
 
 Get a non-expired queue worker by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
@@ -2959,3 +3041,7 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
+
+### deprecated methods
+
+* `get_queue_worker_with_wm_join(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v50.0.0)

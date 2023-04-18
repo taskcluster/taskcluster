@@ -1,0 +1,54 @@
+version: 84
+description: Fetch expired artifacts
+methods:
+  get_expired_artifacts_for_deletion:
+    description: |-
+      Get existing queue artifacts with expiration date below given.
+      Note that this method doesn't use ordering to avoid using
+      complex and expensive table scans.
+      As table is very big doing a sequential scan without ordering is faster.
+      Expired entities are expected to be deleted right after as this function
+      doesn't support pagination with offsets.
+    mode: read
+    serviceName: queue
+    args: expires_in timestamptz, page_size_in integer
+    returns: table(task_id text, run_id integer, name text, storage_type text, content_type text, details jsonb, present boolean, expires timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          queue_artifacts.task_id,
+          queue_artifacts.run_id,
+          queue_artifacts.name,
+          queue_artifacts.storage_type,
+          queue_artifacts.content_type,
+          queue_artifacts.details,
+          queue_artifacts.present,
+          queue_artifacts.expires
+        from queue_artifacts
+        where
+          queue_artifacts.expires < expires_in
+        limit get_page_limit(page_size_in);
+      end
+
+  delete_queue_artifacts:
+    description: |-
+      Delete multiple queue artifacts.
+      Input is a jsonb array of objects with task_id, run_id, and name.
+    mode: write
+    serviceName: queue
+    args: task_id_run_id_names jsonb
+    returns: void
+    body: |-
+      begin
+        delete from queue_artifacts
+        where
+          (task_id, run_id, name)
+          IN (
+            select
+              rec->>'task_id',
+              (rec->>'run_id')::integer,
+              rec->>'name'
+            from jsonb_array_elements(task_id_run_id_names) as rec
+          );
+      end

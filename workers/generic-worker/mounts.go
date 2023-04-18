@@ -15,9 +15,9 @@ import (
 	"github.com/mholt/archiver/v3"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
-	"github.com/taskcluster/taskcluster/v48/internal/scopes"
-	"github.com/taskcluster/taskcluster/v48/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v49/clients/client-go"
+	"github.com/taskcluster/taskcluster/v49/internal/scopes"
+	"github.com/taskcluster/taskcluster/v49/workers/generic-worker/fileutil"
 )
 
 var (
@@ -77,7 +77,7 @@ func (cache *Cache) Rating() float64 {
 	return float64(cache.Hits)
 }
 
-func (cache *Cache) Expunge(task *TaskRun) error {
+func (cache *Cache) Evict(task *TaskRun) error {
 	if task != nil {
 		task.Infof("[mounts] Removing cache %v from cache table", cache.Key)
 	}
@@ -348,7 +348,7 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 		return MalformedPayloadError(taskMount.payloadError)
 	}
 	// Check if any caches need to be purged. See:
-	//   https://docs.taskcluster.net/reference/core/purge-cache
+	//   https://docs.taskcluster.net/docs/reference/core/purge-cache
 	err := taskMount.purgeCaches()
 	// Two possible strategies if we can't reach purgecache service:
 	//
@@ -490,6 +490,11 @@ func (w *WritableDirectoryCache) Mount(task *TaskRun) error {
 
 func (w *WritableDirectoryCache) Unmount(task *TaskRun) error {
 	cache := directoryCaches[w.CacheName]
+	// no need to unmount and preserve cache since it was evicted because of
+	// task exit status code in task.payload.onExitStatus.purgeCaches
+	if cache == nil {
+		return nil
+	}
 	cacheDir := cache.Location
 	taskCacheDir := filepath.Join(taskContext.TaskDir, w.Directory)
 	task.Infof("[mounts] Preserving cache: Moving %q to %q", taskCacheDir, cacheDir)
@@ -516,11 +521,11 @@ func (w *WritableDirectoryCache) Unmount(task *TaskRun) error {
 		// this worker since it cannot persist the cache. Hopefully if there is
 		// a more serious issue, it will be detected via another mechanism and
 		// cause an internal-error.
-		expungeErr := cache.Expunge(task)
+		evictErr := cache.Evict(task)
 		// If we can't remove the cacheDir, then something nasty is going on
 		// since this is in a location that the task shouldn't be writing to...
-		if expungeErr != nil {
-			panic(expungeErr)
+		if evictErr != nil {
+			panic(evictErr)
 		}
 		// The cache directory inside the task (taskCacheDir) will in any case
 		// be cleaned up when task folder is deleted so no need to do anything
@@ -624,7 +629,7 @@ func ensureCached(fsContent FSContent, task *TaskRun) (file string, err error) {
 			return
 		}
 		task.Infof("Found existing download of %v (%v) with SHA256 %v but task definition explicitly requires %v so deleting it", cacheKey, file, sha256, requiredSHA256)
-		err = fileCaches[cacheKey].Expunge(task)
+		err = fileCaches[cacheKey].Evict(task)
 		if err != nil {
 			panic(fmt.Errorf("Could not delete cache entry %v: %v", fileCaches[cacheKey], err))
 		}
@@ -648,7 +653,7 @@ func ensureCached(fsContent FSContent, task *TaskRun) (file string, err error) {
 	}
 	if requiredSHA256 != sha256 {
 		err = fmt.Errorf("Download %v of %v has SHA256 %v but task definition explicitly requires %v; not retrying download as there were no connection failures and HTTP response status code was 200", file, fsContent, sha256, requiredSHA256)
-		err2 := fileCaches[cacheKey].Expunge(task)
+		err2 := fileCaches[cacheKey].Evict(task)
 		if err2 != nil {
 			panic(fmt.Errorf("Could not delete cache entry %v: %v", fileCaches[cacheKey], err2))
 		}
@@ -959,7 +964,7 @@ func (taskMount *TaskMount) purgeCaches() error {
 	for _, request := range purgeRequests.Requests {
 		if cache, exists := directoryCaches[request.CacheName]; exists {
 			if cache.Created.Add(-5 * time.Minute).Before(time.Time(request.Before)) {
-				err := cache.Expunge(taskMount.task)
+				err := cache.Evict(taskMount.task)
 				if err != nil {
 					panic(err)
 				}

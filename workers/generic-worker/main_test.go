@@ -52,7 +52,7 @@ func TestRevisionNumberStored(t *testing.T) {
 		// The version number in this error message is automatically updated on release by infrastructure/tooling/src/release/tasks.js
 
 		t.Fatalf("Git revision could not be determined - got '%v' but expected to match regular expression '^[0-9a-f](40)$'\n"+
-			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
+			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v49/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
 			"Try building generic-worker using the /workers/generic-worker/build.(sh|cmd) script in the taskcluster monorepo.", revision)
 	}
 	t.Logf("Git revision successfully retrieved: %v", revision)
@@ -167,16 +167,7 @@ func TestNonExecutableBinaryFailsTask(t *testing.T) {
 // calls removeTaskDirs(tempDir), and tests that only folders that started with
 // 'task_' were deleted and that the other files and folders were not.
 func TestRemoveTaskDirs(t *testing.T) {
-	d, err := os.MkdirTemp("", t.Name())
-	if err != nil {
-		t.Fatalf("Could not create temp directory: %v", err)
-	}
-	defer func() {
-		err := os.RemoveAll(d)
-		if err != nil {
-			t.Fatalf("Could not remove temp dir %v: %v", d, err)
-		}
-	}()
+	d := t.TempDir()
 	for _, dir := range []string{
 		"task_1234561234", // should remain
 		"task_12345",      // should be deleted
@@ -184,7 +175,7 @@ func TestRemoveTaskDirs(t *testing.T) {
 		"test_12345",      // should remain
 		"bfdnbdfd",        // should remain
 	} {
-		err = os.MkdirAll(filepath.Join(d, dir), 0777)
+		err := os.MkdirAll(filepath.Join(d, dir), 0777)
 		if err != nil {
 			t.Fatalf("Could not create temp %v directory: %v", dir, err)
 		}
@@ -197,23 +188,13 @@ func TestRemoveTaskDirs(t *testing.T) {
 		"applesnpears",                          // should remain
 		filepath.Join("task_12345", "abcde"),    // should be deleted
 	} {
-		err = os.WriteFile(filepath.Join(d, file), []byte("hello world"), 0777)
+		err := os.WriteFile(filepath.Join(d, file), []byte("hello world"), 0777)
 		if err != nil {
 			t.Fatalf("Could not write %v file: %v", file, err)
 		}
 	}
 	deleteTaskDirs(d, "task_1234561234")
-	taskDirsParent, err := os.Open(d)
-	if err != nil {
-		t.Fatalf("Could not open %v directory: %v", d, err)
-	}
-	defer func() {
-		err := taskDirsParent.Close()
-		if err != nil {
-			t.Fatalf("Could not close %v directory: %v", d, err)
-		}
-	}()
-	fi, err := taskDirsParent.Readdir(-1)
+	fi, err := os.ReadDir(d)
 	if err != nil {
 		t.Fatalf("Error reading directory listing of %v: %v", d, err)
 	}

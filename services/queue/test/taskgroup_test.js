@@ -325,6 +325,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       await helper.queue.createTask(taskIdA, _.defaults({
         taskGroupId,
         projectId: 'prj1',
+        schedulerId: 'sched-01',
       }, taskDef));
 
       debug('### checking InsufficientScopes');
@@ -334,7 +335,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         err => err.code === 'InsufficientScopes');
 
       debug('### Seal task-group with seal scope');
-      helper.scopes(`queue:seal-task-group:${taskGroupId}`);
+      helper.scopes(`queue:seal-task-group:sched-01/${taskGroupId}`);
       await helper.queue.sealTaskGroup(taskGroupId);
     });
   });

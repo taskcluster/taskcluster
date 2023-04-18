@@ -527,10 +527,11 @@ suite(testing.suiteName(), function() {
       }),
     },
     {
-      'tasks[0].taskId': 'py36',
-      'tasks[1].taskId': 'py37',
-      'tasks[2].taskId': 'docker_build',
-      'tasks[3].taskId': 'docker_push',
+      'tasks[0].taskId': 'py37',
+      'tasks[1].taskId': 'py38',
+      'tasks[2].taskId': 'py39',
+      'tasks[3].taskId': 'docker_build',
+      'tasks[4].taskId': 'docker_push',
     },
   );
 });

@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/kr/text"
-	"github.com/taskcluster/taskcluster/v48/internal/jsontest"
-	"github.com/taskcluster/taskcluster/v48/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v49/internal/jsontest"
+	"github.com/taskcluster/taskcluster/v49/tools/jsonschema2go"
 	"golang.org/x/tools/imports"
 	"sigs.k8s.io/yaml"
 )
@@ -128,7 +128,7 @@ func formatSourceAndSave(sourceCode []byte, sourceFile string) error {
 	var fixedFixedImports []byte
 	if err == nil {
 		importFixer := regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`)
-		fixedFixedImports = importFixer.ReplaceAll(fixedImports, []byte("github.com/taskcluster/taskcluster/v48/"))
+		fixedFixedImports = importFixer.ReplaceAll(fixedImports, []byte("github.com/taskcluster/taskcluster/v49/"))
 	}
 
 	// only perform general format, if that worked...

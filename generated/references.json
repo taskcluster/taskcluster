@@ -100,6 +100,48 @@
         "provisionerId": {
           "$ref": "task.json#/properties/provisionerId"
         },
+        "quarantineDetails": {
+          "description": "This is a list of changes to the worker's quarantine status. Each entry is an object\ncontaining information about the time, clientId and reason for the change.\n",
+          "items": {
+            "additionalProperties": false,
+            "description": "Information about when and why a worker was quarantined.\n",
+            "properties": {
+              "clientId": {
+                "description": "The clientId of the client that made the request to quarantine the worker.\n",
+                "title": "Quarantine ClientId",
+                "type": "string"
+              },
+              "quarantineInfo": {
+                "description": "Usually a reason for the quarantine.\n",
+                "title": "Quarantine Info",
+                "type": "string"
+              },
+              "quarantineUntil": {
+                "description": "Value of the worker's quarantineUntil property at the moment of the quarantine.\n",
+                "format": "date-time",
+                "title": "Quarantine Until",
+                "type": "string"
+              },
+              "updatedAt": {
+                "description": "Time when the quarantine was updated.\n",
+                "format": "date-time",
+                "title": "Updated At",
+                "type": "string"
+              }
+            },
+            "required": [
+              "clientId",
+              "updatedAt",
+              "quarantineUntil",
+              "quarantineInfo"
+            ],
+            "title": "Quarantine Details",
+            "type": "object"
+          },
+          "title": "Worker Quarantine Details",
+          "type": "array",
+          "uniqueItems": true
+        },
         "quarantineUntil": {
           "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",
           "format": "date-time",
@@ -2199,6 +2241,48 @@
         "provisionerId": {
           "$ref": "task.json#/properties/provisionerId"
         },
+        "quarantineDetails": {
+          "description": "This is a list of changes to the worker's quarantine status. Each entry is an object\ncontaining information about the time, clientId and reason for the change.\n",
+          "items": {
+            "additionalProperties": false,
+            "description": "Information about when and why a worker was quarantined.\n",
+            "properties": {
+              "clientId": {
+                "description": "The clientId of the client that made the request to quarantine the worker.\n",
+                "title": "Quarantine ClientId",
+                "type": "string"
+              },
+              "quarantineInfo": {
+                "description": "Usually a reason for the quarantine.\n",
+                "title": "Quarantine Info",
+                "type": "string"
+              },
+              "quarantineUntil": {
+                "description": "Value of the worker's quarantineUntil property at the moment of the quarantine.\n",
+                "format": "date-time",
+                "title": "Quarantine Until",
+                "type": "string"
+              },
+              "updatedAt": {
+                "description": "Time when the quarantine was updated.\n",
+                "format": "date-time",
+                "title": "Updated At",
+                "type": "string"
+              }
+            },
+            "required": [
+              "clientId",
+              "updatedAt",
+              "quarantineUntil",
+              "quarantineInfo"
+            ],
+            "title": "Quarantine Details",
+            "type": "object"
+          },
+          "title": "Worker Quarantine Details",
+          "type": "array",
+          "uniqueItems": true
+        },
         "quarantineUntil": {
           "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",
           "format": "date-time",
@@ -3494,6 +3578,13 @@
       "additionalProperties": false,
       "description": "Request to update a worker's quarantineUntil property.\n",
       "properties": {
+        "quarantineInfo": {
+          "description": "A message to be included in the worker's quarantine details. This message will be\nappended to the existing quarantine details to keep a history of the worker's quarantine.\n",
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Worker Quarantine Info",
+          "type": "string"
+        },
         "quarantineUntil": {
           "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",
           "format": "date-time",
@@ -4681,6 +4772,53 @@
       "type": "object"
     },
     "filename": "schemas/queue/v1/claim-work-request.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/queue/v1/cancel-task-group-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response from a `cancelTaskGroup` request.\n",
+      "properties": {
+        "cancelledCount": {
+          "description": "Total number of tasks that were cancelled with this call.\nIt includes all non-resolved tasks.\n",
+          "minimum": 0,
+          "title": "Total number of cancelled tasks",
+          "type": "integer"
+        },
+        "taskGroupId": {
+          "description": "Identifier for the task-group being listed.\n",
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Task-Group Identifier",
+          "type": "string"
+        },
+        "taskGroupSize": {
+          "description": "Current count of tasks in the task group.\n",
+          "minimum": 0,
+          "title": "Task-Group size",
+          "type": "integer"
+        },
+        "taskIds": {
+          "description": "List of `taskIds` cancelled by this call.\n",
+          "items": {
+            "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+            "type": "string"
+          },
+          "title": "List of task IDs",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "taskGroupId",
+        "taskGroupSize",
+        "cancelledCount",
+        "taskIds"
+      ],
+      "title": "Cancel Task-Group Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/cancel-task-group-response.json"
   },
   {
     "content": {
@@ -6597,7 +6735,8 @@
               "enum": [
                 "public",
                 "public_restricted",
-                "collaborators"
+                "collaborators",
+                "collaborators_quiet"
               ],
               "type": "string"
             }
@@ -7627,6 +7766,17 @@
           "additionalProperties": false,
           "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
           "properties": {
+            "purgeCaches": {
+              "description": "If the task exists with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit statuses",
+                "type": "integer"
+              },
+              "title": "Purge caches exit status",
+              "type": "array",
+              "uniqueItems": true
+            },
             "retry": {
               "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
               "items": {
@@ -8036,6 +8186,17 @@
           "additionalProperties": false,
           "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
           "properties": {
+            "purgeCaches": {
+              "description": "If the task exists with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit statuses",
+                "type": "integer"
+              },
+              "title": "Purge caches exit status",
+              "type": "array",
+              "uniqueItems": true
+            },
             "retry": {
               "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
               "items": {
@@ -8449,6 +8610,17 @@
           "additionalProperties": false,
           "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
           "properties": {
+            "purgeCaches": {
+              "description": "If the task exists with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit statuses",
+                "type": "integer"
+              },
+              "title": "Purge caches exit status",
+              "type": "array",
+              "uniqueItems": true
+            },
             "retry": {
               "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
               "items": {
@@ -8858,6 +9030,17 @@
           "additionalProperties": false,
           "description": "By default tasks will be resolved with `state/reasonResolved`: `completed/completed`\nif all task commands have a zero exit code, or `failed/failed` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
           "properties": {
+            "purgeCaches": {
+              "description": "If the task exists with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit statuses",
+                "type": "integer"
+              },
+              "title": "Purge caches exit status",
+              "type": "array",
+              "uniqueItems": true
+            },
             "retry": {
               "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as `exception/intermittent-task`. Typically the Queue\nwill then schedule a new run of the existing `taskId` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
               "items": {
@@ -14732,6 +14915,18 @@
           "version": 1
         },
         {
+          "description": "Reports progress of expired artifacts removal.",
+          "fields": {
+            "count": "Count of artifacts removed.",
+            "expires": "Expiration date of artifacts removed."
+          },
+          "level": "notice",
+          "name": "expiredArtifactsRemoved",
+          "title": "Expired Artifacts Removed",
+          "type": "expired-artifacts-removed",
+          "version": 1
+        },
+        {
           "description": "An internal type for logging simple messages. No required fields.",
           "fields": {
           },
@@ -14906,6 +15101,19 @@
           "name": "taskFailed",
           "title": "Task Failed",
           "type": "task-failed",
+          "version": 1
+        },
+        {
+          "description": "All non-resolved tasks within given task group have been cancelled.",
+          "fields": {
+            "cancelledCount": "Total count of tasks whose state was changed",
+            "taskGroupId": "The task group id.",
+            "taskGroupSize": "Total count of tasks in group"
+          },
+          "level": "notice",
+          "name": "taskGroupCancelled",
+          "title": "Task Group Cancelled",
+          "type": "task-group-cancelled",
           "version": 1
         },
         {
@@ -15661,6 +15869,23 @@
           "args": [
             "taskGroupId"
           ],
+          "category": "Tasks",
+          "description": "This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)\nwith the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.\n\nIt is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.\nIf the task group is not sealed, this method will return a 409 response.\n\nIt is possible to rerun a canceled task which will result in a new run.\nCalling `cancelTaskGroup` again in this case will only cancel the new run.\nOther tasks that were already canceled would not be canceled again.",
+          "method": "post",
+          "name": "cancelTaskGroup",
+          "output": "v1/cancel-task-group-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/cancel",
+          "scopes": "queue:cancel-task-group:<schedulerId>/<taskGroupId>",
+          "stability": "experimental",
+          "title": "Cancel Task Group",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
           "category": "Task Groups",
           "description": "Get task group information by `taskGroupId`.\n\nThis will return meta-information associated with the task group.\nIt contains information about task group expiry date or if it is sealed.\n\nIf you also want to see which tasks belong to this task group, you can call\n`listTaskGroup` method.",
           "method": "get",
@@ -15686,7 +15911,7 @@
           "query": [
           ],
           "route": "/task-group/<taskGroupId>/seal",
-          "scopes": "queue:seal-task-group:<taskGroupId>",
+          "scopes": "queue:seal-task-group:<schedulerId>/<taskGroupId>",
           "stability": "experimental",
           "title": "Seal Task Group",
           "type": "function"

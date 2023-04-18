@@ -94,6 +94,21 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'taskGroupCancelled',
+  title: 'Task Group Cancelled',
+  type: 'task-group-cancelled',
+  version: 1,
+  level: 'notice',
+  description: `
+    All non-resolved tasks within given task group have been cancelled.`,
+  fields: {
+    taskGroupId: 'The task group id.',
+    taskGroupSize: 'Total count of tasks in group',
+    cancelledCount: 'Total count of tasks whose state was changed',
+  },
+});
+
+MonitorManager.register({
   name: 'taskException',
   title: 'Task Exception',
   type: 'task-exception',
@@ -170,5 +185,18 @@ MonitorManager.register({
     claimed: 'Number of hints claimed on an iteration.',
     released: 'Number of hints released on an iteration. Should usually be 0.',
     slept: 'If true, there were no hints to claim and the poller slept before claiming again.',
+  },
+});
+
+MonitorManager.register({
+  name: 'expiredArtifactsRemoved',
+  title: 'Expired Artifacts Removed',
+  type: 'expired-artifacts-removed',
+  version: 1,
+  level: 'notice',
+  description: `Reports progress of expired artifacts removal.`,
+  fields: {
+    count: 'Count of artifacts removed.',
+    expires: 'Expiration date of artifacts removed.',
   },
 });

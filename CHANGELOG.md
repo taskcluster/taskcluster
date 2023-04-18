@@ -3,6 +3,80 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v49.1.0
+
+### ADMINS
+
+▶ [minor] [bug 1826417](http://bugzil.la/1826417)
+Changes the way `expire-artifacts` works. It uses a separate function to fetch all expired artifacts and then uses bulk delete to remove them from S3 and the database.
+
+## v49.0.0
+
+### GENERAL
+
+▶ [patch]
+Builds and tests generic worker (multiuser) on macOS Ventura 13 on new, arm64 machines.
+
+### USERS
+
+▶ [MAJOR]
+Remove python 3.6 support as it's past its end-of-life date.
+
+Add python 3.10 and python 3.11 support.
+
+▶ [minor] [#6147](https://github.com/taskcluster/taskcluster/issues/6147)
+Adds `task.payload.onExitStatus.purgeCaches` feature to generic worker to bring to parity with an existing docker worker feature.
+
+`purgeCaches` is an array of exit status code integers that the user wants all caches associated with the task to be purged.
+
+## v48.3.0
+
+### ADMINS
+
+▶ [minor] [#4343](https://github.com/taskcluster/taskcluster/issues/4343)
+Workers can be quarantined with an optional comment. `queue.quarantineWorker` accepts a `quarantineInfo` string.
+Quarantine details also include timestamp and clientId of the user who quarantined the worker.
+This information can be fetched with `worker-manager.getWorker`.
+`quarantineDetails` would be a list of all the quarantine requests made for the worker.
+UI shows this history and allows to specify a comment for quarantine request.
+
+### USERS
+
+▶ [patch]
+Enables missing `collaborators_quiet` policy to the schema validation of `.taskcluster.yml`.
+
+▶ [patch] [bug 1824937](http://bugzil.la/1824937)
+docker-worker no longer waits indefinitely when downloading an image artifact, and will retry if the connection is idle for 60s
+
+## v48.2.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6130](https://github.com/taskcluster/taskcluster/issues/6130)
+This patch ensures that the worker pool ID passed to generic worker contains a slash (`/`) and will error out describing the issue as opposed to panicing when an `index out of range` error.
+
+### USERS
+
+▶ [patch] [bug 1590886](http://bugzil.la/1590886)
+Fix Github statuses: skip unnecessary API updates when task starts running.
+
+## v48.2.0
+
+### USERS
+
+▶ [minor] [#3652](https://github.com/taskcluster/taskcluster/issues/3652)
+It is now possible to cancel a sealed task group by calling the `queue.cancelTaskGroup` API method.
+This will cancel all scheduled/pending/running tasks within given group.
+
+▶ [patch] [bug 1590886](http://bugzil.la/1590886)
+Github service update statuses back to pending when task is retried.
+
+### DEVELOPERS
+
+▶ [minor] [#5993](https://github.com/taskcluster/taskcluster/issues/5993)
+Adds the `liveLog` and `backingLog` feature flags to the generic worker payload so they can be disabled for a task. These are enabled by default.
+Adds the `logs` property to the generic worker payload allowing customization of the live and backing log artifact names.
+
 ## v48.1.1
 
 ### USERS

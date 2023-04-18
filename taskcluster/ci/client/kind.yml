@@ -62,18 +62,6 @@ tasks:
           {{ Xvfb :99 -screen 0 640x480x8 -nolisten tcp & }} &&
           sleep 2 &&
           CHROME_BIN=firefox DISPLAY=:99 yarn test
-  py36:
-    description: python3.6 client tests
-    worker:
-      docker-image: python:3.6
-    run:
-      install: >-
-          eval $(python test/client-library-secrets.py) &&
-          cd clients/client-py &&
-          python3 -mvenv /sandbox &&
-          /sandbox/bin/pip install tox
-      command: >-
-          TOXENV=py36 /sandbox/bin/tox
   py37:
     description: python3.7 client tests
     worker:
@@ -110,6 +98,30 @@ tasks:
           /sandbox/bin/pip install tox
       command: >-
           TOXENV=py39 /sandbox/bin/tox
+  py310:
+    description: python3.10 client tests
+    worker:
+      docker-image: python:3.10
+    run:
+      install: >-
+          eval $(python test/client-library-secrets.py) &&
+          cd clients/client-py &&
+          python3 -mvenv /sandbox &&
+          /sandbox/bin/pip install tox
+      command: >-
+          TOXENV=py310 /sandbox/bin/tox
+  py311:
+    description: python3.11 client tests
+    worker:
+      docker-image: python:3.11
+    run:
+      install: >-
+          eval $(python test/client-library-secrets.py) &&
+          cd clients/client-py &&
+          python3 -mvenv /sandbox &&
+          /sandbox/bin/pip install tox
+      command: >-
+          TOXENV=py311 /sandbox/bin/tox
   rust:
     description: rust client tests
     worker:

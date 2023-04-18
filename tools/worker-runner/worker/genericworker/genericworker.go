@@ -7,10 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v48/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v48/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v48/tools/worker-runner/worker/worker"
-	"github.com/taskcluster/taskcluster/v48/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v49/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v49/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v49/tools/worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v49/tools/workerproto"
 )
 
 type genericworkerConfig struct {
@@ -72,6 +72,11 @@ func (d *genericworker) ConfigureRun(state *run.State) error {
 
 	// split to workerType and provisionerId
 	splitWorkerPoolID := strings.SplitAfterN(state.WorkerPoolID, "/", 2)
+
+	// ensure that the workerPoolID has a slash in it
+	if len(splitWorkerPoolID) != 2 {
+		return fmt.Errorf("workerPoolID %q does not contain a slash", state.WorkerPoolID)
+	}
 
 	// required settings
 	// see https://docs.taskcluster.net/docs/reference/workers/generic-worker/installing#set-up-your-env

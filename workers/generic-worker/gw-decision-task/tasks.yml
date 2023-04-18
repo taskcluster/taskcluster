@@ -41,7 +41,7 @@ Types:
     MaxRunTime: 3600
 Tasks:
   BuildAndTest:
-    - WorkerPool: proj-taskcluster/gw-ci-macos-10-14
+    - WorkerPool: proj-taskcluster/gw-ci-macos-13
       Env:
         ENGINE: multiuser
     - WorkerPool: proj-taskcluster/gw-ci-ubuntu-22-04
@@ -60,10 +60,10 @@ Tasks:
   FormatSource:
     - WorkerPool: proj-taskcluster/gw-ci-ubuntu-22-04
 WorkerPools:
-  proj-taskcluster/gw-ci-macos-10-14:
-    Platform: macOS Mojave 10.14
+  proj-taskcluster/gw-ci-macos-13:
+    Platform: macOS Ventura 13 (arm64)
     OS: darwin
-    Arch: amd64
+    Arch: arm64
   proj-taskcluster/gw-ci-raspbian-stretch:
     Platform: Raspbian GNU/Linux 9 (stretch)
     OS: linux
@@ -186,9 +186,9 @@ Commands:
             cp "${TASK_USER_CREDENTIALS}" next-task-user.json
             # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
             # otherwise tests that call `go run ....` will write go object files to .cache as root
-            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} .
+            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v49/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} .
           fi
-          GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} ./...
+          GORACE=history_size=7 CGO_ENABLED=${CGO_ENABLED_TESTS} go test -tags "${ENGINE}" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v49/workers/generic-worker.revision=${GITHUB_SHA}" ${RACE} ${VET} ./...
 
           # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
           #   DO NOT CHANGE HERE!
@@ -254,9 +254,9 @@ Commands:
       - set GORACE=history_size=7
       - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
       - set GW_TESTS_RUN_AS_CURRENT_USER=true
-      - go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% .
+      - go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v49/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% .
       - set GW_TESTS_RUN_AS_CURRENT_USER=
-      - go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v48/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
+      - go test -tags "%ENGINE%" -failfast -timeout 45m -ldflags "-X github.com/taskcluster/taskcluster/v49/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
       - |
         :: assumption here is that if something inside the if fails, we'll get a non zero exit code
         :: i've also made it an if/else so that one of them has to run, as there should always be a
@@ -278,6 +278,7 @@ Mounts:
         arm64:
           url: https://storage.googleapis.com/golang/go1.19.7.darwin-arm64.tar.gz
           sha256: be85d929f390351212d1fde21c460102983b6341349811bc449bd278fe8f8180
+          format: tar.gz
       linux:
         armv6l:
           url: https://storage.googleapis.com/golang/go1.19.7.linux-armv6l.tar.gz
