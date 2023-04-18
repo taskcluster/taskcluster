@@ -2,7 +2,7 @@
  * Given a user profile, return a picture if any.
  */
 export default user => {
-  if (!user) {
+  if (!user?.profile) {
     return null;
   }
 

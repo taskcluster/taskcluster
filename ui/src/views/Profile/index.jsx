@@ -11,6 +11,7 @@ import DateDistance from '../../components/DateDistance';
 import { withAuth } from '../../utils/Auth';
 import ErrorPanel from '../../components/ErrorPanel';
 import profileQuery from './profile.graphql';
+import username from '../../utils/username';
 
 @withAuth
 @graphql(profileQuery, {
@@ -48,7 +49,7 @@ export default class Profile extends Component {
               <ListItem>
                 <ListItemText
                   primary="Signed In As"
-                  secondary={user.profile.displayName}
+                  secondary={username(user)}
                 />
               </ListItem>
               <ListItem>
