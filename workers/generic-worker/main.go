@@ -733,24 +733,6 @@ func (task *TaskRun) IsIntermittentExitCode(c int64) bool {
 	return false
 }
 
-func (task *TaskRun) purgeCachesIfRequested(c int64) {
-	for _, code := range task.Payload.OnExitStatus.PurgeCaches {
-		if c == code {
-			task.Infof("Purging caches as requested by exit code %v in task.Payload.OnExitStatus.PurgeCaches array", c)
-			task.purgeCaches()
-			break
-		}
-	}
-}
-
-func (task *TaskRun) purgeCaches() {
-	for _, cache := range directoryCaches {
-		if err := cache.Evict(task); err != nil {
-			task.Warnf("Failed to purge cache %v: %v", cache.Location, err)
-		}
-	}
-}
-
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	task.Infof("Executing command %v: %v", index, task.formatCommand(index))
 	log.Print("Executing command " + strconv.Itoa(index) + ": " + task.Commands[index].String())
@@ -758,30 +740,28 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	if cee != nil {
 		panic(cee)
 	}
-	result := task.Commands[index].Execute()
+	task.result = task.Commands[index].Execute()
 	if ae := task.StatusManager.AbortException(); ae != nil {
 		return ae
 	}
-	task.Infof("%v", result)
-
-	task.purgeCachesIfRequested(int64(result.ExitCode()))
+	task.Infof("%v", task.result)
 
 	switch {
-	case result.Failed():
-		if task.IsIntermittentExitCode(int64(result.ExitCode())) {
+	case task.result.Failed():
+		if task.IsIntermittentExitCode(int64(task.result.ExitCode())) {
 			return &CommandExecutionError{
-				Cause:      fmt.Errorf("Task appears to have failed intermittently - exit code %v found in task payload.onExitStatus list", result.ExitCode()),
+				Cause:      fmt.Errorf("Task appears to have failed intermittently - exit code %v found in task payload.onExitStatus list", task.result.ExitCode()),
 				Reason:     intermittentTask,
 				TaskStatus: errored,
 			}
 		} else {
 			return &CommandExecutionError{
-				Cause:      result.FailureCause(),
+				Cause:      task.result.FailureCause(),
 				TaskStatus: failed,
 			}
 		}
-	case result.Crashed():
-		panic(result.CrashCause())
+	case task.result.Crashed():
+		panic(task.result.CrashCause())
 	}
 	return nil
 }
