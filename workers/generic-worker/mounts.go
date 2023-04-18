@@ -379,7 +379,7 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 
 // called when a task has completed
 func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
-	purgeCaches := taskMount.purgeCachesIfRequested()
+	purgeCaches := taskMount.shouldPurgeCaches()
 	// loop through all mounts described in payload
 	for i, mount := range taskMount.mounted {
 		if purgeCaches {
@@ -402,10 +402,10 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 	}
 }
 
-func (taskMount *TaskMount) purgeCachesIfRequested() bool {
+func (taskMount *TaskMount) shouldPurgeCaches() bool {
 	for _, code := range taskMount.task.Payload.OnExitStatus.PurgeCaches {
-		if taskMount.task.exitCode == code {
-			taskMount.task.Infof("Purging caches as requested by exit code %v in task.Payload.OnExitStatus.PurgeCaches array", taskMount.task.exitCode)
+		if int64(taskMount.task.result.ExitCode()) == code {
+			taskMount.task.Infof("Purging caches since last command had exit code %v which is listed in task.Payload.OnExitStatus.PurgeCaches array", taskMount.task.result.ExitCode())
 			return true
 		}
 	}

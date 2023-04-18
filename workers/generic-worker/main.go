@@ -740,29 +740,28 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	if cee != nil {
 		panic(cee)
 	}
-	result := task.Commands[index].Execute()
-	task.exitCode = int64(result.ExitCode())
+	task.result = task.Commands[index].Execute()
 	if ae := task.StatusManager.AbortException(); ae != nil {
 		return ae
 	}
-	task.Infof("%v", result)
+	task.Infof("%v", task.result)
 
 	switch {
-	case result.Failed():
-		if task.IsIntermittentExitCode(task.exitCode) {
+	case task.result.Failed():
+		if task.IsIntermittentExitCode(int64(task.result.ExitCode())) {
 			return &CommandExecutionError{
-				Cause:      fmt.Errorf("Task appears to have failed intermittently - exit code %v found in task payload.onExitStatus list", result.ExitCode()),
+				Cause:      fmt.Errorf("Task appears to have failed intermittently - exit code %v found in task payload.onExitStatus list", task.result.ExitCode()),
 				Reason:     intermittentTask,
 				TaskStatus: errored,
 			}
 		} else {
 			return &CommandExecutionError{
-				Cause:      result.FailureCause(),
+				Cause:      task.result.FailureCause(),
 				TaskStatus: failed,
 			}
 		}
-	case result.Crashed():
-		panic(result.CrashCause())
+	case task.result.Crashed():
+		panic(task.result.CrashCause())
 	}
 	return nil
 }
