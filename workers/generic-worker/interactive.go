@@ -125,6 +125,11 @@ func (it *InteractiveTask) uploadInteractiveArtifact() error {
 	// query params required in ui/src/views/Shell/index.jsx
 	queryParams := url.Values{}
 	queryParams.Set("v", "2")
+	if it.exposure.GetURL().Scheme == "https" {
+		it.exposure.GetURL().Scheme = "wss"
+	} else {
+		it.exposure.GetURL().Scheme = "ws"
+	}
 	queryParams.Set("socketUrl", it.exposure.GetURL().String())
 	queryParams.Set("taskId", it.task.TaskID)
 	queryParams.Set("runId", strconv.FormatUint(uint64(it.task.RunID), 10))
