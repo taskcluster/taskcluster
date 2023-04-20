@@ -165,16 +165,13 @@ func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
 	}
 }
 
-func (it *Interactive) ListenAndServe() error {
+func (it *Interactive) ListenAndServe(ctx context.Context) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", it.Handler)
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", it.TCPPort),
 		Handler: mux,
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	go func() {
 		var err error

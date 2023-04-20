@@ -70,7 +70,7 @@ func (it *InteractiveTask) Start() *CommandExecutionError {
 	it.cancel = cancel
 	done := make(chan error, 1)
 	go func() {
-		done <- it.interactive.ListenAndServe()
+		done <- it.interactive.ListenAndServe(ctx)
 	}()
 
 	err = it.uploadInteractiveArtifact()
