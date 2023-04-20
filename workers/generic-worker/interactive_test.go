@@ -81,7 +81,7 @@ func TestInteractiveCommand(t *testing.T) {
 			url := fmt.Sprintf("ws://localhost:%d", config.InteractivePort)
 			conn, _, err = websocket.DefaultDialer.Dial(url, nil)
 			if err == nil {
-				err = conn.WriteMessage(websocket.TextMessage, []byte("echo hello\n"))
+				err = conn.WriteMessage(websocket.BinaryMessage, []byte("echo hello\n"))
 				if err != nil {
 					t.Fatalf("write error: %v", err)
 				}

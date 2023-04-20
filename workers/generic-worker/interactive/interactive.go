@@ -131,7 +131,7 @@ func (it *Interactive) handleWebsocketMessages(msgChan chan []byte) {
 					return
 				}
 			}
-			if msgType != websocket.TextMessage {
+			if msgType != websocket.BinaryMessage {
 				continue
 			}
 			msgChan <- msg
@@ -146,7 +146,7 @@ func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
 		case <-it.ctx.Done():
 			return
 		default:
-			msg, err := reader.ReadString('\n')
+			msg, err := reader.ReadBytes('\n')
 			if err != nil {
 				if err == io.EOF {
 					continue
@@ -155,7 +155,7 @@ func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
 				return
 			}
 			it.connMutex.Lock()
-			if err := it.conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
+			if err := it.conn.WriteMessage(websocket.BinaryMessage, msg); err != nil {
 				it.connMutex.Unlock()
 				it.streamErrors <- err
 				return

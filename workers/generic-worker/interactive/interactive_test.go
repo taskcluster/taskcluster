@@ -14,7 +14,7 @@ func TestInteractive(t *testing.T) {
 	// Start an interactive session on a test server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	interactive, err := New(53654, ctx)
+	interactive, err := New(53765, ctx)
 	if err != nil {
 		t.Fatalf("could not create interactive session: %v", err)
 	}
@@ -30,7 +30,7 @@ func TestInteractive(t *testing.T) {
 
 	// Send some input to the interactive session
 	input := "echo hello\n"
-	err = conn.WriteMessage(websocket.TextMessage, []byte(input))
+	err = conn.WriteMessage(websocket.BinaryMessage, []byte(input))
 	if err != nil {
 		t.Fatal("write error:", err)
 	}
@@ -46,7 +46,7 @@ func TestInteractive(t *testing.T) {
 	}
 
 	input = "notABashCommand\n"
-	err = conn.WriteMessage(websocket.TextMessage, []byte(input))
+	err = conn.WriteMessage(websocket.BinaryMessage, []byte(input))
 	if err != nil {
 		t.Fatal("write error:", err)
 	}
