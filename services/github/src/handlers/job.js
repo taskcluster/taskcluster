@@ -200,6 +200,10 @@ async function jobHandler(message) {
     return await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e });
   }
 
+  // TODO: before we create new build we should check if there is an existing build already for this SHA
+  // .. we don't know the branch name yet if this is a PR?
+  // ignore push, just pull requests?
+
   try {
     debug(`Trying to create a record for ${organization}/${repository}@${sha} (${groupState}) in github_builds table`);
     let now = new Date();

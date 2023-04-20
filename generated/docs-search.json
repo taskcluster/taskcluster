@@ -2527,6 +2527,13 @@
     "title": "Taskcluster Yml Version 1"
   },
   {
+    "element": "h2",
+    "id": "automatically-cancel-running-builds",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Automatically cancel running builds",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
     "element": "h4",
     "id": "branch-filtering",
     "path": "/reference/integrations/github/taskcluster-yml-v1",

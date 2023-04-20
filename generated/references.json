@@ -6727,6 +6727,11 @@
       "additionalProperties": false,
       "description": "Description of a taskcluster.yml file v1, which may be used to generate a taskgraph\nand tasks.\n",
       "properties": {
+        "autoCancelPreviousChecks": {
+          "default": true,
+          "description": "Automatically cancel running task group on a non-default branch.\nUseful for PRs that are updated frequently. Only the last build will be running.\n",
+          "type": "boolean"
+        },
         "policy": {
           "additionalProperties": false,
           "properties": {
