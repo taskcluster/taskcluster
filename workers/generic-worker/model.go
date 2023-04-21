@@ -30,6 +30,7 @@ type (
 		logMux         sync.RWMutex
 		logWriter      io.Writer
 		queueMux       sync.RWMutex
+		result         *process.Result
 		Queue          tc.Queue           `json:"-"`
 		StatusManager  *TaskStatusManager `json:"-"`
 		LocalClaimTime time.Time          `json:"-"`

@@ -3,6 +3,21 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v49.1.1
+
+### GENERAL
+
+▶ [patch]
+Generic worker feature `task.Payload.OnExitStatus.PurgeCaches` now only purges caches related to the task, instead of all caches on the worker.
+
+### USERS
+
+▶ [patch] [#5773](https://github.com/taskcluster/taskcluster/issues/5773)
+Fix UI bug when user profile was missing and causing whole page to crash.
+
+▶ [patch] [bug 1590886](http://bugzil.la/1590886)
+Github status handler listens to both `taskPending` and `taskRunning` events.
+
 ## v49.1.0
 
 ### ADMINS

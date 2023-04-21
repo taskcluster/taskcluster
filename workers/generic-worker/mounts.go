@@ -379,8 +379,16 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 
 // called when a task has completed
 func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
+	purgeCaches := taskMount.shouldPurgeCaches()
 	// loop through all mounts described in payload
 	for i, mount := range taskMount.mounted {
+		if purgeCaches {
+			switch cache := mount.(type) {
+			case *WritableDirectoryCache:
+				err.add(Failure(directoryCaches[cache.CacheName].Evict(taskMount.task)))
+				continue
+			}
+		}
 		e := mount.Unmount(taskMount.task)
 		if e != nil {
 			fsc, errfsc := mount.FSContent()
@@ -392,6 +400,17 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 			err.add(Failure(e))
 		}
 	}
+}
+
+func (taskMount *TaskMount) shouldPurgeCaches() bool {
+	for _, code := range taskMount.task.Payload.OnExitStatus.PurgeCaches {
+		if int64(taskMount.task.result.ExitCode()) == code {
+			taskMount.task.Infof("Purging caches since last command had exit code %v which is listed in task.Payload.OnExitStatus.PurgeCaches array", taskMount.task.result.ExitCode())
+			return true
+		}
+	}
+
+	return false
 }
 
 // Writable caches require scope generic-worker:cache:<cacheName>. Preloaded
@@ -490,11 +509,6 @@ func (w *WritableDirectoryCache) Mount(task *TaskRun) error {
 
 func (w *WritableDirectoryCache) Unmount(task *TaskRun) error {
 	cache := directoryCaches[w.CacheName]
-	// no need to unmount and preserve cache since it was evicted because of
-	// task exit status code in task.payload.onExitStatus.purgeCaches
-	if cache == nil {
-		return nil
-	}
 	cacheDir := cache.Location
 	taskCacheDir := filepath.Join(taskContext.TaskDir, w.Directory)
 	task.Infof("[mounts] Preserving cache: Moving %q to %q", taskCacheDir, cacheDir)

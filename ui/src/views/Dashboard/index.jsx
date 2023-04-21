@@ -12,6 +12,7 @@ import { withAuth } from '../../utils/Auth';
 import { DOCS_PATH_PREFIX } from '../../utils/constants';
 import Link from '../../utils/Link';
 import StatsFetcher from '../../components/StatusDashboard/StatsFetcher';
+import username from '../../utils/username';
 
 @withStyles(theme => ({
   buttonIcon: {
@@ -33,7 +34,7 @@ export default class DashboardView extends Component {
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Typography variant="h4" className={classes.title}>
-              Hello, {user.profile.displayName}!
+              Hello, {username(user)}!
             </Typography>
           </Grid>
           <Grid item xs={12} sm={6} lg={3}>
