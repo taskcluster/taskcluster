@@ -61,6 +61,14 @@ func New(port uint16, ctx context.Context) (it *Interactive, err error) {
 		return nil, err
 	}
 
+	go it.copyCommandOutputStream(it.stdout)
+	go it.copyCommandOutputStream(it.stderr)
+
+	if err = it.cmd.Start(); err != nil {
+		log.Printf("Command start error: %v", err)
+		return
+	}
+
 	return
 }
 
@@ -82,15 +90,6 @@ func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	go it.copyCommandOutputStream(it.stdout)
-	go it.copyCommandOutputStream(it.stderr)
-
-	if err := it.cmd.Start(); err != nil {
-		log.Printf("Command start error: %v", err)
-		http.Error(w, "Command start error", http.StatusInternalServerError)
-		return
-	}
-
 	msgChan := make(chan []byte, 1)
 	go it.handleWebsocketMessages(msgChan)
 
@@ -101,8 +100,6 @@ func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (it *Interactive) handleWebsocketMessages(msgChan chan []byte) {
-	defer close(it.done)
-
 	for {
 		select {
 		case <-it.ctx.Done():
@@ -131,7 +128,7 @@ func (it *Interactive) handleWebsocketMessages(msgChan chan []byte) {
 					return
 				}
 			}
-			if msgType != websocket.BinaryMessage {
+			if msgType != websocket.TextMessage {
 				continue
 			}
 			msgChan <- msg
@@ -146,7 +143,7 @@ func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
 		case <-it.ctx.Done():
 			return
 		default:
-			msg, err := reader.ReadBytes('\n')
+			msg, err := reader.ReadString('\n')
 			if err != nil {
 				if err == io.EOF {
 					continue
@@ -155,7 +152,7 @@ func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
 				return
 			}
 			it.connMutex.Lock()
-			if err := it.conn.WriteMessage(websocket.BinaryMessage, msg); err != nil {
+			if err := it.conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
 				it.connMutex.Unlock()
 				it.streamErrors <- err
 				return

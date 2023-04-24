@@ -115,7 +115,7 @@ func (it *InteractiveTask) Stop(err *ExecutionErrors) {
 
 func (it *InteractiveTask) uploadInteractiveArtifact() error {
 	var err error
-	it.exposure, err = exposer.ExposeTCPPort(it.interactive.TCPPort)
+	it.exposure, err = exposer.ExposeHTTP(it.interactive.TCPPort)
 	if err != nil {
 		return err
 	}
@@ -126,9 +126,10 @@ func (it *InteractiveTask) uploadInteractiveArtifact() error {
 	queryParams := url.Values{}
 	queryParams.Set("v", "2")
 	socketURL := it.exposure.GetURL()
+	socketURL.Path = "/"
 	if socketURL.Scheme == "https" {
 		socketURL.Scheme = "wss"
-	} else if socketURL.Scheme == "http" {
+	} else {
 		socketURL.Scheme = "ws"
 	}
 	queryParams.Set("socketUrl", socketURL.String())

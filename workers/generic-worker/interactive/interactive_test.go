@@ -30,7 +30,7 @@ func TestInteractive(t *testing.T) {
 
 	// Send some input to the interactive session
 	input := "echo hello\n"
-	err = conn.WriteMessage(websocket.BinaryMessage, []byte(input))
+	err = conn.WriteMessage(websocket.TextMessage, []byte(input))
 	if err != nil {
 		t.Fatal("write error:", err)
 	}
@@ -46,7 +46,7 @@ func TestInteractive(t *testing.T) {
 	}
 
 	input = "notABashCommand\n"
-	err = conn.WriteMessage(websocket.BinaryMessage, []byte(input))
+	err = conn.WriteMessage(websocket.TextMessage, []byte(input))
 	if err != nil {
 		t.Fatal("write error:", err)
 	}

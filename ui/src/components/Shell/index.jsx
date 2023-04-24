@@ -6,7 +6,6 @@ import { DockerExecClient } from 'docker-exec-websocket-client';
 import withAlertOnClose from '../../utils/withAlertOnClose';
 
 const DECODER = new TextDecoder('utf-8');
-const ENCODER = new TextEncoder('utf-8');
 const defaultCommand = [
   'sh',
   '-c',
@@ -107,13 +106,66 @@ export default class Shell extends Component {
         // generic worker
         case '2':
           this.wsClient = new WebSocket(url);
+          // map of row index to command on that line
+          this.cmd = new Map();
 
-          io.sendString = d =>
-            this.wsClient && this.wsClient.send(ENCODER.encode(d));
+          io.sendString = d => {
+            switch (d) {
+              case '\r': {
+                io.println('');
+
+                this.wsClient &&
+                  this.wsClient.send(`${[...this.cmd.values()].join('')}\n`);
+
+                this.cmd.clear();
+
+                break;
+              }
+
+              case '\b':
+              case '\u007f': {
+                let row = terminal.getCursorRow();
+                let col = terminal.getCursorColumn();
+
+                terminal.eraseToLeft();
+
+                if (this.cmd.get(row) && this.cmd.get(row).length > 0) {
+                  this.cmd.set(row, this.cmd.get(row).slice(0, -1));
+                } else {
+                  row -= 1;
+                  col = this.cmd.get(row).length;
+                  terminal.setCursorPosition(row, col);
+                  terminal.eraseToLeft();
+                  this.cmd.set(row, this.cmd.get(row).slice(0, -1));
+                }
+
+                io.print(`\r${this.cmd.get(row)}`);
+
+                break;
+              }
+
+              default: {
+                io.print(d);
+                const row = terminal.getCursorRow();
+
+                this.cmd.get(row)
+                  ? this.cmd.set(row, this.cmd.get(row) + d)
+                  : this.cmd.set(row, d);
+
+                if (this.cmd.get(row).length >= terminal.screenSize.width) {
+                  terminal.setCursorPosition(row + 1, 0);
+                }
+
+                break;
+              }
+            }
+          };
+
           io.onVTKeystroke = io.sendString;
 
-          this.wsClient.onmessage = ({ data }) =>
-            io.writeUTF8(DECODER.decode(data));
+          this.wsClient.onmessage = ({ data }) => {
+            io.writeUTF8(`\r${data}\r`);
+          };
 
           this.wsClient.onclose = () => {
             io.writeUTF8(`\r\nRemote shell closed\r\n`);
