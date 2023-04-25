@@ -65,6 +65,7 @@ func TaskUserPlatformData() (pd *PlatformData, err error) {
 		return
 	}
 	pd.CommandAccessToken = pd.LoginInfo.AccessToken()
+	win32.DumpTokenInfo(pd.CommandAccessToken)
 	return
 }
 
