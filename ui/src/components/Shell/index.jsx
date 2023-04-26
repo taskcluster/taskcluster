@@ -71,7 +71,7 @@ export default class Shell extends Component {
       switch (version) {
         // docker worker
         case '1':
-          io.sendString = d => this.client && this.client.stdin.write(d);
+          io.sendString = d => this.client?.stdin.write(d);
           io.onVTKeystroke = io.sendString;
 
           this.client = new DockerExecClient(options);
@@ -106,55 +106,123 @@ export default class Shell extends Component {
         // generic worker
         case '2':
           this.wsClient = new WebSocket(url);
-          // map of row index to command on that line
-          this.cmd = new Map();
+          this.cmd = [];
+          this.currentCmd = 0;
+          this.prompt = '$ ';
+          // minCol is the minimum column to start printing at
+          // and to stop deleting at
+          // accounts for the prompt "$ "
+          this.minCol = 2;
 
           io.sendString = d => {
             switch (d) {
+              // return key
               case '\r': {
+                if (!this.cmd[this.currentCmd]) {
+                  io.print(`\n\r${this.prompt}`);
+
+                  break;
+                }
+
                 io.println('');
 
-                this.wsClient &&
-                  this.wsClient.send(`${[...this.cmd.values()].join('')}\n`);
+                this.wsClient?.send(`${this.cmd[this.currentCmd]}\n`);
 
-                this.cmd.clear();
+                this.currentCmd += 1;
 
                 break;
               }
 
+              // backspace key
               case '\b':
               case '\u007f': {
-                let row = terminal.getCursorRow();
-                let col = terminal.getCursorColumn();
+                const col = terminal.getCursorColumn();
+                // calculate the offset of the current cursor
+                // position from the start of the command
+                const cursorOffset = col - this.minCol;
 
-                terminal.eraseToLeft();
-
-                if (this.cmd.get(row) && this.cmd.get(row).length > 0) {
-                  this.cmd.set(row, this.cmd.get(row).slice(0, -1));
-                } else {
-                  row -= 1;
-                  col = this.cmd.get(row).length;
-                  terminal.setCursorPosition(row, col);
-                  terminal.eraseToLeft();
-                  this.cmd.set(row, this.cmd.get(row).slice(0, -1));
+                // don't delete the prompt!
+                if (cursorOffset <= 0) {
+                  break;
                 }
 
-                io.print(`\r${this.cmd.get(row)}`);
+                terminal.eraseLine();
+
+                // get the current command on this row,
+                // or an empty string if none exists
+                const currCmd = this.cmd[this.currentCmd] || '';
+                // calculate the index of the character to
+                // delete in the current command string
+                const deleteIndex = cursorOffset - 1;
+                // construct the new command string without
+                // the deleted character
+                const newCmd =
+                  currCmd.slice(0, deleteIndex) +
+                  currCmd.slice(deleteIndex + 1);
+
+                this.cmd[this.currentCmd] = newCmd;
+
+                // print the updated command prompt and command string
+                io.print(`\r${this.prompt}${this.cmd[this.currentCmd] || ''}`);
+
+                terminal.setCursorColumn(col - 1);
+
+                break;
+              }
+
+              // up arrow
+              case '\u001b[A': {
+                break;
+              }
+
+              // down arrow
+              case '\u001b[B': {
+                break;
+              }
+
+              // right arrow
+              case '\u001b[C': {
+                const row = terminal.getCursorRow();
+                const col = terminal.getCursorColumn();
+                const currCmd = this.cmd[this.currentCmd] || '';
+
+                if (currCmd && col < this.minCol + currCmd.length) {
+                  io.print('\u001b[C');
+                  terminal.setCursorPosition(row, col + 1);
+                }
+
+                break;
+              }
+
+              // left arrow
+              case '\u001b[D': {
+                const row = terminal.getCursorRow();
+                const col = terminal.getCursorColumn();
+
+                if (col > this.minCol) {
+                  io.print('\u001b[D');
+                  terminal.setCursorPosition(row, col - 1);
+                }
 
                 break;
               }
 
               default: {
-                io.print(d);
-                const row = terminal.getCursorRow();
+                const col = terminal.getCursorColumn();
+                const currCmd = this.cmd[this.currentCmd] || '';
 
-                this.cmd.get(row)
-                  ? this.cmd.set(row, this.cmd.get(row) + d)
-                  : this.cmd.set(row, d);
+                if (currCmd) {
+                  const strBefore = currCmd.slice(0, col - this.minCol);
+                  const strAfter = currCmd.slice(col - this.minCol);
 
-                if (this.cmd.get(row).length >= terminal.screenSize.width) {
-                  terminal.setCursorPosition(row + 1, 0);
+                  this.cmd[this.currentCmd] = strBefore + d + strAfter;
+                } else {
+                  this.cmd[this.currentCmd] = d;
                 }
+
+                io.print(`\r${this.prompt}${this.cmd[this.currentCmd] || ''}`);
+
+                terminal.setCursorColumn(col + 1);
 
                 break;
               }
@@ -164,32 +232,35 @@ export default class Shell extends Component {
           io.onVTKeystroke = io.sendString;
 
           this.wsClient.onmessage = ({ data }) => {
-            io.writeUTF8(`\r${data}\r`);
+            io.print(`\r${data}`);
+            io.print(`\r${this.prompt}`);
+          };
+
+          this.wsClient.onopen = () => {
+            io.print(this.prompt);
           };
 
           this.wsClient.onclose = () => {
-            io.writeUTF8(`\r\nRemote shell closed\r\n`);
+            io.println(`\r\nRemote shell closed`);
             terminal.uninstallKeyboard();
             terminal.setCursorVisible(false);
           };
 
           this.wsClient.onerror = err => {
-            io.writeUTF8(`\r\nRemote shell error: ${err}\r\n`);
+            io.println(`\r\nRemote shell error: ${err}`);
             terminal.uninstallKeyboard();
             terminal.setCursorVisible(false);
           };
 
           break;
         default:
-          io.writeUTF8(
-            `Interactive shell API version ${version} not supported`
-          );
+          io.println(`Interactive shell API version ${version} not supported`);
 
           break;
       }
 
       terminal.installKeyboard();
-      io.writeUTF8(`Connected to remote shell for taskId: ${taskId}\r\n`);
+      io.println(`Connected to remote shell for taskId: ${taskId}`);
     };
 
     if (this.node) {
