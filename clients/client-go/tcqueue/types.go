@@ -760,7 +760,7 @@ type (
 		// A message to be included in the worker's quarantine details. This message will be
 		// appended to the existing quarantine details to keep a history of the worker's quarantine.
 		//
-		// Min length: 1
+		// Min length: 0
 		// Max length: 4000
 		QuarantineInfo string `json:"quarantineInfo,omitempty"`
 
