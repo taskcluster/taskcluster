@@ -69,6 +69,11 @@ func New(port uint16, ctx context.Context) (it *Interactive, err error) {
 		return
 	}
 
+	go func() {
+		err = it.cmd.Wait()
+		close(it.done)
+	}()
+
 	return
 }
 
@@ -103,6 +108,7 @@ func (it *Interactive) handleWebsocketMessages(msgChan chan []byte) {
 	for {
 		select {
 		case <-it.ctx.Done():
+		case <-it.done:
 			return
 		case err := <-it.streamErrors:
 			if err != nil {
@@ -141,6 +147,7 @@ func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
 	for {
 		select {
 		case <-it.ctx.Done():
+		case <-it.done:
 			return
 		default:
 			msg, err := reader.ReadString('\n')
