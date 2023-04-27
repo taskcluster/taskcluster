@@ -33,10 +33,6 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 	if err != nil {
 		return
 	}
-	// This is the SID of "Everyone" group
-	// TODO: we should probably change this to the logon SID of the user
-	sid := "S-1-1-0"
-	GrantSIDWinstaAccess(sid, pd)
 	return
 }
 
@@ -47,6 +43,7 @@ func TaskUserPlatformData() (pd *PlatformData, err error) {
 		return
 	}
 	pd.CommandAccessToken = pd.LoginInfo.AccessToken()
+	win32.DumpTokenInfo(pd.CommandAccessToken)
 	return
 }
 
@@ -134,6 +131,10 @@ func (pd *PlatformData) RefreshLoginSession(user, pass string) {
 	if err != nil {
 		panic(err)
 	}
+	// This is the SID of "Everyone" group
+	// TODO: we should probably change this to the logon SID of the user
+	sid := "S-1-1-0"
+	GrantSIDWinstaAccess(sid, pd)
 	pd.LoginInfo, err = NewLoginInfo(user, pass)
 	if err != nil {
 		// implies a serious bug
