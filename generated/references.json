@@ -3581,7 +3581,7 @@
         "quarantineInfo": {
           "description": "A message to be included in the worker's quarantine details. This message will be\nappended to the existing quarantine details to keep a history of the worker's quarantine.\n",
           "maxLength": 4000,
-          "minLength": 1,
+          "minLength": 0,
           "title": "Worker Quarantine Info",
           "type": "string"
         },
