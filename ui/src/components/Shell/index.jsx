@@ -170,12 +170,9 @@ export default class Shell extends Component {
                 break;
               }
 
-              // up arrow
-              case '\u001b[A': {
-                break;
-              }
-
-              // down arrow
+              // up/down arrow
+              // may eventually be used to cycle through command history
+              case '\u001b[A':
               case '\u001b[B': {
                 break;
               }

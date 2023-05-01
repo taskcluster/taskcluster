@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/url"
 	"strconv"
 	"time"
@@ -44,7 +43,7 @@ type InteractiveTask struct {
 func (feature *InteractiveFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &InteractiveTask{
 		task:         task,
-		artifactName: "private/generic-worker/shell.html", // TODO: make configurable?
+		artifactName: "private/generic-worker/shell.html",
 	}
 }
 
@@ -62,7 +61,7 @@ func (it *InteractiveTask) Start() *CommandExecutionError {
 	ctx, cancel := context.WithCancel(context.Background())
 	interactive, err := interactive.New(config.InteractivePort, ctx)
 	if err != nil {
-		log.Printf("WARNING: could not create interactive session: %v", err)
+		it.task.Warnf("[interactive] could not create interactive session: %v", err)
 		cancel()
 		return nil
 	}
@@ -75,7 +74,7 @@ func (it *InteractiveTask) Start() *CommandExecutionError {
 
 	err = it.uploadInteractiveArtifact()
 	if err != nil {
-		log.Printf("WARNING: could not upload interactive artifact: %v", err)
+		it.task.Warnf("[interactive] could not upload interactive artifact: %v", err)
 	}
 
 	select {
@@ -101,14 +100,14 @@ func (it *InteractiveTask) Stop(err *ExecutionErrors) {
 	errTerminate := it.interactive.Terminate()
 	if errTerminate != nil {
 		// no need to raise an exception
-		log.Printf("WARNING: could not terminate interactive writer: %s", errTerminate)
+		it.task.Warnf("[interactive] could not terminate interactive session: %v", errTerminate)
 	}
 
 	if it.exposure != nil {
 		closeErr := it.exposure.Close()
 		it.exposure = nil
 		if closeErr != nil {
-			log.Printf("WARNING: could not terminate interactive exposure: %s", closeErr)
+			it.task.Warnf("[interactive] could not terminate interactive exposure: %v", closeErr)
 		}
 	}
 }
@@ -157,6 +156,8 @@ func (it *InteractiveTask) uploadInteractiveArtifact() error {
 	if uploadErr != nil {
 		return uploadErr
 	}
+
+	it.task.Log("[interactive] session available at %s", url)
 
 	return nil
 }

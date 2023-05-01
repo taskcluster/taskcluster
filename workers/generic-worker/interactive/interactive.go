@@ -22,25 +22,25 @@ var upgrader = &websocket.Upgrader{
 }
 
 type Interactive struct {
-	TCPPort      uint16
-	conn         *websocket.Conn
-	connMutex    *sync.Mutex
-	stdin        io.WriteCloser
-	stdout       io.ReadCloser
-	stderr       io.ReadCloser
-	cmd          *exec.Cmd
-	done         chan struct{}
-	streamErrors chan error
-	ctx          context.Context
+	TCPPort   uint16
+	conn      *websocket.Conn
+	connMutex *sync.Mutex
+	stdin     io.WriteCloser
+	stdout    io.ReadCloser
+	stderr    io.ReadCloser
+	cmd       *exec.Cmd
+	done      chan struct{}
+	errors    chan error
+	ctx       context.Context
 }
 
 func New(port uint16, ctx context.Context) (it *Interactive, err error) {
 	it = &Interactive{
-		TCPPort:      port,
-		cmd:          exec.CommandContext(ctx, "bash"),
-		done:         make(chan struct{}),
-		streamErrors: make(chan error, 2),
-		ctx:          ctx,
+		TCPPort: port,
+		cmd:     exec.CommandContext(ctx, "bash"),
+		done:    make(chan struct{}),
+		errors:  make(chan error, 3),
+		ctx:     ctx,
 	}
 
 	it.stdin, err = it.cmd.StdinPipe()
@@ -70,7 +70,7 @@ func New(port uint16, ctx context.Context) (it *Interactive, err error) {
 	}
 
 	go func() {
-		err = it.cmd.Wait()
+		it.errors <- it.cmd.Wait()
 		close(it.done)
 	}()
 
@@ -78,7 +78,6 @@ func New(port uint16, ctx context.Context) (it *Interactive, err error) {
 }
 
 func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
-	// Upgrade the incoming request to a WebSocket connection
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("WebSocket upgrade error: %v", err)
@@ -110,7 +109,7 @@ func (it *Interactive) handleWebsocketMessages(msgChan chan []byte) {
 		case <-it.ctx.Done():
 		case <-it.done:
 			return
-		case err := <-it.streamErrors:
+		case err := <-it.errors:
 			if err != nil {
 				if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 					return
@@ -155,13 +154,13 @@ func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
 				if err == io.EOF {
 					continue
 				}
-				it.streamErrors <- err
+				it.errors <- err
 				return
 			}
 			it.connMutex.Lock()
 			if err := it.conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
 				it.connMutex.Unlock()
-				it.streamErrors <- err
+				it.errors <- err
 				return
 			}
 			it.connMutex.Unlock()
