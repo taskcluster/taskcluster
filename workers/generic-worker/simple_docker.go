@@ -30,10 +30,6 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	return false
 }
 
-func platformFeatures() []Feature {
-	return []Feature{}
-}
-
 func deleteDir(path string) error {
 	log.Print("Removing directory '" + path + "'...")
 	err := host.Run("/bin/chmod", "-R", "u+w", path)

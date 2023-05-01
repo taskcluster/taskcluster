@@ -1,3 +1,5 @@
+//go:build !windows && !docker
+
 package main
 
 import (

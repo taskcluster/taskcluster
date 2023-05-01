@@ -178,19 +178,6 @@ type (
 		// Since: generic-worker 5.3.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 
-		// This allows you to interactively run commands from within the worker
-		// as the task user. This may be useful for debugging purposes.
-		// Can be used for SSH-like access to the running worker.
-		// Note that this feature works differently from the `interactive` feature
-		// in docker worker, which `docker exec`s into the running container.
-		// Since tasks on generic worker are not guaranteed to be running in a
-		// container, a bash shell is started on the task user's account.
-		// A user can then `docker exec` into the a running container, if there
-		// is one.
-		//
-		// Since: generic-worker 49.2.0
-		Interactive bool `json:"interactive,omitempty"`
-
 		// The live log feature streams the combined stderr and stdout to a task artifact
 		// so that the output is available while the task is running.
 		//
@@ -750,11 +737,6 @@ func taskPayloadSchema() string {
         "chainOfTrust": {
           "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
           "title": "Enable generation of signed Chain of Trust artifacts",
-          "type": "boolean"
-        },
-        "interactive": {
-          "description": "This allows you to interactively run commands from within the worker\nas the task user. This may be useful for debugging purposes.\nCan be used for SSH-like access to the running worker.\nNote that this feature works differently from the ` + "`" + `interactive` + "`" + ` feature\nin docker worker, which ` + "`" + `docker exec` + "`" + `s into the running container.\nSince tasks on generic worker are not guaranteed to be running in a\ncontainer, a bash shell is started on the task user's account.\nA user can then ` + "`" + `docker exec` + "`" + ` into the a running container, if there\nis one.\n\nSince: generic-worker 49.2.0",
-          "title": "Docker Exec Interactive",
           "type": "boolean"
         },
         "liveLog": {

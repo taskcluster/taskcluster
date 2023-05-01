@@ -124,7 +124,7 @@ export default class Shell extends Component {
                   break;
                 }
 
-                io.println('');
+                io.print(`\n\r${this.prompt}`);
 
                 this.wsClient?.send(`${this.cmd[this.currentCmd]}\n`);
 

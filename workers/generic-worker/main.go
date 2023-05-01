@@ -79,7 +79,6 @@ func persistFeaturesState() (err error) {
 func initialiseFeatures() (err error) {
 	Features = []Feature{
 		&LiveLogFeature{},
-		&InteractiveFeature{},
 		&TaskclusterProxyFeature{},
 		&OSGroupsFeature{},
 		&MountsFeature{},

@@ -1,3 +1,5 @@
+//go:build !windows && !docker
+
 package main
 
 import (
@@ -59,7 +61,13 @@ func (it *InteractiveTask) ReservedArtifacts() []string {
 
 func (it *InteractiveTask) Start() *CommandExecutionError {
 	ctx, cancel := context.WithCancel(context.Background())
-	interactive, err := interactive.New(config.InteractivePort, ctx)
+	cmd, err := it.task.generateInteractiveCommand(ctx)
+	if err != nil {
+		it.task.Warnf("[interactive] could not generate interactive command: %v", err)
+		cancel()
+		return nil
+	}
+	interactive, err := interactive.New(config.InteractivePort, cmd, ctx)
 	if err != nil {
 		it.task.Warnf("[interactive] could not create interactive session: %v", err)
 		cancel()

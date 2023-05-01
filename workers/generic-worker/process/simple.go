@@ -7,6 +7,8 @@ import (
 	"log"
 	"os/exec"
 	"syscall"
+
+	"golang.org/x/net/context"
 )
 
 type PlatformData struct {
@@ -62,6 +64,18 @@ func (r *Result) Crashed() bool {
 
 func NewCommand(commandLine []string, workingDirectory string, env []string) (*Command, error) {
 	cmd := exec.Command(commandLine[0], commandLine[1:]...)
+	cmd.Env = env
+	cmd.Dir = workingDirectory
+	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	return &Command{
+		Cmd:   cmd,
+		abort: make(chan struct{}),
+	}, nil
+}
+
+func NewCommandContext(ctx context.Context, commandLine []string, workingDirectory string, env []string) (*Command, error) {
+	cmd := exec.CommandContext(ctx, commandLine[0], commandLine[1:]...)
 	cmd.Env = env
 	cmd.Dir = workingDirectory
 	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773

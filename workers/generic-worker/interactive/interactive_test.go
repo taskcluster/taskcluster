@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os/exec"
 	"strings"
 	"testing"
 
@@ -14,7 +15,7 @@ func TestInteractive(t *testing.T) {
 	// Start an interactive session on a test server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	interactive, err := New(53765, ctx)
+	interactive, err := New(53765, exec.CommandContext(ctx, "bash"), ctx)
 	if err != nil {
 		t.Fatalf("could not create interactive session: %v", err)
 	}

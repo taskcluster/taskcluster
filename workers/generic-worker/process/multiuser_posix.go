@@ -13,6 +13,7 @@ import (
 
 	"github.com/taskcluster/taskcluster/v49/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v49/workers/generic-worker/runtime"
+	"golang.org/x/net/context"
 )
 
 type PlatformData struct {
@@ -118,6 +119,23 @@ func NewCommand(commandLine []string, workingDirectory string, env []string, pla
 	cmd.Dir = workingDirectory
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	if platformData.SysProcAttr != nil {
+		cmd.SysProcAttr = platformData.SysProcAttr
+	} else {
+		cmd.SysProcAttr = &syscall.SysProcAttr{}
+	}
+	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
+	cmd.SysProcAttr.Setpgid = true
+	return &Command{
+		Cmd:   cmd,
+		abort: make(chan struct{}),
+	}, nil
+}
+
+func NewCommandContext(ctx context.Context, commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
+	cmd := exec.CommandContext(ctx, commandLine[0], commandLine[1:]...)
+	cmd.Env = env
+	cmd.Dir = workingDirectory
 	if platformData.SysProcAttr != nil {
 		cmd.SysProcAttr = platformData.SysProcAttr
 	} else {

@@ -3,9 +3,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -22,6 +24,7 @@ func (task *TaskRun) formatCommand(index int) string {
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&InteractiveFeature{},
 		// keep chain of trust as low down as possible, as it checks permissions
 		// of signing key file, and a feature could change them, so we want these
 		// checks as late as possible
@@ -55,6 +58,19 @@ func (task *TaskRun) generateCommand(index int) error {
 	defer task.logMux.RUnlock()
 	task.Commands[index].DirectOutput(task.logWriter)
 	return nil
+}
+
+func (task *TaskRun) generateInteractiveCommand(ctx context.Context) (*exec.Cmd, error) {
+	var processCmd *process.Command
+	var err error
+
+	if ctx == nil {
+		processCmd, err = process.NewCommand([]string{"bash"}, taskContext.TaskDir, task.EnvVars(), taskContext.pd)
+	} else {
+		processCmd, err = process.NewCommandContext(ctx, []string{"bash"}, taskContext.TaskDir, task.EnvVars(), taskContext.pd)
+	}
+
+	return processCmd.Cmd, err
 }
 
 func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {

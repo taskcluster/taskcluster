@@ -34,10 +34,10 @@ type Interactive struct {
 	ctx       context.Context
 }
 
-func New(port uint16, ctx context.Context) (it *Interactive, err error) {
+func New(port uint16, cmd *exec.Cmd, ctx context.Context) (it *Interactive, err error) {
 	it = &Interactive{
 		TCPPort: port,
-		cmd:     exec.CommandContext(ctx, "bash"),
+		cmd:     cmd,
 		done:    make(chan struct{}),
 		errors:  make(chan error, 3),
 		ctx:     ctx,
