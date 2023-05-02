@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v49.1.3
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6186](https://github.com/taskcluster/taskcluster/issues/6186)
+Worker-manager refreshes worker from database before calling removeWorker on terminateAfter time exceeded to prevent from stopping workers that were already registered and running since worker scanner has started.
+
 ## v49.1.2
 
 ### USERS
