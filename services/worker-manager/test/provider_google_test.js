@@ -507,6 +507,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!fake.compute.instances.delete_called);
       assert.equal(worker.state, 'running');
     });
+    test('do not remove registered workers with stale terminateAfter', async function () {
+      const terminateAfter = Date.now() - 1000;
+      let worker = await suiteMakeWorker({ providerData: { terminateAfter } });
+      fake.compute.instances.setFakeInstanceStatus(
+        project, 'us-east1-a', workerId,
+        'RUNNING');
+
+      worker.reload = function () {
+        this.providerData.terminateAfter = Date.now() + 1000;
+      };
+
+      worker = await runCheckWorker(worker);
+      assert(!fake.compute.instances.delete_called);
+      assert.equal(worker.state, 'running');
+    });
   });
 
   suite('registerWorker', function() {

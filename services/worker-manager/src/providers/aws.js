@@ -353,7 +353,11 @@ class AwsProvider extends Provider {
         }
       }
       if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-        await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
+        // reload the worker to make sure we have the latest data
+        await worker.reload(this.db);
+        if (worker.providerData.terminateAfter < Date.now()) {
+          await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
+        }
       }
     } catch (e) {
       if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too

@@ -1078,9 +1078,14 @@ class AzureProvider extends Provider {
 
           // If the worker has not checked in recently enough, we consider it failed regardless of the Azure lifecycle
           if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-            const reason = 'terminateAfter time exceeded';
-            await this.removeWorker({ worker, reason });
-            break;
+            // it is possible that scanner loop was taking longer and worker was already updated since last fetch
+            // so we need to check if terminateAfter is still in the past
+            await worker.reload(this.db);
+            if (worker.providerData.terminateAfter < Date.now()) {
+              const reason = 'terminateAfter time exceeded';
+              await this.removeWorker({ worker, reason });
+              break;
+            }
           }
 
           // Call provisionResources to allow it to finish up gathering data about the

@@ -1122,6 +1122,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.removeWorker.called);
       assert(provider.provisionResources.called);
     });
+
+    test('do not remove registered workers with stale terminateAfter', async function() {
+      await setState({ state: 'requested', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
+      // simulate situation where worker scanner was running slow and in-memory worker was already updated in db
+      await worker.update(helper.db, worker => {
+        worker.providerData.terminateAfter = Date.now() - 1000;
+      });
+
+      const reloadSandbox = sinon.createSandbox({});
+      reloadSandbox.stub(worker, 'reload').callsFake(function reloadWorker() {
+        this.providerData.terminateAfter = Date.now() + 1000;
+      });
+      await provider.checkWorker({ worker });
+
+      assert(worker.reload.called);
+      reloadSandbox.restore();
+
+      await worker.reload(helper.db);
+      assert(worker.state === 'requested');
+      assert(!provider.removeWorker.called);
+      assert(provider.provisionResources.called);
+    });
   });
 
   suite('registerWorker', function() {

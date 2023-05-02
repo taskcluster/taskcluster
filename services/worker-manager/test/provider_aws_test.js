@@ -536,6 +536,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
     });
 
+    test('do not remove registered workers with stale terminateAfter', async function () {
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
+      const worker = Worker.fromApi({
+        ...workerInDB,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+          terminateAfter: Date.now() - 1000,
+        },
+      });
+      await worker.create(helper.db);
+      provider.seen = {};
+      worker.reload = function () {
+        this.providerData.terminateAfter = Date.now() + 1000;
+      };
+
+      await provider.checkWorker({ worker: worker });
+      assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
+    });
+
     test('remove very old workers', async function() {
       fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
       const worker = Worker.fromApi({

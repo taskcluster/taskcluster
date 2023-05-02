@@ -376,7 +376,11 @@ class GoogleProvider extends Provider {
         this.seen[worker.workerPoolId] += worker.capacity || 1;
 
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-          await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
+          // reload the worker to make sure we have the latest data
+          await worker.reload(this.db);
+          if (worker.providerData.terminateAfter < Date.now()) {
+            await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
+          }
         }
       } else if (['TERMINATED', 'STOPPED'].includes(status)) {
         await this._enqueue('query', () => this.compute.instances.delete({
