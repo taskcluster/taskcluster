@@ -2,9 +2,7 @@
 
 package main
 
-import (
-	"os"
-)
+import "os"
 
 const (
 	engine = "docker"

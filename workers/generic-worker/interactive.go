@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"net/url"
+	"path"
 	"strconv"
 	"time"
 
@@ -127,22 +128,29 @@ func (it *InteractiveTask) uploadInteractiveArtifact() error {
 		return err
 	}
 
-	// defined in ui/src/App/routes.jsx
-	path := "/shell/"
+	// combine the path from the interactive URL with the expose URL
+	interactiveURL, err := url.Parse(it.interactive.GetURL)
+	if err != nil {
+		return err
+	}
+	exposeURL := it.exposure.GetURL()
+	if exposeURL.Path == "/" {
+		exposeURL.Path = interactiveURL.Path
+	} else {
+		exposeURL.Path = path.Join(exposeURL.Path, interactiveURL.Path)
+	}
+	exposeURL.Scheme = "ws"
+
 	// query params required in ui/src/views/Shell/index.jsx
 	queryParams := url.Values{}
 	queryParams.Set("v", "2")
-	socketURL := it.exposure.GetURL()
-	socketURL.Path = "/"
-	if socketURL.Scheme == "https" {
-		socketURL.Scheme = "wss"
-	} else {
-		socketURL.Scheme = "ws"
-	}
-	queryParams.Set("socketUrl", socketURL.String())
+	queryParams.Set("socketUrl", exposeURL.String())
 	queryParams.Set("taskId", it.task.TaskID)
 	queryParams.Set("runId", strconv.FormatUint(uint64(it.task.RunID), 10))
-	u, err := url.Parse(config.RootURL + path)
+
+	// defined in ui/src/App/routes.jsx
+	shellPath := "/shell/"
+	u, err := url.Parse(config.RootURL + shellPath)
 	if err != nil {
 		return err
 	}
@@ -165,7 +173,7 @@ func (it *InteractiveTask) uploadInteractiveArtifact() error {
 		return uploadErr
 	}
 
-	it.task.Log("[interactive] session available at %s", url)
+	it.task.Infof("[interactive] session available at %s", url)
 
 	return nil
 }

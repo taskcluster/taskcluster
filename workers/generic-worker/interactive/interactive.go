@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"os/exec"
 	"sync"
 
@@ -23,6 +22,7 @@ var upgrader = &websocket.Upgrader{
 
 type Interactive struct {
 	TCPPort   uint16
+	GetURL    string
 	conn      *websocket.Conn
 	connMutex *sync.Mutex
 	stdin     io.WriteCloser
@@ -37,6 +37,7 @@ type Interactive struct {
 func New(port uint16, cmd *exec.Cmd, ctx context.Context) (it *Interactive, err error) {
 	it = &Interactive{
 		TCPPort: port,
+		GetURL:  fmt.Sprintf("http://localhost:%v/shell", port),
 		cmd:     cmd,
 		done:    make(chan struct{}),
 		errors:  make(chan error, 3),
@@ -170,25 +171,15 @@ func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
 
 func (it *Interactive) ListenAndServe(ctx context.Context) error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", it.Handler)
+	mux.HandleFunc("/shell", it.Handler)
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", it.TCPPort),
 		Handler: mux,
 	}
 
 	go func() {
-		var err error
-		crtFile := os.Getenv("SERVER_CRT_FILE")
-		keyFile := os.Getenv("SERVER_KEY_FILE")
-		if crtFile != "" && keyFile != "" {
-			log.Printf("Output server listening... %s (with TLS)", server.Addr)
-			log.Printf("key %s ", keyFile)
-			log.Printf("crt %s ", crtFile)
-			err = server.ListenAndServeTLS(crtFile, keyFile)
-		} else {
-			log.Printf("Output server listening... %s (without TLS)", server.Addr)
-			err = server.ListenAndServe()
-		}
+		log.Printf("Output server listening... %s (without TLS)", server.Addr)
+		err := server.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
 			log.Fatalf("ListenAndServe() error: %v", err)
 		}

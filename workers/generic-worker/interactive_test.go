@@ -80,7 +80,7 @@ func TestInteractiveCommand(t *testing.T) {
 			t.Fatalf("timeout waiting for server to start")
 		case <-tick:
 			// Try to connect to the server
-			url := fmt.Sprintf("ws://localhost:%d", config.InteractivePort)
+			url := fmt.Sprintf("ws://localhost:%v/shell", config.InteractivePort)
 			conn, _, err = websocket.DefaultDialer.Dial(url, nil)
 			if err == nil {
 				err = conn.WriteMessage(websocket.TextMessage, []byte("echo hello\n"))

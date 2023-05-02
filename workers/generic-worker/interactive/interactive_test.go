@@ -23,7 +23,7 @@ func TestInteractive(t *testing.T) {
 	defer server.Close()
 
 	// Make a WebSocket connection to the server
-	url := "ws" + strings.TrimPrefix(server.URL, "http") + "/"
+	url := "ws" + strings.TrimPrefix(server.URL, "http") + "/shell"
 	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		t.Fatal("dial error:", err)
