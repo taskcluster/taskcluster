@@ -8,10 +8,13 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/taskcluster/slugid-go/slugid"
 )
 
 var upgrader = &websocket.Upgrader{
@@ -23,6 +26,7 @@ var upgrader = &websocket.Upgrader{
 type Interactive struct {
 	TCPPort   uint16
 	GetURL    string
+	secret    string
 	conn      *websocket.Conn
 	connMutex *sync.Mutex
 	stdin     io.WriteCloser
@@ -37,12 +41,16 @@ type Interactive struct {
 func New(port uint16, cmd *exec.Cmd, ctx context.Context) (it *Interactive, err error) {
 	it = &Interactive{
 		TCPPort: port,
-		GetURL:  fmt.Sprintf("http://localhost:%v/shell", port),
+		secret:  slugid.Nice(),
 		cmd:     cmd,
 		done:    make(chan struct{}),
 		errors:  make(chan error, 3),
 		ctx:     ctx,
 	}
+
+	it.setRequestURL()
+
+	os.Setenv("INTERACTIVE_ACCESS_TOKEN", it.secret)
 
 	it.stdin, err = it.cmd.StdinPipe()
 	if err != nil {
@@ -79,6 +87,15 @@ func New(port uint16, cmd *exec.Cmd, ctx context.Context) (it *Interactive, err 
 }
 
 func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
+	accessToken := os.Getenv("INTERACTIVE_ACCESS_TOKEN")
+	secret := strings.TrimPrefix(r.URL.Path, "/shell/")
+	// Authenticate the request with accessToken, this is good enough because
+	// interactive shells are short-lived.
+	if secret != accessToken {
+		http.Error(w, "Access denied", http.StatusUnauthorized)
+		return
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("WebSocket upgrade error: %v", err)
@@ -171,7 +188,7 @@ func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
 
 func (it *Interactive) ListenAndServe(ctx context.Context) error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/shell", it.Handler)
+	mux.HandleFunc("/shell/", it.Handler)
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", it.TCPPort),
 		Handler: mux,
@@ -214,4 +231,8 @@ func (it *Interactive) Terminate() error {
 	}
 
 	return it.cmd.Process.Kill()
+}
+
+func (it *Interactive) setRequestURL() {
+	it.GetURL = fmt.Sprintf("http://localhost:%v/shell/%v", it.TCPPort, it.secret)
 }

@@ -2,8 +2,10 @@ package interactive
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"os/exec"
 	"strings"
 	"testing"
@@ -23,7 +25,7 @@ func TestInteractive(t *testing.T) {
 	defer server.Close()
 
 	// Make a WebSocket connection to the server
-	url := "ws" + strings.TrimPrefix(server.URL, "http") + "/shell"
+	url := "ws" + strings.TrimPrefix(server.URL, "http") + fmt.Sprintf("/shell/%v", os.Getenv("INTERACTIVE_ACCESS_TOKEN"))
 	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		t.Fatal("dial error:", err)
