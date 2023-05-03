@@ -1,4 +1,4 @@
-//go:build !windows && !docker
+//go:build (multiuser && darwin) || (multiuser && linux) || simple
 
 package main
 
@@ -32,7 +32,7 @@ func (feature *InteractiveFeature) PersistState() error {
 }
 
 func (feature *InteractiveFeature) IsEnabled(task *TaskRun) bool {
-	return task.Payload.Features.Interactive
+	return config.EnableInteractive && task.Payload.Features.Interactive
 }
 
 type InteractiveTask struct {
@@ -76,6 +76,7 @@ func (it *InteractiveTask) Start() *CommandExecutionError {
 	}
 	it.interactive = interactive
 	it.cancel = cancel
+
 	done := make(chan error, 1)
 	go func() {
 		done <- it.interactive.ListenAndServe(ctx)
@@ -139,7 +140,11 @@ func (it *InteractiveTask) uploadInteractiveArtifact() error {
 	} else {
 		exposeURL.Path = path.Join(exposeURL.Path, interactiveURL.Path)
 	}
-	exposeURL.Scheme = "ws"
+	if exposeURL.Scheme == "https" {
+		exposeURL.Scheme = "wss"
+	} else {
+		exposeURL.Scheme = "ws"
+	}
 
 	// query params required in ui/src/views/Shell/index.jsx
 	queryParams := url.Values{}

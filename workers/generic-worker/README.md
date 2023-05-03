@@ -129,6 +129,9 @@ and reports back results to the queue.
                                             directory will be created if it does not exist. This
                                             may be a relative path to the current directory, or
                                             an absolute path. [default: "downloads"]
+          enableInteractive                 Enables interactive mode. This allows an
+                                            interactive shell session to run on the worker.
+                                            [default: false]
           idleTimeoutSecs                   How many seconds to wait without getting a new
                                             task to perform, before the worker process exits.
                                             An integer, >= 0. A value of 0 means "never reach

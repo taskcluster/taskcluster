@@ -44,8 +44,12 @@ func New(port uint16, cmd *exec.Cmd, ctx context.Context) (it *Interactive, err 
 		secret:  slugid.Nice(),
 		cmd:     cmd,
 		done:    make(chan struct{}),
-		errors:  make(chan error, 3),
-		ctx:     ctx,
+		// size of 3 is because there
+		// are only ever 3 goroutines
+		// who write to this channel
+		// and we don't want to block
+		errors: make(chan error, 3),
+		ctx:    ctx,
 	}
 
 	it.setRequestURL()

@@ -205,6 +205,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			CleanUpTaskDirs:                true,
 			DisableReboots:                 false,
 			DownloadsDir:                   "downloads",
+			EnableInteractive:              false,
 			IdleTimeoutSecs:                0,
 			InteractivePort:                53654,
 			LiveLogExecutable:              "livelog",

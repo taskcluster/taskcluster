@@ -358,6 +358,7 @@ func GWTest(t *testing.T) *Test {
 			// directory-caches.json and file-caches.json are not per-test.
 			DownloadsDir:              filepath.Join(cwd, "downloads"),
 			Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
+			EnableInteractive:         true,
 			IdleTimeoutSecs:           60,
 			InstanceID:                "test-instance-id",
 			InstanceType:              "p3.enormous",

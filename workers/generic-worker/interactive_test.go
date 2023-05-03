@@ -1,4 +1,4 @@
-//go:build !windows && !docker
+//go:build (multiuser && darwin) || (multiuser && linux) || simple
 
 package main
 

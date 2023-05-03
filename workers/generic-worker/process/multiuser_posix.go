@@ -113,12 +113,14 @@ func (r *Result) Crashed() bool {
 	return false
 }
 
-func NewCommand(commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
-	cmd := exec.Command(commandLine[0], commandLine[1:]...)
+func newCommand(f func() *exec.Cmd, commandLine []string, workingDirectory string, env []string, platformData *PlatformData, setOutputStreams bool) (*Command, error) {
+	cmd := f()
 	cmd.Env = env
 	cmd.Dir = workingDirectory
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	if setOutputStreams {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
 	if platformData.SysProcAttr != nil {
 		cmd.SysProcAttr = platformData.SysProcAttr
 	} else {
@@ -132,21 +134,18 @@ func NewCommand(commandLine []string, workingDirectory string, env []string, pla
 	}, nil
 }
 
-func NewCommandContext(ctx context.Context, commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
-	cmd := exec.CommandContext(ctx, commandLine[0], commandLine[1:]...)
-	cmd.Env = env
-	cmd.Dir = workingDirectory
-	if platformData.SysProcAttr != nil {
-		cmd.SysProcAttr = platformData.SysProcAttr
-	} else {
-		cmd.SysProcAttr = &syscall.SysProcAttr{}
+func NewCommand(commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
+	f := func() *exec.Cmd {
+		return exec.Command(commandLine[0], commandLine[1:]...)
 	}
-	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
-	cmd.SysProcAttr.Setpgid = true
-	return &Command{
-		Cmd:   cmd,
-		abort: make(chan struct{}),
-	}, nil
+	return newCommand(f, commandLine, workingDirectory, env, platformData, true)
+}
+
+func NewCommandContext(ctx context.Context, commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
+	f := func() *exec.Cmd {
+		return exec.CommandContext(ctx, commandLine[0], commandLine[1:]...)
+	}
+	return newCommand(f, commandLine, workingDirectory, env, platformData, false)
 }
 
 func (c *Command) SetEnv(envVar, value string) {
