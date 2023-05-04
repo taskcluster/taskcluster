@@ -3,6 +3,24 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v49.2.0
+
+### GENERAL
+
+▶ [patch]
+Upgrade Node.js version to 18.16.0 and go version to 1.19.9.
+
+### USERS
+
+▶ [minor] [#6169](https://github.com/taskcluster/taskcluster/issues/6169)
+Adds interactive shell support to generic-worker.
+
+The worker configuration variable `enableInteractive` needs to be set to `true` to allow the interactive shell feature to be enabled. `enableInteractive` is disabled by default.
+
+Once the worker configuration variable is set, the `interactive` feature can be enabled on a per-task basis.
+
+To enable, set `task.payload.features.interactive` to `true`. And toggle on `Interactive` in the Create Task view of the UI.
+
 ## v49.1.3
 
 ### WORKER-DEPLOYERS
