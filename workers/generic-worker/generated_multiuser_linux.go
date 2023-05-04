@@ -766,7 +766,7 @@ func taskPayloadSchema() string {
         },
         "interactive": {
           "description": "This allows you to interactively run commands from within the worker\nas the task user. This may be useful for debugging purposes.\nCan be used for SSH-like access to the running worker.\nNote that this feature works differently from the ` + "`" + `interactive` + "`" + ` feature\nin docker worker, which ` + "`" + `docker exec` + "`" + `s into the running container.\nSince tasks on generic worker are not guaranteed to be running in a\ncontainer, a bash shell is started on the task user's account.\nA user can then ` + "`" + `docker exec` + "`" + ` into the a running container, if there\nis one.\n\nSince: generic-worker 49.2.0",
-          "title": "Docker Exec Interactive",
+          "title": "Interactive shell",
           "type": "boolean"
         },
         "liveLog": {
