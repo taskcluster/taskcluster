@@ -68,7 +68,7 @@ func TestInteractiveCommand(t *testing.T) {
 	}()
 
 	// Wait for server to start
-	timeout := time.After(5 * time.Second)
+	timeout := time.After(10 * time.Second)
 	tick := time.Tick(500 * time.Millisecond)
 
 	var conn *websocket.Conn
@@ -78,7 +78,7 @@ func TestInteractiveCommand(t *testing.T) {
 		select {
 		case <-timeout:
 			// Timeout reached
-			t.Fatalf("timeout waiting for server to start")
+			t.Fatal("timeout waiting for server to start")
 		case <-tick:
 			// Try to connect to the server
 			url := fmt.Sprintf("ws://localhost:%v/shell/%v", config.InteractivePort, os.Getenv("INTERACTIVE_ACCESS_TOKEN"))
@@ -120,6 +120,47 @@ func TestInteractiveCommand(t *testing.T) {
 				return
 			} else {
 				t.Logf("error connecting to server: %v", err)
+			}
+		}
+	}
+}
+
+func TestInteractiveWrongSecret(t *testing.T) {
+	setup(t)
+	payload := GenericWorkerPayload{
+		Command:    sleep(5),
+		MaxRunTime: 10,
+		Features: FeatureFlags{
+			Interactive: true,
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	done := make(chan string, 1)
+	go func() {
+		done <- submitAndAssert(t, td, payload, "completed", "completed")
+	}()
+
+	// Wait for server to start
+	timeout := time.After(10 * time.Second)
+	tick := time.Tick(500 * time.Millisecond)
+
+	for {
+		select {
+		case <-done:
+			return
+		case <-timeout:
+			// Timeout reached, could not connect to server
+			// which should be the case since we are using the wrong secret
+			return
+		case <-tick:
+			// Try to connect to the server
+			url := fmt.Sprintf("ws://localhost:%v/shell/%v", config.InteractivePort, "bad-secret")
+			_, _, err := websocket.DefaultDialer.Dial(url, nil)
+			if err == nil {
+				t.Fatal("expected error connecting to server")
+				return
 			}
 		}
 	}

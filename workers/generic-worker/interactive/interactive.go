@@ -129,6 +129,7 @@ func (it *Interactive) handleWebsocketMessages(msgChan chan []byte) {
 	for {
 		select {
 		case <-it.ctx.Done():
+			return
 		case <-it.done:
 			return
 		case err := <-it.errors:
@@ -168,6 +169,7 @@ func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
 	for {
 		select {
 		case <-it.ctx.Done():
+			return
 		case <-it.done:
 			return
 		default:
