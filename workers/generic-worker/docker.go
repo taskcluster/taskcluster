@@ -8,6 +8,10 @@ const (
 	engine = "docker"
 )
 
+func platformFeatures() []Feature {
+	return []Feature{}
+}
+
 func secure(configFile string) {
 }
 

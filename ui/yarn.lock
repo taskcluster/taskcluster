@@ -6447,10 +6447,10 @@ hpack.js@^2.1.6:
     readable-stream "^2.0.1"
     wbuf "^1.1.0"
 
-hterm-umd@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/hterm-umd/-/hterm-umd-1.0.1.tgz#68a3ad8c627f3e9fa64baf192d33380f5a78d5ab"
-  integrity sha1-aKOtjGJ/Pp+mS68ZLTM4D1p41as=
+hterm-umdjs@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/hterm-umdjs/-/hterm-umdjs-1.4.1.tgz#0cd5352eaf927c70b83c36146cf2c2a281dba957"
+  integrity sha512-r5JOmdDK1bZCmp3cKcuGRLVeum33H+pzD119ZxmQou+QUVe6SAVSz03HvKWVhM2Ao1Biv+fkhFDmnsaRPq0tFg==
 
 html-encoding-sniffer@^2.0.1:
   version "2.0.1"

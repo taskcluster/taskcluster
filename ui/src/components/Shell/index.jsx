@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { string } from 'prop-types';
-import { hterm, lib } from 'hterm-umd';
+import { hterm, lib } from 'hterm-umdjs';
 import { DockerExecClient } from 'docker-exec-websocket-client';
 import withAlertOnClose from '../../utils/withAlertOnClose';
 
@@ -56,8 +56,6 @@ export default class Shell extends Component {
         command: defaultCommand,
       };
 
-      io.sendString = d => this.client && this.client.stdin.write(d);
-      io.onVTKeystroke = io.sendString;
       io.onTerminalResize = () => null;
       terminal.setCursorPosition(0, 0);
       terminal.setCursorVisible(true);
@@ -70,33 +68,196 @@ export default class Shell extends Component {
 
       // Create a shell client, with interface similar to child_process
       // With an additional method client.resize(cols, rows) for TTY sizing.
-      if (version === '1') {
-        this.client = new DockerExecClient(options);
-        await this.client.execute();
+      switch (version) {
+        // docker worker
+        case '1':
+          io.sendString = d => this.client?.stdin.write(d);
+          io.onVTKeystroke = io.sendString;
 
-        // Wrap client.resize to switch argument ordering
-        const { resize } = this.client;
+          this.client = new DockerExecClient(options);
+          await this.client.execute();
 
-        this.client.resize = (c, r) => resize.call(this.client, r, c);
-      } else {
-        io.writeUTF8(`inteactive shell API version ${version} not supported`);
+          this.client.resize.apply(this.client, [
+            terminal.screenSize.height,
+            terminal.screenSize.width,
+          ]);
+
+          this.client.on('exit', code => {
+            io.writeUTF8(`\r\nRemote shell exited: ${code}\r\n`);
+            terminal.uninstallKeyboard();
+            terminal.setCursorVisible(false);
+          });
+
+          this.client.resize(
+            terminal.screenSize.width,
+            terminal.screenSize.height
+          );
+          io.onTerminalResize = (c, r) => this.client.resize(c, r);
+          this.client.stdout.on('data', data =>
+            io.writeUTF8(DECODER.decode(data))
+          );
+          this.client.stderr.on('data', data =>
+            io.writeUTF8(DECODER.decode(data))
+          );
+          this.client.stdout.resume();
+          this.client.stderr.resume();
+
+          break;
+        // generic worker
+        case '2':
+          this.wsClient = new WebSocket(url);
+          this.cmd = [];
+          this.currentCmd = 0;
+          this.prompt = '$ ';
+          // minCol is the minimum column to start printing at
+          // and to stop deleting at
+          // accounts for the prompt "$ "
+          this.minCol = 2;
+
+          io.sendString = d => {
+            switch (d) {
+              // return key
+              case '\r': {
+                if (!this.cmd[this.currentCmd]) {
+                  io.print(`\n\r${this.prompt}`);
+
+                  break;
+                }
+
+                io.print(`\n\r${this.prompt}`);
+
+                this.wsClient?.send(`${this.cmd[this.currentCmd]}\n`);
+
+                this.currentCmd += 1;
+
+                break;
+              }
+
+              // backspace key
+              case '\b':
+              case '\u007f': {
+                const col = terminal.getCursorColumn();
+                // calculate the offset of the current cursor
+                // position from the start of the command
+                const cursorOffset = col - this.minCol;
+
+                // don't delete the prompt!
+                if (cursorOffset <= 0) {
+                  break;
+                }
+
+                terminal.eraseLine();
+
+                // get the current command on this row,
+                // or an empty string if none exists
+                const currCmd = this.cmd[this.currentCmd] || '';
+                // calculate the index of the character to
+                // delete in the current command string
+                const deleteIndex = cursorOffset - 1;
+                // construct the new command string without
+                // the deleted character
+                const newCmd =
+                  currCmd.slice(0, deleteIndex) +
+                  currCmd.slice(deleteIndex + 1);
+
+                this.cmd[this.currentCmd] = newCmd;
+
+                // print the updated command prompt and command string
+                io.print(`\r${this.prompt}${this.cmd[this.currentCmd] || ''}`);
+
+                terminal.setCursorColumn(col - 1);
+
+                break;
+              }
+
+              // up/down arrow
+              // may eventually be used to cycle through command history
+              case '\u001b[A':
+              case '\u001b[B': {
+                break;
+              }
+
+              // right arrow
+              case '\u001b[C': {
+                const row = terminal.getCursorRow();
+                const col = terminal.getCursorColumn();
+                const currCmd = this.cmd[this.currentCmd] || '';
+
+                if (currCmd && col < this.minCol + currCmd.length) {
+                  io.print('\u001b[C');
+                  terminal.setCursorPosition(row, col + 1);
+                }
+
+                break;
+              }
+
+              // left arrow
+              case '\u001b[D': {
+                const row = terminal.getCursorRow();
+                const col = terminal.getCursorColumn();
+
+                if (col > this.minCol) {
+                  io.print('\u001b[D');
+                  terminal.setCursorPosition(row, col - 1);
+                }
+
+                break;
+              }
+
+              default: {
+                const col = terminal.getCursorColumn();
+                const currCmd = this.cmd[this.currentCmd] || '';
+
+                if (currCmd) {
+                  const strBefore = currCmd.slice(0, col - this.minCol);
+                  const strAfter = currCmd.slice(col - this.minCol);
+
+                  this.cmd[this.currentCmd] = strBefore + d + strAfter;
+                } else {
+                  this.cmd[this.currentCmd] = d;
+                }
+
+                io.print(`\r${this.prompt}${this.cmd[this.currentCmd] || ''}`);
+
+                terminal.setCursorColumn(col + 1);
+
+                break;
+              }
+            }
+          };
+
+          io.onVTKeystroke = io.sendString;
+
+          this.wsClient.onmessage = ({ data }) => {
+            io.print(`\r${data}`);
+            io.print(`\r${this.prompt}`);
+          };
+
+          this.wsClient.onopen = () => {
+            io.print(this.prompt);
+          };
+
+          this.wsClient.onclose = () => {
+            io.println(`\r\nRemote shell closed`);
+            terminal.uninstallKeyboard();
+            terminal.setCursorVisible(false);
+          };
+
+          this.wsClient.onerror = err => {
+            io.println(`\r\nRemote shell error: ${err}`);
+            terminal.uninstallKeyboard();
+            terminal.setCursorVisible(false);
+          };
+
+          break;
+        default:
+          io.println(`Interactive shell API version ${version} not supported`);
+
+          break;
       }
 
       terminal.installKeyboard();
-      io.writeUTF8(`Connected to remote shell for taskId: ${taskId}\r\n`);
-
-      this.client.on('exit', code => {
-        io.writeUTF8(`\r\nRemote shell exited: ${code}\r\n`);
-        terminal.uninstallKeyboard();
-        terminal.setCursorVisible(false);
-      });
-
-      this.client.resize(terminal.screenSize.width, terminal.screenSize.height);
-      io.onTerminalResize = (c, r) => this.client.resize(c, r);
-      this.client.stdout.on('data', data => io.writeUTF8(DECODER.decode(data)));
-      this.client.stderr.on('data', data => io.writeUTF8(DECODER.decode(data)));
-      this.client.stdout.resume();
-      this.client.stderr.resume();
+      io.println(`Connected to remote shell for taskId: ${taskId}`);
     };
 
     if (this.node) {

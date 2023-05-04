@@ -142,6 +142,9 @@ and reports back results to the queue.
                                             directory will be created if it does not exist. This
                                             may be a relative path to the current directory, or
                                             an absolute path. [default: "downloads"]
+          enableInteractive                 Enables interactive mode. This allows an
+                                            interactive shell session to run on the worker.
+                                            [default: false]
           idleTimeoutSecs                   How many seconds to wait without getting a new
                                             task to perform, before the worker process exits.
                                             An integer, >= 0. A value of 0 means "never reach
@@ -150,6 +153,10 @@ and reports back results to the queue.
                                             [default: 0]
           instanceID                        The EC2 instance ID of the worker. Used by chain of trust.
           instanceType                      The EC2 instance Type of the worker. Used by chain of trust.
+          interactivePort                   Set the port number for an interactive shell. This
+                                            is used to allow interactive access to the worker
+                                            while it is running.
+                                            [default: 53654]
           livelogExecutable                 Filepath of LiveLog executable to use; see
                                             https://github.com/taskcluster/livelog
                                             [default: "livelog"]

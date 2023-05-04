@@ -7,6 +7,8 @@ import (
 	"log"
 	"os/exec"
 	"syscall"
+
+	"golang.org/x/net/context"
 )
 
 type PlatformData struct {
@@ -60,8 +62,8 @@ func (r *Result) Crashed() bool {
 	return false
 }
 
-func NewCommand(commandLine []string, workingDirectory string, env []string) (*Command, error) {
-	cmd := exec.Command(commandLine[0], commandLine[1:]...)
+func newCommand(f func() *exec.Cmd, commandLine []string, workingDirectory string, env []string) (*Command, error) {
+	cmd := f()
 	cmd.Env = env
 	cmd.Dir = workingDirectory
 	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
@@ -70,6 +72,20 @@ func NewCommand(commandLine []string, workingDirectory string, env []string) (*C
 		Cmd:   cmd,
 		abort: make(chan struct{}),
 	}, nil
+}
+
+func NewCommand(commandLine []string, workingDirectory string, env []string) (*Command, error) {
+	f := func() *exec.Cmd {
+		return exec.Command(commandLine[0], commandLine[1:]...)
+	}
+	return newCommand(f, commandLine, workingDirectory, env)
+}
+
+func NewCommandContext(ctx context.Context, commandLine []string, workingDirectory string, env []string) (*Command, error) {
+	f := func() *exec.Cmd {
+		return exec.CommandContext(ctx, commandLine[0], commandLine[1:]...)
+	}
+	return newCommand(f, commandLine, workingDirectory, env)
 }
 
 func (c *Command) SetEnv(envVar, value string) {

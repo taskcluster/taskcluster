@@ -10,9 +10,11 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -318,13 +320,23 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 	return
 }
 
-type Test struct {
-	t                  *testing.T
-	Config             *gwconfig.Config
-	OldConfigureForGCP bool
-	srv                *http.Server
-	router             *mux.Router
-}
+type (
+	Test struct {
+		t                  *testing.T
+		Config             *gwconfig.Config
+		OldConfigureForGCP bool
+		srv                *http.Server
+		router             *mux.Router
+	}
+	ArtifactTraits struct {
+		Extracts         []string
+		ContentType      string
+		ContentEncoding  string
+		Expires          tcclient.Time
+		SkipContentCheck bool
+	}
+	ExpectedArtifacts map[string]ArtifactTraits
+)
 
 func GWTest(t *testing.T) *Test {
 	testConfig := &gwconfig.Config{
@@ -346,9 +358,11 @@ func GWTest(t *testing.T) *Test {
 			// directory-caches.json and file-caches.json are not per-test.
 			DownloadsDir:              filepath.Join(cwd, "downloads"),
 			Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
+			EnableInteractive:         true,
 			IdleTimeoutSecs:           60,
 			InstanceID:                "test-instance-id",
 			InstanceType:              "p3.enormous",
+			InteractivePort:           53765,
 			LiveLogExecutable:         "livelog",
 			// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
 			// These ports are not exposed outside of the host. However, in CI they must differ from those of the
@@ -493,4 +507,95 @@ func (gwtest *Test) Teardown() {
 		}
 		gwtest.t.Log("Mock HTTP services stopped")
 	}
+}
+
+func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string, run int) {
+
+	queue := serviceFactory.Queue(nil, config.RootURL)
+	artifacts, err := queue.ListArtifacts(taskID, strconv.Itoa(run), "", "")
+
+	if err != nil {
+		t.Fatalf("Error listing artifacts: %v", err)
+	}
+
+	// Artifacts we find that we were not expecting, mapped by artifact name. Initially set to all artifacts
+	// found, and then later remove all of the ones we were expecting.
+	unexpectedArtifacts := make(map[string]tcqueue.Artifact, len(artifacts.Artifacts))
+
+	for _, actualArtifact := range artifacts.Artifacts {
+		unexpectedArtifacts[actualArtifact.Name] = actualArtifact
+	}
+
+	for artifactName, expected := range expectedArtifacts {
+		if _, ok := unexpectedArtifacts[artifactName]; !ok {
+			t.Errorf("Artifact '%s' not created", artifactName)
+			continue
+		}
+		actual := unexpectedArtifacts[artifactName]
+		// link artifacts do not have content types
+		if actual.StorageType != "link" {
+			if actual.ContentType != expected.ContentType {
+				t.Errorf("Artifact %s should have mime type '%v' but has '%s'", artifactName, expected.ContentType, actual.ContentType)
+			}
+		}
+		if !time.Time(expected.Expires).IsZero() {
+			if actual.Expires.String() != expected.Expires.String() {
+				t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifactName, expected.Expires, actual.Expires)
+			}
+		}
+		if expected.SkipContentCheck {
+			delete(unexpectedArtifacts, artifactName) // artifact expected, so remove from unexpected artifacts map
+			continue
+		}
+		b, rawResp, resp, url := getArtifactContentWithResponses(t, taskID, artifactName)
+		defer resp.Body.Close()
+		for _, requiredSubstring := range expected.Extracts {
+			if !strings.Contains(string(b), requiredSubstring) {
+				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifactName, requiredSubstring, string(b))
+			}
+		}
+		if actualContentEncoding := rawResp.Header.Get("Content-Encoding"); actualContentEncoding != expected.ContentEncoding {
+			t.Errorf("Expected Content-Encoding %q but got Content-Encoding %q for artifact %q from url %v", expected.ContentEncoding, actualContentEncoding, artifactName, url)
+		}
+		if actualContentType := resp.Header.Get("Content-Type"); actualContentType != expected.ContentType {
+			t.Errorf("Content-Type in Signed URL %v response (%v) does not match Content-Type of artifact (%v)", url, actualContentType, expected.ContentType)
+		}
+		delete(unexpectedArtifacts, artifactName) // artifact expected, so remove from unexpected artifacts map
+	}
+
+	if len(unexpectedArtifacts) > 0 {
+		t.Errorf("%v unexpected aritfacts found: %#v", len(unexpectedArtifacts), unexpectedArtifacts)
+	}
+}
+
+// getArtifactContentWithResponses downloads the given artifact, failing the
+// test if this is not possible.  It returns responses for both a "raw" fetch
+// (without compression) and a fetch potentially automatically decoding any
+// content-encoding.  This only works for S3 artifacts, and is only used to
+// test content-encoding.
+func getArtifactContentWithResponses(t *testing.T, taskID string, artifact string) ([]byte, *http.Response, *http.Response, *url.URL) {
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
+	url, err := queue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
+	if err != nil {
+		t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
+	}
+	t.Logf("Getting from url %v", url.String())
+	// need to do this so Content-Encoding header isn't swallowed by Go for test later on
+	tr := &http.Transport{
+		DisableCompression: true,
+	}
+	client := &http.Client{Transport: tr}
+	rawResp, _, err := httpbackoff.ClientGet(client, url.String())
+	if err != nil {
+		t.Fatalf("Error trying to fetch decompressed artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	resp, _, err := httpbackoff.Get(url.String())
+	if err != nil {
+		t.Fatalf("Error trying to fetch artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	return b, rawResp, resp, url
 }
