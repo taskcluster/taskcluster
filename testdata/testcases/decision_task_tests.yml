@@ -49,6 +49,7 @@ testSuite:
           chainOfTrust: true
           taskclusterProxy: true
           dockerSave: true
+          interactive: true
         log: apple/banana.log
         capabilities:
           privileged: true
@@ -128,8 +129,7 @@ testSuite:
         features:
           chainOfTrust: true
           taskclusterProxy: true
-          liveLog: true
-          backingLog: true
+          interactive: true
         logs:
           live: apple/banana.log
           backing: apple/banana_backing.log

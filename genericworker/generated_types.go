@@ -4,7 +4,7 @@ package genericworker
 
 import (
 	"encoding/json"
-	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v49/clients/client-go"
 )
 
 type (
@@ -165,7 +165,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    true
-		BackingLog bool `json:"backingLog,omitempty" default:"true"`
+		BackingLog bool `json:"backingLog,omitempty"`
 
 		// Artifacts named `public/chain-of-trust.json` and
 		// `public/chain-of-trust.json.sig` should be generated which will
@@ -175,13 +175,26 @@ type (
 		// Since: generic-worker 5.3.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 
+		// This allows you to interactively run commands from within the worker
+		// as the task user. This may be useful for debugging purposes.
+		// Can be used for SSH-like access to the running worker.
+		// Note that this feature works differently from the `interactive` feature
+		// in docker worker, which `docker exec`s into the running container.
+		// Since tasks on generic worker are not guaranteed to be running in a
+		// container, a bash shell is started on the task user's account.
+		// A user can then `docker exec` into the a running container, if there
+		// is one.
+		//
+		// Since: generic-worker 49.2.0
+		Interactive bool `json:"interactive,omitempty"`
+
 		// The live log feature streams the combined stderr and stdout to a task artifact
 		// so that the output is available while the task is running.
 		//
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    true
-		LiveLog bool `json:"liveLog,omitempty" default:"true"`
+		LiveLog bool `json:"liveLog,omitempty"`
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
@@ -322,7 +335,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live_backing.log"
-		Backing string `json:"backing,omitempty" default:"public/logs/live_backing.log"`
+		Backing string `json:"backing,omitempty"`
 
 		// Specifies a custom name for the live log artifact.
 		// This is only used if `features.liveLog` is `true`.
@@ -330,7 +343,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live.log"
-		Live string `json:"live,omitempty" default:"public/logs/live.log"`
+		Live string `json:"live,omitempty"`
 	}
 
 	// Byte-for-byte literal inline content of file/archive, up to 64KB in size.

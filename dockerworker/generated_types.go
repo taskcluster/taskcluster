@@ -4,7 +4,7 @@ package dockerworker
 
 import (
 	"encoding/json"
-	tcclient "github.com/taskcluster/taskcluster/v48/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v49/clients/client-go"
 )
 
 type (
@@ -28,7 +28,7 @@ type (
 		// Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.
 		//
 		// Default:    false
-		Privileged bool `json:"privileged,omitempty" default:"false"`
+		Privileged bool `json:"privileged,omitempty"`
 	}
 
 	// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
@@ -107,7 +107,7 @@ type (
 		// Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with `_backing` appended, prior to the file extension (if present). For example, `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt` and backing log artifact `apple/banana.log_backing.txt`. Defaults to `public/logs/live.log`.
 		//
 		// Default:    "public/logs/live.log"
-		Log string `json:"log,omitempty" default:"public/logs/live.log"`
+		Log string `json:"log,omitempty"`
 
 		// Maximum time the task container can run in seconds.
 		//
