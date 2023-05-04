@@ -234,7 +234,7 @@ properties:
         default: true
       interactive:
         type: boolean
-        title: Docker Exec Interactive
+        title: Interactive shell
         description: |-
           This allows you to interactively run commands from within the worker
           as the task user. This may be useful for debugging purposes.
