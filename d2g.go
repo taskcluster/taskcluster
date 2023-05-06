@@ -18,14 +18,6 @@ import (
 	"github.com/taskcluster/shell"
 )
 
-var dwManagedEnvVars = []string{
-	"RUN_ID",
-	"TASKCLUSTER_PROXY_URL",
-	"TASKCLUSTER_ROOT_URL",
-	"TASK_ID",
-	"TASKCLUSTER_WORKER_LOCATION",
-}
-
 type (
 	DockerImageName     string
 	IndexedDockerImage  dockerworker.IndexedDockerImage
@@ -172,15 +164,17 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache) (string, error) {
 	command := strings.Builder{}
 	command.WriteString("podman run --name " + containerName)
-	if dwPayload.Capabilities.Privileged {
+	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind {
 		command.WriteString(" --privileged")
 	}
 	if dwPayload.Features.AllowPtrace {
 		command.WriteString(" --cap-add=SYS_PTRACE")
 	}
 	command.WriteString(createVolumeMountsString(dwPayload.Cache, wdcs))
-	command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
-	command.WriteString(podmanEnvMappings(dwPayload.Env))
+	if dwPayload.Features.TaskclusterProxy {
+		command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
+	}
+	command.WriteString(podmanEnvMappings(dwPayload.Env, dwPayload))
 	dockerImageString, err := dwImage.String()
 	if err != nil {
 		return "", fmt.Errorf("could not form docker image string: %w", err)
@@ -314,8 +308,20 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 }
 
-func podmanEnvMappings(payloadEnv map[string]string) string {
+func podmanEnvMappings(payloadEnv map[string]string, dwPayload *dockerworker.DockerWorkerPayload) string {
 	envStrBuilder := strings.Builder{}
+
+	dwManagedEnvVars := []string{
+		"RUN_ID",
+		"TASKCLUSTER_ROOT_URL",
+		"TASK_ID",
+		"TASKCLUSTER_WORKER_LOCATION",
+	}
+
+	if dwPayload.Features.TaskclusterProxy {
+		dwManagedEnvVars = append(dwManagedEnvVars, "TASKCLUSTER_PROXY_URL")
+	}
+
 	envVarNames := make([]string, len(payloadEnv)+len(dwManagedEnvVars))
 	env := make(map[string]string, len(envVarNames))
 	i := 0
