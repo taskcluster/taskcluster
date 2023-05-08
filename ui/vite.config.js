@@ -1,6 +1,8 @@
 import path from 'path';
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+// import react from '@vitejs/plugin-react';
+import react from "@vitejs/plugin-react-swc";
+import viteTsconfigPaths from 'vite-tsconfig-paths';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import gql from 'vite-plugin-simple-gql';
 import generateEnvJs from './generate-env-js';
@@ -55,26 +57,31 @@ export default ({ mode }) => {
   return defineConfig({
     plugins: [
       gql(),
+      viteTsconfigPaths(),
+
+      // https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react
       react({
-        babel: {
-          plugins: [
-            ['@babel/plugin-proposal-decorators', { legacy: true }],
-            ['@babel/plugin-proposal-class-properties', { loose: false }],
-            ['@babel/plugin-proposal-optional-chaining', { loose: true }],
-            [
-              '@babel/plugin-proposal-nullish-coalescing-operator',
-              { loose: true },
-            ],
-            // ['@babel/plugin-transform-modules-commonjs', { loose: true }],
-          ],
-        },
+        include: [/\.(md|js|jsx|ts|tsx)$/],
+        tsDecorators: true,
+        // babel: {
+        //   plugins: [
+        //     // ['@babel/plugin-proposal-decorators', { loose: true }],
+        //     // ['@babel/plugin-proposal-class-properties', { loose: false }],
+        //     // ['@babel/plugin-proposal-optional-chaining', { loose: true }],
+        //     // [
+        //     //   '@babel/plugin-proposal-nullish-coalescing-operator',
+        //     //   { loose: true },
+        //     // ],
+        //     // ['@babel/plugin-transform-modules-commonjs', { loose: true }],
+        //   ],
+        // },
       }),
     ],
-    esbuild: {
-      loader: 'jsx',
-      include: /src\/.*\.jsx?$/,
-      exclude: [],
-    },
+    // esbuild: {
+    //   loader: 'tsx',
+    //   include: /src\/.*\.jsx?$/,
+    //   exclude: [],
+    // },
     server: {
       port,
       proxy: serverProxyConfig,
@@ -85,25 +92,30 @@ export default ({ mode }) => {
           find: '~@fontsource',
           replacement: path.join(__dirname, 'node_modules', '@fontsource'),
         },
-        {
-          find: '@',
-          replacement: SRC_DIR,
-        },
+        // {
+        //   find: '@',
+        //   replacement: SRC_DIR,
+        // },
       ],
     },
     optimizeDeps: {
-      esbuildOptions: {
-        // Node.js global to browser globalThis
-        define: {
-          global: 'globalThis',
-        },
-        // Enable esbuild polyfill plugins
-        plugins: [
-          NodeGlobalsPolyfillPlugin({
-            buffer: true,
-          }),
-        ],
-      },
+      exclude: ['build/*', 'dist/*'],
+      entries: ['index.html'],
+      // esbuildOptions: {
+      //   // Node.js global to browser globalThis
+      //   define: {
+      //     global: 'globalThis',
+      //   },
+      //   // Enable esbuild polyfill plugins
+      //   plugins: [
+      //     NodeGlobalsPolyfillPlugin({
+      //       buffer: true,
+      //     }),
+      //   ],
+      //   loader: {
+      //     '.jsx': 'tsx',
+      //   },
+      // },
     },
   });
 };
