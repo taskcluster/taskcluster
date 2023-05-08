@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"path"
 	"strconv"
@@ -32,7 +33,7 @@ func (feature *InteractiveFeature) PersistState() error {
 }
 
 func (feature *InteractiveFeature) IsEnabled(task *TaskRun) bool {
-	return config.EnableInteractive && task.Payload.Features.Interactive
+	return task.Payload.Features.Interactive
 }
 
 type InteractiveTask struct {
@@ -61,6 +62,10 @@ func (it *InteractiveTask) ReservedArtifacts() []string {
 }
 
 func (it *InteractiveTask) Start() *CommandExecutionError {
+	if !config.EnableInteractive {
+		return MalformedPayloadError(fmt.Errorf("`enableInteractive` worker config is not set to `true`"))
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	cmd, err := it.task.generateInteractiveCommand(ctx)
 	if err != nil {

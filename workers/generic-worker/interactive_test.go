@@ -13,6 +13,7 @@ import (
 )
 
 func TestInteractiveArtifact(t *testing.T) {
+	os.Setenv("ENABLE_INTERACTIVE", "true")
 	setup(t)
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(0),
@@ -51,6 +52,7 @@ func TestInteractiveArtifact(t *testing.T) {
 }
 
 func TestInteractiveCommand(t *testing.T) {
+	os.Setenv("ENABLE_INTERACTIVE", "true")
 	setup(t)
 	payload := GenericWorkerPayload{
 		Command:    sleep(5),
@@ -126,6 +128,7 @@ func TestInteractiveCommand(t *testing.T) {
 }
 
 func TestInteractiveWrongSecret(t *testing.T) {
+	os.Setenv("ENABLE_INTERACTIVE", "true")
 	setup(t)
 	payload := GenericWorkerPayload{
 		Command:    sleep(5),
@@ -164,4 +167,20 @@ func TestInteractiveWrongSecret(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestInteractiveNoConfigSetMalformedPayload(t *testing.T) {
+	os.Setenv("ENABLE_INTERACTIVE", "false")
+	setup(t)
+	payload := GenericWorkerPayload{
+		Command:    returnExitCode(0),
+		MaxRunTime: 10,
+		Features: FeatureFlags{
+			Interactive: true,
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 }
