@@ -58,11 +58,13 @@ The go type names will be "normalised" from the json subschema Title element.
     cat urls.txt | jsonschema2go -o main
 
   Usage:
-    jsonschema2go -o GO-PACKAGE-NAME
+    jsonschema2go [-d] [-n] -o GO-PACKAGE-NAME
     jsonschema2go --help
 
   Options:
     -h --help               Display this help text.
+    -d                      Enable defaults.
+    -n                      Nested structs.
     -o GO-PACKAGE-NAME      The package name to use in the generated file.
 `
 )
@@ -75,7 +77,8 @@ func main() {
 		Package:              arguments["-o"].(string),
 		ExportTypes:          true,
 		URLs:                 parseStandardIn(),
-		DisableNestedStructs: true,
+		EnableDefaults:       arguments["-d"].(bool),
+		DisableNestedStructs: !arguments["-n"].(bool),
 	}
 	result, err := job.Execute()
 	if err != nil {
