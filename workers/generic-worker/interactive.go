@@ -63,7 +63,13 @@ func (it *InteractiveTask) ReservedArtifacts() []string {
 
 func (it *InteractiveTask) Start() *CommandExecutionError {
 	if !config.EnableInteractive {
-		return MalformedPayloadError(fmt.Errorf("`enableInteractive` worker config is not set to `true`"))
+		workerPoolID := config.WorkerGroup + "/" + config.WorkerType
+		workerManagerURL := config.RootURL + "/worker-manager/" + url.PathEscape(workerPoolID)
+		return MalformedPayloadError(fmt.Errorf(`This task has payload.features.interactive set to true, but enableInteractive is not enabled on this worker pool (%s)
+If you do not require an interactive task, remove payload.features.interactive from the task definition.
+If you do require an interactive task, please do one of two things:
+	1. Contact the owner of the worker pool %s (see %s) and ask for interactive tasks to be enabled.
+	2. Use a worker pool that already allows interactive tasks (search for "enableInteractive": "true" in the worker pool definition)`, workerPoolID, workerPoolID, workerManagerURL))
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
