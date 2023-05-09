@@ -1,4 +1,4 @@
-//go:build simple || docker
+//go:build simple
 
 package main
 
@@ -13,8 +13,8 @@ import (
 )
 
 // Note we don't want to set config.NumberOfTasksToRun on multiuser engine
-// since new OS users would get created, so we limit this test to simple and
-// docker engines.
+// since new OS users would get created, so we limit this test to the simple
+// engine.
 func TestNewTaskDirectoryForEachTask(t *testing.T) {
 	setup(t)
 	config.NumberOfTasksToRun = 3

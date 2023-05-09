@@ -98,22 +98,26 @@ if ${ALL_PLATFORMS}; then
   install simple    darwin  arm64
 
   install multiuser linux   amd64
-  install docker    linux   amd64
+  install multiuser linux   arm64
   install simple    linux   amd64
-  install simple    linux   arm
   install simple    linux   arm64
+
+  install multiuser freebsd amd64
+  install multiuser freebsd arm64
+  install simple    freebsd amd64
+  install simple    freebsd arm64
 else
   MY_GOHOSTOS="$(go env GOHOSTOS)"
   MY_GOHOSTARCH="$(go env GOHOSTARCH)"
   case "${MY_GOHOSTOS}" in
       linux) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
-             install docker    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
      darwin) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
     freebsd) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+             install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
     windows) install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
@@ -137,15 +141,6 @@ if $TEST; then
 # when a new major release is made.
 ####################################################################
   CGO_ENABLED=1 GORACE="history_size=7" go test -tags simple -failfast -ldflags "-X github.com/taskcluster/taskcluster/v49/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
-  MYGOHOSTOS="$(go env GOHOSTOS)"
-  if [ "${MYGOHOSTOS}" == "linux" ] || [ "${MYGOHOSTOS}" == "darwin" ]; then
-####################################################################
-# The version number in this line is automatically updated by
-#   infrastructure/tooling/src/release/tasks.js
-# when a new major release is made.
-####################################################################
-    CGO_ENABLED=1 GORACE="history_size=7" go test -tags docker -failfast -ldflags "-X github.com/taskcluster/taskcluster/v49/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
-  fi
   golint $(go list ./...) | sed "s*${PWD}/**"
   ineffassign .
   goimports -w .

@@ -273,13 +273,6 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 			switch r := e.RootCause.(type) {
 			case httpbackoff.BadHttpResponseCode:
 				if r.HttpResponseCode == 404 {
-					if engine == "docker" {
-						switch serviceFactory.(type) {
-						case *mocktc.ServiceFactory:
-							t.Skip()
-						}
-						t.Fatalf("You've been extremely unlucky. This test depends on task %v with artifact %v that the docker engine can't create, but any of the other engines can create. It is created once every six months by whichever CI task first runs after the previous version expired. It looks like docker engine got there first, which is unfortunate, as it is the only one that can't create it. Probably if you rerun this test, all will be fine, because another CI task will have created it by now.", taskID, name)
-					}
 					t.Logf("Creating task %q for artifact %v under path %v...", taskID, name, path)
 					payload := GenericWorkerPayload{
 						Command:    copyTestdataFile(path),
@@ -597,4 +590,63 @@ func getArtifactContentWithResponses(t *testing.T, taskID string, artifact strin
 		t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
 	}
 	return b, rawResp, resp, url
+}
+
+func checkSHA256(t *testing.T, sha256Hex string, file string) {
+	hasher := sha256.New()
+	f, err := os.Open(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	if _, err := io.Copy(hasher, f); err != nil {
+		t.Fatal(err)
+	}
+	if actualSHA256Hex := hex.EncodeToString(hasher.Sum(nil)); actualSHA256Hex != sha256Hex {
+		t.Errorf("Expected file %v to have SHA256 %v but it was %v", file, sha256Hex, actualSHA256Hex)
+	}
+}
+
+func CancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
+	// resolvetask is a go binary; source is in resolvetask subdirectory, binary is built in CI
+	// but if running test manually, you may need to explicitly build it first.
+	command := singleCommandNoArgs("resolvetask")
+	payload = GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 300,
+	}
+	defaults.SetDefaults(&payload)
+	fullCreds := config.Credentials()
+	td = testTask(t)
+	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/"+t.Name(), time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	payload.Env = map[string]string{
+		"TASKCLUSTER_CLIENT_ID":    tempCreds.ClientID,
+		"TASKCLUSTER_ACCESS_TOKEN": tempCreds.AccessToken,
+		"TASKCLUSTER_CERTIFICATE":  tempCreds.Certificate,
+		"TASKCLUSTER_ROOT_URL":     config.RootURL,
+	}
+	for _, envVar := range []string{
+		"PATH",
+		"GOPATH",
+		"GOROOT",
+	} {
+		if v, exists := os.LookupEnv(envVar); exists {
+			payload.Env[envVar] = v
+		}
+	}
+	return
+}
+
+// getArtifactContent downloads the given artifact's content,
+// failing the test if this is not possible.
+func getArtifactContent(t *testing.T, taskID string, artifact string) []byte {
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
+	buf, _, _, err := queue.DownloadArtifactToBuf(taskID, -1, artifact)
+	if err != nil {
+		t.Fatalf("Error trying to fetch artifact:\n%e", err)
+	}
+	return buf
 }

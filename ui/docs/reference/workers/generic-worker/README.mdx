@@ -13,11 +13,10 @@ The worker will run the task, upload artifacts, and report status to the Queue.
 
 The generic-worker expects an imperative payload comprised of commands to run (`command`) and a timeout for the task (`maxRunTime`), with additional optional settings such as artifacts to upload or environment variables to set.
 
-Depending on the operating system of the worker, and the generic-worker engine that has been installed (multiuser, simple, or docker), the exact form of the required payload varies.
+Depending on the operating system of the worker, and the generic-worker engine that has been installed (multiuser or simple), the exact form of the required payload varies.
 Please see the following pages for guidance:
 
 <!-- BEGIN PAYLOAD LINKS -->
- * [Generic worker payload - docker, posix](/docs/reference/workers/generic-worker/docker-posix-payload)
  * [Generic worker payload - multiuser, posix](/docs/reference/workers/generic-worker/multiuser-posix-payload)
  * [Generic worker payload - multiuser, windows](/docs/reference/workers/generic-worker/multiuser-windows-payload)
  * [Generic worker payload - simple, posix](/docs/reference/workers/generic-worker/simple-posix-payload)
