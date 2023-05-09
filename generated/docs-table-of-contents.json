@@ -3884,35 +3884,13 @@
                 },
                 "name": "installing",
                 "next": {
-                  "path": "reference/workers/generic-worker/docker-posix-payload",
-                  "title": "Task Payload - docker, posix"
+                  "path": "reference/workers/generic-worker/multiuser-posix-payload",
+                  "title": "Task Payload - multiuser, posix"
                 },
                 "path": "reference/workers/generic-worker/installing",
                 "prev": {
                   "path": "reference/workers/generic-worker/support-tiers",
                   "title": "Support Tiers"
-                },
-                "up": {
-                  "path": "reference/workers/generic-worker/README",
-                  "title": "generic-worker"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000,
-                  "title": "Task Payload - docker, posix"
-                },
-                "name": "docker-posix-payload",
-                "next": {
-                  "path": "reference/workers/generic-worker/multiuser-posix-payload",
-                  "title": "Task Payload - multiuser, posix"
-                },
-                "path": "reference/workers/generic-worker/docker-posix-payload",
-                "prev": {
-                  "path": "reference/workers/generic-worker/installing",
-                  "title": "Installing"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -3933,8 +3911,8 @@
                 },
                 "path": "reference/workers/generic-worker/multiuser-posix-payload",
                 "prev": {
-                  "path": "reference/workers/generic-worker/docker-posix-payload",
-                  "title": "Task Payload - docker, posix"
+                  "path": "reference/workers/generic-worker/installing",
+                  "title": "Installing"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",

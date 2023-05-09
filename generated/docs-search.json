@@ -3340,9 +3340,9 @@
   },
   {
     "element": "h2",
-    "id": "docker-engine",
+    "id": "discontinued-docker-engine",
     "path": "/reference/workers/generic-worker/engines",
-    "subtitle": "Docker engine",
+    "subtitle": "Discontinued: Docker engine",
     "title": "Engines"
   },
   {
@@ -3445,9 +3445,9 @@
   },
   {
     "element": "h3",
-    "id": "linux-simplemultiuserdocker-build",
+    "id": "linux-simplemultiuser-build",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Linux simple/multiuser/docker build",
+    "subtitle": "Linux simple/multiuser build",
     "title": "Installing Generic-Worker"
   },
   {
@@ -3518,13 +3518,6 @@
     "id": "tier-2",
     "path": "/reference/workers/generic-worker/support-tiers",
     "subtitle": "Tier 2",
-    "title": "Support Tiers"
-  },
-  {
-    "element": "h2",
-    "id": "tier-3",
-    "path": "/reference/workers/generic-worker/support-tiers",
-    "subtitle": "Tier 3",
     "title": "Support Tiers"
   },
   {

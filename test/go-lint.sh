@@ -8,7 +8,7 @@ if [ -n "${unformatted_files}" ]; then
     exit 1;
 fi
 
-for engine in multiuser simple docker; do
+for engine in multiuser simple; do
   echo "Running golangci-lint for ${engine} engine.."
   golangci-lint run --build-tags "${engine}"
 done

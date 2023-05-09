@@ -1,5 +1,3 @@
-//go:build !docker
-
 package main
 
 import (

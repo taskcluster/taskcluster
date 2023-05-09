@@ -11,38 +11,36 @@ This model is based on [Rust's support tiers](https://forge.rust-lang.org/releas
 
 ## Tier 1
 
-Tier one platforms are "guaranteed to work".
-That means that
-* They are tested in Taskcluster's continuous integration and tests must pass for a change to land.
-* Binaries are provided with each Taskcluster release.
+Tier one platforms are "guaranteed to work". That means:
+
+  * They are tested in Taskcluster's continuous integration and tests must pass for a change to land.
+  * Binaries are provided with each Taskcluster release.
 
 The Tier-1 platforms are:
 
-* generic-worker-multiuser-darwin-amd64
-* generic-worker-multiuser-darwin-arm64
-* generic-worker-multiuser-linux-amd64
-* generic-worker-multiuser-windows-386
-* generic-worker-multiuser-windows-amd64
-* generic-worker-simple-darwin-amd64
-* generic-worker-simple-darwin-arm64
-* generic-worker-simple-linux-amd64
+  * generic-worker-multiuser-darwin-arm64
+  * generic-worker-multiuser-linux-amd64
+  * generic-worker-multiuser-windows-amd64
+  * generic-worker-simple-linux-amd64
 
 ## Tier 2
 
-Tier 2 platforms are "guaranteed to build".
-That means that
-* The are built (generally cross-compiled) in Taskcluster's continuous integration
-* Tests are not run automatically
-* Binaries are not provided with each Taskcluster release
+Tier 2 platforms are "guaranteed to build". That means:
 
-* generic-worker-docker-linux-amd64
-* generic-worker-simple-linux-arm
-* generic-worker-simple-linux-arm64
+  * They are built (generally cross-compiled) in Taskcluster's continuous integration
+  * They may not work
+  * Tests are _not_ run automatically
+  * Binaries _are_ provided with each Taskcluster release
 
-## Tier 3
+The Tier-2 platforms are:
 
-Tier 3 platforms are supported, but that support is not at all guaranteed.
-
-The Tier-3 platforms are:
-
-* generic-worker-multiuser-freebsd-amd64
+  * generic-worker-multiuser-darwin-amd64
+  * generic-worker-multiuser-freebsd-amd64
+  * generic-worker-multiuser-freebsd-arm64
+  * generic-worker-multiuser-linux-arm64
+  * generic-worker-multiuser-windows-386
+  * generic-worker-simple-darwin-amd64
+  * generic-worker-simple-darwin-arm64
+  * generic-worker-simple-freebsd-amd64
+  * generic-worker-simple-freebsd-arm64
+  * generic-worker-simple-linux-arm64
