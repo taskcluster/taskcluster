@@ -63,8 +63,10 @@ if ${ALL_PLATFORMS}; then
   install darwin     arm64
   # linux
   install linux      amd64
-  install linux      arm
   install linux      arm64
+  # freebsd
+  install freebsd    amd64
+  install freebsd    arm64
 else
   install native
 fi
