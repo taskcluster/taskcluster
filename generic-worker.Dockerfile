@@ -14,7 +14,6 @@ RUN cd tools/taskcluster-proxy && go build -o /taskcluster-proxy && cd ..
 RUN cd clients/client-shell && go build -o /taskcluster && cd ../..
 RUN cd workers/generic-worker && \
   ./build.sh && \
-  mv generic-worker-docker-* /generic-worker-docker && \
   mv generic-worker-multiuser-* /generic-worker-multiuser && \
   mv generic-worker-simple-* /generic-worker
 
