@@ -18,3 +18,5 @@ build windows amd64
 build windows 386
 build darwin amd64
 build darwin arm64
+build freebsd amd64
+build freebsd arm64
