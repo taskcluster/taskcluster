@@ -803,7 +803,7 @@ builder.declare({
   route: '/worker/reregister',
   name: 'reregisterWorker',
   title: 'Reregister a Worker',
-  category: 'Workers',
+  category: 'Worker Interface',
   cleanPayload,
   stability: APIBuilder.stability.experimental,
   input: 'reregister-worker-request.yml',
