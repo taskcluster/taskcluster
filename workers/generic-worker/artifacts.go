@@ -246,6 +246,11 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 }
 
 func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExecutionError {
+	if !task.Payload.Features.Artifacts {
+		task.Infof("Skipping upload of artifact %v as artifacts feature is not enabled", artifact.Base().Name)
+		return nil
+	}
+
 	task.Artifacts[artifact.Base().Name] = artifact
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {

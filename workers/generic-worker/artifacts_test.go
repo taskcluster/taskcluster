@@ -1000,6 +1000,30 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 	t.Fatalf("Could not find artifact public/build/X.txt in task run 0 of task %v", taskID)
 }
 
+func TestArtifactsAreNotUploaded(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    returnExitCode(0),
+		MaxRunTime: 10,
+	}
+	defaults.SetDefaults(&payload)
+	payload.Features.Artifacts = false
+
+	td := testTask(t)
+
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+	queue := serviceFactory.Queue(nil, config.RootURL)
+	lar, err := queue.ListArtifacts(taskID, "0", "", "")
+	if err != nil {
+		t.Fatalf("Error listing artifacts of task %v: %v", taskID, err)
+	}
+	if len(lar.Artifacts) != 0 {
+		t.Fatalf("Expected no artifacts, but got %v", lar.Artifacts)
+	}
+}
+
 func TestObjectArtifact(t *testing.T) {
 
 	setup(t)

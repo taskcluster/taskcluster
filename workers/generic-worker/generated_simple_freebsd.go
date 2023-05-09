@@ -162,6 +162,13 @@ type (
 	// Since: generic-worker 5.3.0
 	FeatureFlags struct {
 
+		// This allows you to disable artifact uploads for a task.
+		//
+		// Since: generic-worker 50.1.0
+		//
+		// Default:    true
+		Artifacts bool `json:"artifacts" default:"true"`
+
 		// The backing log feature publishes a task artifact containing the complete
 		// stderr and stdout of the task.
 		//
@@ -733,6 +740,12 @@ func taskPayloadSchema() string {
       "additionalProperties": false,
       "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
       "properties": {
+        "artifacts": {
+          "default": true,
+          "description": "This allows you to disable artifact uploads for a task.\n\nSince: generic-worker 50.1.0",
+          "title": "Enable artifact uploads",
+          "type": "boolean"
+        },
         "backingLog": {
           "default": true,
           "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",

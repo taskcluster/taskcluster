@@ -249,6 +249,14 @@ properties:
 
           Since: generic-worker 48.2.0
         default: true
+      artifacts:
+        type: boolean
+        title: Enable artifact uploads
+        description: |-
+          This allows you to disable artifact uploads for a task.
+
+          Since: generic-worker 50.1.0
+        default: true
   mounts:
     type: array
     description: |-
