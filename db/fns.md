@@ -2162,10 +2162,6 @@ client side.
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
 
-### deprecated methods
-
-* `quarantine_queue_worker_with_last_date_active(task_queue_id_in text, worker_group_in text, worker_id_in text, quarantine_until_in timestamptz)` (compatibility guaranteed until v50.0.0)
-
 ## secrets
 
 * [`delete_secret`](#delete_secret)
@@ -3041,7 +3037,3 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
-
-### deprecated methods
-
-* `get_queue_worker_with_wm_join(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v50.0.0)

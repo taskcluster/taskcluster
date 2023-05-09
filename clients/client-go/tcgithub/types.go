@@ -3,7 +3,7 @@
 package tcgithub
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v49/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
 )
 
 type (

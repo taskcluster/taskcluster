@@ -3,13 +3,13 @@ package mocktc
 import (
 	"testing"
 
-	tcclient "github.com/taskcluster/taskcluster/v49/clients/client-go"
-	"github.com/taskcluster/taskcluster/v49/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v49/clients/client-go/tcobject"
-	"github.com/taskcluster/taskcluster/v49/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v49/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v49/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v49/internal/mocktc/tc"
+	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v50/internal/mocktc/tc"
 )
 
 type ServiceFactory struct {
