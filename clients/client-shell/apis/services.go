@@ -503,6 +503,7 @@ var services = map[string]definitions.Service{
 					"organization",
 					"repository",
 					"sha",
+					"pullRequest",
 				},
 				Input: "",
 			},

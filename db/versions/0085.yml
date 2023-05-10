@@ -1,0 +1,117 @@
+version: 85
+description: Store pull request number in github builds table
+migrationScript: |-
+  begin
+    alter table github_builds add column pull_request_number integer;
+    create index github_builds_pr ON github_builds USING btree (organization, repository, pull_request_number);
+  end
+downgradeScript: |-
+  begin
+    drop index github_builds_pr;
+    alter table github_builds drop column pull_request_number;
+  end
+methods:
+  create_github_build:
+    deprecated: true
+  create_github_build_pr:
+    description: |-
+      Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists.
+    mode: write
+    serviceName: github
+    args: organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text, pull_request_number_in integer
+    returns: void
+    body: |-
+      begin
+        insert
+          into github_builds (organization, repository, sha, task_group_id, state, created, updated, installation_id, event_type, event_id, pull_request_number)
+          values (organization_in, repository_in, sha_in, task_group_id_in, state_in, created_in, updated_in, installation_id_in, event_type_in, event_id_in, pull_request_number_in);
+      end
+  get_github_build:
+    deprecated: true
+  get_github_build_pr:
+    description: |-
+      Get a github build. The returned table will have one or zero rows.
+    mode: read
+    serviceName: github
+    args: task_group_id_in text
+    returns: table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, pull_request_number integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          github_builds.organization,
+          github_builds.repository,
+          github_builds.sha,
+          github_builds.task_group_id,
+          github_builds.state,
+          github_builds.created,
+          github_builds.updated,
+          github_builds.installation_id,
+          github_builds.event_type,
+          github_builds.event_id,
+          github_builds.pull_request_number,
+          public.gen_random_uuid()
+        from github_builds
+        where github_builds.task_group_id = task_group_id_in;
+      end
+  get_github_builds:
+    deprecated: true
+  get_github_builds_pr:
+    description: |-
+      Get github builds.
+    mode: read
+    serviceName: github
+    args: page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text, pull_request_number_in integer
+    returns: table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, pull_request_number integer, etag uuid)
+    body: |-
+      begin
+        return query
+        select
+          github_builds.organization,
+          github_builds.repository,
+          github_builds.sha,
+          github_builds.task_group_id,
+          github_builds.state,
+          github_builds.created,
+          github_builds.updated,
+          github_builds.installation_id,
+          github_builds.event_type,
+          github_builds.event_id,
+          github_builds.pull_request_number,
+          public.gen_random_uuid()
+        from github_builds
+        where
+          (organization_in is null or github_builds.organization = organization_in) and
+          (repository_in is null or github_builds.repository = repository_in) and
+          (sha_in is null or github_builds.sha = sha_in) and
+          (pull_request_number_in is null or github_builds.pull_request_number = pull_request_number_in)
+        order by github_builds.updated asc
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  get_github_checks_by_task_group_id:
+    description: |-
+      Get github check runs by task group id
+    mode: read
+    serviceName: github
+    args: page_size_in integer, page_offset_in integer, task_group_id_in text
+    returns: |-
+      table (
+        task_group_id text,
+        task_id text,
+        check_suite_id text,
+        check_run_id text
+      )
+    body: |-
+      begin
+        return query
+        select
+          github_checks.task_group_id,
+          github_checks.task_id,
+          github_checks.check_suite_id,
+          github_checks.check_run_id
+        from github_checks
+        where github_checks.task_group_id = task_group_id_in
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end

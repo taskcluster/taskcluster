@@ -12,13 +12,14 @@
    * [`update_client`](#update_client)
    * [`update_client_last_used`](#update_client_last_used)
  * [github functions](#github)
-   * [`create_github_build`](#create_github_build)
+   * [`create_github_build_pr`](#create_github_build_pr)
    * [`create_github_check`](#create_github_check)
    * [`delete_github_build`](#delete_github_build)
-   * [`get_github_build`](#get_github_build)
-   * [`get_github_builds`](#get_github_builds)
+   * [`get_github_build_pr`](#get_github_build_pr)
+   * [`get_github_builds_pr`](#get_github_builds_pr)
    * [`get_github_check_by_run_id`](#get_github_check_by_run_id)
    * [`get_github_check_by_task_id`](#get_github_check_by_task_id)
+   * [`get_github_checks_by_task_group_id`](#get_github_checks_by_task_group_id)
    * [`get_github_integration`](#get_github_integration)
    * [`get_github_integrations`](#get_github_integrations)
    * [`set_github_build_state`](#set_github_build_state)
@@ -341,19 +342,20 @@ Does nothing if the client does not exist.
 
 ## github
 
-* [`create_github_build`](#create_github_build)
+* [`create_github_build_pr`](#create_github_build_pr)
 * [`create_github_check`](#create_github_check)
 * [`delete_github_build`](#delete_github_build)
-* [`get_github_build`](#get_github_build)
-* [`get_github_builds`](#get_github_builds)
+* [`get_github_build_pr`](#get_github_build_pr)
+* [`get_github_builds_pr`](#get_github_builds_pr)
 * [`get_github_check_by_run_id`](#get_github_check_by_run_id)
 * [`get_github_check_by_task_id`](#get_github_check_by_task_id)
+* [`get_github_checks_by_task_group_id`](#get_github_checks_by_task_group_id)
 * [`get_github_integration`](#get_github_integration)
 * [`get_github_integrations`](#get_github_integrations)
 * [`set_github_build_state`](#set_github_build_state)
 * [`upsert_github_integration`](#upsert_github_integration)
 
-### create_github_build
+### create_github_build_pr
 
 * *Mode*: write
 * *Arguments*:
@@ -367,8 +369,9 @@ Does nothing if the client does not exist.
   * `installation_id_in integer`
   * `event_type_in text`
   * `event_id_in text`
+  * `pull_request_number_in integer`
 * *Returns*: `void`
-* *Last defined on version*: 23
+* *Last defined on version*: 85
 
 Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists.
 
@@ -395,7 +398,7 @@ Upsert a single check.
 
 Delete a github build.
 
-### get_github_build
+### get_github_build_pr
 
 * *Mode*: read
 * *Arguments*:
@@ -411,12 +414,13 @@ Delete a github build.
   * `installation_id integer`
   * `event_type text`
   * `event_id text`
+  * `pull_request_number integer`
   * `etag uuid`
-* *Last defined on version*: 49
+* *Last defined on version*: 85
 
 Get a github build. The returned table will have one or zero rows.
 
-### get_github_builds
+### get_github_builds_pr
 
 * *Mode*: read
 * *Arguments*:
@@ -425,6 +429,7 @@ Get a github build. The returned table will have one or zero rows.
   * `organization_in text`
   * `repository_in text`
   * `sha_in text`
+  * `pull_request_number_in integer`
 * *Returns*: `table`
   * `organization text`
   * `repository text`
@@ -436,8 +441,9 @@ Get a github build. The returned table will have one or zero rows.
   * `installation_id integer`
   * `event_type text`
   * `event_id text`
+  * `pull_request_number integer`
   * `etag uuid`
-* *Last defined on version*: 49
+* *Last defined on version*: 85
 
 Get github builds.
 
@@ -469,6 +475,22 @@ Get github check run id and check suite id
 * *Last defined on version*: 37
 
 Get a single check from a task_id.
+
+### get_github_checks_by_task_group_id
+
+* *Mode*: read
+* *Arguments*:
+  * `page_size_in integer`
+  * `page_offset_in integer`
+  * `task_group_id_in text`
+* *Returns*: `table`
+  * `   task_group_id text`
+  * `  task_id text`
+  * `  check_suite_id text`
+  * `  check_run_id text `
+* *Last defined on version*: 85
+
+Get github check runs by task group id
 
 ### get_github_integration
 
@@ -516,6 +538,12 @@ Only update the state of a build and update the `updated` timestamp
 * *Last defined on version*: 36
 
 Create a single integration.
+
+### deprecated methods
+
+* `create_github_build(organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text)` (compatibility guaranteed until v52.0.0)
+* `get_github_build(task_group_id_in text)` (compatibility guaranteed until v52.0.0)
+* `get_github_builds(page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text)` (compatibility guaranteed until v52.0.0)
 
 ## hooks
 

@@ -24,7 +24,7 @@ async function taskGroupCreationHandler(message) {
     installation_id,
     organization,
     repository,
-  }] = await this.context.db.fns.get_github_build(taskGroupId);
+  }] = await this.context.db.fns.get_github_build_pr(taskGroupId);
   debug = debug.refine({ event_id, sha, owner: organization, repo: repository, installation_id });
 
   const statusContext = `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`;

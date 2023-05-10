@@ -6727,6 +6727,11 @@
       "additionalProperties": false,
       "description": "Description of a taskcluster.yml file v1, which may be used to generate a taskgraph\nand tasks.\n",
       "properties": {
+        "autoCancelPreviousChecks": {
+          "default": true,
+          "description": "Automatically cancel running task group on a non-default branch.\nUseful for PRs that are updated frequently. Only the last build will be running.\n",
+          "type": "boolean"
+        },
         "policy": {
           "additionalProperties": false,
           "properties": {
@@ -7339,6 +7344,10 @@
                 "minLength": 1,
                 "pattern": "^([a-zA-Z0-9-_%]*)$",
                 "type": "string"
+              },
+              "pullRequestNumber": {
+                "description": "Associated pull request number for 'pull_request' events.\n",
+                "type": "integer"
               },
               "repository": {
                 "description": "Github repository associated with the build.",
@@ -18978,7 +18987,8 @@
             "limit",
             "organization",
             "repository",
-            "sha"
+            "sha",
+            "pullRequest"
           ],
           "route": "/builds",
           "scopes": "github:list-builds",

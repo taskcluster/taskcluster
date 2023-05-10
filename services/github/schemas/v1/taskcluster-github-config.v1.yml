@@ -30,6 +30,12 @@ properties:
     type: string
     enum:
       - checks-v1
+  autoCancelPreviousChecks:
+    type: boolean
+    description: |
+      Automatically cancel running task group on a non-default branch.
+      Useful for PRs that are updated frequently. Only the last build will be running.
+    default: true
   tasks:
     title: Task definition template"
     description: |

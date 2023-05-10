@@ -146,7 +146,7 @@ func (github *Github) GithubWebHookConsumer() error {
 //	github:list-builds
 //
 // See #builds
-func (github *Github) Builds(continuationToken, limit, organization, repository, sha string) (*BuildsResponse, error) {
+func (github *Github) Builds(continuationToken, limit, organization, pullRequest, repository, sha string) (*BuildsResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
@@ -156,6 +156,9 @@ func (github *Github) Builds(continuationToken, limit, organization, repository,
 	}
 	if organization != "" {
 		v.Add("organization", organization)
+	}
+	if pullRequest != "" {
+		v.Add("pullRequest", pullRequest)
 	}
 	if repository != "" {
 		v.Add("repository", repository)
@@ -175,7 +178,7 @@ func (github *Github) Builds(continuationToken, limit, organization, repository,
 //	github:list-builds
 //
 // See Builds for more details.
-func (github *Github) Builds_SignedURL(continuationToken, limit, organization, repository, sha string, duration time.Duration) (*url.URL, error) {
+func (github *Github) Builds_SignedURL(continuationToken, limit, organization, pullRequest, repository, sha string, duration time.Duration) (*url.URL, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
@@ -185,6 +188,9 @@ func (github *Github) Builds_SignedURL(continuationToken, limit, organization, r
 	}
 	if organization != "" {
 		v.Add("organization", organization)
+	}
+	if pullRequest != "" {
+		v.Add("pullRequest", pullRequest)
 	}
 	if repository != "" {
 		v.Add("repository", repository)

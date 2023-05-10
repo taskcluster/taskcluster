@@ -32,7 +32,7 @@ suite(testing.suiteName(), function() {
       };
     }
 
-    const create_build = async (db, build) => await db.fns.create_github_build(
+    const create_build = async (db, build) => await db.deprecatedFns.create_github_build(
       build.organization,
       build.repository,
       build.sha,
@@ -47,13 +47,13 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('create and get', async function(db, isFake) {
       await create_build(db, builds[0]);
-      const [fetched] = await db.fns.get_github_build(builds[0].task_group_id);
+      const [fetched] = await db.deprecatedFns.get_github_build(builds[0].task_group_id);
       assert(fetched.etag);
       delete fetched.etag;
       assert.deepEqual(fetched, builds[0]);
 
-      assert.deepEqual([], await db.fns.get_github_build(null));
-      assert.deepEqual([], await db.fns.get_github_build('doesntexist'));
+      assert.deepEqual([], await db.deprecatedFns.get_github_build(null));
+      assert.deepEqual([], await db.deprecatedFns.get_github_build('doesntexist'));
 
       await assert.rejects(async () => {
         await create_build(db, builds[0]);
@@ -63,7 +63,7 @@ suite(testing.suiteName(), function() {
       for (let i = 0; i < 10; i++) {
         await create_build(db, builds[i]);
       }
-      const fetched = await db.fns.get_github_builds(null, null, null, null, null);
+      const fetched = await db.deprecatedFns.get_github_builds(null, null, null, null, null);
       assert.equal(fetched.length, 10);
       fetched.forEach((build, i) => {
         assert(build.etag);
@@ -73,21 +73,124 @@ suite(testing.suiteName(), function() {
     });
     helper.dbTest('delete', async function(db, isFake) {
       await create_build(db, builds[0]);
-      const [fetched] = await db.fns.get_github_build(builds[0].task_group_id);
+      const [fetched] = await db.deprecatedFns.get_github_build(builds[0].task_group_id);
       assert(fetched.etag);
       delete fetched.etag;
       assert.deepEqual(fetched, builds[0]);
       await db.fns.delete_github_build(builds[0].task_group_id);
-      assert.deepEqual(await db.fns.get_github_build(builds[0].task_group_id), []);
+      assert.deepEqual(await db.deprecatedFns.get_github_build(builds[0].task_group_id), []);
     });
     helper.dbTest('set state', async function(db, isFake) {
       await create_build(db, builds[0]);
-      const [fetched] = await db.fns.get_github_build(builds[0].task_group_id);
+      const [fetched] = await db.deprecatedFns.get_github_build(builds[0].task_group_id);
       await db.fns.set_github_build_state(
         builds[0].task_group_id,
         'huh',
       );
-      const [updated] = await db.fns.get_github_build(builds[0].task_group_id);
+      const [updated] = await db.deprecatedFns.get_github_build(builds[0].task_group_id);
+      assert.notEqual(fetched.etag, updated.etag);
+      assert.notEqual(fetched.updated, updated.updated);
+      assert.equal(fetched.state, 'success');
+      assert.equal(updated.state, 'huh');
+      delete fetched.etag;
+      delete updated.etag;
+      delete fetched.state;
+      delete updated.state;
+      delete fetched.updated;
+      delete updated.updated;
+      assert.deepEqual(fetched, updated);
+
+      // Now check that it throws if you try to updated something not there
+      await assert.rejects(async () => {
+        await db.fns.set_github_build_state(
+          'notagroup',
+          'huh',
+        );
+      }, /no such row/);
+    });
+  });
+
+  suite('github_builds with pull_request_number', function() {
+    const task_group_prefix = 'foobar';
+    const builds = [];
+    for (let i = 0; i < 10; i++) {
+      builds[i] = {
+        organization: 'org',
+        repository: 'repo',
+        sha: slugid.v4(),
+        task_group_id: `${task_group_prefix}-${i}`,
+        state: 'success',
+        created: fromNow(`-${i} weeks`),
+        updated: fromNow(`-${i} days`),
+        installation_id: 1234,
+        event_type: 'something',
+        event_id: 'whatever',
+        pull_request_number: 1000 + i,
+      };
+    }
+
+    const create_build = async (db, build) => await db.fns.create_github_build_pr(
+      build.organization,
+      build.repository,
+      build.sha,
+      build.task_group_id,
+      build.state,
+      build.created,
+      build.updated,
+      build.installation_id,
+      build.event_type,
+      build.event_id,
+      build.pull_request_number,
+    );
+
+    helper.dbTest('create and get', async function(db, isFake) {
+      await create_build(db, builds[0]);
+      const [fetched] = await db.fns.get_github_build_pr(builds[0].task_group_id);
+      assert(fetched.etag);
+      delete fetched.etag;
+      assert.deepEqual(fetched, builds[0]);
+
+      assert.deepEqual([], await db.fns.get_github_build_pr(null));
+      assert.deepEqual([], await db.fns.get_github_build_pr('doesntexist'));
+
+      await assert.rejects(async () => {
+        await create_build(db, builds[0]);
+      }, /duplicate key value violates unique constraint/);
+    });
+    helper.dbTest('list', async function(db, isFake) {
+      for (let i = 0; i < 10; i++) {
+        await create_build(db, builds[i]);
+      }
+      const fetched = await db.fns.get_github_builds_pr(null, null, null, null, null, null);
+      assert.equal(fetched.length, 10);
+      fetched.forEach((build, i) => {
+        assert(build.etag);
+        delete build.etag;
+        assert.deepEqual(build, builds[builds.length - i - 1]);
+      });
+
+      // list by PR
+      const prBuilds = await db.fns.get_github_builds_pr(null, null, null, null, null, builds[0].pull_request_number);
+      assert.equal(prBuilds.length, 1);
+      assert.deepEqual(prBuilds[0].pull_request_number, builds[0].pull_request_number);
+    });
+    helper.dbTest('delete', async function(db, isFake) {
+      await create_build(db, builds[0]);
+      const [fetched] = await db.fns.get_github_build_pr(builds[0].task_group_id);
+      assert(fetched.etag);
+      delete fetched.etag;
+      assert.deepEqual(fetched, builds[0]);
+      await db.fns.delete_github_build(builds[0].task_group_id);
+      assert.deepEqual(await db.fns.get_github_build_pr(builds[0].task_group_id), []);
+    });
+    helper.dbTest('set state', async function(db, isFake) {
+      await create_build(db, builds[0]);
+      const [fetched] = await db.fns.get_github_build_pr(builds[0].task_group_id);
+      await db.fns.set_github_build_state(
+        builds[0].task_group_id,
+        'huh',
+      );
+      const [updated] = await db.fns.get_github_build_pr(builds[0].task_group_id);
       assert.notEqual(fetched.etag, updated.etag);
       assert.notEqual(fetched.updated, updated.updated);
       assert.equal(fetched.state, 'success');
@@ -190,5 +293,22 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(fetched, checks[0]);
       assert.deepEqual([], await db.fns.get_github_check_by_run_id('-not-a-suite-id', 'fake-check-run'));
     });
+
+    helper.dbTest('get by task group id', async function(db) {
+      await create_check(db, checks[0]);
+      const [fetched] = await db.fns.get_github_checks_by_task_group_id({
+        page_size_in: 10,
+        page_offset_in: 0,
+        task_group_id_in: checks[0].task_group_id,
+      });
+
+      assert.deepEqual(fetched, checks[0]);
+      assert.deepEqual([], await db.fns.get_github_checks_by_task_group_id({
+        page_size_in: 10,
+        page_offset_in: 0,
+        task_group_id_in: '-not-a-task-group-id',
+      }));
+    });
+
   });
 });
