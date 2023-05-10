@@ -8794,46 +8794,55 @@
           "description": "Used to enable additional functionality.",
           "properties": {
             "allowPtrace": {
+              "default": false,
               "description": "This allows you to use the Linux ptrace functionality inside the container; it is otherwise disallowed by Docker's security policy.",
               "title": "Allow ptrace within the container",
               "type": "boolean"
             },
             "artifacts": {
+              "default": true,
               "description": "",
               "title": "Artifact uploads",
               "type": "boolean"
             },
             "bulkLog": {
+              "default": true,
               "description": "Useful if live logging is not interesting but the overalllog is later on",
               "title": "Bulk upload the task log into a single artifact",
               "type": "boolean"
             },
             "chainOfTrust": {
+              "default": false,
               "description": "Artifacts named chain-of-trust.json and chain-of-trust.json.sig should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in.",
               "title": "Enable generation of ed25519-signed Chain of Trust artifacts",
               "type": "boolean"
             },
             "dind": {
+              "default": false,
               "description": "Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.",
               "title": "Docker in Docker",
               "type": "boolean"
             },
             "dockerSave": {
+              "default": false,
               "description": "Uploads docker images as artifacts",
               "title": "Docker save",
               "type": "boolean"
             },
             "interactive": {
+              "default": false,
               "description": "This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.",
               "title": "Docker Exec Interactive",
               "type": "boolean"
             },
             "localLiveLog": {
+              "default": true,
               "description": "Logs are stored on the worker during the duration of tasks and available via http chunked streaming then uploaded to s3",
               "title": "Enable live logging (worker local)",
               "type": "boolean"
             },
             "taskclusterProxy": {
+              "default": false,
               "description": "The auth proxy allows making requests to taskcluster/queue and taskcluster/scheduler directly from your task with the same scopes as set in the task. This can be used to make api calls via the [client](https://github.com/taskcluster/taskcluster-client) CURL, etc... Without embedding credentials in the task.",
               "title": "Taskcluster auth proxy service",
               "type": "boolean"
