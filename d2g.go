@@ -1,6 +1,6 @@
-//go:generate /bin/bash -c "echo -e 'file://schemas/docker_worker_payload.yml\nfile://schemas/generic_worker_payload.yml\nfile://schemas/test_suites.yml' | jsonschema2go -o d2g_test > generated_types_test.go && gofmt -w generated_types_test.go"
-//go:generate /bin/bash -c "echo 'file://schemas/docker_worker_payload.yml' | jsonschema2go -o dockerworker > dockerworker/generated_types.go && gofmt -w dockerworker/generated_types.go"
-//go:generate /bin/bash -c "echo 'file://schemas/generic_worker_payload.yml' | jsonschema2go -o genericworker > genericworker/generated_types.go && gofmt -w genericworker/generated_types.go"
+//go:generate /bin/bash -c "echo -e 'file://schemas/docker_worker_payload.yml\nfile://schemas/generic_worker_payload.yml\nfile://schemas/test_suites.yml' | jsonschema2go -d -o d2g_test > generated_types_test.go && gofmt -w generated_types_test.go"
+//go:generate /bin/bash -c "echo 'file://schemas/docker_worker_payload.yml' | jsonschema2go -d -o dockerworker > dockerworker/generated_types.go && gofmt -w dockerworker/generated_types.go"
+//go:generate /bin/bash -c "echo 'file://schemas/generic_worker_payload.yml' | jsonschema2go -d -o genericworker > genericworker/generated_types.go && gofmt -w genericworker/generated_types.go"
 
 package d2g
 
@@ -212,6 +212,8 @@ func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generic
 	gwPayload.Features.ChainOfTrust = dwPayload.Features.ChainOfTrust
 	gwPayload.Features.TaskclusterProxy = dwPayload.Features.TaskclusterProxy
 	gwPayload.Features.Interactive = dwPayload.Features.Interactive
+	gwPayload.Features.LiveLog = dwPayload.Features.LocalLiveLog
+	gwPayload.Features.BackingLog = dwPayload.Features.BulkLog
 }
 
 func setArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {

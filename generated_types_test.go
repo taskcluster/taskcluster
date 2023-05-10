@@ -304,7 +304,7 @@ type (
 		// Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.
 		//
 		// Default:    false
-		Privileged bool `json:"privileged,omitempty"`
+		Privileged bool `json:"privileged" default:"false"`
 	}
 
 	// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
@@ -322,7 +322,7 @@ type (
 		// Default:    false
 		//
 		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/capabilities/properties/privileged
-		Privileged bool `json:"privileged,omitempty"`
+		Privileged bool `json:"privileged" default:"false"`
 	}
 
 	// Static d2g input/output test cases. Contains pairs of Docker Worker payload
@@ -458,7 +458,7 @@ type (
 		// Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with `_backing` appended, prior to the file extension (if present). For example, `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt` and backing log artifact `apple/banana.log_backing.txt`. Defaults to `public/logs/live.log`.
 		//
 		// Default:    "public/logs/live.log"
-		Log string `json:"log,omitempty"`
+		Log string `json:"log" default:"public/logs/live.log"`
 
 		// Maximum time the task container can run in seconds.
 		//
@@ -540,7 +540,7 @@ type (
 		// Default:    "public/logs/live.log"
 		//
 		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/log
-		Log string `json:"log,omitempty"`
+		Log string `json:"log" default:"public/logs/live.log"`
 
 		// Maximum time the task container can run in seconds.
 		//
@@ -669,30 +669,47 @@ type (
 	FeatureFlags struct {
 
 		// This allows you to use the Linux ptrace functionality inside the container; it is otherwise disallowed by Docker's security policy.
-		AllowPtrace bool `json:"allowPtrace,omitempty"`
+		//
+		// Default:    false
+		AllowPtrace bool `json:"allowPtrace" default:"false"`
 
-		Artifacts bool `json:"artifacts,omitempty"`
+		// Default:    true
+		Artifacts bool `json:"artifacts" default:"true"`
 
 		// Useful if live logging is not interesting but the overalllog is later on
-		BulkLog bool `json:"bulkLog,omitempty"`
+		//
+		// Default:    true
+		BulkLog bool `json:"bulkLog" default:"true"`
 
 		// Artifacts named chain-of-trust.json and chain-of-trust.json.sig should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in.
-		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+		//
+		// Default:    false
+		ChainOfTrust bool `json:"chainOfTrust" default:"false"`
 
 		// Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.
-		Dind bool `json:"dind,omitempty"`
+		//
+		// Default:    false
+		Dind bool `json:"dind" default:"false"`
 
 		// Uploads docker images as artifacts
-		DockerSave bool `json:"dockerSave,omitempty"`
+		//
+		// Default:    false
+		DockerSave bool `json:"dockerSave" default:"false"`
 
 		// This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.
-		Interactive bool `json:"interactive,omitempty"`
+		//
+		// Default:    false
+		Interactive bool `json:"interactive" default:"false"`
 
 		// Logs are stored on the worker during the duration of tasks and available via http chunked streaming then uploaded to s3
-		LocalLiveLog bool `json:"localLiveLog,omitempty"`
+		//
+		// Default:    true
+		LocalLiveLog bool `json:"localLiveLog" default:"true"`
 
 		// The auth proxy allows making requests to taskcluster/queue and taskcluster/scheduler directly from your task with the same scopes as set in the task. This can be used to make api calls via the [client](https://github.com/taskcluster/taskcluster-client) CURL, etc... Without embedding credentials in the task.
-		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
+		//
+		// Default:    false
+		TaskclusterProxy bool `json:"taskclusterProxy" default:"false"`
 	}
 
 	// Feature flags enable additional functionality.
@@ -706,7 +723,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    true
-		BackingLog bool `json:"backingLog,omitempty"`
+		BackingLog bool `json:"backingLog" default:"true"`
 
 		// Artifacts named `public/chain-of-trust.json` and
 		// `public/chain-of-trust.json.sig` should be generated which will
@@ -735,7 +752,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    true
-		LiveLog bool `json:"liveLog,omitempty"`
+		LiveLog bool `json:"liveLog" default:"true"`
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
@@ -809,7 +826,7 @@ type (
 		// Default:    true
 		//
 		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/features/properties/backingLog
-		BackingLog bool `json:"backingLog,omitempty"`
+		BackingLog bool `json:"backingLog" default:"true"`
 
 		// Artifacts named `public/chain-of-trust.json` and
 		// `public/chain-of-trust.json.sig` should be generated which will
@@ -844,7 +861,7 @@ type (
 		// Default:    true
 		//
 		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/features/properties/liveLog
-		LiveLog bool `json:"liveLog,omitempty"`
+		LiveLog bool `json:"liveLog" default:"true"`
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
@@ -1036,7 +1053,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live_backing.log"
-		Backing string `json:"backing,omitempty"`
+		Backing string `json:"backing" default:"public/logs/live_backing.log"`
 
 		// Specifies a custom name for the live log artifact.
 		// This is only used if `features.liveLog` is `true`.
@@ -1044,7 +1061,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live.log"
-		Live string `json:"live,omitempty"`
+		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
 	// Configuration for task logs.
@@ -1062,7 +1079,7 @@ type (
 		// Default:    "public/logs/live_backing.log"
 		//
 		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/logs/properties/backing
-		Backing string `json:"backing,omitempty"`
+		Backing string `json:"backing" default:"public/logs/live_backing.log"`
 
 		// Specifies a custom name for the live log artifact.
 		// This is only used if `features.liveLog` is `true`.
@@ -1072,7 +1089,7 @@ type (
 		// Default:    "public/logs/live.log"
 		//
 		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/logs/properties/live
-		Live string `json:"live,omitempty"`
+		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
 	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace

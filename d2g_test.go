@@ -8,6 +8,7 @@ import (
 	"testing"
 	"unsafe"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/d2g"
 	"github.com/taskcluster/d2g/dockerworker"
 	"github.com/xeipuuv/gojsonschema"
@@ -47,6 +48,7 @@ func testSuite(schemaLoader gojsonschema.JSONLoader, path string) func(t *testin
 		validateTestSuite(t, schemaLoader, path)
 		// Iterate through test cases in the test suite, and execute a subtest for each test case
 		var d D2GTestCases
+		defaults.SetDefaults(&d)
 		unmarshalYAML(t, &d, path)
 		for _, tc := range d.TestSuite.Tests {
 			t.Run(
