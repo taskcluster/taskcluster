@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/taskcluster/shell v0.0.0-20191115171910-c688067f12d3
-	github.com/taskcluster/taskcluster/v49 v49.2.0
+	github.com/taskcluster/taskcluster/v50 v50.0.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	sigs.k8s.io/yaml v1.3.0
 )
