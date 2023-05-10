@@ -4,7 +4,7 @@ package d2g_test
 
 import (
 	"encoding/json"
-	tcclient "github.com/taskcluster/taskcluster/v49/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
 )
 
 type (
@@ -103,120 +103,6 @@ type (
 		Type string `json:"type"`
 	}
 
-	// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/definitions/artifact
-	Artifact2 struct {
-
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/definitions/artifact/properties/expires
-		Expires tcclient.Time `json:"expires,omitempty"`
-
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/definitions/artifact/properties/path
-		Path string `json:"path"`
-
-		// Possible values:
-		//   * "file"
-		//   * "directory"
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/definitions/artifact/properties/type
-		Type string `json:"type"`
-	}
-
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/artifacts/items
-	Artifact3 struct {
-
-		// Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the
-		// following file extensions, where `identity` will be used, since they are already
-		// compressed:
-		//
-		// * 7z
-		// * bz2
-		// * deb
-		// * dmg
-		// * flv
-		// * gif
-		// * gz
-		// * jpeg
-		// * jpg
-		// * png
-		// * swf
-		// * tbz
-		// * tgz
-		// * webp
-		// * whl
-		// * woff
-		// * woff2
-		// * xz
-		// * zip
-		// * zst
-		//
-		// Note, setting `contentEncoding` on a directory artifact will apply the same content
-		// encoding to all the files contained in the directory.
-		//
-		// Since: generic-worker 16.2.0
-		//
-		// Possible values:
-		//   * "identity"
-		//   * "gzip"
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/artifacts/items/properties/contentEncoding
-		ContentEncoding string `json:"contentEncoding,omitempty"`
-
-		// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
-		// is/are served over HTTP(S). If not provided (this property is optional) the worker will
-		// guess the content type of artifacts based on the filename extension of the file storing
-		// the artifact content. It does this by looking at the system filename-to-mimetype mappings
-		// defined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`
-		// on a directory artifact will apply the same contentType to all files contained in the
-		// directory.
-		//
-		// See [mime.TypeByExtension](https://pkg.go.dev/mime#TypeByExtension).
-		//
-		// Since: generic-worker 10.4.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/artifacts/items/properties/contentType
-		ContentType string `json:"contentType,omitempty"`
-
-		// Date when artifact should expire must be in the future, no earlier than task deadline, but
-		// no later than task expiry. If not set, defaults to task expiry.
-		//
-		// Since: generic-worker 1.0.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/artifacts/items/properties/expires
-		Expires tcclient.Time `json:"expires,omitempty"`
-
-		// Name of the artifact, as it will be published. If not set, `path` will be used.
-		// Conventionally (although not enforced) path elements are forward slash separated. Example:
-		// `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
-		// Artifact names not beginning `public/` are scope-protected (caller requires scopes to
-		// download the artifact). See the Queue documentation for more information.
-		//
-		// Since: generic-worker 8.1.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/artifacts/items/properties/name
-		Name string `json:"name,omitempty"`
-
-		// Relative path of the file/directory from the task directory. Note this is not an absolute
-		// path as is typically used in docker-worker, since the absolute task directory name is not
-		// known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
-		// forward slashes or backslashes are used.
-		//
-		// Since: generic-worker 1.0.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/artifacts/items/properties/path
-		Path string `json:"path"`
-
-		// Artifacts can be either an individual `file` or a `directory` containing
-		// potentially multiple files with recursively included subdirectories.
-		//
-		// Since: generic-worker 1.0.0
-		//
-		// Possible values:
-		//   * "file"
-		//   * "directory"
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/artifacts/items/properties/type
-		Type string `json:"type"`
-	}
-
 	// Requires scope `queue:get-artifact:<artifact-name>`.
 	//
 	// Since: generic-worker 5.4.0
@@ -236,33 +122,6 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
-	// Requires scope `queue:get-artifact:<artifact-name>`.
-	//
-	// Since: generic-worker 5.4.0
-	//
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[0]
-	ArtifactContent1 struct {
-
-		// Max length: 1024
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[0]/properties/artifact
-		Artifact string `json:"artifact"`
-
-		// The required SHA 256 of the content body.
-		//
-		// Since: generic-worker 10.8.0
-		//
-		// Syntax:     ^[a-f0-9]{64}$
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[0]/properties/sha256
-		Sha256 string `json:"sha256,omitempty"`
-
-		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[0]/properties/taskId
-		TaskID string `json:"taskId"`
-	}
-
 	// Base64 encoded content of file/archive, up to 64KB (encoded) in size.
 	//
 	// Since: generic-worker 11.1.0
@@ -277,24 +136,6 @@ type (
 		Base64 string `json:"base64"`
 	}
 
-	// Base64 encoded content of file/archive, up to 64KB (encoded) in size.
-	//
-	// Since: generic-worker 11.1.0
-	//
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[3]
-	Base64Content1 struct {
-
-		// Base64 encoded content of file/archive, up to 64KB (encoded) in size.
-		//
-		// Since: generic-worker 11.1.0
-		//
-		// Syntax:     ^[A-Za-z0-9/+]+[=]{0,2}$
-		// Max length: 65536
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[3]/properties/base64
-		Base64 string `json:"base64"`
-	}
-
 	// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
 	Capabilities struct {
 
@@ -304,24 +145,6 @@ type (
 		// Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.
 		//
 		// Default:    false
-		Privileged bool `json:"privileged" default:"false"`
-	}
-
-	// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
-	//
-	// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/capabilities
-	Capabilities1 struct {
-
-		// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/capabilities/properties/devices
-		Devices Devices1 `json:"devices,omitempty"`
-
-		// Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.
-		//
-		// Default:    false
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/capabilities/properties/privileged
 		Privileged bool `json:"privileged" default:"false"`
 	}
 
@@ -349,32 +172,6 @@ type (
 		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
 	}
 
-	// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
-	//
-	// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/capabilities/properties/devices
-	Devices1 struct {
-
-		// Mount /dev/shm from the host in the container.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/capabilities/properties/devices/properties/hostSharedMemory
-		HostSharedMemory bool `json:"hostSharedMemory,omitempty"`
-
-		// Mount /dev/kvm from the host in the container.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/capabilities/properties/devices/properties/kvm
-		Kvm bool `json:"kvm,omitempty"`
-
-		// Audio loopback device created using snd-aloop
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/capabilities/properties/devices/properties/loopbackAudio
-		LoopbackAudio bool `json:"loopbackAudio,omitempty"`
-
-		// Video loopback device created using v4l2loopback.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/capabilities/properties/devices/properties/loopbackVideo
-		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
-	}
-
 	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	DockerImageArtifact struct {
 		Path string `json:"path"`
@@ -387,30 +184,7 @@ type (
 	}
 
 	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
-	//
-	// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[3]
-	DockerImageArtifact1 struct {
-
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[3]/properties/path
-		Path string `json:"path"`
-
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[3]/properties/taskId
-		TaskID string `json:"taskId"`
-
-		// Possible values:
-		//   * "task-image"
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[3]/properties/type
-		Type string `json:"type"`
-	}
-
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	DockerImageName string
-
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
-	//
-	// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[0]
-	DockerImageName1 string
 
 	// `.payload` field of the queue.
 	DockerWorkerPayload struct {
@@ -473,94 +247,6 @@ type (
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
-	// `.payload` field of the queue.
-	//
-	// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#
-	DockerWorkerPayload1 struct {
-
-		// Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/artifacts
-		Artifacts map[string]Artifact2 `json:"artifacts,omitempty"`
-
-		// Caches are mounted within the docker container at the mount point specified. Example: ```{ "CACHE NAME": "/mount/path/in/container" }```
-		//
-		// Map entries:
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/cache/additionalProperties
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/cache
-		Cache map[string]string `json:"cache,omitempty"`
-
-		// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/capabilities
-		Capabilities Capabilities1 `json:"capabilities,omitempty"`
-
-		// Example: `['/bin/bash', '-c', 'ls']`.
-		//
-		// Default:    []
-		//
-		// Array items:
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/command/items
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/command
-		Command []string `json:"command,omitempty"`
-
-		// Example: ```
-		// {
-		//   "PATH": '/borked/path'
-		//   "ENV_NAME": "VALUE"
-		// }
-		// ```
-		//
-		// Map entries:
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/env/additionalProperties
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/env
-		Env map[string]string `json:"env,omitempty"`
-
-		// Used to enable additional functionality.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/features
-		Features FeatureFlags2 `json:"features,omitempty"`
-
-		// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
-		//
-		// One of:
-		//   * DockerImageName1
-		//   * NamedDockerImage1
-		//   * IndexedDockerImage1
-		//   * DockerImageArtifact1
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image
-		Image json.RawMessage `json:"image"`
-
-		// Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with `_backing` appended, prior to the file extension (if present). For example, `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt` and backing log artifact `apple/banana.log_backing.txt`. Defaults to `public/logs/live.log`.
-		//
-		// Default:    "public/logs/live.log"
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/log
-		Log string `json:"log" default:"public/logs/live.log"`
-
-		// Maximum time the task container can run in seconds.
-		//
-		// Mininum:    1
-		// Maximum:    86400
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/maxRunTime
-		MaxRunTime int64 `json:"maxRunTime"`
-
-		// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/onExitStatus
-		OnExitStatus ExitStatusHandling1 `json:"onExitStatus,omitempty"`
-
-		// Maintained for backward compatibility, but no longer used
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/supersederUrl
-		SupersederURL string `json:"supersederUrl,omitempty"`
-	}
-
 	// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
 	// if all task commands have a zero exit code, or `failed/failed` if any command has a
 	// non-zero exit code. This payload property allows customsation of the task resolution
@@ -590,45 +276,6 @@ type (
 		Retry []int64 `json:"retry,omitempty"`
 	}
 
-	// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
-	// if all task commands have a zero exit code, or `failed/failed` if any command has a
-	// non-zero exit code. This payload property allows customsation of the task resolution
-	// based on exit code of task commands.
-	//
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/onExitStatus
-	ExitCodeHandling1 struct {
-
-		// If the task exists with a purge caches exit status, all caches
-		// associated with the task will be purged.
-		//
-		// Since: generic-worker 49.0.0
-		//
-		// Array items:
-		// Mininum:    1
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/onExitStatus/properties/purgeCaches/items
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/onExitStatus/properties/purgeCaches
-		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
-
-		// Exit codes for any command in the task payload to cause this task to
-		// be resolved as `exception/intermittent-task`. Typically the Queue
-		// will then schedule a new run of the existing `taskId` (rerun) if not
-		// all task runs have been exhausted.
-		//
-		// See [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.
-		//
-		// Since: generic-worker 10.10.0
-		//
-		// Array items:
-		// Mininum:    1
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/onExitStatus/properties/retry/items
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/onExitStatus/properties/retry
-		Retry []int64 `json:"retry,omitempty"`
-	}
-
 	// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
 	ExitStatusHandling struct {
 
@@ -640,28 +287,6 @@ type (
 		// If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.
 		//
 		// Array items:
-		Retry []int64 `json:"retry,omitempty"`
-	}
-
-	// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
-	//
-	// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/onExitStatus
-	ExitStatusHandling1 struct {
-
-		// If the task exists with a purge caches exit status, all caches associated with the task will be purged.
-		//
-		// Array items:
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/onExitStatus/properties/purgeCaches/items
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/onExitStatus/properties/purgeCaches
-		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
-
-		// If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.
-		//
-		// Array items:
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/onExitStatus/properties/retry/items
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/onExitStatus/properties/retry
 		Retry []int64 `json:"retry,omitempty"`
 	}
 
@@ -762,117 +387,6 @@ type (
 		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
 	}
 
-	// Used to enable additional functionality.
-	//
-	// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/features
-	FeatureFlags2 struct {
-
-		// This allows you to use the Linux ptrace functionality inside the container; it is otherwise disallowed by Docker's security policy.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/features/properties/allowPtrace
-		AllowPtrace bool `json:"allowPtrace,omitempty"`
-
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/features/properties/artifacts
-		Artifacts bool `json:"artifacts,omitempty"`
-
-		// Useful if live logging is not interesting but the overalllog is later on
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/features/properties/bulkLog
-		BulkLog bool `json:"bulkLog,omitempty"`
-
-		// Artifacts named chain-of-trust.json and chain-of-trust.json.sig should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/features/properties/chainOfTrust
-		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
-
-		// Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/features/properties/dind
-		Dind bool `json:"dind,omitempty"`
-
-		// Uploads docker images as artifacts
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/features/properties/dockerSave
-		DockerSave bool `json:"dockerSave,omitempty"`
-
-		// This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/features/properties/interactive
-		Interactive bool `json:"interactive,omitempty"`
-
-		// Logs are stored on the worker during the duration of tasks and available via http chunked streaming then uploaded to s3
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/features/properties/localLiveLog
-		LocalLiveLog bool `json:"localLiveLog,omitempty"`
-
-		// The auth proxy allows making requests to taskcluster/queue and taskcluster/scheduler directly from your task with the same scopes as set in the task. This can be used to make api calls via the [client](https://github.com/taskcluster/taskcluster-client) CURL, etc... Without embedding credentials in the task.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/features/properties/taskclusterProxy
-		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
-	}
-
-	// Feature flags enable additional functionality.
-	//
-	// Since: generic-worker 5.3.0
-	//
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/features
-	FeatureFlags3 struct {
-
-		// The backing log feature publishes a task artifact containing the complete
-		// stderr and stdout of the task.
-		//
-		// Since: generic-worker 48.2.0
-		//
-		// Default:    true
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/features/properties/backingLog
-		BackingLog bool `json:"backingLog" default:"true"`
-
-		// Artifacts named `public/chain-of-trust.json` and
-		// `public/chain-of-trust.json.sig` should be generated which will
-		// include information for downstream tasks to build a level of trust
-		// for the artifacts produced by the task and the environment it ran in.
-		//
-		// Since: generic-worker 5.3.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/features/properties/chainOfTrust
-		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
-
-		// This allows you to interactively run commands from within the worker
-		// as the task user. This may be useful for debugging purposes.
-		// Can be used for SSH-like access to the running worker.
-		// Note that this feature works differently from the `interactive` feature
-		// in docker worker, which `docker exec`s into the running container.
-		// Since tasks on generic worker are not guaranteed to be running in a
-		// container, a bash shell is started on the task user's account.
-		// A user can then `docker exec` into the a running container, if there
-		// is one.
-		//
-		// Since: generic-worker 49.2.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/features/properties/interactive
-		Interactive bool `json:"interactive,omitempty"`
-
-		// The live log feature streams the combined stderr and stdout to a task artifact
-		// so that the output is available while the task is running.
-		//
-		// Since: generic-worker 48.2.0
-		//
-		// Default:    true
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/features/properties/liveLog
-		LiveLog bool `json:"liveLog" default:"true"`
-
-		// The taskcluster proxy provides an easy and safe way to make authenticated
-		// taskcluster requests within the scope(s) of a particular task. See
-		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
-		//
-		// Since: generic-worker 10.6.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/features/properties/taskclusterProxy
-		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
-	}
-
 	FileMount struct {
 
 		// One of:
@@ -885,26 +399,6 @@ type (
 		// The filesystem location to mount the file.
 		//
 		// Since: generic-worker 5.4.0
-		File string `json:"file"`
-	}
-
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/fileMount
-	FileMount1 struct {
-
-		// One of:
-		//   * ArtifactContent1
-		//   * URLContent1
-		//   * RawContent1
-		//   * Base64Content1
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content
-		Content json.RawMessage `json:"content"`
-
-		// The filesystem location to mount the file.
-		//
-		// Since: generic-worker 5.4.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/fileMount/properties/file
 		File string `json:"file"`
 	}
 
@@ -1024,24 +518,6 @@ type (
 		Type string `json:"type"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
-	//
-	// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[2]
-	IndexedDockerImage1 struct {
-
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[2]/properties/namespace
-		Namespace string `json:"namespace"`
-
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[2]/properties/path
-		Path string `json:"path"`
-
-		// Possible values:
-		//   * "indexed-image"
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[2]/properties/type
-		Type string `json:"type"`
-	}
-
 	// Configuration for task logs.
 	//
 	// Since: generic-worker 48.2.0
@@ -1064,55 +540,12 @@ type (
 		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
-	// Configuration for task logs.
-	//
-	// Since: generic-worker 48.2.0
-	//
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/logs
-	Logs1 struct {
-
-		// Specifies a custom name for the backing log artifact.
-		// This is only used if `features.backingLog` is `true`.
-		//
-		// Since: generic-worker 48.2.0
-		//
-		// Default:    "public/logs/live_backing.log"
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/logs/properties/backing
-		Backing string `json:"backing" default:"public/logs/live_backing.log"`
-
-		// Specifies a custom name for the live log artifact.
-		// This is only used if `features.liveLog` is `true`.
-		//
-		// Since: generic-worker 48.2.0
-		//
-		// Default:    "public/logs/live.log"
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/logs/properties/live
-		Live string `json:"live" default:"public/logs/live.log"`
-	}
-
 	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	NamedDockerImage struct {
 		Name string `json:"name"`
 
 		// Possible values:
 		//   * "docker-image"
-		Type string `json:"type"`
-	}
-
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
-	//
-	// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[1]
-	NamedDockerImage1 struct {
-
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[1]/properties/name
-		Name string `json:"name"`
-
-		// Possible values:
-		//   * "docker-image"
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#/properties/image/oneOf[1]/properties/type
 		Type string `json:"type"`
 	}
 
@@ -1126,23 +559,6 @@ type (
 		// Since: generic-worker 11.1.0
 		//
 		// Max length: 65536
-		Raw string `json:"raw"`
-	}
-
-	// Byte-for-byte literal inline content of file/archive, up to 64KB in size.
-	//
-	// Since: generic-worker 11.1.0
-	//
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[2]
-	RawContent1 struct {
-
-		// Byte-for-byte literal inline content of file/archive, up to 64KB in size.
-		//
-		// Since: generic-worker 11.1.0
-		//
-		// Max length: 65536
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[2]/properties/raw
 		Raw string `json:"raw"`
 	}
 
@@ -1174,41 +590,6 @@ type (
 		Format string `json:"format"`
 	}
 
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/readOnlyDirectory
-	ReadOnlyDirectory1 struct {
-
-		// One of:
-		//   * ArtifactContent1
-		//   * URLContent1
-		//   * RawContent1
-		//   * Base64Content1
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content
-		Content json.RawMessage `json:"content"`
-
-		// The filesystem location to mount the directory volume.
-		//
-		// Since: generic-worker 5.4.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/readOnlyDirectory/properties/directory
-		Directory string `json:"directory"`
-
-		// Archive format of content for read only directory.
-		//
-		// Since: generic-worker 5.4.0
-		//
-		// Possible values:
-		//   * "rar"
-		//   * "tar.bz2"
-		//   * "tar.gz"
-		//   * "tar.xz"
-		//   * "tar.zst"
-		//   * "zip"
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/readOnlyDirectory/properties/format
-		Format string `json:"format"`
-	}
-
 	// A test case contains a static input Docker Worker task payload, and an
 	// expected Generic Worker task payload output. The Docker Worker task payload
 	// is converted by d2g to a Generic Worker task payload. The test is successful
@@ -1220,15 +601,11 @@ type (
 		Description string `json:"description"`
 
 		// `.payload` field of the queue.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#
-		DockerWorkerTaskPayload DockerWorkerPayload1 `json:"dockerWorkerTaskPayload"`
+		DockerWorkerTaskPayload DockerWorkerPayload `json:"dockerWorkerTaskPayload"`
 
 		// This schema defines the structure of the `payload` property referred to in a
 		// Taskcluster Task definition.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#
-		GenericWorkerTaskPayload Var `json:"genericWorkerTaskPayload"`
+		GenericWorkerTaskPayload GenericWorkerPayload `json:"genericWorkerTaskPayload"`
 
 		// Name for the test case
 		Name string `json:"name"`
@@ -1265,164 +642,6 @@ type (
 		URL string `json:"url"`
 	}
 
-	// URL to download content from.
-	//
-	// Since: generic-worker 5.4.0
-	//
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[1]
-	URLContent1 struct {
-
-		// The required SHA 256 of the content body.
-		//
-		// Since: generic-worker 10.8.0
-		//
-		// Syntax:     ^[a-f0-9]{64}$
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[1]/properties/sha256
-		Sha256 string `json:"sha256,omitempty"`
-
-		// URL to download content from.
-		//
-		// Since: generic-worker 5.4.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content/oneOf[1]/properties/url
-		URL string `json:"url"`
-	}
-
-	// This schema defines the structure of the `payload` property referred to in a
-	// Taskcluster Task definition.
-	//
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#
-	Var struct {
-
-		// Artifacts to be published.
-		//
-		// Since: generic-worker 1.0.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/artifacts
-		Artifacts []Artifact3 `json:"artifacts,omitempty"`
-
-		// One array per command (each command is an array of arguments). Several arrays
-		// for several commands.
-		//
-		// Since: generic-worker 0.0.1
-		//
-		// Array items:
-		// Array items:
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/command/items/items
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/command/items
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/command
-		Command [][]string `json:"command"`
-
-		// Env vars must be string to __string__ mappings (not number or boolean). For example:
-		// ```
-		// {
-		//   "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
-		//   "GOOS": "darwin",
-		//   "FOO_ENABLE": "true",
-		//   "BAR_TOTAL": "3"
-		// }
-		// ```
-		//
-		// Note, the following environment variables will automatically be set in the task
-		// commands, but may be overridden by environment variables in the task payload:
-		//   * `HOME` - the home directory of the task user
-		//   * `PATH` - `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`
-		//   * `USER` - the name of the task user
-		//
-		// The following environment variables will automatically be set in the task
-		// commands, and may not be overridden by environment variables in the task payload:
-		//   * `DISPLAY` - `:0` (Linux only)
-		//   * `TASK_ID` - the task ID of the currently running task
-		//   * `RUN_ID` - the run ID of the currently running task
-		//   * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment
-		//   * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
-		//      taskcluster authentication proxy for making unauthenticated taskcluster
-		//      API calls
-		//   * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
-		//     `true` in `generic-worker.config` file - the absolute file location of a
-		//     json file containing the current task OS user account name and password.
-		//     This is only useful for the generic-worker multiuser CI tasks, where
-		//     `runTasksAsCurrentUser` is set to `true`.
-		//   * `TASKCLUSTER_WORKER_LOCATION`. See
-		//     [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)
-		//     for details.
-		//
-		// Since: generic-worker 0.0.1
-		//
-		// Map entries:
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/env/additionalProperties
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/env
-		Env map[string]string `json:"env,omitempty"`
-
-		// Feature flags enable additional functionality.
-		//
-		// Since: generic-worker 5.3.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/features
-		Features FeatureFlags3 `json:"features,omitempty"`
-
-		// Configuration for task logs.
-		//
-		// Since: generic-worker 48.2.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/logs
-		Logs Logs1 `json:"logs,omitempty"`
-
-		// Maximum time the task container can run in seconds.
-		//
-		// Since: generic-worker 0.0.1
-		//
-		// Mininum:    1
-		// Maximum:    86400
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/maxRunTime
-		MaxRunTime int64 `json:"maxRunTime"`
-
-		// Directories and/or files to be mounted.
-		//
-		// Since: generic-worker 5.4.0
-		//
-		// Array items:
-		// One of:
-		//   * FileMount1
-		//   * WritableDirectoryCache1
-		//   * ReadOnlyDirectory1
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/mount
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/mounts
-		Mounts []json.RawMessage `json:"mounts,omitempty"`
-
-		// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
-		// if all task commands have a zero exit code, or `failed/failed` if any command has a
-		// non-zero exit code. This payload property allows customsation of the task resolution
-		// based on exit code of task commands.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/onExitStatus
-		OnExitStatus ExitCodeHandling1 `json:"onExitStatus,omitempty"`
-
-		// A list of OS Groups that the task user should be a member of. Not yet implemented on
-		// non-Windows platforms, therefore this optional property may only be an empty array if
-		// provided.
-		//
-		// Since: generic-worker 6.0.0
-		//
-		// Array items:
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/osGroups/items
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/osGroups
-		OSGroups []string `json:"osGroups,omitempty"`
-
-		// This property is allowed for backward compatibility, but is unused.
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/properties/supersederUrl
-		SupersederURL string `json:"supersederUrl,omitempty"`
-	}
-
 	WritableDirectoryCache struct {
 
 		// Implies a read/write cache directory volume. A unique name for the
@@ -1456,51 +675,6 @@ type (
 		//   * "tar.xz"
 		//   * "tar.zst"
 		//   * "zip"
-		Format string `json:"format,omitempty"`
-	}
-
-	// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/writableDirectoryCache
-	WritableDirectoryCache1 struct {
-
-		// Implies a read/write cache directory volume. A unique name for the
-		// cache volume. Requires scope `generic-worker:cache:<cache-name>`.
-		// Note if this cache is loaded from an artifact, you will also require
-		// scope `queue:get-artifact:<artifact-name>` to use this cache.
-		//
-		// Since: generic-worker 5.4.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/writableDirectoryCache/properties/cacheName
-		CacheName string `json:"cacheName"`
-
-		// One of:
-		//   * ArtifactContent1
-		//   * URLContent1
-		//   * RawContent1
-		//   * Base64Content1
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/content
-		Content json.RawMessage `json:"content,omitempty"`
-
-		// The filesystem location to mount the directory volume.
-		//
-		// Since: generic-worker 5.4.0
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/writableDirectoryCache/properties/directory
-		Directory string `json:"directory"`
-
-		// Archive format of the preloaded content (if `content` provided).
-		//
-		// Since: generic-worker 5.4.0
-		//
-		// Possible values:
-		//   * "rar"
-		//   * "tar.bz2"
-		//   * "tar.gz"
-		//   * "tar.xz"
-		//   * "tar.zst"
-		//   * "zip"
-		//
-		// See https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#/definitions/writableDirectoryCache/properties/format
 		Format string `json:"format,omitempty"`
 	}
 )

@@ -50,6 +50,12 @@ func testSuite(schemaLoader gojsonschema.JSONLoader, path string) func(t *testin
 		var d D2GTestCases
 		defaults.SetDefaults(&d)
 		unmarshalYAML(t, &d, path)
+		// TODO: check if this works as expected (create explicit test cases for this)
+		// setting defaults and unmarshaling a second time
+		// because this seems to fix the issue with defaults
+		// not being applied to slices
+		defaults.SetDefaults(&d)
+		unmarshalYAML(t, &d, path)
 		for _, tc := range d.TestSuite.Tests {
 			t.Run(
 				tc.Name,
@@ -76,7 +82,7 @@ func (tc TestCase) TestCase() func(t *testing.T) {
 			t.Fatalf("Cannot convert Generic Worker payload %#v to JSON: %s", tc.GenericWorkerTaskPayload, err)
 		}
 		if string(formattedExpectedGWPayload) != string(formattedActualGWPayload) {
-			t.Fatalf("Converted decision task does not match expected value.\nExpected:%v\nActual:%v", string(formattedExpectedGWPayload), string(formattedActualGWPayload))
+			t.Fatalf("Converted task does not match expected value.\nExpected:%v\nActual:%v", string(formattedExpectedGWPayload), string(formattedActualGWPayload))
 		}
 	}
 }

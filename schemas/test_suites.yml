@@ -63,6 +63,6 @@ properties:
                 Detailed information about what the test case tests
               type: string
             dockerWorkerTaskPayload:
-              "$ref": "https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json#"
+              "$ref": "file://schemas/docker_worker_payload.json#"
             genericWorkerTaskPayload:
-              "$ref": "https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json#"
+              "$ref": "file://schemas/generic_worker_payload.json#"
