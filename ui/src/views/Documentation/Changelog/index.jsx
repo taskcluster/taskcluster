@@ -6,8 +6,8 @@ import { titleCase } from 'title-case';
 import Grid from '@material-ui/core/Grid';
 import Autocomplete from '@material-ui/lab/Autocomplete/Autocomplete';
 import { compareVersions, validate } from 'compare-versions';
-import Checkbox from '@material-ui/core/Checkbox';
-import { FormControlLabel } from '@material-ui/core';
+import Switch from '@material-ui/core/Switch';
+import { Chip, FormControlLabel } from '@material-ui/core';
 import Markdown from '../../../components/Markdown';
 import ChangelogMd from '../../../../../CHANGELOG.md';
 import TextField from '../../../components/TextField';
@@ -62,6 +62,22 @@ const FILTERS = ['version', 'from', 'to', 'q', 'all', 'audience'];
   },
   cbx: {
     marginTop: theme.spacing(2),
+  },
+  chip: {
+    marginLeft: theme.spacing(2),
+    textTransform: 'lowercase',
+    'span::first-letter': {
+      textTransform: 'uppercase',
+    },
+  },
+  section: {
+    '&.MuiGrid-item': {
+      paddingBottom: theme.spacing(2),
+      borderBottom: `1px dotted ${theme.palette.divider}`,
+    },
+  },
+  version: {
+    cursor: 'pointer',
   },
 }))
 export default class Changelog extends Component {
@@ -153,6 +169,7 @@ export default class Changelog extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     const dropdowns = {
       version: 'Choose version',
       from: 'Version from',
@@ -160,6 +177,13 @@ export default class Changelog extends Component {
     };
     const maybeHighlight = (text, q) =>
       q ? text.replace(new RegExp(`(${q})(?![^<>]*>)`, 'gi'), '**$1**') : text;
+    const onToggleFilter = (key, value) => {
+      if (this.state[key] === value) {
+        this.setState({ [key]: '' });
+      } else {
+        this.setState({ [key]: value });
+      }
+    };
 
     return (
       <Grid container spacing={1}>
@@ -200,9 +224,9 @@ export default class Changelog extends Component {
         </Grid>
         <Grid item xs={4}>
           <FormControlLabel
-            className={this.props.classes.cbx}
+            className={classes.cbx}
             control={
-              <Checkbox
+              <Switch
                 checked={this.state.all}
                 onChange={ev => this.setState({ all: ev.target.checked })}
                 value="yes"
@@ -212,11 +236,23 @@ export default class Changelog extends Component {
           />
         </Grid>
         {this.filteredSections(this.state).map(section => (
-          <Grid key={section.id} item xs={12}>
-            <h2>
-              {section.version} :: {section.audience}
-            </h2>
-            <Markdown className={this.props.classes.md}>
+          <Grid key={section.id} item xs={12} className={classes.section}>
+            <h1>
+              <span
+                className={classes.version}
+                onClick={() => onToggleFilter('version', section.version)}>
+                {section.version}
+              </span>
+              <Chip
+                className={classes.chip}
+                size="small"
+                color="primary"
+                label={section.audience}
+                clickable
+                onClick={() => onToggleFilter('audience', section.audience)}
+              />
+            </h1>
+            <Markdown className={classes.md}>
               {maybeHighlight(section.html, this.state.q)}
             </Markdown>
           </Grid>
