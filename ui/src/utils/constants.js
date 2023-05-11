@@ -15,6 +15,7 @@ import FileVideoIcon from 'mdi-react/FileVideoIcon';
 import FileImageIcon from 'mdi-react/FileImageIcon';
 import FileMusicIcon from 'mdi-react/FileMusicIcon';
 import FileIcon from 'mdi-react/FileIcon';
+import ListStatusIcon from 'mdi-react/FormatListChecksIcon';
 import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
 import { join } from 'path';
 
@@ -183,6 +184,12 @@ export const DOCS_MENU_ITEMS = [
     path: join(DOCS_PATH_PREFIX, 'resources'),
     hasChildren: false,
     icon: OpenInNewIcon,
+  },
+  {
+    label: 'Changelog',
+    path: join(DOCS_PATH_PREFIX, 'changelog'),
+    hasChildren: false,
+    icon: ListStatusIcon,
   },
 ];
 

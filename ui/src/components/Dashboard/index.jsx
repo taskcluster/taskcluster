@@ -145,7 +145,11 @@ import SkipNavigation from '../SkipNavigation';
       right: theme.spacing(1),
     },
     deploymentVersion: {
-      padding: theme.spacing(1),
+      padding: theme.spacing(2),
+      '&:hover': {
+        textDecoration: 'underline',
+        color: theme.palette.primary.contrastText,
+      },
     },
     nav: {
       display: 'flex',
@@ -296,12 +300,16 @@ export default class Dashboard extends Component {
           {docs ? <DocsSidebarList /> : <SidebarList />}
         </div>
         {deploymentVersion && (
-          <Typography
-            className={classes.deploymentVersion}
-            variant="caption"
-            noWrap>
-            {deploymentVersion}
-          </Typography>
+          <Link
+            to={`${DOCS_PATH_PREFIX}/changelog?version=${deploymentVersion}`}
+            title="See changelog">
+            <Typography
+              className={classes.deploymentVersion}
+              variant="caption"
+              noWrap>
+              {deploymentVersion}
+            </Typography>
+          </Link>
         )}
       </nav>
     );

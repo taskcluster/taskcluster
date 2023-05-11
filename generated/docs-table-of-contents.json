@@ -1,4 +1,16 @@
 {
+  "changelog": {
+    "children": [
+    ],
+    "data": {
+      "order": 1000,
+      "title": "Changelog"
+    },
+    "excerpt": "",
+    "isEmpty": false,
+    "name": "changelog",
+    "path": "changelog"
+  },
   "gettingStarted": {
     "children": [
     ],

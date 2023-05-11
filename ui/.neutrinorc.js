@@ -141,8 +141,15 @@ module.exports = {
             .loader('shebang-loader');
 
       neutrino.config.module
+        .rule('changelog')
+        .test(/CHANGELOG\.md?$/)
+        .use('raw-loader')
+          .loader('raw-loader')
+          .end();
+
+      neutrino.config.module
         .rule('markdown')
-          .test(/\.mdx?$/)
+          .test(/^(?!CHANGELOG\.md$).*\.mdx$/) // skip CHANGELOG.md
           .use('babel-loader')
             .loader('babel-loader')
             .options({
