@@ -6601,7 +6601,7 @@
           "deprecated": false,
           "description": "Get github check runs by task group id",
           "mode": "read",
-          "returns": "table (\n  task_group_id text,\n  task_id text,\n  check_suite_id text,\n  check_run_id text\n)",
+          "returns": "table (task_group_id text, task_id text, check_suite_id text, check_run_id text)",
           "serviceName": "github"
         }
       },

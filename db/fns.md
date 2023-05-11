@@ -484,10 +484,10 @@ Get a single check from a task_id.
   * `page_offset_in integer`
   * `task_group_id_in text`
 * *Returns*: `table`
-  * `   task_group_id text`
-  * `  task_id text`
-  * `  check_suite_id text`
-  * `  check_run_id text `
+  * `task_group_id text`
+  * `task_id text`
+  * `check_suite_id text`
+  * `check_run_id text`
 * *Last defined on version*: 85
 
 Get github check runs by task group id

@@ -30,10 +30,7 @@ async function jobHandler(message) {
   debug = debug.refine({ owner: organization, repo: repository, sha });
   let pullNumber = message.payload.details['event.pullNumber'] || message.payload.body.number;
 
-  debug(`Retrieving  ${organization}/${repository}@${sha}...`);
-  let defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository }))
-    .data
-    .default_branch;
+  debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
 
   if (!sha) {
     // only releases lack event.head.sha
@@ -54,7 +51,9 @@ async function jobHandler(message) {
     sha = commitInfo.data;
   }
 
-  debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
+  let defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository }))
+    .data
+    .default_branch;
 
   // Try to fetch a .taskcluster.yml file for every request
   debug(`Trying to fetch the YML for ${organization}/${repository}@${sha}`);

@@ -95,13 +95,7 @@ methods:
     mode: read
     serviceName: github
     args: page_size_in integer, page_offset_in integer, task_group_id_in text
-    returns: |-
-      table (
-        task_group_id text,
-        task_id text,
-        check_suite_id text,
-        check_run_id text
-      )
+    returns: table (task_group_id text, task_id text, check_suite_id text, check_run_id text)
     body: |-
       begin
         return query
