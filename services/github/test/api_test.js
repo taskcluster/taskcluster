@@ -20,7 +20,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return;
     }
 
-    await helper.db.fns.create_github_build(
+    await helper.db.fns.create_github_build_pr(
       'abc123',
       'def456',
       '7650871208002a13ba35cf232c0e30d2c3d64783',
@@ -31,8 +31,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       1,
       'push',
       '26370a80-ed65-11e6-8f4c-80082678482d',
+      null,
     );
-    await helper.db.fns.create_github_build(
+    await helper.db.fns.create_github_build_pr(
       'ghi789',
       'jkl101112',
       '8650871208002a13ba35cf232c0e30d2c3d64783',
@@ -43,8 +44,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       1,
       'push',
       '26370a80-ed65-11e6-8f4c-80082678482d',
+      null,
     );
-    await helper.db.fns.create_github_build(
+    await helper.db.fns.create_github_build_pr(
       'abc123',
       'xyz',
       'x650871208002a13ba35cf232c0e30d2c3d64783',
@@ -55,8 +57,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       1,
       'push',
       '26370a80-ed65-11e6-8f4c-80082678482d',
+      null,
     );
-    await helper.db.fns.create_github_build(
+    await helper.db.fns.create_github_build_pr(
       'abc123',
       'xyz',
       'y650871208002a13ba35cf232c0e30d2c3d64783',
@@ -67,6 +70,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       1,
       'push',
       'Unknown',
+      null,
     );
 
     await helper.db.fns.upsert_github_integration(

@@ -180,7 +180,7 @@ class Github(BaseClient):
             'method': 'get',
             'name': 'builds',
             'output': 'v1/build-list.json#',
-            'query': ['continuationToken', 'limit', 'organization', 'repository', 'sha'],
+            'query': ['continuationToken', 'limit', 'organization', 'repository', 'sha', 'pullRequest'],
             'route': '/builds',
             'stability': 'stable',
         },

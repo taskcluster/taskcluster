@@ -264,6 +264,26 @@ class Handlers {
     }
   }
 
+  async cancelPreviousTaskGroups({ debug, organization, repository, newTaskGroupId, sha = null, pullNumber = null }) {
+    debug(`canceling previous task groups for ${organization}/${repository} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`);
+
+    try {
+      const builds = await this.context.db.fns.get_github_builds_pr(1000, 0, organization, repository, sha, pullNumber);
+      const taskGroupIds = builds?.filter(
+        build => ['pending', 'running'].includes(build.state) && build.task_group_id !== newTaskGroupId,
+      ).map(build => build.task_group_id);
+      if (taskGroupIds.length > 0) {
+        debug(`Found running task groups: ${taskGroupIds.join(', ')}. Sealing and cancelling`);
+        await Promise.allSettled(taskGroupIds.map(taskGroupId => this.queueClient.sealTaskGroup(taskGroupId)));
+        await Promise.allSettled(taskGroupIds.map(taskGroupId => this.queueClient.cancelTaskGroup(taskGroupId)));
+        await Promise.allSettled(taskGroupIds.map(taskGroupId => this.context.db.fns.set_github_build_state(taskGroupId, 'cancelled')));
+      }
+    } catch (err) {
+      debug(`Error while canceling previous task groups: ${err.message}`);
+      await this.monitor.reportError(err);
+    }
+  }
+
   commentKey(idents) {
     return crypto
       .createHash('md5')

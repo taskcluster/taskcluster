@@ -29,6 +29,9 @@ type (
 		// Max length: 100
 		Organization string `json:"organization"`
 
+		// Associated pull request number for 'pull_request' events.
+		PullRequestNumber int64 `json:"pullRequestNumber,omitempty"`
+
 		// Github repository associated with the build.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_%]*)$

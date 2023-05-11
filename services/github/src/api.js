@@ -399,6 +399,7 @@ builder.declare({
     organization: /^([a-zA-Z0-9-_%]*)$/,
     repository: /^([a-zA-Z0-9-_%]*)$/,
     sha: /./,
+    pullRequest: /^([0-9]*)$/,
   },
   description: [
     'A paginated list of builds that have been run in',
@@ -406,7 +407,7 @@ builder.declare({
     'fields.',
   ].join('\n'),
 }, async function(req, res) {
-  const { organization, repository, sha } = req.query;
+  const { organization, repository, sha, pullRequest } = req.query;
   if (repository && !organization) {
     return res.reportError('InputError',
       'Must provide `organization` if querying `repository`',
@@ -419,12 +420,13 @@ builder.declare({
   }
   let { continuationToken, rows: builds } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_github_builds(
+    fetch: (size, offset) => this.db.fns.get_github_builds_pr(
       size,
       offset,
       organization || null,
       repository || null,
       sha || null,
+      pullRequest ? parseInt(pullRequest, 10) : null,
     ),
   });
 
@@ -441,6 +443,7 @@ builder.declare({
         eventId: entry.event_id,
         created: entry.created.toJSON(),
         updated: entry.updated.toJSON(),
+        pullRequestNumber: entry.pull_request_number || undefined,
       };
     }),
   });

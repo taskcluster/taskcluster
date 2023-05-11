@@ -11,7 +11,7 @@ async function deprecatedStatusHandler(message) {
   let debug = makeDebug(this.monitor, { taskGroupId });
   debug(`Statuses API. Handling state change for task-group ${taskGroupId}`);
 
-  let [build] = await this.context.db.fns.get_github_build(taskGroupId);
+  let [build] = await this.context.db.fns.get_github_build_pr(taskGroupId);
   if (!build) {
     debug('no status to update..');
     return;
@@ -27,20 +27,21 @@ async function deprecatedStatusHandler(message) {
   const { exchangeNames } = this;
 
   let state = 'success';
+  let usesChecks = false;
 
   if (message.exchange === exchangeNames.taskGroupResolved) {
+    // if this task group uses checks api, there is no need to go through all tasks
+    const [checks] = await this.context.db.fns.get_github_checks_by_task_group_id(1, 0, taskGroupId);
+    if (checks) {
+      usesChecks = true;
+    }
+
     let params = {};
     do {
       let group = await this.queueClient.listTaskGroup(message.payload.taskGroupId, params);
       params.continuationToken = group.continuationToken;
 
       for (let i = 0; i < group.tasks.length; i++) {
-        // don't post group status for checks API
-        if (group.tasks[i].task.routes.includes(this.context.cfg.app.checkTaskRoute)) {
-          debug(`Task group result status not updated: Task group ${taskGroupId} uses Checks API. Exiting`);
-          return;
-        }
-
         if (['failed', 'exception'].includes(group.tasks[i].status.state)) {
           state = 'failure';
           break; // one failure is enough
@@ -65,7 +66,14 @@ async function deprecatedStatusHandler(message) {
     return;
   }
 
+  // It is worth noting that we always want to change the state of the build in the database.
+  // Although this handler is marked as deprecated, taskGroupResolved event should be handled in one place
   await this.context.db.fns.set_github_build_state(taskGroupId, state);
+
+  if (usesChecks) {
+    debug(`Create commit status not called: Task group ${taskGroupId} uses Checks API. Exiting`);
+    return;
+  }
 
   // Authenticating as installation.
   let instGithub = await this.context.github.getInstallationGithub(build.installation_id);

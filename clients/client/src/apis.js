@@ -818,7 +818,8 @@ module.exports = {
             "limit",
             "organization",
             "repository",
-            "sha"
+            "sha",
+            "pullRequest"
           ],
           "route": "/builds",
           "scopes": "github:list-builds",

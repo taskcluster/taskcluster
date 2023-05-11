@@ -28,7 +28,9 @@ async function jobHandler(message) {
   let repository = message.payload.repository;
   let sha = message.payload.details['event.head.sha'];
   debug = debug.refine({ owner: organization, repo: repository, sha });
-  let pullNumber = message.payload.details['event.pullNumber'];
+  let pullNumber = message.payload.details['event.pullNumber'] || message.payload.body.number;
+
+  debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
 
   if (!sha) {
     // only releases lack event.head.sha
@@ -49,7 +51,9 @@ async function jobHandler(message) {
     sha = commitInfo.data;
   }
 
-  debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
+  let defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository }))
+    .data
+    .default_branch;
 
   // Try to fetch a .taskcluster.yml file for every request
   debug(`Trying to fetch the YML for ${organization}/${repository}@${sha}`);
@@ -78,11 +82,6 @@ async function jobHandler(message) {
   // Checking pull request permission.
   if (message.payload.details['event.type'].startsWith('pull_request.')) {
     debug(`Checking pull request permission for ${organization}/${repository}@${sha}...`);
-
-    debug(`Retrieving  ${organization}/${repository}@${sha}...`);
-    let defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository }))
-      .data
-      .default_branch;
 
     let defaultBranchYml = await this.getYml({ instGithub, owner: organization, repo: repository, ref: defaultBranch });
 
@@ -203,7 +202,7 @@ async function jobHandler(message) {
   try {
     debug(`Trying to create a record for ${organization}/${repository}@${sha} (${groupState}) in github_builds table`);
     let now = new Date();
-    await context.db.fns.create_github_build(
+    await context.db.fns.create_github_build_pr(
       organization,
       repository,
       sha,
@@ -214,12 +213,13 @@ async function jobHandler(message) {
       message.payload.installationId,
       message.payload.details['event.type'],
       message.payload.eventId,
+      pullNumber,
     );
   } catch (err) {
     if (err.code !== UNIQUE_VIOLATION) {
       throw err;
     }
-    const [build] = await this.context.db.fns.get_github_build(taskGroupId);
+    const [build] = await this.context.db.fns.get_github_build_pr(taskGroupId);
     assert.equal(build.state, groupState, `State for ${organization}/${repository}@${sha}
       already exists but is set to ${build.state} instead of ${groupState}!`);
     assert.equal(build.organization, organization);
@@ -235,6 +235,16 @@ async function jobHandler(message) {
   } catch (e) {
     debug(`Creating tasks for ${organization}/${repository}@${sha} failed! Leaving comment on Github.`);
     return await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e });
+  }
+
+  // only cancel previous tasks after we have successfully created new ones
+  // Cancel existing builds for non-default branches
+  if (graphConfig.autoCancelPreviousChecks !== false) {
+    if (pullNumber) {
+      await this.cancelPreviousTaskGroups({ organization, repository, pullNumber, debug, newTaskGroupId: taskGroupId });
+    } else if (message.payload.body.ref !== defaultBranch) {
+      await this.cancelPreviousTaskGroups({ organization, repository, sha, debug, newTaskGroupId: taskGroupId });
+    }
   }
 
   try {

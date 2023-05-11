@@ -158,7 +158,8 @@ CREATE TABLE github_builds (
     updated timestamp with time zone NOT NULL,
     installation_id integer NOT NULL,
     event_type text NOT NULL,
-    event_id text NOT NULL
+    event_id text NOT NULL,
+    pull_request_number integer
 );
 ALTER TABLE github_builds
     ADD CONSTRAINT github_builds_pkey PRIMARY KEY (task_group_id);
@@ -508,6 +509,7 @@ ALTER TABLE workers
 ```sql
 CREATE INDEX azure_queue_messages_inserted ON azure_queue_messages USING btree (queue_name, inserted);
 CREATE INDEX github_builds_organization_repository_sha_idx ON github_builds USING btree (organization, repository, sha);
+CREATE INDEX github_builds_pr ON github_builds USING btree (organization, repository, pull_request_number);
 CREATE INDEX github_checks_check_suite_id_check_run_id_idx ON github_checks USING btree (check_suite_id, check_run_id);
 CREATE INDEX hooks_last_fires_time ON hooks_last_fires USING btree (hook_group_id, hook_id, task_create_time);
 CREATE INDEX sha512_index_namespaces_idx ON index_namespaces USING btree (public.sha512(parent), name);

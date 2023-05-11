@@ -49,7 +49,7 @@ async function statusHandler(message) {
   const conclusion = CONCLUSIONS[reasonResolved || state];
   const checkRunStatus = conclusion ? CHECK_RUN_STATES.COMPLETED : TASK_STATE_TO_CHECK_RUN_STATE[state];
 
-  let [build] = await this.context.db.fns.get_github_build(taskGroupId);
+  let [build] = await this.context.db.fns.get_github_build_pr(taskGroupId);
   if (!build) {
     debug(`No github build is associated with task group ${taskGroupId}. Most likely this was triggered by periodic cron hook, which doesn't require github event / check suite.`);
     releaseLock();

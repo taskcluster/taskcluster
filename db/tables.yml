@@ -37,6 +37,7 @@ github_builds:
   installation_id: integer not null
   event_type: text not null
   event_id: text not null
+  pull_request_number: integer
 github_integrations:
   installation_id: integer not null
   owner: text not null
