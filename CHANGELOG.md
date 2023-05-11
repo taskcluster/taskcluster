@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v50.1.0
+
+### GENERAL
+
+▶ [patch]
+Bump caniuse-lite version with `npx update-browserslist-db@latest` due to outdated warning.
+
+### USERS
+
+▶ [minor] [#5621](https://github.com/taskcluster/taskcluster/issues/5621)
+Github service now automatically cancels older task groups to avoid redundancy when there are multiple builds for the same commit sha or pull request. This behavior can be disabled by setting `autoCancelPreviousChecks` to `false` in the `.taskcluster.yml` file.
+
 ## v50.0.0
 
 ### GENERAL
