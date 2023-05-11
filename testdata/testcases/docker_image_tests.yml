@@ -1,0 +1,208 @@
+testSuite:
+  name: Tests all the possible docker image types
+  description: Test all the possible docker image types (DockerImageName|NamedDockerImage|IndexedDockerImage|DockerImageArtifact).
+  tests:
+    - name: DockerImageName
+      description: Test DockerImageName
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        artifacts: []
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              podman run --name taskcontainer
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              ubuntu 'echo "Hello world"'
+
+              exit_code=$?
+
+              podman rm taskcontainer
+
+              exit "${exit_code}"
+        maxRunTime: 3600
+
+    - name: NamedDockerImage
+      description: Test NamedDockerImage
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image:
+          name: ubuntu
+          type: docker-image
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        artifacts: []
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              podman run --name taskcontainer
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              ubuntu 'echo "Hello world"'
+
+              exit_code=$?
+
+              podman rm taskcontainer
+
+              exit "${exit_code}"
+        maxRunTime: 3600
+
+    - name: IndexedDockerImage
+      description: Test IndexedDockerImage
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image:
+          namespace: test-namespace
+          path: /test/path
+          type: indexed-image
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        artifacts: []
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              podman run --name taskcontainer
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              ubuntu 'echo "Hello world"'
+
+              exit_code=$?
+
+              podman rm taskcontainer
+
+              exit "${exit_code}"
+        maxRunTime: 3600
+
+    - name: DockerImageArtifact
+      description: Test DockerImageArtifact
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image:
+          path: /test/path
+          taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+          type: task-image
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        artifacts: []
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+
+              podman run --name taskcontainer
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              "${IMAGE_NAME}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              podman rm taskcontainer
+
+              exit "${exit_code}"
+        mounts:
+          - content:
+              artifact: /test/path
+              taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+            file: path
+        maxRunTime: 3600
+
+    - name: DockerImageArtifact with .lz4 extension
+      description: Test DockerImageArtifact with .lz4 extension
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image:
+          path: /test/path.lz4
+          taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+          type: task-image
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        artifacts: []
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              unlz4 'path.lz4'
+
+              rm 'path.lz4'
+
+              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+
+              podman run --name taskcontainer
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              "${IMAGE_NAME}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              podman rm taskcontainer
+
+              exit "${exit_code}"
+        mounts:
+          - content:
+              artifact: /test/path.lz4
+              taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+            file: path.lz4
+        maxRunTime: 3600
+
+    - name: DockerImageArtifact with .zst extension
+      description: Test DockerImageArtifact with .zst extension
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image:
+          path: /test/path.zst
+          taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+          type: task-image
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        artifacts: []
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              unzstd 'path.zst'
+
+              rm 'path.zst'
+
+              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+
+              podman run --name taskcontainer
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              "${IMAGE_NAME}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              podman rm taskcontainer
+
+              exit "${exit_code}"
+        mounts:
+          - content:
+              artifact: /test/path.zst
+              taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+            file: path.zst
+        maxRunTime: 3600
