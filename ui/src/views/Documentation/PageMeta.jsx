@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import { join } from 'path';
 import { func } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
@@ -55,7 +54,7 @@ export default class PageMeta extends Component {
             {hasPreviousPage && (
               <PageNavigation
                 to={removeReadmeFromPath(
-                  join(DOCS_PATH_PREFIX, pageInfo.prev.path)
+                  `${DOCS_PATH_PREFIX}/${pageInfo.prev.path}`,
                 )}
                 variant="prev"
                 aria-label="Previous Page">
@@ -65,7 +64,7 @@ export default class PageMeta extends Component {
             {hasNextPage && (
               <PageNavigation
                 to={removeReadmeFromPath(
-                  join(DOCS_PATH_PREFIX, pageInfo.next.path)
+                  `${DOCS_PATH_PREFIX}/${pageInfo.next.path}`,
                 )}
                 variant="next"
                 aria-label="Next Page">

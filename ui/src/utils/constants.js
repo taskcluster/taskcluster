@@ -17,9 +17,6 @@ import FileMusicIcon from 'mdi-react/FileMusicIcon';
 import FileIcon from 'mdi-react/FileIcon';
 import ListStatusIcon from 'mdi-react/FormatListChecksIcon';
 import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
-// not imported in vite
-// import { join } from 'path';
-const join = (...args) => args.join('/'); // shameless polyfill
 
 // eslint-disable-next-line import/prefer-default-export
 export const ARTIFACTS_SHOW_MAX = 10;
@@ -159,37 +156,37 @@ export const DOCS_MENU_ITEMS = [
   },
   {
     label: 'Tutorial',
-    path: join(DOCS_PATH_PREFIX, 'tutorial'),
+    path: `${DOCS_PATH_PREFIX}/tutorial`,
     hasChildren: false,
     icon: OneTwoThreeIcon,
   },
   {
     label: 'Manual',
-    path: join(DOCS_PATH_PREFIX, 'manual'),
+    path: `${DOCS_PATH_PREFIX}/manual`,
     hasChildren: true,
     icon: BookOpenVariantIcon,
   },
   {
     label: 'Reference',
-    path: join(DOCS_PATH_PREFIX, 'reference'),
+    path: `${DOCS_PATH_PREFIX}/reference`,
     hasChildren: true,
     icon: BookOpenOutlineIcon,
   },
   {
     label: 'People',
-    path: join(DOCS_PATH_PREFIX, 'people'),
+    path: `${DOCS_PATH_PREFIX}/people`,
     hasChildren: false,
     icon: AccountHeartOutlineIcon,
   },
   {
     label: 'Resources',
-    path: join(DOCS_PATH_PREFIX, 'resources'),
+    path: `${DOCS_PATH_PREFIX}/resources`,
     hasChildren: false,
     icon: OpenInNewIcon,
   },
   {
     label: 'Changelog',
-    path: join(DOCS_PATH_PREFIX, 'changelog'),
+    path: `${DOCS_PATH_PREFIX}/changelog`,
     hasChildren: false,
     icon: ListStatusIcon,
   },

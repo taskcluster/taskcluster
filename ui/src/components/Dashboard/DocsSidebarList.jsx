@@ -15,17 +15,13 @@ import { DOCS_MENU_ITEMS, DOCS_PATH_PREFIX } from '../../utils/constants';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
 
-// not imported in vite
-// import { join } from 'path';
-const join = (...args) => args.join('/'); // shameless polyfill
-
 const getDocsSectionFromPathname = pathname => {
   if (!pathname) {
     return null;
   }
 
   const item = DOCS_MENU_ITEMS.find(({ label }) => {
-    if (pathname.startsWith(join(DOCS_PATH_PREFIX, lowerCase(label)))) {
+    if (pathname.startsWith(`${DOCS_PATH_PREFIX}/${lowerCase(label)}`)) {
       return true;
     }
 
@@ -190,7 +186,7 @@ export default class DocsSidebarList extends Component {
       classes,
       history: { location },
     } = this.props;
-    const href = removeReadmeFromPath(join(DOCS_PATH_PREFIX, node.path));
+    const href = removeReadmeFromPath(`${DOCS_PATH_PREFIX}/${node.path}`);
     const isLinkActive = removeReadmeFromPath(location.pathname) === href;
 
     if (node.children && node.children.length) {

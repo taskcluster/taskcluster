@@ -1,4 +1,3 @@
-import { join } from 'path';
 import { DOCS_PATH_PREFIX } from '../utils/constants';
 import lazy from '../utils/lazy';
 
@@ -15,7 +14,7 @@ const SwitchEntryPoint = lazy(() =>
 export default [
   {
     component: Documentation,
-    path: join(DOCS_PATH_PREFIX, ':path*'),
+    path: `${DOCS_PATH_PREFIX}/:path*`,
   },
 
   {
