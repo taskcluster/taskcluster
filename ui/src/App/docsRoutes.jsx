@@ -22,8 +22,8 @@ export default [
     path: '/profile',
   },
   // Clicking on the logo for example should switch entry points
-  {
-    component: SwitchEntryPoint,
-    path: '/',
-  },
+  // {
+  //   component: SwitchEntryPoint,
+  //   path: '/',
+  // },
 ];

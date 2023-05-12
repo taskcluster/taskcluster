@@ -1,7 +1,9 @@
 import path from 'path';
 import { defineConfig } from 'vite';
-// import react from '@vitejs/plugin-react';
-import react from "@vitejs/plugin-react-swc";
+import react from '@vitejs/plugin-react';
+// import react from "@vitejs/plugin-react-swc";
+// import mdx from '@mdx-js/rollup'
+import Markdown from "vite-plugin-react-markdown";
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import { getBabelOutputPlugin } from '@rollup/plugin-babel'
@@ -58,10 +60,12 @@ export default ({ mode }) => {
     plugins: [
       gql(),
       viteTsconfigPaths(),
+      Markdown(),
 
       // https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react
       // react({
-      //   include: [/\.(md|js|jsx|ts|tsx)$/],
+      //   include: [/\.(md|mdx|js|jsx|ts|tsx)$/],
+      // }),
       //   tsDecorators: true,
       //   // babel: {
       //   //   plugins: [
@@ -79,7 +83,7 @@ export default ({ mode }) => {
     ],
     esbuild: {
       loader: 'tsx',
-      include: /src\/.*\.jsx?$/,
+      include: /src\/.*\.(jsx|mdx)?$/,
       exclude: [],
     },
     server: {
@@ -92,31 +96,45 @@ export default ({ mode }) => {
           find: '~@fontsource',
           replacement: path.join(__dirname, 'node_modules', '@fontsource'),
         },
+        {
+          find: 'taskcluster-ui',
+          replacement: path.join(__dirname, 'src'),
+        },
         // {
         //   find: '@',
         //   replacement: SRC_DIR,
         // },
       ],
     },
-    // build: {
-    //   rollupOptions: {
-    //     output: {
-    //       plugins: [
-    //         getBabelOutputPlugin({
-    //           allowAllFormats: true,
-    //           presets: [
-    //             [
-    //               '@babel/preset-env',
-    //             ],
-    //           ],
-    //         }),
-    //       ],
-    //     },
-    //   },
-    // },
+    build: {
+      rollupOptions: {
+        input: {
+          main: path.join(__dirname, 'index.html'),
+          docs: path.join(__dirname, 'docs/index.html'),
+        },
+        output: {
+          preserveModules: false,
+          plugins: [
+            // mdx({})
+          ],
+        },
+        // output: {
+        //   plugins: [
+        //     getBabelOutputPlugin({
+        //       allowAllFormats: true,
+        //       presets: [
+        //         [
+        //           '@babel/preset-env',
+        //         ],
+        //       ],
+        //     }),
+        //   ],
+        // },
+      },
+    },
     optimizeDeps: {
       exclude: ['build/*', 'dist/*'],
-      entries: ['index.html'],
+      entries: ['index.html', 'docs/index.html'],
       esbuildOptions: {
         // Node.js global to browser globalThis
         define: {
@@ -130,6 +148,7 @@ export default ({ mode }) => {
         ],
         loader: {
           '.jsx': 'tsx',
+          // '.mdx': 'tsx',
         },
       },
     },

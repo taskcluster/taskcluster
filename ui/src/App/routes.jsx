@@ -70,10 +70,10 @@ const NotFound = lazy(() =>
 );
 
 export default [
-  {
-    component: SwitchEntryPoint,
-    path: `${DOCS_PATH_PREFIX}/:path*`,
-  },
+  // {
+  //   component: SwitchEntryPoint,
+  //   path: `${DOCS_PATH_PREFIX}/:path*`,
+  // },
   {
     component: Tasks,
     path: '/tasks',
