@@ -36,6 +36,8 @@ import ErrorPanel from '../ErrorPanel';
 import DocsSidebarList from './DocsSidebarList';
 import SkipNavigation from '../SkipNavigation';
 
+import { version } from '../../../../version.json'
+
 @withRouter
 @withWidth()
 @withStyles(
@@ -229,12 +231,7 @@ export default class Dashboard extends Component {
   }
 
   getDeploymentVersion() {
-    // TODO rebuild this logic
-    return 'TODO: version undefined';
-    // const importer = require.context('../../../..', false, /version\.json/);
-    // const file = importer.keys()[0];
-
-    // return file ? importer(file).version : null;
+    return version || 'unknown';
   }
 
   handleDrawerToggle = () => {

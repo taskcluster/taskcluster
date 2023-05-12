@@ -37,7 +37,7 @@ const generateEnvJs = filename => {
   if (!fs.existsSync(filename)){
     fs.writeFileSync(filename, envJs, 'utf8');
   }
-  console.log('file written', filename, fs.readFileSync(filename));
+  console.log('file written', filename, fs.readFileSync(filename, 'utf-8'));
 };
 
 module.exports = generateEnvJs;

@@ -4,6 +4,7 @@ import { defineConfig } from 'vite';
 import react from "@vitejs/plugin-react-swc";
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
+import { getBabelOutputPlugin } from '@rollup/plugin-babel'
 import gql from 'vite-plugin-simple-gql';
 import generateEnvJs from './generate-env-js';
 
@@ -50,7 +51,6 @@ const serverProxyConfig = {
  */
 export default ({ mode }) => {
   if (mode === 'development') {
-    // TODO: this file keeps dissappearing on reloads.. save somewhere else?
     generateEnvJs(path.join(STATIC_DIR, 'env.js'));
   }
 
@@ -60,28 +60,28 @@ export default ({ mode }) => {
       viteTsconfigPaths(),
 
       // https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react
-      react({
-        include: [/\.(md|js|jsx|ts|tsx)$/],
-        tsDecorators: true,
-        // babel: {
-        //   plugins: [
-        //     // ['@babel/plugin-proposal-decorators', { loose: true }],
-        //     // ['@babel/plugin-proposal-class-properties', { loose: false }],
-        //     // ['@babel/plugin-proposal-optional-chaining', { loose: true }],
-        //     // [
-        //     //   '@babel/plugin-proposal-nullish-coalescing-operator',
-        //     //   { loose: true },
-        //     // ],
-        //     // ['@babel/plugin-transform-modules-commonjs', { loose: true }],
-        //   ],
-        // },
-      }),
+      // react({
+      //   include: [/\.(md|js|jsx|ts|tsx)$/],
+      //   tsDecorators: true,
+      //   // babel: {
+      //   //   plugins: [
+      //   //     ['@babel/plugin-proposal-decorators', { loose: true, decoratorsBeforeExport: true }],
+      //   //     ['@babel/plugin-proposal-class-properties', { loose: false }],
+      //   //     ['@babel/plugin-proposal-optional-chaining', { loose: true }],
+      //   //     [
+      //   //       '@babel/plugin-proposal-nullish-coalescing-operator',
+      //   //       { loose: true },
+      //   //     ],
+      //   //     ['@babel/plugin-transform-modules-commonjs', { loose: true }],
+      //   //   ],
+      //   // },
+      // }),
     ],
-    // esbuild: {
-    //   loader: 'tsx',
-    //   include: /src\/.*\.jsx?$/,
-    //   exclude: [],
-    // },
+    esbuild: {
+      loader: 'tsx',
+      include: /src\/.*\.jsx?$/,
+      exclude: [],
+    },
     server: {
       port,
       proxy: serverProxyConfig,
@@ -98,24 +98,40 @@ export default ({ mode }) => {
         // },
       ],
     },
+    // build: {
+    //   rollupOptions: {
+    //     output: {
+    //       plugins: [
+    //         getBabelOutputPlugin({
+    //           allowAllFormats: true,
+    //           presets: [
+    //             [
+    //               '@babel/preset-env',
+    //             ],
+    //           ],
+    //         }),
+    //       ],
+    //     },
+    //   },
+    // },
     optimizeDeps: {
       exclude: ['build/*', 'dist/*'],
       entries: ['index.html'],
-      // esbuildOptions: {
-      //   // Node.js global to browser globalThis
-      //   define: {
-      //     global: 'globalThis',
-      //   },
-      //   // Enable esbuild polyfill plugins
-      //   plugins: [
-      //     NodeGlobalsPolyfillPlugin({
-      //       buffer: true,
-      //     }),
-      //   ],
-      //   loader: {
-      //     '.jsx': 'tsx',
-      //   },
-      // },
+      esbuildOptions: {
+        // Node.js global to browser globalThis
+        define: {
+          global: 'globalThis',
+        },
+        // Enable esbuild polyfill plugins
+        plugins: [
+          NodeGlobalsPolyfillPlugin({
+            buffer: true,
+          }),
+        ],
+        loader: {
+          '.jsx': 'tsx',
+        },
+      },
     },
   });
 };
