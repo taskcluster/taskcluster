@@ -274,9 +274,9 @@ class Handlers {
       ).map(build => build.task_group_id);
       if (taskGroupIds.length > 0) {
         debug(`Found running task groups: ${taskGroupIds.join(', ')}. Sealing and cancelling`);
-        await Promise.allSettled(taskGroupIds.map(taskGroupId => this.queueClient.sealTaskGroup(taskGroupId)));
-        await Promise.allSettled(taskGroupIds.map(taskGroupId => this.queueClient.cancelTaskGroup(taskGroupId)));
-        await Promise.allSettled(taskGroupIds.map(taskGroupId => this.context.db.fns.set_github_build_state(taskGroupId, 'cancelled')));
+        await Promise.all(taskGroupIds.map(taskGroupId => this.queueClient.sealTaskGroup(taskGroupId)));
+        await Promise.all(taskGroupIds.map(taskGroupId => this.queueClient.cancelTaskGroup(taskGroupId)));
+        await Promise.all(taskGroupIds.map(taskGroupId => this.context.db.fns.set_github_build_state(taskGroupId, 'cancelled')));
       }
     } catch (err) {
       debug(`Error while canceling previous task groups: ${err.message}`);
