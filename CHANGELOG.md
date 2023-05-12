@@ -3,6 +3,35 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v50.1.1
+
+### GENERAL
+
+▶ [patch]
+Aligned platforms of released binaries:
+
+  * darwin/amd64
+  * darwin/arm64
+  * freebsd/amd64
+  * freebsd/arm64
+  * linux/amd64
+  * linux/arm64
+  * windows/386
+  * windows/amd64
+
+Previously there were inconsistencies across tools (e.g. taskcluster cli was released for different platforms than livelog).
+
+### ADMINS
+
+▶ [patch] [#5621](https://github.com/taskcluster/taskcluster/issues/5621)
+Extend `static/taskcluster/github` client with two scopes that are necessary to seal and cancel previously created task groups: `queue:cancel-task-group:taskcluster-github` and `queue:seal-task-group:taskcluster-github`.
+When github repository is using a different schedulerId than `taskcluster-github`, then it might be necessary to update corresponding `repo:github.com/` roles with correct scopes.
+
+### USERS
+
+▶ [patch]
+Adds interactive changelog viewer to the docs section.
+
 ## v50.1.0
 
 ### GENERAL
