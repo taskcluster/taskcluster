@@ -4,3 +4,5 @@
 - queue:route:checks
 - assume:scheduler-id:taskcluster-github/*
 - queue:list-task-group:*
+- queue:seal-task-group:taskcluster-github/*
+- queue:cancel-task-group:taskcluster-github/*

@@ -289,6 +289,33 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.equal(cancelledTaskGroups.length, 0);
     });
 
+    test('errors in queue.sealTask/cancelTaskGroup group are logged', async function () {
+      handlers.queueClient = new taskcluster.Queue({
+        rootUrl: 'https://tc.example.com',
+        fake: {
+          sealTaskGroup: async (taskGroupId) => {
+            throw new Error('sealTaskGroup error: missing scopes');
+          },
+          cancelTaskGroup: async (taskGroupId) => {
+            throw new Error('cancelTaskGroup error: missing scopes');
+          },
+        },
+      });
+
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1 });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1 });
+
+      await handlers.realCancelPreviousTaskGroups({
+        organization: 'TaskclusterRobot', repo: 'hooks-testing', pullNumber: 1, debug: sinon.stub(),
+      });
+
+      const monitor = await helper.load('monitor');
+      assert(monitor.manager.messages.some(
+        ({ Type, Severity, Fields }) => Type === 'monitor.error' && Severity === LEVELS.err && Fields.message === 'sealTaskGroup error: missing scopes',
+      ));
+      monitor.manager.reset();
+    });
+
     test('calls queue.sealTaskGroup/cancelTaskGroup for pulNumber excluding new task group id', async function () {
       await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1 });
       await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1 });
