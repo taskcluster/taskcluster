@@ -12,6 +12,7 @@ const { statusHandler } = require('./status');
 const { jobHandler } = require('./job');
 const { rerunHandler } = require('./rerun');
 const { POLICIES } = require('./policies');
+const { GITHUB_BUILD_STATES } = require('../constants');
 
 /**
  * Create handlers
@@ -264,7 +265,8 @@ class Handlers {
     }
   }
 
-  async cancelPreviousTaskGroups({ debug, organization, repository, newTaskGroupId, sha = null, pullNumber = null }) {
+  async cancelPreviousTaskGroups({ instGithub, debug, organization, repository,
+    newTaskGroupId, sha = null, pullNumber = null }) {
     debug(`canceling previous task groups for ${organization}/${repository} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`);
 
     try {
@@ -273,14 +275,34 @@ class Handlers {
         build => ['pending', 'running'].includes(build.state) && build.task_group_id !== newTaskGroupId,
       ).map(build => build.task_group_id);
       if (taskGroupIds.length > 0) {
+        // we want to make sure that github client respects repository scopes when sealing and cancelling tasks
+        const limitedQueueClient = this.queueClient.use({
+          authorizedScopes: [
+            `assume:repo:github.com/${organization}/${repository}:*`,
+            'queue:seal-task-group:taskcluster-github/*',
+            'queue:cancel-task-group:taskcluster-github/*',
+          ],
+        });
+
         debug(`Found running task groups: ${taskGroupIds.join(', ')}. Sealing and cancelling`);
-        await Promise.all(taskGroupIds.map(taskGroupId => this.queueClient.sealTaskGroup(taskGroupId)));
-        await Promise.all(taskGroupIds.map(taskGroupId => this.queueClient.cancelTaskGroup(taskGroupId)));
-        await Promise.all(taskGroupIds.map(taskGroupId => this.context.db.fns.set_github_build_state(taskGroupId, 'cancelled')));
+        await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.sealTaskGroup(taskGroupId)));
+        await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.cancelTaskGroup(taskGroupId)));
+        await Promise.all(taskGroupIds.map(taskGroupId => this.context.db.fns.set_github_build_state(
+          taskGroupId, GITHUB_BUILD_STATES.CANCELLED,
+        )));
       }
     } catch (err) {
       debug(`Error while canceling previous task groups: ${err.message}`);
       await this.monitor.reportError(err);
+      await this.createExceptionComment({
+        debug,
+        instGithub,
+        organization,
+        repository,
+        sha,
+        pullNumber,
+        error: err,
+      });
     }
   }
 

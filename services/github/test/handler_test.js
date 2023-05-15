@@ -305,15 +305,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1 });
       await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1 });
 
+      const instGithub = github.inst(5828);
+
       await handlers.realCancelPreviousTaskGroups({
-        organization: 'TaskclusterRobot', repo: 'hooks-testing', pullNumber: 1, debug: sinon.stub(),
+        instGithub,
+        organization: 'TaskclusterRobot',
+        repository: 'hooks-testing',
+        pullNumber: 1,
+        debug: sinon.stub(),
       });
+      assert(github.inst(5828).issues.createComment.calledOnce);
+      let args = github.inst(5828).issues.createComment.args;
+      assert.equal(args[0][0].owner, 'TaskclusterRobot');
+      assert.equal(args[0][0].repo, 'hooks-testing');
+      assert.equal(args[0][0].issue_number, 1);
 
       const monitor = await helper.load('monitor');
       assert(monitor.manager.messages.some(
         ({ Type, Severity, Fields }) => Type === 'monitor.error' && Severity === LEVELS.err && Fields.message === 'sealTaskGroup error: missing scopes',
       ));
       monitor.manager.reset();
+
     });
 
     test('calls queue.sealTaskGroup/cancelTaskGroup for pulNumber excluding new task group id', async function () {
@@ -1082,6 +1094,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       assert(github.inst(9988).repos.createCommitStatus.calledOnce === false);
       await assertBuildState('pending');
+    });
+    test('task failure does not change cancelled build state', async function() {
+      await addBuild({ state: 'cancelled', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-failed',
+        routingKey: 'route.statuses',
+        runId: 0,
+        state: 'running',
+      });
+      await assertBuildState('cancelled');
     });
   });
 
