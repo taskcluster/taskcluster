@@ -1,3 +1,5 @@
+//go:build darwin || linux || freebsd
+
 package interactive
 
 import (
