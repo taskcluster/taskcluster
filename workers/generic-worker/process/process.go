@@ -1,5 +1,3 @@
-//go:build multiuser || simple
-
 package process
 
 import (
