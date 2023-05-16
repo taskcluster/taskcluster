@@ -43,6 +43,14 @@ func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericwor
 	if err != nil {
 		return
 	}
+	switch dwImage.(type) {
+	case *IndexedDockerImage:
+		// we want to be sure that TaskclusterProxy
+		// is enabled for IndexedDockerImages
+		// during the remainder of this translation
+		// it's used to access the index service API
+		dwPayload.Features.TaskclusterProxy = true
+	}
 	err = setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches)
 	if err != nil {
 		return
