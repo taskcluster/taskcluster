@@ -202,6 +202,26 @@ func (github *Github) Builds_SignedURL(continuationToken, limit, organization, p
 	return (&cd).SignedURL("/builds", v, duration)
 }
 
+// Cancel all running Task Groups associated with given repository and sha or pullRequest number
+//
+// Required scopes:
+//
+//	github:cancel-builds:<owner>:<repo>
+//
+// See #cancelBuilds
+func (github *Github) CancelBuilds(owner, repo, pullRequest, sha string) (*BuildsResponse, error) {
+	v := url.Values{}
+	if pullRequest != "" {
+		v.Add("pullRequest", pullRequest)
+	}
+	if sha != "" {
+		v.Add("sha", sha)
+	}
+	cd := tcclient.Client(*github)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/builds/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/cancel", new(BuildsResponse), v)
+	return responseObject.(*BuildsResponse), err
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Checks the status of the latest build of a given branch

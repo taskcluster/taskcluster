@@ -334,7 +334,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 1 });
       await handlers.realCancelPreviousTaskGroups({
         organization: 'TaskclusterRobot',
-        repo: 'hooks-testing',
+        repository: 'hooks-testing',
         pullNumber: 1,
         newTaskGroupId: 'bb',
         debug: sinon.stub(),
@@ -354,7 +354,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await addBuild({ state: 'pending', taskGroupId: 'cc' });
       await handlers.realCancelPreviousTaskGroups({
         organization: 'TaskclusterRobot',
-        repo: 'hooks-testing',
+        repository: 'hooks-testing',
         sha: COMMIT_SHA,
         newTaskGroupId: 'bb',
         debug: sinon.stub(),

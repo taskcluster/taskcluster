@@ -12,6 +12,7 @@ const testing = require('taskcluster-lib-testing');
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withFakeGithub(mock, skipping);
+  helper.withFakeQueue(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
 
@@ -44,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       1,
       'push',
       '26370a80-ed65-11e6-8f4c-80082678482d',
-      null,
+      1,
     );
     await helper.db.fns.create_github_build_pr(
       'abc123',
@@ -70,7 +71,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       1,
       'push',
       'Unknown',
-      null,
+      2,
     );
 
     await helper.db.fns.upsert_github_integration(
@@ -313,6 +314,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(builds.builds[0].sha, 'y650871208002a13ba35cf232c0e30d2c3d64783');
   });
 
+  test('pull request builds', async function() {
+    let builds = await helper.apiClient.builds({
+      organization: 'abc123',
+      repository: 'xyz',
+      pullRequest: 2,
+    });
+
+    assert.equal(builds.builds.length, 1);
+    builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
+    assert.equal(builds.builds[0].organization, 'abc123');
+    assert.equal(builds.builds[0].repository, 'xyz');
+    assert.equal(builds.builds[0].pullRequestNumber, 2);
+  });
+
   test('builds invalid queries are rejected', async function() {
     await assert.rejects(async () => {
       await helper.apiClient.builds({
@@ -326,6 +341,73 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         sha: 'y650871208002a13ba35cf232c0e30d2c3d64783',
       });
     }, /Error: Must provide/);
+  });
+
+  suite('cancel builds', function() {
+    setup(async function() {
+      // reset build states
+      const builds = await helper.db.fns.get_github_builds_pr(null, null, null, null, null, null);
+      await Promise.all(builds.map(build => helper.db.fns.set_github_build_state(build.task_group_id, 'pending')));
+    });
+    test('nothing to cancel', async function () {
+      await assert.rejects(async () => {
+        await helper.apiClient.cancelBuilds('no-such-org', 'no-repo');
+      }, /Error: No cancellable builds found/);
+    });
+    test('cancel running builds for repo', async function() {
+      let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz');
+      assert.equal(builds.builds.length, 2);
+      builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
+      assert.equal(builds.builds[0].organization, 'abc123');
+      assert.equal(builds.builds[0].repository, 'xyz');
+      assert.equal(builds.builds[0].state, 'cancelled');
+    });
+    test('cancel running builds for PR', async function() {
+      let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz', { pullRequest: 2 });
+      assert.equal(builds.builds.length, 1);
+      builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
+      assert.equal(builds.builds[0].organization, 'abc123');
+      assert.equal(builds.builds[0].repository, 'xyz');
+      assert.equal(builds.builds[0].state, 'cancelled');
+    });
+    test('cannot cancel twice same builds', async function() {
+      let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz', { pullRequest: 2 });
+      assert.equal(builds.builds.length, 1);
+      await assert.rejects(async () => {
+        await helper.apiClient.cancelBuilds('no-such-org', 'no-repo');
+      }, /Error: No cancellable builds found/);
+    });
+    test('no scopes', async function() {
+      const noScopesClient = new helper.GithubClient({ rootUrl: helper.rootUrl });
+      await assert.rejects(async () => {
+        await noScopesClient.cancelBuilds('abc123', 'xyz');
+      }, err => err.code === 'InsufficientScopes');
+    });
+    test('scopes: wrong org and repo', async function () {
+      await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:wrong-org:wrong-repo'], async () => {
+        await assert.rejects(
+          () => got.post(helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz')),
+          err => err.response.statusCode === 403,
+        );
+      });
+    });
+    test('scopes: wrong repo', async function () {
+      await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:abc123:wrong-repo'], async () => {
+        await assert.rejects(
+          () => got.post(helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz', {})),
+          err => err.response.statusCode === 403,
+        );
+      });
+    });
+    test('scopes: expand scopes works', async function () {
+      await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:abc123:*'], async () => {
+        const builds = await got.post(
+          helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz'),
+          { responseType: 'json' },
+        );
+        assert.equal(builds.body.builds.length, 2);
+      });
+    });
   });
 
   test('integration installation', async function() {

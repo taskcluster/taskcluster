@@ -6607,6 +6607,21 @@
       },
       "migrationScript": "begin\n  alter table github_builds add column pull_request_number integer;\n  create index github_builds_pr ON github_builds USING btree (organization, repository, pull_request_number);\nend",
       "version": 85
+    },
+    {
+      "description": "Filter github builds in db",
+      "methods": {
+        "get_pending_github_builds": {
+          "args": "page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text, pull_request_number_in integer",
+          "body": "begin\n  return query\n  select\n    github_builds.organization,\n    github_builds.repository,\n    github_builds.sha,\n    github_builds.task_group_id,\n    github_builds.state,\n    github_builds.created,\n    github_builds.updated,\n    github_builds.installation_id,\n    github_builds.event_type,\n    github_builds.event_id,\n    github_builds.pull_request_number,\n    public.gen_random_uuid()\n  from github_builds\n  where\n    github_builds.organization = organization_in and\n    github_builds.repository = repository_in and\n    (sha_in is null or github_builds.sha = sha_in) and\n    (pull_request_number_in is null or github_builds.pull_request_number = pull_request_number_in) and\n    github_builds.state in ('pending')\n  order by github_builds.updated asc\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get github builds that are pending (not yet resolved) for a given organization and repository",
+          "mode": "read",
+          "returns": "table (organization text, repository text, sha text, task_group_id text, state text, created timestamptz, updated timestamptz, installation_id integer, event_type text, event_id text, pull_request_number integer, etag uuid)",
+          "serviceName": "github"
+        }
+      },
+      "version": 86
     }
   ]
 }

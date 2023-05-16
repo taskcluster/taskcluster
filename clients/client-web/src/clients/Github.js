@@ -15,6 +15,7 @@ export default class Github extends Client {
     this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.githubWebHookConsumer.entry = {"args":[],"category":"Github Service","method":"post","name":"githubWebHookConsumer","query":[],"route":"/github","stability":"stable","type":"function"}; // eslint-disable-line
     this.builds.entry = {"args":[],"category":"Github Service","method":"get","name":"builds","output":true,"query":["continuationToken","limit","organization","repository","sha","pullRequest"],"route":"/builds","scopes":"github:list-builds","stability":"stable","type":"function"}; // eslint-disable-line
+    this.cancelBuilds.entry = {"args":["owner","repo"],"category":"Github Service","method":"post","name":"cancelBuilds","output":true,"query":["sha","pullRequest"],"route":"/builds/<owner>/<repo>/cancel","scopes":"github:cancel-builds:<owner>:<repo>","stability":"stable","type":"function"}; // eslint-disable-line
     this.badge.entry = {"args":["owner","repo","branch"],"category":"Github Service","method":"get","name":"badge","query":[],"route":"/repository/<owner>/<repo>/<branch>/badge.svg","scopes":"github:get-badge:<owner>:<repo>:<branch>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.repository.entry = {"args":["owner","repo"],"category":"Github Service","method":"get","name":"repository","output":true,"query":[],"route":"/repository/<owner>/<repo>","scopes":"github:get-repository:<owner>:<repo>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.latest.entry = {"args":["owner","repo","branch"],"category":"Github Service","method":"get","name":"latest","query":[],"route":"/repository/<owner>/<repo>/<branch>/latest","scopes":"github:latest-status:<owner>:<repo>:<branch>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -67,6 +68,14 @@ export default class Github extends Client {
     this.validate(this.builds.entry, args);
 
     return this.request(this.builds.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Cancel all running Task Groups associated with given repository and sha or pullRequest number
+  /* eslint-enable max-len */
+  cancelBuilds(...args) {
+    this.validate(this.cancelBuilds.entry, args);
+
+    return this.request(this.cancelBuilds.entry, args);
   }
   /* eslint-disable max-len */
   // Checks the status of the latest build of a given branch

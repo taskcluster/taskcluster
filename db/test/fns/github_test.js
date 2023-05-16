@@ -174,6 +174,18 @@ suite(testing.suiteName(), function() {
       assert.equal(prBuilds.length, 1);
       assert.deepEqual(prBuilds[0].pull_request_number, builds[0].pull_request_number);
     });
+    helper.dbTest('list pending', async function(db, isFake) {
+      for (let i = 0; i < 10; i++) {
+        await create_build(db, { ...builds[i], state: i < 5 ? 'pending' : 'success' });
+      }
+      const fetched = await db.fns.get_pending_github_builds(null, null, 'org', 'repo', null, null);
+      assert.equal(fetched.length, 5);
+
+      // list by PR
+      const prBuilds = await db.fns.get_pending_github_builds(null, null, 'org', 'repo', null, builds[0].pull_request_number);
+      assert.equal(prBuilds.length, 1);
+      assert.deepEqual(prBuilds[0].pull_request_number, builds[0].pull_request_number);
+    });
     helper.dbTest('delete', async function(db, isFake) {
       await create_build(db, builds[0]);
       const [fetched] = await db.fns.get_github_build_pr(builds[0].task_group_id);

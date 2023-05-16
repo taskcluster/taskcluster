@@ -89,6 +89,17 @@ class Github(BaseClient):
 
         return self._makeApiCall(self.funcinfo["builds"], *args, **kwargs)
 
+    def cancelBuilds(self, *args, **kwargs):
+        """
+        Cancel repository builds
+
+        Cancel all running Task Groups associated with given repository and sha or pullRequest number
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["cancelBuilds"], *args, **kwargs)
+
     def badge(self, *args, **kwargs):
         """
         Latest Build Status Badge
@@ -182,6 +193,15 @@ class Github(BaseClient):
             'output': 'v1/build-list.json#',
             'query': ['continuationToken', 'limit', 'organization', 'repository', 'sha', 'pullRequest'],
             'route': '/builds',
+            'stability': 'stable',
+        },
+        "cancelBuilds": {
+            'args': ['owner', 'repo'],
+            'method': 'post',
+            'name': 'cancelBuilds',
+            'output': 'v1/build-list.json#',
+            'query': ['sha', 'pullRequest'],
+            'route': '/builds/<owner>/<repo>/cancel',
             'stability': 'stable',
         },
         "createComment": {

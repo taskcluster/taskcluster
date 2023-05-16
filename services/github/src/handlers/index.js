@@ -32,6 +32,7 @@ class Handlers {
       intree,
       context,
       pulseClient,
+      queueClient,
     } = options;
 
     assert(monitor, 'monitor is required for statistics');
@@ -63,7 +64,7 @@ class Handlers {
     this.deprecatedInitialStatusPq = null;
     this.rerunPq = null;
 
-    this.queueClient = null;
+    this.queueClient = queueClient;
 
     this.handlersCount = {};
 
@@ -79,15 +80,6 @@ class Handlers {
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedInitialStatusPq, 'Cannot setup twice!');
     assert(!this.rerunPq, 'Cannot setup twice!');
-
-    // This is a powerful Queue client without scopes to use throughout the handlers for things
-    // where taskcluster-github is acting of its own accord
-    // Where it is acting on behalf of a task, use this.queueClient.use({authorizedScopes: scopes}).blahblah
-    // (see this.createTasks for example)
-    this.queueClient = new taskcluster.Queue({
-      rootUrl: this.context.cfg.taskcluster.rootUrl,
-      credentials: this.context.cfg.taskcluster.credentials,
-    });
 
     // Listen for new jobs created via the api webhook endpoint
     const GithubEvents = taskcluster.createClient(this.reference);
@@ -270,10 +262,12 @@ class Handlers {
     debug(`canceling previous task groups for ${organization}/${repository} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`);
 
     try {
-      const builds = await this.context.db.fns.get_github_builds_pr(1000, 0, organization, repository, sha, pullNumber);
+      const builds = await this.context.db.fns.get_pending_github_builds(
+        null, null, organization, repository, sha, pullNumber);
       const taskGroupIds = builds?.filter(
-        build => ['pending', 'running'].includes(build.state) && build.task_group_id !== newTaskGroupId,
+        build => build.task_group_id !== newTaskGroupId,
       ).map(build => build.task_group_id);
+
       if (taskGroupIds.length > 0) {
         // we want to make sure that github client respects repository scopes when sealing and cancelling tasks
         const limitedQueueClient = this.queueClient.use({
@@ -340,7 +334,7 @@ class Handlers {
       errorBody, // already in Markdown..
       '',
       '</details>',
-    ].join('\n') ;
+    ].join('\n');
 
     // Warn the user know that there was a problem handling their request
     // by posting a comment; this error is then considered handled and not

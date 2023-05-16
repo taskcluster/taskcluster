@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const _ = require('lodash');
-const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS, GITHUB_TASKS_FOR } = require('./constants');
+const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS, GITHUB_TASKS_FOR, GITHUB_BUILD_STATES } = require('./constants');
 const { shouldSkipCommit, shouldSkipPullRequest } = require('./utils');
 
 // Strips/replaces undesirable characters which GitHub allows in
@@ -199,7 +199,7 @@ let builder = new APIBuilder({
   ].join('\n'),
   serviceName: 'github',
   apiVersion: 'v1',
-  context: ['db', 'monitor', 'publisher', 'cfg', 'ajv', 'github'],
+  context: ['db', 'monitor', 'publisher', 'cfg', 'ajv', 'github', 'queueClient'],
   errorCodes: {
     ForbiddenByGithub: 403,
   },
@@ -418,6 +418,12 @@ builder.declare({
       'Must provide `repository` if querying `sha`',
       {});
   }
+  if (pullRequest && !repository) {
+    return res.reportError('InputError',
+      'Must provide `repository` if querying `pullRequest`',
+      {});
+  }
+
   let { continuationToken, rows: builds } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_github_builds_pr(
@@ -438,6 +444,95 @@ builder.declare({
         repository: entry.repository,
         sha: entry.sha,
         state: entry.state,
+        taskGroupId: entry.task_group_id,
+        eventType: entry.event_type,
+        eventId: entry.event_id,
+        created: entry.created.toJSON(),
+        updated: entry.updated.toJSON(),
+        pullRequestNumber: entry.pull_request_number || undefined,
+      };
+    }),
+  });
+});
+
+builder.declare({
+  method: 'post',
+  route: '/builds/:owner/:repo/cancel',
+  name: 'cancelBuilds',
+  scopes: 'github:cancel-builds:<owner>:<repo>',
+  title: 'Cancel repository builds',
+  stability: 'stable',
+  category: 'Github Service',
+  output: 'build-list.yml',
+  query: {
+    sha: /./,
+    pullRequest: /^([0-9]*)$/,
+  },
+  description: [
+    'Cancel all running Task Groups associated with given repository and sha or pullRequest number',
+  ].join('\n'),
+}, async function(req, res) {
+  const { owner: organization, repo: repository } = req.params;
+  const { sha, pullRequest } = req.query;
+
+  if (repository && !organization) {
+    return res.reportError('InputError',
+      'Must provide `organization` if querying `repository`',
+      {});
+  }
+  if (sha && !repository) {
+    return res.reportError('InputError',
+      'Must provide `repository` if querying `sha`',
+      {});
+  }
+  if (pullRequest && !repository) {
+    return res.reportError('InputError',
+      'Must provide `repository` if querying `pullRequest`',
+      {});
+  }
+
+  const debugMon = this.monitor.childMonitor({ organization, repository, sha, pullRequest });
+  const builds = await this.db.fns.get_pending_github_builds(
+    null, null, organization, repository, sha, pullRequest,
+  );
+
+  if (!builds.length) {
+    debugMon.debug('No builds found to cancel');
+    return res.reportError('ResourceNotFound', 'No cancellable builds found', {});
+  }
+
+  const taskGroupIds = builds.map(build => build.task_group_id);
+  debugMon.debug(`Cancelling ${taskGroupIds.length} task groups: ${taskGroupIds.join(', ')}`);
+
+  try {
+    const limitedQueueClient = this.queueClient.use({
+      authorizedScopes: [
+        `assume:repo:github.com/${organization}/${repository}:*`,
+        'queue:seal-task-group:taskcluster-github/*',
+        'queue:cancel-task-group:taskcluster-github/*',
+      ],
+    });
+
+    await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.sealTaskGroup(taskGroupId)));
+    await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.cancelTaskGroup(taskGroupId)));
+    await Promise.all(taskGroupIds.map(taskGroupId => this.db.fns.set_github_build_state(
+      taskGroupId, GITHUB_BUILD_STATES.CANCELLED,
+    )));
+  } catch (err) {
+    await this.monitor.reportError(err);
+    if (err.code === 'InsufficientScopes') {
+      return res.reportError('InsufficientScopes', err.message, {});
+    }
+    return res.reportError('InputError', err.message, {});
+  }
+
+  return res.reply({
+    builds: builds.map(entry => {
+      return {
+        organization: entry.organization,
+        repository: entry.repository,
+        sha: entry.sha,
+        state: GITHUB_BUILD_STATES.CANCELLED, // no need to refetch from db, we just updated it
         taskGroupId: entry.task_group_id,
         eventType: entry.event_type,
         eventId: entry.event_id,
