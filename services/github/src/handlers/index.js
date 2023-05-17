@@ -287,7 +287,7 @@ class Handlers {
         null,
         organization,
         repository,
-        sha ? null : sha, // we only want to filter either by sha or pull number, not both
+        pullNumber ? null : sha, // we only want to filter either by sha or pull number, not both
         pullNumber ? pullNumber : null,
       );
       const taskGroupIds = builds?.filter(
