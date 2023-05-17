@@ -338,13 +338,4 @@ export const TASK_PAYLOAD_SCHEMAS = {
       maxRunTime: 600 + 30,
     },
   },
-  'generic-docker-posix': {
-    label: 'Generic worker docker posix',
-    type: 'generic-worker',
-    schema: 'docker_posix.json',
-    samplePayload: {
-      command: [payloadCommand],
-      maxRunTime: 600 + 30,
-    },
-  },
 };
