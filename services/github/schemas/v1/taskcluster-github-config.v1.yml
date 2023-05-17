@@ -35,7 +35,7 @@ properties:
     description: |
       Automatically cancel running task group on a non-default branch.
       Useful for PRs that are updated frequently. Only the last build will be running.
-    default: true
+    default: false
   tasks:
     title: Task definition template"
     description: |

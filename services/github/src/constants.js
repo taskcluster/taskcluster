@@ -18,6 +18,13 @@ const GITHUB_TASKS_FOR = {
   PULL_REQUEST_UNTRUSTED: 'github-pull-request-untrusted',
 };
 
+const GITHUB_BUILD_STATES = {
+  FAILURE: 'failure',
+  PENDING: 'pending',
+  SUCCESS: 'success',
+  CANCELLED: 'cancelled',
+};
+
 // https://docs.github.com/developers/webhooks-and-events/webhooks/webhook-events-and-payloads?actionType=released#release
 const GITHUB_RELEASE_ACTION = {
   CREATED: 'created',
@@ -67,6 +74,7 @@ module.exports = {
     RERUN: 'rerun',
   },
   GITHUB_TASKS_FOR,
+  GITHUB_BUILD_STATES,
   GITHUB_RELEASE_ACTION,
   CHECKLOGS_TEXT: 'View logs in Taskcluster',
   CHECKRUN_TEXT: 'View task in Taskcluster',

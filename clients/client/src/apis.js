@@ -830,6 +830,26 @@ module.exports = {
         {
           "args": [
             "owner",
+            "repo"
+          ],
+          "category": "Github Service",
+          "description": "Cancel all running Task Groups associated with given repository and sha or pullRequest number",
+          "method": "post",
+          "name": "cancelBuilds",
+          "output": "v1/build-list.json#",
+          "query": [
+            "sha",
+            "pullRequest"
+          ],
+          "route": "/builds/<owner>/<repo>/cancel",
+          "scopes": "github:cancel-builds:<owner>:<repo>",
+          "stability": "stable",
+          "title": "Cancel repository builds",
+          "type": "function"
+        },
+        {
+          "args": [
+            "owner",
             "repo",
             "branch"
           ],

@@ -6728,7 +6728,7 @@
       "description": "Description of a taskcluster.yml file v1, which may be used to generate a taskgraph\nand tasks.\n",
       "properties": {
         "autoCancelPreviousChecks": {
-          "default": true,
+          "default": false,
           "description": "Automatically cancel running task group on a non-default branch.\nUseful for PRs that are updated frequently. Only the last build will be running.\n",
           "type": "boolean"
         },
@@ -7368,7 +7368,8 @@
                   "pending",
                   "success",
                   "error",
-                  "failure"
+                  "failure",
+                  "cancelled"
                 ],
                 "type": "string"
               },
@@ -19003,6 +19004,26 @@
           "scopes": "github:list-builds",
           "stability": "stable",
           "title": "List of Builds",
+          "type": "function"
+        },
+        {
+          "args": [
+            "owner",
+            "repo"
+          ],
+          "category": "Github Service",
+          "description": "Cancel all running Task Groups associated with given repository and sha or pullRequest number",
+          "method": "post",
+          "name": "cancelBuilds",
+          "output": "v1/build-list.json#",
+          "query": [
+            "sha",
+            "pullRequest"
+          ],
+          "route": "/builds/<owner>/<repo>/cancel",
+          "scopes": "github:cancel-builds:<owner>:<repo>",
+          "stability": "stable",
+          "title": "Cancel repository builds",
           "type": "function"
         },
         {

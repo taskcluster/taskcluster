@@ -205,6 +205,31 @@ impl Github {
         (path, query)
     }
 
+    /// Cancel repository builds
+    ///
+    /// Cancel all running Task Groups associated with given repository and sha or pullRequest number
+    pub async fn cancelBuilds(&self, owner: &str, repo: &str, sha: Option<&str>, pullRequest: Option<&str>) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::cancelBuilds_details(owner, repo, sha, pullRequest);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for cancelBuilds
+    fn cancelBuilds_details<'a>(owner: &'a str, repo: &'a str, sha: Option<&'a str>, pullRequest: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("builds/{}/{}/cancel", urlencode(owner), urlencode(repo));
+        let mut query = None;
+        if let Some(q) = sha {
+            query.get_or_insert_with(Vec::new).push(("sha", q));
+        }
+        if let Some(q) = pullRequest {
+            query.get_or_insert_with(Vec::new).push(("pullRequest", q));
+        }
+
+        (path, query)
+    }
+
     /// Latest Build Status Badge
     ///
     /// Checks the status of the latest build of a given branch

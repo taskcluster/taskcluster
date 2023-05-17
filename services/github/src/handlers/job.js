@@ -199,6 +199,14 @@ async function jobHandler(message) {
     return await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e });
   }
 
+  let build = {
+    organization,
+    repository,
+    sha,
+    task_group_id: taskGroupId,
+    event_type: message.payload.details['event.type'],
+    pull_number: pullNumber,
+  };
   try {
     debug(`Trying to create a record for ${organization}/${repository}@${sha} (${groupState}) in github_builds table`);
     let now = new Date();
@@ -219,7 +227,7 @@ async function jobHandler(message) {
     if (err.code !== UNIQUE_VIOLATION) {
       throw err;
     }
-    const [build] = await this.context.db.fns.get_github_build_pr(taskGroupId);
+    build = await this.context.db.fns.get_github_build_pr(taskGroupId)[0];
     assert.equal(build.state, groupState, `State for ${organization}/${repository}@${sha}
       already exists but is set to ${build.state} instead of ${groupState}!`);
     assert.equal(build.organization, organization);
@@ -239,11 +247,9 @@ async function jobHandler(message) {
 
   // only cancel previous tasks after we have successfully created new ones
   // Cancel existing builds for non-default branches
-  if (graphConfig.autoCancelPreviousChecks !== false) {
-    if (pullNumber) {
-      await this.cancelPreviousTaskGroups({ organization, repository, pullNumber, debug, newTaskGroupId: taskGroupId });
-    } else if (message.payload.body.ref !== defaultBranch) {
-      await this.cancelPreviousTaskGroups({ organization, repository, sha, debug, newTaskGroupId: taskGroupId });
+  if (graphConfig.autoCancelPreviousChecks === true) {
+    if (pullNumber || message.payload.body.ref !== defaultBranch) {
+      await this.cancelPreviousTaskGroups({ instGithub, debug, newBuild: build });
     }
   }
 

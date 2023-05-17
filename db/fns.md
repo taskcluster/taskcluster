@@ -22,6 +22,7 @@
    * [`get_github_checks_by_task_group_id`](#get_github_checks_by_task_group_id)
    * [`get_github_integration`](#get_github_integration)
    * [`get_github_integrations`](#get_github_integrations)
+   * [`get_pending_github_builds`](#get_pending_github_builds)
    * [`set_github_build_state`](#set_github_build_state)
    * [`upsert_github_integration`](#upsert_github_integration)
  * [hooks functions](#hooks)
@@ -352,6 +353,7 @@ Does nothing if the client does not exist.
 * [`get_github_checks_by_task_group_id`](#get_github_checks_by_task_group_id)
 * [`get_github_integration`](#get_github_integration)
 * [`get_github_integrations`](#get_github_integrations)
+* [`get_pending_github_builds`](#get_pending_github_builds)
 * [`set_github_build_state`](#set_github_build_state)
 * [`upsert_github_integration`](#upsert_github_integration)
 
@@ -516,6 +518,33 @@ Get a single integration by owner.
 * *Last defined on version*: 36
 
 Get a list of integrations.
+
+### get_pending_github_builds
+
+* *Mode*: read
+* *Arguments*:
+  * `page_size_in integer`
+  * `page_offset_in integer`
+  * `organization_in text`
+  * `repository_in text`
+  * `sha_in text`
+  * `pull_request_number_in integer`
+* *Returns*: `table`
+  * `organization text`
+  * `repository text`
+  * `sha text`
+  * `task_group_id text`
+  * `state text`
+  * `created timestamptz`
+  * `updated timestamptz`
+  * `installation_id integer`
+  * `event_type text`
+  * `event_id text`
+  * `pull_request_number integer`
+  * `etag uuid`
+* *Last defined on version*: 86
+
+Get github builds that are pending (not yet resolved) for a given organization and repository
 
 ### set_github_build_state
 

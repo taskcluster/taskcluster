@@ -32,7 +32,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   let github = null;
   let handlers = null;
 
-  async function addBuild({ state, taskGroupId, pullNumber }) {
+  async function addBuild({ state, taskGroupId, pullNumber, eventType = 'push' }) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
     await helper.db.fns.create_github_build_pr(
       'TaskclusterRobot',
@@ -43,7 +43,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       new Date(),
       new Date(),
       9988,
-      'push',
+      eventType,
       'aaa-bbb',
       pullNumber,
     );
@@ -284,7 +284,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     test('does not call queue.sealTaskGroup/cancelTaskGroup if no previous builds', async function () {
       await handlers.realCancelPreviousTaskGroups({
-        organization: 'random', repo: 'none', sha: 'none', debug: sinon.stub() });
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: { sha: 'none', organization: 'none', repository: 'none' },
+      });
       assert.equal(sealedTaskGroups.length, 0);
       assert.equal(cancelledTaskGroups.length, 0);
     });
@@ -302,30 +305,47 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         },
       });
 
-      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1 });
-      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1 });
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1, eventType: 'pull_request.synchronize' });
+
+      const instGithub = github.inst(5828);
 
       await handlers.realCancelPreviousTaskGroups({
-        organization: 'TaskclusterRobot', repo: 'hooks-testing', pullNumber: 1, debug: sinon.stub(),
+        instGithub,
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA, organization: 'TaskclusterRobot', repository: 'hooks-testing',
+          pull_number: 1, event_type: 'pull_request.synchronize',
+        },
       });
+      assert(instGithub.issues.createComment.calledOnce);
+      let args = instGithub.issues.createComment.args;
+      assert.equal(args[0][0].owner, 'TaskclusterRobot');
+      assert.equal(args[0][0].repo, 'hooks-testing');
+      assert.equal(args[0][0].issue_number, 1);
 
       const monitor = await helper.load('monitor');
       assert(monitor.manager.messages.some(
-        ({ Type, Severity, Fields }) => Type === 'monitor.error' && Severity === LEVELS.err && Fields.message === 'sealTaskGroup error: missing scopes',
+        ({ Type, Severity, Fields }) => Type === 'monitor.error' && Severity === LEVELS.err && Fields.message.includes('sealTaskGroup error: missing scopes'),
       ));
       monitor.manager.reset();
+
     });
 
     test('calls queue.sealTaskGroup/cancelTaskGroup for pulNumber excluding new task group id', async function () {
-      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1 });
-      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1 });
-      await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 1 });
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1, eventType: 'pull_request.synchronize' });
+      await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 1, eventType: 'pull_request.synchronize' });
+      await addBuild({ state: 'pending', taskGroupId: 'dd', pullNumber: 1, eventType: 'pull_request.closed' });
       await handlers.realCancelPreviousTaskGroups({
-        organization: 'TaskclusterRobot',
-        repo: 'hooks-testing',
-        pullNumber: 1,
-        newTaskGroupId: 'bb',
+        instGithub: sinon.stub(),
         debug: sinon.stub(),
+        newBuild: {
+          sha: 'none', task_group_id: 'bb',
+          organization: 'TaskclusterRobot',
+          repository: 'hooks-testing', pull_number: 1,
+          event_type: 'pull_request.synchronize',
+        },
       });
 
       assert.deepEqual(sealedTaskGroups, ['aa', 'cc']);
@@ -341,15 +361,64 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await addBuild({ state: 'pending', taskGroupId: 'bb' });
       await addBuild({ state: 'pending', taskGroupId: 'cc' });
       await handlers.realCancelPreviousTaskGroups({
-        organization: 'TaskclusterRobot',
-        repo: 'hooks-testing',
-        sha: COMMIT_SHA,
-        newTaskGroupId: 'bb',
+        instGithub: sinon.stub(),
         debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA, task_group_id: 'bb',
+          organization: 'TaskclusterRobot', repository: 'hooks-testing', event_type: 'push',
+        },
       });
 
       assert.deepEqual(sealedTaskGroups, ['aa', 'cc']);
       assert.deepEqual(cancelledTaskGroups, ['aa', 'cc']);
+    });
+
+    test('respects same event types for pull_request', async function () {
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 3, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 3, eventType: 'pull_request.synchronize' });
+      await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 3, eventType: 'pull_request.closed' });
+      await addBuild({ state: 'pending', taskGroupId: 'dd', pullNumber: 3, eventType: 'pull_request.assigned' });
+      await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
+      await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
+
+      await handlers.realCancelPreviousTaskGroups({
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA,
+          task_group_id: 'bb',
+          organization: 'TaskclusterRobot',
+          repository: 'hooks-testing',
+          event_type: 'pull_request.synchronize',
+          pull_number: 3,
+        },
+      });
+      assert.deepEqual(sealedTaskGroups, ['aa']);
+      assert.deepEqual(cancelledTaskGroups, ['aa']);
+    });
+
+    test('respects same event types for push', async function () {
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 3, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 3, eventType: 'pull_request.synchronize' });
+      await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 3, eventType: 'pull_request.closed' });
+      await addBuild({ state: 'pending', taskGroupId: 'dd', pullNumber: 3, eventType: 'pull_request.assigned' });
+      await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
+      await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
+
+      await handlers.realCancelPreviousTaskGroups({
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA,
+          task_group_id: 'gg',
+          organization: 'TaskclusterRobot',
+          repository: 'hooks-testing',
+          event_type: 'push',
+        },
+      });
+
+      assert.deepEqual(sealedTaskGroups, ['ff']);
+      assert.deepEqual(cancelledTaskGroups, ['ff']);
     });
   });
 
@@ -765,11 +834,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
         assert(handlers.cancelPreviousTaskGroups.calledOnce);
         const cancelCallArgs = handlers.cancelPreviousTaskGroups.firstCall.args[0];
-        assert.equal(cancelCallArgs.organization, 'TaskclusterRobot');
-        assert.equal(cancelCallArgs.repository, 'hooks-testing');
-        assert.equal(cancelCallArgs.newTaskGroupId, taskGroupId);
-        assert.equal(cancelCallArgs.sha, COMMIT_SHA);
-        assert.equal(cancelCallArgs.pullNumber, null);
+        assert.equal(cancelCallArgs.newBuild.organization, 'TaskclusterRobot');
+        assert.equal(cancelCallArgs.newBuild.repository, 'hooks-testing');
+        assert.equal(cancelCallArgs.newBuild.task_group_id, taskGroupId);
+        assert.equal(cancelCallArgs.newBuild.sha, COMMIT_SHA);
+        assert.equal(cancelCallArgs.newBuild.pull_number, null);
       });
       test('should cancel task groups for same pull request number', async function () {
         const tcYaml = require('./data/yml/valid-yaml-v1.json');
@@ -794,11 +863,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert(handlers.cancelPreviousTaskGroups.calledOnce);
 
         const cancelCallArgs = handlers.cancelPreviousTaskGroups.firstCall.args[0];
-        assert.equal(cancelCallArgs.organization, 'TaskclusterRobot');
-        assert.equal(cancelCallArgs.repository, 'hooks-testing');
-        assert.equal(cancelCallArgs.newTaskGroupId, taskGroupId);
-        assert.equal(cancelCallArgs.sha, null);
-        assert.equal(cancelCallArgs.pullNumber, 1001);
+        assert.equal(cancelCallArgs.newBuild.organization, 'TaskclusterRobot');
+        assert.equal(cancelCallArgs.newBuild.repository, 'hooks-testing');
+        assert.equal(cancelCallArgs.newBuild.task_group_id, taskGroupId);
+        assert.equal(cancelCallArgs.newBuild.pull_number, 1001);
 
         await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.synchronize', pullNumber: 1001 });
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
@@ -807,11 +875,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
         assert(handlers.cancelPreviousTaskGroups.calledTwice);
         const cancelCallArgs2 = handlers.cancelPreviousTaskGroups.secondCall.args[0];
-        assert.equal(cancelCallArgs2.organization, 'TaskclusterRobot');
-        assert.equal(cancelCallArgs2.repository, 'hooks-testing');
-        assert.equal(cancelCallArgs2.newTaskGroupId, taskGroupId2);
-        assert.equal(cancelCallArgs2.sha, null);
-        assert.equal(cancelCallArgs2.pullNumber, 1001);
+        assert.equal(cancelCallArgs2.newBuild.organization, 'TaskclusterRobot');
+        assert.equal(cancelCallArgs2.newBuild.repository, 'hooks-testing');
+        assert.equal(cancelCallArgs2.newBuild.task_group_id, taskGroupId2);
+        assert.equal(cancelCallArgs2.newBuild.pull_number, 1001);
       });
     });
 
@@ -1082,6 +1149,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       assert(github.inst(9988).repos.createCommitStatus.calledOnce === false);
       await assertBuildState('pending');
+    });
+    test('task failure does not change cancelled build state', async function() {
+      await addBuild({ state: 'cancelled', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-failed',
+        routingKey: 'route.statuses',
+        runId: 0,
+        state: 'running',
+      });
+      await assertBuildState('cancelled');
     });
   });
 

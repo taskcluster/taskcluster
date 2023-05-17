@@ -5,6 +5,7 @@ const Handlers = require('./handlers');
 const Intree = require('./intree');
 const Ajv = require('ajv').default;
 const addFormats = require('ajv-formats').default;
+const taskcluster = require('taskcluster-client');
 const config = require('taskcluster-lib-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const loader = require('taskcluster-lib-loader');
@@ -106,10 +107,22 @@ const load = loader({
     }),
   },
 
+  queueClient: {
+    requires: ['cfg'],
+    // This is a powerful Queue client without scopes to use throughout the handlers for things
+    // where taskcluster-github is acting of its own accord
+    // Where it is acting on behalf of a task, use this.queueClient.use({authorizedScopes: scopes}).blahblah
+    // (see handlers.createTasks for example)
+    setup: ({ cfg, monitor }) => new taskcluster.Queue({
+      rootUrl: cfg.taskcluster.rootUrl,
+      credentials: cfg.taskcluster.credentials,
+    }),
+  },
+
   api: {
     requires: [
-      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv'],
-    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv }) => builder.build({
+      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv', 'queueClient'],
+    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv, queueClient }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
         publisher,
@@ -118,6 +131,7 @@ const load = loader({
         db,
         ajv,
         monitor: monitor.childMonitor('api-context'),
+        queueClient,
       },
       monitor: monitor.childMonitor('api'),
       schemaset,
@@ -162,6 +176,7 @@ const load = loader({
       'pulseClient',
       'publisher',
       'db',
+      'queueClient',
     ],
     setup: async ({
       cfg,
@@ -173,6 +188,7 @@ const load = loader({
       pulseClient,
       publisher,
       db,
+      queueClient,
     }) =>
       new Handlers({
         rootUrl: cfg.taskcluster.rootUrl,
@@ -187,6 +203,7 @@ const load = loader({
         rerunQueueName: cfg.app.rerunQueue,
         context: { cfg, github, schemaset, db, publisher },
         pulseClient,
+        queueClient,
       }),
   },
 

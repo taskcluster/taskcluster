@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const _ = require('lodash');
+const sinon = require('sinon');
 const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
@@ -71,6 +72,27 @@ exports.withFakeGithub = (mock, skipping) => {
   setup(async function() {
     let fakeGithub = await exports.load('github');
     fakeGithub.resetStubs();
+  });
+};
+
+/**
+ * Set the `queueClient` loader component to a fake version.
+ */
+exports.withFakeQueue = (mock, skipping) => {
+  const fakeQueueClient = () => new taskcluster.Queue({
+    rootUrl: 'https://tc.example.com',
+    fake: {
+      sealTaskGroup: sinon.stub(),
+      cancelTaskGroup: sinon.stub(),
+    },
+  });
+
+  suiteSetup(function() {
+    exports.load.inject('queueClient', fakeQueueClient());
+  });
+
+  suiteTeardown(function() {
+    exports.load.remove('queueClient');
   });
 };
 

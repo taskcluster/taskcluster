@@ -508,6 +508,23 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "cancelBuilds",
+				Title:       "Cancel repository builds",
+				Description: "Cancel all running Task Groups associated with given repository and sha or pullRequest number",
+				Stability:   "stable",
+				Method:      "post",
+				Route:       "/builds/<owner>/<repo>/cancel",
+				Args: []string{
+					"owner",
+					"repo",
+				},
+				Query: []string{
+					"sha",
+					"pullRequest",
+				},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "badge",
 				Title:       "Latest Build Status Badge",
 				Description: "Checks the status of the latest build of a given branch\nand returns corresponding badge svg.",

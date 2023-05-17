@@ -52,6 +52,7 @@ type (
 		//   * "success"
 		//   * "error"
 		//   * "failure"
+		//   * "cancelled"
 		State string `json:"state"`
 
 		// Taskcluster task-group associated with the build.
