@@ -257,26 +257,46 @@ class Handlers {
     }
   }
 
-  async cancelPreviousTaskGroups({ instGithub, debug, organization, repository,
-    newTaskGroupId, sha = null, pullNumber = null }) {
+  /**
+   * Cancel any running builds that are not the current build.
+   * If new build is for the 'push' event, then we want to only cancel builds for the same sha and event type.
+   * Same SHA might appear in multiple builds, push event, tag event, etc.
+   * If this is a pull request event, we only want to cancel builds of the same type:
+   *  [pull_request.opened, pull_request.synchronize] are treated as the same type
+   *  pull_request.[labeled, edited, closed, review_requested, assigned] are different events
+   */
+  async cancelPreviousTaskGroups({ instGithub, debug, newBuild }) {
+    const { organization, repository, sha, pull_number: pullNumber,
+      task_group_id: newTaskGroupId, event_type: eventType } = newBuild;
     debug(`canceling previous task groups for ${organization}/${repository} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`);
 
+    const scopes = [
+      `assume:repo:github.com/${organization}/${repository}:*`,
+      'queue:seal-task-group:taskcluster-github/*',
+      'queue:cancel-task-group:taskcluster-github/*',
+    ];
+
     try {
+      let includedEventTypes = [eventType];
+      if (pullNumber && ['pull_request.opened', 'pull_request.synchronize'].includes(eventType)) {
+        includedEventTypes = ['pull_request.opened', 'pull_request.synchronize'];
+      }
+
       const builds = await this.context.db.fns.get_pending_github_builds(
-        null, null, organization, repository, sha, pullNumber);
+        null,
+        null,
+        organization,
+        repository,
+        sha ? null : sha, // we only want to filter either by sha or pull number, not both
+        pullNumber ? pullNumber : null,
+      );
       const taskGroupIds = builds?.filter(
-        build => build.task_group_id !== newTaskGroupId,
+        build => build.task_group_id !== newTaskGroupId && includedEventTypes.includes(build.event_type),
       ).map(build => build.task_group_id);
 
       if (taskGroupIds.length > 0) {
         // we want to make sure that github client respects repository scopes when sealing and cancelling tasks
-        const limitedQueueClient = this.queueClient.use({
-          authorizedScopes: [
-            `assume:repo:github.com/${organization}/${repository}:*`,
-            'queue:seal-task-group:taskcluster-github/*',
-            'queue:cancel-task-group:taskcluster-github/*',
-          ],
-        });
+        const limitedQueueClient = this.queueClient.use({ authorizedScopes: scopes });
 
         debug(`Found running task groups: ${taskGroupIds.join(', ')}. Sealing and cancelling`);
         await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.sealTaskGroup(taskGroupId)));
@@ -286,7 +306,17 @@ class Handlers {
         )));
       }
     } catch (err) {
-      debug(`Error while canceling previous task groups: ${err.message}`);
+      debug(`Error while canceling previous task groups: ${err.message} scopes used: ${scopes.join(', ')}`);
+      err.message = [
+        'Taskcluster-GitHub attempted to cancel previously created task groups with following scopes:',
+        '',
+        '```',
+        scopes.join(', '),
+        '```',
+        '',
+        err.message,
+      ].join('\n');
+
       await this.monitor.reportError(err);
       await this.createExceptionComment({
         debug,
