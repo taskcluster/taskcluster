@@ -20,7 +20,7 @@ func TestDataTestCases(t *testing.T) {
 	b := yamlToJSON(t, "schemas/test_suites.yml")
 	schemaLoader := gojsonschema.NewBytesLoader(b)
 	// Enumerate all test suites under testdata/testcases, and execute a subtest for each suite
-	filepath.WalkDir(
+	err := filepath.WalkDir(
 		"testdata/testcases",
 		func(path string, file fs.DirEntry, e error) error {
 			if e != nil {
@@ -40,6 +40,9 @@ func TestDataTestCases(t *testing.T) {
 			return nil
 		},
 	)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 // testSuite returns a go test the given testSuite
