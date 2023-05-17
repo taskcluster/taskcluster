@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v50.1.3
+
+### ADMINS
+
+▶ [patch] [#5621](https://github.com/taskcluster/taskcluster/issues/5621)
+Github service patch incorrect query for fetching older builds
+
 ## v50.1.2
 
 ### ADMINS
