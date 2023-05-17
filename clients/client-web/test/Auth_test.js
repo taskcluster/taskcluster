@@ -34,7 +34,7 @@ describe('Auth', function() {
     });
 
     expect(auth.buildSignedUrl(auth.client, 'test'))
-      .to.eventually.match(new RegExp(`^${process.env.BASE_URL}/auth/v1/clients/test\\?bewit`));
+      .to.eventually.match(new RegExp(`^${helper.rootUrl}/auth/v1/clients/test\\?bewit`));
   });
 
   it('should request from signed URL', () => {
