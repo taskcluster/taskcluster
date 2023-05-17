@@ -247,7 +247,7 @@ async function jobHandler(message) {
 
   // only cancel previous tasks after we have successfully created new ones
   // Cancel existing builds for non-default branches
-  if (graphConfig.autoCancelPreviousChecks !== false) {
+  if (graphConfig.autoCancelPreviousChecks === true) {
     if (pullNumber || message.payload.body.ref !== defaultBranch) {
       await this.cancelPreviousTaskGroups({ instGithub, debug, newBuild: build });
     }
