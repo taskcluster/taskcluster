@@ -49,7 +49,7 @@ func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericwor
 		// is enabled for IndexedDockerImages
 		// during the remainder of this translation
 		// it's used to access the index service API
-		dwPayload.Features.TaskclusterProxy = true
+		gwPayload.Features.TaskclusterProxy = true
 	}
 	err = setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches)
 	if err != nil {
@@ -128,12 +128,12 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 	return gwArtifacts
 }
 
-func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
+func command(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, dwImage Image, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
 	containerName := "taskcontainer"
 
 	podmanPrepareCommands := dwImage.PrepareCommands()
 
-	podmanRunString, err := podmanRunCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches)
+	podmanRunString, err := podmanRunCommand(containerName, dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches)
 	if err != nil {
 		return nil, fmt.Errorf("could not form podman run command: %w", err)
 	}
@@ -169,7 +169,7 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 	}, nil
 }
 
-func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache) (string, error) {
+func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache) (string, error) {
 	command := strings.Builder{}
 	command.WriteString("podman run --name " + containerName)
 	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind {
@@ -179,10 +179,12 @@ func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorker
 		command.WriteString(" --cap-add=SYS_PTRACE")
 	}
 	command.WriteString(createVolumeMountsString(dwPayload.Cache, wdcs))
-	if dwPayload.Features.TaskclusterProxy {
+	// need to keep TaskclusterProxy to true if it's already been enabled for IndexedDockerImages
+	taskclusterProxyEnabled := gwPayload.Features.TaskclusterProxy || dwPayload.Features.TaskclusterProxy
+	if taskclusterProxyEnabled {
 		command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
 	}
-	command.WriteString(podmanEnvMappings(dwPayload.Env, dwPayload))
+	command.WriteString(podmanEnvMappings(dwPayload.Env, taskclusterProxyEnabled))
 	dockerImageString, err := dwImage.String()
 	if err != nil {
 		return "", fmt.Errorf("could not form docker image string: %w", err)
@@ -212,7 +214,8 @@ func podmanCopyArtifacts(containerName string, dwPayload *dockerworker.DockerWor
 
 func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.Features.ChainOfTrust = dwPayload.Features.ChainOfTrust
-	gwPayload.Features.TaskclusterProxy = dwPayload.Features.TaskclusterProxy
+	// need to keep TaskclusterProxy to true if it's already been enabled for IndexedDockerImages
+	gwPayload.Features.TaskclusterProxy = gwPayload.Features.TaskclusterProxy || dwPayload.Features.TaskclusterProxy
 	gwPayload.Features.Interactive = dwPayload.Features.Interactive
 
 	switch dwPayload.Features.Artifacts {
@@ -232,7 +235,7 @@ func setArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generi
 }
 
 func setCommand(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, dwImage Image, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) (err error) {
-	gwPayload.Command, err = command(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches)
+	gwPayload.Command, err = command(dwPayload, gwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches)
 	return
 }
 
@@ -327,7 +330,7 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 }
 
-func podmanEnvMappings(payloadEnv map[string]string, dwPayload *dockerworker.DockerWorkerPayload) string {
+func podmanEnvMappings(payloadEnv map[string]string, taskclusterProxyEnabled bool) string {
 	envStrBuilder := strings.Builder{}
 
 	dwManagedEnvVars := []string{
@@ -337,7 +340,7 @@ func podmanEnvMappings(payloadEnv map[string]string, dwPayload *dockerworker.Doc
 		"TASKCLUSTER_WORKER_LOCATION",
 	}
 
-	if dwPayload.Features.TaskclusterProxy {
+	if taskclusterProxyEnabled {
 		dwManagedEnvVars = append(dwManagedEnvVars, "TASKCLUSTER_PROXY_URL")
 	}
 

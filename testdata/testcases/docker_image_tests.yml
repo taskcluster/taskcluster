@@ -74,7 +74,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              curl -fsSL -o path '${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path'
+              curl -fsSL -o path "${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path"
 
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
@@ -112,7 +112,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              curl -fsSL -o path.lz4 '${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path.lz4'
+              curl -fsSL -o path.lz4 "${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path.lz4"
 
               unlz4 'path.lz4'
 
@@ -154,7 +154,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              curl -fsSL -o path.zst '${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path.zst'
+              curl -fsSL -o path.zst "${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path.zst"
 
               unzstd 'path.zst'
 

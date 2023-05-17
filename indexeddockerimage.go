@@ -13,7 +13,7 @@ func (idi *IndexedDockerImage) PrepareCommands() []string {
 	findArtifactURL := fmt.Sprintf("${TASKCLUSTER_PROXY_URL}/index/v1/task/%s/artifacts/%s", idi.Namespace, idi.Path)
 	filename := filepath.Base(idi.Path)
 	commands := []string{
-		fmt.Sprintf("curl -fsSL -o %s '%s'", filename, findArtifactURL),
+		fmt.Sprintf(`curl -fsSL -o %s "%s"`, filename, findArtifactURL),
 	}
 
 	handleFileExtentions(filename, &commands)
