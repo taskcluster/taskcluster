@@ -79,9 +79,7 @@ testSuite:
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
               podman run --name taskcontainer
-              --add-host=taskcluster:127.0.0.1 --net=host
               -e "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_PROXY_URL=${TASKCLUSTER_PROXY_URL}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
@@ -121,9 +119,7 @@ testSuite:
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
               podman run --name taskcontainer
-              --add-host=taskcluster:127.0.0.1 --net=host
               -e "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_PROXY_URL=${TASKCLUSTER_PROXY_URL}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
@@ -163,9 +159,7 @@ testSuite:
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
               podman run --name taskcontainer
-              --add-host=taskcluster:127.0.0.1 --net=host
               -e "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_PROXY_URL=${TASKCLUSTER_PROXY_URL}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
