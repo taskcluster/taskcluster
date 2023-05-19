@@ -211,6 +211,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -327,6 +328,18 @@ type (
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
+	// Content originating from a task artifact that has been indexed by the Taskcluster Index Service.
+	//
+	// Since: generic-worker 50.2.0
+	IndexedContent struct {
+
+		// Max length: 1024
+		Artifact string `json:"artifact"`
+
+		// Max length: 255
+		Namespace string `json:"namespace"`
+	}
+
 	// Configuration for task logs.
 	//
 	// Since: generic-worker 48.2.0
@@ -366,6 +379,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -420,6 +434,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -489,6 +504,26 @@ func taskPayloadSchema() string {
             "artifact"
           ],
           "title": "Artifact Content",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Content originating from a task artifact that has been indexed by the Taskcluster Index Service.\n\nSince: generic-worker 50.2.0",
+          "properties": {
+            "artifact": {
+              "maxLength": 1024,
+              "type": "string"
+            },
+            "namespace": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          },
+          "required": [
+            "namespace",
+            "artifact"
+          ],
+          "title": "Indexed Content",
           "type": "object"
         },
         {

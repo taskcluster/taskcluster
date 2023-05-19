@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcindex"
 	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcobject"
 	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcqueue"
@@ -18,6 +19,10 @@ type Auth interface {
 	ExpandScopes(payload *tcauth.SetOfScopes) (*tcauth.SetOfScopes, error)
 	SentryDSN(project string) (*tcauth.SentryDSNResponse, error)
 	WebsocktunnelToken(wstAudience, wstClient string) (*tcauth.WebsocktunnelTokenResponse, error)
+}
+
+type Index interface {
+	FindTask(indexPath string) (*tcindex.IndexedTaskResponse, error)
 }
 
 type WorkerManager interface {

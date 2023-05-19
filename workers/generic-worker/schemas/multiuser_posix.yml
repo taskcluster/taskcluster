@@ -487,6 +487,23 @@ definitions:
       required:
       - taskId
       - artifact
+    - title: Indexed Content
+      description: |-
+        Content originating from a task artifact that has been indexed by the Taskcluster Index Service.
+
+        Since: generic-worker 50.2.0
+      type: object
+      properties:
+        namespace:
+          type: string
+          maxLength: 255
+        artifact:
+          type: string
+          maxLength: 1024
+      additionalProperties: false
+      required:
+      - namespace
+      - artifact
     - title: URL Content
       description: |-
         URL to download content from.

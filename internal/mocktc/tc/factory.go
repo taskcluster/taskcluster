@@ -3,6 +3,7 @@ package tc
 import (
 	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
 	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcindex"
 	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcobject"
 	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcqueue"
@@ -12,6 +13,7 @@ import (
 
 type ServiceFactory interface {
 	Auth(creds *tcclient.Credentials, rootURL string) Auth
+	Index(creds *tcclient.Credentials, rootURL string) Index
 	Queue(creds *tcclient.Credentials, rootURL string) Queue
 	Object(creds *tcclient.Credentials, rootURL string) Object
 	PurgeCache(creds *tcclient.Credentials, rootURL string) PurgeCache
@@ -24,6 +26,10 @@ type ClientFactory struct {
 
 func (cf *ClientFactory) Auth(creds *tcclient.Credentials, rootURL string) Auth {
 	return tcauth.New(creds, rootURL)
+}
+
+func (cf *ClientFactory) Index(creds *tcclient.Credentials, rootURL string) Index {
+	return tcindex.New(creds, rootURL)
 }
 
 func (cf *ClientFactory) PurgeCache(creds *tcclient.Credentials, rootURL string) PurgeCache {
