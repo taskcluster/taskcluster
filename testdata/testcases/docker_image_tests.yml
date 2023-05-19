@@ -64,8 +64,8 @@ testSuite:
         command:
           - echo "Hello world"
         image:
-          namespace: test-namespace
-          path: /test/path
+          namespace: test.namespace
+          path: test/path
           type: indexed-image
         maxRunTime: 3600
       genericWorkerTaskPayload:
@@ -74,12 +74,16 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              curl -fsSL -o path "${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path"
+
+              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+
               podman run --name taskcontainer
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
-              ubuntu 'echo "Hello world"'
+              "${IMAGE_NAME}" 'echo "Hello world"'
 
               exit_code=$?
 
@@ -87,6 +91,88 @@ testSuite:
 
               exit "${exit_code}"
         maxRunTime: 3600
+        features:
+          taskclusterProxy: true
+
+    - name: IndexedDockerImage with .lz4 extension
+      description: Test IndexedDockerImage with .lz4 extension
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image:
+          namespace: test.namespace
+          path: test/path.lz4
+          type: indexed-image
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        artifacts: []
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              curl -fsSL -o path.lz4 "${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path.lz4"
+
+              unlz4 'path.lz4'
+
+              rm 'path.lz4'
+
+              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+
+              podman run --name taskcontainer
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              "${IMAGE_NAME}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              podman rm taskcontainer
+
+              exit "${exit_code}"
+        maxRunTime: 3600
+        features:
+          taskclusterProxy: true
+
+    - name: IndexedDockerImage with .zst extension
+      description: Test IndexedDockerImage with .zst extension
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image:
+          namespace: test.namespace
+          path: test/path.zst
+          type: indexed-image
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        artifacts: []
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              curl -fsSL -o path.zst "${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path.zst"
+
+              unzstd 'path.zst'
+
+              rm 'path.zst'
+
+              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+
+              podman run --name taskcontainer
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              "${IMAGE_NAME}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              podman rm taskcontainer
+
+              exit "${exit_code}"
+        maxRunTime: 3600
+        features:
+          taskclusterProxy: true
 
     - name: DockerImageArtifact
       description: Test DockerImageArtifact
@@ -94,7 +180,7 @@ testSuite:
         command:
           - echo "Hello world"
         image:
-          path: /test/path
+          path: public/test/path
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
           type: task-image
         maxRunTime: 3600
@@ -120,7 +206,7 @@ testSuite:
               exit "${exit_code}"
         mounts:
           - content:
-              artifact: /test/path
+              artifact: public/test/path
               taskId: 2JGiKFtpRnGbVczc6-OJ1Q
             file: path
         maxRunTime: 3600
@@ -131,7 +217,7 @@ testSuite:
         command:
           - echo "Hello world"
         image:
-          path: /test/path.lz4
+          path: public/test/path.lz4
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
           type: task-image
         maxRunTime: 3600
@@ -161,7 +247,7 @@ testSuite:
               exit "${exit_code}"
         mounts:
           - content:
-              artifact: /test/path.lz4
+              artifact: public/test/path.lz4
               taskId: 2JGiKFtpRnGbVczc6-OJ1Q
             file: path.lz4
         maxRunTime: 3600
@@ -172,7 +258,7 @@ testSuite:
         command:
           - echo "Hello world"
         image:
-          path: /test/path.zst
+          path: public/test/path.zst
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
           type: task-image
         maxRunTime: 3600
@@ -202,7 +288,7 @@ testSuite:
               exit "${exit_code}"
         mounts:
           - content:
-              artifact: /test/path.zst
+              artifact: public/test/path.zst
               taskId: 2JGiKFtpRnGbVczc6-OJ1Q
             file: path.zst
         maxRunTime: 3600

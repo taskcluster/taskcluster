@@ -1,9 +1,24 @@
 package d2g
 
-import "github.com/taskcluster/d2g/genericworker"
+import (
+	"fmt"
+	"path/filepath"
+	"strings"
+
+	"github.com/taskcluster/d2g/genericworker"
+	"github.com/taskcluster/shell"
+)
 
 func (idi *IndexedDockerImage) PrepareCommands() []string {
-	return []string{}
+	findArtifactURL := fmt.Sprintf("${TASKCLUSTER_PROXY_URL}/index/v1/task/%s/artifacts/%s", idi.Namespace, idi.Path)
+	filename := filepath.Base(idi.Path)
+	commands := []string{
+		fmt.Sprintf(`curl -fsSL -o %s "%s"`, filename, findArtifactURL),
+	}
+
+	handleFileExtentions(filename, &commands)
+
+	return commands
 }
 
 func (idi *IndexedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
@@ -11,5 +26,34 @@ func (idi *IndexedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
 }
 
 func (idi *IndexedDockerImage) String() (string, error) {
-	return "", nil
+	return `"${IMAGE_NAME}"`, nil
+}
+
+func handleFileExtentions(filename string, commands *[]string) {
+	switch lowerExt := strings.ToLower(filepath.Ext(filename)); lowerExt {
+	case ".lz4":
+		*commands = append(
+			*commands,
+			// TODO handle spaces in file name
+			"unlz4 "+shell.Escape(filename),
+			// TODO handle spaces in file name
+			"rm "+shell.Escape(filename),
+		)
+		filename = filename[:len(filename)-len(lowerExt)]
+	case ".zst":
+		*commands = append(
+			*commands,
+			// TODO handle spaces in file name
+			"unzstd "+shell.Escape(filename),
+			// TODO handle spaces in file name
+			"rm "+shell.Escape(filename),
+		)
+		filename = filename[:len(filename)-len(lowerExt)]
+	}
+
+	*commands = append(
+		*commands,
+		// TODO handle spaces in file name
+		"IMAGE_NAME=$(podman load -i "+shell.Escape(filename)+" | sed -n 's/.*: //p')",
+	)
 }

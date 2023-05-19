@@ -43,6 +43,14 @@ func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericwor
 	if err != nil {
 		return
 	}
+	switch dwImage.(type) {
+	case *IndexedDockerImage:
+		// we want to be sure that TaskclusterProxy
+		// is enabled for IndexedDockerImages
+		// during the remainder of this translation
+		// it's used to access the index service API
+		gwPayload.Features.TaskclusterProxy = true
+	}
 	err = setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches)
 	if err != nil {
 		return
@@ -174,7 +182,7 @@ func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorker
 	if dwPayload.Features.TaskclusterProxy {
 		command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
 	}
-	command.WriteString(podmanEnvMappings(dwPayload.Env, dwPayload))
+	command.WriteString(podmanEnvMappings(dwPayload))
 	dockerImageString, err := dwImage.String()
 	if err != nil {
 		return "", fmt.Errorf("could not form docker image string: %w", err)
@@ -204,7 +212,8 @@ func podmanCopyArtifacts(containerName string, dwPayload *dockerworker.DockerWor
 
 func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.Features.ChainOfTrust = dwPayload.Features.ChainOfTrust
-	gwPayload.Features.TaskclusterProxy = dwPayload.Features.TaskclusterProxy
+	// need to keep TaskclusterProxy to true if it's already been enabled for IndexedDockerImages
+	gwPayload.Features.TaskclusterProxy = gwPayload.Features.TaskclusterProxy || dwPayload.Features.TaskclusterProxy
 	gwPayload.Features.Interactive = dwPayload.Features.Interactive
 
 	switch dwPayload.Features.Artifacts {
@@ -319,7 +328,7 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 }
 
-func podmanEnvMappings(payloadEnv map[string]string, dwPayload *dockerworker.DockerWorkerPayload) string {
+func podmanEnvMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
 	envStrBuilder := strings.Builder{}
 
 	dwManagedEnvVars := []string{
@@ -333,10 +342,10 @@ func podmanEnvMappings(payloadEnv map[string]string, dwPayload *dockerworker.Doc
 		dwManagedEnvVars = append(dwManagedEnvVars, "TASKCLUSTER_PROXY_URL")
 	}
 
-	envVarNames := make([]string, len(payloadEnv)+len(dwManagedEnvVars))
+	envVarNames := make([]string, len(dwPayload.Env)+len(dwManagedEnvVars))
 	env := make(map[string]string, len(envVarNames))
 	i := 0
-	for envVarName, envVarValue := range payloadEnv {
+	for envVarName, envVarValue := range dwPayload.Env {
 		envVarNames[i] = envVarName
 		env[envVarName] = envVarValue
 		i++
