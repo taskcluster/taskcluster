@@ -3,6 +3,7 @@
 package interactive
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
@@ -19,7 +20,8 @@ func TestInteractive(t *testing.T) {
 	// Start an interactive session on a test server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	interactive, err := New(53765, exec.CommandContext(ctx, "bash"), ctx)
+	cmd := func() (*exec.Cmd, error) { return exec.CommandContext(ctx, "bash"), nil }
+	interactive, err := New(53765, cmd, ctx)
 	if err != nil {
 		t.Fatalf("could not create interactive session: %v", err)
 	}
@@ -34,7 +36,7 @@ func TestInteractive(t *testing.T) {
 	}
 
 	// Send some input to the interactive session
-	input := "echo hello\n"
+	input := "\x01echo hello\n"
 	err = conn.WriteMessage(websocket.TextMessage, []byte(input))
 	if err != nil {
 		t.Fatal("write error:", err)
@@ -45,25 +47,33 @@ func TestInteractive(t *testing.T) {
 	if err != nil {
 		t.Fatal("read error:", err)
 	}
-	expected := "hello\n"
+	expected := "echo hello\r\n"
 	if string(output) != expected {
 		t.Fatalf("unexpected output: %v\nexpected: %v", string(output), expected)
 	}
 
-	input = "notABashCommand\n"
-	err = conn.WriteMessage(websocket.TextMessage, []byte(input))
-	if err != nil {
-		t.Fatal("write error:", err)
-	}
-
-	// Wait for the output from the interactive session
-	_, output, err = conn.ReadMessage()
+	_, _, err = conn.ReadMessage()
 	if err != nil {
 		t.Fatal("read error:", err)
 	}
-	expected = "bash: line 2: notABashCommand: command not found\n"
-	if string(output) != expected {
-		t.Fatalf("unexpected output: %v\nexpected: %v", string(output), expected)
+
+	expectedBytes := []byte("hello\r\n")
+	completeOutput := []byte{}
+	ok := false
+	for i := 0; i < 10; i++ {
+		_, output, err = conn.ReadMessage()
+		if err != nil {
+			t.Fatal("read error:", err)
+		}
+		completeOutput = append(completeOutput, output...)
+		if bytes.Contains(completeOutput, expectedBytes) {
+			ok = true
+			break
+		}
+	}
+
+	if !ok {
+		t.Fatalf("Couldn't find expected output: %v. Complete output: %v", expectedBytes, completeOutput)
 	}
 
 	err = conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Closing connection"))
@@ -84,8 +94,5 @@ func TestInteractive(t *testing.T) {
 	}
 
 	// Terminate the interactive session
-	err = interactive.Terminate()
-	if err != nil {
-		t.Fatal("terminate error:", err)
-	}
+	cancel()
 }

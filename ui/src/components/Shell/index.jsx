@@ -24,6 +24,9 @@ const defaultCommand = [
     'exec $SPAWN;',
   ].join(''),
 ];
+// Keep these in sync with the go code
+const MSG_PTY_DATA = 1;
+const MSG_RESIZE_DATA = 2;
 
 hterm.defaultStorage = new lib.Storage.Local();
 
@@ -106,135 +109,35 @@ export default class Shell extends Component {
         // generic worker
         case '2':
           this.wsClient = new WebSocket(url);
-          this.cmd = [];
-          this.currentCmd = 0;
-          this.prompt = '$ ';
-          // minCol is the minimum column to start printing at
-          // and to stop deleting at
-          // accounts for the prompt "$ "
-          this.minCol = 2;
-
+          this.wsClient.binaryType = 'arraybuffer';
           io.sendString = d => {
-            switch (d) {
-              // return key
-              case '\r': {
-                if (!this.cmd[this.currentCmd]) {
-                  io.print(`\n\r${this.prompt}`);
+            const txt = new TextEncoder().encode(d);
+            const buf = new Uint8Array([[MSG_PTY_DATA], ...txt]);
 
-                  break;
-                }
-
-                io.print(`\n\r${this.prompt}`);
-
-                this.wsClient?.send(`${this.cmd[this.currentCmd]}\n`);
-
-                this.currentCmd += 1;
-
-                break;
-              }
-
-              // backspace key
-              case '\b':
-              case '\u007f': {
-                const col = terminal.getCursorColumn();
-                // calculate the offset of the current cursor
-                // position from the start of the command
-                const cursorOffset = col - this.minCol;
-
-                // don't delete the prompt!
-                if (cursorOffset <= 0) {
-                  break;
-                }
-
-                terminal.eraseLine();
-
-                // get the current command on this row,
-                // or an empty string if none exists
-                const currCmd = this.cmd[this.currentCmd] || '';
-                // calculate the index of the character to
-                // delete in the current command string
-                const deleteIndex = cursorOffset - 1;
-                // construct the new command string without
-                // the deleted character
-                const newCmd =
-                  currCmd.slice(0, deleteIndex) +
-                  currCmd.slice(deleteIndex + 1);
-
-                this.cmd[this.currentCmd] = newCmd;
-
-                // print the updated command prompt and command string
-                io.print(`\r${this.prompt}${this.cmd[this.currentCmd] || ''}`);
-
-                terminal.setCursorColumn(col - 1);
-
-                break;
-              }
-
-              // up/down arrow
-              // may eventually be used to cycle through command history
-              case '\u001b[A':
-              case '\u001b[B': {
-                break;
-              }
-
-              // right arrow
-              case '\u001b[C': {
-                const row = terminal.getCursorRow();
-                const col = terminal.getCursorColumn();
-                const currCmd = this.cmd[this.currentCmd] || '';
-
-                if (currCmd && col < this.minCol + currCmd.length) {
-                  io.print('\u001b[C');
-                  terminal.setCursorPosition(row, col + 1);
-                }
-
-                break;
-              }
-
-              // left arrow
-              case '\u001b[D': {
-                const row = terminal.getCursorRow();
-                const col = terminal.getCursorColumn();
-
-                if (col > this.minCol) {
-                  io.print('\u001b[D');
-                  terminal.setCursorPosition(row, col - 1);
-                }
-
-                break;
-              }
-
-              default: {
-                const col = terminal.getCursorColumn();
-                const currCmd = this.cmd[this.currentCmd] || '';
-
-                if (currCmd) {
-                  const strBefore = currCmd.slice(0, col - this.minCol);
-                  const strAfter = currCmd.slice(col - this.minCol);
-
-                  this.cmd[this.currentCmd] = strBefore + d + strAfter;
-                } else {
-                  this.cmd[this.currentCmd] = d;
-                }
-
-                io.print(`\r${this.prompt}${this.cmd[this.currentCmd] || ''}`);
-
-                terminal.setCursorColumn(col + 1);
-
-                break;
-              }
-            }
+            this.wsClient.send(buf);
           };
 
           io.onVTKeystroke = io.sendString;
 
+          io.onTerminalResize = (w, h) => {
+            if (this.wsClient.readyState === WebSocket.OPEN) {
+              const buf = Buffer.alloc(5);
+
+              buf.writeUInt8(MSG_RESIZE_DATA);
+              buf.writeUInt16LE(h, 1);
+              buf.writeUInt16LE(w, 3);
+              this.wsClient.send(buf);
+            }
+          };
+
           this.wsClient.onmessage = ({ data }) => {
-            io.print(`\r${data}`);
-            io.print(`\r${this.prompt}`);
+            io.writeUTF16(data);
           };
 
           this.wsClient.onopen = () => {
-            io.print(this.prompt);
+            const sz = terminal.screenSize;
+
+            io.onTerminalResize(sz.width, sz.height);
           };
 
           this.wsClient.onclose = () => {
