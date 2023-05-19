@@ -27,7 +27,6 @@ const UNREFERENCED_SCHEMAS = [
   { service: 'generic-worker', schema: 'simple_posix.json#' },
   { service: 'generic-worker', schema: 'multiuser_windows.json#' },
   { service: 'generic-worker', schema: 'multiuser_posix.json#' },
-  { service: 'generic-worker', schema: 'docker_posix.json#' },
   { service: 'docker-worker', schema: 'v1/payload.json#' },
 ];
 
