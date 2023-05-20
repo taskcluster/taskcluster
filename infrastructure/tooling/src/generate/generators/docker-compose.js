@@ -405,6 +405,7 @@ exports.tasks.push({
             './generated:/app/generated',
             '.all-contributorsrc:/app/.all-contributorsrc',
             './ui:/app/ui',
+            './CHANGELOG.md:/app/CHANGELOG.md',
           ],
         },
       },
