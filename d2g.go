@@ -178,7 +178,7 @@ func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorker
 	if dwPayload.Features.AllowPtrace {
 		command.WriteString(" --cap-add=SYS_PTRACE")
 	}
-	command.WriteString(createVolumeMountsString(dwPayload.Cache, wdcs))
+	command.WriteString(createVolumeMountsString(dwPayload, wdcs))
 	if dwPayload.Features.TaskclusterProxy {
 		command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
 	}
@@ -284,10 +284,16 @@ func fileNameWithoutExtension(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
 
-func createVolumeMountsString(payloadCache map[string]string, wdcs []genericworker.WritableDirectoryCache) string {
+func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs []genericworker.WritableDirectoryCache) string {
 	volumeMounts := strings.Builder{}
 	for _, wdc := range wdcs {
-		volumeMounts.WriteString(` -v "$(pwd)/` + wdc.Directory + ":" + payloadCache[wdc.CacheName] + `"`)
+		volumeMounts.WriteString(` -v "$(pwd)/` + wdc.Directory + ":" + dwPayload.Cache[wdc.CacheName] + `"`)
+	}
+	if dwPayload.Capabilities.Devices.Kvm {
+		volumeMounts.WriteString(" -v /dev/kvm:/dev/kvm")
+	}
+	if dwPayload.Capabilities.Devices.HostSharedMemory {
+		volumeMounts.WriteString(" -v /dev/shm:/dev/shm")
 	}
 	return volumeMounts.String()
 }
