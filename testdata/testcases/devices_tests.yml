@@ -1,0 +1,67 @@
+testSuite:
+  name: Devices tests
+  description: Test that devices should be mounted as volumes in the resulting generic worker task payload.
+  tests:
+    - name: Host Shared Memory
+      description: >-
+        Tests that host shared memory device is mounted as a volume in the resulting generic worker task payload.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        capabilities:
+          devices:
+            hostSharedMemory: true
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        artifacts: []
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              podman run --name taskcontainer
+              -v /dev/shm:/dev/shm
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              ubuntu 'echo "Hello world"'
+
+              exit_code=$?
+
+              podman rm taskcontainer
+
+              exit "${exit_code}"
+        maxRunTime: 3600
+
+    - name: KVM
+      description: >-
+        Tests that KVM device is mounted as a volume in the resulting generic worker task payload.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        capabilities:
+          devices:
+            kvm: true
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        artifacts: []
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              podman run --name taskcontainer
+              -v /dev/kvm:/dev/kvm
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              ubuntu 'echo "Hello world"'
+
+              exit_code=$?
+
+              podman rm taskcontainer
+
+              exit "${exit_code}"
+        maxRunTime: 3600
