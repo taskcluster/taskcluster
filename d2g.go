@@ -289,7 +289,7 @@ func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs 
 	for _, wdc := range wdcs {
 		volumeMounts.WriteString(` -v "$(pwd)/` + wdc.Directory + ":" + dwPayload.Cache[wdc.CacheName] + `"`)
 	}
-	if dwPayload.Capabilities.Devices.Kvm {
+	if dwPayload.Capabilities.Devices.KVM {
 		volumeMounts.WriteString(" -v /dev/kvm:/dev/kvm")
 	}
 	if dwPayload.Capabilities.Devices.HostSharedMemory {

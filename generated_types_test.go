@@ -116,7 +116,7 @@ type (
 		// Since: generic-worker 10.8.0
 		//
 		// Syntax:     ^[a-f0-9]{64}$
-		Sha256 string `json:"sha256,omitempty"`
+		SHA256 string `json:"sha256,omitempty"`
 
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskID string `json:"taskId"`
@@ -163,7 +163,7 @@ type (
 		HostSharedMemory bool `json:"hostSharedMemory,omitempty"`
 
 		// Mount /dev/kvm from the host in the container.
-		Kvm bool `json:"kvm,omitempty"`
+		KVM bool `json:"kvm,omitempty"`
 
 		// Audio loopback device created using snd-aloop
 		LoopbackAudio bool `json:"loopbackAudio,omitempty"`
@@ -634,7 +634,7 @@ type (
 		// Since: generic-worker 10.8.0
 		//
 		// Syntax:     ^[a-f0-9]{64}$
-		Sha256 string `json:"sha256,omitempty"`
+		SHA256 string `json:"sha256,omitempty"`
 
 		// URL to download content from.
 		//
