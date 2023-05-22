@@ -108,7 +108,7 @@ type (
 		// Since: generic-worker 10.8.0
 		//
 		// Syntax:     ^[a-f0-9]{64}$
-		Sha256 string `json:"sha256,omitempty"`
+		SHA256 string `json:"sha256,omitempty"`
 
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskID string `json:"taskId"`
@@ -380,7 +380,7 @@ type (
 		// Since: generic-worker 10.8.0
 		//
 		// Syntax:     ^[a-f0-9]{64}$
-		Sha256 string `json:"sha256,omitempty"`
+		SHA256 string `json:"sha256,omitempty"`
 
 		// URL to download content from.
 		//
