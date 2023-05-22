@@ -21,7 +21,7 @@ func (dia *DockerImageArtifact) PrepareCommands() []string {
 func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) {
 	artifactContent := genericworker.ArtifactContent{
 		Artifact: dia.Path,
-		Sha256:   "", // We could add this as an optional property to docker worker schema
+		SHA256:   "", // We could add this as an optional property to docker worker schema
 		TaskID:   dia.TaskID,
 	}
 	raw, err := json.MarshalIndent(&artifactContent, "", "  ")

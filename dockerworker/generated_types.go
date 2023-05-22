@@ -38,7 +38,7 @@ type (
 		HostSharedMemory bool `json:"hostSharedMemory,omitempty"`
 
 		// Mount /dev/kvm from the host in the container.
-		Kvm bool `json:"kvm,omitempty"`
+		KVM bool `json:"kvm,omitempty"`
 
 		// Audio loopback device created using snd-aloop
 		LoopbackAudio bool `json:"loopbackAudio,omitempty"`
