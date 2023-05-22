@@ -786,7 +786,7 @@ func (ac *ArtifactContent) UniqueKey() string {
 }
 
 func (ac *ArtifactContent) RequiredSHA256() string {
-	return ac.Sha256
+	return ac.SHA256
 }
 
 func (ac *ArtifactContent) TaskDependencies() []string {
@@ -812,7 +812,7 @@ func (uc *URLContent) UniqueKey() string {
 }
 
 func (uc *URLContent) RequiredSHA256() string {
-	return uc.Sha256
+	return uc.SHA256
 }
 
 func (uc *URLContent) TaskDependencies() []string {

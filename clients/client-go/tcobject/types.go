@@ -35,11 +35,11 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty"`
 		//  }
 		//
 		// Additional properties allowed
@@ -135,11 +135,11 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty"`
 		//  }
 		//
 		// Additional properties allowed
@@ -192,11 +192,11 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty"`
 		//  }
 		//
 		// Additional properties allowed
@@ -226,11 +226,11 @@ type (
 	//
 	//  	// Syntax:     ^[a-z0-9]{64}$
 	//  	//
-	//	//  	Sha256 string `json:"sha256,omitempty"`
+	//	//  	SHA256 string `json:"sha256,omitempty"`
 	//
 	//  	// Syntax:     ^[a-z0-9]{128}$
 	//  	//
-	//	//  	Sha512 string `json:"sha512,omitempty"`
+	//	//  	SHA512 string `json:"sha512,omitempty"`
 	//  }
 	//
 	// Additional properties allowed
@@ -246,11 +246,11 @@ type (
 	//
 	//  	// Syntax:     ^[a-z0-9]{64}$
 	//  	//
-	//	//  	Sha256 string `json:"sha256,omitempty"`
+	//	//  	SHA256 string `json:"sha256,omitempty"`
 	//
 	//  	// Syntax:     ^[a-z0-9]{128}$
 	//  	//
-	//	//  	Sha512 string `json:"sha512,omitempty"`
+	//	//  	SHA512 string `json:"sha512,omitempty"`
 	//  }
 	//
 	// Additional properties allowed
@@ -270,11 +270,11 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty"`
 		//  }
 		//
 		// Additional properties allowed

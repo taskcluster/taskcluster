@@ -43,7 +43,7 @@ type (
 		//
 		// Min length: 40
 		// Max length: 40
-		Sha string `json:"sha"`
+		SHA string `json:"sha"`
 
 		// Github status associated with the build.
 		//

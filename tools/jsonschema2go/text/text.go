@@ -39,7 +39,8 @@ var reservedKeyWords = map[string]bool{
 	"var":         true,
 }
 
-// taken from https://github.com/golang/lint/blob/32a87160691b3c96046c0c678fe57c5bef761456/lint.go#L702
+// originally taken from https://github.com/golang/lint/blob/32a87160691b3c96046c0c678fe57c5bef761456/lint.go#L702
+// and then adapted to include extra terms
 var commonInitialisms = map[string]bool{
 	"API":   true,
 	"ASCII": true,
@@ -54,12 +55,14 @@ var commonInitialisms = map[string]bool{
 	"ID":    true,
 	"IP":    true,
 	"JSON":  true,
+	"KVM":   true,
 	"LHS":   true,
 	"OS":    true,
 	"QPS":   true,
 	"RAM":   true,
 	"RHS":   true,
 	"RPC":   true,
+	"SHA":   true,
 	"SLA":   true,
 	"SMTP":  true,
 	"SQL":   true,
