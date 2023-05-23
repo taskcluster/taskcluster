@@ -41,6 +41,8 @@ tasks:
               git -c advice.detachedHead=false checkout '${head_rev}'
 
               go mod tidy
+              go install honnef.co/go/tools/cmd/staticcheck@latest
+              staticcheck ./...
               git status
               test $(git status --porcelain | wc -l) == 0
 

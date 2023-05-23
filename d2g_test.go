@@ -2,6 +2,7 @@ package d2g_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -14,6 +15,31 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 )
+
+func ExampleScopes_mixture() {
+	dwScopes := []string{
+		"foo",
+		"bar:dog",
+		"cat:docker-worker:feet",
+		"docker-worker",
+		"docker-worker:monkey",
+		"generic-worker:teapot",
+		"docker-worker:docker-worker:potato",
+	}
+	gwScopes := d2g.Scopes(dwScopes)
+	for _, s := range gwScopes {
+		fmt.Printf("\t%#v\n", s)
+	}
+
+	// Output:
+	// 	"foo"
+	// 	"bar:dog"
+	// 	"cat:docker-worker:feet"
+	// 	"docker-worker"
+	// 	"generic-worker:monkey"
+	// 	"generic-worker:teapot"
+	// 	"generic-worker:docker-worker:potato"
+}
 
 // TestDataTestCases runs all the test cases found in directory testdata/testcases.
 func TestDataTestCases(t *testing.T) {
@@ -91,6 +117,7 @@ func (tc TestCase) TestCase() func(t *testing.T) {
 }
 
 func yamlToJSON(t *testing.T, path string) []byte {
+	t.Helper()
 	yml, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
@@ -115,6 +142,7 @@ func yamlToJSON(t *testing.T, path string) []byte {
 }
 
 func unmarshalYAML(t *testing.T, dest interface{}, path string) {
+	t.Helper()
 	j := yamlToJSON(t, path)
 	err := json.Unmarshal(j, dest)
 	if err != nil {
@@ -123,6 +151,7 @@ func unmarshalYAML(t *testing.T, dest interface{}, path string) {
 }
 
 func validateTestSuite(t *testing.T, schemaLoader gojsonschema.JSONLoader, path string) {
+	t.Helper()
 	b := yamlToJSON(t, path)
 	documentLoader := gojsonschema.NewBytesLoader(b)
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
