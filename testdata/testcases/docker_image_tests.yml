@@ -15,18 +15,12 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --name taskcontainer
+              podman run --rm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
               ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              podman rm taskcontainer
-
-              exit "${exit_code}"
         maxRunTime: 3600
 
     - name: NamedDockerImage
@@ -43,18 +37,12 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --name taskcontainer
+              podman run --rm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
               ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              podman rm taskcontainer
-
-              exit "${exit_code}"
         maxRunTime: 3600
 
     - name: IndexedDockerImage
@@ -76,18 +64,12 @@ testSuite:
 
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
-              podman run --name taskcontainer
+              podman run --rm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
               "${IMAGE_NAME}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              podman rm taskcontainer
-
-              exit "${exit_code}"
         maxRunTime: 3600
         features:
           taskclusterProxy: true
@@ -115,18 +97,12 @@ testSuite:
 
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
-              podman run --name taskcontainer
+              podman run --rm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
               "${IMAGE_NAME}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              podman rm taskcontainer
-
-              exit "${exit_code}"
         maxRunTime: 3600
         features:
           taskclusterProxy: true
@@ -154,18 +130,12 @@ testSuite:
 
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
-              podman run --name taskcontainer
+              podman run --rm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
               "${IMAGE_NAME}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              podman rm taskcontainer
-
-              exit "${exit_code}"
         maxRunTime: 3600
         features:
           taskclusterProxy: true
@@ -187,18 +157,12 @@ testSuite:
             - >-
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
-              podman run --name taskcontainer
+              podman run --rm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
               "${IMAGE_NAME}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              podman rm taskcontainer
-
-              exit "${exit_code}"
         mounts:
           - content:
               artifact: public/test/path
@@ -227,18 +191,12 @@ testSuite:
 
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
-              podman run --name taskcontainer
+              podman run --rm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
               "${IMAGE_NAME}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              podman rm taskcontainer
-
-              exit "${exit_code}"
         mounts:
           - content:
               artifact: public/test/path.lz4
@@ -267,18 +225,12 @@ testSuite:
 
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
-              podman run --name taskcontainer
+              podman run --rm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
               "${IMAGE_NAME}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              podman rm taskcontainer
-
-              exit "${exit_code}"
         mounts:
           - content:
               artifact: public/test/path.zst

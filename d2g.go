@@ -129,7 +129,10 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 }
 
 func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
-	containerName := "taskcontainer"
+	containerName := ""
+	if len(gwArtifacts) > 0 {
+		containerName = "taskcontainer"
+	}
 
 	podmanPrepareCommands := dwImage.PrepareCommands()
 
@@ -141,8 +144,15 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 	commands := append(
 		podmanPrepareCommands,
 		podmanRunString,
-		"exit_code=$?",
 	)
+
+	if containerName != "" {
+		commands = append(
+			commands,
+			"exit_code=$?",
+		)
+	}
+
 	commands = append(
 		commands,
 		podmanCopyArtifacts(containerName, dwPayload, gwArtifacts)...,
@@ -154,11 +164,14 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 			"podman save "+containerName+" | gzip > image.tar.gz",
 		)
 	}
-	commands = append(
-		commands,
-		"podman rm "+containerName,
-		`exit "${exit_code}"`,
-	)
+
+	if containerName != "" {
+		commands = append(
+			commands,
+			"podman rm "+containerName,
+			`exit "${exit_code}"`,
+		)
+	}
 
 	return [][]string{
 		{
@@ -171,7 +184,13 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 
 func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache) (string, error) {
 	command := strings.Builder{}
-	command.WriteString("podman run --name " + containerName)
+	command.WriteString("podman run")
+	switch containerName {
+	case "":
+		command.WriteString(" --rm")
+	default:
+		command.WriteString(" --name " + containerName)
+	}
 	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind {
 		command.WriteString(" --privileged")
 	}
