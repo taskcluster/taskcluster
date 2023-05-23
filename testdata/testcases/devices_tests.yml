@@ -19,19 +19,13 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --name taskcontainer
+              podman run --rm
               -v /dev/shm:/dev/shm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
               ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              podman rm taskcontainer
-
-              exit "${exit_code}"
         maxRunTime: 3600
 
     - name: KVM
@@ -51,17 +45,11 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --name taskcontainer
+              podman run --rm
               -v /dev/kvm:/dev/kvm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
               ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              podman rm taskcontainer
-
-              exit "${exit_code}"
         maxRunTime: 3600

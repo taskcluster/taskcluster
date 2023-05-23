@@ -23,18 +23,12 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --name taskcontainer
+              podman run --rm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
               "TASK_ID=${TASK_ID}"
               ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              podman rm taskcontainer
-
-              exit "${exit_code}"
         features:
           backingLog: false
           liveLog: false
