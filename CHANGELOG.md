@@ -3,6 +3,35 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v51.0.0
+
+### USERS
+
+▶ [minor] [#6245](https://github.com/taskcluster/taskcluster/issues/6245)
+Generic Worker payload now supports declaratively mounting indexed artifacts into the task directory. For example:
+
+```yml
+payload:
+  mounts:
+    content:
+      namespace: my.index.namespace
+      artifact: public/image.jpg
+    file: pics/image.jpg
+```
+
+### DEVELOPERS
+
+▶ [MAJOR]
+The jsonschema2go tool now considers `SHA` and `KVM` to be words that should be
+capitalised when generating go type names.
+
+As a consequence, the taskcluster go client is backwardly incomaptible with the
+previous release, since the `tcgithub.Build` struct member `Sha` has been
+renamed to `SHA`.
+
+▶ [patch]
+`node-fetch` dependency removed in favour of `got`.
+
 ## v50.1.3
 
 ### ADMINS

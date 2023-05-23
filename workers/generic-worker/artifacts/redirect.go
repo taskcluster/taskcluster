@@ -1,9 +1,9 @@
 package artifacts
 
 import (
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v50/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v50/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v51/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v51/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v51/workers/generic-worker/gwconfig"
 )
 
 type RedirectArtifact struct {
