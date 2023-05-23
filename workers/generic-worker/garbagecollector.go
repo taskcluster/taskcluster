@@ -7,7 +7,7 @@ import "fmt"
 // favour of a resource with a lower rating.
 type Resource interface {
 	Rating() float64
-	Evict(task *TaskRun) error
+	Evict(taskMount *TaskMount) error
 }
 
 // Resources is a type that can be sorted in order to establish in which order

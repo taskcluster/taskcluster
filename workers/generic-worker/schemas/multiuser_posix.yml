@@ -479,13 +479,30 @@ definitions:
           type: string
           title: SHA 256
           description: |-
-            The required SHA 256 of the content body.
+            If provided, the required SHA256 of the content body.
 
             Since: generic-worker 10.8.0
           pattern: '^[a-f0-9]{64}$'
       additionalProperties: false
       required:
       - taskId
+      - artifact
+    - title: Indexed Content
+      description: |-
+        Content originating from a task artifact that has been indexed by the Taskcluster Index Service.
+
+        Since: generic-worker 50.2.0
+      type: object
+      properties:
+        namespace:
+          type: string
+          maxLength: 255
+        artifact:
+          type: string
+          maxLength: 1024
+      additionalProperties: false
+      required:
+      - namespace
       - artifact
     - title: URL Content
       description: |-
@@ -506,7 +523,7 @@ definitions:
           type: string
           title: SHA 256
           description: |-
-            The required SHA 256 of the content body.
+            If provided, the required SHA256 of the content body.
 
             Since: generic-worker 10.8.0
           pattern: '^[a-f0-9]{64}$'

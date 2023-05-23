@@ -103,7 +103,7 @@ type (
 		// Max length: 1024
 		Artifact string `json:"artifact"`
 
-		// The required SHA 256 of the content body.
+		// If provided, the required SHA256 of the content body.
 		//
 		// Since: generic-worker 10.8.0
 		//
@@ -211,6 +211,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -327,6 +328,18 @@ type (
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
+	// Content originating from a task artifact that has been indexed by the Taskcluster Index Service.
+	//
+	// Since: generic-worker 50.2.0
+	IndexedContent struct {
+
+		// Max length: 1024
+		Artifact string `json:"artifact"`
+
+		// Max length: 255
+		Namespace string `json:"namespace"`
+	}
+
 	// Configuration for task logs.
 	//
 	// Since: generic-worker 48.2.0
@@ -366,6 +379,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -395,7 +409,7 @@ type (
 	// Since: generic-worker 5.4.0
 	URLContent struct {
 
-		// The required SHA 256 of the content body.
+		// If provided, the required SHA256 of the content body.
 		//
 		// Since: generic-worker 10.8.0
 		//
@@ -420,6 +434,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -474,7 +489,7 @@ func taskPayloadSchema() string {
               "type": "string"
             },
             "sha256": {
-              "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+              "description": "If provided, the required SHA256 of the content body.\n\nSince: generic-worker 10.8.0",
               "pattern": "^[a-f0-9]{64}$",
               "title": "SHA 256",
               "type": "string"
@@ -493,10 +508,30 @@ func taskPayloadSchema() string {
         },
         {
           "additionalProperties": false,
+          "description": "Content originating from a task artifact that has been indexed by the Taskcluster Index Service.\n\nSince: generic-worker 50.2.0",
+          "properties": {
+            "artifact": {
+              "maxLength": 1024,
+              "type": "string"
+            },
+            "namespace": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          },
+          "required": [
+            "namespace",
+            "artifact"
+          ],
+          "title": "Indexed Content",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
           "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
           "properties": {
             "sha256": {
-              "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+              "description": "If provided, the required SHA256 of the content body.\n\nSince: generic-worker 10.8.0",
               "pattern": "^[a-f0-9]{64}$",
               "title": "SHA 256",
               "type": "string"
