@@ -42,7 +42,10 @@ tasks:
                 cd d2g
                 git -c advice.detachedHead=false checkout '${head_rev}'
 
+                go install github.com/taskcluster/taskcluster/v51/tools/jsonschema2go/jsonschema2go@latest
+                go generate ./...
                 go mod tidy
+
                 go install honnef.co/go/tools/cmd/staticcheck@latest
                 staticcheck ./...
                 git status
