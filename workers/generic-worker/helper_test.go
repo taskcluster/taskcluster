@@ -39,6 +39,7 @@ var (
 )
 
 func setup(t *testing.T) {
+	t.Helper()
 	test := GWTest(t)
 	err := test.Setup()
 	if err != nil {
@@ -57,13 +58,14 @@ func testWorkerType() string {
 }
 
 func scheduleTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string) {
+	t.Helper()
 	taskID = slugid.Nice()
 	scheduleNamedTask(t, td, payload, taskID)
 	return
 }
 
 func scheduleNamedTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload, taskID string) {
-
+	t.Helper()
 	if td.Payload == nil {
 		b, err := json.Marshal(&payload)
 		if err != nil {
@@ -96,6 +98,7 @@ func scheduleNamedTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload 
 }
 
 func execute(t *testing.T, expectedExitCode ExitCode) {
+	t.Helper()
 	err := UpdateTasksResolvedFile(0)
 	if err != nil {
 		t.Fatalf("Test setup failure - could not write to tasks-resolved-count.txt file: %v", err)
@@ -110,6 +113,7 @@ func execute(t *testing.T, expectedExitCode ExitCode) {
 }
 
 func testTask(t *testing.T) *tcqueue.TaskDefinitionRequest {
+	t.Helper()
 	created := time.Now().UTC()
 	// reset nanoseconds
 	created = created.Add(time.Nanosecond * time.Duration(created.Nanosecond()*-1))
@@ -145,6 +149,7 @@ func testTask(t *testing.T) *tcqueue.TaskDefinitionRequest {
 }
 
 func ensureResolution(t *testing.T, taskID, state, reason string) {
+	t.Helper()
 	if state == "exception" && reason == "worker-shutdown" {
 		execute(t, WORKER_SHUTDOWN)
 	} else {
@@ -173,6 +178,7 @@ func ensureResolution(t *testing.T, taskID, state, reason string) {
 }
 
 func ensureDirContainsNFiles(t *testing.T, dir string, n int) {
+	t.Helper()
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		t.Error(err)
@@ -184,6 +190,7 @@ func ensureDirContainsNFiles(t *testing.T, dir string, n int) {
 }
 
 func LogText(t *testing.T) string {
+	t.Helper()
 	bytes, err := os.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
@@ -192,12 +199,14 @@ func LogText(t *testing.T) string {
 }
 
 func submitAndAssert(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload, state, reason string) (taskID string) {
+	t.Helper()
 	taskID = scheduleTask(t, td, payload)
 	ensureResolution(t, taskID, state, reason)
 	return taskID
 }
 
 func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
+	t.Helper()
 	b, err := json.Marshal(x)
 	if err != nil {
 		t.Fatalf("Could not convert %#v to json: %v", x, err)
@@ -219,7 +228,7 @@ func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
 // it does exist, it simply returns the taskID. If it doesn't, it creates the
 // task and returns.
 func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID string) {
-
+	t.Helper()
 	// Calculate hash of file content
 	rawContent, err := os.Open(filepath.Join(testdataDir, path))
 	if err != nil {
@@ -332,6 +341,7 @@ type (
 )
 
 func GWTest(t *testing.T) *Test {
+	t.Helper()
 	testConfig := &gwconfig.Config{
 		PrivateConfig: gwconfig.PrivateConfig{
 			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
@@ -502,7 +512,7 @@ func (gwtest *Test) Teardown() {
 }
 
 func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string, run int) {
-
+	t.Helper()
 	queue := serviceFactory.Queue(nil, config.RootURL)
 	artifacts, err := queue.ListArtifacts(taskID, strconv.Itoa(run), "", "")
 
@@ -566,6 +576,7 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 // content-encoding.  This only works for S3 artifacts, and is only used to
 // test content-encoding.
 func getArtifactContentWithResponses(t *testing.T, taskID string, artifact string) ([]byte, *http.Response, *http.Response, *url.URL) {
+	t.Helper()
 	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
 	url, err := queue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
 	if err != nil {
@@ -593,6 +604,7 @@ func getArtifactContentWithResponses(t *testing.T, taskID string, artifact strin
 }
 
 func checkSHA256(t *testing.T, sha256Hex string, file string) {
+	t.Helper()
 	hasher := sha256.New()
 	f, err := os.Open(file)
 	if err != nil {
@@ -608,6 +620,7 @@ func checkSHA256(t *testing.T, sha256Hex string, file string) {
 }
 
 func CancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
+	t.Helper()
 	// resolvetask is a go binary; source is in resolvetask subdirectory, binary is built in CI
 	// but if running test manually, you may need to explicitly build it first.
 	command := singleCommandNoArgs("resolvetask")
@@ -643,6 +656,7 @@ func CancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 // getArtifactContent downloads the given artifact's content,
 // failing the test if this is not possible.
 func getArtifactContent(t *testing.T, taskID string, artifact string) []byte {
+	t.Helper()
 	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
 	buf, _, _, err := queue.DownloadArtifactToBuf(taskID, -1, artifact)
 	if err != nil {

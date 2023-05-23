@@ -9,6 +9,7 @@ import (
 // *unless* NO_TEST_SKIP is set, in which case this is considered a fatal
 // error.
 func Get(t *testing.T) string {
+	t.Helper()
 	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
 	if rootURL == "" {
 		if os.Getenv("NO_TEST_SKIP") == "" {
@@ -22,6 +23,7 @@ func Get(t *testing.T) string {
 
 // Like Get, but also return clientID, accessToken, and optional certificate.
 func GetWithCreds(t *testing.T) (rootURL string, clientID string, accessToken string, certificate string) {
+	t.Helper()
 	rootURL = os.Getenv("TASKCLUSTER_ROOT_URL")
 	clientID = os.Getenv("TASKCLUSTER_CLIENT_ID")
 	accessToken = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")

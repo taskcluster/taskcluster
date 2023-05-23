@@ -10,5 +10,6 @@ import (
 )
 
 func makePermsBad(t *testing.T, filename string) {
+	t.Helper()
 	require.NoError(t, os.Chmod(filename, 0666))
 }

@@ -57,7 +57,7 @@ var testCreds = &tcclient.Credentials{
 }
 
 func checkAuthenticate(t *testing.T, response *tcauth.TestAuthenticateResponse, err error, expectedClientID string, expectedScopes []string) {
-
+	t.Helper()
 	if err != nil {
 		t.Error(err)
 		return

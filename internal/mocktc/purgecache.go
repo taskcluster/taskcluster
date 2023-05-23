@@ -18,6 +18,7 @@ func (purgeCache *PurgeCache) PurgeRequests(workerPoolId, since string) (*tcpurg
 /////////////////////////////////////////////////
 
 func NewPurgeCache(t *testing.T) *PurgeCache {
+	t.Helper()
 	pc := &PurgeCache{}
 	return pc
 }

@@ -22,6 +22,7 @@ type ServiceFactory struct {
 }
 
 func NewServiceFactory(t *testing.T) *ServiceFactory {
+	t.Helper()
 	creds := &tcclient.Credentials{
 		ClientID:    "test-client-id",
 		AccessToken: "test-access-token",

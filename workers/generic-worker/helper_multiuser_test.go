@@ -9,6 +9,7 @@ import (
 )
 
 func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
+	t.Helper()
 	taskID := submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 	expectedArtifacts := ExpectedArtifacts{

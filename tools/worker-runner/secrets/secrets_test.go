@@ -12,6 +12,7 @@ import (
 )
 
 func setup(t *testing.T) (*cfg.RunnerConfig, *run.State) {
+	t.Helper()
 	tc.FakeSecretsReset()
 
 	runnerWorkerConfig := cfg.NewWorkerConfig()

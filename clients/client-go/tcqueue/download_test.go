@@ -37,6 +37,7 @@ func (m *mock) Close() {
 }
 
 func mockTcServices(t *testing.T) mock {
+	t.Helper()
 	m := mock{}
 	m.router = mux.NewRouter().UseEncodedPath()
 	m.router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

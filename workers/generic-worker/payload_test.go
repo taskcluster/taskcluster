@@ -25,6 +25,7 @@ func taskWithPayload(payload string) *TaskRun {
 }
 
 func ensureValidPayload(t *testing.T, task *TaskRun) {
+	t.Helper()
 	err := task.validatePayload()
 	if err != nil {
 		t.Logf("%v", err.Cause)
@@ -33,6 +34,7 @@ func ensureValidPayload(t *testing.T, task *TaskRun) {
 }
 
 func ensureMalformedPayload(t *testing.T, task *TaskRun) {
+	t.Helper()
 	err := task.validatePayload()
 	if err == nil {
 		t.Fatalf("Bad task payload should not have passed validation")
@@ -134,6 +136,7 @@ func TestValidPayload(t *testing.T) {
 // This little hack is to make sure we get a timestamp which is truncated to
 // the millisecond
 func NowMillis(t *testing.T) (now time.Time) {
+	t.Helper()
 	var err error
 	now, err = time.Parse(time.RFC3339, tcclient.Time(time.Now()).String())
 	if err != nil {

@@ -19,6 +19,7 @@ import (
 // and denying a task user access to a file/folder (specified by taskPath).
 // filetype should be 'directory' or 'file'.
 func grantingDenying(t *testing.T, filetype string, taskPath ...string) (granting, denying []string) {
+	t.Helper()
 	// We need to escape file path that is contained in final regexp, e.g. due
 	// to '\' path separator on Windows. However, the path also includes an
 	// unknown task user (task_[0-9]*) which we don't want to escape. The

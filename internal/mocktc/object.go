@@ -159,6 +159,7 @@ func (object *Object) StartDownloadCount() int {
 /////////////////////////////////////////////////
 
 func NewObject(t *testing.T, baseURL string) *Object {
+	t.Helper()
 	o := &Object{
 		t:       t,
 		objects: map[string]Obj{},

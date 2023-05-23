@@ -19,6 +19,7 @@ type WorkerManager struct {
 }
 
 func NewWorkerManager(t *testing.T) *WorkerManager {
+	t.Helper()
 	return &WorkerManager{
 		workerPools: map[string]*tcworkermanager.WorkerPoolFullDefinition{},
 	}

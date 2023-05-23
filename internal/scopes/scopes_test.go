@@ -9,10 +9,12 @@ import (
 )
 
 func authClient(t *testing.T) *tcauth.Auth {
+	t.Helper()
 	return tcauth.New(nil, testrooturl.Get(t))
 }
 
 func accept(t *testing.T, given Given, required Required) {
+	t.Helper()
 	satisfied, err := given.Satisfies(required, authClient(t))
 	if err != nil {
 		t.Fatalf("Hit error: %v", err)
@@ -23,6 +25,7 @@ func accept(t *testing.T, given Given, required Required) {
 }
 
 func reject(t *testing.T, given Given, required Required) {
+	t.Helper()
 	satisfied, err := given.Satisfies(required, authClient(t))
 	if err != nil {
 		t.Fatalf("Hit error: %v", err)

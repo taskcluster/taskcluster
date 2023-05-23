@@ -27,6 +27,7 @@ func Vars(r *http.Request) map[string]string {
 }
 
 func WriteAsJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
+	t.Helper()
 	bytes, err := json.MarshalIndent(resp, "", "  ")
 	if err != nil {
 		t.Fatal(err)
@@ -88,6 +89,7 @@ func Marshal(req *http.Request, payload interface{}) {
 }
 
 func ServiceProviders(t *testing.T, baseURL string) []httputil.ServiceProvider {
+	t.Helper()
 	return []httputil.ServiceProvider{
 		NewAuthProvider(NewAuth(t)),
 		NewQueueProvider(NewQueue(t, baseURL)),

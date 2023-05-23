@@ -13,6 +13,7 @@ import (
 )
 
 func setupWorkerRunnerTest(t *testing.T, runnerCapabilities ...string) *workerproto.Protocol {
+	t.Helper()
 	graceful.Reset()
 	workerTransport, runnerTransport := wptesting.NewLocalTransportPair()
 
@@ -65,6 +66,7 @@ func TestNewCredentials(t *testing.T) {
 
 	test := func(withCert bool) func(*testing.T) {
 		return func(t *testing.T) {
+			t.Helper()
 			config = &gwconfig.Config{}
 			config.ClientID = "old"
 			clientID := fmt.Sprintf("client-cert-%v", withCert)
