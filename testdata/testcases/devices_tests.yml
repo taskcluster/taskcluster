@@ -1,3 +1,4 @@
+---
 testSuite:
   name: Devices tests
   description: Test that devices should be mounted as volumes in the resulting generic worker task payload.
@@ -14,7 +15,6 @@ testSuite:
         image: ubuntu
         maxRunTime: 3600
       genericWorkerTaskPayload:
-        artifacts: []
         command:
           - - bash
             - '-cx'
@@ -40,7 +40,6 @@ testSuite:
         image: ubuntu
         maxRunTime: 3600
       genericWorkerTaskPayload:
-        artifacts: []
         command:
           - - bash
             - '-cx'

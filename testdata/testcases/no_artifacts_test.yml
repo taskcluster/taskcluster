@@ -1,3 +1,4 @@
+---
 testSuite:
   name: No artifacts test
   description: Test that no artifacts will be created if disabled in the docker worker payload.
@@ -18,7 +19,6 @@ testSuite:
         image: ubuntu
         maxRunTime: 3600
       genericWorkerTaskPayload:
-        artifacts: []
         command:
           - - bash
             - '-cx'

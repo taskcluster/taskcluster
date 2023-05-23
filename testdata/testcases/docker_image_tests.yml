@@ -1,3 +1,4 @@
+---
 testSuite:
   name: Tests all the possible docker image types
   description: Test all the possible docker image types (DockerImageName|NamedDockerImage|IndexedDockerImage|DockerImageArtifact).
@@ -10,7 +11,6 @@ testSuite:
         image: ubuntu
         maxRunTime: 3600
       genericWorkerTaskPayload:
-        artifacts: []
         command:
           - - bash
             - '-cx'
@@ -33,7 +33,6 @@ testSuite:
           type: docker-image
         maxRunTime: 3600
       genericWorkerTaskPayload:
-        artifacts: []
         command:
           - - bash
             - '-cx'
@@ -57,7 +56,6 @@ testSuite:
           type: indexed-image
         maxRunTime: 3600
       genericWorkerTaskPayload:
-        artifacts: []
         command:
           - - bash
             - '-cx'
@@ -87,7 +85,6 @@ testSuite:
           type: indexed-image
         maxRunTime: 3600
       genericWorkerTaskPayload:
-        artifacts: []
         command:
           - - bash
             - '-cx'
@@ -121,7 +118,6 @@ testSuite:
           type: indexed-image
         maxRunTime: 3600
       genericWorkerTaskPayload:
-        artifacts: []
         command:
           - - bash
             - '-cx'
@@ -155,7 +151,6 @@ testSuite:
           type: task-image
         maxRunTime: 3600
       genericWorkerTaskPayload:
-        artifacts: []
         command:
           - - bash
             - '-cx'
@@ -186,7 +181,6 @@ testSuite:
           type: task-image
         maxRunTime: 3600
       genericWorkerTaskPayload:
-        artifacts: []
         command:
           - - bash
             - '-cx'
@@ -221,7 +215,6 @@ testSuite:
           type: task-image
         maxRunTime: 3600
       genericWorkerTaskPayload:
-        artifacts: []
         command:
           - - bash
             - '-cx'
