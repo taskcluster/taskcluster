@@ -30,8 +30,33 @@ type (
 	}
 )
 
+// Scopes takes a slice of Docker Worker task scopes and returns a slice of
+// equivalent Generic Worker scopes. These scopes should be used together with
+// a converted Docker Worker task payload (see d2g.Convert function) to run
+// Docker Worker tasks under Generic Worker. The conversion is performed by
+// copying dwScopes into gwScopes, and then replacing `docker-worker:` with
+// `generic-worker:` (once) in gwScopes where it appears at the start of the
+// scope.
+func Scopes(dwScopes []string) (gwScopes []string) {
+	gwScopes = make([]string, len(dwScopes))
+	for i, s := range dwScopes {
+		switch strings.HasPrefix(s, "docker-worker:") {
+		case true:
+			gwScopes[i] = "generic-worker:" + s[len("docker-worker:"):]
+		case false:
+			gwScopes[i] = s
+		}
+	}
+	return
+}
+
 // Dev notes: https://docs.google.com/document/d/1QNfHVpxtzXAlLWqZNz3b5mvbQWOrtsWpvadJHiMNbRc/edit#heading=h.uib8l9zhaz1n
 
+// Convert transforms a Docker Worker task payload into an equivalent Generic
+// Worker Multiuser POSIX task payload. The resulting Generic Worker payload is
+// a BASH script which uses Podman to contain the Docker Worker payload. Since
+// scopes fall outside of the payload in a task definition, scopes need to be
+// converted separately (see d2g.Scopes function).
 func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericworker.GenericWorkerPayload, err error) {
 	gwPayload = new(genericworker.GenericWorkerPayload)
 	defaults.SetDefaults(gwPayload)
