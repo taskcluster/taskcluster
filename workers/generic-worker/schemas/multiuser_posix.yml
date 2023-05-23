@@ -491,7 +491,7 @@ definitions:
       description: |-
         Content originating from a task artifact that has been indexed by the Taskcluster Index Service.
 
-        Since: generic-worker 50.2.0
+        Since: generic-worker 51.0.0
       type: object
       properties:
         namespace:
