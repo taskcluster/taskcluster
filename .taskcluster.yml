@@ -18,57 +18,59 @@ tasks:
       then: ${event.pull_request.head.repo.html_url}
       else: ${event.repository.html_url}
   in:
-    - taskId: { $eval: as_slugid("tests_task") }
-      provisionerId: proj-taskcluster
-      workerType: gw-ubuntu-22-04
-      created: {$fromNow: ''}
-      deadline: {$fromNow: '1 day'}
-      payload:
-        command:
-          - - /bin/bash
-            - '-vxec'
-            - |
-              export GOROOT="$(pwd)/go1.19.9/go"
-              export GOPATH="$(pwd)/gopath1.19.9"
-              export PATH="$${GOPATH}/bin:$${GOROOT}/bin:$(pwd)/bin:$${PATH}"
+    $match:
+      (tasks_for == "github-push") || (tasks_for == "github-pull-request" && event["action"] in ["opened","reopened","synchronize"]):
+        taskId: { $eval: as_slugid("tests_task") }
+        provisionerId: proj-taskcluster
+        workerType: gw-ubuntu-22-04
+        created: {$fromNow: ''}
+        deadline: {$fromNow: '1 day'}
+        payload:
+          command:
+            - - /bin/bash
+              - '-vxec'
+              - |
+                export GOROOT="$(pwd)/go1.19.9/go"
+                export GOPATH="$(pwd)/gopath1.19.9"
+                export PATH="$${GOPATH}/bin:$${GOROOT}/bin:$(pwd)/bin:$${PATH}"
 
-              git --version
-              go version
-              go env
+                git --version
+                go version
+                go env
 
-              git clone '${repository}' d2g
-              cd d2g
-              git -c advice.detachedHead=false checkout '${head_rev}'
+                git clone '${repository}' d2g
+                cd d2g
+                git -c advice.detachedHead=false checkout '${head_rev}'
 
-              go mod tidy
-              go install honnef.co/go/tools/cmd/staticcheck@latest
-              staticcheck ./...
-              git status
-              test $(git status --porcelain | wc -l) == 0
+                go mod tidy
+                go install honnef.co/go/tools/cmd/staticcheck@latest
+                staticcheck ./...
+                git status
+                test $(git status --porcelain | wc -l) == 0
 
-              go install ./...
-              go vet ./...
-              go test ./...
-              ../golangci-lint/golangci-lint-1.51.2-*/golangci-lint run --timeout=5m
-        mounts:
-          - content:
-              sha256: e858173b489ec1ddbe2374894f52f53e748feed09dde61be5b4b4ba2d73ef34b
-              url: https://storage.googleapis.com/golang/go1.19.9.linux-amd64.tar.gz
-            directory: go1.19.9
-            format: tar.gz
-          - content:
-              sha256: 4de479eb9d9bc29da51aec1834e7c255b333723d38dbd56781c68e5dddc6a90b
-              url: >-
-                https://github.com/golangci/golangci-lint/releases/download/v1.51.2/golangci-lint-1.51.2-linux-amd64.tar.gz
-            directory: golangci-lint
-            format: tar.gz
-        artifacts:
-          - name: public/build/d2g-linux-amd64
-            path: gopath1.19.9/bin/d2g
-            type: file
-        maxRunTime: 3600
-      metadata:
-        name: d2g linting and tests
-        description: d2g linting and tests
-        owner: pmoore@mozilla.com
-        source: ${repository}/raw/${head_rev}/.taskcluster.yml
+                go install ./...
+                go vet ./...
+                go test ./...
+                ../golangci-lint/golangci-lint-1.51.2-*/golangci-lint run --timeout=5m
+          mounts:
+            - content:
+                sha256: e858173b489ec1ddbe2374894f52f53e748feed09dde61be5b4b4ba2d73ef34b
+                url: https://storage.googleapis.com/golang/go1.19.9.linux-amd64.tar.gz
+              directory: go1.19.9
+              format: tar.gz
+            - content:
+                sha256: 4de479eb9d9bc29da51aec1834e7c255b333723d38dbd56781c68e5dddc6a90b
+                url: >-
+                  https://github.com/golangci/golangci-lint/releases/download/v1.51.2/golangci-lint-1.51.2-linux-amd64.tar.gz
+              directory: golangci-lint
+              format: tar.gz
+          artifacts:
+            - name: public/build/d2g-linux-amd64
+              path: gopath1.19.9/bin/d2g
+              type: file
+          maxRunTime: 3600
+        metadata:
+          name: d2g linting and tests
+          description: d2g linting and tests
+          owner: pmoore@mozilla.com
+          source: ${repository}/raw/${head_rev}/.taskcluster.yml
