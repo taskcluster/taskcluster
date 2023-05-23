@@ -363,7 +363,7 @@ type (
 
 	// Content originating from a task artifact that has been indexed by the Taskcluster Index Service.
 	//
-	// Since: generic-worker 50.2.0
+	// Since: generic-worker 51.0.0
 	IndexedContent struct {
 
 		// Max length: 1024
@@ -541,7 +541,7 @@ func taskPayloadSchema() string {
         },
         {
           "additionalProperties": false,
-          "description": "Content originating from a task artifact that has been indexed by the Taskcluster Index Service.\n\nSince: generic-worker 50.2.0",
+          "description": "Content originating from a task artifact that has been indexed by the Taskcluster Index Service.\n\nSince: generic-worker 51.0.0",
           "properties": {
             "artifact": {
               "maxLength": 1024,
