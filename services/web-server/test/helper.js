@@ -13,7 +13,7 @@ const { SubscriptionClient } = require('subscriptions-transport-ws');
 const { ApolloClient } = require('apollo-client');
 const { InMemoryCache } = require('apollo-cache-inmemory');
 const { HttpLink } = require('apollo-link-http');
-const fetch = require('node-fetch');
+const got = require('got');
 
 exports.load = stickyLoader(load);
 
@@ -245,10 +245,42 @@ exports.withGithubClient = () => {
 };
 
 exports.getHttpClient = () => {
+  const gotFetch = async (url, options) => {
+    // Map Fetch API options to Got options
+    const gotOptions = {
+      method: options.method || 'GET',
+      headers: options.headers,
+      body: options.body,
+      responseType: 'json',
+      throwHttpErrors: false,
+    };
+
+    // Got uses json option for sending JSON, while Fetch API uses body
+    if (options.headers && options.headers['Content-Type'] === 'application/json' && options.body) {
+      gotOptions.json = JSON.parse(options.body);
+      delete gotOptions.body;
+    }
+
+    // Make the request
+    const response = await got(url, gotOptions);
+
+    // Mimic the Fetch API response
+    const fetchResponse = {
+      ok: response.statusCode >= 200 && response.statusCode < 300,
+      status: response.statusCode,
+      statusText: response.statusMessage,
+      json: async () => response.body,
+      text: async () => JSON.stringify(response.body),
+      headers: response.headers,
+    };
+
+    return fetchResponse;
+  };
+
   const cache = new InMemoryCache();
   const httpLink = new HttpLink({
     uri: `http://localhost:${exports.serverPort}/graphql`,
-    fetch,
+    fetch: gotFetch,
   });
 
   return new ApolloClient({ cache, link: httpLink });
