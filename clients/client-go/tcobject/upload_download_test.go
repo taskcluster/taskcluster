@@ -20,6 +20,7 @@ import (
 )
 
 func mockObjectServer(t *testing.T) (*httptest.Server, *mux.Router, *tcobject.Object, *mocktc.Object) {
+	t.Helper()
 	r := mux.NewRouter().UseEncodedPath()
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(404)

@@ -21,11 +21,9 @@ var (
 	taskGroupID = slugid.Nice()
 )
 
-func validateArtifacts(
-	t *testing.T,
-	payloadArtifacts []Artifact,
-	expected []artifacts.TaskArtifact) {
+func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []artifacts.TaskArtifact) {
 
+	t.Helper()
 	payload := GenericWorkerPayload{
 		Artifacts: []Artifact{},
 	}

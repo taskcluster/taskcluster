@@ -115,6 +115,7 @@ func TestConfigureRun(t *testing.T) {
 
 func TestCheckTerminationTime(t *testing.T) {
 	test := func(t *testing.T, proto *workerproto.Protocol, hasCapability bool) {
+		t.Helper()
 		evts := &ScheduledEvents{}
 
 		mds := &fakeMetadataService{nil, nil, nil, evts, nil, "", nil, []byte(`{}`)}

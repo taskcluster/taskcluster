@@ -134,6 +134,7 @@ type ExtHeaderRawCert struct {
 // header; if they are set to anything, including an empty array, that this
 // matches what is found in the header.
 func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
+	t.Helper()
 	tempCredentials, err := permCreds.CreateTemporaryCredentials(time.Second*1, "d", "e", "f")
 	if err != nil {
 		t.Fatalf("Received error when generating temporary credentials: %s", err)
@@ -181,6 +182,7 @@ func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
 // checkExtHeader simply checks if getExtHeader returns the same results as the
 // specified expected header.
 func checkExtHeader(t *testing.T, creds *Credentials, expectedHeader string) {
+	t.Helper()
 	actualHeader, err := getExtHeader(creds)
 	if err != nil {
 		t.Fatalf("Received error when generating ext header: %s", err)

@@ -24,6 +24,7 @@ func genLogger() *log.Logger {
 }
 
 func genWebSocketHandler(t *testing.T, handleConn func(*testing.T, *websocket.Conn)) http.Handler {
+	t.Helper()
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -47,6 +48,7 @@ func genWebSocketHandler(t *testing.T, handleConn func(*testing.T, *websocket.Co
 // functions for session test
 
 func echoConn(t *testing.T, conn *websocket.Conn) {
+	t.Helper()
 	session := Server(conn, Config{Log: genLogger()})
 	stream, err := session.Accept()
 	if err != nil {
@@ -75,6 +77,7 @@ const (
 )
 
 func wsConn(t *testing.T, conn *websocket.Conn) {
+	t.Helper()
 	session := Server(conn, Config{Log: genLogger()})
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", genWsHandler(t))
@@ -84,6 +87,7 @@ func wsConn(t *testing.T, conn *websocket.Conn) {
 }
 
 func genWsHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
+	t.Helper()
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -126,6 +130,7 @@ const (
 )
 
 func manyEchoConn(t *testing.T, conn *websocket.Conn) {
+	t.Helper()
 	session := Server(conn, Config{Log: genLogger()})
 
 	var wg sync.WaitGroup
@@ -163,6 +168,7 @@ func manyEchoConn(t *testing.T, conn *websocket.Conn) {
 }
 
 func timeoutConn(t *testing.T, conn *websocket.Conn) {
+	t.Helper()
 	session := Server(conn, Config{StreamBufferSize: 12})
 	_, err := session.Accept()
 	if err != nil {

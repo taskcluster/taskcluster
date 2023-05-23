@@ -54,6 +54,7 @@ func tcpEchoServer(listener net.Listener) chan bool {
 // Create an httptest-based server that upgrades its connections to websockets
 // and for each connection reads a message, echoes it back, and closes
 func websockEchoServer(t *testing.T) *httptest.Server {
+	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		upgrader := websocket.Upgrader{
 			Subprotocols: websocket.Subprotocols(r),

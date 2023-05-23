@@ -10,6 +10,7 @@ import (
 )
 
 func CallConfigureRun(t *testing.T, state *run.State) {
+	t.Helper()
 	runnercfg := &cfg.RunnerConfig{
 		WorkerImplementation: cfg.WorkerImplementationConfig{
 			Implementation: "generic-worker",

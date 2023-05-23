@@ -32,6 +32,7 @@ type wstServer struct {
 }
 
 func makeWSTServer(t *testing.T) wstServer {
+	t.Helper()
 	listener, port, err := listenOnRandomPort()
 	if err != nil {
 		t.Fatalf("listenOnRandomPort: %s", err)
@@ -80,6 +81,7 @@ func (s *wstServer) close() {
 
 // Create a new exposer with fake auth
 func makeWSTExposer(t *testing.T, serverURL string) Exposer {
+	t.Helper()
 	exposer, err := NewWST(
 		serverURL,
 		mocktc.WST_AUDIENCE,

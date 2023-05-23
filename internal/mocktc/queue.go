@@ -38,6 +38,7 @@ type Queue struct {
 }
 
 func NewQueue(t *testing.T, baseURL string) *Queue {
+	t.Helper()
 	return &Queue{
 		t:         t,
 		tasks:     map[string]*tcqueue.TaskDefinitionAndStatus{},

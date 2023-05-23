@@ -96,6 +96,7 @@ func (routesTest *RoutesTest) request(method string, content []byte) (res *httpt
 }
 
 func NewRoutesTest(t *testing.T) *RoutesTest {
+	t.Helper()
 	return &RoutesTest{
 		Routes: Routes{
 			Client: tcclient.Client{

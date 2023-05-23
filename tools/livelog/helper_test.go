@@ -49,6 +49,7 @@ type TestLivelogServer struct {
 }
 
 func StartServer(t *testing.T, tls bool) *TestLivelogServer {
+	t.Helper()
 	tempdir, err := os.MkdirTemp("", "livelog-tests-")
 	require.NoError(t, err)
 

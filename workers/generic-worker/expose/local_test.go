@@ -25,6 +25,7 @@ func TestConstructor(t *testing.T) {
 }
 
 func makeLocalExposer(t *testing.T) Exposer {
+	t.Helper()
 	exposer, err := NewLocal(net.ParseIP("127.0.0.1"))
 	if err != nil {
 		t.Fatalf("Constructor returned an error: %v", err)

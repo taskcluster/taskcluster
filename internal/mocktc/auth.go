@@ -44,6 +44,7 @@ func (auth *Auth) WebsocktunnelToken(wstAudience, wstClientId string) (*tcauth.W
 /////////////////////////////////////////////////
 
 func NewAuth(t *testing.T) *Auth {
+	t.Helper()
 	a := &Auth{}
 	return a
 }

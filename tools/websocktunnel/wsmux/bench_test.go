@@ -20,6 +20,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func echoFunc(b *testing.B, server *Session, wg *sync.WaitGroup) {
+	b.Helper()
 	if wg != nil {
 		defer wg.Done()
 	}
@@ -44,6 +45,7 @@ func echoFunc(b *testing.B, server *Session, wg *sync.WaitGroup) {
 }
 
 func echoClientFunc(b *testing.B, client *Session, wg *sync.WaitGroup) {
+	b.Helper()
 	if wg != nil {
 		defer wg.Done()
 	}
@@ -83,6 +85,7 @@ func echoClientFunc(b *testing.B, client *Session, wg *sync.WaitGroup) {
 }
 
 func genTransferHandler(b *testing.B) http.Handler {
+	b.Helper()
 	tr := func(w http.ResponseWriter, r *http.Request) {
 		if !websocket.IsWebSocketUpgrade(r) {
 			http.NotFound(w, r)
@@ -103,6 +106,7 @@ func genTransferHandler(b *testing.B) http.Handler {
 const maxTransferStreams = 100
 
 func genMultiTransferHandler(b *testing.B) http.Handler {
+	b.Helper()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !websocket.IsWebSocketUpgrade(r) {
 			http.NotFound(w, r)

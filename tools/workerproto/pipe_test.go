@@ -69,6 +69,7 @@ not a message
 func TestPipeWriter(t *testing.T) {
 
 	doTestPipeInput := func(t *testing.T, chunkSize int, eofOnFinalChunk bool) {
+		t.Helper()
 		testLogDest := &testLogDestination{}
 		oldLogFlags := log.Flags()
 		defer func() {

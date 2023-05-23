@@ -26,6 +26,7 @@ func (s3 *S3) RegisterService(r *mux.Router) {
 }
 
 func New(t *testing.T) *S3 {
+	t.Helper()
 	return &S3{
 		t:         t,
 		resources: map[string]*Resource{},

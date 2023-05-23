@@ -8,6 +8,7 @@ import (
 )
 
 func RequireInitialized(t *testing.T, prot *Protocol, initialized bool) {
+	t.Helper()
 	prot.initializedCond.L.Lock()
 	defer prot.initializedCond.L.Unlock()
 	require.Equal(t, initialized, prot.initialized)
@@ -17,6 +18,7 @@ func TestCapabilityNegotiation(t *testing.T) {
 	test := func(t *testing.T, runnerHasCap bool, workerHasCap bool) {
 		// wire transports together in both directions, and finish them at
 		// the end of the test
+		t.Helper()
 		r2wReader, r2wWriter := io.Pipe()
 		defer r2wWriter.Close()
 		w2rReader, w2rWriter := io.Pipe()

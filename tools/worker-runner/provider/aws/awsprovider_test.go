@@ -84,7 +84,7 @@ func TestAWSConfigureRun(t *testing.T) {
 
 func TestCheckTerminationTime(t *testing.T) {
 	test := func(t *testing.T, proto *workerproto.Protocol, hasCapability bool) {
-
+		t.Helper()
 		metaData := map[string]string{}
 		instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}"
 
@@ -107,6 +107,7 @@ func TestCheckTerminationTime(t *testing.T) {
 	}
 
 	t.Run("without capability", func(t *testing.T) {
+		t.Helper()
 		wkr := ptesting.NewFakeWorkerWithCapabilities()
 		defer wkr.Close()
 
@@ -118,6 +119,7 @@ func TestCheckTerminationTime(t *testing.T) {
 	})
 
 	t.Run("with capability", func(t *testing.T) {
+		t.Helper()
 		wkr := ptesting.NewFakeWorkerWithCapabilities("graceful-termination")
 		defer wkr.Close()
 
