@@ -1,6 +1,6 @@
 const DataLoader = require('dataloader');
 const sift = require('../utils/sift');
-const fetch = require('../utils/fetch');
+const got = require('got');
 const ConnectionLoader = require('../ConnectionLoader');
 const Task = require('../entities/Task');
 const maybeSignedUrl = require('../utils/maybeSignedUrl');
@@ -53,7 +53,7 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
             'public/actions.json',
           );
 
-          const raw = await fetch(url);
+          const raw = await got(url).json();
 
           return raw.actions
             ? {

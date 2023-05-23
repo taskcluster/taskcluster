@@ -1,6 +1,6 @@
 const util = require('util');
 const exec = util.promisify(require('child_process').execFile);
-const fetch = require('node-fetch');
+const got = require('got');
 const { readRepoFile, modifyRepoFile, modifyRepoYAML } = require('../../utils');
 
 /**
@@ -77,7 +77,7 @@ exports.tasks = [{
       ).replace(
         /go[0-9]+\.[0-9]+\.[0-9]+/g,
         `${goVersion}`));
-    const goDownloadsJson = await (await fetch('https://go.dev/dl/?mode=json&include=all')).json();
+    const goDownloadsJson = await got('https://go.dev/dl/?mode=json&include=all', { throwHttpErrors: true }).json();
     const goFilesArr = goDownloadsJson.find(el => el.version === goVersion).files;
     await modifyRepoYAML('workers/generic-worker/gw-decision-task/tasks.yml',
       contents => {
