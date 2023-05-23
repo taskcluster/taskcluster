@@ -838,7 +838,7 @@ func (ic *IndexedContent) Download(taskMount *TaskMount) (file string, sha256 st
 	}
 	ac := &ArtifactContent{
 		Artifact: ic.Artifact,
-		Sha256:   "",
+		SHA256:   "",
 		TaskID:   itr.TaskID,
 	}
 	return ac.Download(taskMount)

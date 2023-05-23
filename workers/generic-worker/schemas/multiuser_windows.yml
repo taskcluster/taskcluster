@@ -510,7 +510,7 @@ definitions:
           type: string
           title: SHA 256
           description: |-
-            The required SHA 256 of the content body.
+            If provided, the required SHA256 of the content body.
 
             Since: generic-worker 10.8.0
           pattern: '^[a-f0-9]{64}$'
@@ -554,7 +554,7 @@ definitions:
           type: string
           title: SHA 256
           description: |-
-            The required SHA 256 of the content body.
+            If provided, the required SHA256 of the content body.
 
             Since: generic-worker 10.8.0
           pattern: '^[a-f0-9]{64}$'
