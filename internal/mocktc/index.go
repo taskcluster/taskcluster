@@ -11,6 +11,7 @@ type Index struct {
 }
 
 func NewIndex(t *testing.T) *Index {
+	t.Helper()
 	return &Index{
 		t: t,
 	}
