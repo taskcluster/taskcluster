@@ -7807,10 +7807,10 @@ jsesc@~0.5.0:
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-0.5.0.tgz#e7dee66e35d6fc16f710fe91d5cf69f70f08911d"
   integrity sha512-uZz5UnB7u4T9LvwmFqXii7pZSouaRPorGs5who1Ip7VO0wxanFvBL7GkM6dTHlgX+jhBApRetaWpnDabOeTcnA==
 
-json-e@^4.0.0:
-  version "4.4.3"
-  resolved "https://registry.yarnpkg.com/json-e/-/json-e-4.4.3.tgz#15fa9c6036244d7ab2a8989bcb826b9e1e691db1"
-  integrity sha512-G2tp4fkEzN6hlya4J9dNaRbIxxTW+Lqu+An40E36SNZYexIGPPuNU30VuS0eZam4AieV0R+fvRxZrVFPJEvUbA==
+json-e@^4.5.2:
+  version "4.5.2"
+  resolved "https://registry.yarnpkg.com/json-e/-/json-e-4.5.2.tgz#778adb604cac0f8b4cac4bd429161b9ec33a2d2f"
+  integrity sha512-Db4hmmjslogEQEZL4IJ5uxiI/RvUdvGADZIRdoYQ7KcdOnmgb1RM96ElNSS3K66rdUcSc6/nJtg5sFWbl8fIXw==
   dependencies:
     json-stable-stringify-without-jsonify "^1.0.1"
 
