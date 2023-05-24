@@ -133,7 +133,8 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 
 		gwArt.Expires = dwPayload.Artifacts[name].Expires
 		gwArt.Name = name
-		gwArt.Path = "artifact" + strconv.Itoa(i)
+		ext := filepath.Ext(dwPayload.Artifacts[name].Path)
+		gwArt.Path = "artifact" + strconv.Itoa(i) + ext
 		gwArt.Type = dwPayload.Artifacts[name].Type
 
 		gwArtifacts[i] = *gwArt
