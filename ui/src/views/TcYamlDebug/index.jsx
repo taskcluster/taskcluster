@@ -55,9 +55,12 @@ const getTaskDefinition = state => {
     tasks: {
       $let: {
         head_rev: {
-          $if: 'tasks_for == "github-pull-request"',
-          then: '${event.pull_request.head.sha}',
-          else: '${event.after}',
+          $switch: {
+            'tasks_for == "github-pull-request"':
+              '${event.pull_request.head.sha}',
+            'tasks_for == "github-push"': '${event.after}',
+            $default: 'UNKNOWN',
+          },
         },
         repository: {
           $if: 'tasks_for == "github-pull-request"',
@@ -89,16 +92,27 @@ const getTaskDefinition = state => {
   });
 };
 
-const testJsoneEvent = (doc, event, tasksFor, action) => {
+const getCustomContext = () => {
+  return dump({
+    timestamp: Math.floor(new Date()),
+    organization: 'test-org',
+    repository: {
+      url: 'url',
+      project: 'project',
+    },
+    push: {
+      branch: 'branch',
+      revision: 'rev',
+    },
+    ownTaskId: 'own-task-id',
+  });
+};
+
+const testJsoneEvent = (doc, extraContext, event, tasksFor, action) => {
   const cfg = { ...doc };
 
   if (cfg.version !== 1) {
     cfg.$fromNow = text => fromNowJSON(text);
-    cfg.timestamp = Math.floor(new Date());
-    cfg.organization = 'test-org';
-    cfg.repository = 'test-repo';
-    cfg['taskcluster.docker.provisionerId'] = 'test-provisioner';
-    cfg['taskcluster.docker.workerType'] = 'test-worker-type';
   }
 
   const context = {
@@ -111,11 +125,8 @@ const testJsoneEvent = (doc, event, tasksFor, action) => {
     ref: 'refs/heads/master',
     as_slugid: text => `${text.replace(/[^a-zA-Z0-9_-]/g, '_')}_slugid`,
 
-    // not sure where those are coming form yet
-    after: 'after',
+    ...extraContext,
   };
-
-  // console.log(tasksFor, action, context, cfg);
 
   return jsone(cfg, context);
 };
@@ -149,15 +160,22 @@ const testJsoneEvent = (doc, event, tasksFor, action) => {
     paddingLeft: theme.spacing(2),
   },
   codeEditor: {
-    maxHeight: 600,
-    height: 600,
+    height: 480,
+  },
+  contextEditor: {
+    height: 220,
   },
   findingsTable: {
     fontSize: 14,
-    'td, th': {
-      padding: theme.spacing(1),
-      paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(2),
+    '& td, th': {
+      margin: 0,
+      padding: theme.spacing(0.5),
+      paddingLeft: theme.spacing(1),
+      paddingRight: theme.spacing(1),
+      borderBottom: `1px solid ${theme.palette.divider}`,
+    },
+    '& tr': {
+      verticalAlign: 'top',
     },
   },
   code: {
@@ -171,6 +189,7 @@ export default class TcYamlDebug extends Component {
   initialState = {
     findings: [],
     editorValue: getTaskDefinition({}),
+    extraContext: getCustomContext(),
   };
 
   state = this.initialState;
@@ -178,6 +197,13 @@ export default class TcYamlDebug extends Component {
   handleEditorChange = editorValue => {
     this.setState({
       editorValue,
+    });
+    this.analyzeLazy();
+  };
+
+  handleExtraContextChange = extraContext => {
+    this.setState({
+      extraContext,
     });
     this.analyzeLazy();
   };
@@ -190,10 +216,12 @@ export default class TcYamlDebug extends Component {
     const addFinding = (type, sentiment, message, tasks) =>
       findings.push({ type, sentiment, message, tasks });
     let doc;
+    let extraContext;
     let schema = 'github-v1';
 
     try {
       doc = load(this.state.editorValue);
+      extraContext = load(this.state.extraContext);
       addFinding('parser', '✅', 'Valid YAML - nice!');
     } catch (e) {
       addFinding('parser', '⛔️', e.message);
@@ -222,15 +250,25 @@ export default class TcYamlDebug extends Component {
       });
     }
 
-    // console.log(validation, ajv.errors, doc);
-
     if (doc?.reporting !== 'checks-v1') {
       addFinding('reporting', '⚠️', 'Not using checks API');
     } else {
       addFinding('reporting', '✅', 'Using checks API');
     }
 
-    // check policy recommendations
+    if (doc?.autoCancelPreviousChecks !== true) {
+      addFinding(
+        'autoCancelPreviousChecks',
+        '⚠️',
+        'Not using autoCancelPreviousChecks to cancel redundant builds'
+      );
+    } else {
+      addFinding(
+        'autoCancelPreviousChecks',
+        '✅',
+        'Using autoCancelPreviousChecks to save resources'
+      );
+    }
 
     if (!doc?.tasks) {
       addFinding('tasks', '⛔️', 'No tasks defined!');
@@ -241,7 +279,13 @@ export default class TcYamlDebug extends Component {
         !action || ['opened', 'synchronize', 'reopened'].includes(action);
 
       try {
-        const parsed = testJsoneEvent(doc, payload, tasksFor, action);
+        const parsed = testJsoneEvent(
+          doc,
+          extraContext,
+          payload,
+          tasksFor,
+          action
+        );
         const suspicious = !isOkAction && parsed.tasks.length > 0;
 
         addFinding(
@@ -253,12 +297,28 @@ export default class TcYamlDebug extends Component {
           parsed.tasks
         );
       } catch (e) {
-        addFinding(name, '⛔️', e.message);
+        addFinding(
+          name,
+          '⛔️',
+          [
+            e.message,
+            e.location.join('.'),
+            `line: ${e.lineNumber}`,
+            `column: ${e.columnNumber}`,
+          ].join(' ')
+        );
       }
     };
 
     runEvent('github-push', testPayloads.push, 'github-push');
+    runEvent('github-tag-push', testPayloads.tagPush, 'github-push');
     runEvent('github-release', testPayloads.release, 'github-release');
+    runEvent(
+      'github-pull-request-untrusted.opened',
+      testPayloads.pullRequest,
+      'pull-request-untrusted',
+      'opened'
+    );
     [
       'opened',
       'synchronize',
@@ -287,19 +347,11 @@ export default class TcYamlDebug extends Component {
       )
     );
 
+    runEvent('custom-task-for-cron', testPayloads.push, 'cron');
+    runEvent('custom-task-for-action', testPayloads.push, 'action');
+
     this.setState({ findings });
   };
-
-  renderEditor() {
-    return (
-      <CodeEditor
-        onChange={this.handleEditorChange}
-        mode="yaml"
-        value={this.state.editorValue}
-        className={this.props.classes.codeEditor}
-      />
-    );
-  }
 
   renderFindings() {
     const { findings } = this.state;
@@ -327,11 +379,13 @@ export default class TcYamlDebug extends Component {
               </td>
               <td>{message}</td>
               <td>
-                {tasks?.length && (
+                {tasks?.length ? (
                   <details>
                     <summary>Rendered tasks</summary>
                     <pre className={this.props.classes.code}>{dump(tasks)}</pre>
                   </details>
+                ) : (
+                  ''
                 )}
               </td>
             </tr>
@@ -348,7 +402,7 @@ export default class TcYamlDebug extends Component {
       <Dashboard title="GitHub .taskcluster.yml debug" disableTitleFormatting>
         <Fragment>
           <Typography className={classes.mainHeading} variant="h6">
-            Lint your <code>.taskclster.yml</code>
+            Lint your <code>.taskcluster.yml</code>
           </Typography>
           <List>
             <ListItem>
@@ -362,7 +416,28 @@ export default class TcYamlDebug extends Component {
               />
             </ListItem>
             <ListItem className={classes.editorListItem}>
-              {this.renderEditor()}
+              <CodeEditor
+                onChange={this.handleEditorChange}
+                mode="yaml"
+                value={this.state.editorValue}
+                className={this.props.classes.codeEditor}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography variant="subtitle2">Extra context</Typography>
+                }
+              />
+            </ListItem>
+            <ListItem className={classes.contextListItem}>
+              <CodeEditor
+                onChange={this.handleExtraContextChange}
+                mode="yaml"
+                value={this.state.extraContext}
+                className={this.props.classes.contextEditor}
+              />
             </ListItem>
             <ListItem>
               <Button

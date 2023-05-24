@@ -92,6 +92,10 @@ export default class SidebarList extends Component {
           GitHub Quickstart
         </SidebarListItem>
 
+        <SidebarListItem to="/tcyaml-debug" icon={<GithubBoxIcon />}>
+          Debug .tc.yml
+        </SidebarListItem>
+
         <SidebarListItem to="/notify/denylist" icon={<CancelIcon />}>
           Denylist Addresses
         </SidebarListItem>
