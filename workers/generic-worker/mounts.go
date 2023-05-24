@@ -784,7 +784,10 @@ func FSContentFrom(c json.RawMessage) (FSContent, error) {
 		return nil, err
 	}
 	switch {
-	case m["artifact"] != nil:
+	// Select property names unique to a single type wherever possible.
+	// Reordering the cases or changing property names to match on could break
+	// things if property names are common to multiple types, so be careful!
+	case m["taskId"] != nil:
 		return UnmarshalInto(c, &ArtifactContent{})
 	case m["namespace"] != nil:
 		return UnmarshalInto(c, &IndexedContent{})
