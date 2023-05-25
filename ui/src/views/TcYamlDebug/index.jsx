@@ -8,6 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import { dump, load } from 'js-yaml';
 import debounce from 'lodash.debounce';
 import jsone from 'json-e';
+import TextField from '../../components/TextField';
 import CodeEditor from '../../components/CodeEditor';
 import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';
@@ -16,6 +17,7 @@ import { siteSpecificVariable } from '../../utils/siteSpecific';
 import ajv from '../../utils/ajv';
 import fromNowJSON from '../../utils/fromNowJSON';
 import * as testPayloads from './test-payload';
+import scrollToHash from '../../utils/scrollToHash';
 
 const prefetchSchema = async () => {
   ajv.addSchema(
@@ -36,6 +38,14 @@ const prefetchSchema = async () => {
 };
 
 prefetchSchema();
+
+const isValidYamlUrl = url => {
+  const urlRe = /(.*)\/\.taskcluster.yml$/;
+  const parsed = new URL(url);
+  const allowedHosts = ['raw.githubusercontent.com'];
+
+  return allowedHosts.includes(parsed.hostname) && urlRe.test(parsed.pathname);
+};
 
 // we embed JSON-e here, which looks a lot like a template to eslint..
 /* eslint-disable no-template-curly-in-string */
@@ -184,15 +194,30 @@ const testJsoneEvent = (doc, extraContext, event, tasksFor, action) => {
     border: '1px solid #ccc',
     padding: theme.spacing(2),
   },
+  textField: {
+    width: '60%',
+  },
 }))
 export default class TcYamlDebug extends Component {
-  initialState = {
-    findings: [],
-    editorValue: getTaskDefinition({}),
-    extraContext: getCustomContext(),
-  };
+  constructor(props) {
+    super(props);
 
-  state = this.initialState;
+    const search = new URLSearchParams(this.props.location.search);
+
+    this.state = {
+      findings: [],
+      taskclusterYmlUrl: search.get('url'),
+      isValidUrl: true,
+      validationMessage: '',
+      urlChanged: false,
+      editorValue: getTaskDefinition({}),
+      extraContext: getCustomContext(),
+    };
+  }
+
+  componentDidMount() {
+    this.loadTaskclusterYml();
+  }
 
   handleEditorChange = editorValue => {
     this.setState({
@@ -208,13 +233,64 @@ export default class TcYamlDebug extends Component {
     this.analyzeLazy();
   };
 
+  handleTaskclusterYmlUrlChange = e => {
+    this.setState({
+      taskclusterYmlUrl: e.target.value,
+    });
+    this.validateUrlDebounced();
+  };
+
+  validateUrlDebounced = debounce(() => this.validateUrl(), 1000);
+
+  validateUrl() {
+    const { history } = this.props;
+    const isValidUrl = isValidYamlUrl(this.state.taskclusterYmlUrl);
+
+    this.setState({
+      isValidUrl,
+      validationMessage: isValidUrl
+        ? ''
+        : 'Invalid URL: should be https://raw.githubusercontent/**/.taskcluster.yml file in a GitHub repository',
+    });
+
+    if (isValidUrl) {
+      history.push({
+        search: `?url=${encodeURIComponent(this.state.taskclusterYmlUrl)}`,
+        hash: '#findings',
+      });
+      this.loadTaskclusterYml();
+    }
+  }
+
   analyzeLazy = debounce(() => this.handleAnalyze(), 1000);
+
+  async loadTaskclusterYml() {
+    const { taskclusterYmlUrl } = this.state;
+
+    if (!isValidYamlUrl(taskclusterYmlUrl)) {
+      return;
+    }
+
+    try {
+      const data = await (await fetch(taskclusterYmlUrl)).text();
+
+      this.setState({
+        editorValue: data,
+        urlChanged: true,
+      });
+      this.analyzeLazy();
+    } catch (e) {
+      this.setState({
+        editorValue: `# Error loading ${taskclusterYmlUrl}: ${e.message}`,
+      });
+    }
+  }
 
   handleAnalyze = () => {
     this.setState({ findings: [] });
     const findings = [];
-    const addFinding = (type, sentiment, message, tasks) =>
-      findings.push({ type, sentiment, message, tasks });
+    const addFinding = (type, sentiment, message, tasks, extra) =>
+      findings.push({ type, sentiment, message, tasks, extra });
     let doc;
     let extraContext;
     let schema = 'github-v1';
@@ -227,8 +303,18 @@ export default class TcYamlDebug extends Component {
       addFinding('parser', '⛔️', e.message);
     }
 
+    if (!doc) {
+      return;
+    }
+
     if (doc.version !== 1) {
-      addFinding('version', '⚠️', 'Not using version 1');
+      addFinding(
+        'version',
+        '⛔️',
+        'Not using version 1',
+        null,
+        'Please migrate to version 1'
+      );
       schema = 'github-v0';
     } else {
       addFinding('version', '✅', 'Using version 1');
@@ -251,7 +337,13 @@ export default class TcYamlDebug extends Component {
     }
 
     if (doc?.reporting !== 'checks-v1') {
-      addFinding('reporting', '⚠️', 'Not using checks API');
+      addFinding(
+        'reporting',
+        '⚠️',
+        'Not using checks API',
+        null,
+        'Checks API are more flexible and is recommended'
+      );
     } else {
       addFinding('reporting', '✅', 'Using checks API');
     }
@@ -260,7 +352,9 @@ export default class TcYamlDebug extends Component {
       addFinding(
         'autoCancelPreviousChecks',
         '⚠️',
-        'Not using autoCancelPreviousChecks to cancel redundant builds'
+        'Not using autoCancelPreviousChecks to cancel redundant builds',
+        null,
+        'This can save resources when changes are pushed frequently for the same PR'
       );
     } else {
       addFinding(
@@ -302,9 +396,9 @@ export default class TcYamlDebug extends Component {
           '⛔️',
           [
             e.message,
-            e.location.join('.'),
-            `line: ${e.lineNumber}`,
-            `column: ${e.columnNumber}`,
+            e.location ? e.location.join('.') : '',
+            e.lineNumber ? `line: ${e.lineNumber}` : '',
+            e.columnNumber ? `column: ${e.columnNumber}` : '',
           ].join(' ')
         );
       }
@@ -350,7 +444,11 @@ export default class TcYamlDebug extends Component {
     runEvent('custom-task-for-cron', testPayloads.push, 'cron');
     runEvent('custom-task-for-action', testPayloads.push, 'action');
 
-    this.setState({ findings });
+    if (this.state.urlChanged && findings.length > 1) {
+      setTimeout(() => scrollToHash(), 100);
+    }
+
+    this.setState({ findings, urlChanged: false });
   };
 
   renderFindings() {
@@ -361,17 +459,17 @@ export default class TcYamlDebug extends Component {
     }
 
     return (
-      <table className={this.props.classes.findingsTable}>
+      <table className={this.props.classes.findingsTable} id="findings">
         <thead>
           <tr>
             <th>?</th>
             <th>Type</th>
             <th>Message</th>
-            <th>Tasks</th>
+            <th>Extra</th>
           </tr>
         </thead>
         <tbody>
-          {findings.map(({ type, sentiment, message, tasks }) => (
+          {findings.map(({ type, sentiment, message, tasks, extra }) => (
             <tr key={type}>
               <td>{sentiment} </td>
               <td>
@@ -379,6 +477,7 @@ export default class TcYamlDebug extends Component {
               </td>
               <td>{message}</td>
               <td>
+                {extra}
                 {tasks?.length ? (
                   <details>
                     <summary>Rendered tasks</summary>
@@ -397,6 +496,7 @@ export default class TcYamlDebug extends Component {
 
   render() {
     const { classes } = this.props;
+    const { taskclusterYmlUrl, isValidUrl, validationMessage } = this.state;
 
     return (
       <Dashboard title="GitHub .taskcluster.yml debug" disableTitleFormatting>
@@ -413,6 +513,15 @@ export default class TcYamlDebug extends Component {
                     Your .taskcluster.yml
                   </Typography>
                 }
+              />
+              <TextField
+                label="Link to .taskcluster.yml"
+                name="taskclusterYmlUrl"
+                onChange={this.handleTaskclusterYmlUrlChange}
+                value={taskclusterYmlUrl}
+                className={classes.textField}
+                error={!isValidUrl}
+                helperText={validationMessage}
               />
             </ListItem>
             <ListItem className={classes.editorListItem}>

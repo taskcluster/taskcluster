@@ -301,7 +301,7 @@ export default class Dashboard extends Component {
         </div>
         {deploymentVersion && (
           <Link
-            to={`${DOCS_PATH_PREFIX}/changelog?version=${deploymentVersion}`}
+            to={`${DOCS_PATH_PREFIX}/changelog?version=v${deploymentVersion}`}
             title="See changelog">
             <Typography
               className={classes.deploymentVersion}
