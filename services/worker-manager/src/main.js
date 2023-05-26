@@ -125,7 +125,7 @@ let load = loader({
   api: {
     requires: [
       'cfg', 'db', 'schemaset', 'monitor', 'providers',
-      'publisher', 'notify'],
+      'publisher', 'notify', 'queue'],
     setup: async ({
       cfg,
       db,
@@ -134,6 +134,7 @@ let load = loader({
       providers,
       publisher,
       notify,
+      queue,
     }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
@@ -143,6 +144,7 @@ let load = loader({
         providers,
         publisher,
         notify,
+        queue,
       },
       monitor: monitor.childMonitor('api'),
       schemaset,

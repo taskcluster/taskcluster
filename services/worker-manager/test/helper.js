@@ -187,6 +187,7 @@ exports.withServer = (mock, skipping) => {
  */
 const stubbedQueue = () => {
   const taskQueues = {};
+  const quarantines = [];
   const queue = new taskcluster.Queue({
     rootUrl: exports.rootUrl,
     credentials: {
@@ -207,9 +208,20 @@ const stubbedQueue = () => {
           workerType,
         };
       },
+      quarantineWorker: async (provisionerId, workerType, workerGroup, workerId, payload) => {
+        quarantines.push({ provisionerId, workerType, workerGroup, workerId, payload });
+        return {
+          provisionerId,
+          workerType,
+          workerGroup,
+          workerId,
+          payload,
+        };
+      },
     },
   });
 
+  queue.quarantines = quarantines;
   queue.setPending = function(taskQueueId, pending) {
     taskQueues[taskQueueId] = pending;
   };
