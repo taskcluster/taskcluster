@@ -730,7 +730,7 @@ export const release = {
   },
   "installation": {
     "id": 5808
-  }
+  },
 };
 
 export const tagPush = {

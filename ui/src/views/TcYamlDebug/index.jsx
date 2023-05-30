@@ -380,15 +380,18 @@ export default class TcYamlDebug extends Component {
           tasksFor,
           action
         );
-        const suspicious = !isOkAction && parsed.tasks.length > 0;
+        const tasksCount = parsed?.tasks?.length || 0;
+        const suspicious = !isOkAction && tasksCount > 0;
 
         addFinding(
           `${name}-tasks`,
           suspicious ? '⛔️' : '✅',
-          `${parsed.tasks.length} task(s) defined ${
-            suspicious ? ', but normally should be 0' : ''
-          }`,
-          parsed.tasks
+          tasksCount === 0
+            ? 'no tasks'
+            : `${tasksCount} task(s) defined ${
+                suspicious ? ', but normally should be 0' : ''
+              }`,
+          parsed?.tasks
         );
       } catch (e) {
         addFinding(
