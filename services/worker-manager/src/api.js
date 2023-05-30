@@ -33,6 +33,7 @@ let builder = new APIBuilder({
     'publisher',
     'monitor',
     'notify',
+    'queue',
   ],
 });
 

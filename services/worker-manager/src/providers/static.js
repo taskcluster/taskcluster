@@ -67,6 +67,8 @@ class StaticProvider extends Provider {
     await worker.update(this.db, worker => {
       worker.state = Worker.states.STOPPED;
     });
+
+    await this.quarantineWorker({ worker, reason });
   }
 
   async registerWorker({ worker, workerPool, workerIdentityProof }) {
