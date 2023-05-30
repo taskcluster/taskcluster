@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v51.1.0
+
+### ADMINS
+
+▶ [minor] [#6247](https://github.com/taskcluster/taskcluster/issues/6247)
+Worker manager now also quarantines worker on `removeWorker` call. This is used to prevent some race conditions when worker is still polling for new work and is removed/shutdown at the same time.
+
+### USERS
+
+▶ [patch]
+The new (unused in production) indexed artifacts feature of Generic Worker was broken in release 51.0.0. This has (hopefully) been fixed.
+
+### DEVELOPERS
+
+▶ [patch]
+New `.taskcuster.yml` linter added in UI to help validate github integration.
+
+▶ [patch]
+Taskcluster YAML validator can load file from URL.
+
 ## v51.0.0
 
 ### USERS
