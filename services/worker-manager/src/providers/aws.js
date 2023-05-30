@@ -20,6 +20,7 @@ class AwsProvider extends Provider {
     notify,
     db,
     providerConfig,
+    queue,
   }) {
     super({
       providerId,
@@ -32,6 +33,7 @@ class AwsProvider extends Provider {
       notify,
       db,
       providerConfig,
+      queue,
     });
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
@@ -417,8 +419,9 @@ class AwsProvider extends Provider {
           `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`,
         );
       }
-
     });
+
+    await this.quarantineWorker({ worker, reason });
   }
 
   async scanPrepare() {

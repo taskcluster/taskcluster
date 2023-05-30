@@ -4,9 +4,8 @@ const assert = require('assert');
 const { ApiError, Provider } = require('./providers/provider');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { WorkerPool, WorkerPoolError, Worker } = require('./data');
-const { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload, splitWorkerPoolId } = require('./util');
+const { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } = require('./util');
 const { TaskQueue } = require('./queue-data');
-const taskcluster = require('taskcluster-client');
 
 let builder = new APIBuilder({
   title: 'Worker Manager Service',
@@ -637,18 +636,6 @@ builder.declare({
 
   try {
     await provider.removeWorker({ worker, reason: 'workerManager.removeWorker API call' });
-
-    // To make sure that queue service will not serve any tasks to this worker we quarantine it
-    const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);
-    await this.queue.quarantineWorker(
-      provisionerId,
-      workerType,
-      workerGroup,
-      workerId,
-      {
-        quarantineUntil: taskcluster.fromNow('1 day'),
-        quarantineInfo: 'workerManager.removeWorker API call',
-      });
   } catch (err) {
     if (!(err instanceof ApiError)) {
       throw err;

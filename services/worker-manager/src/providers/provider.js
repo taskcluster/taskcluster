@@ -3,6 +3,8 @@ const libUrls = require('taskcluster-lib-urls');
 const slugid = require('slugid');
 const yaml = require('js-yaml');
 const { Worker, WorkerPoolError } = require('../data.js');
+const { splitWorkerPoolId } = require('../util.js');
+const taskcluster = require('taskcluster-client');
 
 /**
  * The parent class for all providers.
@@ -20,6 +22,7 @@ class Provider {
     validator,
     providerConfig,
     providerType,
+    queue,
   }) {
     this.providerId = providerId;
     this.monitor = monitor;
@@ -31,6 +34,7 @@ class Provider {
     this.Worker = Worker;
     this.WorkerPoolError = WorkerPoolError;
     this.providerType = providerType;
+    this.queue = queue;
   }
 
   async setup() {
@@ -82,6 +86,20 @@ class Provider {
 
   async removeWorker({ worker, reason }) {
     throw new ApiError('not supported for this provider');
+  }
+
+  async quarantineWorker({ worker, reason = 'worker-manager: worker removed' }) {
+    const { provisionerId, workerType } = splitWorkerPoolId(worker.workerPoolId);
+    await this.queue.quarantineWorker(
+      provisionerId,
+      workerType,
+      worker.workerGroup,
+      worker.workerId,
+      {
+        quarantineUntil: taskcluster.fromNow('1 day'),
+        quarantineInfo: reason,
+      },
+    );
   }
 
   /**

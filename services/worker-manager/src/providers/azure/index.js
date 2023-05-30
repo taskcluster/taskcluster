@@ -1326,6 +1326,8 @@ class AzureProvider extends Provider {
         worker.state = Worker.states.STOPPING;
       }
     });
+
+    await this.quarantineWorker({ worker, reason });
   }
 
   /*
