@@ -140,7 +140,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         storageAccountName: 'storage123',
         _backoffDelay: 1,
       },
-      queue: helper.queue,
     });
 
     // So that checked-in certs are still valid
@@ -869,11 +868,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'none', nic: 'none', disks: ['none', 'none'], vm: 'none' });
       assert.equal(worker.state, 'stopped');
-
-      debug('quarantineWorker was called');
-      const lastQuarantine = helper.queue.quarantines[helper.queue.quarantines.length - 1];
-      assert.equal(lastQuarantine.workerId, worker.workerId);
-      assert.equal(lastQuarantine.payload.quarantineInfo, 'test');
     });
 
     test('vm removal fails (keeps waiting)', async function() {

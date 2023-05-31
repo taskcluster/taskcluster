@@ -8,6 +8,5 @@
 - queue:claim-work:*
 - queue:worker-id:*
 - queue:pending-count:*
-- queue:quarantine-worker:*
 - worker-manager:remove-worker:*
 - worker-manager:reregister-worker:*

@@ -190,8 +190,6 @@ class GoogleProvider extends Provider {
       }
       throw err;
     }
-
-    await this.quarantineWorker({ worker, reason });
   }
 
   async provision({ workerPool, workerInfo }) {

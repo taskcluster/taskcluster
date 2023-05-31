@@ -87,7 +87,7 @@ class TestingProvider extends Provider {
     return worker;
   }
 
-  async removeWorker({ worker, reason }) {
+  async removeWorker({ worker }) {
     if (!worker.providerData.allowRemoveWorker) {
       throw new ApiError('removing workers is not supported for testing provider');
     }
@@ -97,8 +97,6 @@ class TestingProvider extends Provider {
 
       return worker;
     });
-
-    await this.quarantineWorker({ worker, reason });
   }
 }
 

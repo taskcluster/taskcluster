@@ -47,7 +47,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       WorkerPool: helper.WorkerPool,
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {},
-      queue: helper.queue,
     });
     workerPool = WorkerPool.fromApi({
       workerPoolId,
@@ -93,7 +92,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     ]);
   });
 
-  test('removeWorker marks the worker as stopped and calls quarantineWorker', async function() {
+  test('removeWorker marks the worker as stopped', async function() {
     const worker = Worker.fromApi(defaultWorker);
     await worker.create(helper.db);
 
@@ -103,10 +102,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.deepEqual(rows.map(({ worker_id, state }) => ([worker_id, state])), [
       ['abc123', 'stopped'],
     ]);
-
-    const lastQuarantine = helper.queue.quarantines[helper.queue.quarantines.length - 1];
-    assert.equal(lastQuarantine.workerId, workerId);
-    assert.equal(lastQuarantine.payload.quarantineInfo, 'uhoh');
   });
 
   suite('registerWorker', function() {
