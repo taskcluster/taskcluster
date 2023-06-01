@@ -505,7 +505,7 @@ type (
 //
 // Run `generic-worker show-payload-schema` to output this schema to standard
 // out.
-func taskPayloadSchema() string {
+func JSONSchema() string {
 	return `{
   "$id": "/schemas/generic-worker/multiuser_windows.json#",
   "$schema": "/schemas/common/metaschema.json#",

@@ -113,7 +113,7 @@ func main() {
 
 	switch {
 	case arguments["show-payload-schema"]:
-		fmt.Println(taskPayloadSchema())
+		fmt.Println(JSONSchema())
 
 	case arguments["run"]:
 		withWorkerRunner := arguments["--with-worker-runner"].(bool)
@@ -583,14 +583,14 @@ func ClaimWork() *TaskRun {
 
 func (task *TaskRun) validatePayload() *CommandExecutionError {
 	jsonPayload := task.Definition.Payload
-	schemaLoader := gojsonschema.NewStringLoader(taskPayloadSchema())
+	schemaLoader := gojsonschema.NewStringLoader(JSONSchema())
 	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
 	if err != nil {
 		return MalformedPayloadError(err)
 	}
 	if !result.Valid() {
-		task.Errorf("Task payload for this worker type must conform to the following jsonschema:\n%s", taskPayloadSchema())
+		task.Errorf("Task payload for this worker type must conform to the following jsonschema:\n%s", JSONSchema())
 		task.Error("TASK FAIL since the task payload is invalid. See errors:")
 		for _, desc := range result.Errors() {
 			task.Errorf("- %s", desc)

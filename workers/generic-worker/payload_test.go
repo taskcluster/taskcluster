@@ -48,7 +48,7 @@ func ensureMalformedPayload(t *testing.T, task *TaskRun) {
 
 // Test that the burned in payload schema is a valid json schema
 func TestPayloadSchemaValid(t *testing.T) {
-	payloadSchema := taskPayloadSchema()
+	payloadSchema := JSONSchema()
 	schemaLoader := gojsonschema.NewStringLoader(payloadSchema)
 	_, err := gojsonschema.NewSchema(schemaLoader)
 	if err != nil {
