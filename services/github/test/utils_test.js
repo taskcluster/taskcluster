@@ -173,10 +173,14 @@ suite(testing.suiteName(), function() {
       const src = [
         '[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/utils/[22m[1misDateWithin.test.js[22m',
         '[2K[1G[2m$ webpack --mode production[22m',
+        'test factory::test::file_reader_twice ... [31mFAILED(B[m',
+        '[0m[0m[1m[31merror[0m[1m:[0m test failed, to rerun pass `-p taskcluster-upload --lib`',
       ];
       const expected = [
         ' PASS  src/utils/isDateWithin.test.js',
         '$ webpack --mode production',
+        'test factory::test::file_reader_twice ... FAILED',
+        'error: test failed, to rerun pass `-p taskcluster-upload --lib`',
       ];
       assert.equal(expected.join('\n'), ansi2txt(src.join('\n')));
     });

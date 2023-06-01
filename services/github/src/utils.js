@@ -95,7 +95,7 @@ const shouldSkipPullRequest = ({ pull_request }) => {
  */
 const ansi2txt = (src) => {
   // eslint-disable-next-line no-control-regex
-  const regex = /\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]/gm;
+  const regex = /\x1B(\[[0-9;]*[JKGmsu]|\(B)/gm;
   return src.replace(regex, '');
 };
 
