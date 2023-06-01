@@ -112,7 +112,7 @@ func generateFunctions(ymlFile string) []byte {
 //
 // Run ` + "`generic-worker show-payload-schema`" + ` to output this schema to standard
 // out.
-func taskPayloadSchema() string {
+func JSONSchema() string {
     return ` + escapedJSON + `
 }`
 	return []byte(response)
