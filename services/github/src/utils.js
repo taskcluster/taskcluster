@@ -88,14 +88,22 @@ const shouldSkipPullRequest = ({ pull_request }) => {
 
 /**
  * Removes ANSI control characters from string
- * Source: https://stackoverflow.com/a/18000433
+ * Source: https://github.com/chalk/ansi-regex/blob/main/index.js
+ * The reason why we don't use ansi-regex package is because it's "modules" only,
+ * and taskcluster doesn't yet support it.
+ *
+ * See https://en.wikipedia.org/wiki/ANSI_escape_code
  *
  * @param {string} src
  * @returns string
  */
 const ansi2txt = (src) => {
   // eslint-disable-next-line no-control-regex
-  const regex = /\x1B(\[[0-9;]*[JKGmsu]|\(B)/gm;
+  const pattern = [
+    '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
+    '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))',
+  ].join('|');
+  const regex = new RegExp(pattern, 'g');
   return src.replace(regex, '');
 };
 
