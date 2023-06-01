@@ -63,7 +63,7 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
             : null;
         } catch (err) {
           // if the URL does not exist or is an error artifact, return nothing
-          if (err.response && (err.response.status === 404 || err.response.status === 424)) {
+          if (err.response && (err.response.statusCode === 404 || err.response.statusCode === 424)) {
             return null;
           }
 
