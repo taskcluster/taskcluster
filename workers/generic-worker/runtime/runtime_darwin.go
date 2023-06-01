@@ -98,6 +98,12 @@ func WaitForLoginCompletion(timeout time.Duration) error {
 		return nil
 	}
 	log.Print("Timed out waiting for user login")
+	output, err := host.CombinedOutput("/usr/bin/last")
+	if err != nil {
+		log.Printf("Not able to execute /usr/bin/last due to %v", err)
+	} else {
+		log.Print(output)
+	}
 	return errors.New("No user logged in with console session")
 }
 
