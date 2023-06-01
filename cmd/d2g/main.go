@@ -1,3 +1,5 @@
+//go:generate gw-codegen file://../../schemas/docker_worker_payload.json generated_types.go
+
 package main
 
 import (
@@ -5,10 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
-	"net/url"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/mcuadros/go-defaults"
@@ -27,20 +26,8 @@ func main() {
 		log.Fatal("Failed to read input:", err)
 	}
 
-	// Define the path to the JSON schema
-	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
-	if rootURL == "" {
-		log.Fatal("TASKCLUSTER_ROOT_URL environment variable is not set")
-	}
-	u, err := url.Parse(rootURL)
-	if err != nil {
-		log.Fatalf("Failed to parse TASKCLUSTER_ROOT_URL: %v", err)
-	}
-	u.Path = path.Join(u.Path, "schemas/docker-worker/v1/payload.json")
-	schemaURL := u.String()
-
 	// Validate the JSON input against the schema
-	err = validateJSON(schemaURL, input)
+	err = validateJSON(input)
 	if err != nil {
 		log.Fatalf("Input validation failed: %v", err)
 	}
@@ -66,22 +53,9 @@ func main() {
 	fmt.Println(string(formattedActualGWPayload))
 }
 
-func validateJSON(schemaURL string, input []byte) error {
-	// Fetch the JSON schema from the URL
-	response, err := http.Get(schemaURL)
-	if err != nil {
-		return fmt.Errorf("failed to fetch JSON schema: %v", err)
-	}
-	defer response.Body.Close()
-
-	// Read the schema from the response body
-	schemaBytes, err := io.ReadAll(response.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read JSON schema: %v", err)
-	}
-
+func validateJSON(input []byte) error {
 	// Parse the JSON schema
-	schemaLoader := gojsonschema.NewBytesLoader(schemaBytes)
+	schemaLoader := gojsonschema.NewStringLoader(taskPayloadSchema())
 	documentLoader := gojsonschema.NewBytesLoader(input)
 
 	// Perform the validation
