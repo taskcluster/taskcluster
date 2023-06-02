@@ -166,7 +166,7 @@ tasks:
                   # exist in tree so we must hard code the hash of the mozillareleases/taskgraph-decision docker image
                   command:
                       - - bash
-                        - "-cx"
+                        - "-cxe"
                         - |-
                           podman run --name taskcontainer --add-host=taskcluster:127.0.0.1 --net=host \
                               -e "REPOSITORIES={\"taskcluster\":\"taskcluster\"}" \
@@ -189,7 +189,7 @@ tasks:
                                   --taskcluster-checkout=/builds/worker/checkouts/src \
                                   --task-cwd=/builds/worker/checkouts/src \
                                   -- \
-                                  bash -cx '
+                                  bash -cxe '
                                       ln -s /builds/worker/artifacts artifacts
                                       ~/.local/bin/taskgraph decision \
                                           --pushlog-id='\''0'\'' \
