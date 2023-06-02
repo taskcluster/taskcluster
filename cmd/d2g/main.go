@@ -11,6 +11,7 @@ import (
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/d2g"
 	"github.com/taskcluster/d2g/dockerworker"
+	"github.com/taskcluster/d2g/genericworker"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -25,7 +26,7 @@ func main() {
 	}
 
 	// Validate the JSON input against the schema
-	err = validateJSON(input)
+	err = validateJSON(input, dockerworker.JSONSchema())
 	if err != nil {
 		log.Fatalf("Input validation failed: %v", err)
 	}
@@ -48,12 +49,18 @@ func main() {
 		log.Fatalf("Cannot convert Generic Worker payload %#v to JSON: %s", *gwPayload, err)
 	}
 
+	// Validate the JSON output against the schema
+	err = validateJSON(formattedActualGWPayload, genericworker.JSONSchema())
+	if err != nil {
+		log.Fatalf("Output validation failed: %v", err)
+	}
+
 	fmt.Println(string(formattedActualGWPayload))
 }
 
-func validateJSON(input []byte) error {
+func validateJSON(input []byte, schema string) error {
 	// Parse the JSON schema
-	schemaLoader := gojsonschema.NewStringLoader(dockerworker.JSONSchema())
+	schemaLoader := gojsonschema.NewStringLoader(schema)
 	documentLoader := gojsonschema.NewBytesLoader(input)
 
 	// Perform the validation
