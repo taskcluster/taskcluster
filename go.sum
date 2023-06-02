@@ -25,7 +25,7 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
-github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ8=
+github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/taskcluster/httpbackoff/v3 v3.1.0 h1:sa91pm4d5yhsuG7ej3R2Db8IsY3rI8PJ41+tiJ/smqA=
 github.com/taskcluster/httpbackoff/v3 v3.1.0/go.mod h1:RDctDLiKVfdgR3Qq0aS87KdmquezxFjlS0Aw1x0Fi5U=
 github.com/taskcluster/shell v0.0.0-20191115171910-c688067f12d3 h1:5v+o0rYZz+s+qAd3M8mSmAq2g6Isn+chv3dJeMCyHec=
@@ -34,8 +34,8 @@ github.com/taskcluster/slugid-go v1.1.0 h1:SWsUplliyamdYzOKVM4+lDohZKuL63fKreGkv
 github.com/taskcluster/slugid-go v1.1.0/go.mod h1:5sOAcPHjqso1UkKxSl77CkKgOwha0D9X0msBKBj0AOg=
 github.com/taskcluster/taskcluster-lib-urls v13.0.1+incompatible h1:Q3kagxQiHw7QNckRoeeBV16FDvyQC+iSmda99bJEK+U=
 github.com/taskcluster/taskcluster-lib-urls v13.0.1+incompatible/go.mod h1:ALqTgi15AmJGEGubRKM0ydlLAFatlQPrQrmal9YZpQs=
-github.com/taskcluster/taskcluster/v51 v51.0.0 h1:Xu3DzO+tmDd+kkgkoHsme66cpyBE9h+0wpE5L2bsGJw=
-github.com/taskcluster/taskcluster/v51 v51.0.0/go.mod h1:axpEtsDM5Kro5np8P3DwwXBZiENl40fiu2KbJ0ed8iw=
+github.com/taskcluster/taskcluster/v52 v52.0.0 h1:TkYZSZTyvavHz2znaClZ6KK6ha85EBXP2WmmhTj6RcI=
+github.com/taskcluster/taskcluster/v52 v52.0.0/go.mod h1:TOWG0u4X3vhEsSY4tbOG2VkY6/l7mh8ILxtaDxc3IDc=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957 h1:6Fre/uvwovW5YY4nfHZk66cAg9HjT9YdFSAJHUUgOyQ=
 github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957/go.mod h1:dch7ywQEefE1ibFqBG1erFibrdUIwovcwQjksYuHuP4=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=

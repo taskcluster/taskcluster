@@ -1,5 +1,3 @@
-//go:generate gw-codegen file://../../schemas/docker_worker_payload.json generated_types.go
-
 package main
 
 import (
@@ -55,7 +53,7 @@ func main() {
 
 func validateJSON(input []byte) error {
 	// Parse the JSON schema
-	schemaLoader := gojsonschema.NewStringLoader(taskPayloadSchema())
+	schemaLoader := gojsonschema.NewStringLoader(dockerworker.JSONSchema())
 	documentLoader := gojsonschema.NewBytesLoader(input)
 
 	// Perform the validation
