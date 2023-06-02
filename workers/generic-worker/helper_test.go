@@ -27,6 +27,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/v52/clients/client-go"
 	"github.com/taskcluster/taskcluster/v52/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v52/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v52/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v52/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v52/workers/generic-worker/gwconfig"
 )
@@ -405,6 +406,12 @@ func GWTest(t *testing.T) *Test {
 			},
 		},
 	}
+	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") != "" {
+		if os.Getenv("TASKCLUSTER_ROOT_URL") == "" {
+			t.Fatal("TASKCLUSTER_ROOT_URL env var not set, but needed since GW_TESTS_USE_EXTERNAL_TASKCLUSTER is set")
+		}
+		testConfig.RootURL = os.Getenv("TASKCLUSTER_ROOT_URL")
+	}
 	setConfigRunTasksAsCurrentUser(testConfig)
 	for _, dir := range []string{
 		filepath.Join(cwd, "downloads"),
@@ -467,9 +474,10 @@ func GWTest(t *testing.T) *Test {
 		testConfig.AccessToken = "test-access-token"
 		testConfig.ClientID = "test-client-id"
 		testConfig.Certificate = ""
+		serviceFactory = mocktc.NewServiceFactory(t)
+	} else {
+		serviceFactory = &tc.ClientFactory{}
 	}
-
-	serviceFactory = mocktc.NewServiceFactory(t)
 
 	return &Test{
 		t:      t,

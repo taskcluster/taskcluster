@@ -1000,6 +1000,8 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 
 func TestObjectArtifact(t *testing.T) {
 
+	t.Skip("Test currently skipped due to https://github.com/taskcluster/taskcluster/issues/6308")
+
 	setup(t)
 	config.CreateObjectArtifacts = true
 

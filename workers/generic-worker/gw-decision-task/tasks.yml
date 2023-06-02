@@ -47,6 +47,9 @@ Tasks:
     - WorkerPool: proj-taskcluster/gw-ci-ubuntu-22-04
       Env:
         ENGINE: multiuser
+        GW_TESTS_USE_EXTERNAL_TASKCLUSTER: |-
+          Enabled for just one platform (linux/amd64) in https://github.com/taskcluster/taskcluster/issues/6274
+          to help ensure that mock implementations remain consistent with real services.
     - WorkerPool: proj-taskcluster/gw-ci-ubuntu-22-04
       Env:
         ENGINE: simple
