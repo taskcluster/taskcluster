@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v52.0.0
+
+### GENERAL
+
+▶ [MAJOR] [#6227](https://github.com/taskcluster/taskcluster/issues/6227)
+Generic Worker Simple engine is no longer _released_. It can still be built from source, but since it was never intended to be used as a production engine, and was only intended to support development (e.g. for running unit tests or running in a simple dev deployment) the simple engine binaries are no longer released.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#5006](https://github.com/taskcluster/taskcluster/issues/5006)
+Generic Worker on macOS now dumps the output of the `last` command when it is not able to determine the logged in console user. This doesn't solve issue 5006 but it may provide additional troubleshooting information.
+
+### USERS
+
+▶ [patch] [#6278](https://github.com/taskcluster/taskcluster/issues/6278)
+Fix UI issue showing "Response code 404" for missing `public/actions.json` artifact.
+
+▶ [patch] [#5807](https://github.com/taskcluster/taskcluster/issues/5807)
+Fixes escape sequence parsing in logs that are attached to github check runs.
+
 ## v51.1.0
 
 ### ADMINS

@@ -568,12 +568,6 @@ Only update the state of a build and update the `updated` timestamp
 
 Create a single integration.
 
-### deprecated methods
-
-* `create_github_build(organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text)` (compatibility guaranteed until v52.0.0)
-* `get_github_build(task_group_id_in text)` (compatibility guaranteed until v52.0.0)
-* `get_github_builds(page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text)` (compatibility guaranteed until v52.0.0)
-
 ## hooks
 
 * [`create_hook`](#create_hook)

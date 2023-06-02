@@ -10,10 +10,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/taskcluster/taskcluster/v51/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v51/internal/scopes"
-	"github.com/taskcluster/taskcluster/v51/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v51/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v52/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v52/internal/scopes"
+	"github.com/taskcluster/taskcluster/v52/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v52/workers/generic-worker/fileutil"
 	"golang.org/x/crypto/ed25519"
 )
 
