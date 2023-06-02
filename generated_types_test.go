@@ -4,7 +4,7 @@ package d2g_test
 
 import (
 	"encoding/json"
-	tcclient "github.com/taskcluster/taskcluster/v51/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v52/clients/client-go"
 )
 
 type (

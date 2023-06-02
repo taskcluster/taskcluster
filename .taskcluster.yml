@@ -23,12 +23,12 @@ tasks:
         taskId: { $eval: as_slugid("tests_task") }
         provisionerId: proj-taskcluster
         workerType: gw-ubuntu-22-04
-        created: {$fromNow: ''}
-        deadline: {$fromNow: '1 day'}
+        created: { $fromNow: "" }
+        deadline: { $fromNow: "1 day" }
         payload:
           command:
             - - /bin/bash
-              - '-vxec'
+              - "-vxec"
               - |
                 export GOROOT="$(pwd)/go1.19.9/go"
                 export GOPATH="$(pwd)/gopath1.19.9"
@@ -42,7 +42,8 @@ tasks:
                 cd d2g
                 git -c advice.detachedHead=false checkout '${head_rev}'
 
-                go install github.com/taskcluster/taskcluster/v51/tools/jsonschema2go/jsonschema2go@latest
+                go install github.com/taskcluster/taskcluster/v52/tools/jsonschema2go/jsonschema2go@latest
+                go install github.com/taskcluster/taskcluster/v52/workers/generic-worker/gw-codegen@latest
                 go generate ./...
                 go mod tidy
 
