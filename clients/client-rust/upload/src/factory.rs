@@ -81,7 +81,12 @@ mod test {
     #[tokio::test]
     async fn file_reader_twice() -> Result<()> {
         let mut file: File = tempfile()?.into();
+
         file.write_all(DATA).await?;
+        // This file will be cloned before it is read by the factory, so flush
+        // any buffered data before doing so. Tokio internally buffers the write
+        // and completes it in another thread.
+        file.flush().await?;
 
         let mut factory = FileReaderFactory::new(file);
         assert_eq!(&copy_from_factory(&mut factory).await?, DATA);
