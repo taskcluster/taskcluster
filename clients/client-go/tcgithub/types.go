@@ -3,6 +3,8 @@
 package tcgithub
 
 import (
+	"encoding/json"
+
 	tcclient "github.com/taskcluster/taskcluster/v52/clients/client-go"
 )
 
@@ -109,6 +111,98 @@ type (
 	//
 	// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
 	GithubGUID string
+
+	// Render .taskcluster.yml for given event.
+	RenderTaskclusterYmlInput struct {
+
+		// The contents of the .taskcluster.yml
+		Body string `json:"body"`
+
+		// The branch name.
+		//
+		// Default:    "main"
+		Branch string `json:"branch,omitempty"`
+
+		// Additional data to be added to the event object.
+		//
+		// Additional properties allowed
+		FakeEventData json.RawMessage `json:"fakeEventData,omitempty"`
+
+		// Name of the emulated event type
+		//
+		// Possible values:
+		//   * "github-push"
+		//   * "github-tag-push"
+		//   * "github-pull-request"
+		//   * "github-pull-request-untrusted"
+		//   * "github-release"
+		FakeEventType string `json:"fakeEventType"`
+
+		// Name of the pull request action
+		//
+		// Possible values:
+		//   * "opened"
+		//   * "synchronize"
+		//   * "reopened"
+		//   * "assigned"
+		//   * "auto_merge_disabled"
+		//   * "auto_merge_enabled"
+		//   * "closed"
+		//   * "converted_to_draft"
+		//   * "dequeued"
+		//   * "edited"
+		//   * "enqueued"
+		//   * "labeled"
+		//   * "ready_for_review"
+		//   * "review_requested"
+		//   * "review_request_removed"
+		//   * "unassigned"
+		//   * "unlabeled"
+		//
+		// Default:    "opened"
+		FakePullRequestAction string `json:"fakePullRequestAction,omitempty"`
+
+		// Name of the release action
+		//
+		// Possible values:
+		//   * "published"
+		//   * "unpublished"
+		//   * "created"
+		//   * "edited"
+		//   * "deleted"
+		//   * "prereleased"
+		//   * "released"
+		//
+		// Default:    "published"
+		FakeReleaseAction string `json:"fakeReleaseAction,omitempty"`
+
+		// The organization that owns the repository.
+		//
+		// Default:    "TaskclusterRobot"
+		// Syntax:     ^[a-zA-Z0-9_-]+$
+		Organization string `json:"organization,omitempty"`
+
+		// The repository name.
+		//
+		// Default:    "hooks-testing"
+		// Syntax:     ^[a-zA-Z0-9_-]+$
+		Repository string `json:"repository,omitempty"`
+	}
+
+	// Rendered .taskcluster.yml output.
+	RenderTaskclusterYmlOutput struct {
+
+		// Scopes that will be used for the tasks
+		//
+		// Array items:
+		Scopes []string `json:"scopes"`
+
+		// Rendered task
+		//
+		// Array items:
+		// Additional properties allowed
+		Tasks []json.RawMessage `json:"tasks"`
+	}
 
 	// Any Taskcluster-specific Github repository information.
 	RepositoryResponse struct {

@@ -599,6 +599,17 @@ var services = map[string]definitions.Service{
 				Input: "v1/create-comment.json#",
 			},
 			definitions.Entry{
+				Name:        "renderTaskclusterYaml",
+				Title:       "Render .taskcluster.yml file",
+				Description: "This endpoint allows to render the .taskcluster.yml file for a given event or payload.\nThis is useful to preview the result of the .taskcluster.yml file before pushing it to\nthe repository.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/taskcluster-yml",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "v1/taskcluster-render-yaml-input.json#",
+			},
+			definitions.Entry{
 				Name:        "heartbeat",
 				Title:       "Heartbeat",
 				Description: "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",

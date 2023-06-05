@@ -1,0 +1,22 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Render .taskcluster.yml output"
+description: Rendered .taskcluster.yml output.
+type: object
+properties:
+  tasks:
+    type: array
+    description: Rendered task
+    uniqueItems: false
+    items:
+      type: object
+      additionalProperties: true
+  scopes:
+    type: array
+    description: Scopes that will be used for the tasks
+    uniqueItems: true
+    items:
+      type: string
+additionalProperties: false
+required:
+  - tasks
+  - scopes

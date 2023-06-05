@@ -374,6 +374,27 @@ impl Github {
         (path, query)
     }
 
+    /// Render .taskcluster.yml file
+    ///
+    /// This endpoint allows to render the .taskcluster.yml file for a given event or payload.
+    /// This is useful to preview the result of the .taskcluster.yml file before pushing it to
+    /// the repository.
+    pub async fn renderTaskclusterYaml(&self, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::renderTaskclusterYaml_details();
+        let body = Some(payload);
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for renderTaskclusterYaml
+    fn renderTaskclusterYaml_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "taskcluster-yml";
+        let query = None;
+
+        (path, query)
+    }
+
     /// Heartbeat
     ///
     /// Respond with a service heartbeat.

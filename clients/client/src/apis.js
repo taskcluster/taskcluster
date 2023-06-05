@@ -942,6 +942,22 @@ module.exports = {
         {
           "args": [
           ],
+          "category": "Github Service",
+          "description": "This endpoint allows to render the .taskcluster.yml file for a given event or payload.\nThis is useful to preview the result of the .taskcluster.yml file before pushing it to\nthe repository.",
+          "input": "v1/taskcluster-render-yaml-input.json#",
+          "method": "post",
+          "name": "renderTaskclusterYaml",
+          "output": "v1/taskcluster-render-yaml-output.json#",
+          "query": [
+          ],
+          "route": "/taskcluster-yml",
+          "stability": "experimental",
+          "title": "Render .taskcluster.yml file",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "category": "Monitoring",
           "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
           "method": "get",
