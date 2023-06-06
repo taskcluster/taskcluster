@@ -7,7 +7,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { dump, load } from 'js-yaml';
 import debounce from 'lodash.debounce';
-import jsone from 'json-e';
+import { Grid, MenuItem } from '@material-ui/core';
 import TextField from '../../components/TextField';
 import CodeEditor from '../../components/CodeEditor';
 import Dashboard from '../../components/Dashboard';
@@ -15,9 +15,9 @@ import Button from '../../components/Button';
 import urls from '../../utils/urls';
 import { siteSpecificVariable } from '../../utils/siteSpecific';
 import ajv from '../../utils/ajv';
-import fromNowJSON from '../../utils/fromNowJSON';
-import * as testPayloads from './test-payload';
 import scrollToHash from '../../utils/scrollToHash';
+import githubQuery from './github.graphql';
+import JsonDisplay from '../../components/JsonDisplay';
 
 const prefetchSchema = async () => {
   ajv.addSchema(
@@ -39,12 +39,47 @@ const prefetchSchema = async () => {
 
 prefetchSchema();
 
+const releaseActions = [
+  'published',
+  'unpublished',
+  'created',
+  'edited',
+  'deleted',
+  'prereleased',
+  'released',
+];
+const pullRequestActions = [
+  'opened',
+  'synchronize',
+  'reopened',
+  'assigned',
+  'auto_merge_disabled',
+  'auto_merge_enabled',
+  'closed',
+  'converted_to_draft',
+  'dequeued',
+  'edited',
+  'enqueued',
+  'labeled',
+  'ready_for_review',
+  'review_requested',
+  'review_request_removed',
+  'unassigned',
+  'unlabeled',
+];
 const isValidYamlUrl = url => {
   const urlRe = /(.*)\/\.taskcluster.yml$/;
-  const parsed = new URL(url);
-  const allowedHosts = ['raw.githubusercontent.com'];
 
-  return allowedHosts.includes(parsed.hostname) && urlRe.test(parsed.pathname);
+  try {
+    const parsed = new URL(url);
+    const allowedHosts = ['raw.githubusercontent.com'];
+
+    return (
+      allowedHosts.includes(parsed.hostname) && urlRe.test(parsed.pathname)
+    );
+  } catch (e) {
+    return false;
+  }
 };
 
 // we embed JSON-e here, which looks a lot like a template to eslint..
@@ -106,39 +141,13 @@ const getCustomContext = () => {
   return dump({
     timestamp: Math.floor(new Date()),
     organization: 'test-org',
-    repository: {
-      url: 'url',
-      project: 'project',
-    },
+    repository: 'project',
     push: {
       branch: 'branch',
       revision: 'rev',
     },
     ownTaskId: 'own-task-id',
   });
-};
-
-const testJsoneEvent = (doc, extraContext, event, tasksFor, action) => {
-  const cfg = { ...doc };
-
-  if (cfg.version !== 1) {
-    cfg.$fromNow = text => fromNowJSON(text);
-  }
-
-  const context = {
-    event,
-    tasks_for: tasksFor,
-    action,
-
-    // v1
-    taskcluster_root_url: 'https://tc.root',
-    ref: 'refs/heads/master',
-    as_slugid: text => `${text.replace(/[^a-zA-Z0-9_-]/g, '_')}_slugid`,
-
-    ...extraContext,
-  };
-
-  return jsone(cfg, context);
 };
 
 @withApollo
@@ -173,26 +182,36 @@ const testJsoneEvent = (doc, extraContext, event, tasksFor, action) => {
     height: 480,
   },
   contextEditor: {
-    height: 220,
+    height: 160,
   },
-  findingsTable: {
+  dropdown: {
+    minWidth: 200,
+  },
+  findingsRow: {
     fontSize: 14,
-    '& td, th': {
-      margin: 0,
-      padding: theme.spacing(0.5),
-      paddingLeft: theme.spacing(1),
-      paddingRight: theme.spacing(1),
-      borderBottom: `1px solid ${theme.palette.divider}`,
-    },
-    '& tr': {
-      verticalAlign: 'top',
-    },
+    margin: 0,
+    padding: theme.spacing(0.5),
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    verticalAlign: 'top',
   },
   code: {
+    maxWidth: 700,
     fontFamily: 'monospace',
     fontSize: 12,
-    border: '1px solid #ccc',
-    padding: theme.spacing(2),
+    border: '1px solid #eee',
+    padding: theme.spacing(1),
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-all',
+  },
+  scopes: {
+    fontSize: 12,
+  },
+  tasks: {
+    '& pre': {
+      fontSize: 12,
+    },
   },
   textField: {
     width: '60%',
@@ -206,7 +225,7 @@ export default class TcYamlDebug extends Component {
 
     this.state = {
       findings: [],
-      taskclusterYmlUrl: search.get('url'),
+      taskclusterYmlUrl: search.get('url', ''),
       isValidUrl: true,
       validationMessage: '',
       urlChanged: false,
@@ -244,7 +263,8 @@ export default class TcYamlDebug extends Component {
 
   validateUrl() {
     const { history } = this.props;
-    const isValidUrl = isValidYamlUrl(this.state.taskclusterYmlUrl);
+    const { taskclusterYmlUrl } = this.state;
+    const isValidUrl = isValidYamlUrl(taskclusterYmlUrl);
 
     this.setState({
       isValidUrl,
@@ -253,9 +273,9 @@ export default class TcYamlDebug extends Component {
         : 'Invalid URL: should be https://raw.githubusercontent/**/.taskcluster.yml file in a GitHub repository',
     });
 
-    if (isValidUrl) {
+    if (taskclusterYmlUrl && isValidUrl) {
       history.push({
-        search: `?url=${encodeURIComponent(this.state.taskclusterYmlUrl)}`,
+        search: `?url=${encodeURIComponent(taskclusterYmlUrl)}`,
         hash: '#findings',
       });
       this.loadTaskclusterYml();
@@ -286,21 +306,53 @@ export default class TcYamlDebug extends Component {
     }
   }
 
+  handleCustomEventSimulate = e => {
+    const [tasksFor, action] = e.target.value.split('.');
+    const pullRequestAction = tasksFor.includes('pull-request')
+      ? action
+      : undefined;
+    const releaseAction = tasksFor.includes('release') ? action : undefined;
+
+    this.runEvent(tasksFor, pullRequestAction, releaseAction, false, {
+      prepend: true,
+    });
+  };
+
+  resetFindings() {
+    const emptyFindings = [];
+
+    this.setState({
+      findings: emptyFindings,
+    });
+  }
+
+  addFinding(item, prepend = false) {
+    this.setState(state => {
+      const idx = state.findings.length + 1;
+
+      return {
+        findings: prepend
+          ? [{ ...item, idx }, ...state.findings]
+          : [...state.findings, { ...item, idx }],
+      };
+    });
+  }
+
   handleAnalyze = () => {
-    this.setState({ findings: [] });
-    const findings = [];
-    const addFinding = (type, sentiment, message, tasks, extra) =>
-      findings.push({ type, sentiment, message, tasks, extra });
+    this.resetFindings();
+
     let doc;
-    let extraContext;
     let schema = 'github-v1';
 
     try {
       doc = load(this.state.editorValue);
-      extraContext = load(this.state.extraContext);
-      addFinding('parser', '✅', 'Valid YAML - nice!');
+      this.addFinding({
+        type: 'parser',
+        sentiment: '✅',
+        message: 'Valid YAML - nice!',
+      });
     } catch (e) {
-      addFinding('parser', '⛔️', e.message);
+      this.addFinding({ type: 'parser', sentiment: '⛔️', message: e.message });
     }
 
     if (!doc) {
@@ -308,192 +360,199 @@ export default class TcYamlDebug extends Component {
     }
 
     if (doc.version !== 1) {
-      addFinding(
-        'version',
-        '⛔️',
-        'Not using version 1',
-        null,
-        'Please migrate to version 1'
-      );
+      this.addFinding({
+        type: 'version',
+        sentiment: '⛔️',
+        message: 'Not using version 1, please migrate',
+      });
       schema = 'github-v0';
     } else {
-      addFinding('version', '✅', 'Using version 1');
+      this.addFinding({
+        type: 'version',
+        sentiment: '✅',
+        message: 'Using version 1',
+      });
     }
 
     const validation = ajv.validate(schema, doc);
 
     if (validation) {
-      addFinding('schema', '✅', 'Valid schema, amazing!');
+      this.addFinding({
+        type: 'schema',
+        sentiment: '✅',
+        message: 'Valid schema, amazing!',
+      });
     } else {
       ajv.errors.forEach((error, i) => {
-        addFinding(
-          `schema-${i}`,
-          '⚠️',
-          `${error.instancePath} ${error.message} ${JSON.stringify(
+        this.addFinding({
+          type: `schema-${i}`,
+          sentiment: '⚠️',
+          message: `${error.instancePath} ${error.message} ${JSON.stringify(
             error.params
-          )}`
-        );
+          )}`,
+        });
       });
     }
 
     if (doc?.reporting !== 'checks-v1') {
-      addFinding(
-        'reporting',
-        '⚠️',
-        'Not using checks API',
-        null,
-        'Checks API are more flexible and is recommended'
-      );
+      this.addFinding({
+        type: 'reporting',
+        sentiment: '⚠️',
+        message:
+          'Not using checks API. Checks API are more flexible and are recommended',
+      });
     } else {
-      addFinding('reporting', '✅', 'Using checks API');
+      this.addFinding({
+        type: 'reporting',
+        sentiment: '✅',
+        message: 'Using checks API',
+      });
     }
 
     if (doc?.autoCancelPreviousChecks !== true) {
-      addFinding(
-        'autoCancelPreviousChecks',
-        '⚠️',
-        'Not using autoCancelPreviousChecks to cancel redundant builds',
-        null,
-        'This can save resources when changes are pushed frequently for the same PR'
-      );
+      this.addFinding({
+        type: 'autoCancelPreviousChecks',
+        sentiment: '⚠️',
+        message:
+          'Not using autoCancelPreviousChecks to cancel redundant builds. This can save resources when changes are pushed frequently for the same PR',
+      });
     } else {
-      addFinding(
-        'autoCancelPreviousChecks',
-        '✅',
-        'Using autoCancelPreviousChecks to save resources'
-      );
+      this.addFinding({
+        type: 'autoCancelPreviousChecks',
+        sentiment: '✅',
+        message: 'Using autoCancelPreviousChecks to save resources',
+      });
     }
 
     if (!doc?.tasks) {
-      addFinding('tasks', '⛔️', 'No tasks defined!');
+      this.addFinding({
+        type: 'tasks',
+        sentiment: '⛔️',
+        message: 'No tasks defined!',
+      });
     }
 
-    const runEvent = (name, payload, tasksFor, action) => {
-      const isOkAction =
-        !action || ['opened', 'synchronize', 'reopened'].includes(action);
+    this.runEvent('github-push');
+    this.runEvent('github-tag-push');
+    this.runEvent('github-release', undefined, 'published');
+    this.runEvent('github-pull-request-untrusted', 'opened');
+    this.runEvent('github-pull-request', 'opened');
+    this.runEvent('github-pull-request', 'assigned', undefined, true);
 
-      try {
-        const parsed = testJsoneEvent(
-          doc,
-          extraContext,
-          payload,
-          tasksFor,
-          action
-        );
-        const tasksCount = parsed?.tasks?.length || 0;
-        const suspicious = !isOkAction && tasksCount > 0;
+    if (this.state.urlChanged && this.state.findings.length > 1) {
+      setTimeout(() => scrollToHash(), 100);
+    }
 
-        addFinding(
-          `${name}-tasks`,
-          suspicious ? '⛔️' : '✅',
-          tasksCount === 0
-            ? 'no tasks'
-            : `${tasksCount} task(s) defined ${
-                suspicious ? ', but normally should be 0' : ''
-              }`,
-          parsed?.tasks
-        );
-      } catch (e) {
-        addFinding(
-          name,
-          '⛔️',
-          [
+    this.setState({ urlChanged: false });
+  };
+
+  async runEvent(
+    tasksFor,
+    pullRequestAction,
+    releaseAction,
+    expectedZeroTasks = false,
+    opts = { prepend: false }
+  ) {
+    const action = pullRequestAction || releaseAction;
+
+    try {
+      const extraContext = load(this.state.extraContext);
+      const {
+        data: { renderTaskclusterYaml: parsed },
+      } = await this.props.client.query({
+        query: githubQuery,
+        variables: {
+          payload: {
+            body: this.state.editorValue,
+            organization: extraContext?.organization ?? 'tc',
+            repository: extraContext?.repository ?? 'tc',
+            branch: extraContext?.branch ?? 'main',
+            fakeEventType: tasksFor,
+            fakePullRequestAction: pullRequestAction,
+            fakeReleaseAction: releaseAction,
+            fakeEventData: extraContext,
+          },
+        },
+      });
+      const tasksCount = parsed?.tasks?.length || 0;
+      const suspicious = expectedZeroTasks && tasksCount > 0;
+
+      this.addFinding(
+        {
+          type: `${tasksFor}${action ? `.${action}` : ''}`,
+          sentiment: suspicious ? '⛔️' : '✅',
+          message:
+            tasksCount === 0
+              ? ''
+              : `${tasksCount} task(s) defined ${
+                  suspicious ? ', but normally should be 0' : ''
+                }`,
+          tasks: parsed?.tasks,
+          scopes: parsed?.scopes,
+        },
+        opts.prepend
+      );
+    } catch (e) {
+      this.addFinding(
+        {
+          type: `${tasksFor}${action ? `.${action}` : ''}`,
+          sentiment: '⛔️',
+          message: [
             e.message,
             e.location ? e.location.join('.') : '',
             e.lineNumber ? `line: ${e.lineNumber}` : '',
             e.columnNumber ? `column: ${e.columnNumber}` : '',
-          ].join(' ')
-        );
-      }
-    };
-
-    runEvent('github-push', testPayloads.push, 'github-push');
-    runEvent('github-tag-push', testPayloads.tagPush, 'github-push');
-    runEvent('github-release', testPayloads.release, 'github-release');
-    runEvent(
-      'github-pull-request-untrusted.opened',
-      testPayloads.pullRequest,
-      'pull-request-untrusted',
-      'opened'
-    );
-    [
-      'opened',
-      'synchronize',
-      'reopened',
-      // rest is suspicious if produces tasks
-      'assigned',
-      'auto_merge_disabled',
-      'auto_merge_enabled',
-      'closed',
-      'converted_to_draft',
-      'dequeued',
-      'edited',
-      'enqueued',
-      'labeled',
-      'ready_for_review',
-      'review_requested',
-      'review_request_removed',
-      'unassigned',
-      'unlabeled',
-    ].forEach(action =>
-      runEvent(
-        `github-pull-request.${action}`,
-        { ...testPayloads.pullRequest, action },
-        'github-pull-request',
-        action
-      )
-    );
-
-    runEvent('custom-task-for-cron', testPayloads.push, 'cron');
-    runEvent('custom-task-for-action', testPayloads.push, 'action');
-
-    if (this.state.urlChanged && findings.length > 1) {
-      setTimeout(() => scrollToHash(), 100);
+          ].join(' '),
+        },
+        opts.prepend
+      );
     }
-
-    this.setState({ findings, urlChanged: false });
-  };
+  }
 
   renderFindings() {
     const { findings } = this.state;
+    const { classes } = this.props;
 
     if (!findings.length) {
       return;
     }
 
     return (
-      <table className={this.props.classes.findingsTable} id="findings">
-        <thead>
-          <tr>
-            <th>?</th>
-            <th>Type</th>
-            <th>Message</th>
-            <th>Extra</th>
-          </tr>
-        </thead>
-        <tbody>
-          {findings.map(({ type, sentiment, message, tasks, extra }) => (
-            <tr key={type}>
-              <td>{sentiment} </td>
-              <td>
-                <strong>{type}</strong>
-              </td>
-              <td>{message}</td>
-              <td>
-                {extra}
-                {tasks?.length ? (
-                  <details>
-                    <summary>Rendered tasks</summary>
-                    <pre className={this.props.classes.code}>{dump(tasks)}</pre>
-                  </details>
-                ) : (
-                  ''
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Grid container spacing={2} id="findings">
+        {findings.map(({ type, sentiment, message, tasks, scopes, idx }) => (
+          <Grid container key={idx} className={classes.findingsRow}>
+            <Grid item xs={12} sm={3}>
+              <ListItemText
+                primary={
+                  <Typography>
+                    {sentiment} {type}
+                  </Typography>
+                }
+                secondary={message}
+              />
+              {scopes?.length ? (
+                <React.Fragment>
+                  <JsonDisplay
+                    wrapperClassName={classes.scopes}
+                    syntax="yaml"
+                    objectContent={{ scopes }}
+                  />
+                </React.Fragment>
+              ) : (
+                ''
+              )}
+            </Grid>
+            <Grid item xs={12} sm={9} className={classes.tasks}>
+              {tasks?.length ? (
+                <JsonDisplay syntax="yaml" objectContent={{ tasks }} />
+              ) : (
+                ''
+              )}
+              {tasks?.length === 0 && scopes ? 'No tasks defined' : ''}
+            </Grid>
+          </Grid>
+        ))}
+      </Grid>
     );
   }
 
@@ -521,9 +580,9 @@ export default class TcYamlDebug extends Component {
                 label="Link to .taskcluster.yml"
                 name="taskclusterYmlUrl"
                 onChange={this.handleTaskclusterYmlUrlChange}
-                value={taskclusterYmlUrl}
+                value={taskclusterYmlUrl || ''}
                 className={classes.textField}
-                error={!isValidUrl}
+                error={taskclusterYmlUrl !== '' && !isValidUrl}
                 helperText={validationMessage}
               />
             </ListItem>
@@ -548,18 +607,54 @@ export default class TcYamlDebug extends Component {
                 onChange={this.handleExtraContextChange}
                 mode="yaml"
                 value={this.state.extraContext}
-                className={this.props.classes.contextEditor}
+                className={classes.contextEditor}
               />
             </ListItem>
             <ListItem>
-              <Button
-                spanProps={{ className: classes.analyzeButton }}
-                tooltipProps={{ title: 'Analyze' }}
-                onClick={this.handleAnalyze}
-                variant="contained"
-                color="primary">
-                Analyze
-              </Button>
+              <Grid container spacing={2} alignItems="flex-end">
+                <Grid item>
+                  <Button
+                    spanProps={{ className: classes.analyzeButton }}
+                    tooltipProps={{ title: 'Analyze' }}
+                    onClick={this.handleAnalyze}
+                    variant="contained"
+                    color="primary">
+                    Analyze
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <TextField
+                    className={classes.dropdown}
+                    select
+                    label="Simulate custom event"
+                    value=""
+                    onChange={this.handleCustomEventSimulate}>
+                    {releaseActions.map(action => (
+                      <MenuItem
+                        key={`gr-${action}`}
+                        value={`github-release.${action}`}>
+                        <code>github-release</code>.<strong>{action}</strong>
+                      </MenuItem>
+                    ))}
+                    {pullRequestActions.map(action => (
+                      <MenuItem
+                        key={`gpr-${action}`}
+                        value={`github-pull-request.${action}`}>
+                        <code>github-pull-request</code>.
+                        <strong>{action}</strong>
+                      </MenuItem>
+                    ))}
+                    {pullRequestActions.map(action => (
+                      <MenuItem
+                        key={`gpru-${action}`}
+                        value={`github-pull-request-untrusted.${action}`}>
+                        <code>github-pull-request-untrusted</code>.
+                        <strong>{action}</strong>
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
             </ListItem>
             <ListItem>{this.renderFindings()}</ListItem>
           </List>
