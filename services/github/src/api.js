@@ -202,7 +202,7 @@ let builder = new APIBuilder({
   ].join('\n'),
   serviceName: 'github',
   apiVersion: 'v1',
-  context: ['db', 'monitor', 'publisher', 'cfg', 'ajv', 'github', 'queueClient', 'intree'],
+  context: ['db', 'monitor', 'publisher', 'cfg', 'ajv', 'github', 'queueClient', 'intree', 'schemaset'],
   errorCodes: {
     ForbiddenByGithub: 403,
   },
@@ -834,7 +834,7 @@ builder.declare({
 });
 
 builder.declare({
-  name: 'renderTaskclusterYaml',
+  name: 'renderTaskclusterYml',
   title: 'Render .taskcluster.yml file',
   description: [
     'This endpoint allows to render the .taskcluster.yml file for a given event or payload.',
@@ -845,19 +845,19 @@ builder.declare({
   method: 'post',
   category: 'Github Service',
   route: '/taskcluster-yml',
-  input: 'taskcluster-render-yaml-input.yml',
-  output: 'taskcluster-render-yaml-output.yml',
+  input: 'render-taskcluster-yml-input.yml',
+  output: 'render-taskcluster-yml-output.yml',
   scopes: null,
 }, async function(req, res) {
   let {
     body,
-    organization = 'TaskclusterRobot',
-    repository = 'hooks-testing',
-    branch = 'main',
-    fakeEventType,
-    fakePullRequestAction,
-    fakeReleaseAction,
-    fakeEventData = {},
+    organization = 'taskcluster',
+    repository = 'testing',
+    fakeEvent: {
+      type: fakeEventType,
+      action: fakeEventAction,
+      overrides: fakeEventData,
+    } = {},
   } = req.body;
 
   const fakeEventToFnMap = {
@@ -868,35 +868,37 @@ builder.declare({
     'github-release': getReleaseDetails,
   };
 
-  const action = fakeEventType === 'github-pull-request' ? fakePullRequestAction : fakeReleaseAction;
-
+  const branch = fakeEventData?.branch || 'main';
   const fakePayload = fakePayloads.getEventPayload(
-    fakeEventType, action, organization, repository, branch,
+    fakeEventType, fakeEventAction, organization, repository, branch,
   );
 
   const payload = {
     organization,
     repository,
     installationId: Math.floor(Math.random() * 100000),
-    eventId: `evt-${organization}-${repository}-${branch}-${fakeEventType}-${fakePullRequestAction}`,
+    eventId: `evt-${organization}-${repository}-${fakeEventType}-${fakeEventAction}`,
     branch,
     // there is no tag push event, only push to tag ref
     tasks_for: fakeEventType === 'github-tag-push' ? 'github-push' : fakeEventType,
-    action,
+    fakeEventAction,
     body: fakePayload,
     details: fakeEventToFnMap[fakeEventType](fakePayload),
     ...fakeEventData,
   };
+
+  const { rootUrl } = this.cfg.taskcluster;
+  const validator = await this.schemaset.validator(rootUrl);
 
   try {
     const tcYml = yaml.load(body);
     const { tasks, scopes } = this.intree({
       config: tcYml,
       payload,
-      validator: this.validator,
+      validator,
       schema: {
-        0: libUrls.schema(this.cfg.taskcluster.rootUrl, 'github', 'v1/taskcluster-github-config.yml'),
-        1: libUrls.schema(this.cfg.taskcluster.rootUrl, 'github', 'v1/taskcluster-github-config.v1.yml'),
+        0: libUrls.schema(rootUrl, 'github', 'v1/taskcluster-github-config.yml'),
+        1: libUrls.schema(rootUrl, 'github', 'v1/taskcluster-github-config.v1.yml'),
       },
     });
 

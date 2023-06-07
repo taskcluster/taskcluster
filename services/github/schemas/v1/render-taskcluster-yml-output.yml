@@ -5,14 +5,16 @@ type: object
 properties:
   tasks:
     type: array
-    description: Rendered task
+    description: Rendered tasks
     uniqueItems: false
     items:
       type: object
       additionalProperties: true
   scopes:
     type: array
-    description: Scopes that will be used for the tasks
+    description: |
+      Scopes that will be used by the github client to create tasks.
+      Those are different that the scopes inside the tasks itself.
     uniqueItems: true
     items:
       type: string

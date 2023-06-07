@@ -164,7 +164,7 @@ class Github(BaseClient):
 
         return self._makeApiCall(self.funcinfo["createComment"], *args, **kwargs)
 
-    def renderTaskclusterYaml(self, *args, **kwargs):
+    def renderTaskclusterYml(self, *args, **kwargs):
         """
         Render .taskcluster.yml file
 
@@ -175,7 +175,7 @@ class Github(BaseClient):
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["renderTaskclusterYaml"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["renderTaskclusterYml"], *args, **kwargs)
 
     def heartbeat(self, *args, **kwargs):
         """
@@ -268,12 +268,12 @@ class Github(BaseClient):
             'route': '/ping',
             'stability': 'stable',
         },
-        "renderTaskclusterYaml": {
+        "renderTaskclusterYml": {
             'args': [],
-            'input': 'v1/taskcluster-render-yaml-input.json#',
+            'input': 'v1/render-taskcluster-yml-input.json#',
             'method': 'post',
-            'name': 'renderTaskclusterYaml',
-            'output': 'v1/taskcluster-render-yaml-output.json#',
+            'name': 'renderTaskclusterYml',
+            'output': 'v1/render-taskcluster-yml-output.json#',
             'route': '/taskcluster-yml',
             'stability': 'experimental',
         },

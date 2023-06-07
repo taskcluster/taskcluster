@@ -13,11 +13,11 @@ module.exports = ({ github }, isAuthed, rootUrl, monitor, strategies, req, cfg, 
     ),
   );
 
-  const renderTaskclusterYaml = new DataLoader(queries =>
+  const renderTaskclusterYml = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ payload }) => {
         try {
-          return await github.renderTaskclusterYaml(payload);
+          return await github.renderTaskclusterYml(payload);
         } catch (err) {
           return err;
         }
@@ -27,6 +27,6 @@ module.exports = ({ github }, isAuthed, rootUrl, monitor, strategies, req, cfg, 
 
   return {
     githubRepository,
-    renderTaskclusterYaml,
+    renderTaskclusterYml,
   };
 };

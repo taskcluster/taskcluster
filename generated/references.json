@@ -6722,133 +6722,6 @@
   },
   {
     "content": {
-      "$id": "/schemas/github/v1/taskcluster-render-yaml-output.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Rendered .taskcluster.yml output.",
-      "properties": {
-        "scopes": {
-          "description": "Scopes that will be used for the tasks",
-          "items": {
-            "type": "string"
-          },
-          "type": "array",
-          "uniqueItems": true
-        },
-        "tasks": {
-          "description": "Rendered task",
-          "items": {
-            "additionalProperties": true,
-            "type": "object"
-          },
-          "type": "array",
-          "uniqueItems": false
-        }
-      },
-      "required": [
-        "tasks",
-        "scopes"
-      ],
-      "title": "Render .taskcluster.yml output",
-      "type": "object"
-    },
-    "filename": "schemas/github/v1/taskcluster-render-yaml-output.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/github/v1/taskcluster-render-yaml-input.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Render .taskcluster.yml for given event.\n",
-      "properties": {
-        "body": {
-          "description": "The contents of the .taskcluster.yml",
-          "title": "Taskcluster.yml contents",
-          "type": "string"
-        },
-        "branch": {
-          "default": "main",
-          "description": "The branch name.",
-          "type": "string"
-        },
-        "fakeEventData": {
-          "additionalProperties": true,
-          "description": "Additional data to be added to the event object.\n",
-          "type": "object"
-        },
-        "fakeEventType": {
-          "description": "Name of the emulated event type",
-          "enum": [
-            "github-push",
-            "github-tag-push",
-            "github-pull-request",
-            "github-pull-request-untrusted",
-            "github-release"
-          ],
-          "type": "string"
-        },
-        "fakePullRequestAction": {
-          "default": "opened",
-          "description": "Name of the pull request action",
-          "enum": [
-            "opened",
-            "synchronize",
-            "reopened",
-            "assigned",
-            "auto_merge_disabled",
-            "auto_merge_enabled",
-            "closed",
-            "converted_to_draft",
-            "dequeued",
-            "edited",
-            "enqueued",
-            "labeled",
-            "ready_for_review",
-            "review_requested",
-            "review_request_removed",
-            "unassigned",
-            "unlabeled"
-          ],
-          "type": "string"
-        },
-        "fakeReleaseAction": {
-          "default": "published",
-          "description": "Name of the release action",
-          "enum": [
-            "published",
-            "unpublished",
-            "created",
-            "edited",
-            "deleted",
-            "prereleased",
-            "released"
-          ],
-          "type": "string"
-        },
-        "organization": {
-          "default": "TaskclusterRobot",
-          "description": "The organization that owns the repository.",
-          "pattern": "^[a-zA-Z0-9_-]+$",
-          "type": "string"
-        },
-        "repository": {
-          "default": "hooks-testing",
-          "description": "The repository name.",
-          "pattern": "^[a-zA-Z0-9_-]+$",
-          "type": "string"
-        }
-      },
-      "required": [
-        "body",
-        "fakeEventType"
-      ],
-      "title": "Render .taskcluster.yml input",
-      "type": "object"
-    },
-    "filename": "schemas/github/v1/taskcluster-render-yaml-input.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/github/v1/taskcluster-github-config.v1.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -7081,6 +6954,181 @@
       "type": "object"
     },
     "filename": "schemas/github/v1/repository.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/github/v1/render-taskcluster-yml-output.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Rendered .taskcluster.yml output.",
+      "properties": {
+        "scopes": {
+          "description": "Scopes that will be used by the github client to create tasks.\nThose are different that the scopes inside the tasks itself.\n",
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "tasks": {
+          "description": "Rendered tasks",
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "type": "array",
+          "uniqueItems": false
+        }
+      },
+      "required": [
+        "tasks",
+        "scopes"
+      ],
+      "title": "Render .taskcluster.yml output",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/render-taskcluster-yml-output.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/github/v1/render-taskcluster-yml-input.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "definitions": {
+        "overrides": {
+          "additionalProperties": true,
+          "description": "Additional data to be mixed to the mocked event object.\nThis can be used to set some specific properties of the event or override the existing ones.\nFor example:\n  \"ref\": \"refs/heads/main\"\n  \"before\": \"000\"\n  \"after\": \"111\"\n",
+          "title": "Custom event payload",
+          "type": "object"
+        }
+      },
+      "description": "Render .taskcluster.yml for one of the supported events.\n",
+      "properties": {
+        "body": {
+          "description": "The contents of the .taskcluster.yml",
+          "title": "Taskcluster.yml contents",
+          "type": "string"
+        },
+        "fakeEvent": {
+          "description": "Emulate one of the github events with mocked payload.\nSome of the events have sub-actions, that can be specified.\nEvent type names follow the `tasks_for` naming convention.\n",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "overrides": {
+                  "$ref": "#/definitions/overrides"
+                },
+                "type": {
+                  "enum": [
+                    "github-push",
+                    "github-tag-push"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "title": "Push events",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": ".taskcluster.yml supports `github-pull-request` and `github-pull-request-untrusted` events.\nThe difference is that `github-pull-request-untrusted` will use different set of scopes.\n",
+              "properties": {
+                "action": {
+                  "enum": [
+                    "opened",
+                    "synchronize",
+                    "reopened",
+                    "assigned",
+                    "auto_merge_disabled",
+                    "auto_merge_enabled",
+                    "closed",
+                    "converted_to_draft",
+                    "dequeued",
+                    "edited",
+                    "enqueued",
+                    "labeled",
+                    "ready_for_review",
+                    "review_requested",
+                    "review_request_removed",
+                    "unassigned",
+                    "unlabeled"
+                  ],
+                  "title": "Pull Request action"
+                },
+                "overrides": {
+                  "$ref": "#/definitions/overrides"
+                },
+                "type": {
+                  "enum": [
+                    "github-pull-request",
+                    "github-pull-request-untrusted"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "action"
+              ],
+              "title": "Pull Request events",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "action": {
+                  "enum": [
+                    "published",
+                    "unpublished",
+                    "created",
+                    "edited",
+                    "deleted",
+                    "prereleased",
+                    "released"
+                  ],
+                  "title": "Release action"
+                },
+                "overrides": {
+                  "$ref": "#/definitions/overrides"
+                },
+                "type": {
+                  "enum": [
+                    "github-release"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "action"
+              ],
+              "title": "Release events",
+              "type": "object"
+            }
+          ]
+        },
+        "organization": {
+          "pattern": "^[-a-zA-Z0-9]{1,39}$",
+          "title": "The organization that owns the repository.\nThis value together with the repository name will be used in mocked event payload.\n",
+          "type": "string"
+        },
+        "repository": {
+          "pattern": "^[-a-zA-Z0-9_.]{1,100}$",
+          "title": "The repository name.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "body",
+        "fakeEvent"
+      ],
+      "title": "Render .taskcluster.yml input",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/render-taskcluster-yml-input.json"
   },
   {
     "content": {
@@ -19310,10 +19358,10 @@
           ],
           "category": "Github Service",
           "description": "This endpoint allows to render the .taskcluster.yml file for a given event or payload.\nThis is useful to preview the result of the .taskcluster.yml file before pushing it to\nthe repository.",
-          "input": "v1/taskcluster-render-yaml-input.json#",
+          "input": "v1/render-taskcluster-yml-input.json#",
           "method": "post",
-          "name": "renderTaskclusterYaml",
-          "output": "v1/taskcluster-render-yaml-output.json#",
+          "name": "renderTaskclusterYml",
+          "output": "v1/render-taskcluster-yml-output.json#",
           "query": [
           ],
           "route": "/taskcluster-yml",

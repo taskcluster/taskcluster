@@ -112,34 +112,10 @@ type (
 	// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
 	GithubGUID string
 
-	// Render .taskcluster.yml for given event.
-	RenderTaskclusterYmlInput struct {
+	// .taskcluster.yml supports `github-pull-request` and `github-pull-request-untrusted` events.
+	// The difference is that `github-pull-request-untrusted` will use different set of scopes.
+	PullRequestEvents struct {
 
-		// The contents of the .taskcluster.yml
-		Body string `json:"body"`
-
-		// The branch name.
-		//
-		// Default:    "main"
-		Branch string `json:"branch,omitempty"`
-
-		// Additional data to be added to the event object.
-		//
-		// Additional properties allowed
-		FakeEventData json.RawMessage `json:"fakeEventData,omitempty"`
-
-		// Name of the emulated event type
-		//
-		// Possible values:
-		//   * "github-push"
-		//   * "github-tag-push"
-		//   * "github-pull-request"
-		//   * "github-pull-request-untrusted"
-		//   * "github-release"
-		FakeEventType string `json:"fakeEventType"`
-
-		// Name of the pull request action
-		//
 		// Possible values:
 		//   * "opened"
 		//   * "synchronize"
@@ -158,12 +134,50 @@ type (
 		//   * "review_request_removed"
 		//   * "unassigned"
 		//   * "unlabeled"
-		//
-		// Default:    "opened"
-		FakePullRequestAction string `json:"fakePullRequestAction,omitempty"`
+		Action string `json:"action"`
 
-		// Name of the release action
+		// Additional data to be mixed to the mocked event object.
+		// This can be used to set some specific properties of the event or override the existing ones.
+		// For example:
+		//   "ref": "refs/heads/main"
+		//   "before": "000"
+		//   "after": "111"
 		//
+		// Additional properties allowed
+		Overrides json.RawMessage `json:"overrides,omitempty"`
+
+		// Possible values:
+		//   * "github-pull-request"
+		//   * "github-pull-request-untrusted"
+		Type string `json:"type"`
+	}
+
+	// Emulate one of the github events with mocked payload.
+	// Some of the events have sub-actions, that can be specified.
+	// Event type names follow the `tasks_for` naming convention.
+	PushEvents struct {
+
+		// Additional data to be mixed to the mocked event object.
+		// This can be used to set some specific properties of the event or override the existing ones.
+		// For example:
+		//   "ref": "refs/heads/main"
+		//   "before": "000"
+		//   "after": "111"
+		//
+		// Additional properties allowed
+		Overrides json.RawMessage `json:"overrides,omitempty"`
+
+		// Possible values:
+		//   * "github-push"
+		//   * "github-tag-push"
+		Type string `json:"type"`
+	}
+
+	// Emulate one of the github events with mocked payload.
+	// Some of the events have sub-actions, that can be specified.
+	// Event type names follow the `tasks_for` naming convention.
+	ReleaseEvents struct {
+
 		// Possible values:
 		//   * "published"
 		//   * "unpublished"
@@ -172,32 +186,56 @@ type (
 		//   * "deleted"
 		//   * "prereleased"
 		//   * "released"
-		//
-		// Default:    "published"
-		FakeReleaseAction string `json:"fakeReleaseAction,omitempty"`
+		Action string `json:"action"`
 
-		// The organization that owns the repository.
+		// Additional data to be mixed to the mocked event object.
+		// This can be used to set some specific properties of the event or override the existing ones.
+		// For example:
+		//   "ref": "refs/heads/main"
+		//   "before": "000"
+		//   "after": "111"
 		//
-		// Default:    "TaskclusterRobot"
-		// Syntax:     ^[a-zA-Z0-9_-]+$
+		// Additional properties allowed
+		Overrides json.RawMessage `json:"overrides,omitempty"`
+
+		// Possible values:
+		//   * "github-release"
+		Type string `json:"type"`
+	}
+
+	// Render .taskcluster.yml for one of the supported events.
+	RenderTaskclusterYmlInput struct {
+
+		// The contents of the .taskcluster.yml
+		Body string `json:"body"`
+
+		// Emulate one of the github events with mocked payload.
+		// Some of the events have sub-actions, that can be specified.
+		// Event type names follow the `tasks_for` naming convention.
+		//
+		// One of:
+		//   * PushEvents
+		//   * PullRequestEvents
+		//   * ReleaseEvents
+		FakeEvent json.RawMessage `json:"fakeEvent"`
+
+		// Syntax:     ^[-a-zA-Z0-9]{1,39}$
 		Organization string `json:"organization,omitempty"`
 
-		// The repository name.
-		//
-		// Default:    "hooks-testing"
-		// Syntax:     ^[a-zA-Z0-9_-]+$
+		// Syntax:     ^[-a-zA-Z0-9_.]{1,100}$
 		Repository string `json:"repository,omitempty"`
 	}
 
 	// Rendered .taskcluster.yml output.
 	RenderTaskclusterYmlOutput struct {
 
-		// Scopes that will be used for the tasks
+		// Scopes that will be used by the github client to create tasks.
+		// Those are different that the scopes inside the tasks itself.
 		//
 		// Array items:
 		Scopes []string `json:"scopes"`
 
-		// Rendered task
+		// Rendered tasks
 		//
 		// Array items:
 		// Additional properties allowed

@@ -1,5 +1,5 @@
 query GitHub($payload: JSON!) {
-  renderTaskclusterYaml(payload: $payload) {
+  renderTaskclusterYml(payload: $payload) {
     tasks
     scopes
   }

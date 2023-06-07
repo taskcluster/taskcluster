@@ -133,6 +133,7 @@ const load = loader({
         monitor: monitor.childMonitor('api-context'),
         queueClient,
         intree,
+        schemaset,
       },
       monitor: monitor.childMonitor('api'),
       schemaset,

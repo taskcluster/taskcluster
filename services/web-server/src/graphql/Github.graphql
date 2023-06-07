@@ -9,5 +9,5 @@ type TaskclusterYamlRendered {
 
 extend type Query {
   githubRepository(owner: String!, repo: String!): GitHubRepository
-  renderTaskclusterYaml(payload: JSON!): TaskclusterYamlRendered
+  renderTaskclusterYml(payload: JSON!): TaskclusterYamlRendered
 }

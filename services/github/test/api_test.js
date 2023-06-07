@@ -688,7 +688,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     throw new Error('endpoint should have failed');
   });
 
-  suite.only('render taskcluster.yml', function() {
+  suite('render taskcluster.yml', function() {
     const tcYaml = `version: 1
 reporting: checks-v1
 policy:
@@ -719,22 +719,21 @@ tasks:
           maxRunTime: 3600
 `;
     const eventTypes = [
-      { fakeEventType: 'github-push', tasksCount: 1, scopesCount: 3, scope: 'branch:main' },
-      { fakeEventType: 'github-tag-push', tasksCount: 1, scopesCount: 3, scope: 'tag:v1.0.2' },
-      { fakeEventType: 'github-pull-request', tasksCount: 1, scopesCount: 3, fakePullRequestAction: 'opened', scope: 'pull-request' },
-      { fakeEventType: 'github-pull-request', tasksCount: 1, scopesCount: 3, fakePullRequestAction: 'synchronize', scope: 'pull-request' },
-      { fakeEventType: 'github-pull-request', tasksCount: 0, scopesCount: 3, fakePullRequestAction: 'assigned', scope: 'pull-request' },
-      { fakeEventType: 'github-pull-request-untrusted', tasksCount: 0, scopesCount: 3, scope: 'pull-request-untrusted' },
-      { fakeEventType: 'github-release', tasksCount: 0, scopesCount: 3, fakeReleaseAction: 'published', scope: 'release:published' },
-      { fakeEventType: 'github-release', tasksCount: 0, scopesCount: 3, fakeReleaseAction: 'released', scope: 'release:released' },
+      { fakeEvent: { type: 'github-push' }, tasksCount: 1, scopesCount: 3, scope: 'branch:main' },
+      { fakeEvent: { type: 'github-push', overrides: { branch: 'stage' } }, tasksCount: 1, scopesCount: 3, scope: 'branch:stage' },
+      { fakeEvent: { type: 'github-tag-push' }, tasksCount: 1, scopesCount: 3, scope: 'tag:v1.0.2' },
+      { fakeEvent: { type: 'github-pull-request', action: 'opened' }, tasksCount: 1, scopesCount: 3, scope: 'pull-request' },
+      { fakeEvent: { type: 'github-pull-request', action: 'synchronize' }, tasksCount: 1, scopesCount: 3, scope: 'pull-request' },
+      { fakeEvent: { type: 'github-pull-request', action: 'assigned' }, tasksCount: 0, scopesCount: 3, scope: 'pull-request' },
+      { fakeEvent: { type: 'github-pull-request-untrusted', action: 'opened' }, tasksCount: 0, scopesCount: 3, scope: 'pull-request-untrusted' },
+      { fakeEvent: { type: 'github-release', action: 'published' }, tasksCount: 0, scopesCount: 3, scope: 'release:published' },
+      { fakeEvent: { type: 'github-release', action: 'released' }, tasksCount: 0, scopesCount: 3, scope: 'release:released' },
     ];
-    eventTypes.map(({ fakeEventType, tasksCount, scopesCount, fakePullRequestAction, fakeReleaseAction, scope }) =>
-      test(`render .tc.yml for event ${fakeEventType} ${fakePullRequestAction || fakeReleaseAction || ''}`, async function() {
-        const { tasks, scopes } = await helper.apiClient.renderTaskclusterYaml({
+    eventTypes.map(({ fakeEvent, tasksCount, scopesCount, scope }) =>
+      test(`render .tc.yml for event ${fakeEvent.type} ${fakeEvent.action || ''}`, async function() {
+        const { tasks, scopes } = await helper.apiClient.renderTaskclusterYml({
           body: tcYaml,
-          fakeEventType,
-          fakePullRequestAction,
-          fakeReleaseAction,
+          fakeEvent,
           repository: 'awesomeRepo',
           organization: 'org',
         });

@@ -35,6 +35,20 @@ const prefetchSchema = async () => {
     ).json(),
     'github-v1'
   );
+  ajv.addSchema(
+    await (await fetch(urls.schema('queue', 'v1/task-metadata.json'))).json(),
+    'task-metadata.json'
+  );
+  ajv.addSchema(
+    await (await fetch(urls.schema('queue', 'v1/task.json'))).json(),
+    'task.json'
+  );
+  ajv.addSchema(
+    await (
+      await fetch(urls.schema('queue', 'v1/create-task-request.json'))
+    ).json(),
+    'create-task'
+  );
 };
 
 prefetchSchema();
@@ -231,6 +245,11 @@ export default class TcYamlDebug extends Component {
       urlChanged: false,
       editorValue: getTaskDefinition({}),
       extraContext: getCustomContext(),
+      parsed: false,
+      parserOk: false,
+      parserVersion: '',
+      parserChecks: false,
+      parserAutoCancel: false,
     };
   }
 
@@ -308,12 +327,8 @@ export default class TcYamlDebug extends Component {
 
   handleCustomEventSimulate = e => {
     const [tasksFor, action] = e.target.value.split('.');
-    const pullRequestAction = tasksFor.includes('pull-request')
-      ? action
-      : undefined;
-    const releaseAction = tasksFor.includes('release') ? action : undefined;
 
-    this.runEvent(tasksFor, pullRequestAction, releaseAction, false, {
+    this.runEvent(tasksFor, action, false, {
       prepend: true,
     });
   };
@@ -323,6 +338,11 @@ export default class TcYamlDebug extends Component {
 
     this.setState({
       findings: emptyFindings,
+      parsed: false,
+      parserOk: false,
+      parserVersion: '',
+      parserChecks: false,
+      parserAutoCancel: false,
     });
   }
 
@@ -346,43 +366,37 @@ export default class TcYamlDebug extends Component {
 
     try {
       doc = load(this.state.editorValue);
-      this.addFinding({
-        type: 'parser',
-        sentiment: '✅',
-        message: 'Valid YAML - nice!',
+      this.setState({
+        parsed: true,
       });
     } catch (e) {
-      this.addFinding({ type: 'parser', sentiment: '⛔️', message: e.message });
+      this.setState({
+        parsed: true,
+      });
     }
 
     if (!doc) {
       return;
     }
 
+    this.setState({
+      parserVersion: doc.version,
+    });
+
     if (doc.version !== 1) {
-      this.addFinding({
-        type: 'version',
-        sentiment: '⛔️',
-        message: 'Not using version 1, please migrate',
-      });
       schema = 'github-v0';
-    } else {
-      this.addFinding({
-        type: 'version',
-        sentiment: '✅',
-        message: 'Using version 1',
-      });
     }
 
     const validation = ajv.validate(schema, doc);
 
     if (validation) {
-      this.addFinding({
-        type: 'schema',
-        sentiment: '✅',
-        message: 'Valid schema, amazing!',
+      this.setState({
+        parserOk: true,
       });
     } else {
+      this.setState({
+        parserOk: false,
+      });
       ajv.errors.forEach((error, i) => {
         this.addFinding({
           type: `schema-${i}`,
@@ -395,34 +409,18 @@ export default class TcYamlDebug extends Component {
     }
 
     if (doc?.reporting !== 'checks-v1') {
-      this.addFinding({
-        type: 'reporting',
-        sentiment: '⚠️',
-        message:
-          'Not using checks API. Checks API are more flexible and are recommended',
+      this.setState({
+        parserChecks: false,
       });
     } else {
-      this.addFinding({
-        type: 'reporting',
-        sentiment: '✅',
-        message: 'Using checks API',
+      this.setState({
+        parserChecks: true,
       });
     }
 
-    if (doc?.autoCancelPreviousChecks !== true) {
-      this.addFinding({
-        type: 'autoCancelPreviousChecks',
-        sentiment: '⚠️',
-        message:
-          'Not using autoCancelPreviousChecks to cancel redundant builds. This can save resources when changes are pushed frequently for the same PR',
-      });
-    } else {
-      this.addFinding({
-        type: 'autoCancelPreviousChecks',
-        sentiment: '✅',
-        message: 'Using autoCancelPreviousChecks to save resources',
-      });
-    }
+    this.setState({
+      parserAutoCancel: doc?.autoCancelPreviousChecks === true,
+    });
 
     if (!doc?.tasks) {
       this.addFinding({
@@ -434,10 +432,10 @@ export default class TcYamlDebug extends Component {
 
     this.runEvent('github-push');
     this.runEvent('github-tag-push');
-    this.runEvent('github-release', undefined, 'published');
+    this.runEvent('github-release', 'published');
     this.runEvent('github-pull-request-untrusted', 'opened');
     this.runEvent('github-pull-request', 'opened');
-    this.runEvent('github-pull-request', 'assigned', undefined, true);
+    this.runEvent('github-pull-request', 'assigned', true);
 
     if (this.state.urlChanged && this.state.findings.length > 1) {
       setTimeout(() => scrollToHash(), 100);
@@ -448,17 +446,14 @@ export default class TcYamlDebug extends Component {
 
   async runEvent(
     tasksFor,
-    pullRequestAction,
-    releaseAction,
+    action,
     expectedZeroTasks = false,
     opts = { prepend: false }
   ) {
-    const action = pullRequestAction || releaseAction;
-
     try {
       const extraContext = load(this.state.extraContext);
       const {
-        data: { renderTaskclusterYaml: parsed },
+        data: { renderTaskclusterYml: parsed },
       } = await this.props.client.query({
         query: githubQuery,
         variables: {
@@ -466,15 +461,21 @@ export default class TcYamlDebug extends Component {
             body: this.state.editorValue,
             organization: extraContext?.organization ?? 'tc',
             repository: extraContext?.repository ?? 'tc',
-            branch: extraContext?.branch ?? 'main',
-            fakeEventType: tasksFor,
-            fakePullRequestAction: pullRequestAction,
-            fakeReleaseAction: releaseAction,
-            fakeEventData: extraContext,
+            fakeEvent: {
+              type: tasksFor,
+              action,
+              overrides: {
+                branch: extraContext?.branch ?? 'main',
+                ...extraContext,
+              },
+            },
           },
         },
       });
-      const tasksCount = parsed?.tasks?.length || 0;
+      const tasks = Array.isArray(parsed?.tasks)
+        ? parsed.tasks.map(item => item.task)
+        : Object.values(parsed.tasks).map(({ task }) => task);
+      const tasksCount = tasks?.length || 0;
       const suspicious = expectedZeroTasks && tasksCount > 0;
 
       this.addFinding(
@@ -487,8 +488,10 @@ export default class TcYamlDebug extends Component {
               : `${tasksCount} task(s) defined ${
                   suspicious ? ', but normally should be 0' : ''
                 }`,
+          tasksCount,
           tasks: parsed?.tasks,
           scopes: parsed?.scopes,
+          validation: this.validateTasks(tasks),
         },
         opts.prepend
       );
@@ -509,6 +512,26 @@ export default class TcYamlDebug extends Component {
     }
   }
 
+  validateTasks(tasks) {
+    const errors = [];
+
+    tasks.forEach((task, i) => {
+      const validation = ajv.validate('create-task', task);
+
+      if (!validation) {
+        ajv.errors.forEach(error => {
+          errors.push(
+            `Task #${i}: ${error.instancePath} ${
+              error.message
+            } ${JSON.stringify(error.params)}`
+          );
+        });
+      }
+    });
+
+    return errors;
+  }
+
   renderFindings() {
     const { findings } = this.state;
     const { classes } = this.props;
@@ -519,46 +542,75 @@ export default class TcYamlDebug extends Component {
 
     return (
       <Grid container spacing={2} id="findings">
-        {findings.map(({ type, sentiment, message, tasks, scopes, idx }) => (
-          <Grid container key={idx} className={classes.findingsRow}>
-            <Grid item xs={12} sm={3}>
-              <ListItemText
-                primary={
-                  <Typography>
-                    {sentiment} {type}
-                  </Typography>
-                }
-                secondary={message}
-              />
-              {scopes?.length ? (
-                <React.Fragment>
-                  <JsonDisplay
-                    wrapperClassName={classes.scopes}
-                    syntax="yaml"
-                    objectContent={{ scopes }}
-                  />
-                </React.Fragment>
-              ) : (
-                ''
-              )}
+        {findings.map(
+          ({
+            type,
+            sentiment,
+            message,
+            tasks,
+            scopes,
+            idx,
+            tasksCount,
+            validation,
+          }) => (
+            <Grid container key={idx} className={classes.findingsRow}>
+              <Grid item xs={12} sm={4}>
+                <ListItemText
+                  primary={
+                    <Typography>
+                      {sentiment} {type}
+                    </Typography>
+                  }
+                  secondary={message}
+                />
+                {scopes?.length ? (
+                  <React.Fragment>
+                    <JsonDisplay
+                      wrapperClassName={classes.scopes}
+                      syntax="yaml"
+                      objectContent={{ scopes }}
+                    />
+                  </React.Fragment>
+                ) : (
+                  ''
+                )}
+              </Grid>
+              <Grid item xs={12} sm={8} className={classes.tasks}>
+                {tasksCount ? (
+                  <JsonDisplay syntax="yaml" objectContent={{ tasks }} />
+                ) : (
+                  ''
+                )}
+                {tasksCount === 0 && scopes ? 'No tasks defined' : ''}
+                {validation?.length ? (
+                  <ul>
+                    {validation.map(error => (
+                      <li key={error}>⚠️ {error}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  ''
+                )}
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={9} className={classes.tasks}>
-              {tasks?.length ? (
-                <JsonDisplay syntax="yaml" objectContent={{ tasks }} />
-              ) : (
-                ''
-              )}
-              {tasks?.length === 0 && scopes ? 'No tasks defined' : ''}
-            </Grid>
-          </Grid>
-        ))}
+          )
+        )}
       </Grid>
     );
   }
 
   render() {
     const { classes } = this.props;
-    const { taskclusterYmlUrl, isValidUrl, validationMessage } = this.state;
+    const {
+      taskclusterYmlUrl,
+      isValidUrl,
+      validationMessage,
+      parsed,
+      parserOk,
+      parserVersion,
+      parserChecks,
+      parserAutoCancel,
+    } = this.state;
 
     return (
       <Dashboard title="GitHub .taskcluster.yml debug" disableTitleFormatting>
@@ -654,6 +706,22 @@ export default class TcYamlDebug extends Component {
                     ))}
                   </TextField>
                 </Grid>
+                {parsed && (
+                  <Grid item>
+                    <div>{parserOk ? '' : '⛔️ could not parse YAML'}</div>
+                    <div>
+                      {parserVersion === 0
+                        ? ` ⚠️ Uses v0, please migrate to v1`
+                        : ''}
+                    </div>
+                    <div>{parserChecks ? '' : ' ⚠️ not using checks'}</div>
+                    <div>
+                      {parserAutoCancel
+                        ? ''
+                        : ' ⚠️ not using autoCancelPreviousChecks: true'}
+                    </div>
+                  </Grid>
+                )}
               </Grid>
             </ListItem>
             <ListItem>{this.renderFindings()}</ListItem>

@@ -344,8 +344,8 @@ func (github *Github) CreateComment(owner, repo, number string, payload *CreateC
 // This is useful to preview the result of the .taskcluster.yml file before pushing it to
 // the repository.
 //
-// See #renderTaskclusterYaml
-func (github *Github) RenderTaskclusterYaml(payload *RenderTaskclusterYmlInput) (*RenderTaskclusterYmlOutput, error) {
+// See #renderTaskclusterYml
+func (github *Github) RenderTaskclusterYml(payload *RenderTaskclusterYmlInput) (*RenderTaskclusterYmlOutput, error) {
 	cd := tcclient.Client(*github)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/taskcluster-yml", new(RenderTaskclusterYmlOutput), nil)
 	return responseObject.(*RenderTaskclusterYmlOutput), err
