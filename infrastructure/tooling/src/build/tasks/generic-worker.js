@@ -20,7 +20,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         utils,
       });
 
-      const artifacts = glob.sync('generic-worker-multiuser-*', { cwd: artifactsDir });
+      const artifacts = glob.sync('generic-worker-*', { cwd: artifactsDir });
 
       return {
         'generic-worker-artifacts': artifacts,
