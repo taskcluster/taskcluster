@@ -3,6 +3,9 @@ title: "Render .taskcluster.yml input"
 description: |
   Render .taskcluster.yml for one of the supported events.
 
+  Read more about the `.taskcluster.yml` file format in
+  [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)
+
 definitions:
   overrides:
     title: Custom event payload
@@ -14,13 +17,15 @@ definitions:
         "ref": "refs/heads/main"
         "before": "000"
         "after": "111"
+      To make sure which properties are available for each event type,
+      please refer to the github [documentation](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads)
     additionalProperties: true
 
 type:         object
 properties:
   body:
     title: Taskcluster.yml contents
-    description: The contents of the .taskcluster.yml
+    description: The contents of the .taskcluster.yml file.
     type: string
   organization:
     type: string
@@ -41,13 +46,17 @@ properties:
       Event type names follow the `tasks_for` naming convention.
     oneOf:
       - title: Push events
+        description: |
+          Github sends `push` event for commits and for tags.
+          To distinguish between those two, the `ref` property is used.
+          If you want to mock a tag push, please specify `ref` property in the overrides:
+          "ref": "refs/tags/v1.0.0"
         type: object
         properties:
           type:
             type: string
             enum:
               - github-push
-              - github-tag-push
           overrides: {$ref: '#/definitions/overrides'}
         required:
           - type
@@ -57,6 +66,7 @@ properties:
         description: |
           .taskcluster.yml supports `github-pull-request` and `github-pull-request-untrusted` events.
           The difference is that `github-pull-request-untrusted` will use different set of scopes.
+          See [RFC 175](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0175-restricted-pull-requests.md)
         type: object
         properties:
           type:

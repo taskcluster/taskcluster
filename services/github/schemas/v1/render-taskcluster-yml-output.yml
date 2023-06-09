@@ -5,7 +5,10 @@ type: object
 properties:
   tasks:
     type: array
-    description: Rendered tasks
+    description: |
+      Rendered tasks objects.
+      Those objects not guaranteed to produce valid task definitions
+      that conform to the json schema.
     uniqueItems: false
     items:
       type: object

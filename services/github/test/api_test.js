@@ -721,7 +721,7 @@ tasks:
     const eventTypes = [
       { fakeEvent: { type: 'github-push' }, tasksCount: 1, scopesCount: 3, scope: 'branch:main' },
       { fakeEvent: { type: 'github-push', overrides: { branch: 'stage' } }, tasksCount: 1, scopesCount: 3, scope: 'branch:stage' },
-      { fakeEvent: { type: 'github-tag-push' }, tasksCount: 1, scopesCount: 3, scope: 'tag:v1.0.2' },
+      { fakeEvent: { type: 'github-push', overrides: { ref: "refs/tags/v1.0.2" } }, tasksCount: 1, scopesCount: 3, scope: 'tag:v1.0.2' },
       { fakeEvent: { type: 'github-pull-request', action: 'opened' }, tasksCount: 1, scopesCount: 3, scope: 'pull-request' },
       { fakeEvent: { type: 'github-pull-request', action: 'synchronize' }, tasksCount: 1, scopesCount: 3, scope: 'pull-request' },
       { fakeEvent: { type: 'github-pull-request', action: 'assigned' }, tasksCount: 0, scopesCount: 3, scope: 'pull-request' },
@@ -730,7 +730,7 @@ tasks:
       { fakeEvent: { type: 'github-release', action: 'released' }, tasksCount: 0, scopesCount: 3, scope: 'release:released' },
     ];
     eventTypes.map(({ fakeEvent, tasksCount, scopesCount, scope }) =>
-      test(`render .tc.yml for event ${fakeEvent.type} ${fakeEvent.action || ''}`, async function() {
+      test(`render .tc.yml for event ${fakeEvent.type} ${fakeEvent.action || ''} ${scope}`, async function() {
         const { tasks, scopes } = await helper.apiClient.renderTaskclusterYml({
           body: tcYaml,
           fakeEvent,

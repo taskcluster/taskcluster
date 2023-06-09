@@ -733,151 +733,14 @@ const release = `{
   }
 }`;
 
-const tagPush = `{
-  "ref": "refs/tags/v1.0.2",
-  "before": "0000000000000000000000000000000000000000",
-  "after": "b79ce60be819cdc482c9c6a84dc3c457959aa66f",
-  "created": true,
-  "deleted": false,
-  "forced": false,
-  "base_ref": null,
-  "compare": "https://github.com/$ORGANIZATION/$REPOSITORY/compare/v1.0.2",
-  "commits": [],
-  "head_commit": {
-    "id": "b79ce60be819cdc482c9c6a84dc3c457959aa66f",
-    "tree_id": "1e853705688e2088b1d25c7d9c3e521c80ba10cf",
-    "distinct": true,
-    "message": "Update README.md",
-    "timestamp": "2017-01-12T11:16:14-08:00",
-    "url": "https://github.com/$ORGANIZATION/$REPOSITORY/commit/b79ce60be819cdc482c9c6a84dc3c457959aa66f",
-    "author": {
-      "name": "Irene",
-      "email": null,
-      "username": "awesome-dev"
-    },
-    "committer": {
-      "name": "GitHub",
-      "email": "noreply@github.com",
-      "username": "web-flow"
-    },
-    "added": [],
-    "removed": [],
-    "modified": [
-      "README.md"
-    ]
-  },
-  "repository": {
-    "id": 68761376,
-    "name": "$REPOSITORY",
-    "full_name": "$ORGANIZATION/$REPOSITORY",
-    "owner": {
-      "name": "$ORGANIZATION",
-      "email": "taskcluster-accounts@mozilla.com"
-    },
-    "private": false,
-    "html_url": "https://github.com/$ORGANIZATION/$REPOSITORY",
-    "description": "",
-    "fork": false,
-    "url": "https://github.com/$ORGANIZATION/$REPOSITORY",
-    "forks_url": "https://repo/forks",
-    "keys_url": "https://repo/keys{/key_id}",
-    "collaborators_url": "https://repo/collaborators{/collaborator}",
-    "teams_url": "https://repo/teams",
-    "hooks_url": "https://repo/hooks",
-    "issue_events_url": "https://repo/issues/events{/number}",
-    "events_url": "https://repo/events",
-    "assignees_url": "https://repo/assignees{/user}",
-    "branches_url": "https://repo/branches{/branch}",
-    "tags_url": "https://repo/tags",
-    "blobs_url": "https://repo/git/blobs{/sha}",
-    "git_tags_url": "https://repo/git/tags{/sha}",
-    "git_refs_url": "https://repo/git/refs{/sha}",
-    "trees_url": "https://repo/git/trees{/sha}",
-    "statuses_url": "https://repo/statuses/{sha}",
-    "languages_url": "https://repo/languages",
-    "stargazers_url": "https://repo/stargazers",
-    "contributors_url": "https://repo/contributors",
-    "subscribers_url": "https://repo/subscribers",
-    "subscription_url": "https://repo/subscription",
-    "commits_url": "https://repo/commits{/sha}",
-    "git_commits_url": "https://repo/git/commits{/sha}",
-    "comments_url": "https://repo/comments{/number}",
-    "issue_comment_url": "https://repo/issues/comments{/number}",
-    "contents_url": "https://repo/contents/{+path}",
-    "compare_url": "https://repo/compare/{base}...{head}",
-    "merges_url": "https://repo/merges",
-    "archive_url": "https://repo/{archive_format}{/ref}",
-    "downloads_url": "https://repo/downloads",
-    "issues_url": "https://repo/issues{/number}",
-    "pulls_url": "https://repo/pulls{/number}",
-    "milestones_url": "https://repo/milestones{/number}",
-    "notifications_url": "https://repo/notifications{?since,all,participating}",
-    "labels_url": "https://repo/labels{/name}",
-    "releases_url": "https://repo/releases{/id}",
-    "deployments_url": "https://repo/deployments",
-    "created_at": 1474414120,
-    "updated_at": "2017-01-03T18:58:56Z",
-    "pushed_at": 1484248575,
-    "git_url": "git://github.com/$ORGANIZATION/$REPOSITORY.git",
-    "ssh_url": "git@github.com:$ORGANIZATION/$REPOSITORY.git",
-    "clone_url": "https://github.com/$ORGANIZATION/$REPOSITORY.git",
-    "svn_url": "https://github.com/$ORGANIZATION/$REPOSITORY",
-    "homepage": null,
-    "size": 24,
-    "stargazers_count": 1,
-    "watchers_count": 1,
-    "language": null,
-    "has_issues": true,
-    "has_downloads": true,
-    "has_wiki": true,
-    "has_pages": false,
-    "forks_count": 1,
-    "mirror_url": null,
-    "open_issues_count": 0,
-    "forks": 1,
-    "open_issues": 0,
-    "watchers": 1,
-    "default_branch": "master",
-    "stargazers": 1,
-    "master_branch": "master"
-  },
-  "pusher": {
-    "name": "awesome-dev",
-    "email": null
-  },
-  "sender": {
-    "login": "awesome-dev",
-    "id": 18102552,
-    "avatar_url": "https://avatars.githubusercontent.com/u/18102552?v=3",
-    "gravatar_id": "",
-    "url": "https://api.github.com/users/awesome-dev",
-    "html_url": "https://github.com/awesome-dev",
-    "followers_url": "https://awesome-github-dev/followers",
-    "following_url": "https://awesome-github-dev/following{/other_user}",
-    "gists_url": "https://awesome-github-dev/gists{/gist_id}",
-    "starred_url": "https://awesome-github-dev/starred{/owner}{/repo}",
-    "subscriptions_url": "https://awesome-github-dev/subscriptions",
-    "organizations_url": "https://awesome-github-dev/orgs",
-    "repos_url": "https://awesome-github-dev/repos",
-    "events_url": "https://awesome-github-dev/events{/privacy}",
-    "received_events_url": "https://awesome-github-dev/received_events",
-    "type": "User",
-    "site_admin": false
-  },
-  "installation": {
-    "id": 5808
-  }
-}`;
-
 const mapping = {
   'github-push': push,
   'github-pull-request': pullRequest,
   'github-pull-request-untrusted': pullRequest,
   'github-release': release,
-  'github-tag-push': tagPush,
 };
 
-module.exports.getEventPayload = function getEventPayload(type, action, organization, repository, branch) {
+module.exports.getEventPayload = function getEventPayload(type, action, organization, repository, branch, overrides = {}) {
   const event = JSON.parse(
     mapping[type]
       .replaceAll('$ORGANIZATION', organization)
@@ -885,5 +748,5 @@ module.exports.getEventPayload = function getEventPayload(type, action, organiza
       .replaceAll('$BRANCH', branch)
   );
 
-  return { ...event, action };
+  return { ...event, action, ...overrides };
 };

@@ -840,6 +840,7 @@ builder.declare({
     'This endpoint allows to render the .taskcluster.yml file for a given event or payload.',
     'This is useful to preview the result of the .taskcluster.yml file before pushing it to',
     'the repository.',
+    'Read more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)',
   ].join('\n'),
   stability: 'experimental',
   method: 'post',
@@ -861,7 +862,6 @@ builder.declare({
   } = req.body;
 
   const fakeEventToFnMap = {
-    'github-tag-push': getPushDetails,
     'github-push': getPushDetails,
     'github-pull-request': getPullRequestDetails,
     'github-pull-request-untrusted': getPullRequestDetails,
@@ -870,7 +870,7 @@ builder.declare({
 
   const branch = fakeEventData?.branch || 'main';
   const fakePayload = fakePayloads.getEventPayload(
-    fakeEventType, fakeEventAction, organization, repository, branch,
+    fakeEventType, fakeEventAction, organization, repository, branch, fakeEventData,
   );
 
   const payload = {
@@ -879,8 +879,7 @@ builder.declare({
     installationId: Math.floor(Math.random() * 100000),
     eventId: `evt-${organization}-${repository}-${fakeEventType}-${fakeEventAction}`,
     branch,
-    // there is no tag push event, only push to tag ref
-    tasks_for: fakeEventType === 'github-tag-push' ? 'github-push' : fakeEventType,
+    tasks_for: fakeEventType,
     fakeEventAction,
     body: fakePayload,
     details: fakeEventToFnMap[fakeEventType](fakePayload),

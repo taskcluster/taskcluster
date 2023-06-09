@@ -601,7 +601,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "renderTaskclusterYml",
 				Title:       "Render .taskcluster.yml file",
-				Description: "This endpoint allows to render the .taskcluster.yml file for a given event or payload.\nThis is useful to preview the result of the .taskcluster.yml file before pushing it to\nthe repository.",
+				Description: "This endpoint allows to render the .taskcluster.yml file for a given event or payload.\nThis is useful to preview the result of the .taskcluster.yml file before pushing it to\nthe repository.\nRead more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/taskcluster-yml",

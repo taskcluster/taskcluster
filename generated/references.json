@@ -6971,7 +6971,7 @@
           "uniqueItems": true
         },
         "tasks": {
-          "description": "Rendered tasks",
+          "description": "Rendered tasks objects.\nThose objects not guaranteed to produce valid task definitions\nthat conform to the json schema.\n",
           "items": {
             "additionalProperties": true,
             "type": "object"
@@ -6997,15 +6997,15 @@
       "definitions": {
         "overrides": {
           "additionalProperties": true,
-          "description": "Additional data to be mixed to the mocked event object.\nThis can be used to set some specific properties of the event or override the existing ones.\nFor example:\n  \"ref\": \"refs/heads/main\"\n  \"before\": \"000\"\n  \"after\": \"111\"\n",
+          "description": "Additional data to be mixed to the mocked event object.\nThis can be used to set some specific properties of the event or override the existing ones.\nFor example:\n  \"ref\": \"refs/heads/main\"\n  \"before\": \"000\"\n  \"after\": \"111\"\nTo make sure which properties are available for each event type,\nplease refer to the github [documentation](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads)\n",
           "title": "Custom event payload",
           "type": "object"
         }
       },
-      "description": "Render .taskcluster.yml for one of the supported events.\n",
+      "description": "Render .taskcluster.yml for one of the supported events.\n\nRead more about the `.taskcluster.yml` file format in\n[documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)\n",
       "properties": {
         "body": {
-          "description": "The contents of the .taskcluster.yml",
+          "description": "The contents of the .taskcluster.yml file.",
           "title": "Taskcluster.yml contents",
           "type": "string"
         },
@@ -7014,14 +7014,14 @@
           "oneOf": [
             {
               "additionalProperties": false,
+              "description": "Github sends `push` event for commits and for tags.\nTo distinguish between those two, the `ref` property is used.\nIf you want to mock a tag push, please specify `ref` property in the overrides:\n\"ref\": \"refs/tags/v1.0.0\"\n",
               "properties": {
                 "overrides": {
                   "$ref": "#/definitions/overrides"
                 },
                 "type": {
                   "enum": [
-                    "github-push",
-                    "github-tag-push"
+                    "github-push"
                   ],
                   "type": "string"
                 }
@@ -7034,7 +7034,7 @@
             },
             {
               "additionalProperties": false,
-              "description": ".taskcluster.yml supports `github-pull-request` and `github-pull-request-untrusted` events.\nThe difference is that `github-pull-request-untrusted` will use different set of scopes.\n",
+              "description": ".taskcluster.yml supports `github-pull-request` and `github-pull-request-untrusted` events.\nThe difference is that `github-pull-request-untrusted` will use different set of scopes.\nSee [RFC 175](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0175-restricted-pull-requests.md)\n",
               "properties": {
                 "action": {
                   "enum": [
@@ -19357,7 +19357,7 @@
           "args": [
           ],
           "category": "Github Service",
-          "description": "This endpoint allows to render the .taskcluster.yml file for a given event or payload.\nThis is useful to preview the result of the .taskcluster.yml file before pushing it to\nthe repository.",
+          "description": "This endpoint allows to render the .taskcluster.yml file for a given event or payload.\nThis is useful to preview the result of the .taskcluster.yml file before pushing it to\nthe repository.\nRead more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)",
           "input": "v1/render-taskcluster-yml-input.json#",
           "method": "post",
           "name": "renderTaskclusterYml",

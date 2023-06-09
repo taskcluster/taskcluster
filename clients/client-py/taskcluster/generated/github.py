@@ -171,6 +171,7 @@ class Github(BaseClient):
         This endpoint allows to render the .taskcluster.yml file for a given event or payload.
         This is useful to preview the result of the .taskcluster.yml file before pushing it to
         the repository.
+        Read more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)
 
         This method is ``experimental``
         """

@@ -154,13 +154,6 @@ const getTaskDefinition = state => {
 const getCustomContext = () => {
   return dump({
     timestamp: Math.floor(new Date()),
-    organization: 'test-org',
-    repository: 'project',
-    push: {
-      branch: 'branch',
-      revision: 'rev',
-    },
-    ownTaskId: 'own-task-id',
   });
 };
 
@@ -196,7 +189,7 @@ const getCustomContext = () => {
     height: 480,
   },
   contextEditor: {
-    height: 160,
+    height: 100,
   },
   dropdown: {
     minWidth: 200,
@@ -328,7 +321,8 @@ export default class TcYamlDebug extends Component {
   handleCustomEventSimulate = e => {
     const [tasksFor, action] = e.target.value.split('.');
 
-    this.runEvent(tasksFor, action, false, {
+    this.runEvent(tasksFor, action, {
+      expectedZeroTasks: false,
       prepend: true,
     });
   };
@@ -431,11 +425,15 @@ export default class TcYamlDebug extends Component {
     }
 
     this.runEvent('github-push');
-    this.runEvent('github-tag-push');
+    this.runEvent('github-push', undefined, {
+      overrides: { ref: 'refs/tags/v1.0.2' },
+    });
     this.runEvent('github-release', 'published');
     this.runEvent('github-pull-request-untrusted', 'opened');
     this.runEvent('github-pull-request', 'opened');
-    this.runEvent('github-pull-request', 'assigned', true);
+    this.runEvent('github-pull-request', 'assigned', {
+      expectedZeroTasks: true,
+    });
 
     if (this.state.urlChanged && this.state.findings.length > 1) {
       setTimeout(() => scrollToHash(), 100);
@@ -444,12 +442,14 @@ export default class TcYamlDebug extends Component {
     this.setState({ urlChanged: false });
   };
 
-  async runEvent(
-    tasksFor,
-    action,
-    expectedZeroTasks = false,
-    opts = { prepend: false }
-  ) {
+  async runEvent(tasksFor, action, options) {
+    const opts = {
+      overrides: {},
+      expectedZeroTasks: false,
+      prepend: false,
+      ...options,
+    };
+
     try {
       const extraContext = load(this.state.extraContext);
       const {
@@ -459,14 +459,15 @@ export default class TcYamlDebug extends Component {
         variables: {
           payload: {
             body: this.state.editorValue,
-            organization: extraContext?.organization ?? 'tc',
-            repository: extraContext?.repository ?? 'tc',
+            organization: 'taskcluster',
+            repository: 'taskcluster',
             fakeEvent: {
               type: tasksFor,
               action,
               overrides: {
                 branch: extraContext?.branch ?? 'main',
                 ...extraContext,
+                ...opts.overrides,
               },
             },
           },
@@ -476,7 +477,7 @@ export default class TcYamlDebug extends Component {
         ? parsed.tasks.map(item => item.task)
         : Object.values(parsed.tasks).map(({ task }) => task);
       const tasksCount = tasks?.length || 0;
-      const suspicious = expectedZeroTasks && tasksCount > 0;
+      const suspicious = opts.expectedZeroTasks && tasksCount > 0;
 
       this.addFinding(
         {

@@ -943,7 +943,7 @@ module.exports = {
           "args": [
           ],
           "category": "Github Service",
-          "description": "This endpoint allows to render the .taskcluster.yml file for a given event or payload.\nThis is useful to preview the result of the .taskcluster.yml file before pushing it to\nthe repository.",
+          "description": "This endpoint allows to render the .taskcluster.yml file for a given event or payload.\nThis is useful to preview the result of the .taskcluster.yml file before pushing it to\nthe repository.\nRead more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)",
           "input": "v1/render-taskcluster-yml-input.json#",
           "method": "post",
           "name": "renderTaskclusterYml",
