@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"testing"
@@ -86,7 +87,7 @@ func TestInteractiveCommand(t *testing.T) {
 			url := fmt.Sprintf("ws://localhost:%v/shell/%v", config.InteractivePort, os.Getenv("INTERACTIVE_ACCESS_TOKEN"))
 			conn, _, err = websocket.DefaultDialer.Dial(url, nil)
 			if err == nil {
-				err = conn.WriteMessage(websocket.TextMessage, []byte("echo hello\n"))
+				err = conn.WriteMessage(websocket.TextMessage, []byte("\x01echo hello\n"))
 				if err != nil {
 					t.Fatalf("write error: %v", err)
 				}
@@ -96,9 +97,28 @@ func TestInteractiveCommand(t *testing.T) {
 				if err != nil {
 					t.Fatalf("read error: %v", err)
 				}
-				expected := "hello\n"
+				expected := "echo hello\r\n"
 				if string(output) != expected {
-					t.Fatalf("unexpected output: %v\nexpected: %v", string(output), expected)
+					t.Fatalf("unexpected output: %v\nexpected: %v", []byte(output), expected)
+				}
+
+				expectedBytes := []byte("hello\r\n")
+				completeOutput := []byte{}
+				ok := false
+				for i := 0; i < 10; i++ {
+					_, output, err = conn.ReadMessage()
+					if err != nil {
+						t.Fatalf("read error: %v", err)
+					}
+					completeOutput = append(completeOutput, output...)
+					if bytes.Contains(completeOutput, expectedBytes) {
+						ok = true
+						break
+					}
+				}
+
+				if !ok {
+					t.Fatalf("Couldn't find expected output: %v. Complete output: %v", expectedBytes, completeOutput)
 				}
 
 				err = conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Closing connection"))

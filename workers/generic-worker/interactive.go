@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"os/exec"
 	"path"
 	"strconv"
 	"time"
@@ -73,12 +74,10 @@ If you do require an interactive task, please do one of two things:
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	cmd, err := it.task.generateInteractiveCommand(ctx)
-	if err != nil {
-		it.task.Warnf("[interactive] could not generate interactive command: %v", err)
-		cancel()
-		return nil
+	cmd := func() (*exec.Cmd, error) {
+		return it.task.generateInteractiveCommand(ctx)
 	}
+
 	interactive, err := interactive.New(config.InteractivePort, cmd, ctx)
 	if err != nil {
 		it.task.Warnf("[interactive] could not create interactive session: %v", err)
@@ -117,12 +116,6 @@ func (it *InteractiveTask) Stop(err *ExecutionErrors) {
 	}
 
 	it.cancel()
-
-	errTerminate := it.interactive.Terminate()
-	if errTerminate != nil {
-		// no need to raise an exception
-		it.task.Warnf("[interactive] could not terminate interactive session: %v", errTerminate)
-	}
 
 	if it.exposure != nil {
 		closeErr := it.exposure.Close()
