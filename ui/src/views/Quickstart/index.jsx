@@ -80,6 +80,7 @@ const getTaskDefinition = state => {
     policy: {
       pullRequests: access,
     },
+    autoCancelPreviousChecks: true,
     tasks: {
       $let: {
         head_rev: {

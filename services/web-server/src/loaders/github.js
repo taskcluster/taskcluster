@@ -13,7 +13,20 @@ module.exports = ({ github }, isAuthed, rootUrl, monitor, strategies, req, cfg, 
     ),
   );
 
+  const renderTaskclusterYml = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ payload }) => {
+        try {
+          return await github.renderTaskclusterYml(payload);
+        } catch (err) {
+          return err;
+        }
+      }),
+    ),
+  );
+
   return {
     githubRepository,
+    renderTaskclusterYml,
   };
 };

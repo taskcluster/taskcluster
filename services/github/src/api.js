@@ -1,8 +1,11 @@
 const crypto = require('crypto');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const _ = require('lodash');
+const libUrls = require('taskcluster-lib-urls');
+const yaml = require('js-yaml');
 const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS, GITHUB_TASKS_FOR, GITHUB_BUILD_STATES } = require('./constants');
 const { shouldSkipCommit, shouldSkipPullRequest } = require('./utils');
+const fakePayloads = require('./fake-payloads');
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -199,7 +202,7 @@ let builder = new APIBuilder({
   ].join('\n'),
   serviceName: 'github',
   apiVersion: 'v1',
-  context: ['db', 'monitor', 'publisher', 'cfg', 'ajv', 'github', 'queueClient'],
+  context: ['db', 'monitor', 'publisher', 'cfg', 'ajv', 'github', 'queueClient', 'intree', 'schemaset'],
   errorCodes: {
     ForbiddenByGithub: 403,
   },
@@ -828,6 +831,80 @@ builder.declare({
   }
 
   return res.reportError('ResourceNotFound', 'Issue not found', {});
+});
+
+builder.declare({
+  name: 'renderTaskclusterYml',
+  title: 'Render .taskcluster.yml file',
+  description: [
+    'This endpoint allows to render the .taskcluster.yml file for a given event or payload.',
+    'This is useful to preview the result of the .taskcluster.yml file before pushing it to',
+    'the repository.',
+    'Read more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)',
+  ].join('\n'),
+  stability: 'experimental',
+  method: 'post',
+  category: 'Github Service',
+  route: '/taskcluster-yml',
+  input: 'render-taskcluster-yml-input.yml',
+  output: 'render-taskcluster-yml-output.yml',
+  scopes: null,
+}, async function(req, res) {
+  let {
+    body,
+    organization = 'taskcluster',
+    repository = 'testing',
+    fakeEvent: {
+      type: fakeEventType,
+      action: fakeEventAction,
+      overrides: fakeEventData,
+    } = {},
+  } = req.body;
+
+  const fakeEventToFnMap = {
+    'github-push': getPushDetails,
+    'github-pull-request': getPullRequestDetails,
+    'github-pull-request-untrusted': getPullRequestDetails,
+    'github-release': getReleaseDetails,
+  };
+
+  const branch = fakeEventData?.branch || 'main';
+  const fakePayload = fakePayloads.getEventPayload(
+    fakeEventType, fakeEventAction, organization, repository, branch, fakeEventData,
+  );
+
+  const payload = {
+    organization,
+    repository,
+    installationId: Math.floor(Math.random() * 100000),
+    eventId: `evt-${organization}-${repository}-${fakeEventType}-${fakeEventAction}`,
+    branch,
+    tasks_for: fakeEventType,
+    fakeEventAction,
+    body: fakePayload,
+    details: fakeEventToFnMap[fakeEventType](fakePayload),
+    ...fakeEventData,
+  };
+
+  const { rootUrl } = this.cfg.taskcluster;
+  const validator = await this.schemaset.validator(rootUrl);
+
+  try {
+    const tcYml = yaml.load(body);
+    const { tasks, scopes } = this.intree({
+      config: tcYml,
+      payload,
+      validator,
+      schema: {
+        0: libUrls.schema(rootUrl, 'github', 'v1/taskcluster-github-config.yml'),
+        1: libUrls.schema(rootUrl, 'github', 'v1/taskcluster-github-config.v1.yml'),
+      },
+    });
+
+    return res.reply({ tasks, scopes });
+  } catch (e) {
+    return res.reportError('InvalidInput', e.message, {});
+  }
 });
 
 builder.declare({

@@ -338,6 +338,20 @@ func (github *Github) CreateComment(owner, repo, number string, payload *CreateC
 	return err
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// This endpoint allows to render the .taskcluster.yml file for a given event or payload.
+// This is useful to preview the result of the .taskcluster.yml file before pushing it to
+// the repository.
+// Read more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)
+//
+// See #renderTaskclusterYml
+func (github *Github) RenderTaskclusterYml(payload *RenderTaskclusterYmlInput) (*RenderTaskclusterYmlOutput, error) {
+	cd := tcclient.Client(*github)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/taskcluster-yml", new(RenderTaskclusterYmlOutput), nil)
+	return responseObject.(*RenderTaskclusterYmlOutput), err
+}
+
 // Respond with a service heartbeat.
 //
 // This endpoint is used to check on backing services this service

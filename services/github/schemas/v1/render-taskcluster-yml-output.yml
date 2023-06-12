@@ -1,0 +1,27 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Render .taskcluster.yml output"
+description: Rendered .taskcluster.yml output.
+type: object
+properties:
+  tasks:
+    type: array
+    description: |
+      Rendered tasks objects.
+      Those objects not guaranteed to produce valid task definitions
+      that conform to the json schema.
+    uniqueItems: false
+    items:
+      type: object
+      additionalProperties: true
+  scopes:
+    type: array
+    description: |
+      Scopes that will be used by the github client to create tasks.
+      Those are different that the scopes inside the tasks itself.
+    uniqueItems: true
+    items:
+      type: string
+additionalProperties: false
+required:
+  - tasks
+  - scopes

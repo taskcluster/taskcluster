@@ -121,8 +121,8 @@ const load = loader({
 
   api: {
     requires: [
-      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv', 'queueClient'],
-    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv, queueClient }) => builder.build({
+      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv', 'queueClient', 'intree'],
+    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv, queueClient, intree }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
         publisher,
@@ -132,6 +132,8 @@ const load = loader({
         ajv,
         monitor: monitor.childMonitor('api-context'),
         queueClient,
+        intree,
+        schemaset,
       },
       monitor: monitor.childMonitor('api'),
       schemaset,

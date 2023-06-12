@@ -21,6 +21,7 @@ export default class Github extends Client {
     this.latest.entry = {"args":["owner","repo","branch"],"category":"Github Service","method":"get","name":"latest","query":[],"route":"/repository/<owner>/<repo>/<branch>/latest","scopes":"github:latest-status:<owner>:<repo>:<branch>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createStatus.entry = {"args":["owner","repo","sha"],"category":"Github Service","input":true,"method":"post","name":"createStatus","query":[],"route":"/repository/<owner>/<repo>/statuses/<sha>","scopes":"github:create-status:<owner>/<repo>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.createComment.entry = {"args":["owner","repo","number"],"category":"Github Service","input":true,"method":"post","name":"createComment","query":[],"route":"/repository/<owner>/<repo>/issues/<number>/comments","scopes":"github:create-comment:<owner>/<repo>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.renderTaskclusterYml.entry = {"args":[],"category":"Github Service","input":true,"method":"post","name":"renderTaskclusterYml","output":true,"query":[],"route":"/taskcluster-yml","stability":"experimental","type":"function"}; // eslint-disable-line
     this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
@@ -124,6 +125,17 @@ export default class Github extends Client {
     this.validate(this.createComment.entry, args);
 
     return this.request(this.createComment.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This endpoint allows to render the .taskcluster.yml file for a given event or payload.
+  // This is useful to preview the result of the .taskcluster.yml file before pushing it to
+  // the repository.
+  // Read more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)
+  /* eslint-enable max-len */
+  renderTaskclusterYml(...args) {
+    this.validate(this.renderTaskclusterYml.entry, args);
+
+    return this.request(this.renderTaskclusterYml.entry, args);
   }
   /* eslint-disable max-len */
   // Respond with a service heartbeat.

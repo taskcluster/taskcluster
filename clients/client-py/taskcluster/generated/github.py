@@ -164,6 +164,20 @@ class Github(BaseClient):
 
         return self._makeApiCall(self.funcinfo["createComment"], *args, **kwargs)
 
+    def renderTaskclusterYml(self, *args, **kwargs):
+        """
+        Render .taskcluster.yml file
+
+        This endpoint allows to render the .taskcluster.yml file for a given event or payload.
+        This is useful to preview the result of the .taskcluster.yml file before pushing it to
+        the repository.
+        Read more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["renderTaskclusterYml"], *args, **kwargs)
+
     def heartbeat(self, *args, **kwargs):
         """
         Heartbeat
@@ -254,6 +268,15 @@ class Github(BaseClient):
             'name': 'ping',
             'route': '/ping',
             'stability': 'stable',
+        },
+        "renderTaskclusterYml": {
+            'args': [],
+            'input': 'v1/render-taskcluster-yml-input.json#',
+            'method': 'post',
+            'name': 'renderTaskclusterYml',
+            'output': 'v1/render-taskcluster-yml-output.json#',
+            'route': '/taskcluster-yml',
+            'stability': 'experimental',
         },
         "repository": {
             'args': ['owner', 'repo'],
