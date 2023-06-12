@@ -3,6 +3,44 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v53.0.0
+
+### GENERAL
+
+▶ [minor]
+This essentially reverts the change in [#6279](https://github.com/taskcluster/taskcluster/pull/6279).
+
+We learned from RelOps that the simple engine is useful for running generic worker inside a VM and inside of docker containers.
+
+▶ [patch]
+Upgrade to go 1.19.10.
+
+> go1.19.10 (released 2023-06-06) includes four security fixes to the cmd/go and runtime packages, as well as bug fixes to the compiler, the go command, and the runtime.
+
+### ADMINS
+
+▶ [minor] [#6247](https://github.com/taskcluster/taskcluster/issues/6247)
+Revert worker-manager from quarantining workers on removal that was introduced in [PR 6267](https://github.com/taskcluster/taskcluster/pull/6267).
+
+### USERS
+
+▶ [MAJOR]
+Rework the interactive feature for generic worker allowing to run interactive commands in it
+
+▶ [patch]
+Introduced `github.renderTaskclusterYml` endpoint to render provided `.taskcluster.yml` file for various events.
+This might be used for debug purposes or to validate the .taskcluster.yml file
+and make sure that resulting tasks and scopes produce expected values.
+
+### DEVELOPERS
+
+▶ [patch]
+Enables CORS for API for local docker-compose development.
+
+### OTHER
+
+▶ Additional change not described here: [#6280](https://github.com/taskcluster/taskcluster/issues/6280).
+
 ## v52.0.0
 
 ### GENERAL

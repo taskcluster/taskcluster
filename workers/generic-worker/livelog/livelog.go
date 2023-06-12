@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v52/internal/httputil"
+	"github.com/taskcluster/taskcluster/v53/internal/httputil"
 )
 
 // LiveLog provides access to a livelog process running on the OS. Use

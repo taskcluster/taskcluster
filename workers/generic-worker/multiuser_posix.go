@@ -13,9 +13,9 @@ import (
 	"strconv"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v52/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v52/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v52/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v53/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v53/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v53/workers/generic-worker/runtime"
 )
 
 func (task *TaskRun) formatCommand(index int) string {

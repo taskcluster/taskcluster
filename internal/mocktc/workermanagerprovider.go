@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/taskcluster/taskcluster/v52/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v52/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v53/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v53/internal/mocktc/tc"
 )
 
 type WorkerManagerProvider struct {

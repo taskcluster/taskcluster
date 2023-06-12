@@ -11,8 +11,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v52/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v52/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v53/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v53/workers/generic-worker/runtime"
 	"golang.org/x/net/context"
 )
 

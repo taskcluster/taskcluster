@@ -8,9 +8,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v52/clients/client-go"
-	"github.com/taskcluster/taskcluster/v52/internal/httputil"
-	"github.com/taskcluster/taskcluster/v52/internal/mocktc/mocks3"
+	tcclient "github.com/taskcluster/taskcluster/v53/clients/client-go"
+	"github.com/taskcluster/taskcluster/v53/internal/httputil"
+	"github.com/taskcluster/taskcluster/v53/internal/mocktc/mocks3"
 )
 
 func Vars(r *http.Request) map[string]string {
