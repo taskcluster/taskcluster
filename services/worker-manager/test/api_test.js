@@ -11,7 +11,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withProviders(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
@@ -841,19 +840,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId);
       const worker = await Worker.get(helper.db, { workerPoolId, workerGroup, workerId });
       assert.equal(worker.state, 'stopped');
-    });
-    test('remove a worker also quarantines it', async function () {
-      await createWorker({
-        providerData: { allowRemoveWorker: true },
-      });
-      await helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId);
-      const lastQuarantine = helper.queue.quarantines[helper.queue.quarantines.length - 1];
-
-      assert.equal(lastQuarantine.provisionerId, workerPoolId.split('/')[0]);
-      assert.equal(lastQuarantine.workerType, workerPoolId.split('/')[1]);
-      assert.equal(lastQuarantine.workerGroup, workerGroup);
-      assert.equal(lastQuarantine.workerId, workerId);
-      assert.equal(lastQuarantine.payload.quarantineInfo, 'workerManager.removeWorker API call');
     });
   });
 

@@ -93,7 +93,6 @@
       "notify:email:*",
       "queue:claim-work:*",
       "queue:pending-count:*",
-      "queue:quarantine-worker:*",
       "queue:worker-id:*",
       "secrets:get:worker-pool:*",
       "secrets:get:worker-type:*",

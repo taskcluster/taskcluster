@@ -11,7 +11,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withPulse(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withFakeNotify(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
   helper.resetTables(mock, skipping);
 
   let provider;
@@ -38,7 +37,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         workerServiceAccountId: '12345',
         _backoffDelay: 1,
       },
-      queue: helper.queue,
     });
 
     await helper.db.fns.delete_worker_pool(workerPoolId);
@@ -378,36 +376,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       state: 'requested',
       providerData: { zone: 'us-east1-a' },
     });
-    await provider.removeWorker({ worker, reason: 'meh' });
+    await provider.removeWorker({ worker });
     assert(fake.compute.instances.delete_called);
-
-    assert.equal(helper.queue.quarantines.length, 0); // instance not found, so no call
-  });
-
-  test('removeWorker quarantines it', async function() {
-    const workerId = '12345';
-    const worker = await makeWorker({
-      workerPoolId,
-      workerGroup: 'us-east1',
-      workerId,
-      providerId,
-      created: taskcluster.fromNow('0 seconds'),
-      lastModified: taskcluster.fromNow('0 seconds'),
-      lastChecked: taskcluster.fromNow('0 seconds'),
-      expires: taskcluster.fromNow('90 seconds'),
-      capacity: 1,
-      state: 'requested',
-      providerData: { zone: 'us-east1-a' },
-    });
-    fake.compute.instances.setFakeInstanceStatus(
-      project, 'us-east1-a', workerId,
-      'RUNNING');
-    await provider.removeWorker({ worker, reason: 'meh' });
-    assert(fake.compute.instances.delete_called);
-
-    const lastQuarantine = helper.queue.quarantines[helper.queue.quarantines.length - 1];
-    assert.equal(lastQuarantine.workerId, workerId);
-    assert.equal(lastQuarantine.payload.quarantineInfo, 'meh');
   });
 
   suite('checkWorker', function() {
