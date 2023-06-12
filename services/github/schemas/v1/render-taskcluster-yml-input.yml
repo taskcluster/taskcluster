@@ -21,7 +21,7 @@ definitions:
       please refer to the github [documentation](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads)
     additionalProperties: true
 
-type:         object
+type: object
 properties:
   body:
     title: Taskcluster.yml contents
@@ -57,7 +57,7 @@ properties:
             type: string
             enum:
               - github-push
-          overrides: {$ref: '#/definitions/overrides'}
+          overrides: { $ref: "#/definitions/overrides" }
         required:
           - type
         additionalProperties: false
@@ -94,7 +94,7 @@ properties:
               - review_request_removed
               - unassigned
               - unlabeled
-          overrides: {$ref: '#/definitions/overrides'}
+          overrides: { $ref: "#/definitions/overrides" }
         required:
           - type
           - action
@@ -117,7 +117,7 @@ properties:
               - deleted
               - prereleased
               - released
-          overrides: {$ref: '#/definitions/overrides'}
+          overrides: { $ref: "#/definitions/overrides" }
         required:
           - type
           - action
