@@ -221,7 +221,7 @@ don't accept a payload.
 Also please consider using a relatively limited expiration time, as it's not
 possible to retract a signed url without revoking your credentials.
 For more technical details on signed urls, see _bewit_ URLs in
-[hawk](https://github.com/hueniverse/hawk).
+[hawk](https://github.com/mozilla/hawk).
 
 ### Generating Temporary Credentials
 
