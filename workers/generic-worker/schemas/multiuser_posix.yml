@@ -247,6 +247,21 @@ properties:
           is one.
 
           Since: generic-worker 49.2.0
+      loopbackVideo:
+        type: boolean
+        title: Loopback Video device
+        description: |-
+          Video loopback device created using v4l2loopback.
+          A video device will be available to the task user
+          at `/dev/video0` by default (device number can be
+          configured using the `loopbackVideoDeviceNumber`
+          field within the worker config) and an environment
+          variable `TASKCLUSTER_VIDEO_DEVICE` will be created
+          for the task user to use.
+          Ex. `loopbackVideoDeviceNumber: 1` will create
+          `/dev/video1` for the task user.
+
+          Since: generic-worker 53.1.0
   mounts:
     type: array
     description: |-

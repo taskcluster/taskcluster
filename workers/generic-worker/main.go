@@ -209,6 +209,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			InteractivePort:                53654,
 			LiveLogExecutable:              "livelog",
 			LiveLogPortBase:                60098,
+			LoopbackVideoDeviceNumber:      0,
 			NumberOfTasksToRun:             0,
 			ProvisionerID:                  "test-provisioner",
 			RequiredDiskSpaceMegabytes:     10240,

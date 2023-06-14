@@ -199,6 +199,19 @@ type (
 		// Default:    true
 		LiveLog bool `json:"liveLog" default:"true"`
 
+		// Video loopback device created using v4l2loopback.
+		// A video device will be available to the task user
+		// at `/dev/video0` by default (device number can be
+		// configured using the `loopbackVideoDeviceNumber`
+		// field within the worker config) and an environment
+		// variable `TASKCLUSTER_VIDEO_DEVICE` will be created
+		// for the task user to use.
+		// Ex. `loopbackVideoDeviceNumber: 1` will create
+		// `/dev/video1` for the task user.
+		//
+		// Since: generic-worker 53.1.0
+		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
+
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
 		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
@@ -808,6 +821,11 @@ func JSONSchema() string {
           "default": true,
           "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
           "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
+          "type": "boolean"
+        },
+        "loopbackVideo": {
+          "description": "Video loopback device created using v4l2loopback.\nA video device will be available to the task user\nat ` + "`" + `/dev/video0` + "`" + ` by default (device number can be\nconfigured using the ` + "`" + `loopbackVideoDeviceNumber` + "`" + `\nfield within the worker config) and an environment\nvariable ` + "`" + `TASKCLUSTER_VIDEO_DEVICE` + "`" + ` will be created\nfor the task user to use.\nEx. ` + "`" + `loopbackVideoDeviceNumber: 1` + "`" + ` will create\n` + "`" + `/dev/video1` + "`" + ` for the task user.\n\nSince: generic-worker 53.1.0",
+          "title": "Loopback Video device",
           "type": "boolean"
         },
         "taskclusterProxy": {
