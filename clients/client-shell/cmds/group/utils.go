@@ -21,7 +21,7 @@ func executeHelperE(f Executor) func(*cobra.Command, []string) error {
 		}
 
 		if len(args) < 1 {
-			return fmt.Errorf("%s expects argument <taskId>", cmd.Name())
+			return fmt.Errorf("%s expects argument <taskGroupId>", cmd.Name())
 		}
 		return f(creds, args, cmd.OutOrStdout(), cmd.Flags())
 	}
