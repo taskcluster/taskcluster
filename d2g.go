@@ -260,6 +260,7 @@ func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generic
 	// need to keep TaskclusterProxy to true if it's already been enabled for IndexedDockerImages
 	gwPayload.Features.TaskclusterProxy = gwPayload.Features.TaskclusterProxy || dwPayload.Features.TaskclusterProxy
 	gwPayload.Features.Interactive = dwPayload.Features.Interactive
+	gwPayload.Features.LoopbackVideo = dwPayload.Capabilities.Devices.LoopbackVideo
 
 	switch dwPayload.Features.Artifacts {
 	case true:
@@ -339,6 +340,9 @@ func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs 
 	}
 	if dwPayload.Capabilities.Devices.HostSharedMemory {
 		volumeMounts.WriteString(" -v /dev/shm:/dev/shm")
+	}
+	if dwPayload.Capabilities.Devices.LoopbackVideo {
+		volumeMounts.WriteString(` -v "${TASKCLUSTER_VIDEO_DEVICE}:/dev/video0"`)
 	}
 	return volumeMounts.String()
 }
