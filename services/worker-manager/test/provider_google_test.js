@@ -499,7 +499,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('don\'t remove unregistered before terminateAfter', async function() {
       const terminateAfter = Date.now() + 1000;
-      let worker = await suiteMakeWorker({ providerData: { terminateAfter } });
+      let worker = await suiteMakeWorker({
+        created: taskcluster.fromNow('-30 minutes'),
+        providerData: { terminateAfter },
+      });
       fake.compute.instances.setFakeInstanceStatus(
         project, 'us-east1-a', workerId,
         'RUNNING');
@@ -509,7 +512,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
     test('do not remove registered workers with stale terminateAfter', async function () {
       const terminateAfter = Date.now() - 1000;
-      let worker = await suiteMakeWorker({ providerData: { terminateAfter } });
+      let worker = await suiteMakeWorker({
+        created: taskcluster.fromNow('-30 minutes'),
+        providerData: { terminateAfter },
+      });
       fake.compute.instances.setFakeInstanceStatus(
         project, 'us-east1-a', workerId,
         'RUNNING');

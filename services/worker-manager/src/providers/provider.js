@@ -85,6 +85,46 @@ class Provider {
   }
 
   /**
+   * Workers that are being provisioned by worker manager are expected to:
+   * 1. Start (instance is running)
+   * 2. Register (worker is registered with worker manager)
+   * 3. Do work (call queue.claimWork/queue.reclaimTask)
+   *
+   * If worker does not register within given timeout, it will be removed after `terminateAfter` time.
+   * If worker fails to call queue.claimWork, `queue_worker.first_claim` would be set to null.
+   * If worker does not call queue.reclaimTask or stops calling queue.claimWork,
+   * `queue_worker.last_date_active` would not be updated.
+   *
+   * Workers that are registered, but don't have `first_claim`
+   * or `last_date_active` is older than inactivity timeout are considered to be zombies.
+   */
+  static isZombie({ worker, activityTimeout, createdTimeout }) {
+    activityTimeout = activityTimeout || 1000 * 60 * 60 * 2; // last active within 2 hours
+    createdTimeout = createdTimeout || 1000 * 60 * 60 * 1; // created at least 1 hour ago
+
+    const now = Date.now();
+    let reason = null;
+    let isZombie = false;
+
+    if (!worker.firstClaim && worker.created < now - createdTimeout) {
+      isZombie = true;
+      reason = `worker never claimed work, created=${worker.created}`;
+    }
+
+    if (!worker.lastDateActive && worker.firstClaim < now - activityTimeout) {
+      isZombie = true;
+      reason = `worker never reclaimed work, firstClaim=${worker.firstClaim}`;
+    }
+
+    if (worker.lastDateActive < now - activityTimeout) {
+      isZombie = true;
+      reason = `worker inactive, lastDateActive=${worker.lastDateActive}`;
+    }
+
+    return { reason, isZombie };
+  }
+
+  /**
    * Takes a lifecycle block as defined in the schema and returns
    * a date when the worker should be destroyed if the provider
    * supports this action. Also returns the reregistrationTimeout

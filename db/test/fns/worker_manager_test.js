@@ -584,7 +584,8 @@ suite(testing.suiteName(), function() {
         }
       });
 
-      const rows = await db.fns.get_non_stopped_workers_quntil_providers(null, null, null, null, null, null, null);
+      const rows = await db.deprecatedFns.get_non_stopped_workers_quntil_providers(
+        null, null, null, null, null, null, null);
 
       assert.equal(rows.length, 6);
 
@@ -605,6 +606,73 @@ suite(testing.suiteName(), function() {
         assert(row.secret !== undefined);
         assert(row.etag !== undefined);
         assert.deepEqual(row.quarantine_until, nonStoppedIds[i] === 4 ? quarantineUntil : null);
+        i++;
+      }
+    });
+
+    helper.dbTest('get non-stopped workers with queue view timestamps ', async function(db) {
+      const now = new Date();
+
+      let i = 0;
+      // we are randomly ordering the ids to make sure rows are actually coming back ordered accordingly
+      const randomOrderIds = [4, 6, 5, 3, 2, 7, 0, 1];
+      for (let state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
+        await create_worker(db, {
+          worker_pool_id: `wp/${randomOrderIds[i]}`,
+          worker_group: `group${randomOrderIds[i]}`,
+          worker_id: `id${randomOrderIds[i]}`,
+          created: now,
+          last_modified: now,
+          last_checked: now,
+          expires: now,
+          state,
+        });
+        i++;
+      }
+
+      const quarantineUntil = fromNow('1 hour');
+      const firstClaim = fromNow('-1 hour');
+      const lastDateActive = fromNow('-1 minute');
+      await helper.withDbClient(async client => {
+        // worker 4 is quarantined, and worker 6 has the same workerGroup/workerId as a quarantined worker
+        // in another pool, and thus should not appear as quarantined here
+        for (const [workerPoolId, workerGroup, workerId] of [
+          ['wp/4', 'group4', 'id4'],
+          ['wp/6', 'group6', 'id6'],
+        ]) {
+          await client.query(`
+            insert
+            into queue_workers
+            (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim, last_date_active) values
+            ($1, $2, $3, jsonb_build_array(), $4, now() + interval '1 hour', $5, $6)
+          `, [workerPoolId, workerGroup, workerId, quarantineUntil, firstClaim, lastDateActive]);
+        }
+      });
+
+      const rows = await db.fns.get_non_stopped_workers_scanner(
+        null, null, null, null, null, null, null);
+
+      assert.equal(rows.length, 6);
+
+      i = 0;
+      const nonStoppedIds = [0, 2, 4, 5, 6, 7];
+      for (let row of rows) {
+        assert.equal(row.worker_pool_id, `wp/${nonStoppedIds[i]}`);
+        assert.equal(row.worker_group, `group${nonStoppedIds[i]}`);
+        assert.equal(row.worker_id, `id${nonStoppedIds[i]}`);
+        assert.equal(row.provider_id, 'provider');
+        assert(row.state !== 'stopped');
+        assert.equal(row.created.toJSON(), now.toJSON());
+        assert.equal(row.expires.toJSON(), now.toJSON());
+        assert.equal(row.last_modified.toJSON(), now.toJSON());
+        assert.equal(row.last_checked.toJSON(), now.toJSON());
+        assert.equal(row.capacity, 1);
+        assert.deepEqual(row.provider_data, { providerdata: true });
+        assert(row.secret !== undefined);
+        assert(row.etag !== undefined);
+        assert.deepEqual(row.quarantine_until, ['id4', 'id6'].includes(row.worker_id) ? quarantineUntil : null);
+        assert.equal(row.first_claim?.toJSON(), ['id4', 'id6'].includes(row.worker_id) ? firstClaim.toJSON() : undefined);
+        assert.equal(row.last_date_active?.toJSON(), ['id4', 'id6'].includes(row.worker_id) ? lastDateActive.toJSON() : undefined);
         i++;
       }
     });
@@ -640,7 +708,7 @@ suite(testing.suiteName(), function() {
       ];
 
       for (const run of testRuns) {
-        const rows = await db.fns.get_non_stopped_workers_quntil_providers(
+        const rows = await db.deprecatedFns.get_non_stopped_workers_quntil_providers(
           null, null, null, run.providers_filter_cond, run.providers_filter_value, null, null);
 
         assert.equal(rows.length, run.expected_count);

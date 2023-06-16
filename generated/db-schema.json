@@ -6622,6 +6622,24 @@
         }
       },
       "version": 86
+    },
+    {
+      "description": "add queue information to get_non_stopped_workers_quntil_providers",
+      "methods": {
+        "get_non_stopped_workers_quntil_providers": {
+          "deprecated": true
+        },
+        "get_non_stopped_workers_scanner": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.secret,\n    workers.etag,\n    queue_workers.quarantine_until,\n    queue_workers.first_claim,\n    queue_workers.last_date_active\n  from\n    workers\n    left join queue_workers on\n      workers.worker_pool_id = queue_workers.task_queue_id and\n      workers.worker_id = queue_workers.worker_id and\n      workers.worker_group = queue_workers.worker_group\n  where\n    (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and\n    (workers.worker_group = worker_group_in or worker_group_in is null) and\n    (workers.worker_id = worker_id_in or worker_id_in is null) and\n    (workers.state <> 'stopped') and\n    (providers_filter_cond is null or providers_filter_value is null or\n      case\n        when providers_filter_cond = '='\n          then workers.provider_id = ANY(string_to_array(providers_filter_value, ','))\n        when providers_filter_cond = '<>'\n          then workers.provider_id <> ALL(string_to_array(providers_filter_value, ','))\n      end\n      )\n  order by worker_pool_id, worker_group, worker_id\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get non-stopped workers filtered by the optional arguments,\nordered by `worker_pool_id`, `worker_group`, and  `worker_id`.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset `page_offset`.\nThe `quaratine_until` contains NULL or a date in the past if the\nworker is not quarantined, otherwise the date until which it is\nquaratined. `first_claim` and `last_date_active` contains information\nknown to the queue service about the worker.\n`providers_filter_cond` and `providers_filter_value` used to\nfilter `=` or `<>` provider by value.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid, quarantine_until timestamptz, first_claim timestamptz, last_date_active timestamptz)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 87
     }
   ]
 }

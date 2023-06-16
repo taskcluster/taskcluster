@@ -1088,6 +1088,12 @@ class AzureProvider extends Provider {
             }
           }
 
+          const { isZombie, reason } = Provider.isZombie({ worker });
+          if (isZombie) {
+            await this.removeWorker({ worker, reason });
+            break;
+          }
+
           // Call provisionResources to allow it to finish up gathering data about the
           // vm.  This becomes a no-op once all required operations are complete.
           await this.provisionResources({ worker, monitor });

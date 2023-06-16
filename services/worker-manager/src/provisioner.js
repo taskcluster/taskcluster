@@ -112,7 +112,7 @@ class Provisioner {
 
       // Check the state of workers (state is updated by worker-scanner)
       const fetch =
-        async (size, offset) => await this.db.fns.get_non_stopped_workers_quntil_providers(
+        async (size, offset) => await this.db.fns.get_non_stopped_workers_scanner(
           null, null, null, null, null, size, offset);
       for await (let row of paginatedIterator({ fetch })) {
         const worker = Worker.fromDb(row);

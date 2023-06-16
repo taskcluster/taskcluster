@@ -359,6 +359,10 @@ class AwsProvider extends Provider {
           await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
         }
       }
+      const { isZombie, reason } = Provider.isZombie({ worker });
+      if (isZombie) {
+        await this.removeWorker({ worker, reason });
+      }
     } catch (e) {
       if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
         throw e;
