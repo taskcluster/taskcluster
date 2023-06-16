@@ -4,7 +4,7 @@ package d2g_test
 
 import (
 	"encoding/json"
-	tcclient "github.com/taskcluster/taskcluster/v52/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v53/clients/client-go"
 )
 
 type (
@@ -111,7 +111,7 @@ type (
 		// Max length: 1024
 		Artifact string `json:"artifact"`
 
-		// The required SHA 256 of the content body.
+		// If provided, the required SHA256 of the content body.
 		//
 		// Since: generic-worker 10.8.0
 		//
@@ -379,6 +379,13 @@ type (
 		// Default:    true
 		LiveLog bool `json:"liveLog" default:"true"`
 
+		// Video loopback device created using v4l2loopback.
+		// A video device will be available to the task user
+		// at `/dev/video0`.
+		//
+		// Since: generic-worker 53.1.0
+		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
+
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
 		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
@@ -391,6 +398,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -507,6 +515,18 @@ type (
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
+	// Content originating from a task artifact that has been indexed by the Taskcluster Index Service.
+	//
+	// Since: generic-worker 51.0.0
+	IndexedContent struct {
+
+		// Max length: 1024
+		Artifact string `json:"artifact"`
+
+		// Max length: 255
+		Namespace string `json:"namespace"`
+	}
+
 	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	IndexedDockerImage struct {
 		Namespace string `json:"namespace"`
@@ -566,6 +586,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -629,7 +650,7 @@ type (
 	// Since: generic-worker 5.4.0
 	URLContent struct {
 
-		// The required SHA 256 of the content body.
+		// If provided, the required SHA256 of the content body.
 		//
 		// Since: generic-worker 10.8.0
 		//
@@ -654,6 +675,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content

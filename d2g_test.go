@@ -25,6 +25,10 @@ func ExampleScopes_mixture() {
 		"docker-worker:monkey",
 		"generic-worker:teapot",
 		"docker-worker:docker-worker:potato",
+		"docker-worker:capability:device:loopbackVideo",
+		"docker-worker:capability:device:loopbackVideo:",
+		"docker-worker:capability:device:loopbackVideo:x/y/z",
+		"docker-worker:capability:device:kvm:x/y/z",
 	}
 	gwScopes := d2g.Scopes(dwScopes)
 	for _, s := range gwScopes {
@@ -39,6 +43,10 @@ func ExampleScopes_mixture() {
 	// 	"generic-worker:monkey"
 	// 	"generic-worker:teapot"
 	// 	"generic-worker:docker-worker:potato"
+	// 	"generic-worker:loopback-video:*"
+	// 	"generic-worker:loopback-video:"
+	// 	"generic-worker:loopback-video:x/y/z"
+	// 	"generic-worker:capability:device:kvm:x/y/z"
 }
 
 // TestDataTestCases runs all the test cases found in directory testdata/testcases.

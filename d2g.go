@@ -33,17 +33,18 @@ type (
 // Scopes takes a slice of Docker Worker task scopes and returns a slice of
 // equivalent Generic Worker scopes. These scopes should be used together with
 // a converted Docker Worker task payload (see d2g.Convert function) to run
-// Docker Worker tasks under Generic Worker. The conversion is performed by
-// copying dwScopes into gwScopes, and then replacing `docker-worker:` with
-// `generic-worker:` (once) in gwScopes where it appears at the start of the
-// scope.
+// Docker Worker tasks under Generic Worker.
 func Scopes(dwScopes []string) (gwScopes []string) {
 	gwScopes = make([]string, len(dwScopes))
 	for i, s := range dwScopes {
-		switch strings.HasPrefix(s, "docker-worker:") {
-		case true:
+		switch true {
+		case s == "docker-worker:capability:device:loopbackVideo":
+			gwScopes[i] = "generic-worker:loopback-video:*"
+		case strings.HasPrefix(s, "docker-worker:capability:device:loopbackVideo:"):
+			gwScopes[i] = "generic-worker:loopback-video:" + s[len("docker-worker:capability:device:loopbackVideo:"):]
+		case strings.HasPrefix(s, "docker-worker:"):
 			gwScopes[i] = "generic-worker:" + s[len("docker-worker:"):]
-		case false:
+		default:
 			gwScopes[i] = s
 		}
 	}
@@ -260,6 +261,7 @@ func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generic
 	// need to keep TaskclusterProxy to true if it's already been enabled for IndexedDockerImages
 	gwPayload.Features.TaskclusterProxy = gwPayload.Features.TaskclusterProxy || dwPayload.Features.TaskclusterProxy
 	gwPayload.Features.Interactive = dwPayload.Features.Interactive
+	gwPayload.Features.LoopbackVideo = dwPayload.Capabilities.Devices.LoopbackVideo
 
 	switch dwPayload.Features.Artifacts {
 	case true:
@@ -339,6 +341,9 @@ func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs 
 	}
 	if dwPayload.Capabilities.Devices.HostSharedMemory {
 		volumeMounts.WriteString(" -v /dev/shm:/dev/shm")
+	}
+	if dwPayload.Capabilities.Devices.LoopbackVideo {
+		volumeMounts.WriteString(` -v "${TASKCLUSTER_VIDEO_DEVICE}:/dev/video0"`)
 	}
 	return volumeMounts.String()
 }

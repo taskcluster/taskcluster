@@ -5,7 +5,7 @@ package genericworker
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v52/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v53/clients/client-go"
 )
 
 type (
@@ -101,7 +101,7 @@ type (
 		// Max length: 1024
 		Artifact string `json:"artifact"`
 
-		// The required SHA 256 of the content body.
+		// If provided, the required SHA256 of the content body.
 		//
 		// Since: generic-worker 10.8.0
 		//
@@ -197,6 +197,13 @@ type (
 		// Default:    true
 		LiveLog bool `json:"liveLog" default:"true"`
 
+		// Video loopback device created using v4l2loopback.
+		// A video device will be available to the task user
+		// at `/dev/video0`.
+		//
+		// Since: generic-worker 53.1.0
+		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
+
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
 		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
@@ -209,6 +216,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -325,6 +333,18 @@ type (
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
+	// Content originating from a task artifact that has been indexed by the Taskcluster Index Service.
+	//
+	// Since: generic-worker 51.0.0
+	IndexedContent struct {
+
+		// Max length: 1024
+		Artifact string `json:"artifact"`
+
+		// Max length: 255
+		Namespace string `json:"namespace"`
+	}
+
 	// Configuration for task logs.
 	//
 	// Since: generic-worker 48.2.0
@@ -364,6 +384,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -393,7 +414,7 @@ type (
 	// Since: generic-worker 5.4.0
 	URLContent struct {
 
-		// The required SHA 256 of the content body.
+		// If provided, the required SHA256 of the content body.
 		//
 		// Since: generic-worker 10.8.0
 		//
@@ -418,6 +439,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -472,7 +494,7 @@ func JSONSchema() string {
               "type": "string"
             },
             "sha256": {
-              "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+              "description": "If provided, the required SHA256 of the content body.\n\nSince: generic-worker 10.8.0",
               "pattern": "^[a-f0-9]{64}$",
               "title": "SHA 256",
               "type": "string"
@@ -491,10 +513,30 @@ func JSONSchema() string {
         },
         {
           "additionalProperties": false,
+          "description": "Content originating from a task artifact that has been indexed by the Taskcluster Index Service.\n\nSince: generic-worker 51.0.0",
+          "properties": {
+            "artifact": {
+              "maxLength": 1024,
+              "type": "string"
+            },
+            "namespace": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          },
+          "required": [
+            "namespace",
+            "artifact"
+          ],
+          "title": "Indexed Content",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
           "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
           "properties": {
             "sha256": {
-              "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+              "description": "If provided, the required SHA256 of the content body.\n\nSince: generic-worker 10.8.0",
               "pattern": "^[a-f0-9]{64}$",
               "title": "SHA 256",
               "type": "string"
@@ -771,6 +813,11 @@ func JSONSchema() string {
           "default": true,
           "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
           "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
+          "type": "boolean"
+        },
+        "loopbackVideo": {
+          "description": "Video loopback device created using v4l2loopback.\nA video device will be available to the task user\nat ` + "`" + `/dev/video0` + "`" + `.\n\nSince: generic-worker 53.1.0",
+          "title": "Loopback Video device",
           "type": "boolean"
         },
         "taskclusterProxy": {

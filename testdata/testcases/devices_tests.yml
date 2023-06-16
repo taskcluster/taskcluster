@@ -52,3 +52,30 @@ testSuite:
               "TASK_ID=${TASK_ID}"
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
+
+    - name: Video Loopback
+      description: >-
+        Tests that loopbackVideo _capability_ in Docker Worker maps to Generic Worker _feature_ of the same name.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        capabilities:
+          devices:
+            loopbackVideo: true
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              podman run --rm
+              -v "${TASKCLUSTER_VIDEO_DEVICE}:/dev/video0"
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              ubuntu 'echo "Hello world"'
+        features:
+          loopbackVideo: true
+        maxRunTime: 3600
