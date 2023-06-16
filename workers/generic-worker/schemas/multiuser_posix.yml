@@ -261,6 +261,11 @@ properties:
           Ex. `loopbackVideoDeviceNumber: 1` will create
           `/dev/video1` for the task user.
 
+          This feature is only available on Linux. If a task
+          is submitted with this feature enabled on a non-Linux,
+          posix platform (FreeBSD, macOS), the task will resolve as
+          `exception/malformed-payload`.
+
           Since: generic-worker 53.1.0
   mounts:
     type: array
