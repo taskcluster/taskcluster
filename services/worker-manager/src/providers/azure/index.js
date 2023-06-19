@@ -301,7 +301,9 @@ class AzureProvider extends Provider {
       return; // Nothing to do
     }
 
-    const { terminateAfter, reregistrationTimeout } = Provider.interpretLifecycle(workerPool.config);
+    const {
+      terminateAfter, reregistrationTimeout, queueInactivityTimeout,
+    } = Provider.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -443,6 +445,7 @@ class AzureProvider extends Provider {
           ...providerData,
           terminateAfter,
           reregistrationTimeout,
+          queueInactivityTimeout,
         },
       });
       await worker.create(this.db);

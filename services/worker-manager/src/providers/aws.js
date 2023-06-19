@@ -105,7 +105,9 @@ class AwsProvider extends Provider {
       return; // Nothing to do
     }
 
-    const { terminateAfter, reregistrationTimeout } = Provider.interpretLifecycle(workerPool.config);
+    const {
+      terminateAfter, reregistrationTimeout, queueInactivityTimeout,
+    } = Provider.interpretLifecycle(workerPool.config);
 
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
@@ -260,6 +262,7 @@ class AwsProvider extends Provider {
             stateReason: i.StateReason.Message,
             terminateAfter,
             reregistrationTimeout,
+            queueInactivityTimeout,
             workerConfig: config.workerConfig || {},
           },
         });

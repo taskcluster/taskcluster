@@ -85,7 +85,7 @@ class Provider {
   }
 
   /**
-   * Workers that are being provisioned by worker manager are expected to:
+   * Spawned workers are expected to:
    * 1. Start (instance is running)
    * 2. Register (worker is registered with worker manager)
    * 3. Do work (call queue.claimWork/queue.reclaimTask)
@@ -96,29 +96,33 @@ class Provider {
    * `queue_worker.last_date_active` would not be updated.
    *
    * Workers that are registered, but don't have `first_claim`
-   * or `last_date_active` is older than inactivity timeout are considered to be zombies.
+   * or `last_date_active` is older than queueInactivityTimeout are considered to be zombies.
+   *
+   * Both `firstClaim` and `lastDateActive` are coming from queue service.
+   * Those get updated when worker calls queue methods.
    */
-  static isZombie({ worker, activityTimeout, createdTimeout }) {
-    activityTimeout = activityTimeout || 1000 * 60 * 60 * 2; // last active within 2 hours
-    createdTimeout = createdTimeout || 1000 * 60 * 60 * 1; // created at least 1 hour ago
+  static isZombie({ worker }) {
+    const queueInactivityTimeout = worker.providerData?.queueInactivityTimeout || 7200 * 1000;
 
-    const now = Date.now();
+    const lastActiveAfter = Date.now() - queueInactivityTimeout;
+    const isOlderThanTimeout = (date) => date?.getTime() < lastActiveAfter;
+
     let reason = null;
     let isZombie = false;
 
-    if (!worker.firstClaim && worker.created < now - createdTimeout) {
+    if (!worker.firstClaim && isOlderThanTimeout(worker.created)) {
       isZombie = true;
-      reason = `worker never claimed work, created=${worker.created}`;
+      reason = `worker never claimed work, created=${worker.created}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`;
     }
 
-    if (!worker.lastDateActive && worker.firstClaim < now - activityTimeout) {
+    if (!worker.lastDateActive && isOlderThanTimeout(worker.firstClaim)) {
       isZombie = true;
-      reason = `worker never reclaimed work, firstClaim=${worker.firstClaim}`;
+      reason = `worker never reclaimed work, firstClaim=${worker.firstClaim}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`;
     }
 
-    if (worker.lastDateActive < now - activityTimeout) {
+    if (isOlderThanTimeout(worker.lastDateActive)) {
       isZombie = true;
-      reason = `worker inactive, lastDateActive=${worker.lastDateActive}`;
+      reason = `worker inactive, lastDateActive=${worker.lastDateActive}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`;
     }
 
     return { reason, isZombie };
@@ -134,8 +138,11 @@ class Provider {
    * this is also set in the lifecycle schema so update there if
    * changing.
    */
-  static interpretLifecycle({ lifecycle: { registrationTimeout, reregistrationTimeout } = {} }) {
+  static interpretLifecycle({ lifecycle: {
+    registrationTimeout, reregistrationTimeout, queueInactivityTimeout,
+  } = {} }) {
     reregistrationTimeout = reregistrationTimeout || 345600;
+    queueInactivityTimeout = queueInactivityTimeout || 7200; // 2 hours by default
     let terminateAfter = null;
 
     if (registrationTimeout !== undefined && registrationTimeout < reregistrationTimeout) {
@@ -144,7 +151,11 @@ class Provider {
       terminateAfter = Date.now() + reregistrationTimeout * 1000;
     }
 
-    return { terminateAfter, reregistrationTimeout: reregistrationTimeout * 1000 };
+    return {
+      terminateAfter,
+      reregistrationTimeout: reregistrationTimeout * 1000,
+      queueInactivityTimeout: queueInactivityTimeout * 1000,
+    };
   }
 
   // Report an error concerning this worker pool.  This handles notifications and logging.

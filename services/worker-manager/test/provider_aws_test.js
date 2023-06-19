@@ -590,6 +590,74 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await provider.checkWorker({ worker: worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
     });
+
+    test('remove zombie workers with no queue activity', async function () {
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
+      const worker = Worker.fromApi({
+        ...workerInDB,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+          terminateAfter: Date.now() + 100000,
+          queueInactivityTimeout: 1,
+        },
+      });
+      await worker.create(helper.db);
+      provider.seen = {};
+
+      worker.firstClaim = null;
+      worker.lastDateActive = null;
+      worker.created = taskcluster.fromNow('-1 hour');
+      await provider.checkWorker({ worker });
+      assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
+    });
+    test('remove zombie workers that were not active recently', async function () {
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
+      const worker = Worker.fromApi({
+        ...workerInDB,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+          terminateAfter: Date.now() + 100000,
+          queueInactivityTimeout: 12000,
+        },
+      });
+      await worker.create(helper.db);
+      provider.seen = {};
+
+      worker.firstClaim = null;
+      worker.lastDateActive = null;
+      worker.created = taskcluster.fromNow('-120 minutes');
+      worker.firstClaim = taskcluster.fromNow('-110 minutes');
+      worker.lastDate = taskcluster.fromNow('-100 minutes');
+      await provider.checkWorker({ worker });
+      assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
+    });
+    test('don\'t remove zombie workers that were active recently', async function () {
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
+      const worker = Worker.fromApi({
+        ...workerInDB,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+          terminateAfter: Date.now() + 100000,
+          queueInactivityTimeout: 60 * 60 * 4 * 1000,
+        },
+      });
+      await worker.create(helper.db);
+      provider.seen = {};
+
+      worker.firstClaim = null;
+      worker.lastDateActive = null;
+      worker.created = taskcluster.fromNow('-120 minutes');
+      worker.firstClaim = taskcluster.fromNow('-110 minutes');
+      worker.lastDate = taskcluster.fromNow('-100 minutes');
+      await provider.checkWorker({ worker });
+      assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
+    });
   });
 
   suite('AWS provider - removeWorker', function() {

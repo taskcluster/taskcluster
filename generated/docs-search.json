@@ -2268,6 +2268,13 @@
     "title": "Worker-Manager - Worker Interaction"
   },
   {
+    "element": "h2",
+    "id": "queue-inactivity-timeout",
+    "path": "/reference/core/worker-manager/worker-interaction",
+    "subtitle": "Queue Inactivity Timeout",
+    "title": "Worker-Manager - Worker Interaction"
+  },
+  {
     "element": "h3",
     "id": "registration",
     "path": "/reference/core/worker-manager/worker-interaction",

@@ -112,7 +112,8 @@ Be sure to select the AWS provider that we created earlier.
 {
   "lifecycle": {
     "registrationTimeout": 1800,
-    "reregistrationTimeout": 345600
+    "reregistrationTimeout": 345600,
+    "queueInactivityTimeout": 7200
   },
   "maxCapacity": 5, # The maximum amount of capacity this pool may have.
   "minCapacity": 0, # The minimum amount of capacity this pool will have.

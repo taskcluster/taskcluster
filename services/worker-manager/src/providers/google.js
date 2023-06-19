@@ -210,7 +210,9 @@ class GoogleProvider extends Provider {
       return; // Nothing to do
     }
 
-    const { terminateAfter, reregistrationTimeout } = Provider.interpretLifecycle(workerPool.config);
+    const {
+      terminateAfter, reregistrationTimeout, queueInactivityTimeout,
+    } = Provider.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -337,6 +339,7 @@ class GoogleProvider extends Provider {
           },
           terminateAfter,
           reregistrationTimeout, // Record this for later reregistrations so that we can recalculate deadline
+          queueInactivityTimeout,
           workerConfig: cfg.workerConfig || {},
         },
       });

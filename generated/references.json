@@ -498,6 +498,13 @@
       "additionalProperties": false,
       "description": "Conditions a worker can reach and actions to take in the case that they do.\nNot all providers necessarily implement all features of this in the same way.\nRead the providers docs to understand exactly what it will do.\n",
       "properties": {
+        "queueInactivityTimeout": {
+          "default": 7200,
+          "description": "In order to prevent workers from being stuck without doing any work,\n`queueInactivityTimeout` controls how long a worker can do something other than\nworking on a task. If worker process dies, or it stops calling `claimWork`\nor `reclaimTask` it should be considered dead and terminated.\n\nMinimum allowed value is 10 minutes, to give worker chance to start claiming tasks.\n\nThis timeout has no affect quarantined workers,\nas they are still calling `claimWork`.\nStatic workers are also unaffected.\n",
+          "minimum": 600,
+          "title": "Claim Timeout",
+          "type": "integer"
+        },
         "registrationTimeout": {
           "description": "Each worker in this pool has `registrationTimeout` seconds to\nregister itself with worker-manager after it has\nbeen requsted from the cloud provider. After this\ntimeout, worker-manager will terminate the instance,\nassuming it is broken.\n\nThis parameter has no effect for worker pools using the static provider\ntype.\n",
           "title": "Registration Timeout",
