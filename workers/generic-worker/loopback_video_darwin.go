@@ -6,10 +6,10 @@ import (
 	"fmt"
 )
 
-func setupVideoDevice(task *TaskRun) *CommandExecutionError {
+func (lvt *LoopbackVideoTask) setupVideoDevice() *CommandExecutionError {
 	return executionError(malformedPayload, errored, fmt.Errorf("Loopback video device is not supported on macOS"))
 }
 
-func resetVideoDevice() *CommandExecutionError {
+func (lvt *LoopbackVideoTask) resetVideoDevice() *CommandExecutionError {
 	return nil
 }

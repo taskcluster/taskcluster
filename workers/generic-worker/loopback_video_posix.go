@@ -3,6 +3,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/taskcluster/taskcluster/v53/internal/scopes"
 )
 
@@ -27,12 +29,14 @@ func (feature *LoopbackVideoFeature) IsEnabled(task *TaskRun) bool {
 
 func (feature *LoopbackVideoFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &LoopbackVideoTask{
-		task: task,
+		task:       task,
+		devicePath: fmt.Sprintf("/dev/video%d", config.LoopbackVideoDeviceNumber),
 	}
 }
 
 type LoopbackVideoTask struct {
-	task *TaskRun
+	task       *TaskRun
+	devicePath string
 }
 
 func (lvt *LoopbackVideoTask) RequiredScopes() scopes.Required {
@@ -47,9 +51,9 @@ func (lvt *LoopbackVideoTask) ReservedArtifacts() []string {
 }
 
 func (lvt *LoopbackVideoTask) Start() *CommandExecutionError {
-	return setupVideoDevice(lvt.task)
+	return lvt.setupVideoDevice()
 }
 
 func (lvt *LoopbackVideoTask) Stop(err *ExecutionErrors) {
-	err.add(resetVideoDevice())
+	err.add(lvt.resetVideoDevice())
 }

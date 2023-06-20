@@ -22,5 +22,7 @@ func TestLoopbackVideoReturnsMalformedPayload(t *testing.T) {
 	td := testTask(t)
 	td.Scopes = append(td.Scopes, "generic-worker:loopback-video:freebsd/loopback-video")
 
+	// This test is expected to fail with malformed payload
+	// because loopback video is not supported on FreeBSD
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 }
