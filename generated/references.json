@@ -500,8 +500,8 @@
       "properties": {
         "queueInactivityTimeout": {
           "default": 7200,
-          "description": "In order to prevent workers from being stuck without doing any work,\n`queueInactivityTimeout` controls how long a worker can do something other than\nworking on a task. If worker process dies, or it stops calling `claimWork`\nor `reclaimTask` it should be considered dead and terminated.\n\nMinimum allowed value is 10 minutes, to give worker chance to start claiming tasks.\n\nThis timeout has no affect quarantined workers,\nas they are still calling `claimWork`.\nStatic workers are also unaffected.\n",
-          "minimum": 600,
+          "description": "In order to prevent workers from being stuck without doing any work,\n`queueInactivityTimeout` controls how long a worker can do something other than\nworking on a task. If worker process dies, or it stops calling `claimWork`\nor `reclaimTask` it should be considered dead and terminated.\n\nMinimum allowed value is 30 minutes, to prevent workers from being terminated\nwhile they are starting up or rebooting between the tasks.\n\nThis timeout has no affect quarantined workers,\nas they are still calling `claimWork`.\nStatic workers are also unaffected.\n",
+          "minimum": 1800,
           "title": "Queue Inactivity Timeout",
           "type": "integer"
         },

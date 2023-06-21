@@ -33,7 +33,7 @@ properties:
   queueInactivityTimeout:
     title: Queue Inactivity Timeout
     type: integer
-    minimum: 600 # 10 minutes
+    minimum: 1800 # 30 minutes
     default: 7200 # 2 hours
     description: |
       In order to prevent workers from being stuck without doing any work,
@@ -41,7 +41,8 @@ properties:
       working on a task. If worker process dies, or it stops calling `claimWork`
       or `reclaimTask` it should be considered dead and terminated.
 
-      Minimum allowed value is 10 minutes, to give worker chance to start claiming tasks.
+      Minimum allowed value is 30 minutes, to prevent workers from being terminated
+      while they are starting up or rebooting between the tasks.
 
       This timeout has no affect quarantined workers,
       as they are still calling `claimWork`.
