@@ -64,8 +64,8 @@ To make sure that spawned workers are not stuck in a "zombie" state, the worker-
 to see if there was any recent activity from a given worker.
 
 Unfortunately, it is not always possible to handle critical errors gracefully on a worker itself. For example,
-if worker process is being terminated with out of memory error, it is not possible to catch it and report it to the worker-manager.
-Also, when image is not configured properly, worker might be able to start and register, but would fail to call `queue.claimWork`.
+if worker process is being terminated with an out of memory error, it is not possible to catch it and report it to the worker-manager.
+Also, when an image is not configured properly, the worker might be able to start and register, but would fail to call `queue.claimWork`.
 
 In such cases, worker-manager will give `lifecycle.queueInactivityTimeout` seconds to a worker before it is going to be terminated.
 

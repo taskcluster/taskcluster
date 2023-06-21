@@ -31,7 +31,7 @@ properties:
       temporary credentials granted to the worker, meaning that it must be
       less than 30 days. The default value is 4 days.
   queueInactivityTimeout:
-    title: Claim Timeout
+    title: Queue Inactivity Timeout
     type: integer
     minimum: 600 # 10 minutes
     default: 7200 # 2 hours

@@ -85,7 +85,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   suite('isZombie', function() {
-    test('default claim timeout', function() {
+    test('default queue inactivity timeout', function() {
       Date.now = oldnow;
       const worker = Worker.fromApi({});
       worker.created = taskcluster.fromNow('-4 hours');
