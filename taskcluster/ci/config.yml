@@ -16,11 +16,6 @@ workers:
       os: linux
       implementation: docker-worker
       worker-type: ci
-    dw-ci:
-      provisioner: proj-taskcluster
-      os: linux
-      implementation: docker-worker
-      worker-type: dw-ci
     release:
       provisioner: proj-taskcluster
       os: linux
