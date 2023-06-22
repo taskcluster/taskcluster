@@ -1,8 +1,9 @@
 package d2g
 
 import (
-	"github.com/taskcluster/d2g/genericworker"
 	"github.com/taskcluster/shell"
+
+	"github.com/taskcluster/taskcluster/v53/tools/d2g/genericworker"
 )
 
 func (din *DockerImageName) PrepareCommands() []string {
