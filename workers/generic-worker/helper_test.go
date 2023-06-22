@@ -595,8 +595,12 @@ func getArtifactContentWithResponses(t *testing.T, taskID string, artifact strin
 	tr := &http.Transport{
 		DisableCompression: true,
 	}
+	req, err := http.NewRequest("GET", url.String(), nil)
+	if err != nil {
+		t.Fatalf("Error creating GET request for url %v", url)
+	}
 	client := &http.Client{Transport: tr}
-	rawResp, _, err := httpbackoff.ClientGet(client, url.String())
+	rawResp, _, err := httpbackoff.ClientDo(client, req)
 	if err != nil {
 		t.Fatalf("Error trying to fetch decompressed artifact from signed URL %s ...\n%s", url.String(), err)
 	}
