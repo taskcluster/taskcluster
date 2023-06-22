@@ -161,7 +161,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				Type:            "file",
 				Name:            "public/_/X.txt",
 				ContentType:     "text/plain; charset=utf-8",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 			},
 			{
 				Expires:         inAnHour,
@@ -169,7 +169,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				Type:            "file",
 				Name:            "public/b/c/d.jpg",
 				ContentType:     "image/jpeg",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 			},
 			{
 				Expires:         inAnHour,
@@ -206,7 +206,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "image/jpeg",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&artifacts.S3Artifact{
@@ -215,7 +215,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "text/plain; charset=utf-8",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
@@ -224,7 +224,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "image/jpeg",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&artifacts.S3Artifact{
@@ -289,7 +289,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "image/jpeg",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
@@ -337,7 +337,7 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "text/plain; charset=utf-8",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
@@ -356,7 +356,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				Type:            "directory",
 				Name:            "public/b/c",
 				ContentType:     "text/plain; charset=utf-8",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 			},
 			{
 				Expires:         inAnHour,
@@ -376,7 +376,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "text/plain; charset=utf-8",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "%%%", "v", "X"),
 			},
 			&artifacts.S3Artifact{
@@ -385,7 +385,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "text/plain; charset=utf-8",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
@@ -394,7 +394,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "text/plain; charset=utf-8",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&artifacts.S3Artifact{
@@ -469,7 +469,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "image/jpeg",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
@@ -576,7 +576,7 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "image/jpeg",
-				ContentEncoding: "",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		},
