@@ -1,0 +1,35 @@
+---
+testSuite:
+  name: No artifacts test
+  description: Test that no artifacts will be created if disabled in the docker worker payload.
+  tests:
+    - name: No artifacts test
+      description: >-
+        If artifacts are disabled in the docker worker payload, no artifacts should be created
+        in the resulting generic worker task payload.
+      dockerWorkerTaskPayload:
+        artifacts:
+          public/fred:
+            type: directory
+            path: /home/worker/artifacts/fred
+        command:
+          - echo "Hello world"
+        features:
+          artifacts: false
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              podman run --rm
+              -e "RUN_ID=${RUN_ID}" -e
+              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
+              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
+              "TASK_ID=${TASK_ID}"
+              ubuntu 'echo "Hello world"'
+        features:
+          backingLog: false
+          liveLog: false
+        maxRunTime: 3600

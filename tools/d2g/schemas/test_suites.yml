@@ -1,0 +1,68 @@
+"$schema": 'http://json-schema.org/draft-06/schema#'
+"$id": 'schemas/test_suites.json#'
+title: d2g test cases
+description: |-
+  Static d2g input/output test cases. Contains pairs of Docker Worker payload
+  (inputs) and Generic Worker expected payload (outputs).
+type: object
+required:
+- testSuite
+additionalProperties: false
+properties:
+  testSuite:
+    title: Test Suite
+    description: |-
+      A suite of tests for a particular d2g feature or set of features
+    type: object
+    required:
+      - name
+      - description
+      - tests
+    additionalProperties: false
+    properties:
+      name:
+        title: Test Suite Name
+        description: |-
+          Name for the test suite
+        type: string
+      description:
+        title: Test Suite Description
+        description: |-
+          Detailed information about what the test cases do and do not test
+        type: string
+      tests:
+        title: Test cases
+        description: |-
+          The test cases which this test suite contains
+        type: array
+        minItems: 1
+        items:
+          title: Test case
+          description: |-
+            A test case contains a static input Docker Worker task payload, and an
+            expected Generic Worker task payload output. The Docker Worker task payload
+            is converted by d2g to a Generic Worker task payload. The test is successful
+            if the generated Generic Worker task payload exactly matches the Generic
+            Worker task payload in the test case.
+          type: object
+          required:
+            - name
+            - description
+            - dockerWorkerTaskPayload
+            - genericWorkerTaskPayload
+          additionalProperties: false
+          properties:
+            name:
+              title: Test Case Name
+              description: |-
+                Name for the test case
+              type: string
+            description:
+              title: Test Case Description
+              description: |-
+                Detailed information about what the test case tests
+              type: string
+            dockerWorkerTaskPayload:
+              "$ref": "file://schemas/docker_worker_payload.json#"
+            genericWorkerTaskPayload:
+              "$ref": "file://schemas/generic_worker_payload.json#"
