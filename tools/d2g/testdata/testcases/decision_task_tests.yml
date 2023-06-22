@@ -35,7 +35,7 @@ testSuite:
             --base-repository="$GECKO_BASE_REPOSITORY"
             --base-rev="$GECKO_BASE_REV"
             --head-repository="$GECKO_HEAD_REPOSITORY"
-            --head-ref="$GECKO_HEAD_REF" --head-rev="$GECKO_HEAD_REV" 
+            --head-ref="$GECKO_HEAD_REF" --head-rev="$GECKO_HEAD_REV"
         env:
           GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified'
           GECKO_BASE_REV: 330c69218a931b3504d44c867539ed6083521be5
@@ -108,7 +108,7 @@ testSuite:
               --base-repository="$GECKO_BASE_REPOSITORY"
               --base-rev="$GECKO_BASE_REV"
               --head-repository="$GECKO_HEAD_REPOSITORY"
-              --head-ref="$GECKO_HEAD_REF" --head-rev="$GECKO_HEAD_REV" 
+              --head-ref="$GECKO_HEAD_REF" --head-rev="$GECKO_HEAD_REV"
 
               '
 
