@@ -599,6 +599,7 @@ func getArtifactContentWithResponses(t *testing.T, taskID string, artifact strin
 	if err != nil {
 		t.Fatalf("Error creating GET request for url %v", url)
 	}
+	req.Header.Set("Accept-Encoding", "*")
 	client := &http.Client{Transport: tr}
 	rawResp, _, err := httpbackoff.ClientDo(client, req)
 	if err != nil {
