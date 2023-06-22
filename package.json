@@ -155,7 +155,7 @@
     "nock": "13.3.0",
     "open-editor": "^3.0.0",
     "qlobber": "^5.0.3",
-    "semver": "^7.5.1",
+    "semver": "^7.5.2",
     "sinon": "^13.0.0",
     "snake-case": "^3.0.3",
     "taskcluster-lib-testing": "link:libraries/testing",
