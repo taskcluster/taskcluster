@@ -184,7 +184,7 @@ tasks:
                               -e "TASKCLUSTER_ROOT_URL=$${TASKCLUSTER_ROOT_URL}" \
                               -e "TASKCLUSTER_WORKER_LOCATION=$${TASKCLUSTER_WORKER_LOCATION}" \
                               -e "TASK_ID=$${TASK_ID}" \
-                              "mozillareleases/taskgraph:decision-8af16934fd68303cebf9735705515cb48df542d251c04e921c7ac50564faac32@sha256:2965f42c2e91fc66ae7bd27d5dff88297225a90d04ebc6de23c538e3933d4049" \
+                              "mozillareleases/taskgraph:decision-f19bfa3ae9dbc19190149445bfc38ad966b713336e44342c7643b3f7f1e0b023@sha256:ddcc7348db272885e8ea32825f698bfafa4727401099531cd8239d3d458b39aa" \
                               run-task \
                                   --taskcluster-checkout=/builds/worker/checkouts/src \
                                   --task-cwd=/builds/worker/checkouts/src \

@@ -27,7 +27,7 @@ set -ex
 apt-get update
 apt-get install -y curl ca-certificates gnupg
 curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 apt-get update
 apt-get install -y postgresql-$pg_version
 
@@ -48,8 +48,8 @@ echo 'host all all ::1/128 trust' >> /etc/postgresql/$pg_version/main/pg_hba.con
 EOF
 
 cat > ${tmpdir}/Dockerfile <<EOF
-FROM golang:${go_version}-buster as golang
-FROM node:${node_version}-buster
+FROM golang:${go_version}-bookworm as golang
+FROM node:${node_version}-bookworm
 COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=golang /go /go
 ENV GOPATH /go

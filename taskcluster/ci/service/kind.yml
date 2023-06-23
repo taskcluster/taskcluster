@@ -2,30 +2,29 @@
 loader: src.loader:services_and_libraries_loader
 
 transforms:
-  - src.transforms:taskcluster_images
+  - src.transforms:taskcluster_image_versions
   - src.transforms:add_task_env
+  - src.transforms:podman_run
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
 workspace: services
 
 task-defaults:
-  worker-type: ci
+  worker-type: gw-ubuntu-22-04
   run:
     using: bare
-    install: yarn --frozen-lockfile
   scopes:
     - secrets:get:project/taskcluster/testing/azure
     - secrets:get:project/taskcluster/testing/taskcluster-*
-    - docker-worker:cache:taskcluster-test-*
   worker:
     taskcluster-proxy: true
     artifacts:
       - name: public
-        path: /taskcluster/artifacts
+        path: artifact0
         type: directory
     max-run-time: 600
-    docker-image: {taskcluster: 'ci-image'}
     env:
       # temporary for https://github.com/taskcluster/taskcluster/issues/3665
       DEBUG: 'base:app'
+  docker-image: taskcluster/ci-image:node{node_version}-pg{pg_version}-go{go_version}
