@@ -564,7 +564,13 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifactName, requiredSubstring, string(b))
 			}
 		}
-		if actualContentEncoding := rawResp.Header.Get("Content-Encoding"); actualContentEncoding != expected.ContentEncoding {
+		actualContentEncoding := rawResp.Header.Get("Content-Encoding")
+		if actualContentEncoding == "" {
+			// GCS only sends content-encoding header when its not identity
+			// x-goog-stored-content-encoding should always be present
+			actualContentEncoding = rawResp.Header.Get("x-goog-stored-content-encoding")
+		}
+		if actualContentEncoding != expected.ContentEncoding {
 			t.Errorf("Expected Content-Encoding %q but got Content-Encoding %q for artifact %q from url %v", expected.ContentEncoding, actualContentEncoding, artifactName, url)
 		}
 		if actualContentType := resp.Header.Get("Content-Type"); actualContentType != expected.ContentType {
