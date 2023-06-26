@@ -3,6 +3,29 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v53.2.0
+
+### GENERAL
+
+▶ [minor]
+Migrate [d2g](https://github.com/taskcluster/d2g) to `tools/d2g`.
+
+▶ [patch]
+Stop running docker-worker tests in the CI.
+
+The tests will remain in the monorepo because we'll look into using them with generic worker once d2g is integrated.
+
+▶ [patch]
+Upgrade Node.js version to 18.16.1 (security release).
+
+More information can be found [here](https://nodejs.org/en/blog/vulnerability/june-2023-security-releases).
+
+### ADMINS
+
+▶ [minor] [#6142](https://github.com/taskcluster/taskcluster/issues/6142)
+Worker manager stops instances that are not active in queue after short timeout.
+This is to prevent instances from running when worker fails to start claiming work or dies and does not reclaims task.
+
 ## v53.1.0
 
 ### USERS
