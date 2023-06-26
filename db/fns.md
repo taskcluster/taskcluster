@@ -153,7 +153,7 @@
    * [`expire_worker_pool_errors`](#expire_worker_pool_errors)
    * [`expire_worker_pools`](#expire_worker_pools)
    * [`expire_workers`](#expire_workers)
-   * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
+   * [`get_non_stopped_workers_scanner`](#get_non_stopped_workers_scanner)
    * [`get_queue_worker_with_wm_join_2`](#get_queue_worker_with_wm_join_2)
    * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
    * [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
@@ -2501,7 +2501,7 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`expire_worker_pool_errors`](#expire_worker_pool_errors)
 * [`expire_worker_pools`](#expire_worker_pools)
 * [`expire_workers`](#expire_workers)
-* [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
+* [`get_non_stopped_workers_scanner`](#get_non_stopped_workers_scanner)
 * [`get_queue_worker_with_wm_join_2`](#get_queue_worker_with_wm_join_2)
 * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
 * [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
@@ -2641,7 +2641,7 @@ no previous_provider_ids.  Returns the worker pool ids that it deletes.
 Expire workers that come before `expires_in`.
 Returns a count of rows that have been deleted.
 
-### get_non_stopped_workers_quntil_providers
+### get_non_stopped_workers_scanner
 
 * *Mode*: read
 * *Arguments*:
@@ -2667,7 +2667,9 @@ Returns a count of rows that have been deleted.
   * `secret jsonb`
   * `etag uuid`
   * `quarantine_until timestamptz`
-* *Last defined on version*: 71
+  * `first_claim timestamptz`
+  * `last_date_active timestamptz`
+* *Last defined on version*: 87
 
 Get non-stopped workers filtered by the optional arguments,
 ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
@@ -2675,7 +2677,9 @@ If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset `page_offset`.
 The `quaratine_until` contains NULL or a date in the past if the
 worker is not quarantined, otherwise the date until which it is
-quaratined. `providers_filter_cond` and `providers_filter_value` used to
+quaratined. `first_claim` and `last_date_active` contains information
+known to the queue service about the worker.
+`providers_filter_cond` and `providers_filter_value` used to
 filter `=` or `<>` provider by value.
 
 ### get_queue_worker_with_wm_join_2
@@ -3088,3 +3092,7 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
+
+### deprecated methods
+
+* `get_non_stopped_workers_quntil_providers(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v55.0.0)

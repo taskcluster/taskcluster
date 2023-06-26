@@ -210,7 +210,9 @@ class GoogleProvider extends Provider {
       return; // Nothing to do
     }
 
-    const { terminateAfter, reregistrationTimeout } = Provider.interpretLifecycle(workerPool.config);
+    const {
+      terminateAfter, reregistrationTimeout, queueInactivityTimeout,
+    } = Provider.interpretLifecycle(workerPool.config);
 
     const cfgs = [];
     while (toSpawn > 0) {
@@ -337,6 +339,7 @@ class GoogleProvider extends Provider {
           },
           terminateAfter,
           reregistrationTimeout, // Record this for later reregistrations so that we can recalculate deadline
+          queueInactivityTimeout,
           workerConfig: cfg.workerConfig || {},
         },
       });
@@ -382,6 +385,10 @@ class GoogleProvider extends Provider {
             await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
           }
         }
+        const { isZombie, reason } = Provider.isZombie({ worker });
+        if (isZombie) {
+          await this.removeWorker({ worker, reason });
+        }
       } else if (['TERMINATED', 'STOPPED'].includes(status)) {
         await this._enqueue('query', () => this.compute.instances.delete({
           project: worker.providerData.project,
@@ -402,7 +409,7 @@ class GoogleProvider extends Provider {
       monitor.debug(`instance status not found`);
       if (worker.providerData.operation) {
         // We only check in on the operation if the worker failed to
-        // start succesfully
+        // start successfully
         if (await this.handleOperation({
           op: worker.providerData.operation,
           errors: this.errors[worker.workerPoolId],

@@ -1,8 +1,9 @@
 const assert = require('assert');
 const helper = require('./helper');
 const { Provider } = require('../src/providers/provider');
+const taskcluster = require('taskcluster-client');
 const testing = require('taskcluster-lib-testing');
-const { WorkerPool, WorkerPoolError } = require('../src/data');
+const { WorkerPool, WorkerPoolError, Worker } = require('../src/data');
 const { LEVELS } = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
@@ -25,46 +26,117 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     Date.now = oldnow;
   });
 
-  test('no lifecycle', async function() {
-    assert.equal(345600100, Provider.interpretLifecycle({}).terminateAfter);
+  suite('interpretLifecycle', function() {
+    test('no lifecycle', async function() {
+      assert.equal(345600100, Provider.interpretLifecycle({}).terminateAfter);
+    });
+
+    test('empty lifecycle', async function() {
+      assert.equal(345600100, Provider.interpretLifecycle({ lifecycle: {} }).terminateAfter);
+    });
+
+    test('no queueInactivityTimeout', async function () {
+      assert.equal(7200000, Provider.interpretLifecycle({}).queueInactivityTimeout);
+    });
+
+    test('only queueInactivityTimeout', async function () {
+      assert.equal(4000, Provider.interpretLifecycle({
+        lifecycle: { queueInactivityTimeout: 4 } }).queueInactivityTimeout);
+    });
+
+    test('only registrationTimeout', async function() {
+      assert.deepEqual({
+        terminateAfter: 10100,
+        reregistrationTimeout: 345600000,
+        queueInactivityTimeout: 7200000,
+      }, Provider.interpretLifecycle({ lifecycle: { registrationTimeout: 10 } }));
+    });
+
+    test('only reregistrationTimeout', async function() {
+      assert.deepEqual({
+        terminateAfter: 10100,
+        reregistrationTimeout: 10000,
+        queueInactivityTimeout: 7200000,
+      }, Provider.interpretLifecycle({ lifecycle: { reregistrationTimeout: 10 } }));
+    });
+
+    test('greater registrationTimeout', async function() {
+      assert.deepEqual({
+        terminateAfter: 10100,
+        reregistrationTimeout: 10000,
+        queueInactivityTimeout: 5000,
+      }, Provider.interpretLifecycle({ lifecycle: {
+        registrationTimeout: 100,
+        reregistrationTimeout: 10,
+        queueInactivityTimeout: 5,
+      } }));
+    });
+
+    test('greater reregistrationTimeout', async function() {
+      assert.deepEqual({
+        terminateAfter: 10100,
+        reregistrationTimeout: 100000,
+        queueInactivityTimeout: 7200000,
+      }, Provider.interpretLifecycle({ lifecycle: {
+        registrationTimeout: 10,
+        reregistrationTimeout: 100,
+      } }));
+    });
   });
 
-  test('empty lifecycle', async function() {
-    assert.equal(345600100, Provider.interpretLifecycle({ lifecycle: {} }).terminateAfter);
-  });
-
-  test('only registrationTimeout', async function() {
-    assert.deepEqual({
-      terminateAfter: 10100,
-      reregistrationTimeout: 345600000,
-    }, Provider.interpretLifecycle({ lifecycle: { registrationTimeout: 10 } }));
-  });
-
-  test('only reregistrationTimeout', async function() {
-    assert.deepEqual({
-      terminateAfter: 10100,
-      reregistrationTimeout: 10000,
-    }, Provider.interpretLifecycle({ lifecycle: { reregistrationTimeout: 10 } }));
-  });
-
-  test('greater registrationTimeout', async function() {
-    assert.deepEqual({
-      terminateAfter: 10100,
-      reregistrationTimeout: 10000,
-    }, Provider.interpretLifecycle({ lifecycle: {
-      registrationTimeout: 100,
-      reregistrationTimeout: 10,
-    } }));
-  });
-
-  test('greater reregistrationTimeout', async function() {
-    assert.deepEqual({
-      terminateAfter: 10100,
-      reregistrationTimeout: 100000,
-    }, Provider.interpretLifecycle({ lifecycle: {
-      registrationTimeout: 10,
-      reregistrationTimeout: 100,
-    } }));
+  suite('isZombie', function() {
+    test('default queue inactivity timeout', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({});
+      worker.created = taskcluster.fromNow('-4 hours');
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, true);
+      assert.match(res.reason, /queueInactivityTimeout=7200s/);
+    });
+    test('no firstClaim', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({});
+      worker.created = taskcluster.fromNow('-4 hours');
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, true);
+      assert.match(res.reason, /worker never claimed work/);
+    });
+    test('no lastDateActive', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({});
+      worker.created = taskcluster.fromNow('-4 hours');
+      worker.firstClaim = taskcluster.fromNow('-4 hours');
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, true);
+      assert.match(res.reason, /worker never reclaimed work/);
+    });
+    test('not active within queueInactivityTimeout', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({
+        providerData: {
+          queueInactivityTimeout: 1,
+        },
+      });
+      worker.created = taskcluster.fromNow('-5 minutes');
+      worker.firstClaim = taskcluster.fromNow('-4 minutes');
+      worker.lastDateActive = taskcluster.fromNow('-3 minutes');
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, true);
+      assert.match(res.reason, /worker inactive/);
+    });
+    test('not a zombie', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({
+        providerData: {
+          queueInactivityTimeout: 60 * 60 * 24 * 1000,
+        },
+      });
+      worker.created = taskcluster.fromNow('-5 minutes');
+      worker.firstClaim = taskcluster.fromNow('-4 minutes');
+      worker.lastdDateActive = taskcluster.fromNow('-3 minutes');
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, false);
+    });
   });
 
   suite('reportError', function() {

@@ -54,7 +54,7 @@ class WorkerScanner {
     this.monitor.info(`WorkerScanner providers filter: ${this.providersFilter.cond} ${this.providersFilter.value}`);
 
     const fetch =
-      async (size, offset) => await this.db.fns.get_non_stopped_workers_quntil_providers(
+      async (size, offset) => await this.db.fns.get_non_stopped_workers_scanner(
         null, null, null, this.providersFilter.cond, this.providersFilter.value, size, offset);
     for await (let row of paginatedIterator({ fetch, size: 500 })) {
       const worker = Worker.fromDb(row);

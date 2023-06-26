@@ -105,7 +105,9 @@ class AwsProvider extends Provider {
       return; // Nothing to do
     }
 
-    const { terminateAfter, reregistrationTimeout } = Provider.interpretLifecycle(workerPool.config);
+    const {
+      terminateAfter, reregistrationTimeout, queueInactivityTimeout,
+    } = Provider.interpretLifecycle(workerPool.config);
 
     const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
     const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
@@ -260,6 +262,7 @@ class AwsProvider extends Provider {
             stateReason: i.StateReason.Message,
             terminateAfter,
             reregistrationTimeout,
+            queueInactivityTimeout,
             workerConfig: config.workerConfig || {},
           },
         });
@@ -358,6 +361,10 @@ class AwsProvider extends Provider {
         if (worker.providerData.terminateAfter < Date.now()) {
           await this.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
         }
+      }
+      const { isZombie, reason } = Provider.isZombie({ worker });
+      if (isZombie) {
+        await this.removeWorker({ worker, reason });
       }
     } catch (e) {
       if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too

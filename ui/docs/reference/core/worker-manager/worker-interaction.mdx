@@ -58,6 +58,22 @@ The expiration time of the new credentials comes from the worker pool configurat
 which gets set when calling [`workerManager.registerWorker`](/docs/reference/core/worker-manager/api#registerWorker).
 The default behavior, when `reregistrationTimeout` is omitted, is to extend the credentials by 96 hours.
 
+## Queue Inactivity Timeout
+
+To make sure that spawned workers are not stuck in a "zombie" state, the worker-manager will check with queue service
+to see if there was any recent activity from a given worker.
+
+Unfortunately, it is not always possible to handle critical errors gracefully on a worker itself. For example,
+if worker process is being terminated with an out of memory error, it is not possible to catch it and report it to the worker-manager.
+Also, when an image is not configured properly, the worker might be able to start and register, but would fail to call `queue.claimWork`.
+
+In such cases, worker-manager will give `lifecycle.queueInactivityTimeout` seconds to a worker before it is going to be terminated.
+
+Queue service keeps track of worker interactions and stores internally a timestamp when worker first claimed work and
+when it was last active. That information is being used by worker manager to determine if worker is still active or not.
+
+Static workers and quarantines workers are not affected by this timeout.
+
 ## Worker Configuration
 
 Worker images and hosts should generally be kept as generic as possible, with configuration provided via the worker-manager.

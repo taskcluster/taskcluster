@@ -30,5 +30,22 @@ properties:
       will be terminated.  This value also dictates the lifetime of the
       temporary credentials granted to the worker, meaning that it must be
       less than 30 days. The default value is 4 days.
+  queueInactivityTimeout:
+    title: Queue Inactivity Timeout
+    type: integer
+    minimum: 60 # 1 minute
+    default: 7200 # 2 hours
+    description: |
+      In order to prevent workers from being stuck without doing any work,
+      `queueInactivityTimeout` controls how long a worker can do something other than
+      working on a task. If worker process dies, or it stops calling `claimWork`
+      or `reclaimTask` it should be considered dead and terminated.
+
+      Minimum allowed value is 1 minute, to prevent workers from being terminated
+      while they are starting up or rebooting between the tasks.
+
+      This timeout has no affect quarantined workers,
+      as they are still calling `claimWork`.
+      Static workers are also unaffected.
 additionalProperties: false
 required: []
