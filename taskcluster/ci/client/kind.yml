@@ -57,16 +57,6 @@ tasks:
         {{ Xvfb :99 -screen 0 640x480x8 -nolisten tcp & }} &&
         sleep 2 &&
         CHROME_BIN=firefox DISPLAY=:99 yarn test
-  py37:
-    description: python3.7 client tests
-    docker-image: python:3.7
-    run:
-      command: >-
-        eval $(python test/client-library-secrets.py) &&
-        cd clients/client-py &&
-        python3 -mvenv /sandbox &&
-        /sandbox/bin/pip install tox &&
-        TOXENV=py37 /sandbox/bin/tox
   py38:
     description: python3.8 client tests
     docker-image: python:3.8
