@@ -23,6 +23,14 @@ module.exports = {
     TRIGGER_HOOK_WITH_TOKEN: 'triggerHookWithToken',
     PULSE_MESSAGE: 'pulseMessage',
   },
+  HookTaskState: {
+    UNSCHEDULED: 'unscheduled',
+    PENDING: 'pending',
+    RUNNING: 'running',
+    COMPLETED: 'completed',
+    FAILED: 'failed',
+    EXCEPTION: 'exception',
+  },
   Hook: {
     status({ hookGroupId, hookId }, args, { loaders }) {
       return loaders.hookStatus.load({ hookGroupId, hookId });

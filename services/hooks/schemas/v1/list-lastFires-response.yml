@@ -38,6 +38,19 @@ properties:
           enum:
             - success
             - error
+        taskState:
+          description: |
+            Task state derived from tasks last run status.
+            This value can change through time as tasks are being scheduled, run and re-run.
+            If task doesn't exist or was just created, this value will default to `unscheduled`.
+          type: string
+          enum:
+            - unscheduled
+            - pending
+            - running
+            - completed
+            - failed
+            - exception
         error:
           description: |
             The error that occurred when firing the task. This is typically,
@@ -51,6 +64,7 @@ properties:
         - firedBy
         - taskCreateTime
         - result
+        - taskState
         - error
   continuationToken:
     title:                "Continuation Token"

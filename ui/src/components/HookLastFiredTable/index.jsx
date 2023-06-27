@@ -32,6 +32,11 @@ function HookLastFiredTable({ classes, ...props }) {
       type: 'string',
     },
     {
+      label: 'Task State',
+      id: 'taskState',
+      type: 'string',
+    },
+    {
       label: 'Attempted',
       id: 'attempted',
       type: 'string',
@@ -65,6 +70,9 @@ function HookLastFiredTable({ classes, ...props }) {
                 <InformationVariantIcon size={iconSize} />
               </IconButton>
             )}
+          </TableCell>
+          <TableCell>
+            <StatusLabel state={hookFire.taskState} />
           </TableCell>
           <CopyToClipboardTableCell
             tooltipTitle={hookFire.taskCreateTime}

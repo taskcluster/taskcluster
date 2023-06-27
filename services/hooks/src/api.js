@@ -131,7 +131,7 @@ builder.declare({
 
   // find the latest entry in the LastFire table for this hook
   let latest = { task_create_time: new Date(1970, 1, 1) };
-  const rows = await this.db.fns.get_last_fires(hookGroupId, hookId, 1, 0);
+  const rows = await this.db.fns.get_last_fires_with_task_state(hookGroupId, hookId, 1, 0);
   if (rows.length > 0) {
     latest = rows[0];
   }
@@ -673,7 +673,7 @@ builder.declare({
   const { hookGroupId, hookId } = req.params;
   const { continuationToken, rows: lastFires } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_last_fires(
+    fetch: (size, offset) => this.db.fns.get_last_fires_with_task_state(
       hookGroupId, hookId, size, offset,
     ),
   });
@@ -691,6 +691,7 @@ builder.declare({
       taskCreateTime: row.task_create_time.toJSON(),
       result: row.result,
       error: row.error,
+      taskState: row.task_state || 'unscheduled',
     })),
     continuationToken,
   });

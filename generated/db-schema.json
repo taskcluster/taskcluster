@@ -17,7 +17,8 @@
       "tables": {
         "hooks": "write",
         "hooks_last_fires": "write",
-        "hooks_queues": "write"
+        "hooks_queues": "write",
+        "tasks": "read"
       }
     },
     "index": {
@@ -6640,6 +6641,26 @@
         }
       },
       "version": 87
+    },
+    {
+      "description": "Include task last run state in the hooks_last_fires table",
+      "downgradeScript": "begin\n  revoke select on tasks from $db_user_prefix$_hooks;\nend",
+      "methods": {
+        "get_last_fires": {
+          "deprecated": true
+        },
+        "get_last_fires_with_task_state": {
+          "args": "hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    hooks_last_fires.hook_group_id,\n    hooks_last_fires.hook_id,\n    hooks_last_fires.fired_by,\n    hooks_last_fires.task_id,\n    hooks_last_fires.task_create_time,\n    hooks_last_fires.result,\n    hooks_last_fires.error,\n    public.gen_random_uuid(),\n    tasks.runs -> -1 ->> 'state'\n  from hooks_last_fires\n  left join tasks on tasks.task_id = hooks_last_fires.task_id\n  where\n    hooks_last_fires.hook_group_id = hook_group_id_in and\n    hooks_last_fires.hook_id = hook_id_in\n  order by hook_group_id, hook_id, task_create_time DESC\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,\nordered by `hook_group_id`, `hook_id`, and `task_create_time`.\nResults will include the last run state of the task that fired the hook,\nif it exists.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid, task_state text)",
+          "serviceName": "hooks"
+        }
+      },
+      "migrationScript": "begin\n  grant select on tasks to $db_user_prefix$_hooks;\nend",
+      "version": 88
     }
   ]
 }

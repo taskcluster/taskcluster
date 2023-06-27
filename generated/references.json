@@ -6372,6 +6372,18 @@
                 "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
                 "title": "Task Identifier",
                 "type": "string"
+              },
+              "taskState": {
+                "description": "Task state derived from tasks last run status.\nThis value can change through time as tasks are being scheduled, run and re-run.\nIf task doesn't exist or was just created, this value will default to `unscheduled`.\n",
+                "enum": [
+                  "unscheduled",
+                  "pending",
+                  "running",
+                  "completed",
+                  "failed",
+                  "exception"
+                ],
+                "type": "string"
               }
             },
             "required": [
@@ -6381,6 +6393,7 @@
               "firedBy",
               "taskCreateTime",
               "result",
+              "taskState",
               "error"
             ],
             "type": "object"

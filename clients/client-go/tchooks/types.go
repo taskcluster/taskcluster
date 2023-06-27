@@ -295,6 +295,19 @@ type (
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskID string `json:"taskId"`
+
+		// Task state derived from tasks last run status.
+		// This value can change through time as tasks are being scheduled, run and re-run.
+		// If task doesn't exist or was just created, this value will default to `unscheduled`.
+		//
+		// Possible values:
+		//   * "unscheduled"
+		//   * "pending"
+		//   * "running"
+		//   * "completed"
+		//   * "failed"
+		//   * "exception"
+		TaskState string `json:"taskState"`
 	}
 )
 
