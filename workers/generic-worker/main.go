@@ -584,6 +584,11 @@ func ClaimWork() *TaskRun {
 
 func (task *TaskRun) validatePayload() *CommandExecutionError {
 	jsonPayload := task.Definition.Payload
+	defaults.SetDefaults(&task.Payload)
+	err := json.Unmarshal(jsonPayload, &task.Payload)
+	if err != nil {
+		return MalformedPayloadError(err)
+	}
 	schemaLoader := gojsonschema.NewStringLoader(JSONSchema())
 	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
@@ -625,11 +630,6 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		// happened before or after the execution of task specific Turing
 		// complete code.
 		return MalformedPayloadError(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
-	}
-	defaults.SetDefaults(&task.Payload)
-	err = json.Unmarshal(jsonPayload, &task.Payload)
-	if err != nil {
-		return MalformedPayloadError(err)
 	}
 	for _, artifact := range task.Payload.Artifacts {
 		// The default artifact expiry is task expiry, but is only applied when
