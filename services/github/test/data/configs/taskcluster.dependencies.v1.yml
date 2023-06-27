@@ -6,7 +6,6 @@ tasks:
   then:
     - taskId: "docker_build"
       dependencies:
-      - "py37"
       - "py38"
       - "py39"
       provisionerId: test-provisioner
@@ -38,22 +37,6 @@ tasks:
         owner: owner
         source: source
 
-    - taskId: "py37"
-      provisionerId: test-provisioner
-      workerType: github-worker
-      created: {$fromNow: ''}
-      deadline: {$fromNow: '1 hour'}
-      payload:
-        maxRunTime: 3600
-        image: python:3.7
-        command:
-          - sh
-      metadata:
-        name: tox py37
-        description: code linting & unit tests on py37
-        owner: owner
-        source: source
-
     - taskId: "py38"
       provisionerId: test-provisioner
       workerType: github-worker
@@ -81,7 +64,7 @@ tasks:
         command:
           - sh
       metadata:
-        name: tox py37
+        name: tox py39
         description: code linting & unit tests on py39
         owner: owner
         source: source
