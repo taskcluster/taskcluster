@@ -2,27 +2,30 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-  - src.transforms:taskcluster_images
+  - src.transforms:taskcluster_image_versions
   - src.transforms:add_task_env
+  - src.transforms:podman_run
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
 task-defaults:
-  worker-type: ci
+  worker-type: gw-ubuntu-22-04
   run:
     using: bare
   worker:
     max-run-time: 600
-    docker-image: {taskcluster: 'ci-image'}
+  docker-image: golang:{go_version}-bookworm
 
 tasks:
   internal-libraries:
     description: test internal go libraries
     run:
-      install: cd internal
-      command: go test -v -race ./...
+      command: >-
+        cd internal &&
+        go test -v -race ./...
   tools:
     description: test golang tools
     run:
-      install: cd tools
-      command: go test -v -race ./...
+      command: >-
+        cd tools &&
+        go test -v -race ./...

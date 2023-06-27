@@ -2,30 +2,32 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-  - src.transforms:taskcluster_images
+  - src.transforms:taskcluster_image_versions
   - src.transforms:add_task_env
+  - src.transforms:podman_run
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
 task-defaults:
-  worker-type: ci
+  worker-type: gw-ubuntu-22-04
   run:
     using: bare
   worker:
     max-run-time: 600
-    docker-image: {taskcluster: 'ci-image'}
+  docker-image: taskcluster/ci-image:node{node_version}-pg{pg_version}-go{go_version}
 
 tasks:
   tests:
     description: taskcluster package meta tests
     run:
-      install: yarn install
-      command: "set -o pipefail && yarn test:meta | cat"
+      command: >-
+        yarn &&
+        set -o pipefail && yarn test:meta | cat
   generate:
     description: check that `yarn generate` was run
     run:
-      install: yarn install --frozen-lockfile
       command: >-
+        yarn --frozen-lockfile &&
         ./db/test-setup.sh --users &&
         set -o pipefail &&
         yarn generate | cat &&
@@ -37,17 +39,20 @@ tasks:
   build:
     description: taskcluster build dry-run
     run:
-      install: yarn install --frozen-lockfile
-      command: yarn build --dry-run
+      command: >-
+        yarn --frozen-lockfile &&
+        yarn build --dry-run
   changelog-pr:
     description: taskcluster changelog checks
     run-on-tasks-for: [github-pull-request]
     run:
-      install: yarn install --frozen-lockfile
-      command: yarn changelog:check --pr $TASKCLUSTER_PULL_REQUEST_NUMBER
+      command: >-
+        yarn --frozen-lockfile &&
+        yarn changelog:check --pr $TASKCLUSTER_PULL_REQUEST_NUMBER
   changelog-push:
     description: taskcluster changelog checks
     run-on-tasks-for: [github-push]
     run:
-      install: yarn install --frozen-lockfile
-      command: yarn changelog:check
+      command: >-
+        yarn --frozen-lockfile &&
+        yarn changelog:check

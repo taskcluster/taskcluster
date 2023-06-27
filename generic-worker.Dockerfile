@@ -1,6 +1,6 @@
 # Simple generic worker
 
-FROM golang:1.19.10-buster as build
+FROM golang:1.19.10-bookworm as build
 
 WORKDIR /app
 

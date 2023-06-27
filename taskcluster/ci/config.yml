@@ -11,11 +11,6 @@ taskgraph:
 
 workers:
   aliases:
-    ci:
-      provisioner: proj-taskcluster
-      os: linux
-      implementation: docker-worker
-      worker-type: ci
     release:
       provisioner: proj-taskcluster
       os: linux

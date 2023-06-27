@@ -2,28 +2,28 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-  - src.transforms:taskcluster_images
+  - src.transforms:taskcluster_image_versions
   - src.transforms:add_task_env
+  - src.transforms:podman_run
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
 task-defaults:
-  worker-type: ci
+  worker-type: gw-ubuntu-22-04
   run:
     using: bare
   worker:
     max-run-time: 600
-    docker-image: {taskcluster: 'browser-test'}
+  docker-image: taskcluster/browser-test:{node_version}
 
 tasks:
   browser-test:
     description: UI Browser Tests
     run:
-      install: >-
-         {{ yarn --frozen-lockfile || exit 99; }} &&
-         cd ui &&
-         {{ yarn --frozen-lockfile || exit 99; }}
       command: >-
-         yarn lint &&
-         yarn test --coverage &&
-         yarn build
+        {{ yarn --frozen-lockfile || exit 99; }} &&
+        cd ui &&
+        {{ yarn --frozen-lockfile || exit 99; }} &&
+        yarn lint &&
+        yarn test --coverage &&
+        yarn build

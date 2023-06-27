@@ -10,7 +10,7 @@ fi
 tmpdir=$(mktemp -d)
 trap "cd /; rm -rf ${tmpdir}" EXIT
 cat > ${tmpdir}/Dockerfile <<EOF
-FROM node:${node_version}-buster
+FROM node:${node_version}-bookworm
 RUN apt-get update && apt-get install -y rabbitmq-server
 EOF
 

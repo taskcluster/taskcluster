@@ -2,33 +2,37 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-  - src.transforms:taskcluster_images
+  - src.transforms:taskcluster_image_versions
+  - src.transforms:podman_run
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
 task-defaults:
-  worker-type: ci
+  worker-type: gw-ubuntu-22-04
   run:
     using: bare
   worker:
     max-run-time: 600
-    docker-image: {taskcluster: 'ci-image'}
 
 tasks:
   nodejs:
     description: nodejs lint
+    docker-image: node:{node_version}
     run:
-      install: yarn install
-      command: yarn lint
+      command: >-
+        yarn &&
+        yarn lint
   golang:
     description: go lint
+    docker-image: taskcluster/ci-image:node{node_version}-pg{pg_version}-go{go_version}
     run:
-      install: yarn install
-      command: yarn lint:go
+      command: >-
+        yarn &&
+        yarn lint:go
   python:
     description: python flake8
-    worker:
-      docker-image: python:3.11
+    docker-image: python:3.11
     run:
-      install: pip install flake8
-      command: sh test/py-lint.sh
+      command: >-
+        pip install flake8 &&
+        sh test/py-lint.sh
