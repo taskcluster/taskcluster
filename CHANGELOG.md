@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v53.2.1
+
+### GENERAL
+
+▶ [patch] [#6237](https://github.com/taskcluster/taskcluster/issues/6237)
+Fix the case where a generic worker won't upload its log on a malformed payload error. This has been broken since v48.2.0 from PR [#6107](https://github.com/taskcluster/taskcluster/pull/6107).
+
 ## v53.2.0
 
 ### GENERAL
