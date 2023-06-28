@@ -18,6 +18,7 @@ hooks:
     hooks: write
     hooks_queues: write
     hooks_last_fires: write
+    tasks: read
 index:
   tables:
     indexed_tasks: write

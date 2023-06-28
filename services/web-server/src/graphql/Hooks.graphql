@@ -93,6 +93,15 @@ input HookInput {
   triggerSchema: JSON
 }
 
+enum HookTaskState {
+  UNSCHEDULED
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  EXCEPTION
+}
+
 type HookLastFire {
   hookGroupId: ID!,
   hookId: ID!,
@@ -100,6 +109,7 @@ type HookLastFire {
   taskId: String!,
   taskCreateTime: DateTime!,
   result: HookFireResult!,
+  taskState: HookTaskState!,
   error: String!,
 }
 

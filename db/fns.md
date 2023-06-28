@@ -37,7 +37,7 @@
    * [`get_hooks`](#get_hooks)
    * [`get_hooks_queues`](#get_hooks_queues)
    * [`get_last_fire`](#get_last_fire)
-   * [`get_last_fires`](#get_last_fires)
+   * [`get_last_fires_with_task_state`](#get_last_fires_with_task_state)
    * [`update_hook`](#update_hook)
    * [`update_hooks_queue_bindings`](#update_hooks_queue_bindings)
  * [index functions](#index)
@@ -581,7 +581,7 @@ Create a single integration.
 * [`get_hooks`](#get_hooks)
 * [`get_hooks_queues`](#get_hooks_queues)
 * [`get_last_fire`](#get_last_fire)
-* [`get_last_fires`](#get_last_fires)
+* [`get_last_fires_with_task_state`](#get_last_fires_with_task_state)
 * [`update_hook`](#update_hook)
 * [`update_hooks_queue_bindings`](#update_hooks_queue_bindings)
 
@@ -772,7 +772,7 @@ Otherwise, page_size rows are returned at offset page_offset.
 
 Get a hook last fire.
 
-### get_last_fires
+### get_last_fires_with_task_state
 
 * *Mode*: read
 * *Arguments*:
@@ -789,10 +789,13 @@ Get a hook last fire.
   * `result text`
   * `error text`
   * `etag uuid`
-* *Last defined on version*: 79
+  * `task_state text`
+* *Last defined on version*: 88
 
 Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,
 ordered by `hook_group_id`, `hook_id`, and `task_create_time`.
+Results will include the last run state of the task that fired the hook,
+if it exists.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
@@ -843,6 +846,10 @@ Returns the up-to-date hook row that have the same hook group id and hook id.
 
 Update bindings of a hooks queue. If no such queue exists,
 the return value is an empty set.
+
+### deprecated methods
+
+* `get_last_fires(hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v55.0.0)
 
 ## index
 

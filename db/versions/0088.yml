@@ -1,0 +1,47 @@
+version: 88
+description: Include task last run state in the hooks_last_fires table
+migrationScript: |-
+  begin
+    grant select on tasks to $db_user_prefix$_hooks;
+  end
+downgradeScript: |-
+  begin
+    revoke select on tasks from $db_user_prefix$_hooks;
+  end
+methods:
+  get_last_fires:
+    deprecated: true
+  get_last_fires_with_task_state:
+    description: |-
+      Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,
+      ordered by `hook_group_id`, `hook_id`, and `task_create_time`.
+      Results will include the last run state of the task that fired the hook,
+      if it exists.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: hooks
+    args: hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer
+    returns: table(hook_group_id text, hook_id text, fired_by text, task_id text, task_create_time timestamptz, result text, error text, etag uuid, task_state text)
+    body: |-
+      begin
+        return query
+        select
+          hooks_last_fires.hook_group_id,
+          hooks_last_fires.hook_id,
+          hooks_last_fires.fired_by,
+          hooks_last_fires.task_id,
+          hooks_last_fires.task_create_time,
+          hooks_last_fires.result,
+          hooks_last_fires.error,
+          public.gen_random_uuid(),
+          tasks.runs -> -1 ->> 'state'
+        from hooks_last_fires
+        left join tasks on tasks.task_id = hooks_last_fires.task_id
+        where
+          hooks_last_fires.hook_group_id = hook_group_id_in and
+          hooks_last_fires.hook_id = hook_id_in
+        order by hook_group_id, hook_id, task_create_time DESC
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end

@@ -817,6 +817,37 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         creator.fakeCreate = true;
       }
     });
+    const createTask = async (taskId, state) => {
+      await helper.withAdminDbClient(async (client) => {
+        await client.query(
+          'select create_task_projid($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18);',
+          [
+            taskId, // task_id text,
+            'prov/wt', // task_queue_id text,
+            'hooks', // scheduler_id text,
+            'proj', // project_id text,
+            taskId, // task_group_id text,
+            '[]', // dependencies jsonb,
+            'all-resolved', // requires task_requires,
+            '[]', // routes jsonb,
+            'high', // priority task_priority,
+            5, // retries integer,
+            new Date(), // created timestamptz,
+            new Date(), // deadline timestamptz,
+            new Date(), // expires timestamptz,
+            '[]', // scopes jsonb,
+            '{}', // payload jsonb,
+            '{}', // metadata jsonb,
+            '{}', // tags jsonb,
+            '{}', // extra jsonb
+          ],
+        );
+        await client.query(
+          'update tasks set runs = $1 where task_id = $2;',
+          [JSON.stringify([{ state }]), taskId],
+        );
+      });
+    };
 
     test('without scopes', async function() {
       const client = new helper.Hooks({ rootUrl: helper.rootUrl });
@@ -835,12 +866,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           taskId: taskIds[i],
           taskCreateTime: new Date(),
         });
+        await createTask(taskIds[i], 'completed');
       }
       const { lastFires } = await helper.hooks.listLastFires(lastFire.hookGroupId, lastFire.hookId);
       const dataTaskIds = lastFires.map(lastFire => lastFire.taskId);
       taskIds.sort();
       dataTaskIds.sort();
       assume(taskIds).eql(dataTaskIds);
+      assume(lastFires[0].taskState).equals('completed');
     });
   });
 
