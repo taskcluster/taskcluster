@@ -14,12 +14,14 @@ def _dependency_versions():
         node_version = json.load(pkg)["engines"]["node"].strip()
     with open('.go-version', 'r') as goversion:
         go_version = goversion.read().strip()
-    return (node_version, go_version, rust_version, pg_version)
+    with open('.golangci-lint-version', 'r') as golangcilintversion:
+        golangci_lint_version = golangcilintversion.read().strip()
+    return (node_version, go_version, golangci_lint_version, rust_version, pg_version)
 
 
 @transforms.add
 def taskcluster_image_versions(config, tasks):
-    node_version, go_version, rust_version, pg_version = _dependency_versions()
+    node_version, go_version, _, rust_version, pg_version = _dependency_versions()
     for task in tasks:
         image = task["docker-image"]
         task["docker-image"] = image.format(
@@ -34,7 +36,7 @@ def taskcluster_image_versions(config, tasks):
 
 @transforms.add
 def taskcluster_images(config, tasks):
-    node_version, go_version, rust_version, pg_version = _dependency_versions()
+    node_version, go_version, _, rust_version, pg_version = _dependency_versions()
     for task in tasks:
         image = task["worker"]["docker-image"]
         if isinstance(image, dict) and tuple(image.keys())[0] == "taskcluster":
@@ -60,7 +62,7 @@ def taskcluster_images(config, tasks):
 
 @transforms.add
 def add_task_env(config, tasks):
-    node_version, go_version, rust_version, pg_version = _dependency_versions()
+    node_version, go_version, golangci_lint_version, rust_version, pg_version = _dependency_versions()
     for task in tasks:
         env = task["worker"].setdefault("env", {})
 
@@ -80,6 +82,7 @@ def add_task_env(config, tasks):
         env["NODE_VERSION"] = node_version
         env["GO_VERSION"] = go_version
         env["GO_RELEASE"] = go_version[2:]  # Just strip the `go` prefix
+        env["GOLANGCI_LINT_VERSION"] = golangci_lint_version
         env["RUST_VERSION"] = rust_version
         env["POSTGRES_VERSION"] = str(pg_version)
 
@@ -142,7 +145,7 @@ def direct_dependencies(config, tasks):
 
 @transforms.add
 def parameterize_mounts(config, tasks):
-    node_version, go_version, rust_version, pg_version = _dependency_versions()
+    node_version, go_version, golangci_lint_version, rust_version, _ = _dependency_versions()
     for task in tasks:
         mounts = task.get("worker", {}).get("mounts")
         if mounts:
@@ -150,11 +153,54 @@ def parameterize_mounts(config, tasks):
                 if mount["content"].get("url"):
                     mount["content"]["url"] = mount["content"]["url"].format(
                             go_version=go_version,
+                            golangci_lint_version=golangci_lint_version,
                             rust_version=rust_version,
                             node_version=node_version)
                 if mount.get("directory"):
                     mount["directory"] = mount["directory"].format(
                             go_version=go_version,
+                            golangci_lint_version=golangci_lint_version,
                             rust_version=rust_version,
                             node_version=node_version)
+        yield task
+
+
+@transforms.add
+def parameterize_artifacts(config, tasks):
+    node_version, go_version, golangci_lint_version, rust_version, _ = _dependency_versions()
+    for task in tasks:
+        artifacts = task.get("worker", {}).get("artifacts")
+        if artifacts:
+            for artifact in artifacts:
+                artifact["path"] = artifact["path"].format(
+                    go_version=go_version[2:],
+                    golangci_lint_version=golangci_lint_version,
+                    rust_version=rust_version,
+                    node_version=node_version)
+                if artifact.get("name"):
+                    artifact["name"] = artifact["name"].format(
+                        go_version=go_version[2:],
+                        golangci_lint_version=golangci_lint_version,
+                        rust_version=rust_version,
+                        node_version=node_version)
+        yield task
+
+
+@transforms.add
+def copy_command_from(config, tasks):
+    to_copy = {}
+    task_list = list(tasks)
+    for task in task_list:
+        if task.get("copy-command-from"):
+            other_task = task.get("copy-command-from")
+            to_copy[other_task] = None
+
+    for task in task_list:
+        if task["name"] in to_copy:
+            to_copy[task["name"]] = task["run"]["command"]
+
+    for task in task_list:
+        if task.get("copy-command-from"):
+            other_task = task.pop("copy-command-from")
+            task["run"]["command"] = to_copy[other_task]
         yield task

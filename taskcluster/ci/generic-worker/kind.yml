@@ -4,6 +4,8 @@ loader: taskgraph.loader.transform:loader
 transforms:
   - src.transforms:add_task_env
   - src.transforms:parameterize_mounts
+  - src.transforms:parameterize_artifacts
+  - src.transforms:copy_command_from
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
@@ -11,7 +13,7 @@ task-defaults:
   run:
     using: bare
   worker:
-    max-run-time: 3600
+    max-run-time: 1800
 
 tasks:
   windows-worker-runner:
@@ -28,7 +30,6 @@ tasks:
           directory: 'git'
           format: zip
     run:
-      clone: false
       command:
         - set CGO_ENABLED=0
         - set GOPATH=%CD%\gopath%GO_RELEASE%
@@ -43,24 +44,24 @@ tasks:
         - git checkout {head_rev}
         - cd tools/worker-runner
         - go test -v ./...
-  decision-task:
-    description: 'decision task for generic-worker tasks'
+  format-source:
+    description: |
+      This task performs three formatting steps against the codebase, and
+      ensures that no local changes are found after applying them:
+
+      * `go mod tidy` (see the [go modules wiki page](https://github.com/golang/go/wiki/Modules)
+        for more information)
+      * `go fmt` to ensure that go source code is formatted
+      * `goimports` to ensure that imports are specified in their canonical form
     worker-type: gw-ubuntu-22-04
-    scopes:
-      - generic-worker:cache:generic-worker-checkout
-      - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
-      - queue:scheduler-id:taskcluster-level-1
-      - queue:create-task:highest:proj-taskcluster/*
-      - queue:route:checks
     worker:
-      taskcluster-proxy: true
+      max-run-time: 300
       mounts:
         - content:
             url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
           directory: '{go_version}'
           format: tar.gz
     run:
-      clone: false
       command:
         - export CGO_ENABLED=0
         - export GOROOT="$(pwd)/$GO_VERSION/go"
@@ -77,6 +78,260 @@ tasks:
         - git reset --hard "${{GITHUB_SHA}}"
         - git clean -fdx
         - git checkout -B tmp -t "X${{TASK_ID}}"
-        - cd workers/generic-worker/gw-decision-task
-        - go install
-        - '"$(go env GOPATH)/bin/gw-decision-task" tasks.yml "${{GITHUB_SHA}}"'
+        - go fmt ./...
+        - git diff
+        - test $(git status --porcelain | wc -l) == 0
+        - go mod tidy
+        - git diff
+        - test $(git status --porcelain | wc -l) == 0
+        - go install golang.org/x/tools/cmd/goimports
+        - '"$(go env GOPATH)/bin/goimports" -w .'
+        - git checkout -f go.mod go.sum
+        - git diff
+        - test $(git status --porcelain | wc -l) == 0
+  build/test-multiuser-ubuntu-22.04-amd64:
+    description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Ubuntu 22.04
+    worker-type: gw-ci-ubuntu-22-04
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+      - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
+    worker:
+      taskcluster-proxy: true
+      artifacts:
+        - path: gopath{go_version}/bin/generic-worker
+          name: public/build/generic-worker-linux-amd64
+          type: file
+      mounts:
+        - content:
+            url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+          directory: '{go_version}'
+          format: tar.gz
+        - content:
+            url: 'https://github.com/golangci/golangci-lint/releases/download/v{golangci_lint_version}/golangci-lint-{golangci_lint_version}-linux-amd64.tar.gz'
+          directory: golangci-lint
+          format: tar.gz
+      env:
+        ENGINE: multiuser
+        GW_TESTS_USE_EXTERNAL_TASKCLUSTER: |-
+          Enabled for just one platform (linux/amd64) in https://github.com/taskcluster/taskcluster/issues/6274
+          to help ensure that mock implementations remain consistent with real services.
+    run:
+      command:
+        - |
+          set -vx
+          function b64 {{
+            [ "$(uname -s)" != "Darwin" ] || base64 -D
+            [ "$(uname -s)" != "Linux" ]  || base64 -d
+          }}
+          # go test: -race and -msan are only supported on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64
+          if [ "$(uname -m)" == "x86_64" ]; then
+            RACE=-race
+            CGO_ENABLED_TESTS=1
+            # See https://github.com/golang/go/issues/27089#issuecomment-415329050
+            VET=-vet=off
+          else
+            RACE=
+            CGO_ENABLED_TESTS=0
+            VET=
+          fi
+          export CGO_ENABLED=0
+          # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
+          #   DO NOT CHANGE HERE!
+          export GOROOT="$(pwd)/$GO_VERSION/go"
+          export GOPATH="$(pwd)/gopath$GO_RELEASE"
+          export PATH="${{GOPATH}}/bin:${{GOROOT}}/bin:$(pwd)/bin:${{PATH}}"
+          git --version
+          go version
+          go env
+          curl -s "${{TASKCLUSTER_PROXY_URL}}/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | b64 > tc-creds.sh
+          source tc-creds.sh
+          if [ ! -d taskcluster/.git ]; then
+            rm -rf taskcluster
+            git clone {head_repository} taskcluster
+          fi
+          cd taskcluster
+          git fetch {head_repository} "+${{GITHUB_SHA}}:refs/heads/X${{TASK_ID}}"
+          git checkout -f "X${{TASK_ID}}"
+          git reset --hard "${{GITHUB_SHA}}"
+          git clean -fdx
+          git checkout -B tmp -t "X${{TASK_ID}}"
+          cd workers/generic-worker
+          # go.mod and go.sum will be affected by above go get commands, so
+          # tidy them before checking for changes. Not needed in go 1.14:
+          # https://github.com/golang/go/issues/30515#issuecomment-581984371
+          # TODO: use go get -modfile instead when running go 1.14, and remove
+          # go mod tidy command
+          go mod tidy
+          git status
+          # output of wc command can contain spaces on darwin, so no quotes around expression
+          test $(git status --porcelain | wc -l) == 0
+          go install -tags "${{ENGINE}}" -v -ldflags "-X main.revision=${{GITHUB_SHA}}" ./...
+          go install ../../tools/taskcluster-proxy
+          go install ../../tools/livelog
+          go vet -tags "${{ENGINE}}" ./...
+          if [ "${{ENGINE}}" == "multiuser" ]; then
+            cp "${{TASK_USER_CREDENTIALS}}" next-task-user.json
+            # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
+            # otherwise tests that call `go run ....` will write go object files to .cache as root
+            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v54/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} .
+          fi
+          GORACE=history_size=7 CGO_ENABLED=${{CGO_ENABLED_TESTS}} go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v54/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
+          # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
+          #   DO NOT CHANGE HERE!
+          ../../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --build-tags "${{ENGINE}}" --timeout=5m
+  build/test-simple-ubuntu-22.04-amd64:
+    description: This builds and tests the amd64 version of generic-worker (simple engine) on Ubuntu 22.04
+    worker-type: gw-ci-ubuntu-22-04
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+      - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
+    worker:
+      taskcluster-proxy: true
+      artifacts:
+        - path: gopath{go_version}/bin/generic-worker
+          name: public/build/generic-worker-linux-amd64
+          type: file
+      mounts:
+        - content:
+            url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+          directory: '{go_version}'
+          format: tar.gz
+        - content:
+            url: 'https://github.com/golangci/golangci-lint/releases/download/v{golangci_lint_version}/golangci-lint-{golangci_lint_version}-linux-amd64.tar.gz'
+          directory: golangci-lint
+          format: tar.gz
+      env:
+        ENGINE: simple
+    copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
+  build/test-multiuser-macos-13-arm64:
+    description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS Ventura 13
+    worker-type: gw-ci-macos-13
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+      - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
+    worker:
+      taskcluster-proxy: true
+      artifacts:
+        - path: gopath{go_version}/bin/generic-worker
+          name: public/build/generic-worker-darwin-arm64
+          type: file
+      mounts:
+        - content:
+            url: 'https://storage.googleapis.com/golang/{go_version}.darwin-arm64.tar.gz'
+          directory: '{go_version}'
+          format: tar.gz
+        - content:
+            url: 'https://github.com/golangci/golangci-lint/releases/download/v{golangci_lint_version}/golangci-lint-{golangci_lint_version}-darwin-arm64.tar.gz'
+          directory: golangci-lint
+          format: tar.gz
+      env:
+        ENGINE: multiuser
+    copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
+  build/test-multiuser-windows-server-2022-amd64:
+    description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Windows Server 2022
+    worker-type: gw-ci-windows-2022
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+      - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
+    worker:
+      taskcluster-proxy: true
+      artifacts:
+        - path: gopath{go_version}/bin/generic-worker.exe
+          name: public/build/generic-worker-windows-amd64.exe
+          type: file
+      mounts:
+        - content:
+            url: 'https://storage.googleapis.com/golang/{go_version}.windows-amd64.zip'
+          directory: '{go_version}'
+          format: zip
+        - content:
+            url: 'https://github.com/git-for-windows/git/releases/download/v2.41.0.windows.1/MinGit-2.41.0-64-bit.zip'
+          directory: git
+          format: zip
+        - content:
+            url: 'https://github.com/golangci/golangci-lint/releases/download/v{golangci_lint_version}/golangci-lint-{golangci_lint_version}-windows-amd64.zip'
+          directory: golangci-lint
+          format: zip
+        - content:
+            url: https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe
+          file: bin/jq.exe
+        - content:
+            url: http://localhost/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds
+          file: ci-creds.json
+      env:
+        ENGINE: multiuser
+        GW_SKIP_Z_DRIVE_TESTS: 'true'
+    run:
+      command:
+        - |
+          :: go test: -race and -msan are only supported on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64
+          reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "Intel64" > NUL && (
+            set RACE=-race
+            set CGO_ENABLED_TESTS=1
+            :: See https://github.com/golang/go/issues/27089#issuecomment-415329050
+            set VET=-vet=off
+          ) || (
+            set "RACE= "
+            set CGO_ENABLED_TESTS=0
+            set "VET= "
+          )
+          :: find.exe may have exited with exit code 1, so need to explicitly exit with 0
+          exit /b 0
+        - set CGO_ENABLED=0
+        - set GOROOT=%CD%\%GO_VERSION%\go
+        - set GOPATH=%CD%\gopath%GO_RELEASE%
+        - |
+          :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
+          set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%CD%\bin;%PATH%;C:\cygwin\bin
+        - git version
+        - go version
+        - go env
+        - git config --global core.autocrlf false
+        - jq -r .secret.b64_encoded_credentials_batch_script ci-creds.json > tc-creds.bat.b64
+        - certutil -decode tc-creds.bat.b64 tc-creds.bat
+        - call tc-creds.bat 2>&1
+        - if not exist taskcluster git clone %GITHUB_CLONE_URL% taskcluster
+        - cd taskcluster
+        - git fetch %GITHUB_CLONE_URL% +%GITHUB_SHA%:refs/heads/X%TASK_ID%
+        - git checkout -f "X%TASK_ID%"
+        - git reset --hard %GITHUB_SHA%
+        - git clean -fdx
+        - git checkout -B tmp -t "X%TASK_ID%"
+        - cd workers\generic-worker
+        - |
+          :: go.mod and go.sum will be affected by above go get commands, so
+          :: tidy them before checking for changes. Not needed in go 1.14:
+          :: https://github.com/golang/go/issues/30515#issuecomment-581984371
+          :: TODO: use go get -modfile instead when running go 1.14, and remove
+          :: go mod tidy command
+          go mod tidy
+        - |
+          :: this counts the number of lines returned by git status
+          :: dump temp file outside of repo, otherwise git status reports the tmp1.txt file!
+          git status
+          git status --porcelain | C:\Windows\System32\find.exe /v /c "" > ..\..\..\tmp1.txt
+          set /P lines=<..\..\..\tmp1.txt
+          :: this checks that if more than 0 lines are returned, we fail
+          if %lines% gtr 0 exit /b 64
+          :: find.exe may have exited with exit code 1, so need to explicitly exit with 0
+          exit /b 0
+        - go install -tags "%ENGINE%" -v -ldflags "-X main.revision=%GITHUB_SHA%" ./...
+        - go install ..\..\tools\taskcluster-proxy
+        - go install ..\..\tools\livelog
+        - go vet -tags "%ENGINE%" ./...
+        - set CGO_ENABLED=%CGO_ENABLED_TESTS%
+        - set GORACE=history_size=7
+        - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
+        - set GW_TESTS_RUN_AS_CURRENT_USER=true
+        - go test -tags "%ENGINE%" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v54/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% .
+        - set GW_TESTS_RUN_AS_CURRENT_USER=
+        - go test -tags "%ENGINE%" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v54/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
+        - |
+          :: assumption here is that if something inside the if fails, we'll get a non zero exit code
+          :: i've also made it an if/else so that one of them has to run, as there should always be a
+          :: linter
+          if exist ..\..\..\golangci-lint\golangci-lint-%GOLANGCI_LINT_VERSION%-windows-amd64 (
+            ..\..\..\golangci-lint\golangci-lint-%GOLANGCI_LINT_VERSION%-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=5m
+          ) else (
+            ..\..\..\golangci-lint\golangci-lint-%GOLANGCI_LINT_VERSION%-windows-386\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=5m
+          )
