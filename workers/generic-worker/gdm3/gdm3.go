@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v53/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v54/workers/generic-worker/host"
 )
 
 var (

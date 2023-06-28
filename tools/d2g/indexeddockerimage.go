@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v53/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v54/tools/d2g/genericworker"
 )
 
 func (idi *IndexedDockerImage) PrepareCommands() []string {

@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v53/tools/d2g"
-	"github.com/taskcluster/taskcluster/v53/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v53/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v54/tools/d2g"
+	"github.com/taskcluster/taskcluster/v54/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v54/tools/d2g/genericworker"
 	"github.com/xeipuuv/gojsonschema"
 )
 

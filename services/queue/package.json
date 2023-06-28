@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-queue",
-  "version": "53.2.1",
+  "version": "54.0.0",
   "private": true,
   "scripts": {
     "coverage": "c8 yarn test",

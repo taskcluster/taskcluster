@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v54.0.0
+
+### USERS
+
+▶ [MAJOR]
+Remove python 3.7 support as it's hit the EoL date, 2023-06-27.
+
+More info on the python 3.7 release schedule can be found [here](https://peps.python.org/pep-0537/).
+
+▶ [minor] [#6248](https://github.com/taskcluster/taskcluster/issues/6248)
+Hooks service returns task state with lastFires call. This state is also showed in UI, along with the "Fire Status", which only indicate if task was succesfully created, but does not show if the task completed succesfully or not.
+
 ## v53.2.1
 
 ### GENERAL

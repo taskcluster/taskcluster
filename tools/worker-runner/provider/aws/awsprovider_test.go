@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v53/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v53/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v53/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v53/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v53/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v54/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v54/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v54/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v54/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v54/tools/workerproto/testing"
 )
 
 func TestAWSConfigureRun(t *testing.T) {

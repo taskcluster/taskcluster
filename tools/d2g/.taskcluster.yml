@@ -42,8 +42,8 @@ tasks:
                 cd d2g
                 git -c advice.detachedHead=false checkout '${head_rev}'
 
-                go install github.com/taskcluster/taskcluster/v53/tools/jsonschema2go/jsonschema2go@latest
-                go install github.com/taskcluster/taskcluster/v53/workers/generic-worker/gw-codegen@latest
+                go install github.com/taskcluster/taskcluster/v54/tools/jsonschema2go/jsonschema2go@latest
+                go install github.com/taskcluster/taskcluster/v54/workers/generic-worker/gw-codegen@latest
                 go generate ./...
                 go mod tidy
 

@@ -3,7 +3,7 @@ package win32_test
 import (
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v53/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v54/workers/generic-worker/win32"
 )
 
 func TestMergeNilListsFirstNil(t *testing.T) {
