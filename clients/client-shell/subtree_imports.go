@@ -7,6 +7,7 @@ import (
 	_ "github.com/taskcluster/taskcluster/v54/clients/client-shell/apis"
 	_ "github.com/taskcluster/taskcluster/v54/clients/client-shell/cmds/completions"
 	_ "github.com/taskcluster/taskcluster/v54/clients/client-shell/cmds/config"
+	_ "github.com/taskcluster/taskcluster/v54/clients/client-shell/cmds/d2g"
 	_ "github.com/taskcluster/taskcluster/v54/clients/client-shell/cmds/download"
 	_ "github.com/taskcluster/taskcluster/v54/clients/client-shell/cmds/from-now"
 	_ "github.com/taskcluster/taskcluster/v54/clients/client-shell/cmds/group"
