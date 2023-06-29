@@ -547,6 +547,12 @@ exports.tasks.push({
   run: async (requirements, utils) => {
     const extraDirectives = `proxy_hide_header Content-Security-Policy;
       proxy_set_header Host taskcluster;
+
+      # remove original headers to avoid multiple CORS headers
+      proxy_hide_header 'Access-Control-Allow-Origin';
+      proxy_hide_header 'Access-Control-Allow-Credentials';
+      proxy_hide_header 'Access-Control-Allow-Headers';
+
       add_header 'Access-Control-Allow-Origin' '*';
       add_header 'Access-Control-Allow-Credentials' 'true';
       add_header 'Access-Control-Allow-Headers' 'Authorization,Content-Type,Accept-Language';`;
