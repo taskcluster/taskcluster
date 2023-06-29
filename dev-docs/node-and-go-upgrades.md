@@ -34,10 +34,6 @@ To update the go version:
 * Run `"$(go env GOPATH)/bin/goimports" -w .` (or non-bash equivalent)
 * Run `yarn generate` again, should finish cleanly.
 * Create a changelog file and commit
-* If you update the `.golangci-lint-version` file, run `yarn generate` again
-  and update the package hashes in `workers/generic-worker/gw-decision-task/tasks.yml`
-  with the hashes on the `golangci-lint-<X.Y.Z>-checksums.txt` file from the
-  [GitHub releases page](https://github.com/golangci/golangci-lint/releases)
 * Build and push new images (see below)
 
 # Build and push new images
