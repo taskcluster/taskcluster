@@ -3,6 +3,53 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v54.1.0
+
+### USERS
+
+▶ [minor]
+This change adds the `d2g` subcommand to the `taskcluster` cli.
+
+It can be used to translate a Docker Worker payload to a Generic Worker payload.
+Both the input and output are JSON. You can either pass the input as a file or pipe it in to the command.
+
+View help with:
+
+```shell
+taskcluster d2g -h
+```
+
+Example usages:
+
+```shell
+taskcluster d2g -f /path/to/input.json
+```
+
+_OR_
+
+```shell
+taskcluster d2g --file /path/to/input.json
+```
+
+_OR_
+
+```shell
+cat /path/to/input.json | taskcluster d2g
+```
+
+_OR_
+
+```shell
+echo '{"image": "ubuntu", "command": ["bash", "-c", "echo hello world"], "maxRunTime": 300}' | taskcluster d2g
+```
+
+▶ [patch]
+Fixes UI redirect where query parameters were not preserved. This broke changelog link from the sidebar.
+
+### OTHER
+
+▶ Additional change not described here: [#6340](https://github.com/taskcluster/taskcluster/issues/6340).
+
 ## v54.0.0
 
 ### USERS
