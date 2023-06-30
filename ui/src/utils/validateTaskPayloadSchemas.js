@@ -1,17 +1,17 @@
-import urls from 'taskcluster-lib-urls';
 import ajv from './ajv';
+import urls from './urls';
 
 const schemas = {};
 const fetchSchema = async (service, schema) => {
-  const res = await fetch(urls.schema('', service, schema));
+  const res = await fetch(urls.schema(service, schema));
 
   return res.json();
 };
 
 const prefetch = async () => {
-  ajv.addSchema(await fetchSchema('common', 'metaschema.json'));
-  ajv.addSchema(await fetchSchema('queue', 'v1/task.json'));
-  ajv.addSchema(await fetchSchema('queue', 'v1/task-metadata.json'));
+  ajv.addSchemaOnce(await fetchSchema('common', 'metaschema.json'));
+  ajv.addSchemaOnce(await fetchSchema('queue', 'v1/task.json'));
+  ajv.addSchemaOnce(await fetchSchema('queue', 'v1/task-metadata.json'));
 };
 
 const prefetchPromise = prefetch();

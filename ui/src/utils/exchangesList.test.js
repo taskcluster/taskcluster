@@ -5,7 +5,7 @@ describe('exchangesList', () => {
         json: () =>
           Promise.resolve({
             $id: url,
-            exchangePrefix: url.replace('.json', '/').substr(1),
+            exchangePrefix: url.replace('.json', '/'),
             entries: [
               {
                 exchange: 'exchange1',
@@ -23,7 +23,9 @@ describe('exchangesList', () => {
 
     expect(exchanges).toBeDefined();
     expect(
-      exchanges.includes('references/auth/v1/exchanges/exchange1')
+      exchanges.includes(
+        'https://taskcluster.net/references/auth/v1/exchanges/exchange1'
+      )
     ).toBeTruthy();
     expect(window.fetch).toHaveBeenCalled();
   });
