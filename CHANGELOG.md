@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v54.1.2
+
+### USERS
+
+▶ [patch] [#6330](https://github.com/taskcluster/taskcluster/issues/6330)
+Fixes UI errors on pages that were loading metaschema twice.
+
+### DEVELOPERS
+
+▶ [patch]
+Upgrades some rust crates and bumps rust version from 1.65.0 to 1.70.0.
+
 ## v54.1.1
 
 ### GENERAL
