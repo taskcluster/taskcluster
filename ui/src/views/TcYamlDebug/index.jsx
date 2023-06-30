@@ -20,34 +20,31 @@ import githubQuery from './github.graphql';
 import JsonDisplay from '../../components/JsonDisplay';
 
 const prefetchSchema = async () => {
-  ajv.addSchema(
+  ajv.addSchemaOnce(
     await (await fetch(urls.schema('common', 'metaschema.json'))).json()
   );
-  ajv.addSchema(
+  ajv.addSchemaOnce(
     await (
       await fetch(urls.schema('github', 'v1/taskcluster-github-config.json'))
     ).json(),
     'github-v0'
   );
-  ajv.addSchema(
+  ajv.addSchemaOnce(
     await (
       await fetch(urls.schema('github', 'v1/taskcluster-github-config.v1.json'))
     ).json(),
     'github-v1'
   );
-  ajv.addSchema(
-    await (await fetch(urls.schema('queue', 'v1/task-metadata.json'))).json(),
-    'task-metadata.json'
+  ajv.addSchemaOnce(
+    await (await fetch(urls.schema('queue', 'v1/task-metadata.json'))).json()
   );
-  ajv.addSchema(
-    await (await fetch(urls.schema('queue', 'v1/task.json'))).json(),
-    'task.json'
+  ajv.addSchemaOnce(
+    await (await fetch(urls.schema('queue', 'v1/task.json'))).json()
   );
-  ajv.addSchema(
+  ajv.addSchemaOnce(
     await (
       await fetch(urls.schema('queue', 'v1/create-task-request.json'))
-    ).json(),
-    'create-task'
+    ).json()
   );
 };
 

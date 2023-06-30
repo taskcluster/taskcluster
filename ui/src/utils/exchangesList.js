@@ -1,8 +1,8 @@
-import urls from 'taskcluster-lib-urls';
+import urls from './urls';
 
 const exchanges = [];
 const fetchExchanges = async (service, version) => {
-  const res = await fetch(urls.exchangeReference('', service, version));
+  const res = await fetch(urls.exchangeReference(service, version));
   const data = await res.json();
 
   data.entries?.forEach(entry => {
