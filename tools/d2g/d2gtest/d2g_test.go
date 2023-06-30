@@ -1,4 +1,4 @@
-//go:generate gw-codegen file://schemas/test_suites.yml generated_types.go
+//go:generate go run ../../../workers/generic-worker/gw-codegen file://schemas/test_suites.yml generated_types.go
 
 package d2gtest
 

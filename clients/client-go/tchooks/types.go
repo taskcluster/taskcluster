@@ -313,32 +313,32 @@ type (
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // TriggerHookRequest is of type json.RawMessage...
-func (this *TriggerHookRequest) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *TriggerHookRequest) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *TriggerHookRequest) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *TriggerHookRequest) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("TriggerHookRequest: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // TriggerHookResponse is of type json.RawMessage...
-func (this *TriggerHookResponse) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *TriggerHookResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *TriggerHookResponse) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *TriggerHookResponse) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("TriggerHookResponse: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }

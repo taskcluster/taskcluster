@@ -2223,48 +2223,48 @@ type (
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // GetArtifactContentResponse is of type json.RawMessage...
-func (this *GetArtifactContentResponse) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *GetArtifactContentResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *GetArtifactContentResponse) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *GetArtifactContentResponse) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("GetArtifactContentResponse: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // PostArtifactRequest is of type json.RawMessage...
-func (this *PostArtifactRequest) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *PostArtifactRequest) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *PostArtifactRequest) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *PostArtifactRequest) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("PostArtifactRequest: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // PostArtifactResponse is of type json.RawMessage...
-func (this *PostArtifactResponse) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *PostArtifactResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *PostArtifactResponse) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *PostArtifactResponse) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("PostArtifactResponse: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }

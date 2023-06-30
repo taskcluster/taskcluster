@@ -64,7 +64,6 @@ tasks:
           go test -v ./...
           ../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --timeout=5m
           cd d2g
-          go install github.com/taskcluster/taskcluster/v54/workers/generic-worker/gw-codegen@latest
           go generate ./...
           go mod tidy
           git status

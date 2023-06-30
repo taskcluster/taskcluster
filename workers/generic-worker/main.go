@@ -25,7 +25,6 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
-	"github.com/mcuadros/go-defaults"
 	tcclient "github.com/taskcluster/taskcluster/v54/clients/client-go"
 	"github.com/taskcluster/taskcluster/v54/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v54/internal"
@@ -584,52 +583,25 @@ func ClaimWork() *TaskRun {
 
 func (task *TaskRun) validatePayload() *CommandExecutionError {
 	jsonPayload := task.Definition.Payload
-	defaults.SetDefaults(&task.Payload)
-	err := json.Unmarshal(jsonPayload, &task.Payload)
-	if err != nil {
-		return MalformedPayloadError(err)
+	validateErr := task.validateJSON(jsonPayload, JSONSchema())
+	if validateErr != nil {
+		return validateErr
 	}
-	schemaLoader := gojsonschema.NewStringLoader(JSONSchema())
-	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
-	result, err := gojsonschema.Validate(schemaLoader, docLoader)
+	payload := map[string]interface{}{}
+	err := json.Unmarshal(jsonPayload, &payload)
 	if err != nil {
-		return MalformedPayloadError(err)
+		panic(err)
 	}
-	if !result.Valid() {
-		task.Errorf("Task payload for this worker type must conform to the following jsonschema:\n%s", JSONSchema())
-		task.Error("TASK FAIL since the task payload is invalid. See errors:")
-		for _, desc := range result.Errors() {
-			task.Errorf("- %s", desc)
+	if _, exists := payload["image"]; exists {
+		err := task.convertDockerWorkerPayload()
+		if err != nil {
+			return err
 		}
-		// Dealing with Invalid Task Payloads
-		// ----------------------------------
-		// If the task payload is malformed or invalid, keep in mind that the
-		// queue doesn't validate the contents of the `task.payload` property,
-		// the worker may resolve the current run by reporting an exception.
-		// When reporting an exception, using `tcqueue.ReportException` the
-		// worker should give a `reason`. If the worker is unable execute the
-		// task specific payload/code/logic, it should report exception with
-		// the reason `malformed-payload`.
-		//
-		// This can also be used if an external resource that is referenced in
-		// a declarative nature doesn't exist. Generally, it should be used if
-		// we can be certain that another run of the task will have the same
-		// result. This differs from `tcqueue.ReportFailed` in the sense that we
-		// report a failure if the task specific code failed.
-		//
-		// Most tasks includes a lot of declarative steps, such as poll a
-		// docker image, create cache folder, decrypt encrypted environment
-		// variables, set environment variables and etc. Clearly, if decryption
-		// of environment variables fail, there is no reason to retry the task.
-		// Nor can it be said that the task failed, because the error wasn't
-		// caused by execution of Turing complete code.
-		//
-		// If however, we run some executable code referenced in `task.payload`
-		// and the code crashes or exists non-zero, then the task is said to be
-		// failed. The difference is whether or not the unexpected behavior
-		// happened before or after the execution of task specific Turing
-		// complete code.
-		return MalformedPayloadError(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
+	} else {
+		err := json.Unmarshal(jsonPayload, &task.Payload)
+		if err != nil {
+			panic(err)
+		}
 	}
 	for _, artifact := range task.Payload.Artifacts {
 		// The default artifact expiry is task expiry, but is only applied when
@@ -650,6 +622,58 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		}
 	}
 	return nil
+}
+
+func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecutionError {
+	// Parse the JSON schema
+	schemaLoader := gojsonschema.NewStringLoader(schema)
+	documentLoader := gojsonschema.NewBytesLoader(input)
+
+	// Perform the validation
+	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	if err != nil {
+		return MalformedPayloadError(err)
+	}
+
+	// Check if the validation failed
+	if result.Valid() {
+		return nil
+	}
+
+	task.Errorf("Task payload for this worker type must conform to the following jsonschema:\n%s", schema)
+	task.Error("TASK FAIL since the task payload is invalid. See errors:")
+	for _, desc := range result.Errors() {
+		task.Errorf("- %s", desc)
+	}
+	// Dealing with Invalid Task Payloads
+	// ----------------------------------
+	// If the task payload is malformed or invalid, keep in mind that the
+	// queue doesn't validate the contents of the `task.payload` property,
+	// the worker may resolve the current run by reporting an exception.
+	// When reporting an exception, using `tcqueue.ReportException` the
+	// worker should give a `reason`. If the worker is unable execute the
+	// task specific payload/code/logic, it should report exception with
+	// the reason `malformed-payload`.
+	//
+	// This can also be used if an external resource that is referenced in
+	// a declarative nature doesn't exist. Generally, it should be used if
+	// we can be certain that another run of the task will have the same
+	// result. This differs from `tcqueue.ReportFailed` in the sense that we
+	// report a failure if the task specific code failed.
+	//
+	// Most tasks includes a lot of declarative steps, such as poll a
+	// docker image, create cache folder, decrypt encrypted environment
+	// variables, set environment variables and etc. Clearly, if decryption
+	// of environment variables fail, there is no reason to retry the task.
+	// Nor can it be said that the task failed, because the error wasn't
+	// caused by execution of Turing complete code.
+	//
+	// If however, we run some executable code referenced in `task.payload`
+	// and the code crashes or exists non-zero, then the task is said to be
+	// failed. The difference is whether or not the unexpected behavior
+	// happened before or after the execution of task specific Turing
+	// complete code.
+	return MalformedPayloadError(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
 }
 
 type CommandExecutionError struct {

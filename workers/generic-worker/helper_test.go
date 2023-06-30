@@ -28,6 +28,7 @@ import (
 	"github.com/taskcluster/taskcluster/v54/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v54/internal/mocktc"
 	"github.com/taskcluster/taskcluster/v54/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v54/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v54/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v54/workers/generic-worker/gwconfig"
 )
@@ -58,14 +59,14 @@ func testWorkerType() string {
 	return "test-" + strings.ToLower(strings.Replace(slugid.Nice(), "_", "", -1)) + "-a"
 }
 
-func scheduleTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string) {
+func scheduleTask[P GenericWorkerPayload | dockerworker.DockerWorkerPayload](t *testing.T, td *tcqueue.TaskDefinitionRequest, payload P) (taskID string) {
 	t.Helper()
 	taskID = slugid.Nice()
 	scheduleNamedTask(t, td, payload, taskID)
 	return
 }
 
-func scheduleNamedTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload, taskID string) {
+func scheduleNamedTask[P GenericWorkerPayload | dockerworker.DockerWorkerPayload](t *testing.T, td *tcqueue.TaskDefinitionRequest, payload P, taskID string) {
 	t.Helper()
 	if td.Payload == nil {
 		b, err := json.Marshal(&payload)
@@ -199,7 +200,7 @@ func LogText(t *testing.T) string {
 	return string(bytes)
 }
 
-func submitAndAssert(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload, state, reason string) (taskID string) {
+func submitAndAssert[P GenericWorkerPayload | dockerworker.DockerWorkerPayload](t *testing.T, td *tcqueue.TaskDefinitionRequest, payload P, state, reason string) (taskID string) {
 	t.Helper()
 	taskID = scheduleTask(t, td, payload)
 	ensureResolution(t, taskID, state, reason)

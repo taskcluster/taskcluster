@@ -1,3 +1,4 @@
+---
 $schema: "/schemas/common/metaschema.json#"
 $id: "/schemas/generic-worker/simple_posix.json#"
 title: Generic worker payload
@@ -138,8 +139,8 @@ properties:
           title: Content-Encoding header when serving artifact over HTTP.
           type: string
           enum:
-            - identity
-            - gzip
+          - identity
+          - gzip
           description: |-
             Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the
             following file extensions, where `identity` will be used, since they are already
@@ -481,7 +482,7 @@ definitions:
             If provided, the required SHA256 of the content body.
 
             Since: generic-worker 10.8.0
-          pattern: '^[a-f0-9]{64}$'
+          pattern: "^[a-f0-9]{64}$"
       additionalProperties: false
       required:
       - taskId
@@ -525,7 +526,7 @@ definitions:
             If provided, the required SHA256 of the content body.
 
             Since: generic-worker 10.8.0
-          pattern: '^[a-f0-9]{64}$'
+          pattern: "^[a-f0-9]{64}$"
       additionalProperties: false
       required:
       - url
@@ -562,7 +563,7 @@ definitions:
             Base64 encoded content of file/archive, up to 64KB (encoded) in size.
 
             Since: generic-worker 11.1.0
-          pattern: '^[A-Za-z0-9/+]+[=]{0,2}$'
+          pattern: "^[A-Za-z0-9/+]+[=]{0,2}$"
       additionalProperties: false
       required:
       - base64
