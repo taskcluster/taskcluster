@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v54.1.1
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.20.5 from go1.19.10.
+
 ## v54.1.0
 
 ### USERS
