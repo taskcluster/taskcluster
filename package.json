@@ -86,7 +86,7 @@
     "passport": "^0.6.0",
     "passport-auth0": "^1.4.3",
     "passport-github": "^1.1.0",
-    "pg": "^8.8.0",
+    "pg": "^8.11.1",
     "pg-connection-string": "^2.3.0",
     "qs": "^6.10.1",
     "quick-lru": "^5.0.0",
