@@ -12,7 +12,6 @@ import TextField from '../../components/TextField';
 import CodeEditor from '../../components/CodeEditor';
 import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';
-import urls from '../../utils/urls';
 import { siteSpecificVariable } from '../../utils/siteSpecific';
 import ajv from '../../utils/ajv';
 import scrollToHash from '../../utils/scrollToHash';
@@ -20,32 +19,26 @@ import githubQuery from './github.graphql';
 import JsonDisplay from '../../components/JsonDisplay';
 
 const prefetchSchema = async () => {
-  ajv.addSchemaOnce(
-    await (await fetch(urls.schema('common', 'metaschema.json'))).json()
-  );
-  ajv.addSchemaOnce(
-    await (
-      await fetch(urls.schema('github', 'v1/taskcluster-github-config.json'))
-    ).json(),
-    'github-v0'
-  );
-  ajv.addSchemaOnce(
-    await (
-      await fetch(urls.schema('github', 'v1/taskcluster-github-config.v1.json'))
-    ).json(),
-    'github-v1'
-  );
-  ajv.addSchemaOnce(
-    await (await fetch(urls.schema('queue', 'v1/task-metadata.json'))).json()
-  );
-  ajv.addSchemaOnce(
-    await (await fetch(urls.schema('queue', 'v1/task.json'))).json()
-  );
-  ajv.addSchemaOnce(
-    await (
-      await fetch(urls.schema('queue', 'v1/create-task-request.json'))
-    ).json()
-  );
+  await ajv.loadServiceSchema('common', 'metaschema.json');
+  await Promise.all([
+    ajv.loadServiceSchema(
+      'github',
+      'v1/taskcluster-github-config.json',
+      'github-v0'
+    ),
+    ajv.loadServiceSchema(
+      'github',
+      'v1/taskcluster-github-config.v1.json',
+      'github-v1'
+    ),
+    ajv.loadServiceSchema('queue', 'v1/task-metadata.json'),
+    ajv.loadServiceSchema('queue', 'v1/task.json'),
+    ajv.loadServiceSchema(
+      'queue',
+      'v1/create-task-request.json',
+      'create-task'
+    ),
+  ]);
 };
 
 prefetchSchema();
