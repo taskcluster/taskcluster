@@ -1,6 +1,5 @@
-//go:generate /bin/bash -c "echo 'file://schemas/test_suites.yml' | jsonschema2go -d -o d2g_test > generated_types_test.go && gofmt -w generated_types_test.go"
-//go:generate gw-codegen file://schemas/docker_worker_payload.json dockerworker/generated_types.go
-//go:generate gw-codegen file://schemas/generic_worker_payload.json genericworker/generated_types.go
+//go:generate gw-codegen file://../../workers/docker-worker/schemas/v1/payload.yml dockerworker/generated_types.go
+//go:generate gw-codegen file://../../workers/generic-worker/schemas/multiuser_posix.yml genericworker/generated_types.go
 
 package d2g
 

@@ -1,4 +1,6 @@
-package d2g_test
+//go:generate gw-codegen file://schemas/test_suites.yml generated_types.go
+
+package d2gtest
 
 import (
 	"encoding/json"
@@ -7,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"unsafe"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/xeipuuv/gojsonschema"
@@ -15,6 +16,7 @@ import (
 
 	d2g "github.com/taskcluster/taskcluster/v54/tools/d2g"
 	"github.com/taskcluster/taskcluster/v54/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v54/tools/d2g/genericworker"
 )
 
 func ExampleScopes_mixture() {
@@ -52,8 +54,7 @@ func ExampleScopes_mixture() {
 
 // TestDataTestCases runs all the test cases found in directory testdata/testcases.
 func TestDataTestCases(t *testing.T) {
-	b := yamlToJSON(t, "schemas/test_suites.yml")
-	schemaLoader := gojsonschema.NewBytesLoader(b)
+	schema := JSONSchema()
 	// Enumerate all test suites under testdata/testcases, and execute a subtest for each suite
 	err := filepath.WalkDir(
 		"testdata/testcases",
@@ -70,7 +71,7 @@ func TestDataTestCases(t *testing.T) {
 			}
 			t.Run(
 				path,
-				testSuite(schemaLoader, path),
+				testSuite(schema, path),
 			)
 			return nil
 		},
@@ -81,9 +82,9 @@ func TestDataTestCases(t *testing.T) {
 }
 
 // testSuite returns a go test the given testSuite
-func testSuite(schemaLoader gojsonschema.JSONLoader, path string) func(t *testing.T) {
+func testSuite(schema string, path string) func(t *testing.T) {
 	return func(t *testing.T) {
-		validateTestSuite(t, schemaLoader, path)
+		validateTestSuite(t, schema, path)
 		// Iterate through test cases in the test suite, and execute a subtest for each test case
 		var d D2GTestCases
 		defaults.SetDefaults(&d)
@@ -103,10 +104,16 @@ func testSuite(schemaLoader gojsonschema.JSONLoader, path string) func(t *testin
 	}
 }
 
-func (tc TestCase) TestCase() func(t *testing.T) {
+func (tc *TestCase) TestCase() func(t *testing.T) {
 	return func(t *testing.T) {
-		// need to convert types using unsafe package because ... https://github.com/golang/go/issues/58965
-		dwPayload := *(*dockerworker.DockerWorkerPayload)(unsafe.Pointer(&tc.DockerWorkerTaskPayload))
+		t.Helper()
+		tc.Validate(t)
+		dwPayload := dockerworker.DockerWorkerPayload{}
+		defaults.SetDefaults(&dwPayload)
+		err := json.Unmarshal(tc.DockerWorkerTaskPayload, &dwPayload)
+		if err != nil {
+			t.Fatalf("Cannot unmarshal test suite Docker Worker payload %v: %v", string(tc.DockerWorkerTaskPayload), err)
+		}
 		actualGWPayload, err := d2g.Convert(&dwPayload)
 		if err != nil {
 			t.Fatalf("Cannot convert Docker Worker payload %#v to Generic Worker payload: %s", dwPayload, err)
@@ -115,9 +122,15 @@ func (tc TestCase) TestCase() func(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot convert Generic Worker payload %#v to JSON: %s", *actualGWPayload, err)
 		}
-		formattedExpectedGWPayload, err := json.MarshalIndent(tc.GenericWorkerTaskPayload, "", "  ")
+		gwPayload := genericworker.GenericWorkerPayload{}
+		defaults.SetDefaults(&gwPayload)
+		err = json.Unmarshal(tc.GenericWorkerTaskPayload, &gwPayload)
 		if err != nil {
-			t.Fatalf("Cannot convert Generic Worker payload %#v to JSON: %s", tc.GenericWorkerTaskPayload, err)
+			t.Fatalf("Cannot unmarshal test suite Generic Worker payload %v: %v", string(tc.GenericWorkerTaskPayload), err)
+		}
+		formattedExpectedGWPayload, err := json.MarshalIndent(gwPayload, "", "  ")
+		if err != nil {
+			t.Fatalf("Cannot convert Generic Worker payload %#v to JSON: %s", gwPayload, err)
 		}
 		if string(formattedExpectedGWPayload) != string(formattedActualGWPayload) {
 			t.Fatalf("Converted task does not match expected value.\nExpected:%v\nActual:%v", string(formattedExpectedGWPayload), string(formattedActualGWPayload))
@@ -159,10 +172,10 @@ func unmarshalYAML(t *testing.T, dest interface{}, path string) {
 	}
 }
 
-func validateTestSuite(t *testing.T, schemaLoader gojsonschema.JSONLoader, path string) {
+func validateAgainstSchema(t *testing.T, rm json.RawMessage, schema string) {
 	t.Helper()
-	b := yamlToJSON(t, path)
-	documentLoader := gojsonschema.NewBytesLoader(b)
+	documentLoader := gojsonschema.NewBytesLoader(rm)
+	schemaLoader := gojsonschema.NewStringLoader(schema)
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
 		t.Fatal(err)
@@ -174,4 +187,16 @@ func validateTestSuite(t *testing.T, schemaLoader gojsonschema.JSONLoader, path 
 		}
 		t.FailNow()
 	}
+}
+
+func validateTestSuite(t *testing.T, schema string, path string) {
+	t.Helper()
+	b := yamlToJSON(t, path)
+	validateAgainstSchema(t, b, schema)
+}
+
+func (tc *TestCase) Validate(t *testing.T) {
+	t.Helper()
+	validateAgainstSchema(t, tc.DockerWorkerTaskPayload, dockerworker.JSONSchema())
+	validateAgainstSchema(t, tc.GenericWorkerTaskPayload, genericworker.JSONSchema())
 }

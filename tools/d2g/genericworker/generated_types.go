@@ -198,8 +198,20 @@ type (
 		LiveLog bool `json:"liveLog" default:"true"`
 
 		// Video loopback device created using v4l2loopback.
-		// A video device will be available to the task user
-		// at `/dev/video0`.
+		// A video device will be available for the task. Its
+		// location will be passed to the task via environment
+		// variable `TASKCLUSTER_VIDEO_DEVICE`. The
+		// location will be `/dev/video<N>` where `<N>` is
+		// an integer between 0 and 255. The value of `<N>`
+		// is not static, and therefore either the environment
+		// variable should be used, or `/dev` should be
+		// scanned in order to determine the correct location.
+		// Tasks should not assume a constant value.
+		//
+		// This feature is only available on Linux. If a task
+		// is submitted with this feature enabled on a non-Linux,
+		// posix platform (FreeBSD, macOS), the task will resolve as
+		// `exception/malformed-payload`.
 		//
 		// Since: generic-worker 53.1.0
 		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
@@ -816,7 +828,7 @@ func JSONSchema() string {
           "type": "boolean"
         },
         "loopbackVideo": {
-          "description": "Video loopback device created using v4l2loopback.\nA video device will be available to the task user\nat ` + "`" + `/dev/video0` + "`" + `.\n\nSince: generic-worker 53.1.0",
+          "description": "Video loopback device created using v4l2loopback.\nA video device will be available for the task. Its\nlocation will be passed to the task via environment\nvariable ` + "`" + `TASKCLUSTER_VIDEO_DEVICE` + "`" + `. The\nlocation will be ` + "`" + `/dev/video\u003cN\u003e` + "`" + ` where ` + "`" + `\u003cN\u003e` + "`" + ` is\nan integer between 0 and 255. The value of ` + "`" + `\u003cN\u003e` + "`" + `\nis not static, and therefore either the environment\nvariable should be used, or ` + "`" + `/dev` + "`" + ` should be\nscanned in order to determine the correct location.\nTasks should not assume a constant value.\n\nThis feature is only available on Linux. If a task\nis submitted with this feature enabled on a non-Linux,\nposix platform (FreeBSD, macOS), the task will resolve as\n` + "`" + `exception/malformed-payload` + "`" + `.\n\nSince: generic-worker 53.1.0",
           "title": "Loopback Video device",
           "type": "boolean"
         },

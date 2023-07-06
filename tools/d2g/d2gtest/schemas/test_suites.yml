@@ -63,6 +63,14 @@ properties:
                 Detailed information about what the test case tests
               type: string
             dockerWorkerTaskPayload:
-              "$ref": "file://schemas/docker_worker_payload.json#"
+              # validation of this object is handled in test harness, rather
+              # than using $ref, since gojsonschema can't interpret yaml
+              # schemas and we prefer not to keep both json and yml versions in
+              # the repo
+              type: object
             genericWorkerTaskPayload:
-              "$ref": "file://schemas/generic_worker_payload.json#"
+              # validation of this object is handled in test harness, rather
+              # than using $ref, since gojsonschema can't interpret yaml
+              # schemas and we prefer not to keep both json and yml versions in
+              # the repo
+              type: object
