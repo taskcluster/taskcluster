@@ -107,15 +107,15 @@ func (d *genericworker) StartWorker(state *run.State) (workerproto.Transport, er
 	// write out the config file
 	content, err := json.MarshalIndent(state.WorkerConfig, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("Error constructing worker config: %v", err)
+		return nil, fmt.Errorf("error constructing worker config: %v", err)
 	}
 	err = os.WriteFile(d.wicfg.ConfigPath, content, 0600)
 	if err != nil {
-		return nil, fmt.Errorf("Error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
+		return nil, fmt.Errorf("error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
 	}
 
 	if (d.wicfg.Path != "" && d.wicfg.Service != "") || (d.wicfg.Path == "" && d.wicfg.Service == "") {
-		return nil, fmt.Errorf("Specify exactly one of worker.path and worker.windowsService")
+		return nil, fmt.Errorf("specify exactly one of worker.path and worker.windowsService")
 	}
 	if d.wicfg.Path != "" {
 		d.runMethod, err = newCmdRunMethod()

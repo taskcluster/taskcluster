@@ -77,14 +77,14 @@ func (pc *WorkerImplementationConfig) Unpack(out interface{}) error {
 			if optional {
 				continue
 			}
-			return fmt.Errorf("Configuration value `worker.%s` not found in %#v", name, pc.Data)
+			return fmt.Errorf("configuration value `worker.%s` not found in %#v", name, pc.Data)
 		}
 
 		// check types and set the struct field
 		destfield := destval.Field(i)
 		gotval := reflect.ValueOf(val)
 		if destfield.Type() != gotval.Type() {
-			return fmt.Errorf("Configuration value `worker.%s` should have type %s, got %s", name, destfield.Type(), gotval.Type())
+			return fmt.Errorf("configuration value `worker.%s` should have type %s, got %s", name, destfield.Type(), gotval.Type())
 		}
 		destfield.Set(gotval)
 	}

@@ -58,12 +58,12 @@ func (d *dockerworker) ConfigureRun(state *run.State) error {
 
 	workerLocationJson, err := json.Marshal(state.WorkerLocation)
 	if err != nil {
-		return fmt.Errorf("Error encoding worker location: %v", err)
+		return fmt.Errorf("error encoding worker location: %v", err)
 	}
 
 	state.WorkerConfig, err = state.WorkerConfig.Set("workerLocation", string(workerLocationJson))
 	if err != nil {
-		return fmt.Errorf("Could not set worker location in the worker config: %v", err)
+		return fmt.Errorf("could not set worker location in the worker config: %v", err)
 	}
 
 	set := func(key, value string) {
@@ -103,11 +103,11 @@ func (d *dockerworker) StartWorker(state *run.State) (workerproto.Transport, err
 	// write out the config file
 	content, err := json.MarshalIndent(state.WorkerConfig, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("Error constructing worker config: %v", err)
+		return nil, fmt.Errorf("error constructing worker config: %v", err)
 	}
 	err = os.WriteFile(d.wicfg.ConfigPath, content, 0600)
 	if err != nil {
-		return nil, fmt.Errorf("Error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
+		return nil, fmt.Errorf("error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
 	}
 
 	// the --host worker-runner instructs docker-worker to merge

@@ -2,9 +2,9 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-  - src.transforms:taskcluster_image_versions
   - src.transforms:add_task_env
-  - src.transforms:podman_run
+  - src.transforms:parameterize_mounts
+  - src.transforms:parameterize_artifacts
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
@@ -12,9 +12,37 @@ task-defaults:
   worker-type: gw-ubuntu-22-04
   run:
     using: bare
+    install:
+      - |
+        set -vx
+        export CGO_ENABLED=0
+        export GOROOT="$(pwd)/$GO_VERSION/go"
+        export GOPATH="$(pwd)/gopath$GO_RELEASE"
+        export PATH="${{GOPATH}}/bin:${{GOROOT}}/bin:$(pwd)/bin:${{PATH}}"
+        git --version
+        go version
+        go env
+        if [ ! -d taskcluster/.git ]; then
+          rm -rf taskcluster
+          git clone {head_repository} taskcluster
+        fi
+        cd taskcluster
+        git fetch {head_repository} "+${{GITHUB_SHA}}:refs/heads/X${{TASK_ID}}"
+        git checkout -f "X${{TASK_ID}}"
+        git reset --hard "${{GITHUB_SHA}}"
+        git clean -fdx
+        git checkout -B tmp -t "X${{TASK_ID}}"
   worker:
     max-run-time: 600
-  docker-image: golang:{go_version}-bookworm
+    mounts:
+      - content:
+          url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+        directory: '{go_version}'
+        format: tar.gz
+      - content:
+          url: 'https://github.com/golangci/golangci-lint/releases/download/v{golangci_lint_version}/golangci-lint-{golangci_lint_version}-linux-amd64.tar.gz'
+        directory: golangci-lint
+        format: tar.gz
 
 tasks:
   internal-libraries:
@@ -22,10 +50,23 @@ tasks:
     run:
       command: >-
         cd internal &&
-        go test -v -race ./...
+        ../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --timeout=5m &&
+        go test -v ./...
   tools:
     description: test golang tools
     run:
-      command: >-
-        cd tools &&
-        go test -v -race ./...
+      command:
+        - |
+          cd tools
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          staticcheck ./...
+          go vet ./...
+          go test -v ./...
+          ../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --timeout=5m
+          cd d2g
+          go install github.com/taskcluster/taskcluster/v54/workers/generic-worker/gw-codegen@latest
+          go generate ./...
+          go mod tidy
+          git status
+          test $(git status --porcelain | wc -l) == 0
+          go install ./...

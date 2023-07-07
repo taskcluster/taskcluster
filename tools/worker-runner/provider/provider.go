@@ -29,12 +29,12 @@ var providers map[string]providerInfo = map[string]providerInfo{
 
 func New(runnercfg *cfg.RunnerConfig) (provider.Provider, error) {
 	if runnercfg.Provider.ProviderType == "" {
-		return nil, fmt.Errorf("No provider given in configuration")
+		return nil, fmt.Errorf("no provider given in configuration")
 	}
 
 	pi, ok := providers[runnercfg.Provider.ProviderType]
 	if !ok {
-		return nil, fmt.Errorf("Unrecognized provider type %s", runnercfg.Provider.ProviderType)
+		return nil, fmt.Errorf("unrecognized provider type %s", runnercfg.Provider.ProviderType)
 	}
 	return pi.constructor(runnercfg)
 }

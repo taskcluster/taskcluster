@@ -117,7 +117,7 @@ func (mds *realMetadataService) queryAttestedDocument() (string, error) {
 		return "", err
 	}
 	if j.Encoding != "pkcs7" {
-		return "", fmt.Errorf("Expected attested document with format pkcs7, got %s", j.Encoding)
+		return "", fmt.Errorf("expected attested document with format pkcs7, got %s", j.Encoding)
 	}
 	return j.Signature, nil
 }

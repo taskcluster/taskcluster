@@ -62,7 +62,7 @@ func (reg *RegistrationManager) RegisterWorker(workerIdentityProofMap map[string
 		WorkerIdentityProof: json.RawMessage(workerIdentityProof),
 	})
 	if err != nil {
-		return fmt.Errorf("Could not register worker: %w", err)
+		return fmt.Errorf("could not register worker: %w", err)
 	}
 
 	reg.state.Credentials.ClientID = res.Credentials.ClientID
@@ -91,7 +91,7 @@ func (reg *RegistrationManager) UseCachedRun() error {
 		return nil
 	}
 	if expire.Before(time.Now()) {
-		return errors.New("Cached worker credentials have expired; cannot re-register")
+		return errors.New("cached worker credentials have expired; cannot re-register")
 	}
 
 	return nil

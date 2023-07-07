@@ -162,7 +162,7 @@ func copyWsData(dest *websocket.Conn, src *websocket.Conn, stopper *stopper) err
 			return err
 		}
 
-		if stopper.is_stopped() {
+		if stopper.isStopped() {
 			return nil
 		}
 	}

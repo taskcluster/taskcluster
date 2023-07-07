@@ -25,7 +25,7 @@ func Run(configFile string) (state run.State, err error) {
 	log.Printf("Loading worker-runner configuration from %s", configFile)
 	runnercfg, err := cfg.LoadRunnerConfig(configFile)
 	if err != nil {
-		err = fmt.Errorf("Error loading runner config file %s: %s", configFile, err)
+		err = fmt.Errorf("error loading runner config file %s: %s", configFile, err)
 		return
 	}
 
