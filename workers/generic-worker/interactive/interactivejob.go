@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sync"
 	"syscall"
 
 	"github.com/creack/pty"
@@ -26,6 +27,7 @@ type InteractiveJob struct {
 	cmd    *exec.Cmd
 	errors chan error
 	done   chan struct{}
+	wsLock sync.Mutex
 	conn   *websocket.Conn
 	ctx    context.Context
 }
@@ -38,6 +40,7 @@ func CreateInteractiveJob(createCmd CreateInteractiveProcess, conn *websocket.Co
 		// and we don't want to block
 		errors: make(chan error, 3),
 		done:   make(chan struct{}),
+		wsLock: sync.Mutex{},
 		conn:   conn,
 		ctx:    ctx,
 	}
@@ -96,7 +99,7 @@ func (itj *InteractiveJob) copyCommandOutputStream() {
 			if n == 0 {
 				continue
 			}
-			if err := itj.conn.WriteMessage(websocket.TextMessage, buf[:n]); err != nil {
+			if err := itj.writeWsMessage(websocket.TextMessage, buf[:n]); err != nil {
 				itj.errors <- err
 				return
 			}
@@ -155,8 +158,14 @@ func (itj *InteractiveJob) handleWebsocketMessages() {
 
 func (itj *InteractiveJob) reportError(errorMessage string) {
 	log.Println(errorMessage)
-	err := itj.conn.WriteMessage(websocket.TextMessage, []byte(errorMessage))
+	err := itj.writeWsMessage(websocket.TextMessage, []byte(errorMessage))
 	if err != nil {
 		log.Println("Error while reporting error to client")
 	}
+}
+
+func (itj *InteractiveJob) writeWsMessage(messageType int, message []byte) (err error) {
+	itj.wsLock.Lock()
+	defer itj.wsLock.Unlock()
+	return itj.conn.WriteMessage(messageType, message)
 }
