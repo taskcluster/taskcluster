@@ -74,7 +74,7 @@ func configureRun(runnercfg *cfg.RunnerConfig, state *run.State, secretsClientFa
 			log.Printf("Falling back to legacy secret format without top-level config/files properties")
 			err := json.Unmarshal(secResponse.Secret, &secret.Config)
 			if err != nil {
-				return fmt.Errorf("Secret value is not a JSON object")
+				return fmt.Errorf("secret value is not a JSON object")
 			}
 		}
 

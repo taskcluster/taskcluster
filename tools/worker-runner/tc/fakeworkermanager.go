@@ -121,7 +121,7 @@ func FakeWorkerManagerWorkerErrorReports() ([]*tcworkermanager.WorkerErrorReport
 	wmWorkerErrorReportsLock.Lock()
 	defer wmWorkerErrorReportsLock.Unlock()
 	if len(wmWorkerErrorReports) == 0 {
-		return nil, fmt.Errorf("No reportWorkerError calls")
+		return nil, fmt.Errorf("no reportWorkerError calls")
 	} else {
 		reports := make([]*tcworkermanager.WorkerErrorReport, len(wmWorkerErrorReports))
 		copy(reports, wmWorkerErrorReports)
@@ -134,13 +134,13 @@ func FakeWorkerManagerWorkerErrorReports() ([]*tcworkermanager.WorkerErrorReport
 // exactly one.  This resets the list of registrations in the process.
 func FakeWorkerManagerRegistration() (*tcworkermanager.RegisterWorkerRequest, error) {
 	if len(wmRegistrations) == 0 {
-		return nil, fmt.Errorf("No registerWorker calls")
+		return nil, fmt.Errorf("no registerWorker calls")
 	} else if len(wmRegistrations) == 1 {
 		req := wmRegistrations[0]
 		wmRegistrations = []*tcworkermanager.RegisterWorkerRequest{}
 		return req, nil
 	} else {
-		return nil, fmt.Errorf("Multiple registerWorker calls")
+		return nil, fmt.Errorf("multiple registerWorker calls")
 	}
 }
 
@@ -148,13 +148,13 @@ func FakeWorkerManagerRegistration() (*tcworkermanager.RegisterWorkerRequest, er
 // exactly one.  This resets the list of registrations in the process.
 func FakeWorkerManagerReregistration() (*tcworkermanager.ReregisterWorkerRequest, error) {
 	if len(wmReregistrations) == 0 {
-		return nil, fmt.Errorf("No reregisterWorker calls")
+		return nil, fmt.Errorf("no reregisterWorker calls")
 	} else if len(wmReregistrations) == 1 {
 		req := wmReregistrations[0]
 		wmReregistrations = []*tcworkermanager.ReregisterWorkerRequest{}
 		return req, nil
 	} else {
-		return nil, fmt.Errorf("Multiple reregisterWorker calls")
+		return nil, fmt.Errorf("multiple reregisterWorker calls")
 	}
 }
 

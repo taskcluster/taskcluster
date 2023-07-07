@@ -169,8 +169,8 @@ func TestBadPort(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Was expecting an error!")
 	}
-	if err.Error() != "Port -12345 is not in range [0,65535]" {
-		t.Fatalf("Was expecting error to say 'Port -12345 is not in range [0,65535]' but it says: %v", err)
+	if err.Error() != "port -12345 is not in range [0,65535]" {
+		t.Fatalf("Was expecting error to say 'port -12345 is not in range [0,65535]' but it says: %v", err)
 	}
 }
 
@@ -185,7 +185,7 @@ func TestBadIPAddress(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Was expecting an error!")
 	}
-	if err.Error() != "Invalid IPv4/IPv6 address specified - cannot parse: 172.17.0.44.66" {
-		t.Fatalf("Was expecting error to say 'Invalid IPv4/IPv6 address specified - cannot parse: 172.17.0.44.66' but it says: %v", err)
+	if err.Error() != "invalid IPv4/IPv6 address specified - cannot parse: 172.17.0.44.66" {
+		t.Fatalf("Was expecting error to say 'invalid IPv4/IPv6 address specified - cannot parse: 172.17.0.44.66' but it says: %v", err)
 	}
 }

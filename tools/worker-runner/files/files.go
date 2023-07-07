@@ -16,7 +16,7 @@ func ExtractAll(files []File) error {
 	for _, f := range files {
 		err := f.extract()
 		if err != nil {
-			return fmt.Errorf("Error extracting file %v: %v", f.Path, err)
+			return fmt.Errorf("error extracting file %v: %v", f.Path, err)
 		}
 	}
 	return nil

@@ -65,14 +65,14 @@ func (pc *ProviderConfig) Unpack(out interface{}) error {
 		// get the value
 		val, ok := pc.Data[name]
 		if !ok {
-			return fmt.Errorf("Configuration value `provider.%s` not found", name)
+			return fmt.Errorf("configuration value `provider.%s` not found", name)
 		}
 
 		// check types and set the struct field
 		destfield := destval.Field(i)
 		gotval := reflect.ValueOf(val)
 		if destfield.Type() != gotval.Type() {
-			return fmt.Errorf("Configuration value `provider.%s` should have type %s", name, destfield.Type())
+			return fmt.Errorf("configuration value `provider.%s` should have type %s", name, destfield.Type())
 		}
 		destfield.Set(gotval)
 	}

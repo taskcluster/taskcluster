@@ -79,7 +79,7 @@ func (p *StaticProvider) GetWorkerIdentityProof() (map[string]interface{}, error
 }
 
 func (p *StaticProvider) UseCachedRun(run *run.State) error {
-	return errors.New("Do not use cacheOverRestarts with static provider")
+	return errors.New("do not use cacheOverRestarts with static provider")
 }
 
 func (p *StaticProvider) SetProtocol(proto *workerproto.Protocol) {

@@ -175,7 +175,7 @@ func set(key []string, i int, config interface{}, value interface{}) (interface{
 // This returns a new WorkerConfig containing the updated value.
 func (wc *WorkerConfig) Set(key string, value interface{}) (*WorkerConfig, error) {
 	if key == "" {
-		return nil, fmt.Errorf("Must specify a nonempty key")
+		return nil, fmt.Errorf("must specify a nonempty key")
 	}
 
 	if wc == nil {
@@ -195,7 +195,7 @@ func (wc *WorkerConfig) Set(key string, value interface{}) (*WorkerConfig, error
 // Get a value at the given dotted path
 func (wc *WorkerConfig) Get(key string) (interface{}, error) {
 	if key == "" {
-		return nil, fmt.Errorf("Must specify a nonempty key")
+		return nil, fmt.Errorf("must specify a nonempty key")
 	}
 
 	splitkey := strings.Split(key, ".")

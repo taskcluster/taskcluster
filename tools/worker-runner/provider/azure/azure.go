@@ -47,12 +47,12 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 
 	instanceData, err := p.metadataService.queryInstanceData()
 	if err != nil {
-		return fmt.Errorf("Could not query instance data: %v", err)
+		return fmt.Errorf("could not query instance data: %v", err)
 	}
 
 	document, err := p.metadataService.queryAttestedDocument()
 	if err != nil {
-		return fmt.Errorf("Could not query attested document: %v", err)
+		return fmt.Errorf("could not query attested document: %v", err)
 	}
 
 	// bug 1621037: revert to using customData once it is fixed
@@ -211,16 +211,16 @@ func loadTaggedData(tags []Tag) (*TaggedData, error) {
 		}
 	}
 	if c.RootURL == "" {
-		return nil, fmt.Errorf("Did not get root-url from instance tagged data")
+		return nil, fmt.Errorf("did not get root-url from instance tagged data")
 	}
 	if c.WorkerPoolId == "" {
-		return nil, fmt.Errorf("Did not get worker-pool-id from instance tagged data")
+		return nil, fmt.Errorf("did not get worker-pool-id from instance tagged data")
 	}
 	if c.ProviderId == "" {
-		return nil, fmt.Errorf("Did not get provider-id from instance tagged data")
+		return nil, fmt.Errorf("did not get provider-id from instance tagged data")
 	}
 	if c.WorkerGroup == "" {
-		return nil, fmt.Errorf("Did not get worker-group from instance tagged data")
+		return nil, fmt.Errorf("did not get worker-group from instance tagged data")
 	}
 
 	return c, nil

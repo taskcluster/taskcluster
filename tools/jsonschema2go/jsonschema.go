@@ -661,7 +661,7 @@ func (subSchema *JsonSubSchema) link(job *Job) (err error) {
 	if ref := subSchema.Ref; ref != nil && *ref != "" {
 		subSchema.RefSubSchema = job.result.SchemaSet.all[subSchema.RefSchemaURL]
 		if subSchema.RefSubSchema == nil {
-			return fmt.Errorf("Subschema %v not loaded when updating %v", subSchema.RefSchemaURL, subSchema.SourceURL)
+			return fmt.Errorf("subschema %v not loaded when updating %v", subSchema.RefSchemaURL, subSchema.SourceURL)
 		}
 		log.Printf("Linked %v to %v", subSchema.SourceURL, subSchema.RefSchemaURL)
 	} else {
@@ -868,7 +868,7 @@ func (job *Job) loadJsonSchema(URL string) (subSchema *JsonSubSchema, err error)
 			}
 			body = resp.Body
 		default:
-			return nil, fmt.Errorf("Unknown scheme '%s' for URL '%s'", u.Scheme, URL)
+			return nil, fmt.Errorf("unknown scheme '%s' for URL '%s'", u.Scheme, URL)
 		}
 	}
 	defer body.Close()
@@ -894,7 +894,7 @@ func (job *Job) loadJsonSchema(URL string) (subSchema *JsonSubSchema, err error)
 func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
 	// if url is not provided, there is nothing to download
 	if url == "" {
-		return nil, errors.New("Empty url in cacheJsonSchema")
+		return nil, errors.New("empty url in cacheJsonSchema")
 	}
 	sanitizedURL := sanitizeURL(url)
 	// only fetch if we haven't fetched already...
@@ -923,7 +923,7 @@ func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
 	// check that the required subschema is contained in the document we loaded
 	subschema, found := job.result.SchemaSet.all[sanitizedURL]
 	if !found {
-		return nil, fmt.Errorf("Subschema %v not found under URL %v", subschemaPath, rootSchemaURL)
+		return nil, fmt.Errorf("subschema %v not found under URL %v", subschemaPath, rootSchemaURL)
 	}
 	return subschema, nil
 }
@@ -1026,7 +1026,7 @@ package ` + job.Package + `
 	// format it
 	job.result.SourceCode, err = format.Source([]byte(content))
 	if err != nil {
-		err = fmt.Errorf("Formatting error: %v\n%v", err, content)
+		err = fmt.Errorf("formatting error: %v\n%v", err, content)
 	}
 	return job.result, err
 	// imports should be good, so no need to run
