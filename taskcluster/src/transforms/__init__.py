@@ -132,6 +132,11 @@ def podman_run(config, tasks):
                 podman rm taskcontainer
                 exit ${{exit_code}}"""
 
+        # An error sometimes occurs while pulling the docker image:
+        # Error: reading blob sha256:<SHA>: Get "<URL>": remote error: tls: handshake failure
+        # And this exits 125, so we'd like to retry.
+        task["worker"].setdefault("retry-exit-status", []).append(125)
+
         yield task
 
 
