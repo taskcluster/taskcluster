@@ -40,3 +40,6 @@ testSuite:
 
               exit "${exit_code}"
         maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125

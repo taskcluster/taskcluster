@@ -22,6 +22,9 @@ testSuite:
               "TASK_ID=${TASK_ID}"
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
 
     - name: NamedDockerImage
       description: Test NamedDockerImage
@@ -44,6 +47,9 @@ testSuite:
               "TASK_ID=${TASK_ID}"
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
 
     - name: IndexedDockerImage
       description: Test IndexedDockerImage
@@ -73,6 +79,9 @@ testSuite:
         maxRunTime: 3600
         features:
           taskclusterProxy: true
+        onExitStatus:
+          retry:
+            - 125
 
     - name: IndexedDockerImage with .lz4 extension
       description: Test IndexedDockerImage with .lz4 extension
@@ -106,6 +115,9 @@ testSuite:
         maxRunTime: 3600
         features:
           taskclusterProxy: true
+        onExitStatus:
+          retry:
+            - 125
 
     - name: IndexedDockerImage with .zst extension
       description: Test IndexedDockerImage with .zst extension
@@ -139,6 +151,9 @@ testSuite:
         maxRunTime: 3600
         features:
           taskclusterProxy: true
+        onExitStatus:
+          retry:
+            - 125
 
     - name: DockerImageArtifact
       description: Test DockerImageArtifact
@@ -169,6 +184,9 @@ testSuite:
               taskId: 2JGiKFtpRnGbVczc6-OJ1Q
             file: path
         maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
 
     - name: DockerImageArtifact with .lz4 extension
       description: Test DockerImageArtifact with .lz4 extension
@@ -203,6 +221,9 @@ testSuite:
               taskId: 2JGiKFtpRnGbVczc6-OJ1Q
             file: path.lz4
         maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
 
     - name: DockerImageArtifact with .zst extension
       description: Test DockerImageArtifact with .zst extension
@@ -237,3 +258,6 @@ testSuite:
               taskId: 2JGiKFtpRnGbVczc6-OJ1Q
             file: path.zst
         maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125

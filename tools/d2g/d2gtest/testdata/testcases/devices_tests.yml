@@ -27,6 +27,9 @@ testSuite:
               "TASK_ID=${TASK_ID}"
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
 
     - name: KVM
       description: >-
@@ -52,6 +55,9 @@ testSuite:
               "TASK_ID=${TASK_ID}"
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
 
     - name: Video Loopback
       description: >-
@@ -79,3 +85,6 @@ testSuite:
         features:
           loopbackVideo: true
         maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125

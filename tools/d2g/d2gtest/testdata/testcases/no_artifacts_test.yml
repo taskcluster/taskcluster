@@ -33,3 +33,6 @@ testSuite:
           backingLog: false
           liveLog: false
         maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125

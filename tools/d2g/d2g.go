@@ -296,6 +296,16 @@ func setMaxRunTime(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *gener
 func setOnExitStatus(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.OnExitStatus.Retry = dwPayload.OnExitStatus.Retry
 	gwPayload.OnExitStatus.PurgeCaches = dwPayload.OnExitStatus.PurgeCaches
+
+	// An error sometimes occurs while pulling the docker image:
+	// Error: reading blob sha256:<SHA>: Get "<URL>": remote error: tls: handshake failure
+	// And this exits 125, so we'd like to retry.
+	for _, exitCode := range gwPayload.OnExitStatus.Retry {
+		if exitCode == 125 {
+			return
+		}
+	}
+	gwPayload.OnExitStatus.Retry = append(gwPayload.OnExitStatus.Retry, 125)
 }
 
 func setSupersederURL(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
