@@ -84,9 +84,8 @@ tasks:
         - go mod tidy
         - git diff
         - test $(git status --porcelain | wc -l) == 0
-        - go install golang.org/x/tools/cmd/goimports
+        - go install golang.org/x/tools/cmd/goimports@latest
         - '"$(go env GOPATH)/bin/goimports" -w .'
-        - git checkout -f go.mod go.sum
         - git diff
         - test $(git status --porcelain | wc -l) == 0
   build/test-multiuser-ubuntu-22.04-amd64:
@@ -156,11 +155,6 @@ tasks:
           git clean -fdx
           git checkout -B tmp -t "X${{TASK_ID}}"
           cd workers/generic-worker
-          # go.mod and go.sum will be affected by above go get commands, so
-          # tidy them before checking for changes. Not needed in go 1.14:
-          # https://github.com/golang/go/issues/30515#issuecomment-581984371
-          # TODO: use go get -modfile instead when running go 1.14, and remove
-          # go mod tidy command
           go mod tidy
           git status
           # output of wc command can contain spaces on darwin, so no quotes around expression
@@ -298,13 +292,7 @@ tasks:
         - git clean -fdx
         - git checkout -B tmp -t "X%TASK_ID%"
         - cd workers\generic-worker
-        - |
-          :: go.mod and go.sum will be affected by above go get commands, so
-          :: tidy them before checking for changes. Not needed in go 1.14:
-          :: https://github.com/golang/go/issues/30515#issuecomment-581984371
-          :: TODO: use go get -modfile instead when running go 1.14, and remove
-          :: go mod tidy command
-          go mod tidy
+        - go mod tidy
         - |
           :: this counts the number of lines returned by git status
           :: dump temp file outside of repo, otherwise git status reports the tmp1.txt file!
