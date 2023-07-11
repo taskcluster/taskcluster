@@ -13,6 +13,7 @@ import (
 
 	"github.com/taskcluster/taskcluster/v54/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v54/tools/d2g/genericworker"
+	"golang.org/x/exp/slices"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/shell"
@@ -295,6 +296,14 @@ func setMaxRunTime(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *gener
 
 func setOnExitStatus(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.OnExitStatus.Retry = dwPayload.OnExitStatus.Retry
+
+	// An error sometimes occurs while pulling the docker image:
+	// Error: reading blob sha256:<SHA>: Get "<URL>": remote error: tls: handshake failure
+	// And this exits 125, so we'd like to retry.
+	if !slices.Contains(gwPayload.OnExitStatus.Retry, 125) {
+		gwPayload.OnExitStatus.Retry = append(gwPayload.OnExitStatus.Retry, 125)
+	}
+
 	gwPayload.OnExitStatus.PurgeCaches = dwPayload.OnExitStatus.PurgeCaches
 }
 

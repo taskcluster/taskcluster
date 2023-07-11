@@ -55,6 +55,8 @@ testSuite:
         capabilities:
           privileged: true
         onExitStatus:
+          retry:
+            - 125
           purgeCaches:
             - 123
             - 456
@@ -139,6 +141,8 @@ testSuite:
           - cacheName: gecko-level-3-checkouts-sparse-v3
             directory: cache0
         onExitStatus:
+          retry:
+            - 125
           purgeCaches:
             - 123
             - 456
