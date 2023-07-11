@@ -33,7 +33,13 @@ module.exports = {
   },
   Hook: {
     status({ hookGroupId, hookId }, args, { loaders }) {
+      // this is deprecated
       return loaders.hookStatus.load({ hookGroupId, hookId });
+    },
+    lastFire({ hookGroupId, hookId }, args, { loaders }) {
+      return loaders.hookLastFires.load({
+        hookGroupId, hookId, connection: { limit: 1 },
+      }).then(({ lastFires }) => lastFires?.[0]);
     },
   },
   HookGroup: {
@@ -54,8 +60,8 @@ module.exports = {
     hookStatus(parent, { hookGroupId, hookId }, { loaders }) {
       return loaders.hookStatus.load({ hookGroupId, hookId });
     },
-    hookLastFires(parent, { hookGroupId, hookId, filter, connection }, { loaders }) {
-      return loaders.hookLastFires.load({ hookGroupId, hookId, filter, connection });
+    hookLastFires(parent, { hookGroupId, hookId, filter, connection, options }, { loaders }) {
+      return loaders.hookLastFires.load({ hookGroupId, hookId, filter, connection, options });
     },
   },
   Mutation: {

@@ -3,6 +3,18 @@ query Hooks {
     hookGroupId
     hooks {
       hookId
+      hookGroupId
+      lastFire {
+        taskId
+        taskCreateTime
+        result
+        taskState
+        error
+      }
+      bindings {
+        exchange
+      }
+      schedule
     }
   }
 }

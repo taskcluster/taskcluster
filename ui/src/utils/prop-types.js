@@ -301,6 +301,23 @@ export const hook = shape({
   triggerSchema: object,
 });
 
+export const hookWithLastFire = shape({
+  hookGroupId: string,
+  hookId: string,
+  schedule: arrayOf(string),
+  bindings: arrayOf(
+    shape({
+      exchange: string,
+    })
+  ),
+  lastFire: shape({
+    taskId: string,
+    taskState: string,
+    error: oneOfType([string, object]),
+    result: string,
+  }),
+});
+
 export const secret = shape({
   secret: object,
   expires: date,

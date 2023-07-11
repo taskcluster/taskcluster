@@ -1,10 +1,6 @@
 import React, { Component } from 'react';
-import { graphql } from 'react-apollo';
+import { graphql, withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import TreeView from '@material-ui/lab/TreeView';
-import TreeItem from '@material-ui/lab/TreeItem';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { parse, stringify } from 'qs';
 import Typography from '@material-ui/core/Typography';
@@ -14,39 +10,10 @@ import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
-import Link from '../../../utils/Link';
+import HooksListTable from '../../../components/HooksListTable';
 import hooksQuery from './hooks.graphql';
 
-const TreeItems = ({ groups }) => {
-  return groups
-    ? groups.map(group => {
-        const nodes = group.hooks.map(hook => (
-          <TreeItem
-            key={hook.hookId}
-            nodeId={hook.hookId}
-            label={
-              <Link
-                to={`/hooks/${group.hookGroupId}/${encodeURIComponent(
-                  hook.hookId
-                )}`}>
-                {hook.hookId}
-              </Link>
-            }
-          />
-        ));
-
-        return (
-          <TreeItem
-            key={group.hookGroupId}
-            nodeId={group.hookGroupId}
-            label={group.hookGroupId}>
-            {nodes}
-          </TreeItem>
-        );
-      })
-    : [];
-};
-
+@withApollo
 @graphql(hooksQuery, {
   options: {
     fetchPolicy: 'network-only',
@@ -60,13 +27,18 @@ const TreeItems = ({ groups }) => {
     button: true,
     color: '#fff',
   },
+  hasErrors: {
+    '& td, & a': {
+      color: theme.palette.error.main,
+    },
+  },
+  noFires: {
+    '& td, & a': {
+      color: theme.palette.warning.light,
+    },
+  },
 }))
 export default class ListHooks extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { expanded: [], selected: [] };
-  }
-
   handleCreateHook = () => {
     this.props.history.push('/hooks/create');
   };
@@ -82,41 +54,6 @@ export default class ListHooks extends Component {
     });
   };
 
-  updateExpanded() {
-    const query = parse(window.location.search.slice(1));
-    const {
-      data: { hookGroups },
-    } = this.props;
-    const { search } = query;
-    const expandedHookGroups = hookGroups
-      ? hookGroups
-          .filter(
-            group =>
-              group.hooks.filter(hook => hook.hookId.includes(search))
-                .length !== 0
-          )
-          .map(group => group.hookGroupId)
-      : [];
-
-    this.setState({ expanded: expandedHookGroups, selected: [] });
-  }
-
-  componentDidMount() {
-    this.updateExpanded();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (
-      prevProps.location.search.slice(1) !== this.props.location.search.slice(1)
-    ) {
-      this.updateExpanded();
-    }
-  }
-
-  toggleState(stateName) {
-    return (event, nodeIds) => this.setState({ [stateName]: nodeIds });
-  }
-
   render() {
     const {
       classes,
@@ -124,8 +61,7 @@ export default class ListHooks extends Component {
       data: { loading, error, hookGroups },
     } = this.props;
     const { search } = parse(window.location.search.slice(1));
-    const tree = <TreeItems groups={hookGroups} />;
-    const { expanded, selected } = this.state;
+    const hooks = hookGroups?.map(group => group?.hooks).flat();
 
     return (
       <Dashboard
@@ -141,15 +77,12 @@ export default class ListHooks extends Component {
         {!hookGroups && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
         {!loading &&
-          (hookGroups?.length ? (
-            <TreeView
-              {...{ expanded, selected }}
-              onNodeToggle={this.toggleState('expanded')}
-              onNodeSelect={this.toggleState('selected')}
-              defaultCollapseIcon={<ArrowDropDownIcon />}
-              defaultExpandIcon={<ArrowRightIcon />}>
-              {tree}
-            </TreeView>
+          (hooks?.length ? (
+            <HooksListTable
+              searchTerm={search}
+              hooks={hooks}
+              classes={classes}
+            />
           ) : (
             <Typography variant="subtitle1">No hooks are defined</Typography>
           ))}
