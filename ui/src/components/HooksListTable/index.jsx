@@ -6,6 +6,7 @@ import { any, arrayOf, string } from 'prop-types';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import { Badge, Tooltip } from '@material-ui/core';
 import DataTable from '../DataTable';
 import TableCellItem from '../TableCellItem';
 import Link from '../../utils/Link';
@@ -114,7 +115,19 @@ export default class HooksListTable extends Component {
               <TableCellItem>
                 {<code>{schedule[0]}</code>}
                 {schedule.length > 1 && (
-                  <span title={schedule.join(', ')}>+{schedule.length}</span>
+                  <Tooltip
+                    title={
+                      <React.Fragment>
+                        {schedule.slice(1, 10).map(b => (
+                          <pre key={b}>{b}</pre>
+                        ))}
+                      </React.Fragment>
+                    }>
+                    <Badge
+                      badgeContent={`+${schedule.length - 1}`}
+                      color="secondary"
+                    />
+                  </Tooltip>
                 )}
               </TableCellItem>
             </Link>
@@ -130,9 +143,19 @@ export default class HooksListTable extends Component {
                   </code>
                 }
                 {bindings.length > 1 && (
-                  <span title={bindings.map(b => b.exchange).join(', ')}>
-                    +{bindings.length}
-                  </span>
+                  <Tooltip
+                    title={
+                      <React.Fragment>
+                        {bindings.slice(1, 10).map(b => (
+                          <pre key={b.exchange}>{b.exchange}</pre>
+                        ))}
+                      </React.Fragment>
+                    }>
+                    <Badge
+                      badgeContent={`+${bindings.length - 1}`}
+                      color="secondary"
+                    />
+                  </Tooltip>
                 )}
               </TableCellItem>
             </Link>
