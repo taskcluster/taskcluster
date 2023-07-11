@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v54.1.3
+
+### GENERAL
+
+▶ [patch]
+This change updates `d2g` to return the resulting generic worker payload with a `125` exit status code in the retry array to fix an intermittent podman issue while pulling the docker image.
+
+### USERS
+
+▶ [patch]
+Hooks page now displays table instead of tree view. Table view includes extra information that might be helpful to spot issues with hooks. Most recent task with state is displayed if available, or error if last fire was not successful.
+
+▶ [patch]
+UI: Refactors how validation schemas are loaded, to ensure they are only fetched and added once to prevent duplicate schema exceptions.
+
+### OTHER
+
+▶ Additional change not described here: [#6380](https://github.com/taskcluster/taskcluster/issues/6380).
+
 ## v54.1.2
 
 ### USERS
