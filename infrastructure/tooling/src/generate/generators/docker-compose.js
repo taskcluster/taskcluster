@@ -262,7 +262,7 @@ exports.tasks.push({
       },
       services: {
         rabbitmq: serviceDefinition('rabbitmq', {
-          image: 'rabbitmq:3.11.16-management',
+          image: 'rabbitmq:3.12.1-management',
           healthcheck: healthcheck('rabbitmq-diagnostics ping'),
           ports: [
             '5672:5672',
@@ -303,7 +303,7 @@ exports.tasks.push({
           },
         }),
         s3: serviceDefinition('s3', {
-          image: 'minio/minio',
+          image: 'minio/minio:RELEASE.2023-07-11T21-29-34Z',
           command: 'server /data --console-address :9001',
           ports: ['3090:9000', '3091:9001'],
           volumes: [
@@ -316,7 +316,7 @@ exports.tasks.push({
           healthcheck: healthcheck('curl -I http://localhost:9000/minio/health/cluster'),
         }),
         s3_init_buckets: serviceDefinition('s3_init_buckets', {
-          image: 'minio/mc',
+          image: 'minio/mc:RELEASE.2023-07-11T23-30-44Z',
           depends_on: {
             s3: {
               condition: 'service_healthy',
@@ -328,7 +328,7 @@ exports.tasks.push({
             '/usr/bin/mc config host add --quiet --api s3v4 local http://s3:9000 minioadmin miniopassword;',
             '(/usr/bin/mc ls local/public-bucket/ || /usr/bin/mc mb --quiet local/public-bucket/);',
             '(/usr/bin/mc ls local/private-bucket/ || /usr/bin/mc mb --quiet local/private-bucket/);',
-            '/usr/bin/mc policy set public local/public-bucket;',
+            '/usr/bin/mc anonymous set public local/public-bucket;',
             '"',
           ].join('\n'),
           environment: {
