@@ -283,7 +283,7 @@ func setupExposer() (err error) {
 			authClientFactory,
 		)
 	} else {
-		exposer, err = expose.NewLocal(config.PublicIP)
+		exposer, err = expose.NewLocal(config.PublicIP, config.LiveLogExposePort)
 	}
 	return err
 }

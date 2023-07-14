@@ -8,5 +8,7 @@
   "workerType": "generic-worker",
   "livelogExecutable": "/usr/local/bin/livelog",
   "taskclusterProxyExecutable": "/usr/local/bin/taskcluster-proxy",
-  "publicIP": "127.1.2.3"
+  "publicIP": "127.0.0.1",
+  "livelogPortBase": 60000,
+  "livelogExposePort": 59999
 }

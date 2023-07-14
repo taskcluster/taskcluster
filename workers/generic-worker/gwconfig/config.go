@@ -43,6 +43,7 @@ type (
 		InteractivePort                uint16                 `json:"interactivePort"`
 		LiveLogExecutable              string                 `json:"livelogExecutable"`
 		LiveLogPortBase                uint16                 `json:"livelogPortBase"`
+		LiveLogExposePort              uint16                 `json:"livelogExposePort"`
 		LoopbackVideoDeviceNumber      uint8                  `json:"loopbackVideoDeviceNumber"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
 		PrivateIP                      net.IP                 `json:"privateIP"`

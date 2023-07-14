@@ -180,6 +180,8 @@ services:
         condition: service_started
       tc_admin_init:
         condition: service_completed_successfully
+    ports:
+      - '59999:59999'
   generic-worker-static:
     image: taskcluster/generic-worker:v54.1.4
     networks:
@@ -206,6 +208,8 @@ services:
         condition: service_started
       tc_admin_init:
         condition: service_completed_successfully
+    ports:
+      - '59999:59999'
   auth-web:
     image: taskcluster/taskcluster:v54.1.4
     networks:

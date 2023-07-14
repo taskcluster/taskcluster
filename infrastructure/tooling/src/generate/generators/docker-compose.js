@@ -433,6 +433,7 @@ exports.tasks.push({
           taskcluster: { condition: 'service_started' },
           tc_admin_init: { condition: 'service_completed_successfully' },
         },
+        ports: ['59999:59999'],
       });
 
       // allow rebuild
