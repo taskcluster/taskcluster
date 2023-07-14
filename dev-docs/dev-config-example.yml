@@ -179,6 +179,7 @@ queue:
   aws_endpoint: ...
   aws_force_path_style: true/false
   aws_skip_cors_configuration: true/false
+  aws_use_bulk_delete: true/false
   procs:
     web:
       cpu: 10m

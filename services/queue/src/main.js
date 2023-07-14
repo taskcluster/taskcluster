@@ -305,6 +305,7 @@ let load = loader({
           monitor,
           ignoreError: false,
           expires: now,
+          useBulkDelete: !!cfg.aws.useBulkDelete,
         });
         debug('Expired %s artifacts', count);
         monitor.log.expiredArtifactsRemoved({ count, expires: now });
