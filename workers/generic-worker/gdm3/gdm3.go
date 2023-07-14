@@ -1,12 +1,9 @@
-// package gdm3 provides functions for interfacing with Gnome Desktop Manager 3 on linux
+// package gdm3 provides functions for interfacing with Gnome Desktop Manager 3
 package gdm3
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
-
-	"github.com/taskcluster/taskcluster/v54/workers/generic-worker/host"
 )
 
 var (
@@ -71,21 +68,6 @@ func SetAutoLogin(username string, source []byte) (output []byte) {
 	})
 	o := strings.Join(outputLines, "\n")
 	return []byte(o)
-}
-
-// InteractiveUsername attempts to determine which single user is currently
-// logged into a gnome3 desktop session. If it doesn't find precisely one user,
-// it returns an error, otherwise it returns the user it found.
-func InteractiveUsername() (string, error) {
-	gnomeSessionUserList, err := host.CombinedOutput("/bin/bash", "-c", "PROCPS_USERLEN=20 /usr/bin/w -s | /bin/grep gnome-[s]ession | /usr/bin/cut -f1 -d' '")
-	if err != nil {
-		return "", fmt.Errorf("Cannot run command to determine the interactive user: %v", err)
-	}
-	lines := strings.Split(gnomeSessionUserList, "\n")
-	if len(lines) != 2 || lines[1] != "" {
-		return "", fmt.Errorf("Number of gnome session users is not exactly one - not sure which user is interactively logged on: %#v", lines)
-	}
-	return lines[0], nil
 }
 
 // iniFileLineHandler splits the ini file contents passed in data into lines

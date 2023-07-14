@@ -190,6 +190,8 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 			return host.Run("/usr/sbin/chown", "-R", user.Name+":staff", fileOrDir)
 		case "linux":
 			return host.Run("/bin/chown", "-R", user.Name+":"+user.Name, fileOrDir)
+		case "freebsd":
+			return host.Run("/usr/sbin/chown", "-R", user.Name+":"+user.Name, fileOrDir)
 		}
 		return fmt.Errorf("Unknown platform: %v", runtime.GOOS)
 	}
@@ -198,6 +200,8 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 		return host.Run("/usr/sbin/chown", user.Name+":staff", fileOrDir)
 	case "linux":
 		return host.Run("/bin/chown", user.Name+":"+user.Name, fileOrDir)
+	case "freebsd":
+		return host.Run("/usr/sbin/chown", user.Name+":"+user.Name, fileOrDir)
 	}
 	return fmt.Errorf("Unknown platform: %v", runtime.GOOS)
 }

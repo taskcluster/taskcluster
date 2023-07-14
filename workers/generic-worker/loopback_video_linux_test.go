@@ -17,7 +17,7 @@ func TestLoopbackVideo(t *testing.T) {
 	payload := GenericWorkerPayload{
 		Command: [][]string{
 			{"ls", "-l", devicePath},
-			{"/bin/bash", "-c", `echo "Device: $TASKCLUSTER_VIDEO_DEVICE"`},
+			{"/usr/bin/env", "bash", "-c", `echo "Device: $TASKCLUSTER_VIDEO_DEVICE"`},
 		},
 		MaxRunTime: 30,
 		Features: FeatureFlags{

@@ -11,34 +11,11 @@ import (
 	"time"
 
 	"github.com/taskcluster/taskcluster/v54/workers/generic-worker/gdm3"
-	"github.com/taskcluster/taskcluster/v54/workers/generic-worker/host"
 )
 
 const (
 	gdm3CustomConfFile = "/etc/gdm3/custom.conf"
 )
-
-func (user *OSUser) CreateNew(okIfExists bool) (err error) {
-	if okIfExists {
-		panic("(*(runtime.OSUser)).CreateNew(true) not implemented on linux")
-	}
-
-	createUserScript := `
-		set -eu
-		username="${0}"
-		homedir="/home/${0}"
-		password="${1}"
-		echo "Creating user '${username}' with home directory '${homedir}' and password '${password}'..."
-		/usr/bin/sudo /usr/sbin/adduser --disabled-password --gecos "" --debug --home "${homedir}" "${username}"
-		echo "${username}:${password}" | /usr/bin/sudo /usr/sbin/chpasswd
-	`
-
-	return host.Run("/bin/bash", "-c", createUserScript, user.Name, user.Password)
-}
-
-func DeleteUser(username string) (err error) {
-	return host.Run("/usr/bin/sudo", "/usr/sbin/deluser", "--force", "--remove-all-files", username)
-}
 
 func ListUserAccounts() (usernames []string, err error) {
 	var passwd []byte

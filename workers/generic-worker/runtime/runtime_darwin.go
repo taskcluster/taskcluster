@@ -28,19 +28,19 @@ func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 		echo "Creating user '${username}' with home directory '${homedir}' and password '${password}'..."
 		maxid=$(dscl . -list '/Users' 'UniqueID' | awk '{print $2}' | sort -un | tail -1)
 		uid=$((maxid+1))
-		/usr/bin/sudo dscl . -create "/Users/${username}"
-		/usr/bin/sudo dscl . -create "/Users/${username}" 'UserShell' '/bin/bash'
-		/usr/bin/sudo dscl . -create "/Users/${username}" 'RealName' "${fullname}"
-		/usr/bin/sudo dscl . -create "/Users/${username}" 'UniqueID' "${uid}"
-		/usr/bin/sudo dscl . -passwd "/Users/${username}" "${password}"
+		/usr/bin/dscl . -create "/Users/${username}"
+		/usr/bin/dscl . -create "/Users/${username}" 'UserShell' '/bin/bash'
+		/usr/bin/dscl . -create "/Users/${username}" 'RealName' "${fullname}"
+		/usr/bin/dscl . -create "/Users/${username}" 'UniqueID' "${uid}"
+		/usr/bin/dscl . -passwd "/Users/${username}" "${password}"
 		staffGID="$(dscl . -read /Groups/staff | awk '($1 == "PrimaryGroupID:") { print $2 }')"
-		/usr/bin/sudo dscl . -create "/Users/${username}" 'PrimaryGroupID' "${staffGID}"
-		/usr/bin/sudo dscl . -create "/Users/${username}" 'NFSHomeDirectory' "${homedir}"
-		/usr/bin/sudo cp -R '/System/Library/User Template/English.lproj' "${homedir}"
-		/usr/bin/sudo chown -R "${username}:staff" "${homedir}"
+		/usr/bin/dscl . -create "/Users/${username}" 'PrimaryGroupID' "${staffGID}"
+		/usr/bin/dscl . -create "/Users/${username}" 'NFSHomeDirectory' "${homedir}"
+		cp -R '/System/Library/User Template/English.lproj' "${homedir}"
+		chown -R "${username}:staff" "${homedir}"
 	`
 
-	return host.Run("/bin/bash", "-c", createUserScript, user.Name, user.Password)
+	return host.Run("/usr/bin/env", "bash", "-c", createUserScript, user.Name, user.Password)
 }
 
 func DeleteUser(username string) (err error) {
@@ -48,7 +48,7 @@ func DeleteUser(username string) (err error) {
 	if err != nil {
 		log.Printf("WARNING: Error when trying to delete files under /private/var/folders belonging to %v: %v", username, err)
 	}
-	err = host.Run("/bin/bash", "-c", `/usr/bin/sudo dscl . -delete '/Users/`+username+`'`)
+	err = host.Run("/usr/bin/env", "bash", "-c", `/usr/bin/dscl . -delete '/Users/`+username+`'`)
 	if err != nil {
 		return fmt.Errorf("Error when trying to delete user account %v: %v", username, err)
 	}

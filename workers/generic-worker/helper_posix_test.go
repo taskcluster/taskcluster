@@ -28,7 +28,8 @@ func rawHelloGoodbye() string {
 func returnExitCode(exitCode uint) [][]string {
 	return [][]string{
 		{
-			"/bin/bash",
+			"/usr/bin/env",
+			"bash",
 			"-c",
 			fmt.Sprintf("exit %d", exitCode),
 		},
@@ -75,7 +76,8 @@ func checkSHASums() [][]string {
 func incrementCounterInCache() [][]string {
 	return [][]string{
 		{
-			"/bin/bash",
+			"/usr/bin/env",
+			"bash",
 			"-c",
 			`if [ ! -f "my-task-caches/test-modifications/counter" ]; then
 			  echo -n '1' > "my-task-caches/test-modifications/counter"
@@ -110,7 +112,8 @@ func GoEnv() [][]string {
 func logOncePerSecond(count uint, file string) [][]string {
 	return [][]string{
 		{
-			"/bin/bash",
+			"/usr/bin/env",
+			"bash",
 			"-c",
 			// don't use ping since that isn't available on travis-ci.org !
 			fmt.Sprintf(`for ((i=0; i<%v; i++)); do echo $i; sleep 1; done > '%v'`, count, file),
