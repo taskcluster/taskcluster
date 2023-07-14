@@ -675,16 +675,16 @@ type (
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // HawkSignatureAuthenticationResponse is of type json.RawMessage...
-func (this *HawkSignatureAuthenticationResponse) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *HawkSignatureAuthenticationResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *HawkSignatureAuthenticationResponse) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *HawkSignatureAuthenticationResponse) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("HawkSignatureAuthenticationResponse: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }

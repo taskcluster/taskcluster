@@ -374,48 +374,48 @@ type (
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // DownloadObjectResponse is of type json.RawMessage...
-func (this *DownloadObjectResponse) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *DownloadObjectResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *DownloadObjectResponse) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *DownloadObjectResponse) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("DownloadObjectResponse: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // ObjectContentHashes is of type json.RawMessage...
-func (this *ObjectContentHashes) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *ObjectContentHashes) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *ObjectContentHashes) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *ObjectContentHashes) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("ObjectContentHashes: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // ObjectContentHashesForDownload is of type json.RawMessage...
-func (this *ObjectContentHashesForDownload) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *ObjectContentHashesForDownload) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *ObjectContentHashesForDownload) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *ObjectContentHashesForDownload) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("ObjectContentHashesForDownload: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }

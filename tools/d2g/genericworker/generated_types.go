@@ -4,6 +4,7 @@ package genericworker
 
 import (
 	"encoding/json"
+	"errors"
 
 	tcclient "github.com/taskcluster/taskcluster/v54/clients/client-go"
 )
@@ -126,6 +127,167 @@ type (
 		Base64 string `json:"base64"`
 	}
 
+	// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
+	Capabilities struct {
+
+		// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
+		Devices Devices `json:"devices,omitempty"`
+
+		// Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.
+		//
+		// Default:    false
+		Privileged bool `json:"privileged" default:"false"`
+	}
+
+	// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
+	Devices struct {
+
+		// Mount /dev/shm from the host in the container.
+		HostSharedMemory bool `json:"hostSharedMemory,omitempty"`
+
+		// Mount /dev/kvm from the host in the container.
+		KVM bool `json:"kvm,omitempty"`
+
+		// Audio loopback device created using snd-aloop
+		LoopbackAudio bool `json:"loopbackAudio,omitempty"`
+
+		// Video loopback device created using v4l2loopback.
+		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
+	}
+
+	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	DockerImageArtifact struct {
+		Path string `json:"path"`
+
+		TaskID string `json:"taskId"`
+
+		// Possible values:
+		//   * "task-image"
+		Type string `json:"type"`
+	}
+
+	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	DockerImageName string
+
+	DockerWorkerArtifact struct {
+		Expires tcclient.Time `json:"expires,omitempty"`
+
+		Path string `json:"path"`
+
+		// Possible values:
+		//   * "file"
+		//   * "directory"
+		Type string `json:"type"`
+	}
+
+	// Used to enable additional functionality.
+	DockerWorkerFeatureFlags struct {
+
+		// This allows you to use the Linux ptrace functionality inside the container; it is otherwise disallowed by Docker's security policy.
+		//
+		// Default:    false
+		AllowPtrace bool `json:"allowPtrace" default:"false"`
+
+		// Default:    true
+		Artifacts bool `json:"artifacts" default:"true"`
+
+		// Useful if live logging is not interesting but the overalllog is later on
+		//
+		// Default:    true
+		BulkLog bool `json:"bulkLog" default:"true"`
+
+		// Artifacts named chain-of-trust.json and chain-of-trust.json.sig should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in.
+		//
+		// Default:    false
+		ChainOfTrust bool `json:"chainOfTrust" default:"false"`
+
+		// Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.
+		//
+		// Default:    false
+		Dind bool `json:"dind" default:"false"`
+
+		// Uploads docker images as artifacts
+		//
+		// Default:    false
+		DockerSave bool `json:"dockerSave" default:"false"`
+
+		// This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.
+		//
+		// Default:    false
+		Interactive bool `json:"interactive" default:"false"`
+
+		// Logs are stored on the worker during the duration of tasks and available via http chunked streaming then uploaded to s3
+		//
+		// Default:    true
+		LocalLiveLog bool `json:"localLiveLog" default:"true"`
+
+		// The auth proxy allows making requests to taskcluster/queue and taskcluster/scheduler directly from your task with the same scopes as set in the task. This can be used to make api calls via the [client](https://github.com/taskcluster/taskcluster-client) CURL, etc... Without embedding credentials in the task.
+		//
+		// Default:    false
+		TaskclusterProxy bool `json:"taskclusterProxy" default:"false"`
+	}
+
+	// `.payload` field of the queue.
+	DockerWorkerPayload struct {
+
+		// Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
+		Artifacts map[string]DockerWorkerArtifact `json:"artifacts,omitempty"`
+
+		// Caches are mounted within the docker container at the mount point specified. Example: ```{ "CACHE NAME": "/mount/path/in/container" }```
+		//
+		// Map entries:
+		Cache map[string]string `json:"cache,omitempty"`
+
+		// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
+		Capabilities Capabilities `json:"capabilities,omitempty"`
+
+		// Example: `['/bin/bash', '-c', 'ls']`.
+		//
+		// Default:    []
+		//
+		// Array items:
+		Command []string `json:"command,omitempty"`
+
+		// Example: ```
+		// {
+		//   "PATH": '/borked/path'
+		//   "ENV_NAME": "VALUE"
+		// }
+		// ```
+		//
+		// Map entries:
+		Env map[string]string `json:"env,omitempty"`
+
+		// Used to enable additional functionality.
+		Features DockerWorkerFeatureFlags `json:"features,omitempty"`
+
+		// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+		//
+		// One of:
+		//   * DockerImageName
+		//   * NamedDockerImage
+		//   * IndexedDockerImage
+		//   * DockerImageArtifact
+		Image json.RawMessage `json:"image"`
+
+		// Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with `_backing` appended, prior to the file extension (if present). For example, `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt` and backing log artifact `apple/banana.log_backing.txt`. Defaults to `public/logs/live.log`.
+		//
+		// Default:    "public/logs/live.log"
+		Log string `json:"log" default:"public/logs/live.log"`
+
+		// Maximum time the task container can run in seconds.
+		//
+		// Mininum:    1
+		// Maximum:    86400
+		MaxRunTime int64 `json:"maxRunTime"`
+
+		// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
+		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitempty"`
+
+		// Maintained for backward compatibility, but no longer used
+		SupersederURL string `json:"supersederUrl,omitempty"`
+	}
+
 	// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
 	// if all task commands have a zero exit code, or `failed/failed` if any command has a
 	// non-zero exit code. This payload property allows customsation of the task resolution
@@ -152,6 +314,20 @@ type (
 		//
 		// Array items:
 		// Mininum:    1
+		Retry []int64 `json:"retry,omitempty"`
+	}
+
+	// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
+	ExitStatusHandling struct {
+
+		// If the task exists with a purge caches exit status, all caches associated with the task will be purged.
+		//
+		// Array items:
+		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
+
+		// If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.
+		//
+		// Array items:
 		Retry []int64 `json:"retry,omitempty"`
 	}
 
@@ -281,8 +457,8 @@ type (
 		//   * `RUN_ID` - the run ID of the currently running task
 		//   * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment
 		//   * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
-		//      taskcluster authentication proxy for making unauthenticated taskcluster
-		//      API calls
+		//     taskcluster authentication proxy for making unauthenticated taskcluster
+		//     API calls
 		//   * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
 		//     `true` in `generic-worker.config` file - the absolute file location of a
 		//     json file containing the current task OS user account name and password.
@@ -357,6 +533,17 @@ type (
 		Namespace string `json:"namespace"`
 	}
 
+	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	IndexedDockerImage struct {
+		Namespace string `json:"namespace"`
+
+		Path string `json:"path"`
+
+		// Possible values:
+		//   * "indexed-image"
+		Type string `json:"type"`
+	}
+
 	// Configuration for task logs.
 	//
 	// Since: generic-worker 48.2.0
@@ -378,6 +565,20 @@ type (
 		// Default:    "public/logs/live.log"
 		Live string `json:"live" default:"public/logs/live.log"`
 	}
+
+	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	NamedDockerImage struct {
+		Name string `json:"name"`
+
+		// Possible values:
+		//   * "docker-image"
+		Type string `json:"type"`
+	}
+
+	// One of:
+	//   * GenericWorkerPayload
+	//   * DockerWorkerPayload
+	Payload json.RawMessage
 
 	// Byte-for-byte literal inline content of file/archive, up to 64KB in size.
 	//
@@ -477,6 +678,22 @@ type (
 	}
 )
 
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Payload is of type json.RawMessage...
+func (m *Payload) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Payload) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Payload: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
 // Returns json schema for the payload part of the task definition. Please
 // note we use a go string and do not load an external file, since we want this
 // to be *part of the compiled executable*. If this sat in another file that
@@ -493,8 +710,35 @@ func JSONSchema() string {
 	return `{
   "$id": "/schemas/generic-worker/multiuser_posix.json#",
   "$schema": "/schemas/common/metaschema.json#",
-  "additionalProperties": false,
   "definitions": {
+    "artifact": {
+      "additionalProperties": false,
+      "properties": {
+        "expires": {
+          "format": "date-time",
+          "title": "Date when artifact should expire must be in the future.",
+          "type": "string"
+        },
+        "path": {
+          "title": "Location of artifact in container, as an absolute path.",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "file",
+            "directory"
+          ],
+          "title": "Artifact upload type.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "path"
+      ],
+      "title": "Docker Worker Artifact",
+      "type": "object"
+    },
     "content": {
       "oneOf": [
         {
@@ -720,218 +964,500 @@ func JSONSchema() string {
       "type": "object"
     }
   },
-  "description": "This schema defines the structure of the ` + "`" + `payload` + "`" + ` property referred to in a\nTaskcluster Task definition.",
-  "properties": {
-    "artifacts": {
-      "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
-      "items": {
-        "additionalProperties": false,
-        "properties": {
-          "contentEncoding": {
-            "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
-            "enum": [
-              "identity",
-              "gzip"
-            ],
-            "title": "Content-Encoding header when serving artifact over HTTP.",
-            "type": "string"
-          },
-          "contentType": {
-            "description": "Explicitly set the value of the HTTP ` + "`" + `Content-Type` + "`" + ` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple ` + "`" + `mime.types` + "`" + ` files located under ` + "`" + `/etc` + "`" + `. Note, setting ` + "`" + `contentType` + "`" + `\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://pkg.go.dev/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
-            "title": "Content-Type header when serving artifact over HTTP",
-            "type": "string"
-          },
-          "expires": {
-            "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.\n\nSince: generic-worker 1.0.0",
-            "format": "date-time",
-            "title": "Expiry date and time",
-            "type": "string"
-          },
-          "name": {
-            "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
-            "title": "Name of the artifact",
-            "type": "string"
-          },
-          "path": {
-            "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
-            "title": "Artifact location",
-            "type": "string"
-          },
-          "type": {
-            "description": "Artifacts can be either an individual ` + "`" + `file` + "`" + ` or a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories.\n\nSince: generic-worker 1.0.0",
-            "enum": [
-              "file",
-              "directory"
-            ],
-            "title": "Artifact upload type.",
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "path"
-        ],
-        "title": "Artifact",
-        "type": "object"
-      },
-      "title": "Artifacts to be published",
-      "type": "array",
-      "uniqueItems": true
-    },
-    "command": {
-      "description": "One array per command (each command is an array of arguments). Several arrays\nfor several commands.\n\nSince: generic-worker 0.0.1",
-      "items": {
-        "items": {
-          "type": "string"
-        },
-        "minItems": 1,
-        "type": "array",
-        "uniqueItems": false
-      },
-      "minItems": 1,
-      "title": "Commands to run",
-      "type": "array",
-      "uniqueItems": false
-    },
-    "env": {
-      "additionalProperties": {
-        "type": "string"
-      },
-      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nNote, the following environment variables will automatically be set in the task\ncommands, but may be overridden by environment variables in the task payload:\n  * ` + "`" + `HOME` + "`" + ` - the home directory of the task user\n  * ` + "`" + `PATH` + "`" + ` - ` + "`" + `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin` + "`" + `\n  * ` + "`" + `USER` + "`" + ` - the name of the task user\n\nThe following environment variables will automatically be set in the task\ncommands, and may not be overridden by environment variables in the task payload:\n  * ` + "`" + `DISPLAY` + "`" + ` - ` + "`" + `:0` + "`" + ` (Linux only)\n  * ` + "`" + `TASK_ID` + "`" + ` - the task ID of the currently running task\n  * ` + "`" + `RUN_ID` + "`" + ` - the run ID of the currently running task\n  * ` + "`" + `TASKCLUSTER_ROOT_URL` + "`" + ` - the root URL of the taskcluster deployment\n  * ` + "`" + `TASKCLUSTER_PROXY_URL` + "`" + ` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * ` + "`" + `TASK_USER_CREDENTIALS` + "`" + ` (if config property ` + "`" + `runTasksAsCurrentUser` + "`" + ` set to\n    ` + "`" + `true` + "`" + ` in ` + "`" + `generic-worker.config` + "`" + ` file - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    ` + "`" + `runTasksAsCurrentUser` + "`" + ` is set to ` + "`" + `true` + "`" + `.\n  * ` + "`" + `TASKCLUSTER_WORKER_LOCATION` + "`" + `. See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
-      "title": "Env vars",
-      "type": "object"
-    },
-    "features": {
+  "oneOf": [
+    {
       "additionalProperties": false,
-      "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
+      "description": "This schema defines the structure of the ` + "`" + `payload` + "`" + ` property referred to in a\nTaskcluster Task definition.",
       "properties": {
-        "backingLog": {
-          "default": true,
-          "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",
-          "title": "Enable backing log",
-          "type": "boolean"
+        "artifacts": {
+          "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "contentEncoding": {
+                "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "enum": [
+                  "identity",
+                  "gzip"
+                ],
+                "title": "Content-Encoding header when serving artifact over HTTP.",
+                "type": "string"
+              },
+              "contentType": {
+                "description": "Explicitly set the value of the HTTP ` + "`" + `Content-Type` + "`" + ` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple ` + "`" + `mime.types` + "`" + ` files located under ` + "`" + `/etc` + "`" + `. Note, setting ` + "`" + `contentType` + "`" + `\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://pkg.go.dev/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
+                "title": "Content-Type header when serving artifact over HTTP",
+                "type": "string"
+              },
+              "expires": {
+                "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.\n\nSince: generic-worker 1.0.0",
+                "format": "date-time",
+                "title": "Expiry date and time",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                "title": "Name of the artifact",
+                "type": "string"
+              },
+              "path": {
+                "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+                "title": "Artifact location",
+                "type": "string"
+              },
+              "type": {
+                "description": "Artifacts can be either an individual ` + "`" + `file` + "`" + ` or a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories.\n\nSince: generic-worker 1.0.0",
+                "enum": [
+                  "file",
+                  "directory"
+                ],
+                "title": "Artifact upload type.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "path"
+            ],
+            "title": "Artifact",
+            "type": "object"
+          },
+          "title": "Artifacts to be published",
+          "type": "array",
+          "uniqueItems": true
         },
-        "chainOfTrust": {
-          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
-          "title": "Enable generation of signed Chain of Trust artifacts",
-          "type": "boolean"
+        "command": {
+          "description": "One array per command (each command is an array of arguments). Several arrays\nfor several commands.\n\nSince: generic-worker 0.0.1",
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": false
+          },
+          "minItems": 1,
+          "title": "Commands to run",
+          "type": "array",
+          "uniqueItems": false
         },
-        "interactive": {
-          "description": "This allows you to interactively run commands from within the worker\nas the task user. This may be useful for debugging purposes.\nCan be used for SSH-like access to the running worker.\nNote that this feature works differently from the ` + "`" + `interactive` + "`" + ` feature\nin docker worker, which ` + "`" + `docker exec` + "`" + `s into the running container.\nSince tasks on generic worker are not guaranteed to be running in a\ncontainer, a bash shell is started on the task user's account.\nA user can then ` + "`" + `docker exec` + "`" + ` into the a running container, if there\nis one.\n\nSince: generic-worker 49.2.0",
-          "title": "Interactive shell",
-          "type": "boolean"
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nNote, the following environment variables will automatically be set in the task\ncommands, but may be overridden by environment variables in the task payload:\n  * ` + "`" + `HOME` + "`" + ` - the home directory of the task user\n  * ` + "`" + `PATH` + "`" + ` - ` + "`" + `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin` + "`" + `\n  * ` + "`" + `USER` + "`" + ` - the name of the task user\n\nThe following environment variables will automatically be set in the task\ncommands, and may not be overridden by environment variables in the task payload:\n  * ` + "`" + `DISPLAY` + "`" + ` - ` + "`" + `:0` + "`" + ` (Linux only)\n  * ` + "`" + `TASK_ID` + "`" + ` - the task ID of the currently running task\n  * ` + "`" + `RUN_ID` + "`" + ` - the run ID of the currently running task\n  * ` + "`" + `TASKCLUSTER_ROOT_URL` + "`" + ` - the root URL of the taskcluster deployment\n  * ` + "`" + `TASKCLUSTER_PROXY_URL` + "`" + ` (if taskcluster proxy feature enabled) - the\n    taskcluster authentication proxy for making unauthenticated taskcluster\n    API calls\n  * ` + "`" + `TASK_USER_CREDENTIALS` + "`" + ` (if config property ` + "`" + `runTasksAsCurrentUser` + "`" + ` set to\n    ` + "`" + `true` + "`" + ` in ` + "`" + `generic-worker.config` + "`" + ` file - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    ` + "`" + `runTasksAsCurrentUser` + "`" + ` is set to ` + "`" + `true` + "`" + `.\n  * ` + "`" + `TASKCLUSTER_WORKER_LOCATION` + "`" + `. See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+          "title": "Env vars",
+          "type": "object"
         },
-        "liveLog": {
-          "default": true,
-          "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
-          "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
-          "type": "boolean"
+        "features": {
+          "additionalProperties": false,
+          "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
+          "properties": {
+            "backingLog": {
+              "default": true,
+              "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",
+              "title": "Enable backing log",
+              "type": "boolean"
+            },
+            "chainOfTrust": {
+              "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
+              "title": "Enable generation of signed Chain of Trust artifacts",
+              "type": "boolean"
+            },
+            "interactive": {
+              "description": "This allows you to interactively run commands from within the worker\nas the task user. This may be useful for debugging purposes.\nCan be used for SSH-like access to the running worker.\nNote that this feature works differently from the ` + "`" + `interactive` + "`" + ` feature\nin docker worker, which ` + "`" + `docker exec` + "`" + `s into the running container.\nSince tasks on generic worker are not guaranteed to be running in a\ncontainer, a bash shell is started on the task user's account.\nA user can then ` + "`" + `docker exec` + "`" + ` into the a running container, if there\nis one.\n\nSince: generic-worker 49.2.0",
+              "title": "Interactive shell",
+              "type": "boolean"
+            },
+            "liveLog": {
+              "default": true,
+              "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
+              "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
+              "type": "boolean"
+            },
+            "loopbackVideo": {
+              "description": "Video loopback device created using v4l2loopback.\nA video device will be available for the task. Its\nlocation will be passed to the task via environment\nvariable ` + "`" + `TASKCLUSTER_VIDEO_DEVICE` + "`" + `. The\nlocation will be ` + "`" + `/dev/video\u003cN\u003e` + "`" + ` where ` + "`" + `\u003cN\u003e` + "`" + ` is\nan integer between 0 and 255. The value of ` + "`" + `\u003cN\u003e` + "`" + `\nis not static, and therefore either the environment\nvariable should be used, or ` + "`" + `/dev` + "`" + ` should be\nscanned in order to determine the correct location.\nTasks should not assume a constant value.\n\nThis feature is only available on Linux. If a task\nis submitted with this feature enabled on a non-Linux,\nposix platform (FreeBSD, macOS), the task will resolve as\n` + "`" + `exception/malformed-payload` + "`" + `.\n\nSince: generic-worker 53.1.0",
+              "title": "Loopback Video device",
+              "type": "boolean"
+            },
+            "taskclusterProxy": {
+              "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+              "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "Feature flags",
+          "type": "object"
         },
-        "loopbackVideo": {
-          "description": "Video loopback device created using v4l2loopback.\nA video device will be available for the task. Its\nlocation will be passed to the task via environment\nvariable ` + "`" + `TASKCLUSTER_VIDEO_DEVICE` + "`" + `. The\nlocation will be ` + "`" + `/dev/video\u003cN\u003e` + "`" + ` where ` + "`" + `\u003cN\u003e` + "`" + ` is\nan integer between 0 and 255. The value of ` + "`" + `\u003cN\u003e` + "`" + `\nis not static, and therefore either the environment\nvariable should be used, or ` + "`" + `/dev` + "`" + ` should be\nscanned in order to determine the correct location.\nTasks should not assume a constant value.\n\nThis feature is only available on Linux. If a task\nis submitted with this feature enabled on a non-Linux,\nposix platform (FreeBSD, macOS), the task will resolve as\n` + "`" + `exception/malformed-payload` + "`" + `.\n\nSince: generic-worker 53.1.0",
-          "title": "Loopback Video device",
-          "type": "boolean"
+        "logs": {
+          "additionalProperties": false,
+          "description": "Configuration for task logs.\n\nSince: generic-worker 48.2.0",
+          "properties": {
+            "backing": {
+              "default": "public/logs/live_backing.log",
+              "description": "Specifies a custom name for the backing log artifact.\nThis is only used if ` + "`" + `features.backingLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+              "title": "Backing log artifact name",
+              "type": "string"
+            },
+            "live": {
+              "default": "public/logs/live.log",
+              "description": "Specifies a custom name for the live log artifact.\nThis is only used if ` + "`" + `features.liveLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+              "title": "Live log artifact name",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "title": "Logs",
+          "type": "object"
         },
-        "taskclusterProxy": {
-          "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
-          "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
-          "type": "boolean"
+        "maxRunTime": {
+          "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
+          "maximum": 86400,
+          "minimum": 1,
+          "multipleOf": 1,
+          "title": "Maximum run time in seconds",
+          "type": "integer"
+        },
+        "mounts": {
+          "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
+          "items": {
+            "$ref": "#/definitions/mount",
+            "title": "Mount"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "onExitStatus": {
+          "additionalProperties": false,
+          "description": "By default tasks will be resolved with ` + "`" + `state/reasonResolved` + "`" + `: ` + "`" + `completed/completed` + "`" + `\nif all task commands have a zero exit code, or ` + "`" + `failed/failed` + "`" + ` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
+          "properties": {
+            "purgeCaches": {
+              "description": "If the task exists with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit statuses",
+                "type": "integer"
+              },
+              "title": "Purge caches exit status",
+              "type": "array",
+              "uniqueItems": true
+            },
+            "retry": {
+              "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as ` + "`" + `exception/intermittent-task` + "`" + `. Typically the Queue\nwill then schedule a new run of the existing ` + "`" + `taskId` + "`" + ` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
+              "items": {
+                "minimum": 1,
+                "title": "Exit codes",
+                "type": "integer"
+              },
+              "title": "Intermittent task exit codes",
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [],
+          "title": "Exit code handling",
+          "type": "object"
+        },
+        "osGroups": {
+          "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0,
+          "title": "OS Groups",
+          "type": "array",
+          "uniqueItems": false
+        },
+        "supersederUrl": {
+          "description": "This property is allowed for backward compatibility, but is unused.",
+          "title": "unused",
+          "type": "string"
         }
       },
-      "required": [],
-      "title": "Feature flags",
+      "required": [
+        "command",
+        "maxRunTime"
+      ],
+      "title": "Generic worker payload",
       "type": "object"
     },
-    "logs": {
+    {
       "additionalProperties": false,
-      "description": "Configuration for task logs.\n\nSince: generic-worker 48.2.0",
+      "description": "` + "`" + `.payload` + "`" + ` field of the queue.",
       "properties": {
-        "backing": {
-          "default": "public/logs/live_backing.log",
-          "description": "Specifies a custom name for the backing log artifact.\nThis is only used if ` + "`" + `features.backingLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
-          "title": "Backing log artifact name",
-          "type": "string"
+        "artifacts": {
+          "additionalProperties": {
+            "$ref": "#/definitions/artifact"
+          },
+          "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `",
+          "title": "Artifacts",
+          "type": "object"
         },
-        "live": {
+        "cache": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Caches are mounted within the docker container at the mount point specified. Example: ` + "`" + `` + "`" + `` + "`" + `{ \"CACHE NAME\": \"/mount/path/in/container\" }` + "`" + `` + "`" + `` + "`" + `",
+          "title": "Caches to mount point mapping.",
+          "type": "object"
+        },
+        "capabilities": {
+          "additionalProperties": false,
+          "description": "Set of capabilities that must be enabled or made available to the task container Example: ` + "`" + `` + "`" + `` + "`" + `{ \"capabilities\": { \"privileged\": true }` + "`" + `` + "`" + `` + "`" + `",
+          "properties": {
+            "devices": {
+              "additionalProperties": false,
+              "description": "Allows devices from the host system to be attached to a task container similar to using ` + "`" + `--device` + "`" + ` in docker.",
+              "properties": {
+                "hostSharedMemory": {
+                  "description": "Mount /dev/shm from the host in the container.",
+                  "title": "Host shared memory device (Experimental)",
+                  "type": "boolean"
+                },
+                "kvm": {
+                  "description": "Mount /dev/kvm from the host in the container.",
+                  "title": "/dev/kvm device (Experimental)",
+                  "type": "boolean"
+                },
+                "loopbackAudio": {
+                  "description": "Audio loopback device created using snd-aloop",
+                  "title": "Loopback Audio device",
+                  "type": "boolean"
+                },
+                "loopbackVideo": {
+                  "description": "Video loopback device created using v4l2loopback.",
+                  "title": "Loopback Video device",
+                  "type": "boolean"
+                }
+              },
+              "required": [],
+              "title": "Devices to be attached to task containers",
+              "type": "object"
+            },
+            "privileged": {
+              "default": false,
+              "description": "Allows a task to run in a privileged container, similar to running docker with ` + "`" + `--privileged` + "`" + `.  This only works for worker-types configured to enable it.",
+              "title": "Privileged container",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "Capabilities that must be available/enabled for the task container.",
+          "type": "object"
+        },
+        "command": {
+          "default": [],
+          "description": "Example: ` + "`" + `['/bin/bash', '-c', 'ls']` + "`" + `.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Docker command to run (see docker api).",
+          "type": "array"
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Example: ` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": '/borked/path'\n  \"ENV_NAME\": \"VALUE\"\n}\n` + "`" + `` + "`" + `` + "`" + `",
+          "title": "Environment variable mappings.",
+          "type": "object"
+        },
+        "features": {
+          "additionalProperties": false,
+          "description": "Used to enable additional functionality.",
+          "properties": {
+            "allowPtrace": {
+              "default": false,
+              "description": "This allows you to use the Linux ptrace functionality inside the container; it is otherwise disallowed by Docker's security policy.",
+              "title": "Allow ptrace within the container",
+              "type": "boolean"
+            },
+            "artifacts": {
+              "default": true,
+              "description": "",
+              "title": "Artifact uploads",
+              "type": "boolean"
+            },
+            "bulkLog": {
+              "default": true,
+              "description": "Useful if live logging is not interesting but the overalllog is later on",
+              "title": "Bulk upload the task log into a single artifact",
+              "type": "boolean"
+            },
+            "chainOfTrust": {
+              "default": false,
+              "description": "Artifacts named chain-of-trust.json and chain-of-trust.json.sig should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in.",
+              "title": "Enable generation of ed25519-signed Chain of Trust artifacts",
+              "type": "boolean"
+            },
+            "dind": {
+              "default": false,
+              "description": "Runs docker-in-docker and binds ` + "`" + `/var/run/docker.sock` + "`" + ` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.",
+              "title": "Docker in Docker",
+              "type": "boolean"
+            },
+            "dockerSave": {
+              "default": false,
+              "description": "Uploads docker images as artifacts",
+              "title": "Docker save",
+              "type": "boolean"
+            },
+            "interactive": {
+              "default": false,
+              "description": "This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.",
+              "title": "Docker Exec Interactive",
+              "type": "boolean"
+            },
+            "localLiveLog": {
+              "default": true,
+              "description": "Logs are stored on the worker during the duration of tasks and available via http chunked streaming then uploaded to s3",
+              "title": "Enable live logging (worker local)",
+              "type": "boolean"
+            },
+            "taskclusterProxy": {
+              "default": false,
+              "description": "The auth proxy allows making requests to taskcluster/queue and taskcluster/scheduler directly from your task with the same scopes as set in the task. This can be used to make api calls via the [client](https://github.com/taskcluster/taskcluster-client) CURL, etc... Without embedding credentials in the task.",
+              "title": "Taskcluster auth proxy service",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "Docker Worker feature flags",
+          "type": "object"
+        },
+        "image": {
+          "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+          "oneOf": [
+            {
+              "title": "Docker image name",
+              "type": "string"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "docker-image"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "name"
+              ],
+              "title": "Named docker image",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "namespace": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "indexed-image"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "namespace",
+                "path"
+              ],
+              "title": "Indexed docker image",
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "taskId": {
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "task-image"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "taskId",
+                "path"
+              ],
+              "title": "Docker image artifact",
+              "type": "object"
+            }
+          ],
+          "title": "Docker image."
+        },
+        "log": {
           "default": "public/logs/live.log",
-          "description": "Specifies a custom name for the live log artifact.\nThis is only used if ` + "`" + `features.liveLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
-          "title": "Live log artifact name",
+          "description": "Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with ` + "`" + `_backing` + "`" + ` appended, prior to the file extension (if present). For example, ` + "`" + `apple/banana.log.txt` + "`" + ` results in livelog artifact ` + "`" + `apple/banana.log.txt` + "`" + ` and backing log artifact ` + "`" + `apple/banana.log_backing.txt` + "`" + `. Defaults to ` + "`" + `public/logs/live.log` + "`" + `.",
+          "title": "Livelog artifact name",
+          "type": "string"
+        },
+        "maxRunTime": {
+          "description": "Maximum time the task container can run in seconds.",
+          "maximum": 86400,
+          "minimum": 1,
+          "multipleOf": 1,
+          "title": "Maximum run time in seconds",
+          "type": "integer"
+        },
+        "onExitStatus": {
+          "additionalProperties": false,
+          "description": "By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.",
+          "properties": {
+            "purgeCaches": {
+              "description": "If the task exists with a purge caches exit status, all caches associated with the task will be purged.",
+              "items": {
+                "title": "Exit statuses",
+                "type": "integer"
+              },
+              "title": "Purge caches exit status",
+              "type": "array"
+            },
+            "retry": {
+              "description": "If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.",
+              "items": {
+                "title": "Exit statuses",
+                "type": "integer"
+              },
+              "title": "Retriable exit statuses",
+              "type": "array"
+            }
+          },
+          "required": [],
+          "title": "Exit status handling",
+          "type": "object"
+        },
+        "supersederUrl": {
+          "description": "Maintained for backward compatibility, but no longer used",
+          "title": "(unused)",
           "type": "string"
         }
       },
-      "required": [],
-      "title": "Logs",
+      "required": [
+        "image",
+        "maxRunTime"
+      ],
+      "title": "Docker worker payload",
       "type": "object"
-    },
-    "maxRunTime": {
-      "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
-      "maximum": 86400,
-      "minimum": 1,
-      "multipleOf": 1,
-      "title": "Maximum run time in seconds",
-      "type": "integer"
-    },
-    "mounts": {
-      "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
-      "items": {
-        "$ref": "#/definitions/mount",
-        "title": "Mount"
-      },
-      "type": "array",
-      "uniqueItems": false
-    },
-    "onExitStatus": {
-      "additionalProperties": false,
-      "description": "By default tasks will be resolved with ` + "`" + `state/reasonResolved` + "`" + `: ` + "`" + `completed/completed` + "`" + `\nif all task commands have a zero exit code, or ` + "`" + `failed/failed` + "`" + ` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
-      "properties": {
-        "purgeCaches": {
-          "description": "If the task exists with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
-          "items": {
-            "minimum": 1,
-            "title": "Exit statuses",
-            "type": "integer"
-          },
-          "title": "Purge caches exit status",
-          "type": "array",
-          "uniqueItems": true
-        },
-        "retry": {
-          "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as ` + "`" + `exception/intermittent-task` + "`" + `. Typically the Queue\nwill then schedule a new run of the existing ` + "`" + `taskId` + "`" + ` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
-          "items": {
-            "minimum": 1,
-            "title": "Exit codes",
-            "type": "integer"
-          },
-          "title": "Intermittent task exit codes",
-          "type": "array",
-          "uniqueItems": true
-        }
-      },
-      "required": [],
-      "title": "Exit code handling",
-      "type": "object"
-    },
-    "osGroups": {
-      "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
-      "items": {
-        "type": "string"
-      },
-      "maxItems": 0,
-      "title": "OS Groups",
-      "type": "array",
-      "uniqueItems": false
-    },
-    "supersederUrl": {
-      "description": "This property is allowed for backward compatibility, but is unused.",
-      "title": "unused",
-      "type": "string"
     }
-  },
-  "required": [
-    "command",
-    "maxRunTime"
   ],
-  "title": "Generic worker payload",
-  "type": "object"
+  "title": "Payload"
 }`
 }

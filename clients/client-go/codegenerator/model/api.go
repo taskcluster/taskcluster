@@ -467,64 +467,64 @@ func (rs *RequiredScope) String() string {
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // ScopeExpressionTemplate is of type json.RawMessage...
-func (this *ScopeExpressionTemplate) MarshalJSON() ([]byte, error) {
-	return (this.RawMessage).MarshalJSON()
+func (m *ScopeExpressionTemplate) MarshalJSON() ([]byte, error) {
+	return (m.RawMessage).MarshalJSON()
 }
 
 // UnmarshalJSON identifies the data structure at runtime, and unmarshals in
 // the appropriate type
-func (this *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("ScopeExpressionTemplate: UnmarshalJSON on nil pointer")
 	}
-	this.RawMessage = append((this.RawMessage)[0:0], data...)
+	m.RawMessage = append((m.RawMessage)[0:0], data...)
 	var tempObj interface{}
-	err := json.Unmarshal(this.RawMessage, &tempObj)
+	err := json.Unmarshal(m.RawMessage, &tempObj)
 	if err != nil {
 		panic("Internal error: " + err.Error())
 	}
 	switch t := tempObj.(type) {
 	case string:
-		this.Type = "RequiredScope"
-		this.RequiredScope = new(RequiredScope)
-		*(this.RequiredScope) = RequiredScope(t)
+		m.Type = "RequiredScope"
+		m.RequiredScope = new(RequiredScope)
+		*(m.RequiredScope) = RequiredScope(t)
 	case map[string]interface{}:
 		j, err := json.Marshal(t)
 		if err != nil {
 			panic("Internal error: " + err.Error())
 		}
 		if _, exists := t["AnyOf"]; exists {
-			this.Type = "AnyOf"
-			this.AnyOf = new(Disjunction)
-			err = json.Unmarshal(j, this.AnyOf)
+			m.Type = "AnyOf"
+			m.AnyOf = new(Disjunction)
+			err = json.Unmarshal(j, m.AnyOf)
 		}
 		if _, exists := t["AllOf"]; exists {
-			this.Type = "AllOf"
-			this.AllOf = new(Conjunction)
-			err = json.Unmarshal(j, this.AllOf)
+			m.Type = "AllOf"
+			m.AllOf = new(Conjunction)
+			err = json.Unmarshal(j, m.AllOf)
 		}
 		if _, exists := t["if"]; exists {
-			this.Type = "IfThen"
-			this.IfThen = new(Conditional)
-			err = json.Unmarshal(j, this.IfThen)
+			m.Type = "IfThen"
+			m.IfThen = new(Conditional)
+			err = json.Unmarshal(j, m.IfThen)
 		}
 		if _, exists := t["for"]; exists {
-			this.Type = "ForEachIn"
-			this.ForEachIn = new(ForAll)
-			err = json.Unmarshal(j, this.ForEachIn)
+			m.Type = "ForEachIn"
+			m.ForEachIn = new(ForAll)
+			err = json.Unmarshal(j, m.ForEachIn)
 		}
 		if err != nil {
 			panic("Internal error: " + err.Error())
 		}
 	// for old style scopesets [][]string (normal disjunctive form)
 	case []interface{}:
-		this.Type = "AnyOf"
-		this.AnyOf = &Disjunction{
+		m.Type = "AnyOf"
+		m.AnyOf = &Disjunction{
 			AnyOf: make([]ScopeExpressionTemplate, len(t)),
 		}
 		for i, j := range t {
 			allOf := j.([]interface{})
-			this.AnyOf.AnyOf[i] = ScopeExpressionTemplate{
+			m.AnyOf.AnyOf[i] = ScopeExpressionTemplate{
 				Type: "AllOf",
 				AllOf: &Conjunction{
 					AllOf: make([]ScopeExpressionTemplate, len(allOf)),
@@ -532,7 +532,7 @@ func (this *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
 			}
 			for k, l := range allOf {
 				rs := RequiredScope(l.(string))
-				this.AnyOf.AnyOf[i].AllOf.AllOf[k] = ScopeExpressionTemplate{
+				m.AnyOf.AnyOf[i].AllOf.AllOf[k] = ScopeExpressionTemplate{
 					Type:          "RequiredScope",
 					RequiredScope: &rs,
 				}

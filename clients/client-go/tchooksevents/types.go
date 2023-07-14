@@ -29,16 +29,16 @@ type (
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // HookChangedMessage is of type json.RawMessage...
-func (this *HookChangedMessage) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *HookChangedMessage) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *HookChangedMessage) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *HookChangedMessage) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("HookChangedMessage: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }
