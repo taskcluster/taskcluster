@@ -1057,6 +1057,9 @@
           "title": "node debug env var",
           "type": "string"
         },
+        "expire_artifacts_batch_size": {
+          "type": "number"
+        },
         "level": {
           "type": "string"
         },

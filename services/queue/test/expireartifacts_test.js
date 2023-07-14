@@ -17,9 +17,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
   const MAX_ARTIFACTS = 5;
 
   [
-    ['expire s3 artifacts using bulk delete', true],
-    ['expire s3 artifacts using single delete', false],
-  ].forEach(([name, useBulkDelete]) =>
+    ['expire s3 artifacts using bulk delete', true, undefined],
+    ['expire s3 artifacts using single delete', false, undefined],
+    ['expire s3 artifacts using single delete and batch size 1', false, 1],
+  ].forEach(([name, useBulkDelete, batchSize]) =>
     test(name, async () => {
       const yesterday = taskcluster.fromNow('-1 day');
       const today = new Date();
@@ -28,6 +29,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
       await helper.load('cfg');
       helper.load.cfg('aws.useBulkDelete', useBulkDelete);
+      if (batchSize) {
+        helper.load.cfg('expireArtifactsBatchSize', batchSize);
+      }
 
       for (let i = 0; i < MAX_ARTIFACTS; i++) {
         await helper.db.fns.create_queue_artifact(

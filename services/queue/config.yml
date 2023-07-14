@@ -71,7 +71,10 @@ defaults:
     # CDN for public artifact bucket
     publicArtifactBucketCDN:      !env:optional PUBLIC_ARTIFACT_BUCKET_CDN
 
-    taskCacheMaxSize: !env:number:optional TASK_CACHE_MAX_SIZE
+    taskCacheMaxSize:             !env:number:optional TASK_CACHE_MAX_SIZE
+
+    # How many artifacts to remove at once when bulk deletion is disabled
+    expireArtifactsBatchSize:     !env:number:optional EXPIRE_ARTIFACTS_BATCH_SIZE
 
 
   taskcluster:

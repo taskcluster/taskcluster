@@ -42,9 +42,10 @@ const artifactUtils = {
    * need to handle that case.
    */
   async expire({ db, publicBucket, privateBucket, ignoreError, monitor,
-    expires, useBulkDelete = false }) {
+    expires, useBulkDelete, expireArtifactsBatchSize }) {
     let count = 0;
-    const maxPageSize = useBulkDelete ? 1000 : 100;
+
+    assert(!useBulkDelete || expireArtifactsBatchSize <= 1000, 'expireArtifactsBatchSize must be <= 1000 when useBulkDelete is true');
 
     // Fetch all expired artifacts and batch delete the S3 ones
     // then remove the entity from the database
@@ -52,7 +53,7 @@ const artifactUtils = {
     while (true) {
       const rows = await db.fns.get_expired_artifacts_for_deletion({
         expires_in: expires,
-        page_size_in: maxPageSize,
+        page_size_in: expireArtifactsBatchSize,
       });
       if (!rows.length) {
         break;
