@@ -1,4 +1,6 @@
-#!/bin/bash -exv
+#!/usr/bin/env bash
+
+set -exv
 
 # This script is needed because `go test -covermode=atomic` cover doesn't
 # currently support being run against multiple packages
