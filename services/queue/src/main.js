@@ -29,6 +29,9 @@ const DEFAULT_CLAIM_TIMEOUT = 1200;
 // default `expires`, `last_date_active` update frequency
 const DEFAULT_UPDATE_FREQUENCY = '30 minutes';
 
+// for supported bulk deletion S3 operations
+const MAX_BULK_DELETE_SIZE = 1000;
+
 require('./monitor');
 
 // Create component loader
@@ -297,7 +300,15 @@ let load = loader({
     setup: ({ cfg, db, publicArtifactBucket, privateArtifactBucket, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         const now = taskcluster.fromNow(cfg.app.artifactExpirationDelay);
-        debug('Expiring artifacts at: %s, from before %s', new Date(), now);
+        const useBulkDelete = !!cfg.aws.useBulkDelete;
+        // when using bulk delete, maximum number of objects in bulk request is 1000
+        // if using single delete, we have to be cautious not to overload the API with too many parallel requests
+        // so we limit the batch size to 100 by default, which proved to be a good value in production
+        const expireArtifactsBatchSize = useBulkDelete ? MAX_BULK_DELETE_SIZE : (cfg.expireArtifactsBatchSize || 100);
+
+        debug('Expiring artifacts at: %s, from before %s, useBulkDelete: %s, batchSize: %d',
+          new Date(), now, useBulkDelete, expireArtifactsBatchSize);
+
         const count = await artifactUtils.expire({
           db,
           publicBucket: publicArtifactBucket,
@@ -305,6 +316,8 @@ let load = loader({
           monitor,
           ignoreError: false,
           expires: now,
+          expireArtifactsBatchSize,
+          useBulkDelete,
         });
         debug('Expired %s artifacts', count);
         monitor.log.expiredArtifactsRemoved({ count, expires: now });

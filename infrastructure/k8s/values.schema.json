@@ -1050,9 +1050,15 @@
         "aws_skip_cors_configuration": {
           "type": "boolean"
         },
+        "aws_use_bulk_delete": {
+          "type": "boolean"
+        },
         "debug": {
           "title": "node debug env var",
           "type": "string"
+        },
+        "expire_artifacts_batch_size": {
+          "type": "number"
         },
         "level": {
           "type": "string"

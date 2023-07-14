@@ -37,9 +37,15 @@ const artifactUtils = {
    * This method will remove both the artifact in the db and underlying artifact.
    * But the artifact in the db will not be deleted if there is an error
    * deleting the underlying artifact.
+   *
+   * Not all S3-compatible storage providers support bulk delete, so we
+   * need to handle that case.
    */
-  async expire({ db, publicBucket, privateBucket, ignoreError, monitor, expires }) {
+  async expire({ db, publicBucket, privateBucket, ignoreError, monitor,
+    expires, useBulkDelete, expireArtifactsBatchSize }) {
     let count = 0;
+
+    assert(!useBulkDelete || expireArtifactsBatchSize <= 1000, 'expireArtifactsBatchSize must be <= 1000 when useBulkDelete is true');
 
     // Fetch all expired artifacts and batch delete the S3 ones
     // then remove the entity from the database
@@ -47,7 +53,7 @@ const artifactUtils = {
     while (true) {
       const rows = await db.fns.get_expired_artifacts_for_deletion({
         expires_in: expires,
-        page_size_in: 1000,
+        page_size_in: expireArtifactsBatchSize,
       });
       if (!rows.length) {
         break;
@@ -107,6 +113,8 @@ const artifactUtils = {
           }
         }
       };
+      const deleteSingleObject = async (bucket, entry) =>
+        bucket.deleteObject(entry.details.prefix);
 
       monitor.debug({
         message: 'Removing artifacts from buckets',
@@ -117,10 +125,15 @@ const artifactUtils = {
       // only s3 artifacts need to be deleted
       // 'object' artifacts are deleted at expiration by the object service
       // if this fails, we stop and don't delete the db entry
-      await Promise.all([
-        deleteObjects(publicBucket, s3public),
-        deleteObjects(privateBucket, s3private),
-      ]);
+      if (useBulkDelete) {
+        await Promise.all([
+          deleteObjects(publicBucket, s3public),
+          deleteObjects(privateBucket, s3private),
+        ]);
+      } else {
+        await Promise.all(s3public.map(entry => deleteSingleObject(publicBucket, entry)));
+        await Promise.all(s3private.map(entry => deleteSingleObject(privateBucket, entry)));
+      }
 
       monitor.debug({
         message: 'Removed artifacts from buckets',
