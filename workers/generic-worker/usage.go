@@ -163,6 +163,9 @@ and reports back results to the queue.
           livelogPortBase                   Set the base port number for livelog. Livelog requires two
                                             ports: livelogPortBase & livelogPortBase + 1 are used.
                                             [default: 60098]
+          livelogExposePort                 When not using websocktunnel, livelog would be exposed using this port.
+                                            If it is set to 0, logs would be exposed using a random port.
+                                            [default: 0]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
