@@ -25,6 +25,7 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
+	"github.com/mcuadros/go-defaults"
 	tcclient "github.com/taskcluster/taskcluster/v54/clients/client-go"
 	"github.com/taskcluster/taskcluster/v54/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v54/internal"
@@ -576,6 +577,7 @@ func ClaimWork() *TaskRun {
 			featureArtifacts:  map[string]string{},
 			LocalClaimTime:    localClaimTime,
 		}
+		defaults.SetDefaults(&task.Payload)
 		task.StatusManager = NewTaskStatusManager(task)
 		return task
 	}
