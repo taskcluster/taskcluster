@@ -3,6 +3,21 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v54.3.0
+
+### ADMINS
+
+▶ [patch] [#6405](https://github.com/taskcluster/taskcluster/issues/6405)
+Expire artifacts handles the case where the artifact is not found during deletion. GCS behaves differently to S3 here, as it will throw an error if the artifact is not found, where S3 would always return 204.
+
+### USERS
+
+▶ [minor] [#5967](https://github.com/taskcluster/taskcluster/issues/5967)
+This change integrates the `d2g` tool into Generic Worker so that it can accept a valid, Docker Worker payload.
+
+▶ [patch] [#6417](https://github.com/taskcluster/taskcluster/issues/6417)
+Generic Worker: Interactive sessions suffered from a race condition that was introduced in Generic Worker 54.2.0. This has been fixed.
+
 ## v54.2.0
 
 ### USERS
