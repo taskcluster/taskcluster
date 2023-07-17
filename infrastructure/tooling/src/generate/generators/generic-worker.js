@@ -116,7 +116,7 @@ exports.tasks.push({
     }
 
     const links = schemaFiles
-      .map(({ title, filename_base }) => ` * [${title}](/docs/reference/workers/generic-worker/${filename_base})`)
+      .map(({ title, filename_base }) => ` * [Generic worker payload -${title.split('-')[1]}](/docs/reference/workers/generic-worker/${filename_base})`)
       .join('\n');
 
     await modifyRepoFile(path.join(gwDocsDir, 'README.mdx'),
