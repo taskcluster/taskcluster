@@ -4,10 +4,13 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
+	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v54/workers/generic-worker/host"
 )
 
 func TestMissingScopesOSGroups(t *testing.T) {
@@ -32,16 +35,63 @@ func TestMissingScopesOSGroups(t *testing.T) {
 
 func TestOSGroupsRespected(t *testing.T) {
 	setup(t)
+
+	// create some new real OS groups that the test can use
+	newGroups := []string{
+		slugid.Nice(),
+		slugid.Nice(),
+	}
+
+	var err error
+	for _, newGroup := range newGroups {
+		switch runtime.GOOS {
+		case "windows":
+			err = host.Run("net", "localgroup", newGroup, "/add")
+		case "darwin":
+			err = host.Run("/usr/sbin/dseditgroup", "-o", "create", newGroup)
+		case "freebsd":
+			// TODO: copied from Linux, probably needs changing
+			err = host.Run("/usr/sbin/groupadd", newGroup)
+		case "linux":
+			err = host.Run("/usr/sbin/groupadd", newGroup)
+		default:
+			err = fmt.Errorf("Unsupported platform: %v", runtime.GOOS)
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func(newGroup string) {
+			switch runtime.GOOS {
+			case "windows":
+				err = host.Run("net", "localgroup", newGroup, "/delete")
+			case "darwin":
+				err = host.Run("/usr/sbin/dseditgroup", "-o", "delete", newGroup)
+			case "freebsd":
+				// TODO: copied from Linux, probably needs changing
+				err = host.Run("/usr/sbin/groupdel", newGroup)
+			case "linux":
+				err = host.Run("/usr/sbin/groupdel", newGroup)
+			default:
+				err = fmt.Errorf("Unsupported platform: %v", runtime.GOOS)
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+		}(newGroup)
+	}
+
 	payload := GenericWorkerPayload{
-		Command:    helloGoodbye(),
+		Command:    listGroups(),
 		MaxRunTime: 30,
-		OSGroups:   []string{"abc", "def"},
+		OSGroups:   newGroups,
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{
-		"generic-worker:os-group:" + td.ProvisionerID + "/" + td.WorkerType + "/abc",
-		"generic-worker:os-group:" + td.ProvisionerID + "/" + td.WorkerType + "/def",
+
+	td.Scopes = []string{}
+	// grant all required scopes
+	for _, group := range payload.OSGroups {
+		td.Scopes = append(td.Scopes, "generic-worker:os-group:"+td.ProvisionerID+"/"+td.WorkerType+"/"+group)
 	}
 
 	if config.RunTasksAsCurrentUser {
@@ -55,13 +105,20 @@ func TestOSGroupsRespected(t *testing.T) {
 		}
 	} else {
 		// check task had malformed payload, due to non existent groups
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
 
 		logtext := LogText(t)
-		substring := fmt.Sprintf("Could not add task user to os group(s): %v", payload.OSGroups)
-		if !strings.Contains(logtext, substring) {
-			t.Log(logtext)
-			t.Fatalf("Was expecting log to contain string: '%v'", substring)
+		for _, group := range payload.OSGroups {
+			// On Windows, the built in command to list groups (net localgroup)
+			// outputs them prefixed with an asterisk (*). Since it isn't
+			// trivial to adapt the Windows task command to not include the
+			// asterisk, we've adapted the other platforms to match Windows and
+			// include the asterisk. Hence the '*' below.
+			substring := "*" + group
+			if !strings.Contains(logtext, substring) {
+				t.Log(logtext)
+				t.Fatalf("Was expecting log to contain string: '%v'", substring)
+			}
 		}
 	}
 }
