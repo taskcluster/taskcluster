@@ -1,3 +1,5 @@
+//go:build multiuser
+
 package main
 
 import (
@@ -23,6 +25,7 @@ func TestMissingScopesOSGroups(t *testing.T) {
 
 	logtext := LogText(t)
 	if !strings.Contains(logtext, "generic-worker:os-group:"+td.ProvisionerID+"/"+td.WorkerType+"/abc") || !strings.Contains(logtext, "generic-worker:os-group:"+td.ProvisionerID+"/"+td.WorkerType+"/def") {
+		t.Log(logtext)
 		t.Fatalf("Was expecting log file to contain missing scopes, but it doesn't")
 	}
 }

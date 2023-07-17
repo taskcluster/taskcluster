@@ -320,36 +320,6 @@ func RenameFolderCrossDevice(oldpath, newpath string) (err error) {
 	return
 }
 
-func (task *TaskRun) addUserToGroups(groups []string) (updatedGroups []string, notUpdatedGroups []string) {
-	if len(groups) == 0 {
-		return []string{}, []string{}
-	}
-	for _, group := range groups {
-		err := host.Run("net", "localgroup", group, "/add", taskContext.User.Name)
-		if err == nil {
-			updatedGroups = append(updatedGroups, group)
-		} else {
-			notUpdatedGroups = append(notUpdatedGroups, group)
-		}
-	}
-	return
-}
-
-func (task *TaskRun) removeUserFromGroups(groups []string) (updatedGroups []string, notUpdatedGroups []string) {
-	if len(groups) == 0 {
-		return []string{}, []string{}
-	}
-	for _, group := range groups {
-		err := host.Run("net", "localgroup", group, "/delete", taskContext.User.Name)
-		if err == nil {
-			updatedGroups = append(updatedGroups, group)
-		} else {
-			notUpdatedGroups = append(notUpdatedGroups, group)
-		}
-	}
-	return
-}
-
 func RedirectAppData(hUser syscall.Token, folder string) error {
 	RoamingAppDataFolder := filepath.Join(folder, "Roaming")
 	LocalAppDataFolder := filepath.Join(folder, "Local")

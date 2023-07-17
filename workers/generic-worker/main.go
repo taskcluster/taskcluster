@@ -678,6 +678,9 @@ func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecution
 	return MalformedPayloadError(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
 }
 
+// CommandExecutionError wraps error Cause which has occurred during task
+// execution, which should result in the task being resolved as
+// TaskStatus/Reason (e.g. exception/malformed-payload)
 type CommandExecutionError struct {
 	TaskStatus TaskStatus
 	Cause      error
@@ -695,14 +698,17 @@ func executionError(reason TaskUpdateReason, status TaskStatus, err error) *Comm
 	}
 }
 
+// task exception/resource-unavailable error, caused by underlying error err
 func ResourceUnavailable(err error) *CommandExecutionError {
 	return executionError(resourceUnavailable, errored, err)
 }
 
+// task exception/malformed-payload error, caused by underlying error err
 func MalformedPayloadError(err error) *CommandExecutionError {
 	return executionError(malformedPayload, errored, err)
 }
 
+// task failure, caused by underlying error err
 func Failure(err error) *CommandExecutionError {
 	return executionError("", failed, err)
 }
@@ -794,6 +800,7 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	return nil
 }
 
+// ExecutionErrors is a growable slice of errors to collect command execution errors as they occur
 type ExecutionErrors []*CommandExecutionError
 
 func (e *ExecutionErrors) add(err *CommandExecutionError) {
