@@ -113,8 +113,24 @@ const artifactUtils = {
           }
         }
       };
-      const deleteSingleObject = async (bucket, entry) =>
-        bucket.deleteObject(entry.details.prefix);
+      const deleteSingleObject = async (bucket, entry) => {
+        try {
+          return await bucket.deleteObject(entry.details.prefix);
+        } catch (err) {
+          // Some S3-compatible storage providers might throw an error when file is missing
+          // where AWS S3 would return 204 response without body
+          // GCS: https://cloud.google.com/storage/docs/xml-api/delete-object
+          // S3: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html
+          if (`${err.code} ${err.name} ${err.message}`.includes('NoSuchKey')) {
+            const reported = new Error('Failed to delete missing S3 object');
+            reported.prefix = entry.details.prefix;
+            reported.bucket = bucket.bucket;
+            monitor.reportError(reported);
+          } else {
+            throw err;
+          }
+        }
+      };
 
       monitor.debug({
         message: 'Removing artifacts from buckets',
@@ -131,8 +147,8 @@ const artifactUtils = {
           deleteObjects(privateBucket, s3private),
         ]);
       } else {
-        await Promise.all(s3public.map(entry => deleteSingleObject(publicBucket, entry)));
-        await Promise.all(s3private.map(entry => deleteSingleObject(privateBucket, entry)));
+        await Promise.allSettled(s3public.map(entry => deleteSingleObject(publicBucket, entry)));
+        await Promise.allSettled(s3private.map(entry => deleteSingleObject(privateBucket, entry)));
       }
 
       monitor.debug({
