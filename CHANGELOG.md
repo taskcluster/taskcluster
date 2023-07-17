@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v54.3.1
+
+### GENERAL
+
+▶ [patch] [#6420](https://github.com/taskcluster/taskcluster/issues/6420)
+Fixes generic worker issue where artifacts were no longer being uploaded.
+
 ## v54.3.0
 
 ### ADMINS
