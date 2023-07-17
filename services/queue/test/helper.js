@@ -94,6 +94,70 @@ exports.withS3 = (mock, skipping) => {
 };
 
 /**
+ * Set up to use mock-aws-s3 for S3-like operations on GCS
+ *
+ * Discovered differencies os far:
+ * - DeleteObject throws 404 (aws returns 204)
+ * - DeleteObjects not supported
+ */
+exports.withGCS = (mock, skipping) => {
+  let tmpDir;
+
+  suiteSetup('setup withGCS', async function() {
+    if (skipping()) {
+      return;
+    }
+
+    if (mock) {
+      tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
+      mockAwsS3.config.basePath = tmpDir;
+
+      await exports.load('cfg');
+      exports.load.cfg('aws.accessKeyId', undefined);
+      exports.load.cfg('aws.secretAccessKey', undefined);
+
+      const mock = new mockAwsS3.S3({
+        params: {
+          Bucket: 'fake-public',
+        },
+      });
+      // emulate AWS's "promise" mode
+      const makeAwsFunc = fn => (...args) => ({
+        promise: () => fn.apply(mock, args),
+      });
+
+      // mockAwsS3 does not cover CORS methods
+      let CORSRules = [];
+      mock.getBucketCors = makeAwsFunc(async () => ({
+        CORSRules,
+      }));
+      mock.putBucketCors = makeAwsFunc(async ({ CORSConfiguration }) => {
+        CORSRules = _.cloneDeep(CORSConfiguration.CORSRules);
+      });
+      mock.deleteObjects = makeAwsFunc(async () => {
+        throw new Error('InvalidArgument');
+      });
+      mock._origDeleteObject = mock.deleteObject;
+      mock.deleteObject = makeAwsFunc(async (...args) => {
+        // emulate GCS behaviour by throwing 404 if file is missing
+        // we call getObject first that is guaranteed to throw NoSuchKey
+        await mock.getObject.apply(mock, args).promise();
+        // and then do the actual delete
+        return await mock._origDeleteObject.apply(mock, args).promise();
+      });
+
+      exports.load.cfg('aws.mock', mock);
+    }
+  });
+
+  suiteTeardown('cleanup withGCS', function() {
+    if (tmpDir) {
+      rmSync(tmpDir, { recursive: true });
+    }
+  });
+};
+
+/**
  * Provide a fake QueueService implementation at helper.queueService
  */
 exports.withQueueService = (mock, skipping) => {
