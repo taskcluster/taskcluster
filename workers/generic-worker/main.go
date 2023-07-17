@@ -209,6 +209,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			InteractivePort:                53654,
 			LiveLogExecutable:              "livelog",
 			LiveLogPortBase:                60098,
+			LoopbackAudioDeviceNumber:      16,
 			LoopbackVideoDeviceNumber:      0,
 			MaxTaskRunTime:                 86400, // 86400s is 24 hours
 			NumberOfTasksToRun:             0,

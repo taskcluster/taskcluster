@@ -44,6 +44,7 @@ type (
 		LiveLogExecutable              string                 `json:"livelogExecutable"`
 		LiveLogPortBase                uint16                 `json:"livelogPortBase"`
 		LiveLogExposePort              uint16                 `json:"livelogExposePort"`
+		LoopbackAudioDeviceNumber      uint8                  `json:"loopbackAudioDeviceNumber"`
 		LoopbackVideoDeviceNumber      uint8                  `json:"loopbackVideoDeviceNumber"`
 		MaxTaskRunTime                 uint32                 `json:"maxTaskRunTime"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`

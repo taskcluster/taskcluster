@@ -373,6 +373,26 @@ type (
 		// Default:    true
 		LiveLog bool `json:"liveLog" default:"true"`
 
+		// Audio loopback device created using snd-aloop.
+		// An audio device will be available for the task. Its
+		// location will be `/dev/snd`. Devices inside that directory
+		// will take the form `/dev/snd/controlC<N>`,
+		// `/dev/snd/pcmC<N>D0c`, `/dev/snd/pcmC<N>D0p`,
+		// `/dev/snd/pcmC<N>D1c`, and `/dev/snd/pcmC<N>D1p`,
+		// where <N> is an integer between 0 and 31, inclusive.
+		// The Generic Worker config setting `loopbackAudioDeviceNumber`
+		// may be used to change the device number in case the
+		// default value (`16`) conflicts with another
+		// audio device on the worker.
+		//
+		// This feature is only available on Linux. If a task
+		// is submitted with this feature enabled on a non-Linux,
+		// posix platform (FreeBSD, macOS), the task will resolve as
+		// `exception/malformed-payload`.
+		//
+		// Since: generic-worker 54.5.0
+		LoopbackAudio bool `json:"loopbackAudio,omitempty"`
+
 		// Video loopback device created using v4l2loopback.
 		// A video device will be available for the task. Its
 		// location will be passed to the task via environment
@@ -1071,6 +1091,11 @@ func JSONSchema() string {
               "default": true,
               "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
               "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
+              "type": "boolean"
+            },
+            "loopbackAudio": {
+              "description": "Audio loopback device created using snd-aloop.\nAn audio device will be available for the task. Its\nlocation will be ` + "`" + `/dev/snd` + "`" + `. Devices inside that directory\nwill take the form ` + "`" + `/dev/snd/controlC\u003cN\u003e` + "`" + `,\n` + "`" + `/dev/snd/pcmC\u003cN\u003eD0c` + "`" + `, ` + "`" + `/dev/snd/pcmC\u003cN\u003eD0p` + "`" + `,\n` + "`" + `/dev/snd/pcmC\u003cN\u003eD1c` + "`" + `, and ` + "`" + `/dev/snd/pcmC\u003cN\u003eD1p` + "`" + `,\nwhere \u003cN\u003e is an integer between 0 and 31, inclusive.\nThe Generic Worker config setting ` + "`" + `loopbackAudioDeviceNumber` + "`" + `\nmay be used to change the device number in case the\ndefault value (` + "`" + `16` + "`" + `) conflicts with another\naudio device on the worker.\n\nThis feature is only available on Linux. If a task\nis submitted with this feature enabled on a non-Linux,\nposix platform (FreeBSD, macOS), the task will resolve as\n` + "`" + `exception/malformed-payload` + "`" + `.\n\nSince: generic-worker 54.5.0",
+              "title": "Loopback Audio device",
               "type": "boolean"
             },
             "loopbackVideo": {

@@ -166,6 +166,15 @@ and reports back results to the queue.
           livelogExposePort                 When not using websocktunnel, livelog would be exposed using this port.
                                             If it is set to 0, logs would be exposed using a random port.
                                             [default: 0]
+          loopbackAudioDeviceNumber         The audio loopback device number. The resulting devices inside /dev/snd
+                                            will take the form controlC<DEVICE_NUMBER>, pcmC<DEVICE_NUMBER>D0c,
+                                            pcmC<DEVICE_NUMBER>D0p, pcmC<DEVICE_NUMBER>D1c, pcmC<DEVICE_NUMBER>D1p
+                                            where <DEVICE_NUMBER> is an integer between 0 and 31.
+                                            [default: 16]
+          loopbackVideoDeviceNumber         The video loopback device number. Its value will take the form
+                                            /dev/video<DEVICE_NUMBER> where <DEVICE_NUMBER> is an integer
+                                            between 0 and 255. This setting may be used to change it.
+                                            [default: 0]
           maxTaskRunTime                    The maximum value allowed for maxRunTime on generic-worker payloads.
                                             [default: 86400]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
