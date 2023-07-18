@@ -6904,7 +6904,7 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "54.1.2"
+  version "54.3.1"
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
@@ -6914,37 +6914,37 @@ tar-stream@^2.0.0:
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-db@link:db":
-  version "54.1.2"
+  version "54.3.1"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "54.1.2"
+  version "54.3.1"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "54.1.2"
+  version "54.3.1"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "54.1.2"
+  version "54.3.1"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "54.1.2"
+  version "54.3.1"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "54.1.2"
+  version "54.3.1"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "54.1.2"
+  version "54.3.1"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "54.1.2"
+  version "54.3.1"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "54.1.2"
+  version "54.3.1"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "54.1.2"
+  version "54.3.1"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "54.1.2"
+  version "54.3.1"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6954,7 +6954,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "54.1.2"
+  version "54.3.1"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6962,7 +6962,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "54.1.2"
+  version "54.3.1"
 
 test-exclude@^6.0.0:
   version "6.0.0"
@@ -7498,9 +7498,9 @@ with@^7.0.0:
     babel-walk "3.0.0-canary-5"
 
 word-wrap@^1.2.3, word-wrap@~1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/word-wrap/-/word-wrap-1.2.3.tgz#610636f6b1f703891bd34771ccb17fb93b47079c"
-  integrity sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/word-wrap/-/word-wrap-1.2.4.tgz#cb4b50ec9aca570abd1f52f33cd45b6c61739a9f"
+  integrity sha512-2V81OA4ugVo5pRo46hAoD2ivUJx8jXmWXfUkY4KFNw0hEptvN0QfH3K4nHiwzGeKl5rFKedV48QVoqYavy4YpA==
 
 workerpool@6.2.1:
   version "6.2.1"
