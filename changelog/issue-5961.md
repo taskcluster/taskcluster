@@ -8,6 +8,8 @@ FreeBSD. Support was already added to Windows in Generic Worker 6.0.0.
 Example Linux/macOS task (requires `docker` to be installed on worker):
 
 ```
+created: <timestamp>
+deadline: <timestamp>
 workerType: my-worker-type
 provisionerId: mv-provisioner-id
 scopes:
