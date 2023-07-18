@@ -140,3 +140,13 @@ func sleep(seconds uint) [][]string {
 		},
 	}
 }
+
+func listGroups() [][]string {
+	return [][]string{
+		{
+			"bash",
+			"-c",
+			`USER="$(whoami)"; for group in $(id -nG "${USER}"); do echo "*${group}"; done`,
+		},
+	}
+}

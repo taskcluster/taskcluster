@@ -1,4 +1,4 @@
-//go:build darwin || linux || freebsd
+//go:build simple
 
 package main
 
@@ -12,7 +12,7 @@ import (
 func TestEmptyOSGroups(t *testing.T) {
 	setup(t)
 	payload := GenericWorkerPayload{
-		Command:    helloGoodbye(),
+		Command:    listGroups(),
 		MaxRunTime: 30,
 		OSGroups:   []string{},
 	}
@@ -25,7 +25,7 @@ func TestEmptyOSGroups(t *testing.T) {
 func TestNonEmptyOSGroups(t *testing.T) {
 	setup(t)
 	payload := GenericWorkerPayload{
-		Command:    helloGoodbye(),
+		Command:    listGroups(),
 		MaxRunTime: 30,
 		OSGroups:   []string{"abc"},
 	}

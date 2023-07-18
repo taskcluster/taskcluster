@@ -8,13 +8,6 @@ import (
 type OSGroupsFeature struct {
 }
 
-// one instance per task
-type OSGroups struct {
-	Task *TaskRun
-	// keep track of which groups we successfully update
-	AddedGroups []string
-}
-
 func (feature *OSGroupsFeature) Name() string {
 	return "OS Groups"
 }

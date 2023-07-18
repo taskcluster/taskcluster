@@ -285,15 +285,13 @@ oneOf:
       type: array
       title: OS Groups
       description: |-
-        A list of OS Groups that the task user should be a member of. Not yet implemented on
-        non-Windows platforms, therefore this optional property may only be an empty array if
-        provided.
+        A list of OS Groups that the task user should be a member of.
 
-        Since: generic-worker 6.0.0
+        Since: generic-worker 6.0.0 (Windows)
+        Since: generic-worker 54.4.0 (FreeBSD, Linux, macOS)
       uniqueItems: false
       items:
         type: string
-      maxItems: 0
     supersederUrl:
       type: string
       title: unused

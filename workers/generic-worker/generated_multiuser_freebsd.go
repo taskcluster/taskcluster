@@ -510,11 +510,10 @@ type (
 		// based on exit code of task commands.
 		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
 
-		// A list of OS Groups that the task user should be a member of. Not yet implemented on
-		// non-Windows platforms, therefore this optional property may only be an empty array if
-		// provided.
+		// A list of OS Groups that the task user should be a member of.
 		//
-		// Since: generic-worker 6.0.0
+		// Since: generic-worker 6.0.0 (Windows)
+		// Since: generic-worker 54.4.0 (FreeBSD, Linux, macOS)
 		//
 		// Array items:
 		OSGroups []string `json:"osGroups,omitempty"`
@@ -1161,11 +1160,10 @@ func JSONSchema() string {
           "type": "object"
         },
         "osGroups": {
-          "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+          "description": "A list of OS Groups that the task user should be a member of.\n\nSince: generic-worker 6.0.0 (Windows)\nSince: generic-worker 54.4.0 (FreeBSD, Linux, macOS)",
           "items": {
             "type": "string"
           },
-          "maxItems": 0,
           "title": "OS Groups",
           "type": "array",
           "uniqueItems": false
