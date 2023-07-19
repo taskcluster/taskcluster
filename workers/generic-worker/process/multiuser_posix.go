@@ -122,7 +122,8 @@ func newCommand(f func() *exec.Cmd, commandLine []string, workingDirectory strin
 		cmd.Stderr = os.Stderr
 	}
 	if platformData.SysProcAttr != nil {
-		cmd.SysProcAttr = platformData.SysProcAttr
+		attrs := *platformData.SysProcAttr
+		cmd.SysProcAttr = &attrs
 	} else {
 		cmd.SysProcAttr = &syscall.SysProcAttr{}
 	}
