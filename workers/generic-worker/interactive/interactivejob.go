@@ -50,7 +50,11 @@ func CreateInteractiveJob(createCmd CreateInteractiveProcess, conn *websocket.Co
 		itj.reportError(fmt.Sprintf("Error while getting command %v", err))
 		return
 	}
-	cmd.SysProcAttr = &syscall.SysProcAttr{}
+	if cmd.SysProcAttr == nil {
+		cmd.SysProcAttr = &syscall.SysProcAttr{}
+	}
+	cmd.SysProcAttr.Setpgid = false
+	cmd.SysProcAttr.Setctty = true
 	cmd.SysProcAttr.Setsid = true
 	itj.cmd = cmd
 
