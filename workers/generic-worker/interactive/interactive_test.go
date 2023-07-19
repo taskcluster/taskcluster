@@ -72,6 +72,11 @@ func TestInteractive(t *testing.T) {
 		}
 	}
 
+	nonExpectedBytes := []byte("Inappropriate ioctl for device")
+	if bytes.Contains(completeOutput, nonExpectedBytes) {
+		t.Fatalf("Bash complained about ioctls (%v)", completeOutput)
+	}
+
 	if !ok {
 		t.Fatalf("Couldn't find expected output: %v. Complete output: %v", expectedBytes, completeOutput)
 	}
