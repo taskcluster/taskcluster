@@ -1,4 +1,4 @@
-FROM node:18.16.1
+FROM node:18.17.0
 
 WORKDIR /app/ui
 COPY yarn.lock package.json ./
