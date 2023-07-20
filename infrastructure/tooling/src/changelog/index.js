@@ -119,7 +119,7 @@ class ChangeLog {
     const lastVersion = await this.lastVersion();
     this.updates = await gitLog({
       dir: REPO_ROOT,
-      args: [`v${lastVersion}..HEAD`, '--author=dependabot', '--author=renovate', "--pretty='%s (%h)'"],
+      args: [`v${lastVersion}..HEAD`, '--author=dependabot', '--author=renovate', "--pretty=%s (%h)"],
     });
   }
 
