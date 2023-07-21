@@ -192,11 +192,12 @@ MonitorManager.register({
   name: 'expiredArtifactsRemoved',
   title: 'Expired Artifacts Removed',
   type: 'expired-artifacts-removed',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: `Reports progress of expired artifacts removal.`,
   fields: {
     count: 'Count of artifacts removed.',
     expires: 'Expiration date of artifacts removed.',
+    errorsCount: 'Count of errors encountered (most likely missing objects)',
   },
 });

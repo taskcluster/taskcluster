@@ -335,15 +335,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     // would log errors through monitor
     await helper.runExpiration('expire-artifacts');
-    const errors = monitor.manager.messages.filter(m => m.Type === 'monitor.error');
-    assume(errors.length).equals(4);
-    assume(errors.map(e => e.Fields.prefix).sort()).deep.equals([
-      `${taskId}/0/log.log`,
-      `${taskId}/2/log.log`,
-      `${taskId}/3/log.log`,
-      `${taskId}/4/log.log`,
-    ]);
-    assume(errors[0].Fields.bucket).equals('fake-public');
+    const [ result ] = monitor.manager.messages.filter(m => m.Type === 'expired-artifacts-removed');
+    assume(result.Fields.count).equals(5);
+    assume(result.Fields.errorsCount).equals(4);
     monitor.manager.reset();
 
     rows = await helper.db.fns.get_expired_artifacts_for_deletion({

@@ -309,7 +309,7 @@ let load = loader({
         debug('Expiring artifacts at: %s, from before %s, useBulkDelete: %s, batchSize: %d',
           new Date(), now, useBulkDelete, expireArtifactsBatchSize);
 
-        const count = await artifactUtils.expire({
+        const { count, errorsCount } = await artifactUtils.expire({
           db,
           publicBucket: publicArtifactBucket,
           privateBucket: privateArtifactBucket,
@@ -319,8 +319,8 @@ let load = loader({
           expireArtifactsBatchSize,
           useBulkDelete,
         });
-        debug('Expired %s artifacts', count);
-        monitor.log.expiredArtifactsRemoved({ count, expires: now });
+        debug('Expired %s artifacts (%s errors)', count, errorsCount);
+        monitor.log.expiredArtifactsRemoved({ count, errorsCount, expires: now });
       });
     },
   },
