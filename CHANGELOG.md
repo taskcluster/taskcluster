@@ -3,6 +3,32 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v54.4.1
+
+### GENERAL
+
+▶ [patch]
+Upgrade Node.js to 18.17.0.
+
+### ADMINS
+
+▶ [patch] [#6405](https://github.com/taskcluster/taskcluster/issues/6405)
+Expire artifacts job no longer logs errors for each missing artifact. Instead it reports the number of missing artifacts at the end of the job.
+
+### USERS
+
+▶ [patch]
+Adds a task log letting the user know their Docker Worker payload is being converted to a Generic Worker payload using d2g.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot/Renovate updates</summary>
+
+* build(deps): bump aiohttp from 3.8.4 to 3.8.5 in /taskcluster (56a9903ae)
+
+</details>
+
 ## v54.4.0
 
 ### USERS
