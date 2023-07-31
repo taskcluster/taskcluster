@@ -134,7 +134,7 @@ class BaseClient(object):
             data['routingKeyPattern'] = routingKeyPattern
             return data
 
-        if type(routingKeyPattern) != dict:
+        if not isinstance(routingKeyPattern, dict):
             errStr = 'routingKeyPattern must eventually be a dict'
             raise exceptions.TaskclusterTopicExchangeFailure(errStr)
 
