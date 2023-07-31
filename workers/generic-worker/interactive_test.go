@@ -76,6 +76,7 @@ func TestInteractiveCommand(t *testing.T) {
 
 	var conn *websocket.Conn
 	var err error
+	const SENTINEL = "S3ntin3lValue"
 
 	for {
 		select {
@@ -87,31 +88,22 @@ func TestInteractiveCommand(t *testing.T) {
 			url := fmt.Sprintf("ws://localhost:%v/shell/%v", config.InteractivePort, os.Getenv("INTERACTIVE_ACCESS_TOKEN"))
 			conn, _, err = websocket.DefaultDialer.Dial(url, nil)
 			if err == nil {
-				err = conn.WriteMessage(websocket.TextMessage, []byte("\x01echo hello\n"))
+				err = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("\x01echo %s\nexit", SENTINEL)))
 				if err != nil {
 					t.Fatalf("write error: %v", err)
 				}
 
 				var output []byte
-				_, output, err = conn.ReadMessage()
-				if err != nil {
-					t.Fatalf("read error: %v", err)
-				}
-				expected := "echo hello\r\n"
-				if string(output) != expected {
-					t.Fatalf("unexpected output: %v\nexpected: %v", []byte(output), expected)
-				}
-
-				expectedBytes := []byte("hello\r\n")
+				expectedBytes := []byte(SENTINEL)
 				completeOutput := []byte{}
 				ok := false
-				for i := 0; i < 10; i++ {
+				for i := 0; i < 20; i++ {
 					_, output, err = conn.ReadMessage()
 					if err != nil {
 						t.Fatalf("read error: %v", err)
 					}
 					completeOutput = append(completeOutput, output...)
-					if bytes.Contains(completeOutput, expectedBytes) {
+					if bytes.Count(completeOutput, expectedBytes) == 3 {
 						ok = true
 						break
 					}
