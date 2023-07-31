@@ -81,7 +81,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --name taskcontainer --privileged -v
+              podman run -t --name taskcontainer --privileged -v
               "$(pwd)/cache0:/builds/worker/checkouts"
               --add-host=taskcluster:127.0.0.1 --net=host -e
               "GECKO_BASE_REPOSITORY=https://hg.mozilla.org/mozilla-unified" -e
