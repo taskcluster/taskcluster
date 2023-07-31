@@ -19,7 +19,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --rm
+              podman run -t --rm
               -v /dev/shm:/dev/shm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
@@ -47,7 +47,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --rm
+              podman run -t --rm
               -v /dev/kvm:/dev/kvm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
@@ -75,7 +75,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --rm
+              podman run -t --rm
               -v "${TASKCLUSTER_VIDEO_DEVICE}:/dev/video0"
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e

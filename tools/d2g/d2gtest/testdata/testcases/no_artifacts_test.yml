@@ -23,7 +23,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --rm
+              podman run -t --rm
               -e "RUN_ID=${RUN_ID}" -e
               "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
               "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
