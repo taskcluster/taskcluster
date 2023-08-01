@@ -114,7 +114,13 @@ func TestExponentialBackoffFailure(t *testing.T) {
 		t.Fatalf("should not run for more than %d milliseconds", maxTime)
 	}
 
-	if count > 10 || count < 4 {
+	// Note, sometimes 11 requests occur, presumably because the attempts occur
+	// when clock is 0ms, 200ms, 400ms, 600ms, 800ms, 1000ms, 1200ms, 1400ms,
+	// 1600ms, 1800ms, 2000ms, or there is a timeout go routine that isn't
+	// guaranteed to be immediately scheduled after 2 seconds. We may even
+	// want to bump the limit to 12, no need to be super strict here. Let's see
+	// how it is with 11 for now.
+	if count > 11 || count < 4 {
 		t.Fatalf("wrong number of retries: %d", count)
 	}
 }
