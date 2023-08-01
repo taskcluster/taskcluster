@@ -34,39 +34,27 @@ func TestInteractive(t *testing.T) {
 	if err != nil {
 		t.Fatal("dial error:", err)
 	}
+	const SENTINEL = "S3ntin3lValue"
 
 	// Send some input to the interactive session
-	input := "\x01echo hello\n"
+	input := fmt.Sprintf("\x01echo %s\nexit\n", SENTINEL)
 	err = conn.WriteMessage(websocket.TextMessage, []byte(input))
 	if err != nil {
 		t.Fatal("write error:", err)
 	}
 
 	// Wait for the output from the interactive session
-	_, output, err := conn.ReadMessage()
-	if err != nil {
-		t.Fatal("read error:", err)
-	}
-	expected := "echo hello\r\n"
-	if string(output) != expected {
-		t.Fatalf("unexpected output: %v\nexpected: %v", string(output), expected)
-	}
-
-	_, _, err = conn.ReadMessage()
-	if err != nil {
-		t.Fatal("read error:", err)
-	}
-
-	expectedBytes := []byte("hello\r\n")
+	var output []byte
+	expectedBytes := []byte(SENTINEL)
 	completeOutput := []byte{}
 	ok := false
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		_, output, err = conn.ReadMessage()
 		if err != nil {
-			t.Fatal("read error:", err)
+			t.Fatalf("read error: %v", err)
 		}
 		completeOutput = append(completeOutput, output...)
-		if bytes.Contains(completeOutput, expectedBytes) {
+		if bytes.Count(completeOutput, expectedBytes) == 3 {
 			ok = true
 			break
 		}
