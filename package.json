@@ -30,7 +30,7 @@
     "amqplib": "^0.8.0",
     "apollo-server-core": "^3.11.1",
     "apollo-server-express": "^3.11.1",
-    "aws-sdk": "^2.1354.0",
+    "aws-sdk": "^2.1426.0",
     "body-parser": "1.20.1",
     "body-parser-graphql": "^1.0.0",
     "chalk": "^4.0.0",
