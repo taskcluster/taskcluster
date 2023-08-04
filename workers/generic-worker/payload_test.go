@@ -124,6 +124,7 @@ func TestNoCommandsSpecified(t *testing.T) {
 
 // Valid payload should pass validation
 func TestValidPayload(t *testing.T) {
+	setup(t)
 	ensureValidPayload(t, taskWithPayload(`{
   "env": {
     "XPI_NAME": "dist/example_add-on-0.0.1.zip"
@@ -167,8 +168,32 @@ func TestArtifactExpiresBeforeDeadline(t *testing.T) {
 	ensureMalformedPayload(t, task)
 }
 
+// If a task has a higher `maxRunTime` than the `maxTaskRunTime` set in the worker config we should get a Malformed Payload
+func TestMaxTaskRunTime(t *testing.T) {
+	setup(t)
+	now := NowMillis(t)
+	task := taskWithPayload(`{
+  "env": {
+    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+  },
+  "maxRunTime": 86401,
+  "command": [` + rawHelloGoodbye() + `],
+  "artifacts": [
+    {
+      "type": "file",
+      "path": "public/some/artifact",
+      "expires": "` + tcclient.Time(now.Add(time.Minute*20)).String() + `"
+    }
+  ]
+}`)
+	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
+	ensureMalformedPayload(t, task)
+}
+
 // If artifact expires with task deadline, we should not get a Malformed Payload
 func TestArtifactExpiresWithDeadline(t *testing.T) {
+	setup(t)
 	now := NowMillis(t)
 	task := taskWithPayload(`{
   "env": {
@@ -191,6 +216,7 @@ func TestArtifactExpiresWithDeadline(t *testing.T) {
 
 // If artifact expires after task deadline, but before task expiry, we should not get a Malformed Payload
 func TestArtifactExpiresBetweenDeadlineAndTaskExpiry(t *testing.T) {
+	setup(t)
 	now := NowMillis(t)
 	task := taskWithPayload(`{
   "env": {
@@ -213,6 +239,7 @@ func TestArtifactExpiresBetweenDeadlineAndTaskExpiry(t *testing.T) {
 
 // If artifact expires with task expiry, we should not get a Malformed Payload
 func TestArtifactExpiresWithTask(t *testing.T) {
+	setup(t)
 	now := NowMillis(t)
 	task := taskWithPayload(`{
   "env": {
