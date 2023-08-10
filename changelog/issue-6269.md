@@ -2,4 +2,4 @@ audience: developers
 level: minor
 reference: issue 6269
 ---
-The maximum value for `maxRunTime` on `generic-worker` payloads can now be configured using a `maxTaskRunTime` property on the `generic-worker` config.
+Generic Worker now provides configuration property `maxTaskRunTime` as an upper bound for task payload property `maxRunTime`. Tasks with `maxRunTime` exceeding this value will be resolved as `exception/malformed-payload`.
