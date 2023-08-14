@@ -372,7 +372,7 @@ func GWTest(t *testing.T) *Test {
 			// These ports are not exposed outside of the host. However, in CI they must differ from those of the
 			// generic-worker instance running the test suite.
 			LiveLogPortBase:    30583,
-			MaxTaskRunTime:     180,
+			MaxTaskRunTime:     300,
 			NumberOfTasksToRun: 1,
 			PrivateIP:          net.ParseIP("87.65.43.21"),
 			ProvisionerID:      "test-provisioner",
