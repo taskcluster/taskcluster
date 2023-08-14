@@ -210,7 +210,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			LiveLogExecutable:              "livelog",
 			LiveLogPortBase:                60098,
 			LoopbackVideoDeviceNumber:      0,
-			MaxTaskRunTime:                 86400,
+			MaxTaskRunTime:                 86400, // 86400s is 24 hours
 			NumberOfTasksToRun:             0,
 			ProvisionerID:                  "test-provisioner",
 			RequiredDiskSpaceMegabytes:     10240,
