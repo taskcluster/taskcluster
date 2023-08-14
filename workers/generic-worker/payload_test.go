@@ -171,24 +171,45 @@ func TestArtifactExpiresBeforeDeadline(t *testing.T) {
 // If a task has a higher `maxRunTime` than the `maxTaskRunTime` set in the worker config we should get a Malformed Payload
 func TestMaxTaskRunTime(t *testing.T) {
 	setup(t)
-	now := NowMillis(t)
-	task := taskWithPayload(`{
-  "env": {
-    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
-  },
-  "maxRunTime": 86401,
-  "command": [` + rawHelloGoodbye() + `],
-  "artifacts": [
-    {
-      "type": "file",
-      "path": "public/some/artifact",
-      "expires": "` + tcclient.Time(now.Add(time.Minute*20)).String() + `"
-    }
-  ]
-}`)
-	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
-	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
-	ensureMalformedPayload(t, task)
+	task := maxTaskRunTimeTestTask(t)
+	if err := task.validatePayload(); err == nil {
+		t.Fatal("Bad task payload should not have passed validation")
+	} else {
+		assertMaxTaskRunTimeError(t, err)
+	}
+	t.Logf("Task log:\n%v", task.logWriter)
+}
+
+func maxTaskRunTimeTestTask(t *testing.T) *TaskRun {
+	payload, err := json.Marshal(GenericWorkerPayload{
+		Command:    returnExitCode(0),
+		MaxRunTime: 70,
+	})
+	if err != nil {
+		t.Fatalf("Failed to marshal payload: %v", err)
+	}
+	return &TaskRun{
+		TaskID: slugid.Nice(),
+		Definition: tcqueue.TaskDefinitionResponse{
+			Payload: payload,
+		},
+		logWriter: &bytes.Buffer{},
+	}
+}
+
+func assertMaxTaskRunTimeError(t *testing.T, err error) {
+	cmdErr, ok := err.(*CommandExecutionError)
+	if !ok {
+		t.Fatalf("Unexpected error type: %v", err)
+	}
+	if cmdErr.Reason != "malformed-payload" || cmdErr.TaskStatus != errored {
+		t.Errorf("Bad task payload should have returned malformed-payload, but actually returned:\n%#v", err)
+	}
+	const expectedErrorText = "Task's maxRunTime of 70 exceeded allowed maximum of 60"
+	if !strings.Contains(err.Error(), expectedErrorText) {
+		t.Fatalf("Was expecting error text to include %q but it didn't: %v", expectedErrorText, err)
+	}
+	t.Logf("%v", cmdErr.Cause)
 }
 
 // If artifact expires with task deadline, we should not get a Malformed Payload
