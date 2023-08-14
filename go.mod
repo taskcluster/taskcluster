@@ -17,7 +17,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.0
-	github.com/iancoleman/strcase v0.2.0
+	github.com/iancoleman/strcase v0.3.0
 	github.com/johncgriffin/overflow v0.0.0-20211019200055-46fa312c352c
 	github.com/kr/text v0.2.0
 	github.com/mcuadros/go-defaults v1.2.0
