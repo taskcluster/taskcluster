@@ -4,7 +4,7 @@
   "version": "54.4.1",
   "engine-strict": true,
   "engines": {
-    "node": "18.17.0",
+    "node": "18.17.1",
     "yarn": "^1.22.19"
   },
   "description": "Docker task host for linux.",
