@@ -181,6 +181,7 @@ func TestMaxTaskRunTime(t *testing.T) {
 }
 
 func maxTaskRunTimeTestTask(t *testing.T) *TaskRun {
+	t.Helper()
 	payload, err := json.Marshal(GenericWorkerPayload{
 		Command:    returnExitCode(0),
 		MaxRunTime: 200,
@@ -198,6 +199,7 @@ func maxTaskRunTimeTestTask(t *testing.T) *TaskRun {
 }
 
 func assertMaxTaskRunTimeError(t *testing.T, err error) {
+	t.Helper()
 	cmdErr, ok := err.(*CommandExecutionError)
 	if !ok {
 		t.Fatalf("Unexpected error type: %v", err)
