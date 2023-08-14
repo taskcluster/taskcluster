@@ -183,7 +183,7 @@ func TestMaxTaskRunTime(t *testing.T) {
 func maxTaskRunTimeTestTask(t *testing.T) *TaskRun {
 	payload, err := json.Marshal(GenericWorkerPayload{
 		Command:    returnExitCode(0),
-		MaxRunTime: 70,
+		MaxRunTime: 200,
 	})
 	if err != nil {
 		t.Fatalf("Failed to marshal payload: %v", err)
@@ -205,7 +205,7 @@ func assertMaxTaskRunTimeError(t *testing.T, err error) {
 	if cmdErr.Reason != "malformed-payload" || cmdErr.TaskStatus != errored {
 		t.Errorf("Bad task payload should have returned malformed-payload, but actually returned:\n%#v", err)
 	}
-	const expectedErrorText = "Task's maxRunTime of 70 exceeded allowed maximum of 60"
+	const expectedErrorText = "Task's maxRunTime of 200 exceeded allowed maximum of 180"
 	if !strings.Contains(err.Error(), expectedErrorText) {
 		t.Fatalf("Was expecting error text to include %q but it didn't: %v", expectedErrorText, err)
 	}
