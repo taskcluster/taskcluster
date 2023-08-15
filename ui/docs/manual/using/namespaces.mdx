@@ -219,7 +219,8 @@ The `project-admin:*` parameterized role then grants the following scopes:
 
  * `assume:hook-id:project-<..>/*`
  * `assume:project:<..>:*`
- * `assume:worker-type:proj-<..>/*`
+ * `assume:worker-id:proj-<..>/*`
+ * `assume:worker-pool:proj-<..>/*`
  * `auth:create-client:project/<..>/*`
  * `auth:create-role:hook-id:project-<..>/*`
  * `auth:create-role:project:<..>:*`
@@ -236,20 +237,25 @@ The `project-admin:*` parameterized role then grants the following scopes:
  * `hooks:trigger-hook:project-<..>/*`
  * `index:insert-task:project.<..>.*`
  * `project:<..>:*`
+ * `purge-cache:proj-<..>/*`
  * `queue:claim-work:proj-<..>/*`
- * `queue:create-task:highest:proj-<..>/*`
  * `queue:create-task:high:proj-<..>/*`
- * `queue:create-task:lowest:proj-<..>/*`
+ * `queue:create-task:highest:proj-<..>/*`
  * `queue:create-task:low:proj-<..>/*`
+ * `queue:create-task:lowest:proj-<..>/*`
  * `queue:create-task:medium:proj-<..>/*`
  * `queue:create-task:very-high:proj-<..>/*`
  * `queue:create-task:very-low:proj-<..>/*`
  * `queue:get-artifact:project/<..>/*`
  * `queue:quarantine-worker:proj-<..>/*`
  * `queue:route:index.project.<..>.*`
- * `queue:worker-id:proj-<..>/*`
  * `secrets:get:project/<..>/*`
+ * `secrets:get:worker-pool:proj-<..>/*`
  * `secrets:set:project/<..>/*`
+ * `secrets:set:worker-pool:proj-<..>/*`
+ * `worker-manager:create-worker:proj-<..>/*`
+ * `worker-manager:manage-worker-pool:proj-<..>/*`
+ * `worker-manager:remove-worker:proj-<..>/*`
 
 Project admins may then delegate portions of these scopes as desired.
 The scopes cover:
@@ -257,9 +263,9 @@ The scopes cover:
 * scopes `project:<project>:…`
 * clients `project/<project>/*`
 * roles `project:<project>:*`
-* artifacts `project/<project/*`
+* artifacts `project/<project>/*`
 * hooks `project-<project>/*`
-* worker pools `project-<project>/*`
+* worker pools `proj-<project>/*`
 * secrets `project/<project>/*`
 * index namespaces `project.<project>.*`
 
