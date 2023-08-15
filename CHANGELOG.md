@@ -3,6 +3,43 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v54.4.2
+
+### GENERAL
+
+▶ [patch]
+Upgrades go to 1.21.0 and node to 18.17.1
+
+### USERS
+
+▶ [patch] [#6440](https://github.com/taskcluster/taskcluster/issues/6440)
+Generic Worker now allocates a pseudo tty when running Docker Worker tasks, to
+emulate Docker Worker behavior. Previously it did not allocate a tty, which
+could result in e.g. output not being colored.
+
+### OTHER
+
+▶ Additional changes not described here: [#6400](https://github.com/taskcluster/taskcluster/issues/6400), [#6414](https://github.com/taskcluster/taskcluster/issues/6414), [#6442](https://github.com/taskcluster/taskcluster/issues/6442).
+
+### Automated Package Updates
+
+<details>
+<summary>11 Dependabot/Renovate updates</summary>
+
+* build(deps-dev): bump eslint in /clients/client-web (7b132ce69)
+* build(deps-dev): bump zen-observable from 0.8.15 to 0.10.0 (b6098fade)
+* build(deps): bump github.com/iancoleman/strcase from 0.2.0 to 0.3.0 (deea49585)
+* build(deps-dev): bump @babel/core in /clients/client-web (c5e7d8ab6)
+* build(deps-dev): bump karma-coverage in /clients/client-web (8c0c79322)
+* build(deps): bump pyyaml from 6.0 to 6.0.1 in /taskcluster (f818ba817)
+* build(deps): bump taskcluster from 54.1.2 to 54.4.1 in /taskcluster (06d02af96)
+* build(deps-dev): bump nock from 13.3.1 to 13.3.2 in /clients/client (58f394be6)
+* build(deps): bump aws-sdk from 2.1376.0 to 2.1426.0 (bfb701686)
+* build(deps): bump golang.org/x/tools from 0.11.0 to 0.11.1 (7420158d5)
+* build(deps): bump certifi from 2023.5.7 to 2023.7.22 in /taskcluster (5f364270a)
+
+</details>
+
 ## v54.4.1
 
 ### GENERAL
