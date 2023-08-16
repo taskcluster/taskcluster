@@ -37,7 +37,7 @@ func TestInteractive(t *testing.T) {
 	const SENTINEL = "S3ntin3lValue"
 
 	// Send some input to the interactive session
-	input := fmt.Sprintf("\x01echo %s\nexit\n", SENTINEL)
+	input := fmt.Sprintf("\x01echo %s\n", SENTINEL)
 	err = conn.WriteMessage(websocket.TextMessage, []byte(input))
 	if err != nil {
 		t.Fatal("write error:", err)
