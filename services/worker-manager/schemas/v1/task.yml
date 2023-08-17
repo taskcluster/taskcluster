@@ -205,7 +205,9 @@ properties:
           repository. This should be place someone can go an do a git/hg blame
           to who came up with recipe for this task.
         type:           string
-        format:         uri
+        anyOf:
+          - format: uri
+          - format: regex
         pattern:        {$const: source-pattern}
         maxLength:      4096
     additionalProperties: false
