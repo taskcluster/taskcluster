@@ -318,24 +318,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.status).deep.equals(r2.status);
   });
 
-  test('Minimum task definition with ssh source', async () => {
-    const taskDef = makeSourceTask('ssh://git@github.com:taskcluster/taskcluster-queue');
-    const taskId = slugid.v4();
+  [
+    'ssh://git@github.com:taskcluster/taskcluster-queue',
+    'git@github.com:taskcluster/taskcluster-queue',
+  ].forEach((source) => {
+    test(`Minimum task definition with source ${source}`, async () => {
+      const taskDef = makeSourceTask(source);
+      const taskId = slugid.v4();
 
-    helper.scopes(
-      'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
-      'queue:create-task:project:none',
-      'queue:scheduler-id:-',
-      'queue:status:' + taskId,
-    );
+      helper.scopes(
+        'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
+        'queue:create-task:project:none',
+        'queue:scheduler-id:-',
+        'queue:status:' + taskId,
+      );
 
-    debug('### Creating task');
-    const r1 = await helper.queue.createTask(taskId, taskDef);
-    helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status.state, 'unscheduled'));
-    helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
+      debug('### Creating task');
+      const r1 = await helper.queue.createTask(taskId, taskDef);
+      helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status.state, 'unscheduled'));
+      helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
 
-    const r2 = helper.checkDates(await helper.queue.status(taskId));
-    assume(r1.status).deep.equals(r2.status);
+      const r2 = helper.checkDates(await helper.queue.status(taskId));
+      assume(r1.status).deep.equals(r2.status);
+    });
   });
 
   const makePriorityTask = (priority) => {
