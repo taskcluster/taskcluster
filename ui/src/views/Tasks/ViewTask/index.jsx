@@ -384,7 +384,6 @@ export default class ViewTask extends Component {
           'taskGroupId',
           'schedulerId',
           'priority',
-          'dependencies',
           'requires',
         ],
         task
@@ -588,7 +587,6 @@ export default class ViewTask extends Component {
                 <li>
                   Update deadlines and other timestamps for the current time
                 </li>
-                <li>Strip self-dependencies from the task definition</li>
                 <li>
                   Set number of <code>retries</code> to zero
                 </li>
@@ -778,7 +776,7 @@ export default class ViewTask extends Component {
 
   retriggerTask = async () => {
     const taskId = nice();
-    const task = omit('dependencies', gqlTaskToApi(this.props.data.task));
+    const task = gqlTaskToApi(this.props.data.task);
     const now = Date.now();
     const created = Date.parse(task.created);
 
