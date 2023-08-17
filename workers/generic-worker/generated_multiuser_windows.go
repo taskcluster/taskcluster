@@ -296,11 +296,11 @@ type (
 		Logs Logs `json:"logs,omitempty"`
 
 		// Maximum time the task container can run in seconds.
+		// The maximum value for `maxRunTime` is set by a `maxTaskRunTime` config property specific to each worker-pool.
 		//
 		// Since: generic-worker 0.0.1
 		//
 		// Mininum:    1
-		// Maximum:    86400
 		MaxRunTime int64 `json:"maxRunTime"`
 
 		// Directories and/or files to be mounted.
@@ -870,8 +870,7 @@ func JSONSchema() string {
       "type": "object"
     },
     "maxRunTime": {
-      "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
-      "maximum": 86400,
+      "description": "Maximum time the task container can run in seconds.\nThe maximum value for ` + "`" + `maxRunTime` + "`" + ` is set by a ` + "`" + `maxTaskRunTime` + "`" + ` config property specific to each worker-pool.\n\nSince: generic-worker 0.0.1",
       "minimum": 1,
       "multipleOf": 1,
       "title": "Maximum run time in seconds",

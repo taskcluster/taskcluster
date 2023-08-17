@@ -7995,8 +7995,7 @@
           "type": "object"
         },
         "maxRunTime": {
-          "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
-          "maximum": 86400,
+          "description": "Maximum time the task container can run in seconds.\nThe maximum value for `maxRunTime` is set by a `maxTaskRunTime` config property specific to each worker-pool.\n\nSince: generic-worker 0.0.1",
           "minimum": 1,
           "multipleOf": 1,
           "title": "Maximum run time in seconds",
@@ -8435,8 +8434,7 @@
           "type": "object"
         },
         "maxRunTime": {
-          "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
-          "maximum": 86400,
+          "description": "Maximum time the task container can run in seconds.\nThe maximum value for `maxRunTime` is set by a `maxTaskRunTime` config property specific to each worker-pool.\n\nSince: generic-worker 0.0.1",
           "minimum": 1,
           "multipleOf": 1,
           "title": "Maximum run time in seconds",
@@ -8919,8 +8917,7 @@
               "type": "object"
             },
             "maxRunTime": {
-              "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
-              "maximum": 86400,
+              "description": "Maximum time the task container can run in seconds.\nThe maximum value for `maxRunTime` is set by a `maxTaskRunTime` config property specific to each worker-pool.\n\nSince: generic-worker 0.0.1",
               "minimum": 1,
               "multipleOf": 1,
               "title": "Maximum run time in seconds",

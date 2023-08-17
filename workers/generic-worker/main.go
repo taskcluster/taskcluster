@@ -210,6 +210,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			LiveLogExecutable:              "livelog",
 			LiveLogPortBase:                60098,
 			LoopbackVideoDeviceNumber:      0,
+			MaxTaskRunTime:                 86400, // 86400s is 24 hours
 			NumberOfTasksToRun:             0,
 			ProvisionerID:                  "test-provisioner",
 			RequiredDiskSpaceMegabytes:     10240,
@@ -623,6 +624,9 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 				return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires after task expiry (%v is after %v)", artifact.Path, artifact.Expires, task.Definition.Expires))
 			}
 		}
+	}
+	if task.Payload.MaxRunTime > int64(config.MaxTaskRunTime) {
+		return MalformedPayloadError(fmt.Errorf("Task's maxRunTime of %d exceeded allowed maximum of %d", task.Payload.MaxRunTime, config.MaxTaskRunTime))
 	}
 	return nil
 }

@@ -61,11 +61,11 @@ properties:
     title: Maximum run time in seconds
     description: |-
       Maximum time the task container can run in seconds.
+      The maximum value for `maxRunTime` is set by a `maxTaskRunTime` config property specific to each worker-pool.
 
       Since: generic-worker 0.0.1
     multipleOf: 1
     minimum: 1
-    maximum: 86400
   artifacts:
     type: array
     title: Artifacts to be published
