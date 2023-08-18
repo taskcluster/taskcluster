@@ -305,7 +305,7 @@ properties:
       purgeCaches:
         title: Purge caches exit status
         description: |-
-          If the task exists with a purge caches exit status, all caches
+          If the task exits with a purge caches exit status, all caches
           associated with the task will be purged.
 
           Since: generic-worker 49.0.0

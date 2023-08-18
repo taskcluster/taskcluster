@@ -179,7 +179,7 @@ properties:
       retry:
         title: Retriable exit statuses
         description: >-
-          If the task exists with a retriable exit status, the task will be
+          If the task exits with a retriable exit status, the task will be
           marked as an exception and a new run created.
         type: array
         items:
@@ -188,7 +188,7 @@ properties:
       purgeCaches:
         title: Purge caches exit status
         description: >-
-          If the task exists with a purge caches exit status, all caches
+          If the task exits with a purge caches exit status, all caches
           associated with the task will be purged.
         type: array
         items:
