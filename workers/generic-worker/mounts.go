@@ -226,7 +226,7 @@ type FSContent interface {
 	// UniqueKey returns a string which represents the content, such that if
 	// two FSContent types return the same key, it can be assumed they
 	// represent the same content.
-	UniqueKey() string
+	UniqueKey(taskMount *TaskMount) (string, error)
 	// SHA256 of the content.
 	RequiredSHA256() string
 	// String representation of where the content comes from
@@ -664,7 +664,10 @@ func (f *FileMount) Unmount(taskMount *TaskMount) error {
 
 // ensureCached returns a file containing the given content
 func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, err error) {
-	cacheKey := fsContent.UniqueKey()
+	cacheKey, err := fsContent.UniqueKey(taskMount)
+	if err != nil {
+		return "", err
+	}
 	var sha256 string
 	requiredSHA256 := fsContent.RequiredSHA256()
 	if _, inCache := fileCaches[cacheKey]; inCache {
@@ -855,12 +858,13 @@ func (ic *IndexedContent) String() string {
 	return "namespace " + ic.Namespace + " artifact " + ic.Artifact
 }
 
-func (ac *ArtifactContent) UniqueKey() string {
-	return "artifact:" + ac.TaskID + ":" + ac.Artifact
+func (ac *ArtifactContent) UniqueKey(taskMount *TaskMount) (string, error) {
+	return "artifact:" + ac.TaskID + ":" + ac.Artifact, nil
 }
 
-func (ic *IndexedContent) UniqueKey() string {
-	return "indexed:" + ic.Namespace + ":" + ic.Artifact
+func (ic *IndexedContent) UniqueKey(taskMount *TaskMount) (string, error) {
+	itr, err := taskMount.index.FindTask(ic.Namespace)
+	return "indexed:" + ic.Namespace + ":" + ic.Artifact + ":" + itr.TaskID, err
 }
 
 func (ac *ArtifactContent) RequiredSHA256() string {
@@ -893,8 +897,8 @@ func (uc *URLContent) String() string {
 	return "url " + uc.URL
 }
 
-func (uc *URLContent) UniqueKey() string {
-	return "urlcontent:" + uc.URL
+func (uc *URLContent) UniqueKey(taskMount *TaskMount) (string, error) {
+	return "urlcontent:" + uc.URL, nil
 }
 
 func (uc *URLContent) RequiredSHA256() string {
@@ -967,8 +971,8 @@ func (rc *RawContent) String() string {
 	return "Raw (" + rc.Raw + ")"
 }
 
-func (rc *RawContent) UniqueKey() string {
-	return "Raw content: " + rc.Raw
+func (rc *RawContent) UniqueKey(taskMount *TaskMount) (string, error) {
+	return "Raw content: " + rc.Raw, nil
 }
 
 func (rc *RawContent) RequiredSHA256() string {
@@ -992,8 +996,8 @@ func (bc *Base64Content) String() string {
 	return "Base64 (" + bc.Base64 + ")"
 }
 
-func (bc *Base64Content) UniqueKey() string {
-	return "Base64 content: " + bc.Base64
+func (bc *Base64Content) UniqueKey(taskMount *TaskMount) (string, error) {
+	return "Base64 content: " + bc.Base64, nil
 }
 
 func (bc *Base64Content) RequiredSHA256() string {
