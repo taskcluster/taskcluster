@@ -206,7 +206,7 @@ Generation requires database to be running in order to properly generate schema 
 
 ```sh
 # start the database and initialize it
-docker compose up -d postgres pg_int_db
+docker compose up -d postgres pg_init_db
 
 # export test database that can be used for generation
 export TEST_DB_URL=postgresql://postgres@localhost:5432/taskcluster-test

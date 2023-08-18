@@ -126,12 +126,12 @@ type (
 	// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
 	ExitStatusHandling struct {
 
-		// If the task exists with a purge caches exit status, all caches associated with the task will be purged.
+		// If the task exits with a purge caches exit status, all caches associated with the task will be purged.
 		//
 		// Array items:
 		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
 
-		// If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.
+		// If the task exits with a retriable exit status, the task will be marked as an exception and a new run created.
 		//
 		// Array items:
 		Retry []int64 `json:"retry,omitempty"`
@@ -490,7 +490,7 @@ func JSONSchema() string {
       "description": "By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.",
       "properties": {
         "purgeCaches": {
-          "description": "If the task exists with a purge caches exit status, all caches associated with the task will be purged.",
+          "description": "If the task exits with a purge caches exit status, all caches associated with the task will be purged.",
           "items": {
             "title": "Exit statuses",
             "type": "integer"
@@ -499,7 +499,7 @@ func JSONSchema() string {
           "type": "array"
         },
         "retry": {
-          "description": "If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.",
+          "description": "If the task exits with a retriable exit status, the task will be marked as an exception and a new run created.",
           "items": {
             "title": "Exit statuses",
             "type": "integer"
