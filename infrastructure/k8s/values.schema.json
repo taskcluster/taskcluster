@@ -1063,6 +1063,9 @@
         "level": {
           "type": "string"
         },
+        "max_task_deadline": {
+          "type": "number"
+        },
         "private_artifact_bucket": {
           "type": "string"
         },

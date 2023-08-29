@@ -147,6 +147,7 @@ let builder = new APIBuilder({
     'artifactRegion', // AWS Region where s3 artifacts are stored
     'LRUcache', // LRU cache for tasks
     'objectService', // Object service API client
+    'maxTaskDeadline', // maximum value allowed for task deadlines
   ],
 });
 
@@ -590,7 +591,7 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
 };
 
 /** Construct default values and validate dates */
-let patchAndValidateTaskDef = function(taskId, taskDef) {
+let patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadline) {
   // Set taskGroupId to taskId if not provided
   if (!taskDef.taskGroupId) {
     taskDef.taskGroupId = taskId;
@@ -629,12 +630,11 @@ let patchAndValidateTaskDef = function(taskId, taskDef) {
   }
 
   let msToDeadline = deadline.getTime() - new Date().getTime();
-  // Validate that deadline is less than 5 days from now, allow 15 min drift
-  // NOTE: Azure does not allow more than 7 days - see https://bugzilla.mozilla.org/show_bug.cgi?id=1604175
-  if (msToDeadline > 5 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
+  // Validate that deadline is less than maxTaskDeadline days from now, allow 15 min drift
+  if (msToDeadline > maxTaskDeadline * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
     return {
       code: 'InputError',
-      message: '`deadline` cannot be more than 5 days into the future',
+      message: `\`deadline\` cannot be more than ${maxTaskDeadline} days into the future`,
       details: { deadline: taskDef.deadline },
     };
   }
@@ -792,7 +792,7 @@ builder.declare({
   await authorizeTaskCreation(req, taskId, taskDef);
 
   // Patch default values and validate timestamps
-  let detail = patchAndValidateTaskDef(taskId, taskDef);
+  let detail = patchAndValidateTaskDef(taskId, taskDef, this.maxTaskDeadline);
   if (detail) {
     return res.reportError(detail.code, detail.message, detail.details);
   }
