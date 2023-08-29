@@ -1887,7 +1887,7 @@ var services = map[string]definitions.Service{
 			},
 			definitions.Entry{
 				Name:        "getWorker",
-				Title:       "Get a worker-type",
+				Title:       "Get a worker from worker-type",
 				Description: "Get a worker from a worker-type.",
 				Stability:   "deprecated",
 				Method:      "get",
@@ -2335,7 +2335,7 @@ var services = map[string]definitions.Service{
 			},
 			definitions.Entry{
 				Name:        "getWorker",
-				Title:       "Get a worker-type",
+				Title:       "Get a worker",
 				Description: "Get a worker from a worker-type.",
 				Stability:   "experimental",
 				Method:      "get",

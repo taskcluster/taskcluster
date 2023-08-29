@@ -5,7 +5,6 @@ const { ApiError, Provider } = require('./providers/provider');
 const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
 const { WorkerPool, WorkerPoolError, Worker } = require('./data');
 const { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } = require('./util');
-const { TaskQueue } = require('./queue-data');
 
 let builder = new APIBuilder({
   title: 'Worker Manager Service',
@@ -940,7 +939,7 @@ builder.declare({
   scopes: 'worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>',
   stability: APIBuilder.stability.experimental,
   output: 'worker-response.yml',
-  title: 'Get a worker-type',
+  title: 'Get a worker',
   category: 'Worker Metadata',
   description: [
     'Get a worker from a worker-type.',
@@ -950,15 +949,9 @@ builder.declare({
   const workerPoolId = joinWorkerPoolId(provisionerId, workerType);
 
   const now = new Date();
-  const [worker, tQueue] = await Promise.all([
-    Worker.getQueueWorker(this.db, workerPoolId, workerGroup, workerId, now),
-    TaskQueue.get(this.db, workerPoolId, now),
-  ]);
+  const worker = await Worker.getQueueWorker(this.db, workerPoolId, workerGroup, workerId, now);
 
-  // do not consider workers expired until their quarantine date expires.
-  const expired = worker && worker.expires < now && worker.quarantineUntil < now;
-
-  if (expired || !worker || !tQueue) {
+  if (!worker) {
     return res.reportError('ResourceNotFound',
       'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
       'worker-type `{{workerType}}` and provisioner `{{provisionerId}}` not found. ' +

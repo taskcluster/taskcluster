@@ -3016,7 +3016,7 @@ module.exports = {
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
           "scopes": "queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
           "stability": "deprecated",
-          "title": "Get a worker-type",
+          "title": "Get a worker from worker-type",
           "type": "function"
         },
         {
@@ -4203,7 +4203,7 @@ module.exports = {
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
           "scopes": "worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
           "stability": "experimental",
-          "title": "Get a worker-type",
+          "title": "Get a worker",
           "type": "function"
         },
         {

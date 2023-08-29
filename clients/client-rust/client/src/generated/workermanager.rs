@@ -642,7 +642,7 @@ impl WorkerManager {
         (path, query)
     }
 
-    /// Get a worker-type
+    /// Get a worker
     ///
     /// Get a worker from a worker-type.
     pub async fn getWorker(&self, provisionerId: &str, workerType: &str, workerGroup: &str, workerId: &str) -> Result<Value, Error> {

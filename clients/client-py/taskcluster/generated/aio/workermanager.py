@@ -300,7 +300,7 @@ class WorkerManager(AsyncBaseClient):
 
     async def getWorker(self, *args, **kwargs):
         """
-        Get a worker-type
+        Get a worker
 
         Get a worker from a worker-type.
 

@@ -837,7 +837,7 @@ class Queue(BaseClient):
 
     def getWorker(self, *args, **kwargs):
         """
-        Get a worker-type
+        Get a worker from worker-type
 
         Get a worker from a worker-type.
 

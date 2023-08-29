@@ -2195,7 +2195,7 @@ builder.declare({
   scopes: 'queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>',
   stability: APIBuilder.stability.deprecated,
   output: 'worker-response.yml',
-  title: 'Get a worker-type',
+  title: 'Get a worker from worker-type',
   category: 'Worker Metadata',
   description: [
     'Get a worker from a worker-type.',
