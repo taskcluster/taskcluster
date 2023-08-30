@@ -864,7 +864,7 @@ func (ac *ArtifactContent) UniqueKey(taskMount *TaskMount) (string, error) {
 
 func (ic *IndexedContent) UniqueKey(taskMount *TaskMount) (string, error) {
 	itr, err := taskMount.index.FindTask(ic.Namespace)
-	return "indexed:" + ic.Namespace + ":" + ic.Artifact + ":" + itr.TaskID, err
+	return "artifact:" + itr.TaskID + ":" + ic.Artifact, err
 }
 
 func (ac *ArtifactContent) RequiredSHA256() string {
