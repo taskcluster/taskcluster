@@ -247,6 +247,28 @@ properties:
           `exception/malformed-payload`.
 
           Since: generic-worker 53.1.0
+      loopbackAudio:
+          type: boolean
+          title: Loopback Audio device
+          description: |-
+            Audio loopback device created using snd-aloop.
+            An audio device will be available for the task. Its
+            location will be `/dev/snd`. Devices inside that directory
+            will take the form `/dev/snd/controlC<N>`,
+            `/dev/snd/pcmC<N>D0c`, `/dev/snd/pcmC<N>D0p`,
+            `/dev/snd/pcmC<N>D1c`, and `/dev/snd/pcmC<N>D1p`,
+            where <N> is an integer between 0 and 31, inclusive.
+            The Generic Worker config setting `loopbackAudioDeviceNumber`
+            may be used to change the device number in case the
+            default value (`16`) conflicts with another
+            audio device on the worker.
+
+            This feature is only available on Linux. If a task
+            is submitted with this feature enabled on a non-Linux,
+            posix platform (FreeBSD, macOS), the task will resolve as
+            `exception/malformed-payload`.
+
+            Since: generic-worker 54.5.0
   mounts:
     type: array
     description: |-

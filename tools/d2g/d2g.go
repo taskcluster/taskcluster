@@ -42,6 +42,10 @@ func Scopes(dwScopes []string) (gwScopes []string) {
 			gwScopes[i] = "generic-worker:loopback-video:*"
 		case strings.HasPrefix(s, "docker-worker:capability:device:loopbackVideo:"):
 			gwScopes[i] = "generic-worker:loopback-video:" + s[len("docker-worker:capability:device:loopbackVideo:"):]
+		case s == "docker-worker:capability:device:loopbackAudio":
+			gwScopes[i] = "generic-worker:loopback-audio:*"
+		case strings.HasPrefix(s, "docker-worker:capability:device:loopbackAudio:"):
+			gwScopes[i] = "generic-worker:loopback-audio:" + s[len("docker-worker:capability:device:loopbackAudio:"):]
 		case strings.HasPrefix(s, "docker-worker:"):
 			gwScopes[i] = "generic-worker:" + s[len("docker-worker:"):]
 		default:
@@ -264,6 +268,7 @@ func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generic
 	gwPayload.Features.TaskclusterProxy = gwPayload.Features.TaskclusterProxy || dwPayload.Features.TaskclusterProxy
 	gwPayload.Features.Interactive = dwPayload.Features.Interactive
 	gwPayload.Features.LoopbackVideo = dwPayload.Capabilities.Devices.LoopbackVideo
+	gwPayload.Features.LoopbackAudio = dwPayload.Capabilities.Devices.LoopbackAudio
 
 	switch dwPayload.Features.Artifacts {
 	case true:
@@ -349,13 +354,16 @@ func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs 
 		volumeMounts.WriteString(` -v "$(pwd)/` + wdc.Directory + ":" + dwPayload.Cache[wdc.CacheName] + `"`)
 	}
 	if dwPayload.Capabilities.Devices.KVM {
-		volumeMounts.WriteString(" -v /dev/kvm:/dev/kvm")
+		volumeMounts.WriteString(" --device=/dev/kvm")
 	}
 	if dwPayload.Capabilities.Devices.HostSharedMemory {
-		volumeMounts.WriteString(" -v /dev/shm:/dev/shm")
+		volumeMounts.WriteString(" --device=/dev/shm")
 	}
 	if dwPayload.Capabilities.Devices.LoopbackVideo {
-		volumeMounts.WriteString(` -v "${TASKCLUSTER_VIDEO_DEVICE}:/dev/video0"`)
+		volumeMounts.WriteString(` --device="${TASKCLUSTER_VIDEO_DEVICE}"`)
+	}
+	if dwPayload.Capabilities.Devices.LoopbackAudio {
+		volumeMounts.WriteString(" --device=/dev/snd")
 	}
 	return volumeMounts.String()
 }
