@@ -3,6 +3,49 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v54.5.0
+
+### USERS
+
+▶ [minor] [#5995](https://github.com/taskcluster/taskcluster/issues/5995)
+Generic Worker: Adds `task.payload.feature.loopbackAudio` for loopback audio device support on Linux.
+
+The `snd-aloop` kernel module must be installed on the host system for this feature to work, although it does not _need_ to be loaded. Generic Worker loads the module with `modprobe` and generates the virtual audio device with a `snd-aloop` command. Under the multiuser engine, it also manages file ownership of the device with `chown` to ensure that only tasks with suitable scopes have read/write access to the virtual device.
+
+For tasks that enable the feature, the virtual audio device will be found at `/dev/snd`. Devices inside that directory will take the form `/dev/snd/controlC<DEVICE_NUMBER>`, `/dev/snd/pcmC<DEVICE_NUMBER>D0c`, `/dev/snd/pcmC<DEVICE_NUMBER>D0p`, `/dev/snd/pcmC<DEVICE_NUMBER>D1c`, and `/dev/snd/pcmC<DEVICE_NUMBER>D1p`, where `<DEVICE_NUMBER>` is an integer between 0 and 31, inclusive. The Generic Worker config setting `loopbackAudioDeviceNumber` may be used to change the device number in case the default value (`16`) conflicts with another audio device on the worker. Future releases of Generic Worker may provide the capability of having more than one virtual audio device; currently only one virtual audio device is supported.
+
+▶ [patch] [#6481](https://github.com/taskcluster/taskcluster/issues/6481)
+Allow git SSH urls in `metadata.source`.
+
+▶ [patch] [#6476](https://github.com/taskcluster/taskcluster/issues/6476)
+Generic Worker now checks the Index to see if there is a new version of an Indexed Artifact available. If there isn't, it is fine to use its cached copy, but if there is, it updates its cache.
+
+▶ [patch]
+Generic Worker: If a Docker Worker payload is received, the resulting, d2g-translated Generic Worker payload will be logged out to the user.
+
+▶ [patch] [#6438](https://github.com/taskcluster/taskcluster/issues/6438)
+`dependencies` are no longer removed from the task definition when you `Edit` or `Retrigger` a task.
+
+### DEVELOPERS
+
+▶ [minor] [#6269](https://github.com/taskcluster/taskcluster/issues/6269)
+Generic Worker now provides configuration property `maxTaskRunTime` as an upper bound for task payload property `maxRunTime`. Tasks with `maxRunTime` exceeding this value will be resolved as `exception/malformed-payload`.
+
+### OTHER
+
+▶ Additional changes not described here: [#6482](https://github.com/taskcluster/taskcluster/issues/6482), [#6484](https://github.com/taskcluster/taskcluster/issues/6484).
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot/Renovate updates</summary>
+
+* build(deps): bump taskcluster-taskgraph in /taskcluster (172ce2df5)
+* build(deps): bump protobufjs from 6.11.3 to 6.11.4 (328acc638)
+* build(deps): bump slugid from 3.2.0 to 4.0.0 in /clients/client (22eb08ae4)
+
+</details>
+
 ## v54.4.2
 
 ### GENERAL
