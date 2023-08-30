@@ -30,7 +30,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	task.Definition.Scopes = d2g.Scopes(task.Definition.Scopes)
 
 	// Convert gwPayload to JSON
-	formattedActualGWPayload, err := json.Marshal(*gwPayload)
+	formattedActualGWPayload, err := json.MarshalIndent(*gwPayload, "", "  ")
 	if err != nil {
 		return executionError(malformedPayload, errored, fmt.Errorf("cannot convert Generic Worker payload %#v to JSON: %s", *gwPayload, err))
 	}
@@ -45,6 +45,8 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	if err != nil {
 		return MalformedPayloadError(err)
 	}
+
+	task.Infof("Generic Worker Payload:\n%s", string(formattedActualGWPayload))
 
 	return nil
 }
