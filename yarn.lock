@@ -40,9 +40,9 @@
     long "^4.0.0"
 
 "@apollo/usage-reporting-protobuf@^4.0.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@apollo/usage-reporting-protobuf/-/usage-reporting-protobuf-4.1.0.tgz#b54b8c32702bbe81aa0e399076ddabaf75a13f9b"
-  integrity sha512-hXouMuw5pQVkzi8dgMybmr6Y11+eRmMQVoB5TF0HyTwAg9SOq/v3OCuiYqcVUKdBcskU9Msp+XvjAk0GKpWCwQ==
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@apollo/usage-reporting-protobuf/-/usage-reporting-protobuf-4.1.1.tgz#407c3d18c7fbed7a264f3b9a3812620b93499de1"
+  integrity sha512-u40dIUePHaSKVshcedO7Wp+mPiZsaU6xjv9J+VyxpoU/zL6Jle+9zWeG98tr/+SZ0nZ4OXhrbb8SNr0rAPpIDA==
   dependencies:
     "@apollo/protobufjs" "1.2.7"
 
@@ -271,33 +271,23 @@
     "@graphql-tools/utils" "8.9.0"
     tslib "^2.4.0"
 
-"@graphql-tools/merge@8.3.18":
-  version "8.3.18"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/merge/-/merge-8.3.18.tgz#bfbb517c68598a885809f16ce5c3bb1ebb8f04a2"
-  integrity sha512-R8nBglvRWPAyLpZL/f3lxsY7wjnAeE0l056zHhcO/CgpvK76KYUt9oEkR05i8Hmt8DLRycBN0FiotJ0yDQWTVA==
+"@graphql-tools/merge@^8.4.1":
+  version "8.4.2"
+  resolved "https://registry.yarnpkg.com/@graphql-tools/merge/-/merge-8.4.2.tgz#95778bbe26b635e8d2f60ce9856b388f11fe8288"
+  integrity sha512-XbrHAaj8yDuINph+sAfuq3QCZ/tKblrTLOpirK0+CAgNlZUCHs0Fa+xtMUURgwCVThLle1AF7svJCxFizygLsw==
   dependencies:
-    "@graphql-tools/utils" "9.2.1"
+    "@graphql-tools/utils" "^9.2.1"
     tslib "^2.4.0"
 
 "@graphql-tools/mock@^8.1.2":
-  version "8.7.18"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/mock/-/mock-8.7.18.tgz#12a3eee55e406197b81dca570d062918db206b2e"
-  integrity sha512-ZbXMp86V0DmfgUZhr5aGHtNIS2hBazhvTpPlFCyNOP+RMio3ErKnSsma3T1jV1ZyMo11l7QrxV9Xxn3uA0dv+w==
+  version "8.7.20"
+  resolved "https://registry.yarnpkg.com/@graphql-tools/mock/-/mock-8.7.20.tgz#c83ae0f1940d194a3982120c9c85f3ac6b4f7f20"
+  integrity sha512-ljcHSJWjC/ZyzpXd5cfNhPI7YljRVvabKHPzKjEs5ElxWu2cdlLGvyNYepApXDsM/OJG/2xuhGM+9GWu5gEAPQ==
   dependencies:
-    "@graphql-tools/schema" "9.0.16"
-    "@graphql-tools/utils" "9.2.1"
+    "@graphql-tools/schema" "^9.0.18"
+    "@graphql-tools/utils" "^9.2.1"
     fast-json-stable-stringify "^2.1.0"
     tslib "^2.4.0"
-
-"@graphql-tools/schema@9.0.16":
-  version "9.0.16"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/schema/-/schema-9.0.16.tgz#7d340d69e6094dc01a2b9e625c7bb4fff89ea521"
-  integrity sha512-kF+tbYPPf/6K2aHG3e1SWIbapDLQaqnIHVRG6ow3onkFoowwtKszvUyOASL6Krcv2x9bIMvd1UkvRf9OaoROQQ==
-  dependencies:
-    "@graphql-tools/merge" "8.3.18"
-    "@graphql-tools/utils" "9.2.1"
-    tslib "^2.4.0"
-    value-or-promise "1.0.12"
 
 "@graphql-tools/schema@^8.0.0", "@graphql-tools/schema@^8.3.1":
   version "8.5.1"
@@ -309,6 +299,16 @@
     tslib "^2.4.0"
     value-or-promise "1.0.11"
 
+"@graphql-tools/schema@^9.0.18":
+  version "9.0.19"
+  resolved "https://registry.yarnpkg.com/@graphql-tools/schema/-/schema-9.0.19.tgz#c4ad373b5e1b8a0cf365163435b7d236ebdd06e7"
+  integrity sha512-oBRPoNBtCkk0zbUsyP4GaIzCt8C0aCI4ycIRUL67KK5pOHljKLBBtGT+Jr6hkzA74C8Gco8bpZPe7aWFjiaK2w==
+  dependencies:
+    "@graphql-tools/merge" "^8.4.1"
+    "@graphql-tools/utils" "^9.2.1"
+    tslib "^2.4.0"
+    value-or-promise "^1.0.12"
+
 "@graphql-tools/utils@8.9.0":
   version "8.9.0"
   resolved "https://registry.yarnpkg.com/@graphql-tools/utils/-/utils-8.9.0.tgz#c6aa5f651c9c99e1aca55510af21b56ec296cdb7"
@@ -316,7 +316,7 @@
   dependencies:
     tslib "^2.4.0"
 
-"@graphql-tools/utils@9.2.1":
+"@graphql-tools/utils@^9.2.1":
   version "9.2.1"
   resolved "https://registry.yarnpkg.com/@graphql-tools/utils/-/utils-9.2.1.tgz#1b3df0ef166cfa3eae706e3518b17d5922721c57"
   integrity sha512-WUw506Ql6xzmOORlriNrD6Ugx+HjVgYxt9KCXD9mHAak+eaXSwuGGPyE60hy9xaDEoXKBsG7SkG69ybitaVl6A==
@@ -325,9 +325,9 @@
     tslib "^2.4.0"
 
 "@graphql-typed-document-node/core@^3.1.1":
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/@graphql-typed-document-node/core/-/core-3.1.2.tgz#6fc464307cbe3c8ca5064549b806360d84457b04"
-  integrity sha512-9anpBMM9mEgZN4wr2v8wHJI2/u5TnnggewRN6OlvXTTnuVyoY19X6rOv9XTqKRw6dcGKwZsBi8n0kDE2I5i4VA==
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@graphql-typed-document-node/core/-/core-3.2.0.tgz#5f3d96ec6b2354ad6d8a28bf216a1d97b5426861"
+  integrity sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==
 
 "@grpc/grpc-js@^1.2.11":
   version "1.8.17"
@@ -1467,9 +1467,9 @@ apollo-reporting-protobuf@^3.4.0:
     "@apollo/protobufjs" "1.2.6"
 
 apollo-server-core@^3.11.1, apollo-server-core@^3.12.0:
-  version "3.12.0"
-  resolved "https://registry.yarnpkg.com/apollo-server-core/-/apollo-server-core-3.12.0.tgz#8aa2a7329ce6fe1823290c45168c749db01548df"
-  integrity sha512-hq7iH6Cgldgmnjs9FVSZeKWRpi0/ZR+iJ1arzeD2VXGxxgk1mAm/cz1Tx0TYgegZI+FvvrRl0UhKEx7sLnIxIg==
+  version "3.12.1"
+  resolved "https://registry.yarnpkg.com/apollo-server-core/-/apollo-server-core-3.12.1.tgz#ba255c37345db29c48a2e0c064c519a8d62eb5af"
+  integrity sha512-9SF5WAkkV0FZQ2HVUWI9Jada1U0jg7e8NCN9EklbtvaCeUlOLyXyM+KCWuZ7+dqHxjshbtcwylPHutt3uzoNkw==
   dependencies:
     "@apollo/utils.keyvaluecache" "^1.0.1"
     "@apollo/utils.logger" "^1.0.0"
@@ -5294,9 +5294,9 @@ node-fetch@^2.6.0, node-fetch@^2.6.1:
     whatwg-url "^5.0.0"
 
 node-fetch@^2.6.7:
-  version "2.6.9"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.9.tgz#7c7f744b5cc6eb5fd404e0c7a9fec630a55657e6"
-  integrity sha512-DJm/CJkZkRjKKj4Zi4BsKVZh3ValV5IR5s7LVZnW+6YMh0W1BfNA8XSs6DLMGYlId5F3KnA70uu2qepcR08Qqg==
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.7.0.tgz#d0f0fa6e3e2dc1d27efcd8ad99d550bda94d187d"
+  integrity sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==
   dependencies:
     whatwg-url "^5.0.0"
 
@@ -6606,12 +6606,19 @@ slick@^1.12.2:
   resolved "https://registry.yarnpkg.com/slick/-/slick-1.12.2.tgz#bd048ddb74de7d1ca6915faa4a57570b3550c2d7"
   integrity sha512-4qdtOGcBjral6YIBCWJ0ljFSKNLz9KkhbWtuGvUyRowl1kxfuE1x/Z/aJcaiilpb3do9bl5K7/1h9XC5wWpY/A==
 
-slugid@^3.1.0, slugid@^3.2.0:
+slugid@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/slugid/-/slugid-3.2.0.tgz#3731f4debe46b319f6fbbefda58de30316af957d"
   integrity sha512-f0vZb6VyjUdZG5kaxd9CNpfhy+eUUTC8RnbDolC3ZLjYa7n5AdPkQnqnIjmoZYoPS9dWMOXQdoBREAGQqdZb9A==
   dependencies:
     uuid "^8.3.2"
+
+slugid@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/slugid/-/slugid-4.0.0.tgz#27c548953584b89891a35048f00e332b882542ab"
+  integrity sha512-NJ3Sd6NkVIoC8h3Tpn74Ez+SkvukgCror6jIqhSzJYMyK3nbhAmJFKKwOYu2ZulrfvRe1BJDE+CBm/N9t2dENg==
+  dependencies:
+    uuid "^9.0.0"
 
 snake-case@^3.0.3:
   version "3.0.4"
@@ -6904,47 +6911,47 @@ tar-stream@^2.0.0:
     readable-stream "^3.1.1"
 
 "taskcluster-client@link:clients/client":
-  version "54.4.2"
+  version "54.5.0"
   dependencies:
     debug "^4.1.1"
     got "^11.8.1"
     hawk "^9.0.1"
     lodash "^4.17.4"
-    slugid "^3.1.0"
+    slugid "^4.0.0"
     taskcluster-lib-urls "^13.0.0"
 
 "taskcluster-db@link:db":
-  version "54.4.2"
+  version "54.5.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "54.4.2"
+  version "54.5.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "54.4.2"
+  version "54.5.0"
 
 "taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "54.4.2"
+  version "54.5.0"
 
 "taskcluster-lib-config@link:libraries/config":
-  version "54.4.2"
+  version "54.5.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "54.4.2"
+  version "54.5.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "54.4.2"
+  version "54.5.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "54.4.2"
+  version "54.5.0"
 
 "taskcluster-lib-postgres@link:libraries/postgres":
-  version "54.4.2"
+  version "54.5.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "54.4.2"
+  version "54.5.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "54.4.2"
+  version "54.5.0"
 
 taskcluster-lib-scopes@^11.0.0:
   version "11.0.0"
@@ -6954,7 +6961,7 @@ taskcluster-lib-scopes@^11.0.0:
     fast-json-stable-stringify "^2.1.0"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "54.4.2"
+  version "54.5.0"
 
 taskcluster-lib-urls@^13.0.0:
   version "13.0.1"
@@ -6962,7 +6969,7 @@ taskcluster-lib-urls@^13.0.0:
   integrity sha512-WrhKMbiWmpPrB0vbzLZq4W35mhdPVLklZY+qrBoI7KQzFAjO/qsgS8ssHL6eYmvBf4fE7C+C9ZFxQpQOUynQvg==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "54.4.2"
+  version "54.5.0"
 
 test-exclude@^6.0.0:
   version "6.0.0"
@@ -7112,9 +7119,9 @@ tslib@^2.0.3:
   integrity sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==
 
 tslib@^2.1.0, tslib@^2.4.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.5.0.tgz#42bfed86f5787aeb41d031866c8f402429e0fddf"
-  integrity sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.6.2.tgz#703ac29425e7b37cd6fd456e92404d46d1f3e4ae"
+  integrity sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==
 
 tunnel-agent@^0.6.0:
   version "0.6.0"
@@ -7375,7 +7382,7 @@ value-or-promise@1.0.11:
   resolved "https://registry.yarnpkg.com/value-or-promise/-/value-or-promise-1.0.11.tgz#3e90299af31dd014fe843fe309cefa7c1d94b140"
   integrity sha512-41BrgH+dIbCFXClcSapVs5M6GkENd3gQOJpEfPDNa71LsUGMXDL0jMWpI/Rh7WhX+Aalfz2TTS3Zt5pUsbnhLg==
 
-value-or-promise@1.0.12:
+value-or-promise@^1.0.12:
   version "1.0.12"
   resolved "https://registry.yarnpkg.com/value-or-promise/-/value-or-promise-1.0.12.tgz#0e5abfeec70148c78460a849f6b003ea7986f15c"
   integrity sha512-Z6Uz+TYwEqE7ZN50gwn+1LCVo9ZVrpxRPOhOLnncYkY1ZzOYtrX8Fwf/rFktZ8R5mJms6EZf5TqNOMeZmnPq9Q==
