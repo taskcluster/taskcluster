@@ -1063,7 +1063,7 @@
         "level": {
           "type": "string"
         },
-        "max_task_deadline": {
+        "max_task_deadline_days": {
           "type": "number"
         },
         "private_artifact_bucket": {

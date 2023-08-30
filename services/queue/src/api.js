@@ -147,7 +147,7 @@ let builder = new APIBuilder({
     'artifactRegion', // AWS Region where s3 artifacts are stored
     'LRUcache', // LRU cache for tasks
     'objectService', // Object service API client
-    'maxTaskDeadline', // maximum value allowed for task deadlines
+    'maxTaskDeadlineDays', // maximum value allowed for task deadlines in days
   ],
 });
 
@@ -591,7 +591,7 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
 };
 
 /** Construct default values and validate dates */
-let patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadline) {
+let patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
   // Set taskGroupId to taskId if not provided
   if (!taskDef.taskGroupId) {
     taskDef.taskGroupId = taskId;
@@ -630,11 +630,11 @@ let patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadline) {
   }
 
   let msToDeadline = deadline.getTime() - new Date().getTime();
-  // Validate that deadline is less than maxTaskDeadline days from now, allow 15 min drift
-  if (msToDeadline > maxTaskDeadline * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
+  // Validate that deadline is less than maxTaskDeadlineDays from now, allow 15 min drift
+  if (msToDeadline > maxTaskDeadlineDays * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
     return {
       code: 'InputError',
-      message: `\`deadline\` cannot be more than ${maxTaskDeadline} days into the future`,
+      message: `\`deadline\` cannot be more than ${maxTaskDeadlineDays} days into the future`,
       details: { deadline: taskDef.deadline },
     };
   }
@@ -792,7 +792,7 @@ builder.declare({
   await authorizeTaskCreation(req, taskId, taskDef);
 
   // Patch default values and validate timestamps
-  let detail = patchAndValidateTaskDef(taskId, taskDef, this.maxTaskDeadline);
+  let detail = patchAndValidateTaskDef(taskId, taskDef, this.maxTaskDeadlineDays);
   if (detail) {
     return res.reportError(detail.code, detail.message, detail.details);
   }

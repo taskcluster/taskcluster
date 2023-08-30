@@ -5,7 +5,7 @@ defaults:
     # Number of seconds before the claim to a run expires, defaulting to 1200
     claimTimeout:                 !env:number:optional TASK_CLAIM_TIMEOUT
 
-    maxTaskDeadline:              !env:number:optional MAX_TASK_DEADLINE
+    maxTaskDeadlineDays:              !env:number:optional MAX_TASK_DEADLINE_DAYS
 
     # S3 buckets where artifacts are stored
     publicArtifactBucket:         !env PUBLIC_ARTIFACT_BUCKET
@@ -130,7 +130,7 @@ test:
   app:
     # For testing purposes we let claims expire very fast
     claimTimeout:                 1
-    maxTaskDeadline:              5
+    maxTaskDeadlineDays:          5
     queuePrefix:                  'hacks3'
     queuePrefix2:                 'hacks4' # For testing deletion of queues
     claimQueue:                   'test-claim-queue'
