@@ -49,7 +49,7 @@ const strcmp = (a, b) => {
  * Representation of the as-yet-unreleased changelog snippets
  *
  * options: {
- *   skipUpdates: if true, don't load dependabot/renovate updates
+ *   skipUpdates: if true, don't load dependabot updates
  * }
  */
 class ChangeLog {
@@ -119,7 +119,7 @@ class ChangeLog {
     const lastVersion = await this.lastVersion();
     this.updates = await gitLog({
       dir: REPO_ROOT,
-      args: [`v${lastVersion}..HEAD`, '--author=dependabot', '--author=renovate', "--pretty=%s (%h)"],
+      args: [`v${lastVersion}..HEAD`, '--author=dependabot', "--pretty=%s (%h)"],
     });
   }
 
@@ -207,7 +207,7 @@ class ChangeLog {
         '### Automated Package Updates',
         '',
         '<details>',
-        `<summary>${this.updates.length} Dependabot/Renovate updates</summary>`,
+        `<summary>${this.updates.length} Dependabot updates</summary>`,
         '', // without this newline, the list will not render correctly
       ]
         .concat(this.updates.map(u => `* ${u}`))
