@@ -15,7 +15,7 @@ import (
 	"github.com/tent/hawk-go"
 
 	got "github.com/taskcluster/go-got"
-	tcclient "github.com/taskcluster/taskcluster/v54/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v55/clients/client-go"
 )
 
 // Credentials for taskcluster and methods to sign requests.

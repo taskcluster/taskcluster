@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v55.0.0
+
+### DEPLOYERS
+
+▶ [minor] [#2942](https://github.com/taskcluster/taskcluster/issues/2942)
+The new `queue.maxTaskDeadlineDays` Helm configuration parameter controls the maximum value allowed for task deadlines. The default is 5 days, matching the previous hard-coded setting.
+
+### USERS
+
+▶ [MAJOR] [#6117](https://github.com/taskcluster/taskcluster/issues/6117)
+`workerManager.getWorker` returns worker even if it is quarantined and expired.
+This is to avoid confusion in the UI when a worker is linked in UI, still exists in database, but page returns `404`.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot/Renovate updates</summary>
+
+* build(deps): bump apollo-server-core from 3.12.0 to 3.12.1 (74b091287)
+
+</details>
+
 ## v54.5.0
 
 ### USERS

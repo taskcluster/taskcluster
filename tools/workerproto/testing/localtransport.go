@@ -3,7 +3,7 @@ package testing
 import (
 	"encoding/json"
 
-	"github.com/taskcluster/taskcluster/v54/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v55/tools/workerproto"
 )
 
 // LocalTransport is a transport for which both sides are in the same process.

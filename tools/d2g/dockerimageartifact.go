@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/taskcluster/taskcluster/v54/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v55/tools/d2g/genericworker"
 )
 
 func (dia *DockerImageArtifact) PrepareCommands() []string {

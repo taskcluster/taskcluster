@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-db",
   "private": true,
-  "version": "54.5.0",
+  "version": "55.0.0",
   "license": "MPL-2.0",
   "scripts": {
     "test": "mocha test/*_test.js test/**/*_test.js",

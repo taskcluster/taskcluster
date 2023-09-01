@@ -847,10 +847,6 @@ Returns the up-to-date hook row that have the same hook group id and hook id.
 Update bindings of a hooks queue. If no such queue exists,
 the return value is an empty set.
 
-### deprecated methods
-
-* `get_last_fires(hook_group_id_in text, hook_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v55.0.0)
-
 ## index
 
 * [`create_index_namespace`](#create_index_namespace)
@@ -3099,7 +3095,3 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
-
-### deprecated methods
-
-* `get_non_stopped_workers_quntil_providers(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v55.0.0)
