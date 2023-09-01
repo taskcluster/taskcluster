@@ -201,6 +201,7 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         'clients/client-go/**',
         'clients/client-shell/**',
         'internal/**',
+        'taskcluster/ci/generic-worker/**',
         'tools/**',
         'ui/docs/reference/workers/websocktunnel.mdx',
         // Provide explicit list of allowed file extensions so that
