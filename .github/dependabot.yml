@@ -5,7 +5,6 @@
 
 version: 2
 updates:
-
   # Maintain node dependencies for taskcluster
   - package-ecosystem: "npm"
     directory: "/"
@@ -68,3 +67,11 @@ updates:
     schedule:
       interval: "monthly"
     rebase-strategy: "disabled"
+groups:
+  # Groups together all minor/patch version updates for dependencies
+  deps-dev:
+    patterns:
+      - "*"
+    update-types:
+      - "minor"
+      - "patch"
