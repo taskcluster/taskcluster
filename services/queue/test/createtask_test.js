@@ -282,6 +282,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
+  test('createTask w. deadline > maxTaskDeadlineDays -> 400', async () => {
+    const taskId = slugid.v4();
+    await helper.queue.createTask(taskId, _.defaults({
+      deadline: taskcluster.fromNowJSON('6 days'),
+    }, taskDef)).then(() => {
+      throw new Error('This operation should have failed!');
+    }, (err) => {
+      assume(err.statusCode).equals(400);
+      debug('Expected error: %j', err, err);
+    });
+  });
+
   const makeSourceTask = (source) => {
     return {
       provisionerId: 'no-provisioner-extended-extended',

@@ -25,6 +25,7 @@ const { artifactUtils } = require('./utils');
 
 // default claim timeout to 20 minutes (in seconds)
 const DEFAULT_CLAIM_TIMEOUT = 1200;
+const DEFAULT_MAX_TASK_DEADLINE_DAYS = 5;
 
 // default `expires`, `last_date_active` update frequency
 const DEFAULT_UPDATE_FREQUENCY = '30 minutes';
@@ -206,6 +207,7 @@ let load = loader({
         dependencyTracker: ctx.dependencyTracker,
         publisher: ctx.publisher,
         claimTimeout: ctx.cfg.app.claimTimeout || DEFAULT_CLAIM_TIMEOUT,
+        maxTaskDeadlineDays: ctx.cfg.app.maxTaskDeadlineDays || DEFAULT_MAX_TASK_DEADLINE_DAYS,
         queueService: ctx.queueService,
         signPublicArtifactUrls: !!ctx.cfg.app.signPublicArtifactUrls,
         publicBucket: ctx.publicArtifactBucket,
