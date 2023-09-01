@@ -11,6 +11,14 @@ updates:
     schedule:
       interval: "monthly"
     rebase-strategy: "disabled"
+    groups:
+      # Groups together all minor/patch version updates for dependencies
+      deps-dev:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Maintain node dependencies for taskcluster-client
   - package-ecosystem: "npm"
@@ -18,6 +26,14 @@ updates:
     schedule:
       interval: "monthly"
     rebase-strategy: "disabled"
+    groups:
+      # Groups together all minor/patch version updates for dependencies
+      deps-dev:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Maintain node dependencies for taskcluster-client-web
   - package-ecosystem: "npm"
@@ -25,6 +41,14 @@ updates:
     schedule:
       interval: "monthly"
     rebase-strategy: "disabled"
+    groups:
+      # Groups together all minor/patch version updates for dependencies
+      deps-dev:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Maintain node dependencies for taskcluster-client-rust
   - package-ecosystem: "cargo"
@@ -32,6 +56,14 @@ updates:
     schedule:
       interval: "monthly"
     rebase-strategy: "disabled"
+    groups:
+      # Groups together all minor/patch version updates for dependencies
+      deps-dev:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Maintain node dependencies for taskcluster-ui
   - package-ecosystem: "npm"
@@ -39,6 +71,14 @@ updates:
     schedule:
       interval: "monthly"
     rebase-strategy: "disabled"
+    groups:
+      # Groups together all minor/patch version updates for dependencies
+      deps-dev:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Maintain node dependencies for taskcluster-ui e2e tests
   - package-ecosystem: "npm"
@@ -46,6 +86,14 @@ updates:
     schedule:
       interval: "monthly"
     rebase-strategy: "disabled"
+    groups:
+      # Groups together all minor/patch version updates for dependencies
+      deps-dev:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Maintain go dependencies
   - package-ecosystem: "gomod"
@@ -53,6 +101,14 @@ updates:
     schedule:
       interval: "monthly"
     rebase-strategy: "disabled"
+    groups:
+      # Groups together all minor/patch version updates for dependencies
+      deps-dev:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Set update schedule for GitHub Actions
   - package-ecosystem: "github-actions"
@@ -60,6 +116,14 @@ updates:
     schedule:
       interval: "monthly"
     rebase-strategy: "disabled"
+    groups:
+      # Groups together all minor/patch version updates for dependencies
+      deps-dev:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Maintain pip dependencies for taskgraph
   - package-ecosystem: "pip"
@@ -67,11 +131,11 @@ updates:
     schedule:
       interval: "monthly"
     rebase-strategy: "disabled"
-groups:
-  # Groups together all minor/patch version updates for dependencies
-  deps-dev:
-    patterns:
-      - "*"
-    update-types:
-      - "minor"
-      - "patch"
+    groups:
+      # Groups together all minor/patch version updates for dependencies
+      deps-dev:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
