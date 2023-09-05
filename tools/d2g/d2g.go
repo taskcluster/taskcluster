@@ -418,16 +418,14 @@ func podmanEnvMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
 		dwManagedEnvVars = append(dwManagedEnvVars, "TASKCLUSTER_PROXY_URL")
 	}
 
-	envVarNames := make([]string, len(dwPayload.Env)+len(dwManagedEnvVars))
-	env := make(map[string]string, len(envVarNames))
-	i := 0
+	envVarNames := []string{}
+	env := map[string]string{}
 	for envVarName, envVarValue := range dwPayload.Env {
-		envVarNames[i] = envVarName
+		envVarNames = append(envVarNames, envVarName)
 		env[envVarName] = envVarValue
-		i++
 	}
-	for j, envVarName := range dwManagedEnvVars {
-		envVarNames[i+j] = envVarName
+	for _, envVarName := range dwManagedEnvVars {
+		envVarNames = append(envVarNames, envVarName)
 		env[envVarName] = "${" + envVarName + "}"
 	}
 	sort.Strings(envVarNames)
