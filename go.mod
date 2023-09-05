@@ -19,7 +19,6 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/johncgriffin/overflow v0.0.0-20211019200055-46fa312c352c
-	github.com/kr/text v0.2.0
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/mitchellh/go-homedir v1.1.0
@@ -63,6 +62,7 @@ require (
 	github.com/joeshaw/multierror v0.0.0-20140124173710-69b34d4ec901 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/nwaples/rardecode v1.1.3 // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"go/build"
 	"go/format"
 	"log"
@@ -10,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/kr/text"
 	"github.com/taskcluster/taskcluster/v55/internal/jsontest"
 	"github.com/taskcluster/taskcluster/v55/tools/jsonschema2go"
 	"golang.org/x/tools/imports"
@@ -97,7 +95,7 @@ func generateFunctions(ymlFile string) []byte {
 	}
 
 	// the following strings.Replace function call safely escapes backticks (`) in rawJSON
-	escapedJSON := "`" + strings.Replace(text.Indent(fmt.Sprintf("%v", string(rawJSON)), ""), "`", "` + \"`\" + `", -1) + "`"
+	escapedJSON := "`" + strings.Replace(string(rawJSON), "`", "` + \"`\" + `", -1) + "`"
 
 	response := `
 // Returns json schema for the payload part of the task definition. Please
