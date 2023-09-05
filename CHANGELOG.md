@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v55.0.1
+
+### USERS
+
+▶ [patch] [#6521](https://github.com/taskcluster/taskcluster/issues/6521)
+Generic Worker now outputs a warning in the task log if a Docker Worker payload is supplied, together with the
+d2g-converted task definition, in order to help users migrate their tasks to native Generic Worker format.
+
+### OTHER
+
+▶ Additional change not described here: [#6513](https://github.com/taskcluster/taskcluster/issues/6513).
+
+### Automated Package Updates
+
+<details>
+<summary>7 Dependabot updates</summary>
+
+* build(deps-dev): bump the deps group (1a1e30ce3)
+* build(deps-dev): bump the deps-dev group (9f2491c20)
+* build(deps): bump actions/checkout from 3 to 4 (487c1c0de)
+* build(deps-dev): bump @babel/core in /clients/client-web (2af04e02f)
+* build(deps): bump taskcluster from 54.4.1 to 55.0.0 in /taskcluster (6421f4f8c)
+* build(deps-dev): bump chai from 4.3.7 to 4.3.8 in /clients/client-web (c5cd0f576)
+* build(deps-dev): bump eslint in /clients/client-web (8f82a9e90)
+
+</details>
+
 ## v55.0.0
 
 ### DEPLOYERS
