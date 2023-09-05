@@ -65,7 +65,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	task.Warn("This task was designed to run under Docker Worker. Docker Worker is a worker implementation")
 	task.Warn("that is _no longer_ maintained.")
 	task.Warn("In order to execute this task, it is being converted to a Generic Worker task, using the D2G")
-	task.Warn("utility (Docker worker 2 Generic worker):")
+	task.Warn("utility (Docker Worker 2 Generic Worker):")
 	task.Warn("    https://github.com/taskcluster/taskcluster/tree/main/tools/d2g")
 	task.Warn("")
 	task.Warn("We recommend that you convert all your Docker Worker tasks to Generic Worker tasks, to ensure")
