@@ -597,7 +597,6 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		panic(err)
 	}
 	if _, exists := payload["image"]; exists {
-		task.Info("Docker Worker payload detected. Converting to a Generic Worker payload using d2g.")
 		err := task.convertDockerWorkerPayload()
 		if err != nil {
 			return err
