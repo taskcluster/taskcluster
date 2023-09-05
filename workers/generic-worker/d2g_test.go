@@ -34,6 +34,7 @@ func TestWithValidDockerWorkerPayload(t *testing.T) {
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
+	t.Log(LogText(t))
 }
 
 func TestWithInvalidDockerWorkerPayload(t *testing.T) {
