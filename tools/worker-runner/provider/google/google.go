@@ -2,7 +2,9 @@ package google
 
 import (
 	"fmt"
+	"log"
 	"strings"
+	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v55/clients/client-go"
 	"github.com/taskcluster/taskcluster/v55/clients/client-go/tcworkermanager"
@@ -19,6 +21,7 @@ type GoogleProvider struct {
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
 	workerIdentityProof        map[string]interface{}
+	terminationTicker          *time.Ticker
 }
 
 func (p *GoogleProvider) ConfigureRun(state *run.State) error {
@@ -104,8 +107,37 @@ func (p *GoogleProvider) SetProtocol(proto *workerproto.Protocol) {
 	p.proto = proto
 }
 
+func (p *GoogleProvider) checkTerminationTime() bool {
+	value, err := p.metadataService.queryMetadata("/instance/preempted")
+	// if the file exists and contains TRUE, it's time to go away
+	if err == nil && value == "TRUE" {
+		log.Println("GCP Metadata Service says termination is imminent")
+		if p.proto != nil && p.proto.Capable("graceful-termination") {
+			p.proto.Send(workerproto.Message{
+				Type: "graceful-termination",
+				Properties: map[string]interface{}{
+					// preemption generally doesn't leave time to finish tasks
+					"finish-tasks": false,
+				},
+			})
+		}
+		return true
+	}
+	return false
+}
+
 func (p *GoogleProvider) WorkerStarted(state *run.State) error {
+	// start polling for graceful shutdown
+	p.terminationTicker = time.NewTicker(30 * time.Second)
 	p.proto.AddCapability("graceful-termination")
+
+	go func() {
+		for {
+			<-p.terminationTicker.C
+			log.Println("polling for termination-time")
+			p.checkTerminationTime()
+		}
+	}()
 
 	return nil
 }
