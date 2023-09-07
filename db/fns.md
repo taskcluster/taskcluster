@@ -18,7 +18,7 @@
    * [`get_github_build_pr`](#get_github_build_pr)
    * [`get_github_builds_pr`](#get_github_builds_pr)
    * [`get_github_check_by_run_id`](#get_github_check_by_run_id)
-   * [`get_github_check_by_task_id`](#get_github_check_by_task_id)
+   * [`get_github_check_by_task_group_and_task_id`](#get_github_check_by_task_group_and_task_id)
    * [`get_github_checks_by_task_group_id`](#get_github_checks_by_task_group_id)
    * [`get_github_integration`](#get_github_integration)
    * [`get_github_integrations`](#get_github_integrations)
@@ -349,7 +349,7 @@ Does nothing if the client does not exist.
 * [`get_github_build_pr`](#get_github_build_pr)
 * [`get_github_builds_pr`](#get_github_builds_pr)
 * [`get_github_check_by_run_id`](#get_github_check_by_run_id)
-* [`get_github_check_by_task_id`](#get_github_check_by_task_id)
+* [`get_github_check_by_task_group_and_task_id`](#get_github_check_by_task_group_and_task_id)
 * [`get_github_checks_by_task_group_id`](#get_github_checks_by_task_group_id)
 * [`get_github_integration`](#get_github_integration)
 * [`get_github_integrations`](#get_github_integrations)
@@ -464,19 +464,20 @@ Get github builds.
 
 Get github check run id and check suite id
 
-### get_github_check_by_task_id
+### get_github_check_by_task_group_and_task_id
 
 * *Mode*: read
 * *Arguments*:
+  * `task_group_id_in text`
   * `task_id_in text`
 * *Returns*: `table`
   * `task_group_id text`
   * `task_id text`
   * `check_suite_id text`
   * `check_run_id text`
-* *Last defined on version*: 37
+* *Last defined on version*: 89
 
-Get a single check from a task_id.
+Get a single check from a (task_group_id, task_id).
 
 ### get_github_checks_by_task_group_id
 
@@ -567,6 +568,10 @@ Only update the state of a build and update the `updated` timestamp
 * *Last defined on version*: 36
 
 Create a single integration.
+
+### deprecated methods
+
+* `get_github_check_by_task_id(task_id_in text)` (compatibility guaranteed until v57.0.0)
 
 ## hooks
 
