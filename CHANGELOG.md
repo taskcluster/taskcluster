@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v55.1.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6530](https://github.com/taskcluster/taskcluster/issues/6530)
+Workers deployed in GCP as spot instances or preemptible VMs now
+handle instance termination gracefully.
+
 ## v55.1.0
 
 ### GENERAL
