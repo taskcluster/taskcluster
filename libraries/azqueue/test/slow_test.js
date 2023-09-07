@@ -11,7 +11,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   suiteSetup(function() {
     // HINT: run these tests with the following to see explains in the logs:
     //
-    // docker run -ti -p 127.0.0.1:5432:5432  --rm postgres:11 \
+    // docker run -ti -p 127.0.0.1:5432:5432  --rm postgres:15 \
     //   -c log_statement=all \
     //   -c session_preload_libraries=auto_explain \
     //   -c auto_explain.log_min_duration=0s \

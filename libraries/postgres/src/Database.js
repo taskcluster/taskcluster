@@ -434,11 +434,9 @@ class Database {
         SELECT current_setting('server_version_num');
       `);
       const ver = version.rows[0].current_setting;
-      if (ver < 110000) {
-        throw new Error("Postgres version is less than 11. Please upgrade to 11.x");
-      }
-      if (ver >= 120000) {
-        throw new Error("Postgres version is greater than 11. Please downgrade to 11.x");
+      const majorVersion = Math.floor(ver / 10000);
+      if (majorVersion !== 11 && majorVersion !== 15) {
+        throw new Error("Postgres version is not 11.x or 15.x. Please upgrade to 11.x or 15.x");
       }
     });
   }

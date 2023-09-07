@@ -7,7 +7,7 @@ transforms = TransformSequence()
 
 
 def _dependency_versions():
-    pg_version = 11
+    pg_version = 15
     with open('clients/client-rust/rust-toolchain', 'r') as f:
         rust_version = f.read().strip()
     with open('package.json', 'r') as pkg:
