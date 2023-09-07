@@ -3,6 +3,20 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v55.1.0
+
+### GENERAL
+
+▶ [minor] [#6528](https://github.com/taskcluster/taskcluster/issues/6528)
+Github webhook handler supports recommended `X-Hub-Signature-256` verification.
+All verification failures are being reported to the sentry additionally.
+
+▶ [patch]
+Replaces slow db query to fetch check run build status with a faster one, which is used in background status update handlers.
+
+▶ [patch]
+Upgrades to go1.21.1
+
 ## v55.0.1
 
 ### USERS
