@@ -9,6 +9,7 @@ import (
 	"github.com/taskcluster/taskcluster/v55/tools/worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v55/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v55/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v55/tools/workerproto"
 )
 
 func TestGoogleConfigureRun(t *testing.T) {
@@ -83,4 +84,68 @@ func TestGoogleConfigureRun(t *testing.T) {
 	require.Equal(t, map[string]interface{}{
 		"token": "i-promise",
 	}, proof)
+}
+
+func TestCheckTerminationTime(t *testing.T) {
+	test := func(t *testing.T, proto *workerproto.Protocol, hasCapability bool) {
+		t.Helper()
+
+		userData := &UserData{
+			WorkerPoolID: "w/p",
+			ProviderID:   "gcp1",
+			WorkerGroup:  "wg",
+			RootURL:      "https://tc.example.com",
+		}
+		identityPath := "/instance/service-accounts/default/identity?audience=https://tc.example.com&format=full"
+		metaData := map[string]string{
+			"/instance/id":           "i-123",
+			identityPath:             "i-promise",
+			"/project/project-id":    "proj-1234",
+			"/instance/image":        "img-123",
+			"/instance/machine-type": "most-of-the-cloud",
+			"/instance/zone":         "/project/1234/zone/in-central1-b",
+			"/instance/hostname":     "my-worker.example.com",
+			"/instance/network-interfaces/0/access-configs/0/external-ip": "1.2.3.4",
+			"/instance/network-interfaces/0/ip":                           "192.168.0.1",
+		}
+		mds := &fakeMetadataService{nil, userData, metaData}
+		p := &GoogleProvider{
+			runnercfg:                  nil,
+			workerManagerClientFactory: nil,
+			metadataService:            mds,
+			proto:                      proto,
+			terminationTicker:          nil,
+		}
+
+		proto.AddCapability("graceful-termination")
+		proto.Start(false)
+
+		// not time yet..
+		require.False(t, p.checkTerminationTime())
+
+		metaData["/instance/preempted"] = "TRUE"
+		require.True(t, p.checkTerminationTime())
+	}
+
+	t.Run("without capability", func(t *testing.T) {
+		wkr := ptesting.NewFakeWorkerWithCapabilities()
+		defer wkr.Close()
+
+		gotTerm := wkr.MessageReceivedFunc("graceful-termination", nil)
+
+		test(t, wkr.RunnerProtocol, false)
+
+		require.False(t, gotTerm())
+	})
+
+	t.Run("with capability", func(t *testing.T) {
+		wkr := ptesting.NewFakeWorkerWithCapabilities("graceful-termination")
+		defer wkr.Close()
+
+		gotTerm := wkr.MessageReceivedFunc("graceful-termination", nil)
+
+		test(t, wkr.RunnerProtocol, false)
+
+		require.True(t, gotTerm())
+	})
 }
