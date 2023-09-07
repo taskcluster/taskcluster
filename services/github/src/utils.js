@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const request = require('superagent');
 const util = require('util');
 
@@ -124,6 +125,42 @@ const tailLog = (log, maxLines = 250, maxPayloadLength = 30000) => {
 const markdownLog = (log) => ['\n---\n\n```bash\n', log, '\n```'].join('');
 const markdownAnchor = (name, url) => `[${name}](${url})`;
 
+/**
+ * Hashes a payload by some secret, using the same algorithm that
+ * GitHub uses to compute their X-Hub-Signature HTTP header. Used
+ * for verifying the legitimacy of WebHooks.
+ **/
+function generateXHubSignature(secret, payload, algorithm = 'sha1') {
+  if (!['sha1', 'sha256'].includes(algorithm)) {
+    throw new Error('Invalid algorithm');
+  }
+  return [
+    algorithm,
+    crypto.createHmac(algorithm, secret).update(payload).digest('hex'),
+  ].join('=');
+}
+
+/**
+ * Compare hmac.digest() signatures in constant time
+ * Double hmac verification is the preferred way to do this
+ * since we can't predict optimizations performed by the runtime.
+ **/
+function compareSignatures(sOne, sTwo) {
+  const secret = crypto.randomBytes(16).toString('hex');
+  const h1 = crypto.createHmac('sha1', secret).update(sOne);
+  const h2 = crypto.createHmac('sha1', secret).update(sTwo);
+  return crypto.timingSafeEqual(h1.digest(), h2.digest());
+}
+
+/**
+ * signature must be one of the: 'sha256=xxx', 'sha1=xxx'
+ */
+const checkGithubSignature = (secret, payload, signature) => {
+  const [algorithm] = signature.split('=');
+  const expected = generateXHubSignature(secret, payload, algorithm);
+  return compareSignatures(signature, expected);
+};
+
 module.exports = {
   throttleRequest,
   shouldSkipCommit,
@@ -132,4 +169,6 @@ module.exports = {
   tailLog,
   markdownLog,
   markdownAnchor,
+  checkGithubSignature,
+  generateXHubSignature,
 };

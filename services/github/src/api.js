@@ -1,10 +1,9 @@
-const crypto = require('crypto');
 const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
 const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
 const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS, GITHUB_TASKS_FOR, GITHUB_BUILD_STATES } = require('./constants');
-const { shouldSkipCommit, shouldSkipPullRequest } = require('./utils');
+const { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature } = require('./utils');
 const fakePayloads = require('./fake-payloads');
 
 // Strips/replaces undesirable characters which GitHub allows in
@@ -101,28 +100,6 @@ function getRerunDetails(eventData) {
     'event.head.user.login': eventData.sender.login,
     'event.head.repo.name': eventData.repository.name,
   };
-}
-
-/**
- * Hashes a payload by some secret, using the same algorithm that
- * GitHub uses to compute their X-Hub-Signature HTTP header. Used
- * for verifying the legitimacy of WebHooks.
- **/
-function generateXHubSignature(secret, payload) {
-  return 'sha1=' + crypto.createHmac('sha1', secret).update(payload).digest('hex');
-}
-
-/**
- * Compare hmac.digest('hex') signatures in constant time
- * Double hmac verification is the preferred way to do this
- * since we can't predict optimizations performed by the runtime.
- * https: *www.isecpartners.com/blog/2011/february/double-hmac-verification.aspx
- **/
-function compareSignatures(sOne, sTwo) {
-  const secret = crypto.randomBytes(16).toString('hex');
-  let h1 = crypto.createHmac('sha1', secret).update(sOne);
-  let h2 = crypto.createHmac('sha1', secret).update(sTwo);
-  return h1.digest('hex') === h2.digest('hex');
 }
 
 /***
@@ -245,21 +222,31 @@ builder.declare({
   if (!body) {
     return resolve(res, 400, 'Request missing a body');
   }
+  const installationId = body.installation && body.installation.id;
 
   let webhookSecrets = this.cfg.webhook.secret;
-  let xHubSignature = req.headers['x-hub-signature'];
+  // sha256 version is recommended by github but if it's missing we fallback to sha1
+  // sha256 can be missing in some older Github Enterprise versions
+  // checkGithubSignature function will handle both cases
+  let xHubSignature = req.headers['x-hub-signature-256'] || req.headers['x-hub-signature'];
 
   if (xHubSignature && !webhookSecrets) {
     return resolve(res, 400, 'Server is not setup to handle secrets');
   } else if (webhookSecrets && !xHubSignature) {
     return resolve(res, 400, 'Request missing a secret');
   } else if (webhookSecrets && xHubSignature) {
+    const bodyPayload = JSON.stringify(body);
     // Verify that our payload is legitimate
-    if (!webhookSecrets.some(webhookSecret => {
-      let calculatedSignature = generateXHubSignature(webhookSecret,
-        JSON.stringify(body));
-      return compareSignatures(calculatedSignature, xHubSignature);
-    })) {
+    if (!webhookSecrets.some(webhookSecret => checkGithubSignature(webhookSecret, bodyPayload, xHubSignature))) {
+      // let sentry know about this
+      await this.monitor.reportError(
+        new Error('X-hub-signature does not match'), {
+          xHubSignature,
+          installationId,
+          event: req.headers['x-github-event'],
+          eventId: req.headers['x-github-delivery'],
+        },
+      );
       return resolve(res, 403, 'X-hub-signature does not match; bad webhook secret?');
     }
   }
@@ -267,7 +254,6 @@ builder.declare({
   let msg = {};
   let publisherKey = '';
 
-  const installationId = body.installation && body.installation.id;
   this.monitor.log.webhookReceived({ eventId, eventType, installationId });
 
   debugMonitor.debug({

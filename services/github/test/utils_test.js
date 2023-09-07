@@ -1,6 +1,9 @@
 const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
-const { throttleRequest, shouldSkipCommit, shouldSkipPullRequest, tailLog, ansi2txt } = require('../src/utils');
+const {
+  throttleRequest, shouldSkipCommit, shouldSkipPullRequest,
+  tailLog, ansi2txt, generateXHubSignature, checkGithubSignature,
+} = require('../src/utils');
 
 suite(testing.suiteName(), function() {
   suite('throttleRequest', function() {
@@ -195,6 +198,48 @@ suite(testing.suiteName(), function() {
       const payloadLong = Array.from({ length: 10 }).map(line => 'line'.repeat(1000)).join('\n');
       assert.equal(1, tailLog(payloadLong, 10, 20).split('\n').length);
       assert.equal('line', tailLog(payloadLong, 10, 4));
+    });
+  });
+
+  suite('generateXHubSignature', function() {
+    test('supports sha1', function () {
+      assert.equal(
+        generateXHubSignature('secret', '{payload}', 'sha1'),
+        'sha1=ab20ad67182f5ac039c105be046648f980d60558',
+      );
+    });
+    test('supports sha256', function () {
+      assert.equal(
+        generateXHubSignature('secret', '{payload}', 'sha256'),
+        'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be',
+      );
+    });
+    test('throws on invalid algorithm', function () {
+      assert.throws(() => {
+        generateXHubSignature('secret', 'payload', 'sha999');
+      }, /Invalid algorithm/);
+    });
+  });
+  suite('checkGithubSignature', function() {
+    test('supports sha1', function () {
+      assert.equal(
+        checkGithubSignature('secret', '{payload}', 'sha1=ab20ad67182f5ac039c105be046648f980d60558'),
+        true,
+      );
+      assert.equal(
+        checkGithubSignature('wrongSecret', '{payload}', 'sha1=ab20ad67182f5ac039c105be046648f980d60558'),
+        false,
+      );
+    });
+    test('supports sha256', function () {
+      assert.equal(
+        checkGithubSignature('secret', '{payload}', 'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be'),
+        true,
+      );
+      assert.equal(
+        checkGithubSignature('wrongSecret', '{payload}', 'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be'),
+        false,
+      );
     });
   });
 });

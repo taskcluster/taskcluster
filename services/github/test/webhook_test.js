@@ -4,6 +4,8 @@ const assert = require('assert');
 const testing = require('taskcluster-lib-testing');
 const { LEVELS } = require('taskcluster-lib-monitor');
 
+const TC_DEV_INSTALLATION_ID = 28513985;
+
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withFakeGithub(mock, skipping);
@@ -18,6 +20,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     github = await helper.load('github');
     github.inst(5808).setUser({ id: 14795478, email: 'someuser@github.com', username: 'TaskclusterRobot' });
     github.inst(5808).setUser({ id: 18102552, email: 'anotheruser@github.com', username: 'owlishDeveloper' });
+    github.inst(TC_DEV_INSTALLATION_ID).setUser({ id: 83861, email: 'lotas@users.noreply.github.com', username: 'lotas' });
     monitor = await helper.load('monitor');
   });
 
@@ -41,6 +44,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           },
           Severity: LEVELS.notice,
         });
+      } else if (statusCode === 403) {
+        const errorEntry = monitor.manager.messages.find(({ Type }) => Type === 'monitor.error');
+        assert.equal(errorEntry.Logger, 'taskcluster.test.api');
+        assert.equal(errorEntry.Fields.message, 'X-hub-signature does not match');
+        assert.equal(errorEntry.Fields.xHubSignature, request.headers['X-Hub-Signature-256'] || request.headers['X-Hub-Signature']);
+        assert.equal(errorEntry.Fields.event, request.headers['X-GitHub-Event']);
+        assert.equal(errorEntry.Fields.eventId, request.headers['X-GitHub-Delivery']);
+        assert.equal(errorEntry.Fields.installationId, request.body?.installation?.id);
+        // clear errors
+        monitor.manager.reset();
       }
       await check();
     });
@@ -48,8 +61,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   // Good data: should all return 200 responses
   statusTest('Pull Request Opened', 'webhook.pull_request.open.json', 204);
-  statusTest('Pull Request Closed', 'webhook.pull_request.close.json', 204);
-  statusTest('Push', 'webhook.push.json', 204);
+  statusTest('Pull Request Closed', 'webhook.pull_request.close.sha256.json', 204, TC_DEV_INSTALLATION_ID);
+  statusTest('Push SHA1', 'webhook.push.json', 204);
+  statusTest('Push SHA256', 'webhook.push.sha256.json', 204, TC_DEV_INSTALLATION_ID);
+  statusTest('Push wrong signature', 'webhook.push.bad_signature.json', 403, TC_DEV_INSTALLATION_ID);
   statusTest('Push skip ci', 'webhook.push.skip-ci.json', 200);
   statusTest('Release', 'webhook.release.json', 204);
   statusTest('Tag', 'webhook.tag_push.json', 204);
