@@ -177,7 +177,7 @@ async function statusHandler(message) {
       output.addText(markdownLog(tailLog(liveLogText, 250, githubCheck.output.getRemainingMaxSize())));
     }
 
-    let [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
+    let [checkRun] = await this.context.db.fns.get_github_check_by_task_group_and_task_id(taskGroupId, taskId);
     const isRerun = checkRunStatus === CHECK_RUN_STATES.IN_PROGRESS && runId > 0;
 
     if (checkRun && !isRerun) {

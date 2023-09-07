@@ -6661,6 +6661,24 @@
       },
       "migrationScript": "begin\n  grant select on tasks to $db_user_prefix$_hooks;\nend",
       "version": 88
+    },
+    {
+      "description": "github checks fetching to use indexes",
+      "methods": {
+        "get_github_check_by_task_group_and_task_id": {
+          "args": "task_group_id_in text, task_id_in text",
+          "body": "begin\n  return query select\n    github_checks.task_group_id,\n    github_checks.task_id,\n    github_checks.check_suite_id,\n    github_checks.check_run_id\n  from github_checks\n  where\n    github_checks.task_group_id = task_group_id_in\n    and\n    github_checks.task_id = task_id_in;\nend",
+          "deprecated": false,
+          "description": "Get a single check from a (task_group_id, task_id).",
+          "mode": "read",
+          "returns": "table (task_group_id text, task_id text, check_suite_id text, check_run_id text)",
+          "serviceName": "github"
+        },
+        "get_github_check_by_task_id": {
+          "deprecated": true
+        }
+      },
+      "version": 89
     }
   ]
 }
