@@ -15,7 +15,7 @@ if [ -z "${go_version}" ]; then
     exit 1
 fi
 
-pg_version=11
+pg_version=15
 
 tmpdir=$(mktemp -d)
 trap "cd /; rm -rf ${tmpdir}" EXIT
@@ -37,8 +37,8 @@ rm -rf /var/lib/apt/lists/*
 localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
 # drop and re-create the default cluster with the appropriate locale
-pg_dropcluster 11 main
-pg_createcluster 11 main --lc-collate=en_US.UTF8 --lc-ctype=en_US.UTF8
+pg_dropcluster 15 main
+pg_createcluster 15 main --lc-collate=en_US.UTF8 --lc-ctype=en_US.UTF8
 
 # allow postgres to connect locally with no auth -- this is for testing!
 echo 'local all all trust' > /etc/postgresql/$pg_version/main/pg_hba.conf

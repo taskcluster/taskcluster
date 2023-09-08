@@ -270,5 +270,5 @@ This approach is slower, but is appropriate for testing.
 
 ## Development
 
-To test this library, you will need a Postgres database, running the latest release of Postgres 11.
+To test this library, you will need a Postgres database, running the latest release of Postgres 11 or 15.
 The easiest and best way to do this is to use docker, as described in the [Development Process docs](../dev-docs/development-process.md).

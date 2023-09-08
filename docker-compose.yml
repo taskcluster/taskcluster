@@ -23,7 +23,7 @@ services:
       RABBITMQ_DEFAULT_PASS: admin
       RABBITMQ_DEFAULT_VHOST: local
   postgres:
-    image: postgres:11
+    image: postgres:15
     networks:
       - local
     volumes:

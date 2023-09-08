@@ -2,7 +2,7 @@ module.exports = {
   READ: 'read',
   WRITE: 'write',
 
-  // see https://www.postgresql.org/docs/11/errcodes-appendix.html
+  // see https://www.postgresql.org/docs/15/errcodes-appendix.html
   DUPLICATE_OBJECT: '42710',
   DUPLICATE_TABLE: '42P07',
   NUMERIC_VALUE_OUT_OF_RANGE: '22003',

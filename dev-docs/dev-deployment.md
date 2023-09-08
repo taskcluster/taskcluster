@@ -16,7 +16,7 @@ You will need to have the following
 * A RabbitMQ cluster running the latest available version. (see also [install RabbitMQ](#own-rabbitmq-in-cluster))
   The deployment process requires administrative access (the RabbitMQ management API) and creates multiple users.
   The free levels of CloudAMQP's service do not support this.
-* A Postgres server running Postgres 11.x (see below for Google Cloud SQL, or use another provider). (see also [install Postgres](#own-postgres-in-cluster))
+* A Postgres server running Postgres 11.x or 15.x (see below for Google Cloud SQL, or use another provider). (see also [install Postgres](#own-postgres-in-cluster))
   The Postgres server must be initialized with the `en_US.utf8` locale; see [the deployment docs](../ui/docs/manual/deploying/database.mdx).
 * An AWS account and an IAM user in that account
   Set up your `aws` command-line to use the IAM user (`aws configure`).
@@ -368,7 +368,7 @@ Warning: by using this approach, you are responsible for maintenance and backups
       enabled: true
 
    image:
-      tag: 11  # Taskcluster currently supports version 11
+      tag: 15  # Taskcluster currently supports version 11 and 15
    ```
 
    More details at <https://github.com/bitnami/charts/tree/master/bitnami/postgresql>
