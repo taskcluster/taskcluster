@@ -373,6 +373,16 @@ yarn start notify-background-handler
 >
 > This way using exported environment variable makes compose behaviour more intuitive.
 
+## Cleaning up unused docker images
+
+With each new Taskcluster release, new docker images are created. Over time this may lead to a large number of unused images. To clean up unused images, run the following command:
+
+```sh
+./docker/cleanup-images.sh
+```
+
+This will find all `taskcluster/` images that are referenced in `docker-compose.yml` and for each one will remove all other images with the same name but different tag.
+
 ## Running tasks with local generic-worker
 
 `generic-worker` is configured to automatically start with `docker compose` and connect to taskcluster using `docker-compose/generic-worker` task queue id.
