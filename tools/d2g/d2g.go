@@ -24,7 +24,6 @@ type (
 	NamedDockerImage    dockerworker.NamedDockerImage
 	DockerImageArtifact dockerworker.DockerImageArtifact
 	Image               interface {
-		PrepareCommands() []string
 		FileMounts() ([]genericworker.FileMount, error)
 		String() (string, error)
 	}
@@ -166,15 +165,15 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 		containerName = "taskcontainer"
 	}
 
-	podmanPrepareCommands := dwImage.PrepareCommands()
+	commands := []string{}
 
 	podmanRunString, err := podmanRunCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches)
 	if err != nil {
 		return nil, fmt.Errorf("could not form podman run command: %w", err)
 	}
 
-	commands := append(
-		podmanPrepareCommands,
+	commands = append(
+		commands,
 		podmanRunString,
 	)
 

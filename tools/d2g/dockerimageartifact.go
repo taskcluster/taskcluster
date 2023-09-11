@@ -8,16 +8,6 @@ import (
 	"github.com/taskcluster/taskcluster/v55/tools/d2g/genericworker"
 )
 
-func (dia *DockerImageArtifact) PrepareCommands() []string {
-	commands := []string{}
-	filename := filepath.Base(dia.Path)
-	handleFileExtentions(filename, &commands)
-	// if filepath.Ext(strings.ToLower(filename)) != ".tar" {
-	//	return fmt.Errorf("docker image artifact %q has an unsupported file extension - only support .tar, .tar.lz4, .tar.zst", dia.Path)
-	// }
-	return commands
-}
-
 func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) {
 	artifactContent := genericworker.ArtifactContent{
 		Artifact: dia.Path,
@@ -38,5 +28,5 @@ func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) 
 }
 
 func (dia *DockerImageArtifact) String() (string, error) {
-	return `"${IMAGE_NAME}"`, nil
+	return fmt.Sprintf("docker-archive:%s", filepath.Base(dia.Path)), nil
 }

@@ -62,15 +62,16 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              curl -fsSL -o path "${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path"
-
-              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
-
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              "${IMAGE_NAME}" 'echo "Hello world"'
+              docker-archive:path 'echo "Hello world"'
         maxRunTime: 3600
+        mounts:
+          - content:
+              artifact: test/path
+              namespace: test.namespace
+            file: path
         features:
           taskclusterProxy: true
         onExitStatus:
@@ -92,19 +93,16 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              curl -fsSL -o path.lz4 "${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path.lz4"
-
-              unlz4 'path.lz4'
-
-              rm 'path.lz4'
-
-              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
-
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              "${IMAGE_NAME}" 'echo "Hello world"'
+              docker-archive:path.lz4 'echo "Hello world"'
         maxRunTime: 3600
+        mounts:
+          - content:
+              artifact: test/path.lz4
+              namespace: test.namespace
+            file: path.lz4
         features:
           taskclusterProxy: true
         onExitStatus:
@@ -126,19 +124,16 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              curl -fsSL -o path.zst "${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path.zst"
-
-              unzstd 'path.zst'
-
-              rm 'path.zst'
-
-              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
-
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              "${IMAGE_NAME}" 'echo "Hello world"'
+              docker-archive:path.zst 'echo "Hello world"'
         maxRunTime: 3600
+        mounts:
+          - content:
+              artifact: test/path.zst
+              namespace: test.namespace
+            file: path.zst
         features:
           taskclusterProxy: true
         onExitStatus:
@@ -160,12 +155,10 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
-
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              "${IMAGE_NAME}" 'echo "Hello world"'
+              docker-archive:path 'echo "Hello world"'
         mounts:
           - content:
               artifact: public/test/path
@@ -191,16 +184,10 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              unlz4 'path.lz4'
-
-              rm 'path.lz4'
-
-              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
-
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              "${IMAGE_NAME}" 'echo "Hello world"'
+              docker-archive:path.lz4 'echo "Hello world"'
         mounts:
           - content:
               artifact: public/test/path.lz4
@@ -226,16 +213,10 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              unzstd 'path.zst'
-
-              rm 'path.zst'
-
-              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
-
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              "${IMAGE_NAME}" 'echo "Hello world"'
+              docker-archive:path.zst 'echo "Hello world"'
         mounts:
           - content:
               artifact: public/test/path.zst
