@@ -17,21 +17,22 @@ To create such an app, use the docs at https://developer.github.com/apps/buildin
 * Webhook URL should link to `/api/github/v1/github` on your deployment's root URL
 * Set the secret to an arbitrary value that you also configure in your Taskcluster instance's settings.
 * Under `Repository permissions` set:
-  * Administration: Read-only
-  * Checks: Read and write
-  * Commit statuses: Read and write
-  * Contents: Read-only
-  * Issues: Read and write
-  * Metadata: Read-only
-  * Pull requests: Read and write
+  * Administration: `Read-only`
+  * Checks: `Read and write`
+  * Commit statuses: `Read and write`
+  * Contents: `Read-only`
+  * Issues: `Read and write`
+  * Metadata: `Read-only`
+  * Pull requests: `Read and write`
   * Leave everything else set to `No access`
 * Under `Organization permissions` set:
-  * Members: Read-only
+  * Members: `Read-only`
   * Leave everything else set to `No access`
 * Under `Subscribe to events` check the following boxes:
   * Pull request
   * Push
   * Release
+  * Check run (if you want to receive "rerun" requests from GitHub UI for failed checks)
 
 ## Taskcluster Configuration
 
