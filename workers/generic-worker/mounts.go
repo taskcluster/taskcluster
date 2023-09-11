@@ -79,11 +79,11 @@ func (cache *Cache) Rating() float64 {
 }
 
 func (cache *Cache) Evict(taskMount *TaskMount) error {
-	if taskMount.task != nil {
+	if taskMount != nil {
 		taskMount.Infof("Removing cache %v from cache table", cache.Key)
 	}
 	delete(cache.Owner, cache.Key)
-	if taskMount.task != nil {
+	if taskMount != nil {
 		taskMount.Infof("Deleting cache %v file(s) at %v", cache.Key, cache.Location)
 	}
 	// delete the cache on the file system
