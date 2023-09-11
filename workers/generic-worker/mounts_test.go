@@ -1014,3 +1014,32 @@ func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
 	// (which can happen if it wasn't unmounted after first task failed)
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }
+
+func TestEvictNext(t *testing.T) {
+	r := Resources(
+		[]Resource{
+			&Cache{
+				Key: "apple",
+			},
+			&Cache{
+				Key: "banana",
+			},
+			&Cache{
+				Key: "pear",
+			},
+		},
+	)
+	err := r.EvictNext()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(r) != 2 {
+		t.Fatalf("Was expecting cache to have two entries (banana and pear), because apple should have been evicted; however cache has %v entries", len(r))
+	}
+	if key := r[0].(*Cache).Key; key != "banana" {
+		t.Fatalf("Was expecting first cache item to be \"banana\" because \"apple\" should have been evicted, but it is %q", key)
+	}
+	if key := r[1].(*Cache).Key; key != "pear" {
+		t.Fatalf("Was expecting second cache item to be \"pear\" because \"apple\" should have been evicted, but it is %q", key)
+	}
+}
