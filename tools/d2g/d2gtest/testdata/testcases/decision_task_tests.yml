@@ -84,19 +84,13 @@ testSuite:
               podman run -t --name taskcontainer --privileged -v
               "$(pwd)/cache0:/builds/worker/checkouts"
               --add-host=taskcluster:127.0.0.1 --net=host -e
-              "GECKO_BASE_REPOSITORY=https://hg.mozilla.org/mozilla-unified" -e
-              "GECKO_BASE_REV=330c69218a931b3504d44c867539ed6083521be5" -e
-              "GECKO_HEAD_REF=ca2873779214f6109ffe1b23e1455350294ac325" -e
-              "GECKO_HEAD_REPOSITORY=https://hg.mozilla.org/mozilla-central" -e
-              "GECKO_HEAD_REV=ca2873779214f6109ffe1b23e1455350294ac325" -e
-              "HG_STORE_PATH=/builds/worker/checkouts/hg-store" -e
-              "MOZ_AUTOMATION=1" -e "PYTHONDONTWRITEBYTECODE=1" -e
-              "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_CACHES=/builds/worker/checkouts" -e
-              "TASKCLUSTER_PROXY_URL=${TASKCLUSTER_PROXY_URL}" -e
-              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
-              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
-              "TASK_ID=${TASK_ID}"
+              GECKO_BASE_REPOSITORY -e GECKO_BASE_REV -e
+              GECKO_HEAD_REF -e GECKO_HEAD_REPOSITORY -e
+              GECKO_HEAD_REV -e HG_STORE_PATH -e
+              MOZ_AUTOMATION -e PYTHONDONTWRITEBYTECODE -e
+              RUN_ID -e TASKCLUSTER_CACHES -e
+              TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL -e
+              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
               'mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06'
               /builds/worker/bin/run-task
               --gecko-checkout=/builds/worker/checkouts/gecko
@@ -129,6 +123,16 @@ testSuite:
               podman rm taskcontainer
 
               exit "${exit_code}"
+        env:
+          GECKO_BASE_REPOSITORY: 'https://hg.mozilla.org/mozilla-unified'
+          GECKO_BASE_REV: 330c69218a931b3504d44c867539ed6083521be5
+          GECKO_HEAD_REF: ca2873779214f6109ffe1b23e1455350294ac325
+          GECKO_HEAD_REPOSITORY: 'https://hg.mozilla.org/mozilla-central'
+          GECKO_HEAD_REV: ca2873779214f6109ffe1b23e1455350294ac325
+          HG_STORE_PATH: /builds/worker/checkouts/hg-store
+          MOZ_AUTOMATION: '1'
+          PYTHONDONTWRITEBYTECODE: '1'
+          TASKCLUSTER_CACHES: /builds/worker/checkouts
         features:
           chainOfTrust: true
           taskclusterProxy: true

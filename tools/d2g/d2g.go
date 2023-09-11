@@ -94,6 +94,7 @@ func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericwor
 		return
 	}
 
+	setEnv(dwPayload, gwPayload)
 	setFeatures(dwPayload, gwPayload)
 	setLogs(dwPayload, gwPayload)
 	setMaxRunTime(dwPayload, gwPayload)
@@ -262,6 +263,10 @@ func podmanCopyArtifacts(containerName string, dwPayload *dockerworker.DockerWor
 	return commands
 }
 
+func setEnv(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
+	gwPayload.Env = dwPayload.Env
+}
+
 func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.Features.ChainOfTrust = dwPayload.Features.ChainOfTrust
 	// need to keep TaskclusterProxy to true if it's already been enabled for IndexedDockerImages
@@ -368,8 +373,8 @@ func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs 
 	return volumeMounts.String()
 }
 
-func podmanEnvSetting(envVarName, envVarValue string) string {
-	return ` -e "` + envVarName + "=" + envVarValue + `"`
+func podmanEnvSetting(envVarName string) string {
+	return fmt.Sprintf(" -e %s", envVarName)
 }
 
 func imageObject(payloadImage *json.RawMessage) (Image, error) {
@@ -419,18 +424,13 @@ func podmanEnvMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
 	}
 
 	envVarNames := []string{}
-	env := map[string]string{}
-	for envVarName, envVarValue := range dwPayload.Env {
+	for envVarName := range dwPayload.Env {
 		envVarNames = append(envVarNames, envVarName)
-		env[envVarName] = envVarValue
 	}
-	for _, envVarName := range dwManagedEnvVars {
-		envVarNames = append(envVarNames, envVarName)
-		env[envVarName] = "${" + envVarName + "}"
-	}
+	envVarNames = append(envVarNames, dwManagedEnvVars...)
 	sort.Strings(envVarNames)
 	for _, envVarName := range envVarNames {
-		envStrBuilder.WriteString(podmanEnvSetting(envVarName, env[envVarName]))
+		envStrBuilder.WriteString(podmanEnvSetting(envVarName))
 	}
 	return envStrBuilder.String()
 }
