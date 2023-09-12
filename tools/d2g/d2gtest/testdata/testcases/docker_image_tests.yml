@@ -16,10 +16,8 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm
-              -e "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
-              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
-              "TASK_ID=${TASK_ID}"
+              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
+              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
         onExitStatus:
@@ -41,10 +39,8 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm
-              -e "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
-              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
-              "TASK_ID=${TASK_ID}"
+              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
+              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
         onExitStatus:
@@ -71,10 +67,8 @@ testSuite:
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
               podman run -t --rm
-              -e "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
-              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
-              "TASK_ID=${TASK_ID}"
+              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
+              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
               "${IMAGE_NAME}" 'echo "Hello world"'
         maxRunTime: 3600
         features:
@@ -107,10 +101,8 @@ testSuite:
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
               podman run -t --rm
-              -e "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
-              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
-              "TASK_ID=${TASK_ID}"
+              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
+              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
               "${IMAGE_NAME}" 'echo "Hello world"'
         maxRunTime: 3600
         features:
@@ -143,10 +135,8 @@ testSuite:
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
               podman run -t --rm
-              -e "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
-              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
-              "TASK_ID=${TASK_ID}"
+              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
+              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
               "${IMAGE_NAME}" 'echo "Hello world"'
         maxRunTime: 3600
         features:
@@ -173,10 +163,8 @@ testSuite:
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
               podman run -t --rm
-              -e "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
-              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
-              "TASK_ID=${TASK_ID}"
+              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
+              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
               "${IMAGE_NAME}" 'echo "Hello world"'
         mounts:
           - content:
@@ -210,10 +198,8 @@ testSuite:
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
               podman run -t --rm
-              -e "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
-              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
-              "TASK_ID=${TASK_ID}"
+              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
+              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
               "${IMAGE_NAME}" 'echo "Hello world"'
         mounts:
           - content:
@@ -247,10 +233,8 @@ testSuite:
               IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
 
               podman run -t --rm
-              -e "RUN_ID=${RUN_ID}" -e
-              "TASKCLUSTER_ROOT_URL=${TASKCLUSTER_ROOT_URL}" -e
-              "TASKCLUSTER_WORKER_LOCATION=${TASKCLUSTER_WORKER_LOCATION}" -e
-              "TASK_ID=${TASK_ID}"
+              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
+              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
               "${IMAGE_NAME}" 'echo "Hello world"'
         mounts:
           - content:
