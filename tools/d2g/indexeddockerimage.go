@@ -54,6 +54,6 @@ func handleFileExtentions(filename string, commands *[]string) {
 	*commands = append(
 		*commands,
 		// TODO handle spaces in file name
-		"IMAGE_NAME=$(podman load -i "+shell.Escape(filename)+" | sed -n 's/.*: //p')",
+		"IMAGE_NAME=$(podman load -i "+shell.Escape(filename)+" | sed -n '1s/.*: //p')",
 	)
 }
