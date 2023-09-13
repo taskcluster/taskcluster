@@ -57,9 +57,6 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 				continue
 			}
 			walkFn := func(path string, info os.FileInfo, incomingErr error) error {
-				// I think we don't need to handle incomingErr != nil since
-				// resolve(...) gets called which should catch the same issues
-				// raised in incomingErr - *** I GUESS *** !!
 				subPath, err := filepath.Rel(taskContext.TaskDir, path)
 				if err != nil {
 					// this indicates a bug in the code
@@ -76,6 +73,25 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 					Expires: base.Expires,
 				}
 				switch {
+				// Issue 6488
+				// Sometimes an error occurs during the scanning of a file or
+				// directory. Perhaps this is when a file/directory is deleted
+				// while the directory is being scanned, or perhaps it can
+				// happen if Generic Worker does not have read permissions for
+				// the file/directory. Either way, create an error artifact to
+				// cause the task to fail, and the cause to be preserved in the
+				// error artifact.
+				case incomingErr != nil:
+					fullPath := filepath.Join(taskContext.TaskDir, subPath)
+					payloadArtifacts = append(
+						payloadArtifacts,
+						&artifacts.ErrorArtifact{
+							BaseArtifact: b,
+							Message:      fmt.Sprintf("Error processing file '%s' as artifact: %s", fullPath, incomingErr),
+							Reason:       "invalid-resource-on-worker",
+							Path:         subPath,
+						},
+					)
 				case info.IsDir():
 					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType, artifact.ContentEncoding); errArtifact != nil {
 						payloadArtifacts = append(payloadArtifacts, errArtifact)
@@ -85,6 +101,8 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 				}
 				return nil
 			}
+			// Any error returned here should already have been handled by
+			// walkFn, so should be safe to ignore.
 			_ = filepath.Walk(filepath.Join(taskContext.TaskDir, basePath), walkFn)
 		}
 	}
