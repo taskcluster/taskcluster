@@ -73,8 +73,7 @@ testSuite:
             name: public/docker-contexts
             path: artifact1
             type: directory
-          - expires: '0001-01-01T00:00:00.000Z'
-            name: public/dockerImage.tar.gz
+          - name: public/dockerImage.tar.gz
             path: image.tar.gz
             type: file
         command:
@@ -110,10 +109,10 @@ testSuite:
 
               exit_code=$?
 
-              podman cp 'taskcontainer:/builds/worker/artifacts' artifact0
+              podman cp taskcontainer:/builds/worker/artifacts artifact0
 
               podman cp
-              'taskcontainer:/builds/worker/checkouts/gecko/docker-contexts'
+              taskcontainer:/builds/worker/checkouts/gecko/docker-contexts
               artifact1
 
               podman commit taskcontainer taskcontainer

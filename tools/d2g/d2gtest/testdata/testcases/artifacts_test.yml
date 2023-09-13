@@ -11,31 +11,33 @@ testSuite:
           public/fred:
             type: file
             path: /home/worker/artifacts/fred.txt
+          # Issue #6470
+          public/build.tar.gz:
+            path: /etc/passwd' artifact0; whoami; echo foo > /root/bar; cp 'foo
+            expires: '2024-05-28T16:12:56.693817Z'
+            type: file
         command:
           - echo "Hello world"
         image: ubuntu
         maxRunTime: 3600
       genericWorkerTaskPayload:
         artifacts:
-          - expires: '0001-01-01T00:00:00.000Z'
-            name: public/fred
-            path: artifact0.txt
+          - expires: '2024-05-28T16:12:56.693Z'
+            name: public/build.tar.gz
+            path: artifact0
+            type: file
+          - name: public/fred
+            path: artifact1.txt
             type: file
         command:
           - - bash
             - '-cx'
-            - >-
-              podman run -t --name taskcontainer
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e
-              TASK_ID ubuntu 'echo "Hello world"'
-
+            - |-
+              podman run -t --name taskcontainer -e RUN_ID -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_ID ubuntu 'echo "Hello world"'
               exit_code=$?
-
-              podman cp 'taskcontainer:/home/worker/artifacts/fred.txt' artifact0.txt
-
+              podman cp taskcontainer:'/etc/passwd'\'' artifact0; whoami; echo foo > /root/bar; cp '\''foo' artifact0
+              podman cp taskcontainer:'/home/worker/artifacts/fred.txt' 'artifact1.txt'
               podman rm taskcontainer
-
               exit "${exit_code}"
         maxRunTime: 3600
         onExitStatus:

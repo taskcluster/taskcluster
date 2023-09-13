@@ -240,6 +240,7 @@ func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorker
 	if err != nil {
 		return "", fmt.Errorf("could not form docker image string: %w", err)
 	}
+	// note, dockerImageString is already shell escaped
 	command.WriteString(" " + dockerImageString)
 	command.WriteString(" " + shell.Escape(dwPayload.Command...))
 	return command.String(), nil
@@ -258,7 +259,7 @@ func podmanCopyArtifacts(containerName string, dwPayload *dockerworker.DockerWor
 		if _, ok := dwPayload.Artifacts[gwArtifacts[i].Name]; !ok {
 			continue
 		}
-		commands = append(commands, fmt.Sprintf("podman cp '%s:%s' %s", containerName, dwPayload.Artifacts[gwArtifacts[i].Name].Path, gwArtifacts[i].Path))
+		commands = append(commands, fmt.Sprintf("podman cp %s:%s %s", containerName, shell.Escape(dwPayload.Artifacts[gwArtifacts[i].Name].Path), shell.Escape(gwArtifacts[i].Path)))
 	}
 	return commands
 }
