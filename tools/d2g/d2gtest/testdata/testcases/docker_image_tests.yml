@@ -64,7 +64,7 @@ testSuite:
             - >-
               curl -fsSL -o path "${TASKCLUSTER_PROXY_URL}/index/v1/task/test.namespace/artifacts/test/path"
 
-              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
 
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
@@ -98,7 +98,7 @@ testSuite:
 
               rm 'path.lz4'
 
-              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
 
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
@@ -132,7 +132,7 @@ testSuite:
 
               rm 'path.zst'
 
-              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
 
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
@@ -160,7 +160,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
 
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
@@ -195,7 +195,7 @@ testSuite:
 
               rm 'path.lz4'
 
-              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
 
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
@@ -230,7 +230,7 @@ testSuite:
 
               rm 'path.zst'
 
-              IMAGE_NAME=$(podman load -i path | sed -n 's/.*: //p')
+              IMAGE_NAME=$(podman load -i path | sed -n '1s/.*: //p')
 
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
