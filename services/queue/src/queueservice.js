@@ -112,11 +112,14 @@ class QueueService {
     clearInterval(this.queueResetInterval);
   }
 
-  _putMessage(queue, message, { visibility, ttl }) {
+  _putMessage(queue, message, { visibility, ttl, taskQueueId, priority }) {
     let text = Buffer.from(JSON.stringify(message)).toString('base64');
     return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
       visibilityTimeout: visibility,
       messageTTL: ttl,
+      taskQueueId,
+      priority,
+      payload: message,
     }));
   }
 
@@ -141,6 +144,7 @@ class QueueService {
           msg.messageId,
           msg.popReceipt, {
             visibilityTimeout: 0,
+            payload: JSON.parse(Buffer.from(msg.messageText, 'base64')),
           },
         ),
       };
@@ -479,6 +483,8 @@ class QueueService {
     }, {
       ttl: timeToDeadline,
       visibility: 0,
+      taskQueueId: task.taskQueueId,
+      priority: parseInt(PRIORITY_TO_CONSTANT[task.priority] || '0', 10),
     });
   }
 

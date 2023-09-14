@@ -84,7 +84,10 @@ CREATE TABLE azure_queue_messages (
     inserted timestamp with time zone NOT NULL,
     visible timestamp with time zone NOT NULL,
     expires timestamp with time zone NOT NULL,
-    pop_receipt uuid
+    pop_receipt uuid,
+    task_queue_id text,
+    priority integer,
+    payload jsonb
 );
 ALTER TABLE azure_queue_messages
     ADD CONSTRAINT azure_queue_messages_pkey PRIMARY KEY (message_id);

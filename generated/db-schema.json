@@ -102,8 +102,11 @@
       "inserted": "timestamp with time zone not null",
       "message_id": "uuid not null",
       "message_text": "text not null",
+      "payload": "jsonb",
       "pop_receipt": "uuid",
+      "priority": "integer",
       "queue_name": "text not null",
+      "task_queue_id": "text",
       "visible": "timestamp with time zone not null"
     },
     "cache_purges": {
@@ -6679,6 +6682,38 @@
         }
       },
       "version": 89
+    },
+    {
+      "description": "prepare queue for upcoming migration and refactoring",
+      "downgradeScript": "begin\n  alter table azure_queue_messages\n    drop column task_queue_id,\n    drop column priority,\n    drop column payload;\nend",
+      "methods": {
+        "azure_queue_put": {
+          "deprecated": true
+        },
+        "azure_queue_put_extra": {
+          "args": "queue_name text, message_text text, visible timestamp, expires timestamp, task_queue_id text, priority int, payload jsonb",
+          "body": "begin\n  insert into azure_queue_messages (\n      queue_name,\n      message_id,\n      message_text,\n      inserted,\n      visible,\n      expires,\n      task_queue_id,\n      priority,\n      payload\n    ) values (\n      azure_queue_put_extra.queue_name,\n      public.gen_random_uuid(),\n      azure_queue_put_extra.message_text,\n      now(),\n      azure_queue_put_extra.visible,\n      azure_queue_put_extra.expires,\n      azure_queue_put_extra.task_queue_id,\n      azure_queue_put_extra.priority,\n      azure_queue_put_extra.payload\n    );\n  execute 'notify ' || quote_ident(queue_name);\nend",
+          "deprecated": false,
+          "description": "Put the given message into the given queue.  The message will not be visible until\nafter the visible timestamp, and will disappear after the expires timestamp.\nAdditionally store the given task_queue_id, priority and payload as jsonb.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "azure_queue_update": {
+          "deprecated": true
+        },
+        "azure_queue_update_extra": {
+          "args": "queue_name text, message_text text, message_id uuid, pop_receipt uuid, visible timestamp, payload jsonb",
+          "body": "begin\n  update azure_queue_messages msgs\n    set message_text = azure_queue_update_extra.message_text,\n      visible = azure_queue_update_extra.visible\n    where msgs.queue_name = azure_queue_update_extra.queue_name\n      and msgs.message_id = azure_queue_update_extra.message_id\n      and msgs.pop_receipt = azure_queue_update_extra.pop_receipt;\nend",
+          "deprecated": false,
+          "description": "Update the message identified by the given `queue_name`, `message_id` and\n`pop_receipt`, setting its `visible` and `message_text` properties as\ngiven.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  alter table azure_queue_messages\n    add column task_queue_id text null, -- expose cryptic names\n    add column priority int null, -- don't forget about the priority\n    add column payload jsonb null; -- instead of base64 encoded string use jsonb\nend",
+      "version": 90
     }
   ]
 }
