@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v55.2.1
+
+### GENERAL
+
+▶ [patch]
+Updates ubuntu image versions to `jammy`.
+
 ## v55.2.0
 
 ### GENERAL
