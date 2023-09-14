@@ -1,11 +1,11 @@
 let _ = require('lodash');
 let debug = require('debug')('app:queue');
 let assert = require('assert');
-let base32 = require('thirty-two');
-let crypto = require('crypto');
+// let base32 = require('thirty-two');
+// let crypto = require('crypto');
 let slugid = require('slugid');
-let AZQueue = require('taskcluster-lib-azqueue');
-let { splitTaskQueueId } = require('./utils');
+// let AZQueue = require('taskcluster-lib-azqueue');
+// let { splitTaskQueueId } = require('./utils');
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where
@@ -61,9 +61,6 @@ class QueueService {
    * options:
    * {
    *   db:                   // tc-lib-postgres Database
-   *   claimQueue:           // Queue name for the claim expiration queue
-   *   resolvedQueue:        // Queue name for the resolved task queue
-   *   deadlineQueue:        // Queue name for the deadline queue
    *   deadlineDelay:        // ms before deadline expired messages arrive
    *   monitor:              // base.monitor instance
    * }
@@ -71,55 +68,32 @@ class QueueService {
   constructor(options) {
     assert(options, 'options is required');
     assert(options.db, 'db is required');
-    assert(options.resolvedQueue, 'A resolvedQueue name must be given');
-    assert(options.claimQueue, 'A claimQueue name must be given');
-    assert(options.deadlineQueue, 'A deadlineQueue name must be given');
     assert(options.monitor, 'A monitor instance must be given');
     options = _.defaults({}, options, {
       deadlineDelay: 10 * 60 * 1000,
     });
 
     this.monitor = options.monitor;
-    this.client = new AZQueue({ db: options.db });
+    this.db = options.db;
 
-    // Promises that queues are created, return mapping from priority to
-    // azure queue names.
-    this.queues = {};
+    // this.client = new AZQueue({ db: options.db });
+    // just a proxy for now
+    this.client = new Proxy({}, {
+      get: (target, prop) => {
+        return (...args) => {
+          console.log('AZQueue.%s(%j)', prop, args);
+        };
+      },
+      apply: (target, thisArg, args) => {
+        console.log('AZQueue(%j)', args);
+      },
+    });
 
-    // Resets queues cache every 25 hours, this ensures that meta-data is kept
-    // up-to-date with a last_used field no more than 48 hours behind
-    this.queueResetInterval = setInterval(() => {this.queues = {};}, 25 * 60 * 60 * 1000);
-
-    // Store claimQueue name, and remember if we've created it
-    this.claimQueue = options.claimQueue;
-    this.claimQueueReady = null;
-
-    // Store resolvedQueue name, and remember if we've created it
-    this.resolvedQueue = options.resolvedQueue;
-    this.resolvedQueueReady = null;
-
-    // Store deadlineQueue name, and remember if we've created it
-    this.deadlineQueue = options.deadlineQueue;
     this.deadlineDelay = options.deadlineDelay;
-    this.deadlineQueueReady = null;
-
-    // Keep a cache of pending counts as mapping:
-    //    <provisionerId>/<workerType> -> {lastUpdated, count: promise}
-    this.countPendingCache = {};
   }
 
   terminate() {
-    clearInterval(this.queueResetInterval);
-  }
-
-  _putMessage(queue, message, { visibility, ttl, taskQueueId, priority }) {
-    let text = Buffer.from(JSON.stringify(message)).toString('base64');
-    return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
-      visibilityTimeout: visibility,
-      messageTTL: ttl,
-      taskQueueId,
-      priority,
-    }));
+    // ?
   }
 
   async _getMessages(queue, { visibility, count }) {
@@ -149,45 +123,6 @@ class QueueService {
     });
   }
 
-  /** Ensure existence of the claim queue */
-  ensureClaimQueue() {
-    if (this.claimQueueReady) {
-      return this.claimQueueReady;
-    }
-    let ready = this.client.createQueue(this.claimQueue).catch(err => {
-      // Don't cache negative results
-      this.claimQueueReady = null;
-      throw err;
-    });
-    return this.claimQueueReady = ready;
-  }
-
-  /** Ensure existence of the resolved task queue */
-  ensureResolvedQueue() {
-    if (this.resolvedQueueReady) {
-      return this.resolvedQueueReady;
-    }
-    let ready = this.client.createQueue(this.resolvedQueue).catch(err => {
-      // Don't cache negative results
-      this.resolvedQueueReady = null;
-      throw err;
-    });
-    return this.resolvedQueueReady = ready;
-  }
-
-  /** Ensure existence of the deadline queue */
-  ensureDeadlineQueue() {
-    if (this.deadlineQueueReady) {
-      return this.deadlineQueueReady;
-    }
-    let ready = this.client.createQueue(this.deadlineQueue).catch(err => {
-      // Don't cache negative results
-      this.deadlineQueueReady = null;
-      throw err;
-    });
-    return this.deadlineQueueReady = ready;
-  }
-
   /** Enqueue message to become visible when claim has expired */
   async putClaimMessage(taskId, runId, takenUntil) {
     assert(taskId, 'taskId must be given');
@@ -195,15 +130,26 @@ class QueueService {
     assert(takenUntil instanceof Date, 'takenUntil must be a date');
     assert(isFinite(takenUntil), 'takenUntil must be a valid date');
 
-    await this.ensureClaimQueue();
-    return this._putMessage(this.claimQueue, {
-      taskId: taskId,
-      runId: runId,
-      takenUntil: takenUntil.toJSON(),
-    }, {
-      ttl: 7 * 24 * 60 * 60,
-      visibility: secondsTo(takenUntil),
-    });
+    // TODO
+    // this.db.fns.put_claim_message() ...
+
+    // return this._putMessage(this.claimQueue, {
+    //   taskId: taskId,
+    //   runId: runId,
+    //   takenUntil: takenUntil.toJSON(),
+    // }, {
+    //   ttl: 7 * 24 * 60 * 60,
+    //   visibility: secondsTo(takenUntil),
+    // });
+    // _putMessage(queue, message, { visibility, ttl, taskQueueId, priority }) {
+    //   let text = Buffer.from(JSON.stringify(message)).toString('base64');
+    //   return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
+    //     visibilityTimeout: visibility,
+    //     messageTTL: ttl,
+    //     taskQueueId,
+    //     priority,
+    //   }));
+    // }
   }
 
   /** Enqueue message ensure the dependency resolver handles the resolution */
@@ -215,13 +161,24 @@ class QueueService {
            resolution === 'exception',
     'resolution must be completed, failed or exception');
 
-    await this.ensureResolvedQueue();
-    return this._putMessage(this.resolvedQueue, {
-      taskId, taskGroupId, schedulerId, resolution,
-    }, {
-      ttl: 7 * 24 * 60 * 60,
-      visibility: 0,
-    });
+    // TODO
+    // this.db.fns.put_resolved_message() ...
+
+    // return this._putMessage(this.resolvedQueue, {
+    //   taskId, taskGroupId, schedulerId, resolution,
+    // }, {
+    //   ttl: 7 * 24 * 60 * 60,
+    //   visibility: 0,
+    // });
+    // _putMessage(queue, message, { visibility, ttl, taskQueueId, priority }) {
+    //   let text = Buffer.from(JSON.stringify(message)).toString('base64');
+    //   return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
+    //     visibilityTimeout: visibility,
+    //     messageTTL: ttl,
+    //     taskQueueId,
+    //     priority,
+    //   }));
+    // }
   }
 
   /** Enqueue message to become visible when deadline has expired */
@@ -232,19 +189,31 @@ class QueueService {
     assert(deadline instanceof Date, 'deadline must be a date');
     assert(isFinite(deadline), 'deadline must be a valid date');
 
-    await this.ensureDeadlineQueue();
     let delay = Math.floor(this.deadlineDelay / 1000);
     debug('Put deadline message to be visible in %s seconds',
       secondsTo(deadline) + delay);
-    return this._putMessage(this.deadlineQueue, {
-      taskId,
-      taskGroupId,
-      schedulerId,
-      deadline: deadline.toJSON(),
-    }, {
-      ttl: 7 * 24 * 60 * 60,
-      visibility: secondsTo(deadline) + delay,
-    });
+
+    // TODO
+    // this.db.fns.put_deadline_message() ...
+
+    // return this._putMessage(this.deadlineQueue, {
+    //   taskId,
+    //   taskGroupId,
+    //   schedulerId,
+    //   deadline: deadline.toJSON(),
+    // }, {
+    //   ttl: 7 * 24 * 60 * 60,
+    //   visibility: secondsTo(deadline) + delay,
+    // });
+    // _putMessage(queue, message, { visibility, ttl, taskQueueId, priority }) {
+    //   let text = Buffer.from(JSON.stringify(message)).toString('base64');
+    //   return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
+    //     visibilityTimeout: visibility,
+    //     messageTTL: ttl,
+    //     taskQueueId,
+    //     priority,
+    //   }));
+    // }
   }
 
   /**
@@ -266,24 +235,24 @@ class QueueService {
    * Note, messages must be handled within 10 minutes.
    */
   async pollClaimQueue() {
-    // Ensure the claim queue exists
-    await this.ensureClaimQueue();
+    // TODO
+    // return this.db.fns.get_claim_queue() ... map()
 
     // Get messages
-    let messages = await this._getMessages(this.claimQueue, {
-      visibility: 10 * 60,
-      count: 32,
-    });
+    // let messages = await this._getMessages(this.claimQueue, {
+    //   visibility: 10 * 60,
+    //   count: 32,
+    // });
 
-    // Convert to neatly consumable format
-    return messages.map(m => {
-      return {
-        taskId: m.payload.taskId,
-        runId: m.payload.runId,
-        takenUntil: new Date(m.payload.takenUntil),
-        remove: m.remove,
-      };
-    });
+    // // Convert to neatly consumable format
+    // return messages.map(m => {
+    //   return {
+    //     taskId: m.payload.taskId,
+    //     runId: m.payload.runId,
+    //     takenUntil: new Date(m.payload.takenUntil),
+    //     remove: m.remove,
+    //   };
+    // });
   }
 
   /**
@@ -305,25 +274,26 @@ class QueueService {
    * Note, messages must be handled within 10 minutes.
    */
   async pollResolvedQueue() {
-    // Ensure the claim queue exists
-    await this.ensureResolvedQueue();
+    // TODO:
+
+    // return this.db.fns.get_resolved_queue() ... map()
 
     // Get messages
-    let messages = await this._getMessages(this.resolvedQueue, {
-      visibility: 10 * 60,
-      count: 32,
-    });
+    // let messages = await this._getMessages(this.resolvedQueue, {
+    //   visibility: 10 * 60,
+    //   count: 32,
+    // });
 
-    // Convert to neatly consumable format
-    return messages.map(m => {
-      return {
-        taskId: m.payload.taskId,
-        taskGroupId: m.payload.taskGroupId,
-        schedulerId: m.payload.schedulerId,
-        resolution: m.payload.resolution,
-        remove: m.remove,
-      };
-    });
+    // // Convert to neatly consumable format
+    // return messages.map(m => {
+    //   return {
+    //     taskId: m.payload.taskId,
+    //     taskGroupId: m.payload.taskGroupId,
+    //     schedulerId: m.payload.schedulerId,
+    //     resolution: m.payload.resolution,
+    //     remove: m.remove,
+    //   };
+    // });
   }
 
   /**
@@ -344,101 +314,32 @@ class QueueService {
    * Note, messages must be handled within 10 minutes.
    */
   async pollDeadlineQueue() {
-    // Ensure the deadline queue exists
-    await this.ensureDeadlineQueue();
+    // TODO
+    // return this.db.fns.get_deadline_queue() ... map()
 
     // Get messages
-    let messages = await this._getMessages(this.deadlineQueue, {
-      visibility: 10 * 60,
-      count: 32,
-    });
+    // let messages = await this._getMessages(this.deadlineQueue, {
+    //   visibility: 10 * 60,
+    //   count: 32,
+    // });
 
-    // Convert to neatly consumable format
-    return messages.map(m => {
-      return {
-        taskId: m.payload.taskId,
-        taskGroupId: m.payload.taskGroupId,
-        schedulerId: m.payload.schedulerId,
-        deadline: new Date(m.payload.deadline),
-        remove: m.remove,
-      };
-    });
-  }
-
-  /** Ensure existence of a queue */
-  ensurePendingQueue(taskQueueId) {
-    let id = taskQueueId;
-
-    // Find promise
-    if (this.queues[id]) {
-      return this.queues[id];
-    }
-
-    // Create promise, if it doesn't exist
-    // Validate taskQueueId
-    assert(/^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/.test(taskQueueId),
-      'Expected taskQueueId to be a split identifier');
-
-    // Hash identifier to 24 characters
-    let hashId = (id) => {
-      let h = crypto.createHash('sha256').update(id).digest();
-      return base32.encode(h.slice(0, 15)).toString('utf-8').toLowerCase();
-    };
-
-    // Construct queue name prefix (add priority later)
-    const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
-    let namePrefix = [
-      this.prefix, // prefix all queues
-      hashId(provisionerId), // hash of provisionerId
-      hashId(workerType), // hash of workerType
-      '', // priority, add PRIORITY_TO_CONSTANT
-    ].join('-');
-
-    // Mapping from priority to queue name
-    let names = _.mapValues(PRIORITY_TO_CONSTANT, c => namePrefix + c);
-
-    // Return and cache promise that we created this queue
-    return this.queues[id] = Promise.all(_.map(names, queueName => {
-      return this._ensureQueueAndMetadata(queueName, taskQueueId);
-    })).catch(err => {
-      err.note = 'Failed to ensure azure queue in queueservice.js';
-      this.monitor.reportError(err);
-
-      // Don't cache negative results
-      this.queues[id] = undefined;
-      throw err;
-    }).then(() => names);
-  }
-
-  /**
-   * Ensure that queue with given name exists and has correct meta-data,
-   * in particular regarding meta-data for expiration.
-   *
-   * We maintain following meta-data keys:
-   *  * `provisioner_id`,
-   *  * `worker_type`, and
-   *  * `last_used` (tolerating 23 hours difference, updated every 25 hours)
-   *
-   * We delete queues if they have `last_used` > 10 days ago, this happens in
-   * a periodic test tasks.
-   */
-  async _ensureQueueAndMetadata(queue, taskQueueId) {
-    // NOOP on postgres
-  }
-
-  /**
-   * Remove all worker queues not used since `now - 10 days`.
-   * Returns number of queues deleted.
-   */
-  async deleteUnusedWorkerQueues(now = new Date()) {
-    // NOOP on postgres
-    return 0;
+    // // Convert to neatly consumable format
+    // return messages.map(m => {
+    //   return {
+    //     taskId: m.payload.taskId,
+    //     taskGroupId: m.payload.taskGroupId,
+    //     schedulerId: m.payload.schedulerId,
+    //     deadline: new Date(m.payload.deadline),
+    //     remove: m.remove,
+    //   };
+    // });
   }
 
   /**
    * Remove expired messages
    */
   async deleteExpiredMessages() {
+    // TODO: remove for all 4 new tables
     await this.client.deleteExpiredMessages();
   }
 
@@ -458,9 +359,6 @@ class QueueService {
     validateTask(task);
     assert(typeof runId === 'number', 'Expected runId as number');
 
-    // Find name of azure queue
-    let queueNames = await this.ensurePendingQueue(task.taskQueueId);
-
     // Find the time to deadline
     let timeToDeadline = secondsTo(task.deadline);
     // If deadline is reached, we don't care to publish a message about the task
@@ -474,23 +372,35 @@ class QueueService {
     }
 
     // Put message queue
-    return this._putMessage(queueNames[task.priority], {
-      taskId: task.taskId,
-      runId: runId,
-      hintId: slugid.v4(),
-    }, {
-      ttl: timeToDeadline,
-      visibility: 0,
-      taskQueueId: task.taskQueueId,
-      priority: parseInt(PRIORITY_TO_CONSTANT[task.priority] || '0', 10),
-    });
+    // TODO - call db directly to insert into right table
+
+    // this.db.fns.put_pending_message() ...
+
+    // return this._putMessage(task.taskQueueId, task.priority, {
+    //   taskId: task.taskId,
+    //   runId: runId,
+    //   hintId: slugid.v4(),
+    // }, {
+    //   ttl: timeToDeadline,
+    //   visibility: 0,
+    //   taskQueueId: task.taskQueueId,
+    //   priority: parseInt(PRIORITY_TO_CONSTANT[task.priority] || '0', 10),
+    // });
+    // _putMessage(queue, message, { visibility, ttl, taskQueueId, priority }) {
+    //   let text = Buffer.from(JSON.stringify(message)).toString('base64');
+    //   return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
+    //     visibilityTimeout: visibility,
+    //     messageTTL: ttl,
+    //     taskQueueId,
+    //     priority,
+    //   }));
+    // }
   }
 
   /**
-   * Return pending queues as list of poll(count) in order of priority.
+   * Return tasks for a given task queue id in order of priority.
    *
-   * A poll(count) function returns up-to count messages, where each message
-   * is on the form:
+   * Returns messages in the form:
    * {
    *   taskId:  '...',        // taskId from the message
    *   runId:   0,            // runId from the message
@@ -499,64 +409,54 @@ class QueueService {
    *   release: function() {} // Async function that makes the message visible
    * }
    */
-  async pendingQueues(taskQueueId) {
-    // Find names of azure queues
-    let queueNames = await this.ensurePendingQueue(taskQueueId);
-    // Order by priority (and convert to array)
-    let queues = PRIORITIES.map(priority => queueNames[priority]);
-
-    // For each queue, return poll(count) function
-    return queues.map(queue => {
-      return async (count) => {
-        // Get messages
-        let messages = await this._getMessages(queue, {
-          visibility: 5 * 60,
-          count: Math.min(count, 32),
-        });
-        return messages.map(m => {
-          return {
-            taskId: m.payload.taskId,
-            runId: m.payload.runId,
-            hintId: m.payload.hintId,
-            remove: m.remove,
-            release: m.release,
-          };
-        });
+  async getTaskQueuePendingTasks(taskQueueId, count) {
+    const rows = await this.db.fns.queue_pending_tasks_get(taskQueueId, count);
+    return rows.map(({ task_id, run_id, hint_id, pop_receipt }) => {
+      return {
+        taskId: task_id,
+        runId: run_id,
+        hintId: hint_id,
+        remove: async () => this.db.fns.queue_pending_tasks_delete(task_id, pop_receipt),
+        release: async () => this.db.fns.queue_pending_tasks_release(task_id, pop_receipt),
       };
     });
   }
 
-  /** Returns promise for number of messages pending in pending task queue */
+    // let queueNames = await this.ensurePendingQueue(taskQueueId);
+    // // Order by priority (and convert to array)
+    // let queues = PRIORITIES.map(priority => queueNames[priority]);
+
+    // // For each queue, return poll(count) function
+    // return queues.map(queue => {
+    //   return async (count) => {
+    //     // Get messages
+    //     let messages = await this._getMessages(queue, {
+    //       visibility: 5 * 60,
+    //       count: Math.min(count, 32),
+    //     });
+    //     return messages.map(m => {
+    //       return {
+    //         taskId: m.payload.taskId,
+    //         runId: m.payload.runId,
+    //         hintId: m.payload.hintId,
+    //         remove: m.remove,
+    //         release: m.release,
+    //       };
+    //     });
+    //   };
+    // });
+  }
+
+  /**
+   * Count number of pending tasks for a given task queue
+   *
+   * @param {String} taskQueueId
+   * @returns {Number} number of pending tasks
+   */
   async countPendingMessages(taskQueueId) {
-    // Find cache entry
-    let cacheKey = taskQueueId;
-    let entry = this.countPendingCache[cacheKey] || {
-      count: Promise.resolve(0),
-      lastUpdated: 0,
-    };
-    this.countPendingCache[cacheKey] = entry;
-
-    // Update count if more than 20 seconds old
-    if (Date.now() - entry.lastUpdated > 20 * 1000) {
-      entry.lastUpdated = Date.now();
-      entry.count = (async () => {
-        // Find name of azure queue
-        let queueNames = await this.ensurePendingQueue(taskQueueId);
-
-        // Find messages count queues
-        let results = await Promise.all(_.map(queueNames, queueName => {
-          return this.client.getMetadata(queueName);
-        }));
-
-        // Sum up the messageCount property
-        return _.sumBy(results, 'messageCount');
-      })();
-    }
-
-    // Wait for result and return it
-    return await entry.count;
+    const [{ queue_pending_task_count }] = await this.db.fns.queue_pending_task_count(taskQueueId);
+    return queue_pending_task_count;
   }
 }
 
-// Export QueueService
 module.exports = QueueService;

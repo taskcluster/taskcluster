@@ -1,0 +1,106 @@
+version: 91
+description: migrate existing azure queue messages into new tables
+
+migrationScript: 0091-migration.sql
+downgradeScript: 0091-downgrade.sql
+
+methods:
+  azure_queue_get:
+    deprecated: true
+  azure_queue_put:
+    deprecated: true
+  azure_queue_count:
+    deprecated: true
+  azure_queue_delete:
+    deprecated: true
+  azure_queue_update:
+    deprecated: true
+  azure_queue_put_extra:
+    deprecated: true
+  azure_queue_delete_expired:
+    deprecated: true
+
+
+  # queue_pending_tasks indexes:
+  #  (task_queue_id, priority, inserted)
+  #  (task_id) unique
+  queue_pending_tasks_get:
+    description: |
+      Get up to `count` messages from the given taskQueueId.
+      tbd..
+      this mimics `azure_queue_get`
+      is `visible` field necessary ?? or just setting and un-setting `pop_receipt` is enough
+    mode: write
+    serviceName: queue
+    args: task_queue_id_in text, count integer
+    returns: table (task_id text, run_id text, hint_id text, pop_receipt uuid)
+    body: |-
+      begin
+        return query
+          with updated as (
+            update queue_pending_tasks qpt
+            set pop_receipt = public.gen_random_uuid()
+            where
+              qpt.task_id in (
+                select qpt2.task_id
+                from queue_pending_tasks qpt2
+                where qpt2.task_queue_id = task_queue_id_in
+                  and qpt2.expires > now()
+                  and pop_receipt is null
+                order by qpt2.priority desc, qpt2.inserted_at asc
+                for update skip locked
+                limit count
+            )
+            returning qpt.priority, qpt.inserted_at, qpt.task_id, qpt.run_id, qpt.hint_id, qpt.pop_receipt
+          )
+          select u.task_id, u.run_id, u.hint_id, u.pop_receipt
+          from updated as u
+          order by u.priority desc, u.inserted asc;
+      end
+
+  queue_pending_task_release:
+    description: |
+      Release task back to the queue to be picked up by another worker.
+    mode: write
+    serviceName: queue
+    args: task_id_in text, pop_receipt_in uuid
+    returns: void
+    body: |-
+      begin
+        update queue_pending_tasks
+        set pop_receipt = null
+        where task_id = task_id_in
+          and pop_receipt = pop_receipt_in;
+      end
+
+  queue_pending_task_delete:
+    description: |
+      Delete pending task from the queue.
+    mode: write
+    serviceName: queue
+    args: task_id_in text, pop_receipt_in uuid
+    returns: void
+    body: |-
+      begin
+        delete from queue_pending_tasks
+        where task_id = task_id_in
+          and pop_receipt = pop_receipt_in;
+      end
+
+
+  # count pending messages per task queue
+  queue_pending_task_count:
+    description: |
+      Count the number of pending messages for given task queue.
+    mode: read
+    serviceName: queue
+    args: task_queue_id_in text
+    returns: integer
+    body: |-
+      begin
+        return (
+          select count(*)
+          from queue_pending_tasks
+          where task_queue_id = task_queue_id_in
+        );
+      end

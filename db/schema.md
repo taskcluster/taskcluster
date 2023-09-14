@@ -20,6 +20,10 @@
  * [`object_hashes`](#object_hashes)
  * [`objects`](#objects)
  * [`queue_artifacts`](#queue_artifacts)
+ * [`queue_claimed_tasks`](#queue_claimed_tasks)
+ * [`queue_pending_tasks`](#queue_pending_tasks)
+ * [`queue_resolved_tasks`](#queue_resolved_tasks)
+ * [`queue_task_deadlines`](#queue_task_deadlines)
  * [`queue_workers`](#queue_workers)
  * [`roles`](#roles)
  * [`secrets`](#secrets)
@@ -39,6 +43,7 @@
 
 ```sql
 CREATE UNIQUE INDEX objects_upload_id_idx ON objects USING btree (upload_id) WHERE (upload_id IS NOT NULL);
+CREATE UNIQUE INDEX task_id ON queue_pending_tasks USING btree (task_id);
 ```
 
 ## access_tokens
@@ -309,6 +314,62 @@ CREATE TABLE queue_artifacts (
 );
 ALTER TABLE queue_artifacts
     ADD CONSTRAINT queue_artifacts_pkey PRIMARY KEY (task_id, run_id, name);
+```
+
+## queue_claimed_tasks
+
+```sql
+CREATE TABLE queue_claimed_tasks (
+    task_id text NOT NULL,
+    run_id integer NOT NULL,
+    claimed_at timestamp with time zone NOT NULL,
+    taken_until timestamp with time zone NOT NULL,
+    expires timestamp with time zone NOT NULL,
+    pop_receipt uuid
+);
+```
+
+## queue_pending_tasks
+
+```sql
+CREATE TABLE queue_pending_tasks (
+    task_queue_id text NOT NULL,
+    priority integer NOT NULL,
+    task_id text NOT NULL,
+    run_id integer NOT NULL,
+    hint_id text NOT NULL,
+    inserted_at timestamp with time zone NOT NULL,
+    expires timestamp with time zone NOT NULL,
+    pop_receipt uuid
+);
+```
+
+## queue_resolved_tasks
+
+```sql
+CREATE TABLE queue_resolved_tasks (
+    task_group_id text NOT NULL,
+    task_id text NOT NULL,
+    scheduler_id text NOT NULL,
+    resolution text NOT NULL,
+    resolved_at timestamp with time zone NOT NULL,
+    expires timestamp with time zone NOT NULL,
+    pop_receipt uuid
+);
+```
+
+## queue_task_deadlines
+
+```sql
+CREATE TABLE queue_task_deadlines (
+    task_id text NOT NULL,
+    task_group_id text NOT NULL,
+    scheduler_id text NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    deadline_at timestamp with time zone NOT NULL,
+    expires timestamp with time zone NOT NULL,
+    pop_receipt uuid
+);
 ```
 
 ## queue_workers

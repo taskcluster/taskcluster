@@ -165,21 +165,7 @@ exports.withQueueService = (mock, skipping) => {
     if (skipping()) {
       return;
     }
-
-    if (mock) {
-      helper.queueService = await helper.load('queueService');
-    } else {
-      // ensure we are using unique queue names from run to run of this service
-      // so that tests do not interfere with one another.  This prefix can only
-      // be 6 characters long..
-      const pfx = 'q' + new Date().getTime().toString().slice(-5);
-      await helper.load('cfg');
-      helper.load.cfg('app.claimQueue', `${pfx}-claim`);
-      helper.load.cfg('app.deadlineQueue', `${pfx}-deadline`);
-      helper.load.cfg('app.resolvedQueue', `${pfx}-resolved`);
-
-      helper.queueService = await helper.load('queueService');
-    }
+    console.error('withQueueService is refactored');
   });
 };
 

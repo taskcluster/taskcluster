@@ -34,18 +34,6 @@ defaults:
     # schedulerId inside a task-group where all tasks are about to expire.
     taskGroupExpiresExtension:     6220800 # 3 days as seconds
 
-    # Prefix for azure queues (at most 6 characters)
-    queuePrefix:                  queue
-
-    # Name of azure queue for tracking claim expiration
-    claimQueue:                   claim-queue
-
-    # Name of azure queue for tracking deadlines
-    deadlineQueue:                deadline-queue
-
-    # Name of azure queue for tracking resolved tasks (dependency tracker)
-    resolvedQueue:                resolved-queue
-
     # Number of ms before deadline expiration message arrives, past deadline
     deadlineDelay:                60000
 
@@ -131,10 +119,6 @@ test:
     # For testing purposes we let claims expire very fast
     claimTimeout:                 1
     maxTaskDeadlineDays:          5
-    queuePrefix:                  'hacks3'
-    queuePrefix2:                 'hacks4' # For testing deletion of queues
-    claimQueue:                   'test-claim-queue'
-    deadlineQueue:                'test-deadline-queue'
     deadlineDelay:                1000
     # Positive, means we expire artifacts 4 days ahead of time, useful for
     # testing. In production this should be "- x hours" or so...

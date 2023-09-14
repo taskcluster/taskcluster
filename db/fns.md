@@ -72,12 +72,7 @@
    * [`purge_requests_wpid`](#purge_requests_wpid)
  * [queue functions](#queue)
    * [`add_task_dependency`](#add_task_dependency)
-   * [`azure_queue_count`](#azure_queue_count)
-   * [`azure_queue_delete`](#azure_queue_delete)
-   * [`azure_queue_delete_expired`](#azure_queue_delete_expired)
-   * [`azure_queue_get`](#azure_queue_get)
-   * [`azure_queue_put_extra`](#azure_queue_put_extra)
-   * [`azure_queue_update`](#azure_queue_update)
+   * [`azure_queue_get1`](#azure_queue_get1)
    * [`cancel_task`](#cancel_task)
    * [`cancel_task_group`](#cancel_task_group)
    * [`check_task_claim`](#check_task_claim)
@@ -110,6 +105,8 @@
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
    * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
    * [`queue_artifact_present`](#queue_artifact_present)
+   * [`queue_pending_task_count`](#queue_pending_task_count)
+   * [`queue_pending_tasks_get`](#queue_pending_tasks_get)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
    * [`reclaim_task`](#reclaim_task)
@@ -1285,12 +1282,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 ## queue
 
 * [`add_task_dependency`](#add_task_dependency)
-* [`azure_queue_count`](#azure_queue_count)
-* [`azure_queue_delete`](#azure_queue_delete)
-* [`azure_queue_delete_expired`](#azure_queue_delete_expired)
-* [`azure_queue_get`](#azure_queue_get)
-* [`azure_queue_put_extra`](#azure_queue_put_extra)
-* [`azure_queue_update`](#azure_queue_update)
+* [`azure_queue_get1`](#azure_queue_get1)
 * [`cancel_task`](#cancel_task)
 * [`cancel_task_group`](#cancel_task_group)
 * [`check_task_claim`](#check_task_claim)
@@ -1323,6 +1315,8 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
 * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
 * [`queue_artifact_present`](#queue_artifact_present)
+* [`queue_pending_task_count`](#queue_pending_task_count)
+* [`queue_pending_tasks_get`](#queue_pending_tasks_get)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
 * [`reclaim_task`](#reclaim_task)
@@ -1352,43 +1346,7 @@ Create an un-satisfied task dependency between the two tasks, with the given
 requirement style and expiration. If the dependency already exists, nothing
 happens.
 
-### azure_queue_count
-
-* *Mode*: read
-* *Arguments*:
-  * `queue_name text`
-* *Returns*: `integer`
-* *Last defined on version*: 6
-
-Count non-expired messages in the named queue.
-
-
-### azure_queue_delete
-
-* *Mode*: write
-* *Arguments*:
-  * `queue_name text`
-  * `message_id uuid`
-  * `pop_receipt uuid`
-* *Returns*: `void`
-* *Last defined on version*: 3
-
-Delete the message identified by the given `queue_name`, `message_id` and
-`pop_receipt`.
-
-
-### azure_queue_delete_expired
-
-* *Mode*: write
-* *Arguments*:
-* *Returns*: `void`
-* *Last defined on version*: 3
-
-Delete all expired messages.  This is a maintenance task that should occur
-about once an hour.
-
-
-### azure_queue_get
+### azure_queue_get1
 
 * *Mode*: write
 * *Arguments*:
@@ -1399,47 +1357,12 @@ about once an hour.
   * `message_id uuid`
   * `message_text text`
   * `pop_receipt uuid`
-* *Last defined on version*: 5
+* *Last defined on version*: 91
 
 Get up to `count` messages from the given queue, setting the `visible`
 column of each to the given value.  Returns a `message_id` and
 `pop_receipt` for each one, for use with `azure_queue_delete` and
 `azure_queue_update`.
-
-
-### azure_queue_put_extra
-
-* *Mode*: write
-* *Arguments*:
-  * `queue_name text`
-  * `message_text text`
-  * `visible timestamp`
-  * `expires timestamp`
-  * `task_queue_id text`
-  * `priority int`
-* *Returns*: `void`
-* *Last defined on version*: 90
-
-Put the given message into the given queue.  The message will not be visible until
-after the visible timestamp, and will disappear after the expires timestamp.
-Additionally store the given task_queue_id and priority.
-
-
-### azure_queue_update
-
-* *Mode*: write
-* *Arguments*:
-  * `queue_name text`
-  * `message_text text`
-  * `message_id uuid`
-  * `pop_receipt uuid`
-  * `visible timestamp`
-* *Returns*: `void`
-* *Last defined on version*: 3
-
-Update the message identified by the given `queue_name`, `message_id` and
-`pop_receipt`, setting its `visible` and `message_text` properties as
-given.
 
 
 ### cancel_task
@@ -2013,6 +1936,36 @@ Worker will keep a history of all quarantine details.
 Mark the given queue artifact as present, returning the updated artifact.  Returns
 nothing if no such artifact exists.
 
+### queue_pending_task_count
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+* *Returns*: `integer`
+* *Last defined on version*: 91
+
+Count the number of pending messages for given task queue.
+
+
+### queue_pending_tasks_get
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `run_id text`
+  * `hint_id text`
+  * `pop_receipt uuid`
+* *Last defined on version*: 91
+
+Get up to `count` messages from the given taskQueueId.
+tbd..
+this mimics `azure_queue_get`
+is `visible` field necessary ?? or just setting and un-setting `pop_receipt` is enough
+
+
 ### queue_worker_seen_with_last_date_active
 
 * *Mode*: write
@@ -2226,7 +2179,13 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
 
 ### deprecated methods
 
+* `azure_queue_count(queue_name text)` (compatibility guaranteed until v57.0.0)
+* `azure_queue_delete(queue_name text, message_id uuid, pop_receipt uuid)` (compatibility guaranteed until v57.0.0)
+* `azure_queue_delete_expired()` (compatibility guaranteed until v57.0.0)
+* `azure_queue_get(queue_name text, visible timestamp, count integer)` (compatibility guaranteed until v57.0.0)
 * `azure_queue_put(queue_name text, message_text text, visible timestamp, expires timestamp)` (compatibility guaranteed until v57.0.0)
+* `azure_queue_put_extra(queue_name text, message_text text, visible timestamp, expires timestamp, task_queue_id text, priority int)` (compatibility guaranteed until v57.0.0)
+* `azure_queue_update(queue_name text, message_text text, message_id uuid, pop_receipt uuid, visible timestamp)` (compatibility guaranteed until v57.0.0)
 
 ## secrets
 

@@ -47,6 +47,10 @@
       "tables": {
         "azure_queue_messages": "write",
         "queue_artifacts": "write",
+        "queue_claimed_tasks": "write",
+        "queue_pending_tasks": "write",
+        "queue_resolved_tasks": "write",
+        "queue_task_deadlines": "write",
         "queue_workers": "write",
         "task_dependencies": "write",
         "task_groups": "write",
@@ -220,6 +224,42 @@
       "present": "boolean not null",
       "run_id": "integer not null",
       "storage_type": "text not null",
+      "task_id": "text not null"
+    },
+    "queue_claimed_tasks": {
+      "claimed_at": "timestamp with time zone not null",
+      "expires": "timestamp with time zone not null",
+      "pop_receipt": "uuid",
+      "run_id": "integer not null",
+      "taken_until": "timestamp with time zone not null",
+      "task_id": "text not null"
+    },
+    "queue_pending_tasks": {
+      "expires": "timestamp with time zone not null",
+      "hint_id": "text not null",
+      "inserted_at": "timestamp with time zone not null",
+      "pop_receipt": "uuid",
+      "priority": "integer not null",
+      "run_id": "integer not null",
+      "task_id": "text not null",
+      "task_queue_id": "text not null"
+    },
+    "queue_resolved_tasks": {
+      "expires": "timestamp with time zone not null",
+      "pop_receipt": "uuid",
+      "resolution": "text not null",
+      "resolved_at": "timestamp with time zone not null",
+      "scheduler_id": "text not null",
+      "task_group_id": "text not null",
+      "task_id": "text not null"
+    },
+    "queue_task_deadlines": {
+      "created_at": "timestamp with time zone not null",
+      "deadline_at": "timestamp with time zone not null",
+      "expires": "timestamp with time zone not null",
+      "pop_receipt": "uuid",
+      "scheduler_id": "text not null",
+      "task_group_id": "text not null",
       "task_id": "text not null"
     },
     "queue_workers": {
@@ -6701,6 +6741,62 @@
       },
       "migrationScript": "begin\n  alter table azure_queue_messages\n    add column task_queue_id text null, -- expose cryptic names\n    add column priority int null; -- don't forget about the priority\nend",
       "version": 90
+    },
+    {
+      "description": "migrate existing azure queue messages into new tables",
+      "downgradeScript": "begin\n  drop table queue_pending_tasks;\n  drop table queue_claimed_tasks;\n  drop table queue_resolved_tasks;\n  drop table queue_task_deadlines;\nend\n",
+      "methods": {
+        "azure_queue_count": {
+          "deprecated": true
+        },
+        "azure_queue_delete": {
+          "deprecated": true
+        },
+        "azure_queue_delete_expired": {
+          "deprecated": true
+        },
+        "azure_queue_get": {
+          "deprecated": true
+        },
+        "azure_queue_get1": {
+          "args": "queue_name text, visible timestamp, count integer",
+          "body": "begin\n  return query\n    with updated as (\n      update azure_queue_messages m\n      set\n        pop_receipt = public.gen_random_uuid(),\n        visible = azure_queue_get.visible\n      where\n        m.message_id in (\n          select m2.message_id from azure_queue_messages m2\n          where m2.queue_name = azure_queue_get.queue_name\n            and m2.visible <= now()\n            and m2.expires > now()\n          order by m2.inserted\n          for update skip locked\n          limit count\n      )\n      returning m.inserted, m.message_id, m.message_text, m.pop_receipt\n    )\n    select\n      u.message_id, u.message_text, u.pop_receipt\n    from updated as u\n    order by u.inserted;\nend",
+          "deprecated": false,
+          "description": "Get up to `count` messages from the given queue, setting the `visible`\ncolumn of each to the given value.  Returns a `message_id` and\n`pop_receipt` for each one, for use with `azure_queue_delete` and\n`azure_queue_update`.\n",
+          "mode": "write",
+          "returns": "table (message_id uuid, message_text text, pop_receipt uuid)",
+          "serviceName": "queue"
+        },
+        "azure_queue_put": {
+          "deprecated": true
+        },
+        "azure_queue_put_extra": {
+          "deprecated": true
+        },
+        "azure_queue_update": {
+          "deprecated": true
+        },
+        "queue_pending_task_count": {
+          "args": "task_queue_id_in text",
+          "body": "begin\n  return (\n    select count(*)\n    from queue_pending_tasks\n    where task_queue_id = task_queue_id_in\n  );\nend",
+          "deprecated": false,
+          "description": "Count the number of pending messages for given task queue.\n",
+          "mode": "read",
+          "returns": "integer",
+          "serviceName": "queue"
+        },
+        "queue_pending_tasks_get": {
+          "args": "task_queue_id_in text, count integer",
+          "body": "begin\n  return query\n    with updated as (\n      update queue_pending_tasks qpt\n      set pop_receipt = public.gen_random_uuid()\n      where\n        qpt.task_id in (\n          select qpt2.task_id\n          from queue_pending_tasks qpt2\n          where qpt2.task_queue_id = task_queue_id_in\n            and qpt2.expires > now()\n            and pop_receipt is null\n          order by qpt2.priority desc, qpt2.inserted_at asc\n          for update skip locked\n          limit count\n      )\n      returning qpt.priority, qpt.inserted_at, qpt.task_id, qpt.run_id, qpt.hint_id, qpt.pop_receipt\n    )\n    select u.task_id, u.run_id, u.hint_id, u.pop_receipt\n    from updated as u\n    order by u.priority desc, u.inserted asc;\nend",
+          "deprecated": false,
+          "description": "Get up to `count` messages from the given taskQueueId.\ntbd..\nthis mimics `azure_queue_get`\nis `visible` field necessary ?? or just setting and un-setting `pop_receipt` is enough\n",
+          "mode": "write",
+          "returns": "table (task_id text, run_id text, hint_id text, pop_receipt uuid)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  -- migration is only possible when all tasks were migrated to new column structure\n  IF EXISTS (\n    SELECT message_id FROM azure_queue_messages\n    WHERE queue_name NOT IN ('claim-queue', 'deadline-queue', 'resolved-queue')\n    AND task_queue_id IS NULL\n    LIMIT 1\n  ) THEN\n    RAISE EXCEPTION 'Not possible to migrate, some records are still in old format';\n  END IF;\n\n  -- migration of data\n  -- prevent reads and writes from table, get exclusive access\n  LOCK TABLE azure_queue_messages;\n\n  -- Task Deadlines\n  -- purpose: know when particular task expires, so dependencies/task groups can be resolved\n  -- queries: what tasks are not scheduled for given task_group_id/scheduler_id\n  CREATE TABLE queue_task_deadlines (\n    task_id text not null,\n    task_group_id text not null,\n    scheduler_id text not null,\n    created_at timestamptz not null,\n    deadline_at timestamptz not null,\n    expires timestamptz not null,\n    pop_receipt uuid null\n  );\n\n  -- migrate data to deadline queue\n  INSERT INTO queue_task_deadlines\n    (task_group_id, task_id, scheduler_id, created_at, deadline_at, expires, pop_receipt)\n  SELECT\n    convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskGroupId',\n    convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',\n    convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'schedulerId',\n    inserted,\n    visible, -- when this message becomes visible, it means it hits deadline\n    expires,\n    pop_receipt\n  FROM azure_queue_messages\n  WHERE queue_name = 'deadline-queue'\n  AND expires > now();\n\n  -- Resolved Tasks\n  -- queries: what tasks are not scheduled for given task_group_id/scheduler_id\n  -- purpose: not much since this will have short-lived data\n  CREATE TABLE queue_resolved_tasks (\n    task_group_id text not null,\n    task_id text not null,\n    scheduler_id text not null,\n    resolution text not null,\n    resolved_at timestamptz not null,\n    expires timestamptz not null,\n    pop_receipt uuid null\n  );\n\n  -- migrate data to resolved queue\n  INSERT INTO\n    queue_resolved_tasks (task_id, task_group_id, scheduler_id, resolution, resolved_at, expires, pop_receipt)\n  SELECT\n    convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',\n    convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskGroupId',\n    convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'schedulerId',\n    convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'resolution',\n    inserted,\n    expires,\n    pop_receipt\n  FROM azure_queue_messages\n  WHERE queue_name = 'resolved-queue'\n  AND expires > now();\n\n  -- Claimed Tasks\n  -- queries: what tasks are running and waiting to be reclaimed or resolved\n  CREATE TABLE queue_claimed_tasks (\n    task_id text not null,\n    run_id integer not null,\n    claimed_at timestamptz not null,\n    taken_until timestamptz not null,\n    expires timestamptz not null,\n    pop_receipt uuid null\n  );\n\n  -- migrate data to resolved queue\n  INSERT INTO\n    queue_claimed_tasks (task_id, run_id, claimed_at, taken_until, expires, pop_receipt)\n  SELECT\n    convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',\n    CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'runId' AS INTEGER),\n    inserted,\n    CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'takenUntil' AS timestamp with time zone),\n    expires,\n    pop_receipt\n  FROM azure_queue_messages\n  WHERE queue_name = 'claim-queue'\n  AND expires > now();\n\n  -- Pending (scheduled)\n  -- purpose: keep the record of all tasks that were scheduled and claimed\n  -- queries:\n  --  * what tasks are pending for a given queue\n  --  * what tasks are claimed and still running (for claim expire purpose)\n  --  * find tasks that were claimed but not resolved (for claim expire purpose)\n  CREATE TABLE queue_pending_tasks (\n    task_queue_id text not null,\n    priority int not null,\n    task_id text not null, -- should be unique and a key\n    run_id integer not null,\n    hint_id text not null, -- to know that task was claimed properly, stored inside tasks.runs[]\n    inserted_at timestamptz not null,\n    expires timestamptz not null,\n    pop_receipt uuid null\n  );\n\n  CREATE UNIQUE INDEX \"task_id\" ON \"public\".\"queue_pending_tasks\" USING BTREE (\"task_id\");\n\n  -- rest goes into queue_pending_tasks\n  INSERT INTO queue_pending_tasks\n    (task_queue_id, priority, task_id, run_id, hint_id, inserted_at, expires, pop_receipt)\n  SELECT\n    task_queue_id,\n    priority,\n    convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',\n    CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'runId' AS INTEGER),\n    convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'hintId',\n    inserted,\n    expires,\n    pop_receipt\n  FROM azure_queue_messages\n  WHERE queue_name NOT IN ('claim-queue', 'deadline-queue', 'resolved-queue')\n  AND task_queue_id IS NOT NULL\n  AND expires > now();\n\n  -- apply indexes\n\n  GRANT select, insert, update, delete ON queue_pending_tasks to $db_user_prefix$_queue;\n  GRANT select, insert, update, delete ON queue_task_deadlines to $db_user_prefix$_queue;\n  GRANT select, insert, update, delete ON queue_resolved_tasks to $db_user_prefix$_queue;\n  GRANT select, insert, update, delete ON queue_claimed_tasks to $db_user_prefix$_queue;\n\n  -- delete old data\n  DELETE FROM azure_queue_messages;\nend\n",
+      "version": 91
     }
   ]
 }

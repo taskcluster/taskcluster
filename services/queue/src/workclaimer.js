@@ -59,37 +59,37 @@ class HintPoller {
     }
   }
 
+  /**
+   * we probably don't have to fetch all tasks and then release unused ones?
+   * .?
+   */
   async poll() {
-    // Get poll functions for pending queues (ordered by priority)
-    let polls = await this.parent._queueService.pendingQueues(
-      this.taskQueueId,
-    );
+    // Get poll function for pending queue (tasks ordered by priority)
+    const getTasks = await this.parent._queueService.getTaskQueuePendingTasks;
+
     // While we have requests for hints
     while (_.sumBy(this.requests, 'count') > 0) {
       let claimed = 0;
       let released = 0;
 
-      // In-order of priority, we poll hints from queues
-      for (let poll of polls) {
-        // While limit of hints requested is greater zero, and we are getting
-        // hints from the queue we continue to claim from this queue
-        let limit, hints;
-        let i = 10; // count iterations a limit to 10, before we start over
-        while ((limit = _.sumBy(this.requests, 'count')) > 0 &&
-               (hints = await poll(limit)).length > 0 && i-- > 0) {
-          // Count hints claimed
-          claimed += hints.length;
+      // While limit of hints requested is greater zero, and we are getting
+      // hints from the queue we continue to claim from this queue
+      let limit, hints;
+      let i = 10; // count iterations a limit to 10, before we start over
+      while ((limit = _.sumBy(this.requests, 'count')) > 0 &&
+              (hints = await getTasks(this.taskQueueId, limit)).length > 0 && i-- > 0) {
+        // Count hints claimed
+        claimed += hints.length;
 
-          // While we have hints and requests for hints we resolve requests
-          while (hints.length > 0 && this.requests.length > 0) {
-            let { resolve, count } = this.requests.shift();
-            resolve(hints.splice(0, count));
-          }
-
-          // Release remaining hints (this shouldn't happen often!)
-          await Promise.all(hints.map(hint => hint.release()));
-          released += hints.length;
+        // While we have hints and requests for hints we resolve requests
+        while (hints.length > 0 && this.requests.length > 0) {
+          let { resolve, count } = this.requests.shift();
+          resolve(hints.splice(0, count));
         }
+
+        // Release remaining hints (this shouldn't happen often!)
+        await Promise.all(hints.map(hint => hint.release()));
+        released += hints.length;
       }
 
       // If nothing was claimed, we sleep 1000ms before polling again
