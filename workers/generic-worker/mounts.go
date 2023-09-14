@@ -630,30 +630,13 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 	if err != nil {
 		return err
 	}
-	cacheFile, err := ensureCached(fsContent, taskMount)
-	if err != nil {
-		return err
-	}
+
 	file := filepath.Join(taskContext.TaskDir, f.File)
-	parentDir := filepath.Dir(file)
-	err = MkdirAll(taskMount, parentDir, 0700)
-	// this could be a user error, if someone supplies an invalid path, so let's not
-	// panic, but make this a task failure
+	err = decompress(fsContent, f.Format, file, taskMount)
 	if err != nil {
 		return err
 	}
-	// Let's copy rather than move, since we want to be totally sure that the
-	// task can't modify the contents, and setting as read-only is not enough -
-	// the user could change the rights and then modify it.
-	taskMount.Infof("Copying %v to %v", cacheFile, file)
-	err = copyFileContents(cacheFile, file)
-	if err != nil {
-		// this could be a system error, but it can also be that e.g. the task
-		// specified an invalid path, so resolve as malformed payload rather
-		// than panic
-		taskMount.Errorf("Not able to mount content from %v at path %v", fsContent.String(), file)
-		return err
-	}
+
 	return makeFileReadWritableForTaskUser(taskMount, file)
 }
 
@@ -764,11 +747,78 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 		unarchiver = &archiver.TarZstd{
 			Tar: &archiver.Tar{},
 		}
+	case "tar.lz4":
+		unarchiver = &archiver.TarLz4{
+			Tar: &archiver.Tar{},
+		}
 	default:
 		log.Fatalf("Unsupported format %v", format)
 		return fmt.Errorf("Unsupported archive format %v", format)
 	}
 	return unarchiver.Unarchive(cacheFile, dir)
+}
+
+func decompress(fsContent FSContent, format string, file string, taskMount *TaskMount) error {
+	cacheFile, err := ensureCached(fsContent, taskMount)
+	if err != nil {
+		log.Printf("Could not cache content: %v", err)
+		return err
+	}
+
+	parentDir := filepath.Dir(file)
+	err = MkdirAll(taskMount, parentDir, 0700)
+	// this could be a user error, if someone supplies an invalid path, so let's not
+	// panic, but make this a task failure
+	if err != nil {
+		return err
+	}
+
+	var d archiver.Decompressor
+	switch format {
+	case "bz2":
+		d = &archiver.Bz2{}
+	case "gz":
+		d = &archiver.Gz{}
+	case "lz4":
+		d = &archiver.Lz4{}
+	case "xz":
+		d = &archiver.Xz{}
+	case "zst":
+		d = &archiver.Zstd{}
+	case "":
+		// No compression, just copy file.
+		// Let's copy rather than move, since we want to be totally sure that the
+		// task can't modify the contents, and setting as read-only is not enough -
+		// the user could change the rights and then modify it.
+		taskMount.Infof("Copying %v to %v", cacheFile, file)
+		err = copyFileContents(cacheFile, file)
+		if err != nil {
+			// this could be a system error, but it can also be that e.g. the task
+			// specified an invalid path, so resolve as malformed payload rather
+			// than panic
+			taskMount.Errorf("Not able to mount content from %v at path %v", fsContent.String(), file)
+			return err
+		}
+		return nil
+	default:
+		log.Fatalf("Unsupported format %v", format)
+		return fmt.Errorf("Unsupported decompression format %v", format)
+	}
+
+	taskMount.Infof("Decompressing %v file %v to '%v'", format, cacheFile, file)
+	// Useful for worker logs too (not just task logs)
+	log.Printf("[mounts] Decompressing %v file %v to '%v'", format, cacheFile, file)
+	src, err := os.Open(cacheFile)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+	dst, err := os.Create(file)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+	return d.Decompress(src, dst)
 }
 
 // FSContentFrom returns either a *ArtifactContent, *IndexedContent,

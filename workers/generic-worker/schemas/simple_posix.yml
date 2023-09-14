@@ -389,6 +389,19 @@ definitions:
 
           Since: generic-worker 5.4.0
         "$ref": "#/definitions/content"
+      format:
+        title: Format
+        type: string
+        description: |-
+          Compression format of the preloaded content.
+
+          Since: generic-worker 55.2.0
+        enum:
+        - bz2
+        - gz
+        - lz4
+        - xz
+        - zst
     additionalProperties: false
     required:
     - file
@@ -433,6 +446,7 @@ definitions:
         - rar
         - tar.bz2
         - tar.gz
+        - tar.lz4
         - tar.xz
         - tar.zst
         - zip
@@ -474,6 +488,7 @@ definitions:
         - rar
         - tar.bz2
         - tar.gz
+        - tar.lz4
         - tar.xz
         - tar.zst
         - zip
