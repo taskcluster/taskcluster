@@ -72,7 +72,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
-        'FROM ubuntu:latest AS certs',
+        'FROM ubuntu:jammy AS certs',
         'RUN apt-get update',
         'RUN apt-get upgrade -y',
         'RUN apt-get install -y ca-certificates',

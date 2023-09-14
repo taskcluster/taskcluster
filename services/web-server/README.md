@@ -104,7 +104,7 @@ Variables:
     "deadline": "2018-03-07T06:03:06.683Z",
     "expires": "2019-03-07T06:03:06.683Z",
     "payload": {
-      "image": "ubuntu:13.10",
+      "image": "ubuntu:latest",
       "command": [
         "/bin/bash",
         "-c",

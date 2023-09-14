@@ -1,7 +1,7 @@
-FROM ubuntu:20.04
+FROM ubuntu:jammy
 
 ARG NODE_VERSION
-ENV DOCKER_VERSION=5:20.10.12~3-0~ubuntu-focal
+ENV DOCKER_VERSION=5:24.0.0-1~ubuntu.22.04~jammy
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -33,10 +33,10 @@ RUN curl -SL "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x6
     npm install -g yarn@1.0.2 && \
     yarn global add babel-cli
 
-env HOME /home/tester
-env SHELL /bin/bash
-env PATH $PATH:/home/tester/bin
-workdir /home/tester
+ENV HOME /home/tester
+ENV SHELL /bin/bash
+ENV PATH $PATH:/home/tester/bin
+WORKDIR /home/tester
 
 COPY bin /home/tester/bin/
 COPY ./wrapdocker /usr/local/bin/wrapdocker

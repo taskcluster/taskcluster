@@ -66,7 +66,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
         // get the latest ca-certificates from Ubuntu
-        'FROM ubuntu:latest as ubuntu',
+        'FROM ubuntu:jammy as ubuntu',
         'RUN apt-get update',
         'RUN apt-get install -y ca-certificates',
         // start over in an empty image and just copy the certs in

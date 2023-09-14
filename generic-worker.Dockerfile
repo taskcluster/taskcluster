@@ -1,6 +1,6 @@
 # Simple generic worker
 
-FROM golang:1.21.1-bookworm as build
+FROM golang:1.21.1-bookworm AS build
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ RUN cd workers/generic-worker && \
   mv generic-worker-simple-* /generic-worker
 
 
-FROM ubuntu:kinetic
+FROM ubuntu:jammy
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y ca-certificates curl gzip
