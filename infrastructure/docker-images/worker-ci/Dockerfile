@@ -6,16 +6,16 @@ ENV DOCKER_VERSION=5:24.0.0-1~ubuntu.22.04~jammy
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     gnupg \
-    lsb-release
+    curl
 
-# Add key for docker apt repository
-COPY download.docker.com.gpg /tmp/download.docker.com.gpg
-RUN gpg --dearmor \
-        -o /usr/share/keyrings/docker-archive-keyring.gpg \
-        /tmp/download.docker.com.gpg && \
-    echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
-        | tee /etc/apt/sources.list.d/docker.list
+RUN install -m 0755 -d /etc/apt/keyrings
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+RUN chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Add the repository to Apt sources:
+RUN echo \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -28,8 +28,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     jq
 
-RUN curl -SL "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" | \
-    tar --xz --extract --directory /usr/local --strip-components=1 && \
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && \
+    . ~/.nvm/nvm.sh && \
+    nvm install $NODE_VERSION && \
+    nvm alias default $NODE_VERSION && \
+    nvm use default && \
     npm install -g yarn@1.0.2 && \
     yarn global add babel-cli
 
