@@ -3,6 +3,48 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v55.2.0
+
+### GENERAL
+
+▶ [patch] [#6543](https://github.com/taskcluster/taskcluster/issues/6543)
+Generic Worker: d2g no longer passes the environment variable values to the `podman run` command. Instead, just the variable name is passed as `-e VAR` which tells podman to take the value from the host. This will tidy up the run command and will help with any escaping issues users may have been having.
+
+### DEPLOYERS
+
+▶ [minor] [#5514](https://github.com/taskcluster/taskcluster/issues/5514)
+Adds support for postgres version 15.
+
+Note: if you want to migrate your local dev db to pg15, you'll need to either erase the existing db with `docker volume rm taskcluster_db-data` before you migrate, or, if you'd prefer to keep your local dev data, you'll need to manually dump the db contents and then import them into the upgraded db.
+
+Support for postgres v11 will be dropped from Taskcluster on November 9, 2023 (v11 EoL date) and that will be a breaking change.
+
+▶ [patch] [#6534](https://github.com/taskcluster/taskcluster/issues/6534)
+Upgrades kubernetes cronjob api version to `batch/v1`.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6540](https://github.com/taskcluster/taskcluster/issues/6540)
+Generic Worker panicked when evicting caches to free up space on workers. This was reported via sentry [here](https://mozilla.sentry.io/issues/4044685700/?project=6462337).
+
+### USERS
+
+▶ [patch] [#6470](https://github.com/taskcluster/taskcluster/issues/6470)
+D2G now properly escapes artifact paths in generated `podman cp` commands.
+
+▶ [patch] [#6488](https://github.com/taskcluster/taskcluster/issues/6488)
+Generic Worker no longer panics if an IO error occurs while scanning the filesystem for artifacts.
+
+▶ [patch] [#6516](https://github.com/taskcluster/taskcluster/issues/6516)
+Generic Worker now handles Indexed Docker Images where the docker image
+contains multiple tags. Previously, Generic Worker assumed that indexed docker
+images would have only one tag.
+
+### DEVELOPERS
+
+▶ [patch]
+Updates Github integration documentation to tell which events to subscribe to.
+
 ## v55.1.1
 
 ### WORKER-DEPLOYERS
