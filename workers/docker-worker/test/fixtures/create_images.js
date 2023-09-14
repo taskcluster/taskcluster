@@ -53,7 +53,7 @@ function run(name, args) {
 }
 
 async function main() {
-  const IMAGE_NAME = 'ubuntu:18.04';
+  const IMAGE_NAME = 'ubuntu:jammy';
   const lz4ImagePath = '/tmp/image.tar.lz4';
   const zstImagePath = '/tmp/image.tar.zst';
   const tarImagePath = '/tmp/image.tar';
