@@ -22,6 +22,12 @@ func rawHelloGoodbye() string {
 	return `"echo hello world!", "echo goodbye world!"`
 }
 
+func printFileContents(path string) []string {
+	return []string{
+		fmt.Sprintf("type %s", path),
+	}
+}
+
 func checkSHASums() []string {
 	return []string{
 		"PowerShell.exe -NoProfile -ExecutionPolicy Bypass -File preloaded\\check-shasums.ps1",

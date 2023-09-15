@@ -649,7 +649,7 @@ definitions:
         description: |-
           Compression format of the preloaded content.
 
-          Since: generic-worker 55.2.0
+          Since: generic-worker 55.3.0
         enum:
         - bz2
         - gz

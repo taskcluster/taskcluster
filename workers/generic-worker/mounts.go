@@ -752,7 +752,6 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 			Tar: &archiver.Tar{},
 		}
 	default:
-		log.Fatalf("Unsupported format %v", format)
 		return fmt.Errorf("Unsupported archive format %v", format)
 	}
 	return unarchiver.Unarchive(cacheFile, dir)
@@ -801,7 +800,6 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		}
 		return nil
 	default:
-		log.Fatalf("Unsupported format %v", format)
 		return fmt.Errorf("Unsupported decompression format %v", format)
 	}
 

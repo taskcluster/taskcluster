@@ -439,7 +439,7 @@ type (
 
 		// Compression format of the preloaded content.
 		//
-		// Since: generic-worker 55.2.0
+		// Since: generic-worker 55.3.0
 		//
 		// Possible values:
 		//   * "bz2"
@@ -895,7 +895,7 @@ func JSONSchema() string {
           "type": "string"
         },
         "format": {
-          "description": "Compression format of the preloaded content.\n\nSince: generic-worker 55.2.0",
+          "description": "Compression format of the preloaded content.\n\nSince: generic-worker 55.3.0",
           "enum": [
             "bz2",
             "gz",
