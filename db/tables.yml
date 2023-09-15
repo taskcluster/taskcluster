@@ -222,7 +222,6 @@ azure_queue_messages:
   pop_receipt: uuid
   task_queue_id: text
   priority: integer
-  payload: jsonb
 object_hashes:
   name: text not null
   algorithm: text not null

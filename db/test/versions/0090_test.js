@@ -14,12 +14,10 @@ suite(testing.suiteName(), function () {
     await helper.assertTable('azure_queue_messages');
     await helper.assertNoTableColumn('azure_queue_messages', 'task_queue_id');
     await helper.assertNoTableColumn('azure_queue_messages', 'priority');
-    await helper.assertNoTableColumn('azure_queue_messages', 'payload');
 
     await helper.upgradeTo(THIS_VERSION);
     await helper.assertTable('azure_queue_messages');
     await helper.assertTableColumn('azure_queue_messages', 'task_queue_id');
     await helper.assertTableColumn('azure_queue_messages', 'priority');
-    await helper.assertTableColumn('azure_queue_messages', 'payload');
   });
 });

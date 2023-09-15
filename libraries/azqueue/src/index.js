@@ -21,7 +21,7 @@ class AZQueue {
     // NOOP
   }
 
-  async putMessage(name, text, { visibilityTimeout, messageTTL, taskQueueId, priority, payload }) {
+  async putMessage(name, text, { visibilityTimeout, messageTTL, taskQueueId, priority }) {
     await this.db.fns.azure_queue_put_extra(
       name,
       text,
@@ -29,7 +29,6 @@ class AZQueue {
       taskcluster.fromNow(`${messageTTL} seconds`),
       taskQueueId,
       priority,
-      payload,
     );
   }
 
@@ -49,14 +48,13 @@ class AZQueue {
     await this.db.fns.azure_queue_delete(name, messageId, popReceipt);
   }
 
-  async updateMessage(name, messageText, messageId, popReceipt, { visibilityTimeout, payload }) {
-    await this.db.fns.azure_queue_update_extra(
+  async updateMessage(name, messageText, messageId, popReceipt, { visibilityTimeout }) {
+    await this.db.fns.azure_queue_update(
       name,
       messageText,
       messageId,
       popReceipt,
-      taskcluster.fromNow(`${visibilityTimeout} seconds`),
-      payload);
+      taskcluster.fromNow(`${visibilityTimeout} seconds`));
   }
 
   async listQueues() {

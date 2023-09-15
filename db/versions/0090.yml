@@ -4,15 +4,13 @@ migrationScript: |-
   begin
     alter table azure_queue_messages
       add column task_queue_id text null, -- expose cryptic names
-      add column priority int null, -- don't forget about the priority
-      add column payload jsonb null; -- instead of base64 encoded string use jsonb
+      add column priority int null; -- don't forget about the priority
   end
 downgradeScript: |-
   begin
     alter table azure_queue_messages
       drop column task_queue_id,
-      drop column priority,
-      drop column payload;
+      drop column priority;
   end
 methods:
 
@@ -23,10 +21,10 @@ methods:
     description: |
       Put the given message into the given queue.  The message will not be visible until
       after the visible timestamp, and will disappear after the expires timestamp.
-      Additionally store the given task_queue_id, priority and payload as jsonb.
+      Additionally store the given task_queue_id and priority.
     mode: write
     serviceName: queue
-    args: queue_name text, message_text text, visible timestamp, expires timestamp, task_queue_id text, priority int, payload jsonb
+    args: queue_name text, message_text text, visible timestamp, expires timestamp, task_queue_id text, priority int
     returns: void
     body: |-
       begin
@@ -38,8 +36,7 @@ methods:
             visible,
             expires,
             task_queue_id,
-            priority,
-            payload
+            priority
           ) values (
             azure_queue_put_extra.queue_name,
             public.gen_random_uuid(),
@@ -48,31 +45,7 @@ methods:
             azure_queue_put_extra.visible,
             azure_queue_put_extra.expires,
             azure_queue_put_extra.task_queue_id,
-            azure_queue_put_extra.priority,
-            azure_queue_put_extra.payload
+            azure_queue_put_extra.priority
           );
         execute 'notify ' || quote_ident(queue_name);
-      end
-
-
-  azure_queue_update:
-    deprecated: true
-
-  azure_queue_update_extra:
-    description: |
-      Update the message identified by the given `queue_name`, `message_id` and
-      `pop_receipt`, setting its `visible` and `message_text` properties as
-      given.
-    mode: write
-    serviceName: queue
-    args: queue_name text, message_text text, message_id uuid, pop_receipt uuid, visible timestamp, payload jsonb
-    returns: void
-    body: |-
-      begin
-        update azure_queue_messages msgs
-          set message_text = azure_queue_update_extra.message_text,
-            visible = azure_queue_update_extra.visible
-          where msgs.queue_name = azure_queue_update_extra.queue_name
-            and msgs.message_id = azure_queue_update_extra.message_id
-            and msgs.pop_receipt = azure_queue_update_extra.pop_receipt;
       end

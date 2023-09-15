@@ -25,7 +25,7 @@ suite(testing.suiteName(), function() {
     helper.dbTest('count queue containing messages', async function(db) {
       await db.deprecatedFns.azure_queue_put("deps", "expired", fromNow('0 seconds'), fromNow('-10 seconds'));
       await db.deprecatedFns.azure_queue_put("deps", "visible", fromNow('0 seconds'), fromNow('10 seconds'));
-      await db.fns.azure_queue_put_extra("deps", "invisible", fromNow('10 seconds'), fromNow('10 seconds'), 'tq1', 0, {});
+      await db.fns.azure_queue_put_extra("deps", "invisible", fromNow('10 seconds'), fromNow('10 seconds'), 'tq1', 0);
       const result = await db.fns.azure_queue_count("deps");
       // expired message is not counted, leaving only invisible and visible
       assert.deepEqual(result, [{ azure_queue_count: 2 }]);
@@ -64,7 +64,7 @@ suite(testing.suiteName(), function() {
       await db.deprecatedFns.azure_queue_put("deps", "visible", fromNow('0 seconds'), fromNow('10 seconds'));
       const result = await db.fns.azure_queue_get("deps", fromNow('10 seconds'), 1);
       assert.deepEqual(result.map(({ message_text }) => message_text), ['visible']);
-      await db.deprecatedFns.azure_queue_update("deps", "visible2", result[0].message_id, result[0].pop_receipt, fromNow('0 seconds'));
+      await db.fns.azure_queue_update("deps", "visible2", result[0].message_id, result[0].pop_receipt, fromNow('0 seconds'));
       const result2 = await db.fns.azure_queue_get("deps", fromNow('10 seconds'), 1);
       assert.deepEqual(result2.map(({ message_text }) => message_text), ['visible2']);
     });

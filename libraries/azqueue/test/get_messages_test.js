@@ -131,7 +131,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const base64EncodedObject = Buffer.from(JSON.stringify(obj)).toString('base64');
 
     await queue.putMessage('foo', base64EncodedObject, { visibilityTimeout: 0, messageTTL: 100, taskQueueId: 'tq1',
-      priority: 9, payload: obj });
+      priority: 9 });
 
     // those columns are only used for future migration
     // so they are currently not returned with any of the existing read methods
@@ -142,6 +142,5 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(rows[0].message_text, base64EncodedObject);
     assert.equal(rows[0].task_queue_id, 'tq1');
     assert.equal(rows[0].priority, 9);
-    assert.deepEqual(rows[0].payload, obj);
   });
 });

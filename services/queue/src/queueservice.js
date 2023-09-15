@@ -119,7 +119,6 @@ class QueueService {
       messageTTL: ttl,
       taskQueueId,
       priority,
-      payload: message,
     }));
   }
 
@@ -144,7 +143,6 @@ class QueueService {
           msg.messageId,
           msg.popReceipt, {
             visibilityTimeout: 0,
-            payload: JSON.parse(Buffer.from(msg.messageText, 'base64')),
           },
         ),
       };
