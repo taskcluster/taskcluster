@@ -25,6 +25,15 @@ func rawHelloGoodbye() string {
 	return `["echo", "hello world!"], ["echo", "goodbye world!"]`
 }
 
+func printFileContents(path string) [][]string {
+	return [][]string{
+		{
+			"cat",
+			path,
+		},
+	}
+}
+
 func returnExitCode(exitCode uint) [][]string {
 	return [][]string{
 		{

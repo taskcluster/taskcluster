@@ -212,6 +212,7 @@ type MountsLoggingTestCase struct {
 	TaskRunResolutionState string
 	TaskRunReasonResolved  string
 	PerTaskRunLogExcerpts  [][]string
+	PerTaskRunLogContains  []string
 	Payload                *GenericWorkerPayload
 }
 
@@ -228,7 +229,11 @@ func LogTest(m *MountsLoggingTestCase) {
 	}
 	payload.Mounts = toMountArray(m.Test, &m.Mounts)
 
-	for _, run := range m.PerTaskRunLogExcerpts {
+	if len(m.PerTaskRunLogContains) > 0 && len(m.PerTaskRunLogExcerpts) != len(m.PerTaskRunLogContains) {
+		m.Test.Fatalf("If you specify PerTaskRunLogContains it must be the same length as PerTaskRunLogExcerpts")
+	}
+
+	for i, run := range m.PerTaskRunLogExcerpts {
 
 		td := testTask(m.Test)
 		td.Scopes = m.Scopes
@@ -236,6 +241,9 @@ func LogTest(m *MountsLoggingTestCase) {
 		_ = submitAndAssert(m.Test, td, *payload, m.TaskRunResolutionState, m.TaskRunReasonResolved)
 
 		logtext := LogText(m.Test)
+		if len(m.PerTaskRunLogContains) > 0 && !strings.Contains(logtext, m.PerTaskRunLogContains[i]) {
+			m.Test.Fatalf("Was expecting log file to contain %s, but it instead contains:\n%v", m.PerTaskRunLogExcerpts[i], logtext)
+		}
 		allLogLines := strings.Split(logtext, "\n")
 		mountsLogLines := make([]string, 0, len(run))
 		for _, logLine := range allLogLines {
@@ -257,7 +265,7 @@ func LogTest(m *MountsLoggingTestCase) {
 		}
 		for i := range mountsLogLines {
 			if matched, err := regexp.MatchString(`\[mounts\] `+run[i], mountsLogLines[i]); err != nil || !matched {
-				m.Test.Fatalf("Was expecting log line to match pattern '%v', but it does not:\n%v", run[i], mountsLogLines[i])
+				m.Test.Fatalf("Was expecting log line to match pattern '%v', but it does not:\n%v\n\n%s", run[i], mountsLogLines[i], logtext)
 			}
 		}
 		err := os.RemoveAll(taskContext.TaskDir)
@@ -416,6 +424,72 @@ func TestFileMountNoSHA256(t *testing.T) {
 				pass1,
 				// Required text from second task when download is already cached
 				pass2,
+			},
+		},
+	)
+}
+
+func TestFileMountWithCompression(t *testing.T) {
+	setup(t)
+	taskID := CreateArtifactFromFile(t, "compressed-file-mount.txt.gz", "public/build/compressed-file-mount.txt.gz")
+
+	// whether permission is granted to task user depends if running under windows or not
+	// and is independent of whether running as current user or not
+	granting, _ := grantingDenying(t, "file", t.Name())
+
+	// No cache on first pass
+	pass1 := append([]string{
+		`Downloading task ` + taskID + ` artifact public/build/compressed-file-mount.txt.gz to .*`,
+		`Downloaded 89 bytes with SHA256 a37856e8cd10250f76dc076bb03d380b16a870dec31f3461223f753124a4b28a from task ` + taskID + ` artifact public/build/compressed-file-mount.txt.gz to .*`,
+		`Content from task ` + taskID + ` artifact public/build/compressed-file-mount.txt.gz .* matches required SHA256 a37856e8cd10250f76dc076bb03d380b16a870dec31f3461223f753124a4b28a`,
+		`Creating directory .* with permissions 0700`,
+		`Decompressing gz file .* to .*` + t.Name(),
+	},
+		granting...,
+	)
+
+	// On second pass, cache already exists
+	pass2 := append([]string{
+		`Found existing download for artifact:` + taskID + `:public/build/compressed-file-mount.txt.gz .* with correct SHA256 a37856e8cd10250f76dc076bb03d380b16a870dec31f3461223f753124a4b28a`,
+		`Creating directory .* with permissions 0700`,
+		`Decompressing gz file .* to .*` + t.Name(),
+	},
+		granting...,
+	)
+
+	LogTest(
+		&MountsLoggingTestCase{
+			Test: t,
+			Mounts: []MountEntry{
+				&FileMount{
+					File: t.Name(),
+					Content: json.RawMessage(`{
+						"taskId":   "` + taskID + `",
+						"artifact": "public/build/compressed-file-mount.txt.gz",
+						"sha256":	"a37856e8cd10250f76dc076bb03d380b16a870dec31f3461223f753124a4b28a"
+					}`),
+					Format: "gz",
+				},
+			},
+			Dependencies: []string{
+				taskID,
+			},
+			TaskRunResolutionState: "completed",
+			TaskRunReasonResolved:  "completed",
+			PerTaskRunLogExcerpts: [][]string{
+				// Required text from first task with no cached value
+				pass1,
+				// Required text from second task when download is already cached
+				pass2,
+			},
+			PerTaskRunLogContains: []string{
+				// ensure that file was decompressed and that we can read it
+				"testing file mounts with compression!",
+				"testing file mounts with compression!",
+			},
+			Payload: &GenericWorkerPayload{
+				Command:    printFileContents(t.Name()),
+				MaxRunTime: 10,
 			},
 		},
 	)

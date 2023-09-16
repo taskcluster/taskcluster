@@ -7748,6 +7748,18 @@
               "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
               "title": "File",
               "type": "string"
+            },
+            "format": {
+              "description": "Compression format of the preloaded content.\n\nSince: generic-worker 55.3.0",
+              "enum": [
+                "bz2",
+                "gz",
+                "lz4",
+                "xz",
+                "zst"
+              ],
+              "title": "Format",
+              "type": "string"
             }
           },
           "required": [
@@ -7790,6 +7802,7 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.lz4",
                 "tar.xz",
                 "tar.zst",
                 "zip"
@@ -7838,6 +7851,7 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.lz4",
                 "tar.xz",
                 "tar.zst",
                 "zip"
@@ -8197,6 +8211,18 @@
               "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
               "title": "File",
               "type": "string"
+            },
+            "format": {
+              "description": "Compression format of the preloaded content.\n\nSince: generic-worker 55.3.0",
+              "enum": [
+                "bz2",
+                "gz",
+                "lz4",
+                "xz",
+                "zst"
+              ],
+              "title": "Format",
+              "type": "string"
             }
           },
           "required": [
@@ -8239,6 +8265,7 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.lz4",
                 "tar.xz",
                 "tar.zst",
                 "zip"
@@ -8287,6 +8314,7 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.lz4",
                 "tar.xz",
                 "tar.zst",
                 "zip"
@@ -8667,6 +8695,18 @@
               "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
               "title": "File",
               "type": "string"
+            },
+            "format": {
+              "description": "Compression format of the preloaded content.\n\nSince: generic-worker 55.3.0",
+              "enum": [
+                "bz2",
+                "gz",
+                "lz4",
+                "xz",
+                "zst"
+              ],
+              "title": "Format",
+              "type": "string"
             }
           },
           "required": [
@@ -8709,6 +8749,7 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.lz4",
                 "tar.xz",
                 "tar.zst",
                 "zip"
@@ -8757,6 +8798,7 @@
                 "rar",
                 "tar.bz2",
                 "tar.gz",
+                "tar.lz4",
                 "tar.xz",
                 "tar.zst",
                 "zip"

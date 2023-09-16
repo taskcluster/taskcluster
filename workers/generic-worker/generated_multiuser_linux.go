@@ -436,6 +436,18 @@ type (
 		//
 		// Since: generic-worker 5.4.0
 		File string `json:"file"`
+
+		// Compression format of the preloaded content.
+		//
+		// Since: generic-worker 55.3.0
+		//
+		// Possible values:
+		//   * "bz2"
+		//   * "gz"
+		//   * "lz4"
+		//   * "xz"
+		//   * "zst"
+		Format string `json:"format,omitempty"`
 	}
 
 	// This schema defines the structure of the `payload` property referred to in a
@@ -637,6 +649,7 @@ type (
 		//   * "rar"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.lz4"
 		//   * "tar.xz"
 		//   * "tar.zst"
 		//   * "zip"
@@ -692,6 +705,7 @@ type (
 		//   * "rar"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.lz4"
 		//   * "tar.xz"
 		//   * "tar.zst"
 		//   * "zip"
@@ -879,6 +893,18 @@ func JSONSchema() string {
           "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
           "title": "File",
           "type": "string"
+        },
+        "format": {
+          "description": "Compression format of the preloaded content.\n\nSince: generic-worker 55.3.0",
+          "enum": [
+            "bz2",
+            "gz",
+            "lz4",
+            "xz",
+            "zst"
+          ],
+          "title": "Format",
+          "type": "string"
         }
       },
       "required": [
@@ -921,6 +947,7 @@ func JSONSchema() string {
             "rar",
             "tar.bz2",
             "tar.gz",
+            "tar.lz4",
             "tar.xz",
             "tar.zst",
             "zip"
@@ -969,6 +996,7 @@ func JSONSchema() string {
             "rar",
             "tar.bz2",
             "tar.gz",
+            "tar.lz4",
             "tar.xz",
             "tar.zst",
             "zip"
