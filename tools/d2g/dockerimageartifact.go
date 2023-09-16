@@ -3,7 +3,6 @@ package d2g
 import (
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 
 	"github.com/taskcluster/taskcluster/v55/tools/d2g/genericworker"
 )
@@ -21,12 +20,12 @@ func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) 
 	return []genericworker.FileMount{
 		{
 			Content: json.RawMessage(raw),
-			// TODO check if this could conflict with other files(?)
-			File: filepath.Base(dia.Path),
+			File:    "dockerimage",
+			Format:  fileExtension(dia.Path),
 		},
 	}, nil
 }
 
 func (dia *DockerImageArtifact) String() (string, error) {
-	return fmt.Sprintf("docker-archive:%s", filepath.Base(dia.Path)), nil
+	return "docker-archive:dockerimage", nil
 }

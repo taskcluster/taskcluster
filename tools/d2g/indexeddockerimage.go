@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/taskcluster/taskcluster/v55/tools/d2g/genericworker"
 )
@@ -20,12 +21,25 @@ func (idi *IndexedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
 	return []genericworker.FileMount{
 		{
 			Content: json.RawMessage(raw),
-			// TODO check if this could conflict with other files(?)
-			File: filepath.Base(idi.Path),
+			File:    "dockerimage",
+			Format:  fileExtension(idi.Path),
 		},
 	}, nil
 }
 
 func (idi *IndexedDockerImage) String() (string, error) {
-	return fmt.Sprintf("docker-archive:%s", filepath.Base(idi.Path)), nil
+	return "docker-archive:dockerimage", nil
+}
+
+func fileExtension(path string) string {
+	extensionFormats := map[string]string{
+		".bz2": "bz2",
+		".gz":  "gz",
+		".lz4": "lz4",
+		".xz":  "xz",
+		".zst": "zst",
+	}
+
+	lowerExt := strings.ToLower(filepath.Ext(path))
+	return extensionFormats[lowerExt]
 }

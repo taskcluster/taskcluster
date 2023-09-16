@@ -65,13 +65,13 @@ testSuite:
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              docker-archive:path 'echo "Hello world"'
+              docker-archive:dockerimage 'echo "Hello world"'
         maxRunTime: 3600
         mounts:
           - content:
               artifact: test/path
               namespace: test.namespace
-            file: path
+            file: dockerimage
         features:
           taskclusterProxy: true
         onExitStatus:
@@ -96,13 +96,14 @@ testSuite:
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              docker-archive:path.lz4 'echo "Hello world"'
+              docker-archive:dockerimage 'echo "Hello world"'
         maxRunTime: 3600
         mounts:
           - content:
               artifact: test/path.lz4
               namespace: test.namespace
-            file: path.lz4
+            file: dockerimage
+            format: lz4
         features:
           taskclusterProxy: true
         onExitStatus:
@@ -127,13 +128,14 @@ testSuite:
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              docker-archive:path.zst 'echo "Hello world"'
+              docker-archive:dockerimage 'echo "Hello world"'
         maxRunTime: 3600
         mounts:
           - content:
               artifact: test/path.zst
               namespace: test.namespace
-            file: path.zst
+            file: dockerimage
+            format: zst
         features:
           taskclusterProxy: true
         onExitStatus:
@@ -158,12 +160,12 @@ testSuite:
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              docker-archive:path 'echo "Hello world"'
+              docker-archive:dockerimage 'echo "Hello world"'
         mounts:
           - content:
               artifact: public/test/path
               taskId: 2JGiKFtpRnGbVczc6-OJ1Q
-            file: path
+            file: dockerimage
         maxRunTime: 3600
         onExitStatus:
           retry:
@@ -187,12 +189,13 @@ testSuite:
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              docker-archive:path.lz4 'echo "Hello world"'
+              docker-archive:dockerimage 'echo "Hello world"'
         mounts:
           - content:
               artifact: public/test/path.lz4
               taskId: 2JGiKFtpRnGbVczc6-OJ1Q
-            file: path.lz4
+            file: dockerimage
+            format: lz4
         maxRunTime: 3600
         onExitStatus:
           retry:
@@ -216,12 +219,13 @@ testSuite:
               podman run -t --rm
               -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
               TASKCLUSTER_WORKER_LOCATION -e TASK_ID
-              docker-archive:path.zst 'echo "Hello world"'
+              docker-archive:dockerimage 'echo "Hello world"'
         mounts:
           - content:
               artifact: public/test/path.zst
               taskId: 2JGiKFtpRnGbVczc6-OJ1Q
-            file: path.zst
+            file: dockerimage
+            format: zst
         maxRunTime: 3600
         onExitStatus:
           retry:
