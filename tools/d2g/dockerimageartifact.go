@@ -3,20 +3,9 @@ package d2g
 import (
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 
 	"github.com/taskcluster/taskcluster/v55/tools/d2g/genericworker"
 )
-
-func (dia *DockerImageArtifact) PrepareCommands() []string {
-	commands := []string{}
-	filename := filepath.Base(dia.Path)
-	handleFileExtentions(filename, &commands)
-	// if filepath.Ext(strings.ToLower(filename)) != ".tar" {
-	//	return fmt.Errorf("docker image artifact %q has an unsupported file extension - only support .tar, .tar.lz4, .tar.zst", dia.Path)
-	// }
-	return commands
-}
 
 func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) {
 	artifactContent := genericworker.ArtifactContent{
@@ -31,12 +20,16 @@ func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) 
 	return []genericworker.FileMount{
 		{
 			Content: json.RawMessage(raw),
-			// TODO check if this could conflict with other files(?)
-			File: filepath.Base(dia.Path),
+			// Instead of trying to preserve the artifact filename, we use a
+			// hardcoded name to prevent filename collisions.
+			// This _may_ cause issues once concurrent tasks are supported
+			// on generic worker (see https://bugzil.la/1609102).
+			File:   "dockerimage",
+			Format: fileExtension(dia.Path),
 		},
 	}, nil
 }
 
 func (dia *DockerImageArtifact) String() (string, error) {
-	return `"${IMAGE_NAME}"`, nil
+	return "docker-archive:dockerimage", nil
 }

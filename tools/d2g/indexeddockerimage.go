@@ -1,59 +1,49 @@
 package d2g
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"strings"
 
-	"github.com/taskcluster/shell"
 	"github.com/taskcluster/taskcluster/v55/tools/d2g/genericworker"
 )
 
-func (idi *IndexedDockerImage) PrepareCommands() []string {
-	findArtifactURL := fmt.Sprintf("${TASKCLUSTER_PROXY_URL}/index/v1/task/%s/artifacts/%s", idi.Namespace, idi.Path)
-	filename := filepath.Base(idi.Path)
-	commands := []string{
-		fmt.Sprintf(`curl -fsSL -o %s "%s"`, filename, findArtifactURL),
-	}
-
-	handleFileExtentions(filename, &commands)
-
-	return commands
-}
-
 func (idi *IndexedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
-	return []genericworker.FileMount{}, nil
+	indexedContent := genericworker.IndexedContent{
+		Artifact:  idi.Path,
+		Namespace: idi.Namespace,
+	}
+	raw, err := json.MarshalIndent(&indexedContent, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("cannot marshal indexed content %#v into json: %w", indexedContent, err)
+	}
+	return []genericworker.FileMount{
+		{
+			Content: json.RawMessage(raw),
+			// Instead of trying to preserve the artifact filename, we use a
+			// hardcoded name to prevent filename collisions.
+			// This _may_ cause issues once concurrent tasks are supported
+			// on generic worker (see https://bugzil.la/1609102).
+			File:   "dockerimage",
+			Format: fileExtension(idi.Path),
+		},
+	}, nil
 }
 
 func (idi *IndexedDockerImage) String() (string, error) {
-	return `"${IMAGE_NAME}"`, nil
+	return "docker-archive:dockerimage", nil
 }
 
-func handleFileExtentions(filename string, commands *[]string) {
-	switch lowerExt := strings.ToLower(filepath.Ext(filename)); lowerExt {
-	case ".lz4":
-		*commands = append(
-			*commands,
-			// TODO handle spaces in file name
-			"unlz4 "+shell.Escape(filename),
-			// TODO handle spaces in file name
-			"rm "+shell.Escape(filename),
-		)
-		filename = filename[:len(filename)-len(lowerExt)]
-	case ".zst":
-		*commands = append(
-			*commands,
-			// TODO handle spaces in file name
-			"unzstd "+shell.Escape(filename),
-			// TODO handle spaces in file name
-			"rm "+shell.Escape(filename),
-		)
-		filename = filename[:len(filename)-len(lowerExt)]
+func fileExtension(path string) string {
+	extensionFormats := map[string]string{
+		".bz2": "bz2",
+		".gz":  "gz",
+		".lz4": "lz4",
+		".xz":  "xz",
+		".zst": "zst",
 	}
 
-	*commands = append(
-		*commands,
-		// TODO handle spaces in file name
-		"IMAGE_NAME=$(podman load -i "+shell.Escape(filename)+" | sed -n '1s/.*: //p')",
-	)
+	lowerExt := strings.ToLower(filepath.Ext(path))
+	return extensionFormats[lowerExt]
 }

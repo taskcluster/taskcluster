@@ -6,10 +6,6 @@ import (
 	"github.com/taskcluster/taskcluster/v55/tools/d2g/genericworker"
 )
 
-func (din *DockerImageName) PrepareCommands() []string {
-	return []string{}
-}
-
 func (din *DockerImageName) FileMounts() ([]genericworker.FileMount, error) {
 	return []genericworker.FileMount{}, nil
 }
