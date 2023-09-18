@@ -76,7 +76,7 @@
    * [`azure_queue_delete`](#azure_queue_delete)
    * [`azure_queue_delete_expired`](#azure_queue_delete_expired)
    * [`azure_queue_get`](#azure_queue_get)
-   * [`azure_queue_put`](#azure_queue_put)
+   * [`azure_queue_put_extra`](#azure_queue_put_extra)
    * [`azure_queue_update`](#azure_queue_update)
    * [`cancel_task`](#cancel_task)
    * [`cancel_task_group`](#cancel_task_group)
@@ -1289,7 +1289,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`azure_queue_delete`](#azure_queue_delete)
 * [`azure_queue_delete_expired`](#azure_queue_delete_expired)
 * [`azure_queue_get`](#azure_queue_get)
-* [`azure_queue_put`](#azure_queue_put)
+* [`azure_queue_put_extra`](#azure_queue_put_extra)
 * [`azure_queue_update`](#azure_queue_update)
 * [`cancel_task`](#cancel_task)
 * [`cancel_task_group`](#cancel_task_group)
@@ -1407,7 +1407,7 @@ column of each to the given value.  Returns a `message_id` and
 `azure_queue_update`.
 
 
-### azure_queue_put
+### azure_queue_put_extra
 
 * *Mode*: write
 * *Arguments*:
@@ -1415,11 +1415,14 @@ column of each to the given value.  Returns a `message_id` and
   * `message_text text`
   * `visible timestamp`
   * `expires timestamp`
+  * `task_queue_id text`
+  * `priority int`
 * *Returns*: `void`
-* *Last defined on version*: 3
+* *Last defined on version*: 90
 
 Put the given message into the given queue.  The message will not be visible until
 after the visible timestamp, and will disappear after the expires timestamp.
+Additionally store the given task_queue_id and priority.
 
 
 ### azure_queue_update
@@ -2220,6 +2223,10 @@ client side.
 
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
+
+### deprecated methods
+
+* `azure_queue_put(queue_name text, message_text text, visible timestamp, expires timestamp)` (compatibility guaranteed until v57.0.0)
 
 ## secrets
 

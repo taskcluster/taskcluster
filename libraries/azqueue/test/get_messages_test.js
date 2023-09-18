@@ -123,4 +123,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     // note that *crucially* this does not include any duplicates
     assert.deepEqual(got.sort(), _.range(150).map(i => `foo-${i}`).sort());
   });
+
+  test('store extra columns (see 0090)', async function () {
+    const queue = new AZQueue({ db: helper.db });
+
+    const obj = { ok: 'ok' };
+    const base64EncodedObject = Buffer.from(JSON.stringify(obj)).toString('base64');
+
+    await queue.putMessage('foo', base64EncodedObject, { visibilityTimeout: 0, messageTTL: 100, taskQueueId: 'tq1',
+      priority: 9 });
+
+    // those columns are only used for future migration
+    // so they are currently not returned with any of the existing read methods
+    const { rows } = await helper.db._withClient('read', async client => {
+      return client.query('select * from azure_queue_messages');
+    });
+
+    assert.equal(rows[0].message_text, base64EncodedObject);
+    assert.equal(rows[0].task_queue_id, 'tq1');
+    assert.equal(rows[0].priority, 9);
+  });
 });
