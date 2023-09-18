@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v55.3.0
+
+### GENERAL
+
+▶ [patch] [#2940](https://github.com/taskcluster/taskcluster/issues/2940)
+Prepares azure_queue_messages table for upcoming migration by adding `task_queue_id`, `priority` columns.
+
+▶ [patch]
+D2G now takes advantage of Generic Worker Indexed Artifacts, introduced in Generic Worker 51.0.0. D2G translates Indexed Docker Images into Generic Worker mounted Indexed Artifacts. Previously, D2G generated commands to query the taskcluster Index and fetch the docker image.
+With this improvement, docker images are now cached on workers, docker image dependencies between tasks are declarative (and thus inspectable), and generated Generic Worker task payloads are simpler and easier to understand.
+
+### USERS
+
+▶ [minor] [#6553](https://github.com/taskcluster/taskcluster/issues/6553)
+Generic Worker File Mounts now include an optional `format` field to specify the compression format for the content. Generic Worker will decompress the retrieved content using the format specified before writing to disk. To avoid decompression, do not include the format field.
+
+Allowed compression formats are: `bz2`, `gz`, `lz4`, `xz`, and `zst`.
+
+This change additionally adds support for the `tar.lz4` format for Writable Directory Caches and Read Only Directories.
+
 ## v55.2.1
 
 ### GENERAL
