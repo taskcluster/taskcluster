@@ -21,8 +21,12 @@ func (idi *IndexedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
 	return []genericworker.FileMount{
 		{
 			Content: json.RawMessage(raw),
-			File:    "dockerimage",
-			Format:  fileExtension(idi.Path),
+			// Instead of trying to preserve the artifact filename, we use a
+			// hardcoded name to prevent filename collisions.
+			// This _may_ cause issues once concurrent tasks are supported
+			// on generic worker (see https://bugzil.la/1609102).
+			File:   "dockerimage",
+			Format: fileExtension(idi.Path),
 		},
 	}, nil
 }
