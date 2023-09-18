@@ -21,12 +21,14 @@ class AZQueue {
     // NOOP
   }
 
-  async putMessage(name, text, { visibilityTimeout, messageTTL }) {
-    await this.db.fns.azure_queue_put(
+  async putMessage(name, text, { visibilityTimeout, messageTTL, taskQueueId, priority }) {
+    await this.db.fns.azure_queue_put_extra(
       name,
       text,
       taskcluster.fromNow(`${visibilityTimeout} seconds`),
       taskcluster.fromNow(`${messageTTL} seconds`),
+      taskQueueId,
+      priority,
     );
   }
 
