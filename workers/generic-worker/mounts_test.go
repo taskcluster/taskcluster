@@ -212,7 +212,7 @@ type MountsLoggingTestCase struct {
 	TaskRunResolutionState string
 	TaskRunReasonResolved  string
 	PerTaskRunLogExcerpts  [][]string
-	PerTaskRunLogContains  []string
+	PerTaskExtraTesting    func(*testing.T)
 	Payload                *GenericWorkerPayload
 }
 
@@ -229,11 +229,7 @@ func LogTest(m *MountsLoggingTestCase) {
 	}
 	payload.Mounts = toMountArray(m.Test, &m.Mounts)
 
-	if len(m.PerTaskRunLogContains) > 0 && len(m.PerTaskRunLogExcerpts) != len(m.PerTaskRunLogContains) {
-		m.Test.Fatalf("If you specify PerTaskRunLogContains it must be the same length as PerTaskRunLogExcerpts")
-	}
-
-	for i, run := range m.PerTaskRunLogExcerpts {
+	for _, run := range m.PerTaskRunLogExcerpts {
 
 		td := testTask(m.Test)
 		td.Scopes = m.Scopes
@@ -241,9 +237,6 @@ func LogTest(m *MountsLoggingTestCase) {
 		_ = submitAndAssert(m.Test, td, *payload, m.TaskRunResolutionState, m.TaskRunReasonResolved)
 
 		logtext := LogText(m.Test)
-		if len(m.PerTaskRunLogContains) > 0 && !strings.Contains(logtext, m.PerTaskRunLogContains[i]) {
-			m.Test.Fatalf("Was expecting log file to contain %s, but it instead contains:\n%v", m.PerTaskRunLogExcerpts[i], logtext)
-		}
 		allLogLines := strings.Split(logtext, "\n")
 		mountsLogLines := make([]string, 0, len(run))
 		for _, logLine := range allLogLines {
@@ -268,6 +261,11 @@ func LogTest(m *MountsLoggingTestCase) {
 				m.Test.Fatalf("Was expecting log line to match pattern '%v', but it does not:\n%v\n\n%s", run[i], mountsLogLines[i], logtext)
 			}
 		}
+
+		if m.PerTaskExtraTesting != nil {
+			m.PerTaskExtraTesting(m.Test)
+		}
+
 		err := os.RemoveAll(taskContext.TaskDir)
 		if err != nil {
 			m.Test.Fatalf("Could not delete task directory: %v", err)
@@ -482,14 +480,16 @@ func TestFileMountWithCompression(t *testing.T) {
 				// Required text from second task when download is already cached
 				pass2,
 			},
-			PerTaskRunLogContains: []string{
-				// ensure that file was decompressed and that we can read it
-				"testing file mounts with compression!",
-				"testing file mounts with compression!",
-			},
 			Payload: &GenericWorkerPayload{
 				Command:    printFileContents(t.Name()),
 				MaxRunTime: 10,
+			},
+			PerTaskExtraTesting: func(t *testing.T) {
+				t.Helper()
+				expectedText := "testing file mounts with compression!"
+				if logtext := LogText(t); !strings.Contains(logtext, expectedText) {
+					t.Fatalf("Was expecting log to contain text %q but it didn't: %v", expectedText, logtext)
+				}
 			},
 		},
 	)
