@@ -5,7 +5,7 @@ let assert = require('assert');
 // let crypto = require('crypto');
 let slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
-// let AZQueue = require('taskcluster-lib-azqueue');
+
 // let { splitTaskQueueId } = require('./utils');
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
@@ -53,9 +53,6 @@ assert(_.xor(PRIORITIES, _.keys(PRIORITY_TO_CONSTANT)).length === 0);
  */
 class QueueService {
   /**
-   * Create convenient azure queue storage wrapper, for managing how we
-   * interface azure queue.
-   *
    * options:
    * {
    *   db:                   // tc-lib-postgres Database
@@ -108,36 +105,21 @@ class QueueService {
   // }
 
   /** Enqueue message to become visible when claim has expired */
-  async putClaimMessage(taskId, runId, takenUntil) {
+  async putClaimTask(taskId, runId, takenUntil) {
     assert(taskId, 'taskId must be given');
     assert(typeof runId === 'number', 'runId must be a number');
     assert(takenUntil instanceof Date, 'takenUntil must be a date');
     assert(isFinite(takenUntil), 'takenUntil must be a valid date');
 
-    // TODO
-    // this.db.fns.put_claim_message() ...
-
-    // return this._putMessage(this.claimQueue, {
-    //   taskId: taskId,
-    //   runId: runId,
-    //   takenUntil: takenUntil.toJSON(),
-    // }, {
-    //   ttl: 7 * 24 * 60 * 60,
-    //   visibility: secondsTo(takenUntil),
-    // });
-    // _putMessage(queue, message, { visibility, ttl, taskQueueId, priority }) {
-    //   let text = Buffer.from(JSON.stringify(message)).toString('base64');
-    //   return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
-    //     visibilityTimeout: visibility,
-    //     messageTTL: ttl,
-    //     taskQueueId,
-    //     priority,
-    //   }));
-    // }
+    await this.db.fns.queue_claimed_task_put(
+      taskId,
+      runId,
+      takenUntil.toJSON(),
+    );
   }
 
   /** Enqueue message ensure the dependency resolver handles the resolution */
-  async putResolvedMessage(taskId, taskGroupId, schedulerId, resolution) {
+  async putResolvedTask(taskId, taskGroupId, schedulerId, resolution) {
     assert(taskId, 'taskId must be given');
     assert(taskGroupId, 'taskGroupId must be given');
     assert(schedulerId, 'schedulerId must be given');
@@ -145,24 +127,12 @@ class QueueService {
            resolution === 'exception',
     'resolution must be completed, failed or exception');
 
-    // TODO
-    // this.db.fns.put_resolved_message() ...
-
-    // return this._putMessage(this.resolvedQueue, {
-    //   taskId, taskGroupId, schedulerId, resolution,
-    // }, {
-    //   ttl: 7 * 24 * 60 * 60,
-    //   visibility: 0,
-    // });
-    // _putMessage(queue, message, { visibility, ttl, taskQueueId, priority }) {
-    //   let text = Buffer.from(JSON.stringify(message)).toString('base64');
-    //   return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
-    //     visibilityTimeout: visibility,
-    //     messageTTL: ttl,
-    //     taskQueueId,
-    //     priority,
-    //   }));
-    // }
+    await this.db.fns.queue_resolved_task_put(
+      taskGroupId,
+      taskId,
+      schedulerId,
+      resolution,
+    );
   }
 
   /** Enqueue message to become visible when deadline has expired */

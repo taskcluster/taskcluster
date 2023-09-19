@@ -104,12 +104,14 @@
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
    * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
    * [`queue_artifact_present`](#queue_artifact_present)
+   * [`queue_claimed_task_put`](#queue_claimed_task_put)
    * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
    * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
    * [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
    * [`queue_pending_tasks_get`](#queue_pending_tasks_get)
    * [`queue_pending_tasks_put`](#queue_pending_tasks_put)
    * [`queue_pending_tasks_release`](#queue_pending_tasks_release)
+   * [`queue_resolved_task_put`](#queue_resolved_task_put)
    * [`queue_task_deadline_put`](#queue_task_deadline_put)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -1318,12 +1320,14 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
 * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
 * [`queue_artifact_present`](#queue_artifact_present)
+* [`queue_claimed_task_put`](#queue_claimed_task_put)
 * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
 * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
 * [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
 * [`queue_pending_tasks_get`](#queue_pending_tasks_get)
 * [`queue_pending_tasks_put`](#queue_pending_tasks_put)
 * [`queue_pending_tasks_release`](#queue_pending_tasks_release)
+* [`queue_resolved_task_put`](#queue_resolved_task_put)
 * [`queue_task_deadline_put`](#queue_task_deadline_put)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -1925,6 +1929,19 @@ Worker will keep a history of all quarantine details.
 Mark the given queue artifact as present, returning the updated artifact.  Returns
 nothing if no such artifact exists.
 
+### queue_claimed_task_put
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `run_id_in integer`
+  * `taken_until_in timestamptz`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Track when task was claimed and when it should be reclaimed
+
+
 ### queue_pending_tasks_count
 
 * *Mode*: read
@@ -2004,6 +2021,20 @@ When record already exists, we update the priority, run_id, hint_id and expirati
 * *Last defined on version*: 91
 
 Release task back to the queue to be picked up by another worker.
+
+
+### queue_resolved_task_put
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `task_id_in text`
+  * `scheduler_id_in text`
+  * `resolution_in text`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Track when task was resolved
 
 
 ### queue_task_deadline_put

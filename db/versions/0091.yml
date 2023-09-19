@@ -149,7 +149,7 @@ methods:
         );
       end
 
-
+  # deadline queue
   queue_task_deadline_put:
     description: |
       Track task deadline
@@ -174,5 +174,56 @@ methods:
           now(),
           deadline_in,
           visible_at
+        );
+      end
+
+  # claim queue
+  queue_claimed_task_put:
+    description: |
+      Track when task was claimed and when it should be reclaimed
+    mode: write
+    serviceName: queue
+    args: task_id_in text, run_id_in integer, taken_until_in timestamptz
+    returns: void
+    body: |-
+      begin
+        insert into queue_claimed_tasks (
+          task_id,
+          run_id,
+          claimed_at,
+          taken_until
+        )
+        values (
+          task_id_in,
+          run_id_in,
+          now(),
+          taken_until_in
+        );
+      end
+
+
+  # resolved queue
+  queue_resolved_task_put:
+    description: |
+      Track when task was resolved
+    mode: write
+    serviceName: queue
+    args: task_group_id_in text, task_id_in text, scheduler_id_in text, resolution_in text
+    returns: void
+    body: |-
+      begin
+        insert into queue_resolved_tasks (
+          task_group_id,
+          task_id,
+          scheduler_id,
+          resolution,
+          resolved_at
+        )
+        values (
+          task_group_id_in,
+          task_id_in,
+          scheduler_id_in,
+          resolution_in,
+          now()
         );
       end

@@ -83,12 +83,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }, 100, 250);
   });
 
-  test('putClaimMessage, pollClaimQueue', async () => {
+  test('putClaimTask, pollClaimQueue', async () => {
     const taskId = slugid.v4();
     const takenUntil = new Date(new Date().getTime() + 2 * 1000);
     debug('Putting message with taskId: %s', taskId);
     // Put message
-    await queueService.putClaimMessage(taskId, 0, takenUntil);
+    await queueService.putClaimTask(taskId, 0, takenUntil);
 
     // Poll for message
     return testing.poll(async () => {
@@ -109,13 +109,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }, 100, 250);
   });
 
-  test('putResolvedMessage, pollResolvedQueue', async () => {
+  test('putResolvedTask, pollResolvedQueue', async () => {
     const taskId = slugid.v4();
     const taskGroupId = slugid.v4();
     const schedulerId = slugid.v4();
     debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
     // Put message
-    await queueService.putResolvedMessage(taskId, taskGroupId, schedulerId, 'completed');
+    await queueService.putResolvedTask(taskId, taskGroupId, schedulerId, 'completed');
 
     // Poll for message
     return testing.poll(async () => {
