@@ -106,6 +106,7 @@
    * [`queue_artifact_present`](#queue_artifact_present)
    * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
    * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
+   * [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
    * [`queue_pending_tasks_get`](#queue_pending_tasks_get)
    * [`queue_pending_tasks_put`](#queue_pending_tasks_put)
    * [`queue_pending_tasks_release`](#queue_pending_tasks_release)
@@ -1319,6 +1320,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`queue_artifact_present`](#queue_artifact_present)
 * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
 * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
+* [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
 * [`queue_pending_tasks_get`](#queue_pending_tasks_get)
 * [`queue_pending_tasks_put`](#queue_pending_tasks_put)
 * [`queue_pending_tasks_release`](#queue_pending_tasks_release)
@@ -1944,6 +1946,16 @@ Count the number of pending messages for given task queue.
 * *Last defined on version*: 91
 
 Delete pending task from the queue.
+
+
+### queue_pending_tasks_delete_expired
+
+* *Mode*: write
+* *Arguments*:
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete all expired tasks.
 
 
 ### queue_pending_tasks_get

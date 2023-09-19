@@ -24,17 +24,17 @@ let validateTask = task => {
   assert(task.deadline instanceof Date, 'Expected task.deadline');
 };
 
-/** Priority to constant for use in queue name (should be a string) */
+/** Priority to constant number */
 const PRIORITY_TO_CONSTANT = {
-  highest: '7',
-  'very-high': '6',
-  high: '5',
-  medium: '4',
-  low: '3',
-  'very-low': '2',
-  lowest: '1',
+  highest: 7,
+  'very-high': 6,
+  high: 5,
+  medium: 4,
+  low: 3,
+  'very-low': 2,
+  lowest: 1,
 };
-_.forIn(PRIORITY_TO_CONSTANT, v => assert(typeof v === 'string'));
+_.forIn(PRIORITY_TO_CONSTANT, v => assert(typeof v === 'number'));
 
 /** Priority in order of priority from high to low */
 const PRIORITIES = [
@@ -73,53 +73,39 @@ class QueueService {
 
     this.monitor = options.monitor;
     this.db = options.db;
-
-    // this.client = new AZQueue({ db: options.db });
-    // just a proxy for now
-    this.client = new Proxy({}, {
-      get: (target, prop) => {
-        return (...args) => {
-          console.log('AZQueue.%s(%j)', prop, args);
-        };
-      },
-      apply: (target, thisArg, args) => {
-        console.log('AZQueue(%j)', args);
-      },
-    });
-
     this.deadlineDelay = options.deadlineDelay;
   }
 
   terminate() {
-    // ?
+    // nop ?
   }
 
-  async _getMessages(queue, { visibility, count }) {
-    let messages = await this.monitor.timer('getMessages', this.client.getMessages(queue, {
-      visibilityTimeout: visibility,
-      numberOfMessages: count,
-    }));
-    return messages.map(msg => {
-      return {
-        payload: JSON.parse(Buffer.from(msg.messageText, 'base64')),
-        remove: this.client.deleteMessage.bind(
-          this.client,
-          queue,
-          msg.messageId,
-          msg.popReceipt,
-        ),
-        release: this.client.updateMessage.bind(
-          this.client,
-          queue,
-          msg.messageText,
-          msg.messageId,
-          msg.popReceipt, {
-            visibilityTimeout: 0,
-          },
-        ),
-      };
-    });
-  }
+  // async _getMessages(queue, { visibility, count }) {
+  //   let messages = await this.monitor.timer('getMessages', this.client.getMessages(queue, {
+  //     visibilityTimeout: visibility,
+  //     numberOfMessages: count,
+  //   }));
+  //   return messages.map(msg => {
+  //     return {
+  //       payload: JSON.parse(Buffer.from(msg.messageText, 'base64')),
+  //       remove: this.client.deleteMessage.bind(
+  //         this.client,
+  //         queue,
+  //         msg.messageId,
+  //         msg.popReceipt,
+  //       ),
+  //       release: this.client.updateMessage.bind(
+  //         this.client,
+  //         queue,
+  //         msg.messageText,
+  //         msg.messageId,
+  //         msg.popReceipt, {
+  //           visibilityTimeout: 0,
+  //         },
+  //       ),
+  //     };
+  //   });
+  // }
 
   /** Enqueue message to become visible when claim has expired */
   async putClaimMessage(taskId, runId, takenUntil) {
@@ -323,8 +309,8 @@ class QueueService {
    * Remove expired messages
    */
   async deleteExpiredMessages() {
-    // TODO: remove for all 4 new tables
-    await this.client.deleteExpiredMessages();
+    // TODO: remove for all 4 new tables or only pending tasks?
+    await this.db.fns.queue_pending_tasks_delete_expired();
   }
 
   /**
@@ -357,7 +343,7 @@ class QueueService {
 
     await this.db.fns.queue_pending_tasks_put(
       task.taskQueueId,
-      parseInt(PRIORITY_TO_CONSTANT[task.priority] || '0', 10),
+      PRIORITY_TO_CONSTANT[task.priority] || 0,
       task.taskId,
       runId,
       slugid.v4(),

@@ -6780,6 +6780,15 @@
           "returns": "void",
           "serviceName": "queue"
         },
+        "queue_pending_tasks_delete_expired": {
+          "args": "",
+          "body": "begin\n  delete from queue_pending_tasks\n    where expires <= now();\nend",
+          "deprecated": false,
+          "description": "Delete all expired tasks.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
         "queue_pending_tasks_get": {
           "args": "task_queue_id_in text, count integer",
           "body": "begin\n  return query\n    with updated as (\n      update queue_pending_tasks qpt\n      set pop_receipt = public.gen_random_uuid()\n      where\n        qpt.task_id in (\n          select qpt2.task_id\n          from queue_pending_tasks qpt2\n          where qpt2.task_queue_id = task_queue_id_in\n            and qpt2.expires > now()\n            and qpt2.pop_receipt is null\n          order by qpt2.priority desc, qpt2.inserted_at asc\n          for update skip locked\n          limit count\n      )\n      returning qpt.priority, qpt.inserted_at, qpt.task_id, qpt.run_id, qpt.hint_id, qpt.pop_receipt\n    )\n    select u.task_id, u.run_id, u.hint_id, u.pop_receipt\n    from updated as u\n    order by u.priority desc, u.inserted_at asc;\nend",

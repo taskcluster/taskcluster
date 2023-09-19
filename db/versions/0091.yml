@@ -117,6 +117,20 @@ methods:
           and pop_receipt = pop_receipt_in;
       end
 
+  queue_pending_tasks_delete_expired:
+    description: |
+      Delete all expired tasks.
+    mode: write
+    serviceName: queue
+    args: ''
+    returns: void
+    body: |-
+      begin
+        delete from queue_pending_tasks
+          where expires <= now();
+      end
+
+
 
   # count pending messages per task queue
   queue_pending_tasks_count:
