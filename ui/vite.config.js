@@ -1,6 +1,7 @@
 import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import fs from 'fs';
 // import react from "@vitejs/plugin-react-swc";
 // import mdx from '@mdx-js/rollup'
 import Markdown from "vite-plugin-react-markdown";
@@ -58,6 +59,7 @@ export default ({ mode }) => {
 
   return defineConfig({
     plugins: [
+      reactVirtualized(),
       gql(),
       viteTsconfigPaths(),
       Markdown(),
@@ -154,3 +156,22 @@ export default ({ mode }) => {
     },
   });
 };
+
+// hack area
+const WRONG_CODE = 'import { bpfrpt_proptype_WindowScroller } from "../WindowScroller.js";';
+export function reactVirtualized() {
+  return {
+    name: "my:react-virtualized",
+    configResolved() {
+      const file = require
+        .resolve("react-virtualized")
+        .replace(
+          path.join("dist", "commonjs", "index.js"),
+          path.join("dist", "es", "WindowScroller", "utils", "onScroll.js"),
+        );
+      const code = fs.readFileSync(file, "utf-8");
+      const modified = code.replace(WRONG_CODE, "");
+      fs.writeFileSync(file, modified);
+    },
+  }
+}
