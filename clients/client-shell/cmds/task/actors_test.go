@@ -96,14 +96,3 @@ func (suite *FakeServerSuite) TestRunRerunCommandNoForce() {
 	// task
 	assert.Error(suite.T(), runRerun(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 }
-
-func (suite *FakeServerSuite) TestRunCompleteCommand() {
-	// set up to run a command and capture output
-	buf, cmd := setUpCommand()
-
-	// run the command
-	args := []string{fakeTaskID}
-	assert.NoError(suite.T(), runComplete(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
-
-	suite.Equal("completed 'completed'\n", buf.String())
-}

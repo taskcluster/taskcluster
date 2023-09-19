@@ -18,7 +18,7 @@ type (
 	TaskRun struct {
 		TaskID              string                         `json:"taskId"`
 		RunID               uint                           `json:"runId"`
-		TaskClaimResponse   tcqueue.TaskClaimResponse      `json:"-"`
+		TaskClaimResponse   tcqueue.TaskClaim              `json:"-"`
 		TaskReclaimResponse tcqueue.TaskReclaimResponse    `json:"-"`
 		Definition          tcqueue.TaskDefinitionResponse `json:"-"`
 		Payload             GenericWorkerPayload           `json:"-"`

@@ -52,9 +52,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    let r1 = await helper.queue.claimTask(taskId, 0, {
+    let { tasks: [r1] } = await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertNoPulseMessage('task-completed');
 
@@ -96,9 +97,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    let r1 = await helper.queue.claimTask(taskId, 0, {
+    let { tasks: [r1] } = await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertNoPulseMessage('task-completed');
 
@@ -139,9 +141,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    let r1 = await helper.queue.claimTask(taskId, 0, {
+    let { tasks: [r1] } = await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
 
     debug('### Reporting task exception');
@@ -198,9 +201,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    let r1 = await helper.queue.claimTask(taskId, 0, {
+    let { tasks: [r1] } = await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
 
     debug('### Reporting task exception');
@@ -249,9 +253,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    let r1 = await helper.queue.claimTask(taskId, 0, {
+    let { tasks: [r1] } = await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
 
     debug('### Reporting task exception');
@@ -300,9 +305,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
 
     debug('### Reporting task exception (malformed-payload)');
@@ -342,9 +348,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running');
     helper.clearPulseMessages();
@@ -375,7 +382,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     helper.scopes();
-    await helper.queue.claimTask(taskId, 1, {
+    await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
@@ -400,9 +407,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
 
     debug('### Reporting task completed');
@@ -440,9 +448,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running');
     helper.clearPulseMessages();
@@ -466,9 +475,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     helper.scopes();
-    await helper.queue.claimTask(taskId, 1, {
+    await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running');
 

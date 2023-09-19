@@ -149,7 +149,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
   });
 
-  test('createTask, claimTask, cancelTask (idempotent)', async () => {
+  test('createTask, claimWork, cancelTask (idempotent)', async () => {
     const taskId = slugid.v4();
 
     debug('### Create task');
@@ -161,9 +161,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-pending');
 
     debug('### Claim task');
-    const r2 = await helper.queue.claimTask(taskId, 0, {
+    const { tasks: [r2] } = await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     assume(r2.status.state).equals('running');
     helper.assertPulseMessage('task-running');

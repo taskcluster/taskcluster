@@ -124,9 +124,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-pending');
 
     debug('### Claim task');
-    await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimWork(task.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running');
 
@@ -160,9 +161,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-pending');
 
     debug('### Claim task');
-    await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimWork(task.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running');
 

@@ -102,9 +102,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     }
 
     debug('### Claim and resolve taskA');
-    await helper.queue.claimTask(taskIdA, 0, {
+    await helper.queue.claimWork(taskA.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
 
     helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
@@ -144,9 +145,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     monitor.manager.reset();
 
     debug('### Claim and resolve taskB');
-    await helper.queue.claimTask(taskIdB, 0, {
+    await helper.queue.claimWork(taskB.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdB);
     await helper.queue.reportCompleted(taskIdB, 0);
@@ -224,9 +226,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(d2.tasks.map(t => t.status.taskId)).contains(taskIdE);
 
     debug('### Claim and resolve taskA');
-    await helper.queue.claimTask(taskIdA, 0, {
+    await helper.queue.claimWork(taskA.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
     await helper.queue.reportCompleted(taskIdA, 0);
@@ -301,15 +304,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r4.status.state).equals('unscheduled');
 
     debug('### Claim taskA and taskB');
-    await helper.queue.claimTask(taskIdA, 0, {
+    await helper.queue.claimWork(taskA.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
     helper.clearPulseMessages();
-    await helper.queue.claimTask(taskIdB, 0, {
+    await helper.queue.claimWork(taskB.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdB);
     helper.clearPulseMessages();
@@ -358,9 +363,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### claimTask');
-    await helper.queue.claimTask(taskIdA, 0, {
+    await helper.queue.claimWork(taskA.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
   });
 
@@ -386,9 +392,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### claimTask and resolve taskA');
-    await helper.queue.claimTask(taskIdA, 0, {
+    await helper.queue.claimWork(taskA.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
     helper.clearPulseMessages();
@@ -449,9 +456,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r2.status.state).equals('unscheduled');
 
     debug('### Claim and resolve taskA');
-    await helper.queue.claimTask(taskIdA, 0, {
+    await helper.queue.claimWork(taskA.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     await helper.queue.reportFailed(taskIdA, 0);
 
@@ -527,9 +535,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.clearPulseMessages();
 
     debug('### Claim and resolve taskA');
-    await helper.queue.claimTask(taskIdA, 0, {
+    await helper.queue.claimWork(taskA.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     // post to claim queue
     // update Tasks
@@ -599,13 +608,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   test('a task on which lots of other tasks depend is resolved', async () => {
     const reqTaskId = slugid.v4();
-    const depTaskIds = _.range(200).map(() => slugid.v4());
+    const depTaskIds = new Array(200).fill().map(() => slugid.v4());
+    const reqTask = taskDef();
 
-    const t = await helper.queue.createTask(reqTaskId, taskDef());
+    const t = await helper.queue.createTask(reqTaskId, reqTask);
     assert.equal(t.status.state, 'pending');
     await Promise.all(
       depTaskIds.map(
-        async depTaskId => {
+        async (depTaskId) => {
           const t = await helper.queue.createTask(depTaskId, { ...taskDef(), dependencies: [reqTaskId] });
           assert.equal(t.status.state, 'unscheduled');
         }));
@@ -614,9 +624,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.startPollingService('dependency-resolver');
 
     debug('### Claim reqTask');
-    await helper.queue.claimTask(reqTaskId, 0, {
+    await helper.queue.claimWork(reqTask.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running', m => m.payload.status.taskId === reqTaskId);
     helper.clearPulseMessages();

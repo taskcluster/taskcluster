@@ -53,9 +53,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   const claimTask = async () => {
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running');
   };

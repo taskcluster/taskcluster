@@ -44,9 +44,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.status.runs.length).equals(1);
 
     debug('### Claim task');
-    await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimWork(task.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
 
     debug('### Report task completed');
@@ -77,9 +78,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.status.runs.length).equals(1);
 
     debug('### Claim task');
-    await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimWork(task.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
 
     debug('### Report task completed');

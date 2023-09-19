@@ -2489,30 +2489,6 @@ module.exports = {
             "runId"
           ],
           "category": "Worker Interface",
-          "description": "claim a task - never documented",
-          "input": "v1/task-claim-request.json#",
-          "method": "post",
-          "name": "claimTask",
-          "output": "v1/task-claim-response.json#",
-          "query": [
-          ],
-          "route": "/task/<taskId>/runs/<runId>/claim",
-          "scopes": {
-            "AllOf": [
-              "queue:claim-task:<provisionerId>/<workerType>",
-              "queue:worker-id:<workerGroup>/<workerId>"
-            ]
-          },
-          "stability": "deprecated",
-          "title": "Claim Task",
-          "type": "function"
-        },
-        {
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "category": "Worker Interface",
           "description": "Refresh the claim for a specific `runId` for given `taskId`. This updates\nthe `takenUntil` property and returns a new set of temporary credentials\nfor performing requests on behalf of the task. These credentials should\nbe used in-place of the credentials returned by `claimWork`.\n\nThe `reclaimTask` requests serves to:\n * Postpone `takenUntil` preventing the queue from resolving\n   `claim-expired`,\n * Refresh temporary credentials used for processing the task, and\n * Abort execution if the task/run have been resolved.\n\nIf the `takenUntil` timestamp is exceeded the queue will resolve the run\nas _exception_ with reason `claim-expired`, and proceeded to retry to the\ntask. This ensures that tasks are retried, even if workers disappear\nwithout warning.\n\nIf the task is resolved, this end-point will return `409` reporting\n`RequestConflict`. This typically happens if the task have been canceled\nor the `task.deadline` have been exceeded. If reclaiming fails, workers\nshould abort the task and forget about the given `runId`. There is no\nneed to resolve the run or upload artifacts.",
           "method": "post",
           "name": "reclaimTask",

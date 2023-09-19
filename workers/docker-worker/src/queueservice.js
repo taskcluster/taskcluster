@@ -72,17 +72,6 @@ class TaskQueue {
   }
 
   /**
-   * Call the queue service's claimTask endpoint
-   */
-  async claimTask(taskId, runId) {
-    const queue = this.queueClient();
-    return await queue.claimTask(taskId, runId, {
-      workerId: this.runtime.workerId,
-      workerGroup: this.runtime.workerGroup,
-    });
-  }
-
-  /**
    * Create a new Queue client object.  This is done on-demand so that it uses
    * the most up-to-date credentials.
    */

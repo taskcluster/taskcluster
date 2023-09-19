@@ -356,17 +356,6 @@ class Queue(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["claimWork"], *args, **kwargs)
 
-    async def claimTask(self, *args, **kwargs):
-        """
-        Claim Task
-
-        claim a task - never documented
-
-        This method is ``deprecated``
-        """
-
-        return await self._makeApiCall(self.funcinfo["claimTask"], *args, **kwargs)
-
     async def reclaimTask(self, *args, **kwargs):
         """
         Reclaim task
@@ -917,15 +906,6 @@ class Queue(AsyncBaseClient):
             'output': 'v1/cancel-task-group-response.json#',
             'route': '/task-group/<taskGroupId>/cancel',
             'stability': 'experimental',
-        },
-        "claimTask": {
-            'args': ['taskId', 'runId'],
-            'input': 'v1/task-claim-request.json#',
-            'method': 'post',
-            'name': 'claimTask',
-            'output': 'v1/task-claim-response.json#',
-            'route': '/task/<taskId>/runs/<runId>/claim',
-            'stability': 'deprecated',
         },
         "claimWork": {
             'args': ['taskQueueId'],

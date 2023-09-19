@@ -3507,93 +3507,6 @@
   },
   {
     "content": {
-      "$id": "/schemas/queue/v1/task-claim-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Response to a successful task claim\n",
-      "properties": {
-        "credentials": {
-          "$ref": "task-credentials.json#"
-        },
-        "runId": {
-          "description": "`run-id` assigned to this run of the task\n",
-          "maximum": 1000,
-          "minimum": 0,
-          "type": "integer"
-        },
-        "status": {
-          "$ref": "task-status.json#"
-        },
-        "takenUntil": {
-          "description": "Time at which the run expires and is resolved as `exception`,\nwith reason `claim-expired` if the run haven't been reclaimed.\n",
-          "format": "date-time",
-          "type": "string"
-        },
-        "task": {
-          "$ref": "task.json#"
-        },
-        "workerGroup": {
-          "description": "Identifier for the worker-group within which this run started.\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "type": "string"
-        },
-        "workerId": {
-          "description": "Identifier for the worker executing this run.\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "type": "string"
-        }
-      },
-      "required": [
-        "status",
-        "runId",
-        "workerGroup",
-        "workerId",
-        "takenUntil",
-        "task",
-        "credentials"
-      ],
-      "title": "Task Claim Response",
-      "type": "object"
-    },
-    "filename": "schemas/queue/v1/task-claim-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/queue/v1/task-claim-request.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Request to claim (or reclaim) a task\n",
-      "properties": {
-        "workerGroup": {
-          "description": "Identifier for group that worker claiming the task is a part of.\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "type": "string"
-        },
-        "workerId": {
-          "description": "Identifier for worker within the given workerGroup\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "type": "string"
-        }
-      },
-      "required": [
-        "workerGroup",
-        "workerId"
-      ],
-      "title": "Task Claim Request",
-      "type": "object"
-    },
-    "filename": "schemas/queue/v1/task-claim-request.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/queue/v1/quarantine-worker-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -16342,30 +16255,6 @@
           },
           "stability": "stable",
           "title": "Claim Work",
-          "type": "function"
-        },
-        {
-          "args": [
-            "taskId",
-            "runId"
-          ],
-          "category": "Worker Interface",
-          "description": "claim a task - never documented",
-          "input": "v1/task-claim-request.json#",
-          "method": "post",
-          "name": "claimTask",
-          "output": "v1/task-claim-response.json#",
-          "query": [
-          ],
-          "route": "/task/<taskId>/runs/<runId>/claim",
-          "scopes": {
-            "AllOf": [
-              "queue:claim-task:<provisionerId>/<workerType>",
-              "queue:worker-id:<workerGroup>/<workerId>"
-            ]
-          },
-          "stability": "deprecated",
-          "title": "Claim Task",
           "type": "function"
         },
         {

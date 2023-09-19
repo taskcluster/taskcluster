@@ -112,9 +112,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
       debug('### Claiming task');
       // First runId is always 0, so we should be able to claim it here
-      const { credentials } = await helper.queue.claimTask(taskId, 0, {
+      const { tasks: [{ credentials }] } = await helper.queue.claimWork(taskDef.taskQueueId, {
         workerGroup: 'my-worker-group',
         workerId: 'my-worker',
+        tasks: 1,
       });
 
       taskCredentials = credentials;
@@ -1094,9 +1095,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
       debug('### Claiming task');
       // First runId is always 0, so we should be able to claim it here
-      await helper.queue.claimTask(taskId, 0, {
+      await helper.queue.claimWork(taskDef.taskQueueId, {
         workerGroup: 'my-worker-group',
         workerId: 'my-worker',
+        tasks: 1,
       });
 
       debug('### Send post artifact request');

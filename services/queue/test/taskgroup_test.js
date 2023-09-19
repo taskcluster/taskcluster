@@ -55,18 +55,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.status).deep.equals(r2.status);
 
     debug('### Claim and resolve taskA');
-    await helper.queue.claimTask(taskIdA, 0, {
+    await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdA);
     await helper.queue.reportCompleted(taskIdA, 0);
     helper.assertPulseMessage('task-completed', m => m.payload.status.taskId === taskIdA);
 
     debug('### Claim and resolve taskB');
-    await helper.queue.claimTask(taskIdB, 0, {
+    await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     helper.assertPulseMessage('task-running', m => m.payload.status.taskId === taskIdB);
     await helper.queue.reportCompleted(taskIdB, 0);

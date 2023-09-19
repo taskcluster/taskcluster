@@ -92,9 +92,10 @@ async function main() {
   });
 
   console.log(`Task ${taskId} created successfullly, claiming`);
-  const claim = await queue.claimTask(taskId, 0, {
+  const { tasks: [claim] } = await queue.claimWork('null-provisioner/docker-worker', {
     workerGroup: 'docker-worker',
     workerId: 'docker-worker',
+    tasks: 1,
   });
 
   scheduleReclaim(queue, claim);

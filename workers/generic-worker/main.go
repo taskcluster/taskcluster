@@ -574,7 +574,7 @@ func ClaimWork() *TaskRun {
 			Status:            claimed,
 			Definition:        taskResponse.Task,
 			Queue:             taskQueue,
-			TaskClaimResponse: tcqueue.TaskClaimResponse(taskResponse),
+			TaskClaimResponse: tcqueue.TaskClaim(taskResponse),
 			Artifacts:         map[string]artifacts.TaskArtifact{},
 			featureArtifacts:  map[string]string{},
 			LocalClaimTime:    localClaimTime,

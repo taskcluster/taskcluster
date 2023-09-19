@@ -557,23 +557,6 @@ func (queue *Queue) ClaimWork(taskQueueId string, payload *ClaimWorkRequest) (*C
 	return responseObject.(*ClaimWorkResponse), err
 }
 
-// Stability: *** DEPRECATED ***
-//
-// claim a task - never documented
-//
-// Required scopes:
-//
-//	All of:
-//	* queue:claim-task:<provisionerId>/<workerType>
-//	* queue:worker-id:<workerGroup>/<workerId>
-//
-// See #claimTask
-func (queue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, error) {
-	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/claim", new(TaskClaimResponse), nil)
-	return responseObject.(*TaskClaimResponse), err
-}
-
 // Refresh the claim for a specific `runId` for given `taskId`. This updates
 // the `takenUntil` property and returns a new set of temporary credentials
 // for performing requests on behalf of the task. These credentials should

@@ -593,25 +593,6 @@ impl Queue {
         (path, query)
     }
 
-    /// Claim Task
-    ///
-    /// claim a task - never documented
-    pub async fn claimTask(&self, taskId: &str, runId: &str, payload: &Value) -> Result<Value, Error> {
-        let method = "POST";
-        let (path, query) = Self::claimTask_details(taskId, runId);
-        let body = Some(payload);
-        let resp = self.client.request(method, &path, query, body).await?;
-        Ok(resp.json().await?)
-    }
-
-    /// Determine the HTTP request details for claimTask
-    fn claimTask_details<'a>(taskId: &'a str, runId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("task/{}/runs/{}/claim", urlencode(taskId), urlencode(runId));
-        let query = None;
-
-        (path, query)
-    }
-
     /// Reclaim task
     ///
     /// Refresh the claim for a specific `runId` for given `taskId`. This updates

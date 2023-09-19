@@ -39,12 +39,6 @@ var (
 		Short: "Cancel a task.",
 		RunE:  executeHelperE(runCancel),
 	}
-
-	runcompleteCmd = &cobra.Command{
-		Use:   "complete <taskId>",
-		Short: "Completes a task.",
-		RunE:  executeHelperE(runComplete),
-	}
 )
 
 var log = root.Logger
@@ -64,8 +58,6 @@ func init() {
 	runcancelCmd.Flags().BoolP("noop", "n", false, "Using this flag, will tell the command to not actually run, but prints out what it would do.")
 	runcancelCmd.Flags().BoolP("confirm", "c", false, "Prompts user with a confirmation (y/n) before performing any changes.")
 
-	runcompleteCmd.Flags().BoolP("noop", "n", false, "Using this flag, will tell the command to not actually run, but prints out what it would do.")
-	runcompleteCmd.Flags().BoolP("confirm", "c", false, "Prompts user with a confirmation (y/n) before performing any changes.")
 	// Commands that fetch information
 	Command.AddCommand(
 		// status
@@ -107,8 +99,6 @@ func init() {
 		retriggerCmd,
 		// rerun
 		rerunCmd,
-		// cancel
-		runcompleteCmd,
 	)
 
 	// Add the task subtree to the root.

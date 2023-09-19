@@ -39,9 +39,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-pending');
 
     debug('### Claim task (runId: 0)');
-    const r2 = await helper.queue.claimTask(taskId, 0, {
+    const { tasks: [r2] } = await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     debug(`claimed until ${r2.takenUntil}, ${new Date(r2.takenUntil) - new Date()}ms from now`);
     helper.assertPulseMessage('task-running');
@@ -68,9 +69,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r3.status.state).equals('pending');
 
     debug('### Claim task (runId: 1)');
-    const r4 = await helper.queue.claimTask(taskId, 1, {
+    const { tasks: [r4] } = await helper.queue.claimWork(taskDef.taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
+      tasks: 1,
     });
     assume(r4.status.retriesLeft).equals(0);
     debug(`claimed until ${r4.takenUntil}, ${new Date(r2.takenUntil) - new Date()}ms from now`);

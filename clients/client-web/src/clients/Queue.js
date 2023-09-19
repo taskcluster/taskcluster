@@ -25,7 +25,6 @@ export default class Queue extends Client {
     this.rerunTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"rerunTask","output":true,"query":[],"route":"/task/<taskId>/rerun","scopes":{"AnyOf":["queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>","queue:rerun-task-in-project:<projectId>",{"AllOf":["queue:rerun-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.cancelTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"cancelTask","output":true,"query":[],"route":"/task/<taskId>/cancel","scopes":{"AnyOf":["queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>","queue:cancel-task-in-project:<projectId>",{"AllOf":["queue:cancel-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.claimWork.entry = {"args":["taskQueueId"],"category":"Worker Interface","input":true,"method":"post","name":"claimWork","output":true,"query":[],"route":"/claim-work/<taskQueueId>","scopes":{"AllOf":["queue:claim-work:<taskQueueId>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.claimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"claimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/claim","scopes":{"AllOf":["queue:claim-task:<provisionerId>/<workerType>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"deprecated","type":"function"}; // eslint-disable-line
     this.reclaimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reclaimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/reclaim","scopes":"queue:reclaim-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.reportCompleted.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportCompleted","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/completed","scopes":"queue:resolve-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.reportFailed.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportFailed","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/failed","scopes":"queue:resolve-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -275,14 +274,6 @@ export default class Queue extends Client {
     this.validate(this.claimWork.entry, args);
 
     return this.request(this.claimWork.entry, args);
-  }
-  /* eslint-disable max-len */
-  // claim a task - never documented
-  /* eslint-enable max-len */
-  claimTask(...args) {
-    this.validate(this.claimTask.entry, args);
-
-    return this.request(this.claimTask.entry, args);
   }
   /* eslint-disable max-len */
   // Refresh the claim for a specific `runId` for given `taskId`. This updates
