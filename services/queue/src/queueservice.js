@@ -4,6 +4,7 @@ let assert = require('assert');
 // let base32 = require('thirty-two');
 // let crypto = require('crypto');
 let slugid = require('slugid');
+const taskcluster = require('taskcluster-client');
 // let AZQueue = require('taskcluster-lib-azqueue');
 // let { splitTaskQueueId } = require('./utils');
 
@@ -48,10 +49,7 @@ const PRIORITIES = [
 assert(_.xor(PRIORITIES, _.keys(PRIORITY_TO_CONSTANT)).length === 0);
 
 /**
- * Wrapper for azure queue storage, to ease our use cases.
- * Specifically, this supports managing the deadline message queue, and the
- * pending-task queues stored in azure, both creation and operations on these
- * queues.
+ * Utility class for managing task lifecycle queues.
  */
 class QueueService {
   /**
@@ -182,7 +180,7 @@ class QueueService {
   }
 
   /** Enqueue message to become visible when deadline has expired */
-  async putDeadlineMessage(taskId, taskGroupId, schedulerId, deadline) {
+  async putDeadlineTask(taskId, taskGroupId, schedulerId, deadline) {
     assert(taskId, 'taskId must be given');
     assert(taskGroupId, 'taskGroupId must be given');
     assert(schedulerId, 'schedulerId must be given');
@@ -193,27 +191,13 @@ class QueueService {
     debug('Put deadline message to be visible in %s seconds',
       secondsTo(deadline) + delay);
 
-    // TODO
-    // this.db.fns.put_deadline_message() ...
-
-    // return this._putMessage(this.deadlineQueue, {
-    //   taskId,
-    //   taskGroupId,
-    //   schedulerId,
-    //   deadline: deadline.toJSON(),
-    // }, {
-    //   ttl: 7 * 24 * 60 * 60,
-    //   visibility: secondsTo(deadline) + delay,
-    // });
-    // _putMessage(queue, message, { visibility, ttl, taskQueueId, priority }) {
-    //   let text = Buffer.from(JSON.stringify(message)).toString('base64');
-    //   return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
-    //     visibilityTimeout: visibility,
-    //     messageTTL: ttl,
-    //     taskQueueId,
-    //     priority,
-    //   }));
-    // }
+    await this.db.fns.queue_task_deadline_put(
+      taskGroupId,
+      taskId,
+      schedulerId,
+      deadline.toJSON(), // this is to be checked against task record if it didn't change
+      taskcluster.fromNow(`${secondsTo(deadline) + delay} seconds`), // this is slightly after deadline
+    );
   }
 
   /**
@@ -355,46 +339,30 @@ class QueueService {
    *
    * Notice that a data.Task entity fits this description perfectly.
    */
-  async putPendingMessage(task, runId) {
+  async putPendingTask(task, runId) {
     validateTask(task);
     assert(typeof runId === 'number', 'Expected runId as number');
 
-    // Find the time to deadline
+    // // Find the time to deadline
     let timeToDeadline = secondsTo(task.deadline);
     // If deadline is reached, we don't care to publish a message about the task
     // being pending.
-    if (timeToDeadline === 0) {
+    if (timeToDeadline === 1) {
       // This should not happen, but if timing is right it is possible.
       console.log('runId: %s of taskId: %s became pending after deadline, ' +
-                  'skipping pending message publication to azure queue',
+                  'skipping pending task publication',
       runId, task.taskId);
       return;
     }
 
-    // Put message queue
-    // TODO - call db directly to insert into right table
-
-    // this.db.fns.put_pending_message() ...
-
-    // return this._putMessage(task.taskQueueId, task.priority, {
-    //   taskId: task.taskId,
-    //   runId: runId,
-    //   hintId: slugid.v4(),
-    // }, {
-    //   ttl: timeToDeadline,
-    //   visibility: 0,
-    //   taskQueueId: task.taskQueueId,
-    //   priority: parseInt(PRIORITY_TO_CONSTANT[task.priority] || '0', 10),
-    // });
-    // _putMessage(queue, message, { visibility, ttl, taskQueueId, priority }) {
-    //   let text = Buffer.from(JSON.stringify(message)).toString('base64');
-    //   return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
-    //     visibilityTimeout: visibility,
-    //     messageTTL: ttl,
-    //     taskQueueId,
-    //     priority,
-    //   }));
-    // }
+    await this.db.fns.queue_pending_tasks_put(
+      task.taskQueueId,
+      parseInt(PRIORITY_TO_CONSTANT[task.priority] || '0', 10),
+      task.taskId,
+      runId,
+      slugid.v4(),
+      taskcluster.fromNow(`${timeToDeadline} seconds`), // expires in
+    );
   }
 
   /**
@@ -422,30 +390,30 @@ class QueueService {
     });
   }
 
-    // let queueNames = await this.ensurePendingQueue(taskQueueId);
-    // // Order by priority (and convert to array)
-    // let queues = PRIORITIES.map(priority => queueNames[priority]);
+  // let queueNames = await this.ensurePendingQueue(taskQueueId);
+  // // Order by priority (and convert to array)
+  // let queues = PRIORITIES.map(priority => queueNames[priority]);
 
-    // // For each queue, return poll(count) function
-    // return queues.map(queue => {
-    //   return async (count) => {
-    //     // Get messages
-    //     let messages = await this._getMessages(queue, {
-    //       visibility: 5 * 60,
-    //       count: Math.min(count, 32),
-    //     });
-    //     return messages.map(m => {
-    //       return {
-    //         taskId: m.payload.taskId,
-    //         runId: m.payload.runId,
-    //         hintId: m.payload.hintId,
-    //         remove: m.remove,
-    //         release: m.release,
-    //       };
-    //     });
-    //   };
-    // });
-  }
+  // // For each queue, return poll(count) function
+  // return queues.map(queue => {
+  //   return async (count) => {
+  //     // Get messages
+  //     let messages = await this._getMessages(queue, {
+  //       visibility: 5 * 60,
+  //       count: Math.min(count, 32),
+  //     });
+  //     return messages.map(m => {
+  //       return {
+  //         taskId: m.payload.taskId,
+  //         runId: m.payload.runId,
+  //         hintId: m.payload.hintId,
+  //         remove: m.remove,
+  //         release: m.release,
+  //       };
+  //     });
+  //   };
+  // });
+  // }
 
   /**
    * Count number of pending tasks for a given task queue
@@ -454,8 +422,8 @@ class QueueService {
    * @returns {Number} number of pending tasks
    */
   async countPendingMessages(taskQueueId) {
-    const [{ queue_pending_task_count }] = await this.db.fns.queue_pending_task_count(taskQueueId);
-    return queue_pending_task_count;
+    const [{ queue_pending_tasks_count }] = await this.db.fns.queue_pending_tasks_count(taskQueueId);
+    return queue_pending_tasks_count;
   }
 }
 

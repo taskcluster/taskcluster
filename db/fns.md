@@ -72,7 +72,6 @@
    * [`purge_requests_wpid`](#purge_requests_wpid)
  * [queue functions](#queue)
    * [`add_task_dependency`](#add_task_dependency)
-   * [`azure_queue_get1`](#azure_queue_get1)
    * [`cancel_task`](#cancel_task)
    * [`cancel_task_group`](#cancel_task_group)
    * [`check_task_claim`](#check_task_claim)
@@ -105,8 +104,12 @@
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
    * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
    * [`queue_artifact_present`](#queue_artifact_present)
-   * [`queue_pending_task_count`](#queue_pending_task_count)
+   * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
+   * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
    * [`queue_pending_tasks_get`](#queue_pending_tasks_get)
+   * [`queue_pending_tasks_put`](#queue_pending_tasks_put)
+   * [`queue_pending_tasks_release`](#queue_pending_tasks_release)
+   * [`queue_task_deadline_put`](#queue_task_deadline_put)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
    * [`reclaim_task`](#reclaim_task)
@@ -1282,7 +1285,6 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 ## queue
 
 * [`add_task_dependency`](#add_task_dependency)
-* [`azure_queue_get1`](#azure_queue_get1)
 * [`cancel_task`](#cancel_task)
 * [`cancel_task_group`](#cancel_task_group)
 * [`check_task_claim`](#check_task_claim)
@@ -1315,8 +1317,12 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
 * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
 * [`queue_artifact_present`](#queue_artifact_present)
-* [`queue_pending_task_count`](#queue_pending_task_count)
+* [`queue_pending_tasks_count`](#queue_pending_tasks_count)
+* [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
 * [`queue_pending_tasks_get`](#queue_pending_tasks_get)
+* [`queue_pending_tasks_put`](#queue_pending_tasks_put)
+* [`queue_pending_tasks_release`](#queue_pending_tasks_release)
+* [`queue_task_deadline_put`](#queue_task_deadline_put)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
 * [`reclaim_task`](#reclaim_task)
@@ -1345,25 +1351,6 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 Create an un-satisfied task dependency between the two tasks, with the given
 requirement style and expiration. If the dependency already exists, nothing
 happens.
-
-### azure_queue_get1
-
-* *Mode*: write
-* *Arguments*:
-  * `queue_name text`
-  * `visible timestamp`
-  * `count integer`
-* *Returns*: `table`
-  * `message_id uuid`
-  * `message_text text`
-  * `pop_receipt uuid`
-* *Last defined on version*: 91
-
-Get up to `count` messages from the given queue, setting the `visible`
-column of each to the given value.  Returns a `message_id` and
-`pop_receipt` for each one, for use with `azure_queue_delete` and
-`azure_queue_update`.
-
 
 ### cancel_task
 
@@ -1936,7 +1923,7 @@ Worker will keep a history of all quarantine details.
 Mark the given queue artifact as present, returning the updated artifact.  Returns
 nothing if no such artifact exists.
 
-### queue_pending_task_count
+### queue_pending_tasks_count
 
 * *Mode*: read
 * *Arguments*:
@@ -1947,6 +1934,18 @@ nothing if no such artifact exists.
 Count the number of pending messages for given task queue.
 
 
+### queue_pending_tasks_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete pending task from the queue.
+
+
 ### queue_pending_tasks_get
 
 * *Mode*: write
@@ -1955,7 +1954,7 @@ Count the number of pending messages for given task queue.
   * `count integer`
 * *Returns*: `table`
   * `task_id text`
-  * `run_id text`
+  * `run_id integer`
   * `hint_id text`
   * `pop_receipt uuid`
 * *Last defined on version*: 91
@@ -1964,6 +1963,50 @@ Get up to `count` messages from the given taskQueueId.
 tbd..
 this mimics `azure_queue_get`
 is `visible` field necessary ?? or just setting and un-setting `pop_receipt` is enough
+
+
+### queue_pending_tasks_put
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `priority_in integer`
+  * `task_id_in text`
+  * `run_id_in integer`
+  * `hint_id_in text`
+  * `expires_in timestamp`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Put the task into the pending queue.
+When record already exists, we update the priority, run_id, hint_id and expiration.
+
+
+### queue_pending_tasks_release
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Release task back to the queue to be picked up by another worker.
+
+
+### queue_task_deadline_put
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `task_id_in text`
+  * `scheduler_id_in text`
+  * `deadline_in timestamptz`
+  * `visible_at timestamp`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Track task deadline
 
 
 ### queue_worker_seen_with_last_date_active

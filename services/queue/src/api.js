@@ -807,7 +807,7 @@ builder.declare({
   }
 
   // Insert entry in deadline queue
-  await this.queueService.putDeadlineMessage(
+  await this.queueService.putDeadlineTask(
     taskId,
     taskDef.taskGroupId,
     taskDef.schedulerId,
@@ -868,17 +868,20 @@ builder.declare({
     this.monitor.log.taskDefined({ taskId });
   }
 
+  // for createTask it is always first runId we want to check and publish pending messages
+  const runId = 0;
+
   // Same as above but for tasks with no dependencies, scheduling the first run.
-  let runZeroState = (task.runs[0] || { state: 'unscheduled' }).state;
+  let runZeroState = (task.runs[runId] || { state: 'unscheduled' }).state;
   if (runZeroState === 'pending') {
     await Promise.all([
       // Put message into the task pending queue
-      this.queueService.putPendingMessage(task, 0),
+      this.queueService.putPendingTask(task, runId),
 
       // Put message in appropriate azure queue, and publish message to pulse
-      this.publisher.taskPending({ status, task: taskPulseContents, runId: 0 }, task.routes),
+      this.publisher.taskPending({ status, task: taskPulseContents, runId }, task.routes),
     ]);
-    this.monitor.log.taskPending({ taskId, runId: 0 });
+    this.monitor.log.taskPending({ taskId, runId });
   }
 
   // Reply
@@ -1045,7 +1048,7 @@ builder.declare({
   if (state === 'pending') {
     let runId = task.runs.length - 1;
     await Promise.all([
-      this.queueService.putPendingMessage(task, runId),
+      this.queueService.putPendingTask(task, runId),
       this.publisher.taskPending({
         status: status,
         runId: runId,
@@ -1719,7 +1722,7 @@ builder.declare({
       (newRun.reasonCreated === 'retry' ||
        newRun.reasonCreated === 'task-retry')) {
     await Promise.all([
-      this.queueService.putPendingMessage(task, runId + 1),
+      this.queueService.putPendingTask(task, runId + 1),
       this.publisher.taskPending({
         status,
         task: taskPulseContents,

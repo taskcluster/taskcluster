@@ -21,21 +21,21 @@ begin
     task_group_id text not null,
     scheduler_id text not null,
     created_at timestamptz not null,
-    deadline_at timestamptz not null,
-    expires timestamptz not null,
+    deadline timestamptz not null,
+    visible_at timestamptz not null,
     pop_receipt uuid null
   );
 
   -- migrate data to deadline queue
   INSERT INTO queue_task_deadlines
-    (task_group_id, task_id, scheduler_id, created_at, deadline_at, expires, pop_receipt)
+    (task_group_id, task_id, scheduler_id, created_at, deadline, visible_at, pop_receipt)
   SELECT
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskGroupId',
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'schedulerId',
     inserted,
+    CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'deadline' AS timestamp with time zone),
     visible, -- when this message becomes visible, it means it hits deadline
-    expires,
     pop_receipt
   FROM azure_queue_messages
   WHERE queue_name = 'deadline-queue'
@@ -50,20 +50,18 @@ begin
     scheduler_id text not null,
     resolution text not null,
     resolved_at timestamptz not null,
-    expires timestamptz not null,
     pop_receipt uuid null
   );
 
   -- migrate data to resolved queue
   INSERT INTO
-    queue_resolved_tasks (task_id, task_group_id, scheduler_id, resolution, resolved_at, expires, pop_receipt)
+    queue_resolved_tasks (task_id, task_group_id, scheduler_id, resolution, resolved_at, pop_receipt)
   SELECT
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskGroupId',
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'schedulerId',
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'resolution',
     inserted,
-    expires,
     pop_receipt
   FROM azure_queue_messages
   WHERE queue_name = 'resolved-queue'
@@ -76,19 +74,17 @@ begin
     run_id integer not null,
     claimed_at timestamptz not null,
     taken_until timestamptz not null,
-    expires timestamptz not null,
     pop_receipt uuid null
   );
 
   -- migrate data to resolved queue
   INSERT INTO
-    queue_claimed_tasks (task_id, run_id, claimed_at, taken_until, expires, pop_receipt)
+    queue_claimed_tasks (task_id, run_id, claimed_at, taken_until, pop_receipt)
   SELECT
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',
     CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'runId' AS INTEGER),
     inserted,
     CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'takenUntil' AS timestamp with time zone),
-    expires,
     pop_receipt
   FROM azure_queue_messages
   WHERE queue_name = 'claim-queue'
@@ -138,5 +134,5 @@ begin
   GRANT select, insert, update, delete ON queue_claimed_tasks to $db_user_prefix$_queue;
 
   -- delete old data
-  DELETE FROM azure_queue_messages;
+  -- DELETE FROM azure_queue_messages;
 end

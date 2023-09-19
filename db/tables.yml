@@ -217,8 +217,8 @@ queue_task_deadlines:
   task_group_id: text not null
   scheduler_id: text not null
   created_at: timestamp with time zone not null
-  deadline_at: timestamp with time zone not null
-  expires: timestamp with time zone not null
+  deadline: timestamp with time zone not null
+  visible_at: timestamp with time zone not null
   pop_receipt: uuid
 
 queue_resolved_tasks:
@@ -227,7 +227,6 @@ queue_resolved_tasks:
   scheduler_id: text not null
   resolution: text not null
   resolved_at: timestamp with time zone not null
-  expires: timestamp with time zone not null
   pop_receipt: uuid
 
 queue_claimed_tasks:
@@ -235,7 +234,6 @@ queue_claimed_tasks:
   run_id: integer not null
   claimed_at: timestamp with time zone not null
   taken_until: timestamp with time zone not null
-  expires: timestamp with time zone not null
   pop_receipt: uuid
 
 queue_pending_tasks:

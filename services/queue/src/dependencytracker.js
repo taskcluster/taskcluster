@@ -269,7 +269,7 @@ class DependencyTracker {
     // if the initial run is pending
     if (task.runs && task.runs[0].state === 'pending') {
       await Promise.all([
-        this.queueService.putPendingMessage(task, 0),
+        this.queueService.putPendingTask(task, 0),
         this.publisher.taskPending({
           status: status,
           runId: 0,

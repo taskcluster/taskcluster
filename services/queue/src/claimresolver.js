@@ -156,7 +156,7 @@ class ClaimResolver {
         newRun.state === 'pending' &&
         newRun.reasonCreated === 'retry') {
       await Promise.all([
-        this.queueService.putPendingMessage(task, runId + 1),
+        this.queueService.putPendingTask(task, runId + 1),
         this.publisher.taskPending({
           status: status,
           runId: runId + 1,
