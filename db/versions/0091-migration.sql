@@ -138,5 +138,10 @@ begin
   GRANT select, insert, update, delete ON queue_claimed_tasks to $db_user_prefix$_queue;
 
   -- delete old data
+  -- or delete whole table? will there be workers still running at the time of migration?
+  -- maybe it's better to leave the table as is to let remaining workers finish what was started
+  -- and in worst case new workers might restart few tasks
+  -- other queues should not suffer much, as deadline/resolved/claims are handling errors
+  -- table can be dropped in a followup migration on next release
   -- DELETE FROM azure_queue_messages;
 end
