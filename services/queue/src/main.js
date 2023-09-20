@@ -291,6 +291,7 @@ let load = loader({
         ownName,
         queueService, dependencyTracker,
         pollingDelay: cfg.app.dependencyResolver.pollingDelay,
+        count: cfg.app.dependencyResolver.count,
         monitor: monitor.childMonitor('dependency-resolver'),
       });
       await resolver.start();

@@ -61,6 +61,8 @@ defaults:
     dependencyResolver:
       # Number of ms to sleep after polling from an empty queue
       pollingDelay:               5000
+      # Number of records to process at once
+      count:                      32
 
     # CDN for public artifact bucket
     publicArtifactBucketCDN:      !env:optional PUBLIC_ARTIFACT_BUCKET_CDN

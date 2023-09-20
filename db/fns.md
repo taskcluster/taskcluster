@@ -113,6 +113,8 @@
    * [`queue_pending_tasks_get`](#queue_pending_tasks_get)
    * [`queue_pending_tasks_put`](#queue_pending_tasks_put)
    * [`queue_pending_tasks_release`](#queue_pending_tasks_release)
+   * [`queue_resolved_task_delete`](#queue_resolved_task_delete)
+   * [`queue_resolved_task_get`](#queue_resolved_task_get)
    * [`queue_resolved_task_put`](#queue_resolved_task_put)
    * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
    * [`queue_task_deadline_get`](#queue_task_deadline_get)
@@ -1333,6 +1335,8 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`queue_pending_tasks_get`](#queue_pending_tasks_get)
 * [`queue_pending_tasks_put`](#queue_pending_tasks_put)
 * [`queue_pending_tasks_release`](#queue_pending_tasks_release)
+* [`queue_resolved_task_delete`](#queue_resolved_task_delete)
+* [`queue_resolved_task_get`](#queue_resolved_task_get)
 * [`queue_resolved_task_put`](#queue_resolved_task_put)
 * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
 * [`queue_task_deadline_get`](#queue_task_deadline_get)
@@ -2057,6 +2061,35 @@ When record already exists, we update the priority, run_id, hint_id and expirati
 * *Last defined on version*: 91
 
 Release task back to the queue to be picked up by another worker.
+
+
+### queue_resolved_task_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete claimed task
+
+
+### queue_resolved_task_get
+
+* *Mode*: write
+* *Arguments*:
+  * `visible_at_in timestamptz`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `task_group_id text`
+  * `scheduler_id text`
+  * `resolution text`
+  * `pop_receipt uuid`
+* *Last defined on version*: 91
+
+Get up to `count` messages from the resolved queue
 
 
 ### queue_resolved_task_put

@@ -15,6 +15,7 @@ class DependencyResolver {
    *   dependencyTracker:   // DependencyTracker instance
    *   queueService:        // QueueService instance
    *   pollingDelay:        // Number of ms to sleep between polling
+   *   count:               // Number of records to fetch at a time
    *   monitor:             // base.monitor instance
    * }
    */
@@ -24,6 +25,8 @@ class DependencyResolver {
     assert(options.queueService, 'Expected options.queueService');
     assert(typeof options.pollingDelay === 'number',
       'Expected pollingDelay to be a number');
+    assert(typeof options.count === 'number',
+      'Expected count to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
 
@@ -63,7 +66,7 @@ class DependencyResolver {
 
   /** Poll for messages and handle them in a loop */
   async _pollResolvedTasks() {
-    let messages = await this.queueService.pollResolvedQueue();
+    let messages = await this.queueService.pollResolvedQueue(this.count);
     let failed = 0;
     await Promise.all(messages.map(async (m) => {
       // Don't let a single task error break the loop, it'll be retried later

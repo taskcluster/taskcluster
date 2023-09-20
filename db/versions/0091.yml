@@ -319,3 +319,47 @@ methods:
           now()
         );
       end
+
+  queue_resolved_task_get:
+    description: |
+      Get up to `count` messages from the resolved queue
+    mode: write
+    serviceName: queue
+    args: visible_at_in timestamptz, count integer
+    returns: table (task_id text, task_group_id text, scheduler_id text, resolution text, pop_receipt uuid)
+    body: |-
+      begin
+        return query
+          with updated as (
+            update queue_resolved_tasks q
+            set pop_receipt = public.gen_random_uuid(),
+              visible_at = visible_at_in
+            where
+              q.task_id in (
+                select q2.task_id
+                from queue_resolved_tasks q2
+                where q2.visible_at <= now()
+                order by q2.resolved_at
+                for update skip locked
+                limit count
+            )
+            returning q.task_id, q.task_group_id, q.scheduler_id, q.resolution, q.pop_receipt
+          )
+          select u.task_id, u.task_group_id, u.scheduler_id, u.resolution, u.pop_receipt
+          from updated as u
+          order by u.resolved_at;
+      end
+
+  queue_resolved_task_delete:
+    description: |
+      Delete claimed task
+    mode: write
+    serviceName: queue
+    args: task_id_in text, pop_receipt_in uuid
+    returns: void
+    body: |-
+      begin
+        delete from queue_resolved_tasks
+        where task_id = task_id_in
+          and pop_receipt = pop_receipt_in;
+      end

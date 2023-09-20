@@ -150,27 +150,25 @@ class QueueService {
    *
    * Note, messages must be handled within 10 minutes.
    */
-  async pollResolvedQueue() {
-    // TODO:
+  async pollResolvedQueue(count = 32) {
+    // if message is not processed on time, different handler will pick it up after 1 minute
+    // if it is processed, it would be removed from the table
+    const hideUntil = taskcluster.fromNow('1 minute');
 
-    // return this.db.fns.get_resolved_queue() ... map()
-
-    // Get messages
-    // let messages = await this._getMessages(this.resolvedQueue, {
-    //   visibility: 10 * 60,
-    //   count: 32,
-    // });
-
-    // // Convert to neatly consumable format
-    // return messages.map(m => {
-    //   return {
-    //     taskId: m.payload.taskId,
-    //     taskGroupId: m.payload.taskGroupId,
-    //     schedulerId: m.payload.schedulerId,
-    //     resolution: m.payload.resolution,
-    //     remove: m.remove,
-    //   };
-    // });
+    const rows = await this.db.fns.queue_resolved_task_get(hideUntil, count);
+    return rows.map(({
+      task_id: taskId,
+      task_group_id: taskGroupId,
+      scheduler_id: schedulerId,
+      resolution,
+      pop_receipt,
+    }) => ({
+      taskId,
+      taskGroupId,
+      schedulerId,
+      resolution,
+      remove: async () => this.db.fns.queue_resolved_task_delete(taskId, pop_receipt),
+    }));
   }
 
   /** Enqueue message to become visible when deadline has expired */

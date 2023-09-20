@@ -6845,6 +6845,24 @@
           "returns": "void",
           "serviceName": "queue"
         },
+        "queue_resolved_task_delete": {
+          "args": "task_id_in text, pop_receipt_in uuid",
+          "body": "begin\n  delete from queue_resolved_tasks\n  where task_id = task_id_in\n    and pop_receipt = pop_receipt_in;\nend",
+          "deprecated": false,
+          "description": "Delete claimed task\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "queue_resolved_task_get": {
+          "args": "visible_at_in timestamptz, count integer",
+          "body": "begin\n  return query\n    with updated as (\n      update queue_resolved_tasks q\n      set pop_receipt = public.gen_random_uuid(),\n        visible_at = visible_at_in\n      where\n        q.task_id in (\n          select q2.task_id\n          from queue_resolved_tasks q2\n          where q2.visible_at <= now()\n          order by q2.resolved_at\n          for update skip locked\n          limit count\n      )\n      returning q.task_id, q.task_group_id, q.scheduler_id, q.resolution, q.pop_receipt\n    )\n    select u.task_id, u.task_group_id, u.scheduler_id, u.resolution, u.pop_receipt\n    from updated as u\n    order by u.resolved_at;\nend",
+          "deprecated": false,
+          "description": "Get up to `count` messages from the resolved queue\n",
+          "mode": "write",
+          "returns": "table (task_id text, task_group_id text, scheduler_id text, resolution text, pop_receipt uuid)",
+          "serviceName": "queue"
+        },
         "queue_resolved_task_put": {
           "args": "task_group_id_in text, task_id_in text, scheduler_id_in text, resolution_in text",
           "body": "begin\n  insert into queue_resolved_tasks (\n    task_group_id,\n    task_id,\n    scheduler_id,\n    resolution,\n    resolved_at,\n    visible_at\n  )\n  values (\n    task_group_id_in,\n    task_id_in,\n    scheduler_id_in,\n    resolution_in,\n    now(),\n    now()\n  );\nend",
