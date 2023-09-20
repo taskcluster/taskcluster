@@ -332,7 +332,7 @@ let load = loader({
     requires: ['cfg', 'queueService', 'monitor'],
     setup: ({ cfg, queueService, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
-        debug('Expiring azqueue messages at: %s', new Date());
+        debug('Expiring pending messages at: %s', new Date());
         await queueService.deleteExpiredMessages();
       });
     },

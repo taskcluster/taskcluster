@@ -6929,9 +6929,6 @@ tar-stream@^2.0.0:
 "taskcluster-lib-app@link:libraries/app":
   version "55.3.4"
 
-"taskcluster-lib-azqueue@link:libraries/azqueue":
-  version "55.3.4"
-
 "taskcluster-lib-config@link:libraries/config":
   version "55.3.4"
 
