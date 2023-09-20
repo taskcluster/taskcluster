@@ -274,6 +274,7 @@ let load = loader({
         db, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.deadlineResolver.pollingDelay,
         parallelism: cfg.app.deadlineResolver.parallelism,
+        count: cfg.app.deadlineResolver.count,
         monitor: monitor.childMonitor('deadline-resolver'),
       });
       await resolver.start();
@@ -333,7 +334,7 @@ let load = loader({
     setup: ({ cfg, queueService, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Expiring pending messages at: %s', new Date());
-        await queueService.deleteExpiredMessages();
+        await queueService.deleteExpiredTasks();
       });
     },
   },

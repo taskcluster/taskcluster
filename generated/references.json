@@ -15099,19 +15099,6 @@
           "version": 1
         },
         {
-          "description": "Report result of polling messages from an azure queue.",
-          "fields": {
-            "failed": "Number of these messages that failed to be handled.",
-            "messages": "Number of messages fetched.",
-            "resolver": "The name of the queue being polled."
-          },
-          "level": "info",
-          "name": "azureQueuePoll",
-          "title": "Azure Queue Poll",
-          "type": "azure-queue-poll",
-          "version": 1
-        },
-        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -15287,6 +15274,19 @@
           "name": "pulsePublisherBlocked",
           "title": "Pulse server has (un)blocked a publisher",
           "type": "pulsePublisherBlocked",
+          "version": 1
+        },
+        {
+          "description": "Report result of polling tasks from queue tables.",
+          "fields": {
+            "count": "Number of tasks fetched.",
+            "failed": "Number of these tasks that failed to be handled.",
+            "resolver": "The name of the queue being polled."
+          },
+          "level": "info",
+          "name": "queuePoll",
+          "title": "Queue Poll",
+          "type": "queue-poll",
           "version": 1
         },
         {

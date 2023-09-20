@@ -1903,7 +1903,7 @@ builder.declare({
   const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
   // Get number of pending message
-  let count = await this.queueService.countPendingMessages(taskQueueId);
+  let count = await this.queueService.countPendingTasks(taskQueueId);
 
   // Reply to call with count `pendingTasks`
   return res.reply({

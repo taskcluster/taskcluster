@@ -2,6 +2,7 @@ const assert = require('assert');
 const QueueService = require('./queueservice');
 const Iterate = require('taskcluster-lib-iterate');
 const { Task } = require('./data');
+const { sleep } = require('./utils');
 
 /**
  * Facade that handles resolution of claims by takenUntil, using the advisory
@@ -103,19 +104,14 @@ class ClaimResolver {
     // Azure repeatedly for empty queues, at the cost of some slight delay
     // to finding new messages in those queues.
     if (messages.length === 0) {
-      await this.sleep(2000);
+      await sleep(2000);
     }
 
-    this.monitor.log.azureQueuePoll({
-      messages: messages.length,
+    this.monitor.log.queuePoll({
+      count: messages.length,
       failed,
       resolver: 'claim',
     });
-  }
-
-  /** Sleep for `delay` ms, returns a promise */
-  sleep(delay) {
-    return new Promise(accept => setTimeout(accept, delay));
   }
 
   /** Handle advisory message about claim expiration */

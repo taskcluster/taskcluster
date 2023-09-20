@@ -6800,7 +6800,7 @@
         },
         "queue_pending_tasks_get": {
           "args": "task_queue_id_in text, count integer",
-          "body": "begin\n  return query\n    with updated as (\n      update queue_pending_tasks qpt\n      set pop_receipt = public.gen_random_uuid()\n      where\n        qpt.task_id in (\n          select qpt2.task_id\n          from queue_pending_tasks qpt2\n          where qpt2.task_queue_id = task_queue_id_in\n            and qpt2.expires > now()\n            and qpt2.pop_receipt is null\n          order by qpt2.priority desc, qpt2.inserted_at asc\n          for update skip locked\n          limit count\n      )\n      returning qpt.priority, qpt.inserted_at, qpt.task_id, qpt.run_id, qpt.hint_id, qpt.pop_receipt\n    )\n    select u.task_id, u.run_id, u.hint_id, u.pop_receipt\n    from updated as u\n    order by u.priority desc, u.inserted_at asc;\nend",
+          "body": "begin\n  return query\n    with updated as (\n      update queue_pending_tasks q\n      set pop_receipt = public.gen_random_uuid()\n      where\n        q.task_id in (\n          select q2.task_id\n          from queue_pending_tasks q2\n          where q2.task_queue_id = task_queue_id_in\n            and q2.expires > now()\n            and q2.pop_receipt is null\n          order by q2.priority desc, q2.inserted_at asc\n          for update skip locked\n          limit count\n      )\n      returning q.priority, q.inserted_at, q.task_id, q.run_id, q.hint_id, q.pop_receipt\n    )\n    select u.task_id, u.run_id, u.hint_id, u.pop_receipt\n    from updated as u\n    order by u.priority desc, u.inserted_at asc;\nend",
           "deprecated": false,
           "description": "Get up to `count` messages from the given taskQueueId.\ntbd..\nthis mimics `azure_queue_get`\nis `visible` field necessary ?? or just setting and un-setting `pop_receipt` is enough\n",
           "mode": "write",
@@ -6832,6 +6832,24 @@
           "description": "Track when task was resolved\n",
           "mode": "write",
           "returns": "void",
+          "serviceName": "queue"
+        },
+        "queue_task_deadline_delete": {
+          "args": "task_id_in text, pop_receipt_in uuid",
+          "body": "begin\n  delete from queue_task_deadlines\n  where task_id = task_id_in\n    and pop_receipt = pop_receipt_in;\nend",
+          "deprecated": false,
+          "description": "Delete deadline task\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "queue_task_deadline_get": {
+          "args": "visible_at_in timestamp, count integer",
+          "body": "begin\n  return query\n    with updated as (\n      update queue_task_deadlines q\n      set pop_receipt = public.gen_random_uuid(),\n        visible_at = visible_at_in\n      where\n        q.task_id in (\n          select q2.task_id\n          from queue_task_deadlines q2\n          where q2.visible_at <= now()\n          order by q2.created_at\n          for update skip locked\n          limit count\n      )\n      returning q.task_id, q.task_group_id, q.scheduler_id, q.deadline, q.pop_receipt\n    )\n    select u.task_id, u.task_group_id, u.scheduler_id, u.deadline, u.pop_receipt\n    from updated as u\n    order by u.deadline;\nend",
+          "deprecated": false,
+          "description": "Get up to `count` messages from the deadline queue\n",
+          "mode": "write",
+          "returns": "table (task_id text, task_group_id text, scheduler_id text, deadline timestamptz, pop_receipt uuid)",
           "serviceName": "queue"
         },
         "queue_task_deadline_put": {

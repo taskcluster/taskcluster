@@ -112,6 +112,8 @@
    * [`queue_pending_tasks_put`](#queue_pending_tasks_put)
    * [`queue_pending_tasks_release`](#queue_pending_tasks_release)
    * [`queue_resolved_task_put`](#queue_resolved_task_put)
+   * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
+   * [`queue_task_deadline_get`](#queue_task_deadline_get)
    * [`queue_task_deadline_put`](#queue_task_deadline_put)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -1328,6 +1330,8 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`queue_pending_tasks_put`](#queue_pending_tasks_put)
 * [`queue_pending_tasks_release`](#queue_pending_tasks_release)
 * [`queue_resolved_task_put`](#queue_resolved_task_put)
+* [`queue_task_deadline_delete`](#queue_task_deadline_delete)
+* [`queue_task_deadline_get`](#queue_task_deadline_get)
 * [`queue_task_deadline_put`](#queue_task_deadline_put)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -2035,6 +2039,35 @@ Release task back to the queue to be picked up by another worker.
 * *Last defined on version*: 91
 
 Track when task was resolved
+
+
+### queue_task_deadline_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete deadline task
+
+
+### queue_task_deadline_get
+
+* *Mode*: write
+* *Arguments*:
+  * `visible_at_in timestamp`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `task_group_id text`
+  * `scheduler_id text`
+  * `deadline timestamptz`
+  * `pop_receipt uuid`
+* *Last defined on version*: 91
+
+Get up to `count` messages from the deadline queue
 
 
 ### queue_task_deadline_put

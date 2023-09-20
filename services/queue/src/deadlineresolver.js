@@ -4,6 +4,7 @@ let _ = require('lodash');
 let QueueService = require('./queueservice');
 let Iterate = require('taskcluster-lib-iterate');
 const { Task } = require('./data');
+const { sleep } = require('./utils');
 
 /**
  * Facade that handles resolution tasks by deadline, using the advisory messages
@@ -30,8 +31,9 @@ class DeadlineResolver {
    *   dependencyTracker: // instance of DependencyTracker
    *   publisher:         // publisher from base.Exchanges
    *   pollingDelay:      // Number of ms to sleep between polling
+   *   count:             // Number of messages to fetch in each poll
    *   parallelism:       // Number of polling loops to run in parallel
-   *                      // Each handles up to 32 messages in parallel
+   *                      // Each handles up to `count` messages in parallel
    *   monitor:           // base.monitor instance
    * }
    */
@@ -46,6 +48,8 @@ class DeadlineResolver {
       'Expected pollingDelay to be a number');
     assert(typeof options.parallelism === 'number',
       'Expected parallelism to be a number');
+    assert(typeof options.count === 'number',
+      'Expected count to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
     this.db = options.db;
@@ -54,6 +58,7 @@ class DeadlineResolver {
     this.publisher = options.publisher;
     this.pollingDelay = options.pollingDelay;
     this.parallelism = options.parallelism;
+    this.count = options.count;
     this.monitor = options.monitor;
 
     this.iterator = new Iterate({
@@ -89,41 +94,34 @@ class DeadlineResolver {
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    let messages = await this.queueService.pollDeadlineQueue();
+    let tasks = await this.queueService.pollDeadlineQueue(this.count);
     let failed = 0;
 
-    await Promise.all(messages.map(async (message) => {
+    await Promise.all(tasks.map(async (task) => {
       // Don't let a single task error break the loop, it'll be retried later
       // as we don't remove message unless they are handled
       try {
-        await this.handleMessage(message);
+        await this.handleTask(task);
       } catch (err) {
         failed += 1;
         this.monitor.reportError(err, 'warning');
       }
     }));
 
-    // If there were no messages, back of for a bit.  This avoids pounding
-    // Azure repeatedly for empty queues, at the cost of some slight delay
-    // to finding new messages in those queues.
-    if (messages.length === 0) {
-      await this.sleep(2000);
+    // If there were no messages, back of for a bit.
+    if (tasks.length === 0) {
+      await sleep(2000);
     }
 
-    this.monitor.log.azureQueuePoll({
-      messages: messages.length,
+    this.monitor.log.queuePoll({
+      count: tasks.length,
       failed,
       resolver: 'deadline',
     });
   }
 
-  /** Sleep for `delay` ms, returns a promise */
-  sleep(delay) {
-    return new Promise((accept) => { setTimeout(accept, delay); });
-  }
-
   /** Handle advisory message about deadline expiration */
-  async handleMessage({ taskId, taskGroupId, schedulerId, deadline, remove }) {
+  async handleTask({ taskId, taskGroupId, schedulerId, deadline, remove }) {
     const task = await Task.get(this.db, taskId);
 
     // If the task doesn't exist, or if the deadline has changed, then we're done

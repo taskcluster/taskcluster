@@ -36,20 +36,20 @@ methods:
       begin
         return query
           with updated as (
-            update queue_pending_tasks qpt
+            update queue_pending_tasks q
             set pop_receipt = public.gen_random_uuid()
             where
-              qpt.task_id in (
-                select qpt2.task_id
-                from queue_pending_tasks qpt2
-                where qpt2.task_queue_id = task_queue_id_in
-                  and qpt2.expires > now()
-                  and qpt2.pop_receipt is null
-                order by qpt2.priority desc, qpt2.inserted_at asc
+              q.task_id in (
+                select q2.task_id
+                from queue_pending_tasks q2
+                where q2.task_queue_id = task_queue_id_in
+                  and q2.expires > now()
+                  and q2.pop_receipt is null
+                order by q2.priority desc, q2.inserted_at asc
                 for update skip locked
                 limit count
             )
-            returning qpt.priority, qpt.inserted_at, qpt.task_id, qpt.run_id, qpt.hint_id, qpt.pop_receipt
+            returning q.priority, q.inserted_at, q.task_id, q.run_id, q.hint_id, q.pop_receipt
           )
           select u.task_id, u.run_id, u.hint_id, u.pop_receipt
           from updated as u
@@ -131,7 +131,6 @@ methods:
       end
 
 
-
   # count pending messages per task queue
   queue_pending_tasks_count:
     description: |
@@ -176,6 +175,51 @@ methods:
           visible_at
         );
       end
+
+  queue_task_deadline_get:
+    description: |
+      Get up to `count` messages from the deadline queue
+    mode: write
+    serviceName: queue
+    args: visible_at_in timestamp, count integer
+    returns: table (task_id text, task_group_id text, scheduler_id text, deadline timestamptz, pop_receipt uuid)
+    body: |-
+      begin
+        return query
+          with updated as (
+            update queue_task_deadlines q
+            set pop_receipt = public.gen_random_uuid(),
+              visible_at = visible_at_in
+            where
+              q.task_id in (
+                select q2.task_id
+                from queue_task_deadlines q2
+                where q2.visible_at <= now()
+                order by q2.created_at
+                for update skip locked
+                limit count
+            )
+            returning q.task_id, q.task_group_id, q.scheduler_id, q.deadline, q.pop_receipt
+          )
+          select u.task_id, u.task_group_id, u.scheduler_id, u.deadline, u.pop_receipt
+          from updated as u
+          order by u.deadline;
+      end
+
+  queue_task_deadline_delete:
+    description: |
+      Delete deadline task
+    mode: write
+    serviceName: queue
+    args: task_id_in text, pop_receipt_in uuid
+    returns: void
+    body: |-
+      begin
+        delete from queue_task_deadlines
+        where task_id = task_id_in
+          and pop_receipt = pop_receipt_in;
+      end
+
 
   # claim queue
   queue_claimed_task_put:

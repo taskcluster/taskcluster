@@ -7,15 +7,15 @@ const { MonitorManager } = require('taskcluster-lib-monitor');
  */
 
 MonitorManager.register({
-  name: 'azureQueuePoll',
-  title: 'Azure Queue Poll',
-  type: 'azure-queue-poll',
+  name: 'queuePoll',
+  title: 'Queue Poll',
+  type: 'queue-poll',
   version: 1,
   level: 'info',
-  description: 'Report result of polling messages from an azure queue.',
+  description: 'Report result of polling tasks from queue tables.',
   fields: {
-    messages: 'Number of messages fetched.',
-    failed: 'Number of these messages that failed to be handled.',
+    count: 'Number of tasks fetched.',
+    failed: 'Number of these tasks that failed to be handled.',
     resolver: 'The name of the queue being polled.',
   },
 });

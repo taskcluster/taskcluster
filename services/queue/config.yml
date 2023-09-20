@@ -41,6 +41,8 @@ defaults:
     deadlineResolver:
       # Number of ms to sleep after polling from an empty queue
       pollingDelay:               5000
+      # Number of records to process at once
+      count:                      32
       # Number of event loops to run in parallel, each taking up to 32 message
       # in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
       parallelism:                1
@@ -49,6 +51,8 @@ defaults:
     claimResolver:
       # Number of ms to sleep after polling from an empty queue
       pollingDelay:               5000
+      # Number of records to process at once
+      count:                      32
       # Number of event loops to run in parallel, each taking up to 32 message
       # in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
       parallelism:                1

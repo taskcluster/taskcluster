@@ -1,12 +1,8 @@
 let _ = require('lodash');
 let debug = require('debug')('app:queue');
 let assert = require('assert');
-// let base32 = require('thirty-two');
-// let crypto = require('crypto');
 let slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
-
-// let { splitTaskQueueId } = require('./utils');
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where
@@ -14,14 +10,6 @@ const taskcluster = require('taskcluster-client');
 let secondsTo = (target, relativeTo = new Date()) => {
   let delta = Math.ceil((target.getTime() - relativeTo.getTime()) / 1000);
   return Math.max(delta, 1);
-};
-
-/** Validate task description object */
-let validateTask = task => {
-  assert(typeof task.taskId === 'string', 'Expected task.taskId');
-  assert(typeof task.taskQueueId === 'string',
-    'Expected task.taskQueueId');
-  assert(task.deadline instanceof Date, 'Expected task.deadline');
 };
 
 /** Priority to constant number */
@@ -247,45 +235,41 @@ class QueueService {
    *     deadline:    [Date object],  // Deadline of task when submitted
    *     remove:      function() {},  // Delete message call when handled
    *   },
-   *   ... // up-to to 32 objects in one list
    * ]
    * ```
    *
    * Note, messages must be handled within 10 minutes.
    */
-  async pollDeadlineQueue() {
-    // TODO
-    // return this.db.fns.get_deadline_queue() ... map()
+  async pollDeadlineQueue(count = 32) {
+    // if message is not processed on time, different handler will pick it up after 1 minute
+    // if it is processed, it would be removed from the table
+    const hideUntil = taskcluster.fromNow('1 minute');
 
-    // Get messages
-    // let messages = await this._getMessages(this.deadlineQueue, {
-    //   visibility: 10 * 60,
-    //   count: 32,
-    // });
-
-    // // Convert to neatly consumable format
-    // return messages.map(m => {
-    //   return {
-    //     taskId: m.payload.taskId,
-    //     taskGroupId: m.payload.taskGroupId,
-    //     schedulerId: m.payload.schedulerId,
-    //     deadline: new Date(m.payload.deadline),
-    //     remove: m.remove,
-    //   };
-    // });
+    const rows = await this.db.fns.queue_task_deadline_get(hideUntil, count);
+    return rows.map(({
+      task_id: taskId,
+      task_group_id: taskGroupId,
+      scheduler_id: schedulerId,
+      deadline,
+      pop_receipt,
+    }) => ({
+      taskId,
+      taskGroupId,
+      schedulerId,
+      deadline: new Date(deadline),
+      remove: async () => this.db.fns.queue_task_deadline_delete(taskId, pop_receipt),
+    }));
   }
 
   /**
-   * Remove expired messages
+   * Remove expired tasks from the pending queue
    */
-  async deleteExpiredMessages() {
-    // TODO: remove for all 4 new tables or only pending tasks?
+  async deleteExpiredTasks() {
     await this.db.fns.queue_pending_tasks_delete_expired();
   }
 
   /**
    * Enqueue message about a new pending task in appropriate queue
-   *
    *
    * The `task` argument is an object with the properties:
    *  - `taskId`
@@ -296,8 +280,10 @@ class QueueService {
    * Notice that a data.Task entity fits this description perfectly.
    */
   async putPendingTask(task, runId) {
-    validateTask(task);
+    assert(typeof task.taskId === 'string', 'Expected task.taskId');
     assert(typeof runId === 'number', 'Expected runId as number');
+    assert(typeof task.taskQueueId === 'string', 'Expected task.taskQueueId');
+    assert(task.deadline instanceof Date, 'Expected task.deadline');
 
     // // Find the time to deadline
     let timeToDeadline = secondsTo(task.deadline);
@@ -324,6 +310,10 @@ class QueueService {
   /**
    * Return tasks for a given task queue id in order of priority.
    *
+   * Fetched tasks would be assigned `pop_receipt` which will make it invisible to other queries
+   * Once task is processed, record would be removed. If it wasn't processed,
+   * `pop_receipt` would be cleared, so it would be come "visible" to the queue again.
+   *
    * Returns messages in the form:
    * {
    *   taskId:  '...',        // taskId from the message
@@ -335,41 +325,19 @@ class QueueService {
    */
   async getTaskQueuePendingTasks(taskQueueId, count) {
     const rows = await this.db.fns.queue_pending_tasks_get(taskQueueId, count);
-    return rows.map(({ task_id, run_id, hint_id, pop_receipt }) => {
-      return {
-        taskId: task_id,
-        runId: run_id,
-        hintId: hint_id,
-        remove: async () => this.db.fns.queue_pending_tasks_delete(task_id, pop_receipt),
-        release: async () => this.db.fns.queue_pending_tasks_release(task_id, pop_receipt),
-      };
-    });
+    return rows.map(({
+      task_id: taskId,
+      run_id: runId,
+      hint_id: hintId,
+      pop_receipt,
+    }) => ({
+      taskId,
+      runId,
+      hintId,
+      remove: async () => this.db.fns.queue_pending_tasks_delete(taskId, pop_receipt),
+      release: async () => this.db.fns.queue_pending_tasks_release(taskId, pop_receipt),
+    }));
   }
-
-  // let queueNames = await this.ensurePendingQueue(taskQueueId);
-  // // Order by priority (and convert to array)
-  // let queues = PRIORITIES.map(priority => queueNames[priority]);
-
-  // // For each queue, return poll(count) function
-  // return queues.map(queue => {
-  //   return async (count) => {
-  //     // Get messages
-  //     let messages = await this._getMessages(queue, {
-  //       visibility: 5 * 60,
-  //       count: Math.min(count, 32),
-  //     });
-  //     return messages.map(m => {
-  //       return {
-  //         taskId: m.payload.taskId,
-  //         runId: m.payload.runId,
-  //         hintId: m.payload.hintId,
-  //         remove: m.remove,
-  //         release: m.release,
-  //       };
-  //     });
-  //   };
-  // });
-  // }
 
   /**
    * Count number of pending tasks for a given task queue
@@ -377,7 +345,7 @@ class QueueService {
    * @param {String} taskQueueId
    * @returns {Number} number of pending tasks
    */
-  async countPendingMessages(taskQueueId) {
+  async countPendingTasks(taskQueueId) {
     const [{ queue_pending_tasks_count }] = await this.db.fns.queue_pending_tasks_count(taskQueueId);
     return queue_pending_tasks_count;
   }

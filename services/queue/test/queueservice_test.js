@@ -192,8 +192,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await message.remove();
   });
 
-  test('countPendingMessages', async () => {
-    const count = await queueService.countPendingMessages(
+  test('countPendingTasks', async () => {
+    const count = await queueService.countPendingTasks(
       `${provisionerId}/${workerType}`,
     );
     debug('pending message count: %j', count);

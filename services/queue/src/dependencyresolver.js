@@ -1,5 +1,6 @@
 let assert = require('assert');
 let Iterate = require('taskcluster-lib-iterate');
+const { sleep } = require('./utils');
 
 /**
  * When a task is resolved, we put a message in the resolvedQueue, this class
@@ -80,19 +81,14 @@ class DependencyResolver {
     // Azure repeatedly for empty queues, at the cost of some slight delay
     // to finding new messages in those queues.
     if (messages.length === 0) {
-      await this.sleep(2000);
+      await sleep(2000);
     }
 
-    this.monitor.log.azureQueuePoll({
-      messages: messages.length,
+    this.monitor.log.queuePoll({
+      count: messages.length,
       failed,
       resolver: 'dependency',
     });
-  }
-
-  /** Sleep for `delay` ms, returns a promise */
-  sleep(delay) {
-    return new Promise((accept) => { setTimeout(accept, delay); });
   }
 }
 
