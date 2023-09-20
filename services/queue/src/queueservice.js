@@ -62,38 +62,10 @@ class QueueService {
   }
 
   terminate() {
-    // nop ?
   }
 
-  // async _getMessages(queue, { visibility, count }) {
-  //   let messages = await this.monitor.timer('getMessages', this.client.getMessages(queue, {
-  //     visibilityTimeout: visibility,
-  //     numberOfMessages: count,
-  //   }));
-  //   return messages.map(msg => {
-  //     return {
-  //       payload: JSON.parse(Buffer.from(msg.messageText, 'base64')),
-  //       remove: this.client.deleteMessage.bind(
-  //         this.client,
-  //         queue,
-  //         msg.messageId,
-  //         msg.popReceipt,
-  //       ),
-  //       release: this.client.updateMessage.bind(
-  //         this.client,
-  //         queue,
-  //         msg.messageText,
-  //         msg.messageId,
-  //         msg.popReceipt, {
-  //           visibilityTimeout: 0,
-  //         },
-  //       ),
-  //     };
-  //   });
-  // }
-
   /** Enqueue message to become visible when claim has expired */
-  async putClaimTask(taskId, runId, takenUntil) {
+  async putClaimMessage(taskId, runId, takenUntil) {
     assert(taskId, 'taskId must be given');
     assert(typeof runId === 'number', 'runId must be a number');
     assert(takenUntil instanceof Date, 'takenUntil must be a date');
@@ -103,44 +75,6 @@ class QueueService {
       taskId,
       runId,
       takenUntil.toJSON(),
-    );
-  }
-
-  /** Enqueue message ensure the dependency resolver handles the resolution */
-  async putResolvedTask(taskId, taskGroupId, schedulerId, resolution) {
-    assert(taskId, 'taskId must be given');
-    assert(taskGroupId, 'taskGroupId must be given');
-    assert(schedulerId, 'schedulerId must be given');
-    assert(resolution === 'completed' || resolution === 'failed' ||
-           resolution === 'exception',
-    'resolution must be completed, failed or exception');
-
-    await this.db.fns.queue_resolved_task_put(
-      taskGroupId,
-      taskId,
-      schedulerId,
-      resolution,
-    );
-  }
-
-  /** Enqueue message to become visible when deadline has expired */
-  async putDeadlineTask(taskId, taskGroupId, schedulerId, deadline) {
-    assert(taskId, 'taskId must be given');
-    assert(taskGroupId, 'taskGroupId must be given');
-    assert(schedulerId, 'schedulerId must be given');
-    assert(deadline instanceof Date, 'deadline must be a date');
-    assert(isFinite(deadline), 'deadline must be a valid date');
-
-    let delay = Math.floor(this.deadlineDelay / 1000);
-    debug('Put deadline message to be visible in %s seconds',
-      secondsTo(deadline) + delay);
-
-    await this.db.fns.queue_task_deadline_put(
-      taskGroupId,
-      taskId,
-      schedulerId,
-      deadline.toJSON(), // this is to be checked against task record if it didn't change
-      taskcluster.fromNow(`${secondsTo(deadline) + delay} seconds`), // this is slightly after deadline
     );
   }
 
@@ -162,25 +96,40 @@ class QueueService {
    *
    * Note, messages must be handled within 10 minutes.
    */
-  async pollClaimQueue() {
-    // TODO
-    // return this.db.fns.get_claim_queue() ... map()
+  async pollClaimQueue(count = 32) {
+    // if message is not processed on time, different handler will pick it up after 1 minute
+    // if it is processed, it would be removed from the table
+    const hideUntil = taskcluster.fromNow('1 minute');
 
-    // Get messages
-    // let messages = await this._getMessages(this.claimQueue, {
-    //   visibility: 10 * 60,
-    //   count: 32,
-    // });
+    const rows = await this.db.fns.queue_claimed_task_get(hideUntil, count);
+    return rows.map(({
+      task_id: taskId,
+      run_id: runId,
+      taken_until,
+      pop_receipt,
+    }) => ({
+      taskId,
+      runId,
+      takenUntil: new Date(taken_until),
+      remove: async () => this.db.fns.queue_claimed_task_delete(taskId, pop_receipt),
+    }));
+  }
 
-    // // Convert to neatly consumable format
-    // return messages.map(m => {
-    //   return {
-    //     taskId: m.payload.taskId,
-    //     runId: m.payload.runId,
-    //     takenUntil: new Date(m.payload.takenUntil),
-    //     remove: m.remove,
-    //   };
-    // });
+  /** Enqueue message ensure the dependency resolver handles the resolution */
+  async putResolvedMessage(taskId, taskGroupId, schedulerId, resolution) {
+    assert(taskId, 'taskId must be given');
+    assert(taskGroupId, 'taskGroupId must be given');
+    assert(schedulerId, 'schedulerId must be given');
+    assert(resolution === 'completed' || resolution === 'failed' ||
+      resolution === 'exception',
+    'resolution must be completed, failed or exception');
+
+    await this.db.fns.queue_resolved_task_put(
+      taskGroupId,
+      taskId,
+      schedulerId,
+      resolution,
+    );
   }
 
   /**
@@ -222,6 +171,27 @@ class QueueService {
     //     remove: m.remove,
     //   };
     // });
+  }
+
+  /** Enqueue message to become visible when deadline has expired */
+  async putDeadlineMessage(taskId, taskGroupId, schedulerId, deadline) {
+    assert(taskId, 'taskId must be given');
+    assert(taskGroupId, 'taskGroupId must be given');
+    assert(schedulerId, 'schedulerId must be given');
+    assert(deadline instanceof Date, 'deadline must be a date');
+    assert(isFinite(deadline), 'deadline must be a valid date');
+
+    let delay = Math.floor(this.deadlineDelay / 1000);
+    debug('Put deadline message to be visible in %s seconds',
+      secondsTo(deadline) + delay);
+
+    await this.db.fns.queue_task_deadline_put(
+      taskGroupId,
+      taskId,
+      schedulerId,
+      deadline.toJSON(), // this is to be checked against task record if it didn't change
+      taskcluster.fromNow(`${secondsTo(deadline) + delay} seconds`), // this is slightly after deadline
+    );
   }
 
   /**
@@ -279,7 +249,7 @@ class QueueService {
    *
    * Notice that a data.Task entity fits this description perfectly.
    */
-  async putPendingTask(task, runId) {
+  async putPendingMessage(task, runId) {
     assert(typeof task.taskId === 'string', 'Expected task.taskId');
     assert(typeof runId === 'number', 'Expected runId as number');
     assert(typeof task.taskQueueId === 'string', 'Expected task.taskQueueId');

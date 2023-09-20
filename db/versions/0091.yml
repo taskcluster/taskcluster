@@ -154,7 +154,7 @@ methods:
       Track task deadline
     mode: write
     serviceName: queue
-    args: task_group_id_in text, task_id_in text, scheduler_id_in text, deadline_in timestamptz, visible_at timestamp
+    args: task_group_id_in text, task_id_in text, scheduler_id_in text, deadline_in timestamptz, visible_at timestamptz
     returns: void
     body: |-
       begin
@@ -181,7 +181,7 @@ methods:
       Get up to `count` messages from the deadline queue
     mode: write
     serviceName: queue
-    args: visible_at_in timestamp, count integer
+    args: visible_at_in timestamptz, count integer
     returns: table (task_id text, task_group_id text, scheduler_id text, deadline timestamptz, pop_receipt uuid)
     body: |-
       begin
@@ -235,14 +235,60 @@ methods:
           task_id,
           run_id,
           claimed_at,
-          taken_until
+          taken_until,
+          visible_at
         )
         values (
           task_id_in,
           run_id_in,
           now(),
-          taken_until_in
+          taken_until_in,
+          taken_until_in -- visible_at initially same as taken_until
         );
+      end
+
+  queue_claimed_task_get:
+    description: |
+      Get up to `count` messages from the claimed queue
+    mode: write
+    serviceName: queue
+    args: visible_at_in timestamptz, count integer
+    returns: table (task_id text, run_id integer, taken_until timestamptz, pop_receipt uuid)
+    body: |-
+      begin
+        return query
+          with updated as (
+            update queue_claimed_tasks q
+            set pop_receipt = public.gen_random_uuid(),
+              visible_at = visible_at_in
+            where
+              q.task_id in (
+                select q2.task_id
+                from queue_claimed_tasks q2
+                where q2.visible_at <= now()
+                order by q2.taken_until
+                for update skip locked
+                limit count
+            )
+            returning q.task_id, q.run_id, q.taken_until, q.pop_receipt
+          )
+          select u.task_id, u.run_id, u.taken_until, u.pop_receipt
+          from updated as u
+          order by u.taken_until;
+      end
+
+  queue_claimed_task_delete:
+    description: |
+      Delete claimed task
+    mode: write
+    serviceName: queue
+    args: task_id_in text, pop_receipt_in uuid
+    returns: void
+    body: |-
+      begin
+        delete from queue_claimed_tasks
+        where task_id = task_id_in
+          and pop_receipt = pop_receipt_in;
       end
 
 
@@ -261,13 +307,15 @@ methods:
           task_id,
           scheduler_id,
           resolution,
-          resolved_at
+          resolved_at,
+          visible_at
         )
         values (
           task_group_id_in,
           task_id_in,
           scheduler_id_in,
           resolution_in,
+          now(),
           now()
         );
       end

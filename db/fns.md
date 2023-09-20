@@ -104,6 +104,8 @@
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
    * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
    * [`queue_artifact_present`](#queue_artifact_present)
+   * [`queue_claimed_task_delete`](#queue_claimed_task_delete)
+   * [`queue_claimed_task_get`](#queue_claimed_task_get)
    * [`queue_claimed_task_put`](#queue_claimed_task_put)
    * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
    * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
@@ -1322,6 +1324,8 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
 * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
 * [`queue_artifact_present`](#queue_artifact_present)
+* [`queue_claimed_task_delete`](#queue_claimed_task_delete)
+* [`queue_claimed_task_get`](#queue_claimed_task_get)
 * [`queue_claimed_task_put`](#queue_claimed_task_put)
 * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
 * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
@@ -1933,6 +1937,34 @@ Worker will keep a history of all quarantine details.
 Mark the given queue artifact as present, returning the updated artifact.  Returns
 nothing if no such artifact exists.
 
+### queue_claimed_task_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete claimed task
+
+
+### queue_claimed_task_get
+
+* *Mode*: write
+* *Arguments*:
+  * `visible_at_in timestamptz`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `run_id integer`
+  * `taken_until timestamptz`
+  * `pop_receipt uuid`
+* *Last defined on version*: 91
+
+Get up to `count` messages from the claimed queue
+
+
 ### queue_claimed_task_put
 
 * *Mode*: write
@@ -2057,7 +2089,7 @@ Delete deadline task
 
 * *Mode*: write
 * *Arguments*:
-  * `visible_at_in timestamp`
+  * `visible_at_in timestamptz`
   * `count integer`
 * *Returns*: `table`
   * `task_id text`
@@ -2078,7 +2110,7 @@ Get up to `count` messages from the deadline queue
   * `task_id_in text`
   * `scheduler_id_in text`
   * `deadline_in timestamptz`
-  * `visible_at timestamp`
+  * `visible_at timestamptz`
 * *Returns*: `void`
 * *Last defined on version*: 91
 

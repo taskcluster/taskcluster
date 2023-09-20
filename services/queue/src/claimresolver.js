@@ -43,6 +43,8 @@ class ClaimResolver {
       'Expected pollingDelay to be a number');
     assert(typeof options.parallelism === 'number',
       'Expected parallelism to be a number');
+    assert(typeof options.count === 'number',
+      'Expected count to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
     this.db = options.db;
@@ -51,6 +53,7 @@ class ClaimResolver {
     this.publisher = options.publisher;
     this.pollingDelay = options.pollingDelay;
     this.parallelism = options.parallelism;
+    this.count = options.count;
     this.monitor = options.monitor;
 
     this.iterator = new Iterate({
@@ -152,7 +155,7 @@ class ClaimResolver {
         newRun.state === 'pending' &&
         newRun.reasonCreated === 'retry') {
       await Promise.all([
-        this.queueService.putPendingTask(task, runId + 1),
+        this.queueService.putPendingMessage(task, runId + 1),
         this.publisher.taskPending({
           status: status,
           runId: runId + 1,

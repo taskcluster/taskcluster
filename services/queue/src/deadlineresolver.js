@@ -94,14 +94,14 @@ class DeadlineResolver {
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    let tasks = await this.queueService.pollDeadlineQueue(this.count);
+    let messages = await this.queueService.pollDeadlineQueue(this.count);
     let failed = 0;
 
-    await Promise.all(tasks.map(async (task) => {
+    await Promise.all(messages.map(async (message) => {
       // Don't let a single task error break the loop, it'll be retried later
       // as we don't remove message unless they are handled
       try {
-        await this.handleTask(task);
+        await this.handleMessage(message);
       } catch (err) {
         failed += 1;
         this.monitor.reportError(err, 'warning');
@@ -109,19 +109,19 @@ class DeadlineResolver {
     }));
 
     // If there were no messages, back of for a bit.
-    if (tasks.length === 0) {
+    if (messages.length === 0) {
       await sleep(2000);
     }
 
     this.monitor.log.queuePoll({
-      count: tasks.length,
+      count: messages.length,
       failed,
       resolver: 'deadline',
     });
   }
 
   /** Handle advisory message about deadline expiration */
-  async handleTask({ taskId, taskGroupId, schedulerId, deadline, remove }) {
+  async handleMessage({ taskId, taskGroupId, schedulerId, deadline, remove }) {
     const task = await Task.get(this.db, taskId);
 
     // If the task doesn't exist, or if the deadline has changed, then we're done

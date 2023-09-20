@@ -324,6 +324,7 @@ CREATE TABLE queue_claimed_tasks (
     run_id integer NOT NULL,
     claimed_at timestamp with time zone NOT NULL,
     taken_until timestamp with time zone NOT NULL,
+    visible_at timestamp with time zone NOT NULL,
     pop_receipt uuid
 );
 ```
@@ -352,6 +353,7 @@ CREATE TABLE queue_resolved_tasks (
     scheduler_id text NOT NULL,
     resolution text NOT NULL,
     resolved_at timestamp with time zone NOT NULL,
+    visible_at timestamp with time zone NOT NULL,
     pop_receipt uuid
 );
 ```

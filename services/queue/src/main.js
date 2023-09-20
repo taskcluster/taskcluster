@@ -253,6 +253,7 @@ let load = loader({
         db, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.claimResolver.pollingDelay,
         parallelism: cfg.app.claimResolver.parallelism,
+        count: cfg.app.claimResolver.count,
         monitor: monitor.childMonitor('claim-resolver'),
       });
       await resolver.start();

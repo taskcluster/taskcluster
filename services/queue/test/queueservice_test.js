@@ -55,14 +55,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const workerType = 'no-worker';
   const provisionerId = slugid.v4(); // make a unique provisionerId
 
-  test('putDeadlineTask, pollDeadlineQueue', async () => {
+  test('putDeadlineMessage, pollDeadlineQueue', async () => {
     const taskId = slugid.v4();
     const taskGroupId = slugid.v4();
     const schedulerId = slugid.v4();
     const deadline = new Date(new Date().getTime() + 1 * 1000);
     debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
     // Put message
-    await queueService.putDeadlineTask(taskId, taskGroupId, schedulerId, deadline);
+    await queueService.putDeadlineMessage(taskId, taskGroupId, schedulerId, deadline);
 
     // Poll for message
     return testing.poll(async () => {
@@ -83,12 +83,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }, 100, 250);
   });
 
-  test('putClaimTask, pollClaimQueue', async () => {
+  test('putClaimMessage, pollClaimQueue', async () => {
     const taskId = slugid.v4();
     const takenUntil = new Date(new Date().getTime() + 2 * 1000);
     debug('Putting message with taskId: %s', taskId);
     // Put message
-    await queueService.putClaimTask(taskId, 0, takenUntil);
+    await queueService.putClaimMessage(taskId, 0, takenUntil);
 
     // Poll for message
     return testing.poll(async () => {
@@ -109,13 +109,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }, 100, 250);
   });
 
-  test('putResolvedTask, pollResolvedQueue', async () => {
+  test('putResolvedMessage, pollResolvedQueue', async () => {
     const taskId = slugid.v4();
     const taskGroupId = slugid.v4();
     const schedulerId = slugid.v4();
     debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
     // Put message
-    await queueService.putResolvedTask(taskId, taskGroupId, schedulerId, 'completed');
+    await queueService.putResolvedMessage(taskId, taskGroupId, schedulerId, 'completed');
 
     // Poll for message
     return testing.poll(async () => {
@@ -149,7 +149,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // Put message into pending queue
     debug('### Putting message in pending queue');
-    await queueService.putPendingTask(task, runId);
+    await queueService.putPendingMessage(task, runId);
 
     // Get poll functions for queues
     let poll = await queueService.getTaskQueuePendingTasks(`${provisionerId}/${workerType}`);

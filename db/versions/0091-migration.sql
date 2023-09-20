@@ -50,18 +50,20 @@ begin
     scheduler_id text not null,
     resolution text not null,
     resolved_at timestamptz not null,
+    visible_at timestamptz not null,
     pop_receipt uuid null
   );
 
   -- migrate data to resolved queue
   INSERT INTO
-    queue_resolved_tasks (task_id, task_group_id, scheduler_id, resolution, resolved_at, pop_receipt)
+    queue_resolved_tasks (task_id, task_group_id, scheduler_id, resolution, resolved_at, visible_at, pop_receipt)
   SELECT
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskGroupId',
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'schedulerId',
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'resolution',
     inserted,
+    visible,
     pop_receipt
   FROM azure_queue_messages
   WHERE queue_name = 'resolved-queue'
@@ -74,17 +76,19 @@ begin
     run_id integer not null,
     claimed_at timestamptz not null,
     taken_until timestamptz not null,
+    visible_at timestamptz not null,
     pop_receipt uuid null
   );
 
   -- migrate data to resolved queue
   INSERT INTO
-    queue_claimed_tasks (task_id, run_id, claimed_at, taken_until, pop_receipt)
+    queue_claimed_tasks (task_id, run_id, claimed_at, taken_until, visible_at, pop_receipt)
   SELECT
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',
     CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'runId' AS INTEGER),
     inserted,
     CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'takenUntil' AS timestamp with time zone),
+    visible,
     pop_receipt
   FROM azure_queue_messages
   WHERE queue_name = 'claim-queue'
