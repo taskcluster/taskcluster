@@ -82,7 +82,7 @@ class HintPoller {
       let limit, hints;
       let i = 10; // count iterations a limit to 10, before we start over
       while ((limit = _.sumBy(this.requests, 'count')) > 0 &&
-          (hints = await this.pollPendingQueue(this.taskQueueId, limit)).length > 0 && i-- > 0) {
+          (hints = await this.pollPendingQueue(limit)).length > 0 && i-- > 0) {
         // Count hints claimed
         claimed += hints.length;
 

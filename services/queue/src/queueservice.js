@@ -234,7 +234,7 @@ class QueueService {
   /**
    * Remove expired tasks from the pending queue
    */
-  async deleteExpiredTasks() {
+  async deleteExpired() {
     await this.db.fns.queue_pending_tasks_delete_expired();
   }
 
@@ -293,22 +293,26 @@ class QueueService {
    *   release: function() {} // Async function that makes the message visible
    * }
    */
-  async pendingQueue(taskQueueId, count) {
-    const hideUntil = taskcluster.fromNow(MESSAGE_FREEZE_TIMEOUT);
-
-    const rows = await this.db.fns.queue_pending_tasks_get(taskQueueId, hideUntil, count);
-    return rows.map(({
-      task_id: taskId,
-      run_id: runId,
-      hint_id: hintId,
-      pop_receipt,
-    }) => ({
-      taskId,
-      runId,
-      hintId,
-      remove: async () => this.db.fns.queue_pending_tasks_delete(taskId, pop_receipt),
-      release: async () => this.db.fns.queue_pending_tasks_release(taskId, pop_receipt),
-    }));
+  async pollPendingQueue(taskQueueId) {
+    return async (count) => {
+      const rows = await this.db.fns.queue_pending_tasks_get(
+        taskQueueId,
+        taskcluster.fromNow(MESSAGE_FREEZE_TIMEOUT), // hide until
+        count,
+      );
+      return rows.map(({
+        task_id: taskId,
+        run_id: runId,
+        hint_id: hintId,
+        pop_receipt,
+      }) => ({
+        taskId,
+        runId,
+        hintId,
+        remove: async () => this.db.fns.queue_pending_tasks_delete(taskId, pop_receipt),
+        release: async () => this.db.fns.queue_pending_tasks_release(taskId, pop_receipt),
+      }));
+    };
   }
 
   /**

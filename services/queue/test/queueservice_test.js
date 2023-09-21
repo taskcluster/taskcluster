@@ -152,15 +152,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await queueService.putPendingMessage(task, runId);
 
     // Get poll functions for queues
-    let poll = await queueService.pendingQueue(`${provisionerId}/${workerType}`);
+    let poll = await queueService.pollPendingQueue(`${provisionerId}/${workerType}`);
 
     // Poll for the message
     let message = await testing.poll(async () => {
-      for (let i = 0; i < poll.length; i++) {
-        let messages = await poll[i](1);
-        if (messages.length === 1) {
-          return messages[0];
-        }
+      let messages = await poll(1);
+      if (messages.length === 1) {
+        return messages[0];
       }
       throw new Error('Expected message');
     }, 100, 250);
@@ -174,11 +172,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // Poll message again
     message = await testing.poll(async () => {
-      for (let i = 0; i < poll.length; i++) {
-        let messages = await poll[i](1);
-        if (messages.length === 1) {
-          return messages[0];
-        }
+      let messages = await poll(1);
+      if (messages.length === 1) {
+        return messages[0];
       }
       throw new Error('Expected message to return');
     }, 100, 250);
