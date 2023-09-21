@@ -293,7 +293,7 @@ class QueueService {
    *   release: function() {} // Async function that makes the message visible
    * }
    */
-  async pollPendingQueue(taskQueueId) {
+  pollPendingQueue(taskQueueId) {
     return async (count) => {
       const rows = await this.db.fns.queue_pending_tasks_get(
         taskQueueId,

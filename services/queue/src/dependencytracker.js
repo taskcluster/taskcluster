@@ -174,7 +174,7 @@ class DependencyTracker {
 
         if (resolution !== 'completed') {
           // If the resolution wasn't 'completed', we can only remove mark this
-          // dependency as satisified if the 'require' relation is
+          // dependency as satisfied if the 'require' relation is
           // 'all-resolved'.
           if (dep.requires !== 'all-resolved') {
             return;

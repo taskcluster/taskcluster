@@ -158,18 +158,6 @@ exports.withGCS = (mock, skipping) => {
 };
 
 /**
- * Provide a fake QueueService implementation at helper.queueService
- */
-exports.withQueueService = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-    console.error('withQueueService is refactored');
-  });
-};
-
-/**
  * Mock the https://ip-ranges.amazonaws.com/ip-ranges.json endpoint
  * to use a fixed set of IP ranges for testing.
  *

@@ -18,10 +18,6 @@ methods:
   azure_queue_delete_expired:
     deprecated: true
 
-
-  # queue_pending_tasks indexes:
-  #  (task_queue_id, priority, inserted)
-  #  (task_id) unique
   queue_pending_tasks_get:
     description: |
       Get up to `count` messages from the given taskQueueId.
