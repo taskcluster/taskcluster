@@ -10,12 +10,20 @@ let _ = require('lodash');
  *  B) If there is an hint in an azure queue, it may or may not be pending.
  *
  * It's an if, but not an only-if (think over-approximation).
+ *
+ * @class HintPoller
+ * @param {string} taskQueueId - The ID of the task queue to poll for hints.
+ * @param {Object} options - The options for the HintPoller.
+ * @param {Monitor} options.monitor - The monitor object to use for logging.
+ * @param {Function } options.pollPendingQueue - Function that fetches pending tasks for given queue
+ * @param {Function} options.onError - The function to call if an error occurs.
+ * @param {Function} options.onDestroy - The function to call when the HintPoller is destroyed.
  */
 class HintPoller {
-  constructor(taskQueueId, { monitor, db, onError, onDestroy }) {
+  constructor(taskQueueId, { monitor, pollPendingQueue, onError, onDestroy }) {
     this.taskQueueId = taskQueueId;
     this.monitor = monitor;
-    this.db = db;
+    this.pollPendingQueue = pollPendingQueue;
     this.onError = onError;
     this.onDestroy = onDestroy;
     this.requests = [];
@@ -59,19 +67,6 @@ class HintPoller {
     }
   }
 
-  async getTasks(count) {
-    const rows = await this.db.fns.queue_pending_tasks_get(this.taskQueueId, count);
-    return rows.map(({ task_id, run_id, hint_id, pop_receipt }) => {
-      return {
-        taskId: task_id,
-        runId: run_id,
-        hintId: hint_id,
-        remove: async () => this.db.fns.queue_pending_tasks_delete(task_id, pop_receipt),
-        release: async () => this.db.fns.queue_pending_tasks_release(task_id, pop_receipt),
-      };
-    });
-  }
-
   /**
    * we probably don't have to fetch all tasks and then release unused ones?
    * .?
@@ -87,7 +82,7 @@ class HintPoller {
       let limit, hints;
       let i = 10; // count iterations a limit to 10, before we start over
       while ((limit = _.sumBy(this.requests, 'count')) > 0 &&
-              (hints = await this.getTasks(limit)).length > 0 && i-- > 0) {
+          (hints = await this.pollPendingQueue(this.taskQueueId, limit)).length > 0 && i-- > 0) {
         // Count hints claimed
         claimed += hints.length;
 

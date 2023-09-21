@@ -1957,7 +1957,7 @@ Delete claimed task
 
 * *Mode*: write
 * *Arguments*:
-  * `visible_at_in timestamptz`
+  * `visible_in timestamptz`
   * `count integer`
 * *Returns*: `table`
   * `task_id text`
@@ -2020,6 +2020,7 @@ Delete all expired tasks.
 * *Mode*: write
 * *Arguments*:
   * `task_queue_id_in text`
+  * `visible_in timestamptz`
   * `count integer`
 * *Returns*: `table`
   * `task_id text`
@@ -2029,9 +2030,6 @@ Delete all expired tasks.
 * *Last defined on version*: 91
 
 Get up to `count` messages from the given taskQueueId.
-tbd..
-this mimics `azure_queue_get`
-is `visible` field necessary ?? or just setting and un-setting `pop_receipt` is enough
 
 
 ### queue_pending_tasks_put
@@ -2079,7 +2077,7 @@ Delete claimed task
 
 * *Mode*: write
 * *Arguments*:
-  * `visible_at_in timestamptz`
+  * `visible_in timestamptz`
   * `count integer`
 * *Returns*: `table`
   * `task_id text`
@@ -2122,7 +2120,7 @@ Delete deadline task
 
 * *Mode*: write
 * *Arguments*:
-  * `visible_at_in timestamptz`
+  * `visible_in timestamptz`
   * `count integer`
 * *Returns*: `table`
   * `task_id text`
@@ -2143,7 +2141,7 @@ Get up to `count` messages from the deadline queue
   * `task_id_in text`
   * `scheduler_id_in text`
   * `deadline_in timestamptz`
-  * `visible_at timestamptz`
+  * `visible timestamptz`
 * *Returns*: `void`
 * *Last defined on version*: 91
 

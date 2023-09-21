@@ -42,7 +42,7 @@ class WorkClaimer extends events.EventEmitter {
     if (!this._hintPollers[taskQueueId]) {
       this._hintPollers[taskQueueId] = new HintPoller(taskQueueId, {
         monitor: this._monitor,
-        db: this.db,
+        pollPendingQueue: async (taskQueueId, limit) => this._queueService.pendingQueue(taskQueueId, limit),
         onError: err => this.emit('error', err),
         onDestroy: () => delete this._hintPollers[taskQueueId],
       });

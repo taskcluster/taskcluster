@@ -216,9 +216,9 @@ queue_task_deadlines:
   task_id: text not null
   task_group_id: text not null
   scheduler_id: text not null
-  created_at: timestamp with time zone not null
+  created: timestamp with time zone not null
   deadline: timestamp with time zone not null
-  visible_at: timestamp with time zone not null
+  visible: timestamp with time zone not null
   pop_receipt: uuid
 
 queue_resolved_tasks:
@@ -226,16 +226,16 @@ queue_resolved_tasks:
   task_id: text not null
   scheduler_id: text not null
   resolution: text not null
-  resolved_at: timestamp with time zone not null
-  visible_at: timestamp with time zone not null
+  resolved: timestamp with time zone not null
+  visible: timestamp with time zone not null
   pop_receipt: uuid
 
 queue_claimed_tasks:
   task_id: text not null
   run_id: integer not null
-  claimed_at: timestamp with time zone not null
+  claimed: timestamp with time zone not null
   taken_until: timestamp with time zone not null
-  visible_at: timestamp with time zone not null
+  visible: timestamp with time zone not null
   pop_receipt: uuid
 
 queue_pending_tasks:
@@ -244,8 +244,9 @@ queue_pending_tasks:
   task_id: text not null
   run_id: integer not null
   hint_id: text not null
-  inserted_at: timestamp with time zone not null
+  inserted: timestamp with time zone not null
   expires: timestamp with time zone not null
+  visible: timestamp with time zone not null
   pop_receipt: uuid
 
 # This table is used by tc-lib-azqueue to emulate the Azure Storage API's Queue functionality.

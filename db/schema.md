@@ -43,7 +43,7 @@
 
 ```sql
 CREATE UNIQUE INDEX objects_upload_id_idx ON objects USING btree (upload_id) WHERE (upload_id IS NOT NULL);
-CREATE UNIQUE INDEX task_id ON queue_pending_tasks USING btree (task_id);
+CREATE UNIQUE INDEX queue_pending_task_idx ON queue_pending_tasks USING btree (task_id);
 ```
 
 ## access_tokens
@@ -322,9 +322,9 @@ ALTER TABLE queue_artifacts
 CREATE TABLE queue_claimed_tasks (
     task_id text NOT NULL,
     run_id integer NOT NULL,
-    claimed_at timestamp with time zone NOT NULL,
+    claimed timestamp with time zone NOT NULL,
     taken_until timestamp with time zone NOT NULL,
-    visible_at timestamp with time zone NOT NULL,
+    visible timestamp with time zone NOT NULL,
     pop_receipt uuid
 );
 ```
@@ -338,8 +338,9 @@ CREATE TABLE queue_pending_tasks (
     task_id text NOT NULL,
     run_id integer NOT NULL,
     hint_id text NOT NULL,
-    inserted_at timestamp with time zone NOT NULL,
+    inserted timestamp with time zone NOT NULL,
     expires timestamp with time zone NOT NULL,
+    visible timestamp with time zone NOT NULL,
     pop_receipt uuid
 );
 ```
@@ -352,8 +353,8 @@ CREATE TABLE queue_resolved_tasks (
     task_id text NOT NULL,
     scheduler_id text NOT NULL,
     resolution text NOT NULL,
-    resolved_at timestamp with time zone NOT NULL,
-    visible_at timestamp with time zone NOT NULL,
+    resolved timestamp with time zone NOT NULL,
+    visible timestamp with time zone NOT NULL,
     pop_receipt uuid
 );
 ```
@@ -365,9 +366,9 @@ CREATE TABLE queue_task_deadlines (
     task_id text NOT NULL,
     task_group_id text NOT NULL,
     scheduler_id text NOT NULL,
-    created_at timestamp with time zone NOT NULL,
+    created timestamp with time zone NOT NULL,
     deadline timestamp with time zone NOT NULL,
-    visible_at timestamp with time zone NOT NULL,
+    visible timestamp with time zone NOT NULL,
     pop_receipt uuid
 );
 ```
@@ -575,6 +576,14 @@ CREATE INDEX github_builds_organization_repository_sha_idx ON github_builds USIN
 CREATE INDEX github_builds_pr ON github_builds USING btree (organization, repository, pull_request_number);
 CREATE INDEX github_checks_check_suite_id_check_run_id_idx ON github_checks USING btree (check_suite_id, check_run_id);
 CREATE INDEX hooks_last_fires_time ON hooks_last_fires USING btree (hook_group_id, hook_id, task_create_time);
+CREATE INDEX queue_claimed_task_idx ON queue_claimed_tasks USING btree (task_id);
+CREATE INDEX queue_claimed_task_vis_idx ON queue_claimed_tasks USING btree (visible);
+CREATE INDEX queue_pending_task_queue_idx ON queue_pending_tasks USING btree (task_queue_id, priority, inserted);
+CREATE INDEX queue_pending_task_vis_idx ON queue_pending_tasks USING btree (visible, expires);
+CREATE INDEX queue_resolved_task_idx ON queue_resolved_tasks USING btree (task_id);
+CREATE INDEX queue_resolved_task_vis_idx ON queue_resolved_tasks USING btree (visible);
+CREATE INDEX queue_task_deadline_idx ON queue_task_deadlines USING btree (task_id);
+CREATE INDEX queue_task_deadline_vis_idx ON queue_task_deadlines USING btree (visible);
 CREATE INDEX sha512_index_namespaces_idx ON index_namespaces USING btree (public.sha512(parent), name);
 CREATE INDEX sha512_indexed_tasks_idx ON indexed_tasks USING btree (public.sha512(namespace), name);
 CREATE INDEX task_dependencies_dependent_task_id_idx ON task_dependencies USING btree (dependent_task_id) WHERE (NOT satisfied);

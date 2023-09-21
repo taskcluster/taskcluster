@@ -152,7 +152,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await queueService.putPendingMessage(task, runId);
 
     // Get poll functions for queues
-    let poll = await queueService.getTaskQueuePendingTasks(`${provisionerId}/${workerType}`);
+    let poll = await queueService.pendingQueue(`${provisionerId}/${workerType}`);
 
     // Poll for the message
     let message = await testing.poll(async () => {

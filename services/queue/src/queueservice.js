@@ -36,6 +36,8 @@ const PRIORITIES = [
 ];
 assert(_.xor(PRIORITIES, _.keys(PRIORITY_TO_CONSTANT)).length === 0);
 
+const MESSAGE_FREEZE_TIMEOUT = '5 minutes';
+
 /**
  * Utility class for managing task lifecycle queues.
  */
@@ -97,9 +99,9 @@ class QueueService {
    * Note, messages must be handled within 10 minutes.
    */
   async pollClaimQueue(count = 32) {
-    // if message is not processed on time, different handler will pick it up after 1 minute
+    // if message is not processed on time, different handler will pick it up after timeout
     // if it is processed, it would be removed from the table
-    const hideUntil = taskcluster.fromNow('1 minute');
+    const hideUntil = taskcluster.fromNow(MESSAGE_FREEZE_TIMEOUT);
 
     const rows = await this.db.fns.queue_claimed_task_get(hideUntil, count);
     return rows.map(({
@@ -151,9 +153,9 @@ class QueueService {
    * Note, messages must be handled within 10 minutes.
    */
   async pollResolvedQueue(count = 32) {
-    // if message is not processed on time, different handler will pick it up after 1 minute
+    // if message is not processed on time, different handler will pick it up after timeout
     // if it is processed, it would be removed from the table
-    const hideUntil = taskcluster.fromNow('1 minute');
+    const hideUntil = taskcluster.fromNow(MESSAGE_FREEZE_TIMEOUT);
 
     const rows = await this.db.fns.queue_resolved_task_get(hideUntil, count);
     return rows.map(({
@@ -209,9 +211,9 @@ class QueueService {
    * Note, messages must be handled within 10 minutes.
    */
   async pollDeadlineQueue(count = 32) {
-    // if message is not processed on time, different handler will pick it up after 1 minute
+    // if message is not processed on time, different handler will pick it up after timeout
     // if it is processed, it would be removed from the table
-    const hideUntil = taskcluster.fromNow('1 minute');
+    const hideUntil = taskcluster.fromNow(MESSAGE_FREEZE_TIMEOUT);
 
     const rows = await this.db.fns.queue_task_deadline_get(hideUntil, count);
     return rows.map(({
@@ -291,8 +293,10 @@ class QueueService {
    *   release: function() {} // Async function that makes the message visible
    * }
    */
-  async getTaskQueuePendingTasks(taskQueueId, count) {
-    const rows = await this.db.fns.queue_pending_tasks_get(taskQueueId, count);
+  async pendingQueue(taskQueueId, count) {
+    const hideUntil = taskcluster.fromNow(MESSAGE_FREEZE_TIMEOUT);
+
+    const rows = await this.db.fns.queue_pending_tasks_get(taskQueueId, hideUntil, count);
     return rows.map(({
       task_id: taskId,
       run_id: runId,
