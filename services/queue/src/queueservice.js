@@ -67,8 +67,11 @@ class QueueService {
   }
 
   /** Enqueue message to become visible when claim has expired */
-  async putClaimMessage(taskId, runId, takenUntil) {
+  async putClaimMessage(taskId, runId, takenUntil, taskQueueId, workerGroup, workerId) {
     assert(taskId, 'taskId must be given');
+    assert(taskQueueId, 'taskQueueId must be given');
+    assert(workerGroup, 'workerGroup must be given');
+    assert(workerId, 'workerId must be given');
     assert(typeof runId === 'number', 'runId must be a number');
     assert(takenUntil instanceof Date, 'takenUntil must be a date');
     assert(isFinite(takenUntil), 'takenUntil must be a valid date');
@@ -77,6 +80,9 @@ class QueueService {
       taskId,
       runId,
       takenUntil.toJSON(),
+      taskQueueId,
+      workerGroup,
+      workerId,
     );
   }
 
@@ -117,8 +123,13 @@ class QueueService {
     }));
   }
 
-  /** Enqueue message ensure the dependency resolver handles the resolution */
-  async putResolvedMessage(taskId, taskGroupId, schedulerId, resolution) {
+  /**
+   * Enqueue message ensure the dependency resolver handles the resolution.
+   * This is being called whenever task is resolved as completed or failed.
+   *
+   * At this moment we can also drop record from the claim queue, since the task was resolved.
+   */
+  async putResolvedMessage(taskId, taskGroupId, schedulerId, resolution, runId = 0) {
     assert(taskId, 'taskId must be given');
     assert(taskGroupId, 'taskGroupId must be given');
     assert(schedulerId, 'schedulerId must be given');
@@ -126,12 +137,15 @@ class QueueService {
       resolution === 'exception',
     'resolution must be completed, failed or exception');
 
-    await this.db.fns.queue_resolved_task_put(
-      taskGroupId,
-      taskId,
-      schedulerId,
-      resolution,
-    );
+    await Promise.allSettled([
+      this.db.fns.queue_resolved_task_put(
+        taskGroupId,
+        taskId,
+        schedulerId,
+        resolution,
+      ),
+      this.db.fns.queue_claimed_task_resolved(taskId, runId),
+    ]);
   }
 
   /**

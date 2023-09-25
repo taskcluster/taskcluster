@@ -322,6 +322,9 @@ ALTER TABLE queue_artifacts
 CREATE TABLE queue_claimed_tasks (
     task_id text NOT NULL,
     run_id integer NOT NULL,
+    task_queue_id text NOT NULL,
+    worker_group text NOT NULL,
+    worker_id text NOT NULL,
     claimed timestamp with time zone NOT NULL,
     taken_until timestamp with time zone NOT NULL,
     visible timestamp with time zone NOT NULL,
@@ -576,7 +579,8 @@ CREATE INDEX github_builds_organization_repository_sha_idx ON github_builds USIN
 CREATE INDEX github_builds_pr ON github_builds USING btree (organization, repository, pull_request_number);
 CREATE INDEX github_checks_check_suite_id_check_run_id_idx ON github_checks USING btree (check_suite_id, check_run_id);
 CREATE INDEX hooks_last_fires_time ON hooks_last_fires USING btree (hook_group_id, hook_id, task_create_time);
-CREATE INDEX queue_claimed_task_idx ON queue_claimed_tasks USING btree (task_id);
+CREATE INDEX queue_claimed_task_idx ON queue_claimed_tasks USING btree (task_id, run_id);
+CREATE INDEX queue_claimed_task_queue_idx ON queue_claimed_tasks USING btree (task_queue_id, worker_group, worker_id);
 CREATE INDEX queue_claimed_task_vis_idx ON queue_claimed_tasks USING btree (visible);
 CREATE INDEX queue_pending_task_queue_idx ON queue_pending_tasks USING btree (task_queue_id, priority, inserted);
 CREATE INDEX queue_pending_task_vis_idx ON queue_pending_tasks USING btree (visible, expires);

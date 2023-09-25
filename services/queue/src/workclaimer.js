@@ -123,7 +123,7 @@ class WorkClaimer extends events.EventEmitter {
     // put the claim-expiration message into the queue first.  If the
     // subsequent claim_task fails, the claim-expiration message will be
     // ignored when it appears.
-    await this._queueService.putClaimMessage(taskId, runId, takenUntil);
+    await this._queueService.putClaimMessage(taskId, runId, takenUntil, task.taskQueueId, workerGroup, workerId);
     task.updateStatusWith(
       await this.db.fns.claim_task(taskId, runId, workerGroup, workerId, hintId, takenUntil));
 

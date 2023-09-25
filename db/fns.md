@@ -107,6 +107,7 @@
    * [`queue_claimed_task_delete`](#queue_claimed_task_delete)
    * [`queue_claimed_task_get`](#queue_claimed_task_get)
    * [`queue_claimed_task_put`](#queue_claimed_task_put)
+   * [`queue_claimed_task_resolved`](#queue_claimed_task_resolved)
    * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
    * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
    * [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
@@ -1329,6 +1330,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`queue_claimed_task_delete`](#queue_claimed_task_delete)
 * [`queue_claimed_task_get`](#queue_claimed_task_get)
 * [`queue_claimed_task_put`](#queue_claimed_task_put)
+* [`queue_claimed_task_resolved`](#queue_claimed_task_resolved)
 * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
 * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
 * [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
@@ -1976,10 +1978,26 @@ Get up to `count` messages from the claimed queue
   * `task_id_in text`
   * `run_id_in integer`
   * `taken_until_in timestamptz`
+  * `task_queue_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
 * *Returns*: `void`
 * *Last defined on version*: 91
 
 Track when task was claimed and when it should be reclaimed
+
+
+### queue_claimed_task_resolved
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `run_id_in integer`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Once the task gets resolved it is no longer relevant for the claim queue, since it cannot expire anymore.
+We can safely delete given run from the claim queue.
 
 
 ### queue_pending_tasks_count
@@ -2029,7 +2047,8 @@ Delete all expired tasks.
   * `pop_receipt uuid`
 * *Last defined on version*: 91
 
-Get up to `count` messages from the given taskQueueId.
+Get up to `count` messages for the pending tasks from the given taskQueueId.
+Messages are locked and will temporarily become invisible for the `visible_in` period.
 
 
 ### queue_pending_tasks_put

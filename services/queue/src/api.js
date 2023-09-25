@@ -325,16 +325,18 @@ const cancelSingleTask = async (task, ctx) => {
 
   // If the last run was canceled, resolve dependencies and publish message
   if (run && run.state === 'exception' && run.reasonResolved === 'canceled') {
+    const runId = task.runs.length - 1;
+
     // Update dependency tracker
     await ctx.queueService.putResolvedMessage(
       task.taskId,
       task.taskGroupId,
       task.schedulerId,
       'exception',
+      runId,
     );
 
     // Publish message about the exception
-    const runId = task.runs.length - 1;
     await ctx.publisher.taskException(_.defaults({
       status,
       runId,
@@ -1416,7 +1418,7 @@ builder.declare({
   // Put claim-expiration message in queue, if not already done, before
   // reclaiming.  If the reclaim DB operation fails, then this message
   // will be ignored.
-  await this.queueService.putClaimMessage(taskId, runId, takenUntil);
+  await this.queueService.putClaimMessage(taskId, runId, takenUntil, task.taskQueueId, run.workerGroup, run.workerId);
   task.updateStatusWith(
     await this.db.fns.reclaim_task(taskId, runId, takenUntil));
 
@@ -1536,6 +1538,7 @@ let resolveTask = async function(req, res, taskId, runId, target) {
     task.taskGroupId,
     task.schedulerId,
     target,
+    runId,
   );
 
   // Construct status object

@@ -5,6 +5,7 @@ migrationScript: 0091-migration.sql
 downgradeScript: 0091-downgrade.sql
 
 methods:
+  # those methods and the azure messages table would be dropped in next release
   azure_queue_get:
     deprecated: true
   azure_queue_count:
@@ -20,7 +21,8 @@ methods:
 
   queue_pending_tasks_get:
     description: |
-      Get up to `count` messages from the given taskQueueId.
+      Get up to `count` messages for the pending tasks from the given taskQueueId.
+      Messages are locked and will temporarily become invisible for the `visible_in` period.
     mode: write
     serviceName: queue
     args: task_queue_id_in text, visible_in timestamptz, count integer
@@ -81,6 +83,9 @@ methods:
             queue_pending_tasks.task_queue_id = task_queue_id_in
             AND queue_pending_tasks.task_id = task_id_in
             AND queue_pending_tasks.pop_receipt is null;
+
+        -- notify listeners that there is a new task in the queue
+        EXECUTE 'NOTIFY task_pending, ' || quote_literal(task_queue_id_in) || ';';
       end
 
   queue_pending_tasks_release:
@@ -220,13 +225,16 @@ methods:
       Track when task was claimed and when it should be reclaimed
     mode: write
     serviceName: queue
-    args: task_id_in text, run_id_in integer, taken_until_in timestamptz
+    args: task_id_in text, run_id_in integer, taken_until_in timestamptz, task_queue_id_in text, worker_group_in text, worker_id_in text
     returns: void
     body: |-
       begin
         insert into queue_claimed_tasks (
           task_id,
           run_id,
+          task_queue_id,
+          worker_group,
+          worker_id,
           claimed,
           taken_until,
           visible
@@ -234,6 +242,9 @@ methods:
         values (
           task_id_in,
           run_id_in,
+          task_queue_id_in,
+          worker_group_in,
+          worker_id_in,
           now(),
           taken_until_in,
           taken_until_in -- visible initially same as taken_until
@@ -284,6 +295,21 @@ methods:
           and pop_receipt = pop_receipt_in;
       end
 
+  queue_claimed_task_resolved:
+    description: |
+      Once the task gets resolved it is no longer relevant for the claim queue, since it cannot expire anymore.
+      We can safely delete given run from the claim queue.
+    mode: write
+    serviceName: queue
+    args: task_id_in text, run_id_in integer
+    returns: void
+    body: |-
+      begin
+        delete from queue_claimed_tasks
+        where task_id = task_id_in
+          and run_id = run_id_in;
+      end
+
 
   # resolved queue
   queue_resolved_task_put:
@@ -311,6 +337,9 @@ methods:
           now(),
           now()
         );
+
+        -- notify listeners that task was resolved
+        EXECUTE 'NOTIFY task_resolved, ' || quote_literal(task_id_in) || ';';
       end
 
   queue_resolved_task_get:

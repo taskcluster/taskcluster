@@ -233,6 +233,9 @@ queue_resolved_tasks:
 queue_claimed_tasks:
   task_id: text not null
   run_id: integer not null
+  task_queue_id: text not null
+  worker_group: text not null
+  worker_id: text not null
   claimed: timestamp with time zone not null
   taken_until: timestamp with time zone not null
   visible: timestamp with time zone not null

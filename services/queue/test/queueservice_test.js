@@ -88,7 +88,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const takenUntil = new Date(new Date().getTime() + 2 * 1000);
     debug('Putting message with taskId: %s', taskId);
     // Put message
-    await queueService.putClaimMessage(taskId, 0, takenUntil);
+    await queueService.putClaimMessage(taskId, 0, takenUntil, 'tq/id', 'wg', 'wi');
 
     // Poll for message
     return testing.poll(async () => {

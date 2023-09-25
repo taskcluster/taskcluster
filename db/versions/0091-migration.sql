@@ -1,14 +1,14 @@
 begin
   -- migration is only possible when all tasks were migrated to new column structure
-  -- TODO: would be better to wait before all records are migrated and not block the migration here
-  IF EXISTS (
-    SELECT message_id FROM azure_queue_messages
-    WHERE queue_name NOT IN ('claim-queue', 'deadline-queue', 'resolved-queue')
-    AND task_queue_id IS NULL
-    LIMIT 1
-  ) THEN
-    RAISE EXCEPTION 'Not possible to migrate, some records are still in old format';
-  END IF;
+  -- following query is commented out for documentation purposes, to prevent failed migration on prod deployment
+  -- IF EXISTS (
+  --   SELECT message_id FROM azure_queue_messages
+  --   WHERE queue_name NOT IN ('claim-queue', 'deadline-queue', 'resolved-queue')
+  --   AND task_queue_id IS NULL
+  --   LIMIT 1
+  -- ) THEN
+  --   RAISE EXCEPTION 'Not possible to migrate, some records are still in old format';
+  -- END IF;
 
   -- migration of data
   -- prevent reads and writes from table, get exclusive access
@@ -80,6 +80,9 @@ begin
   CREATE TABLE queue_claimed_tasks (
     task_id text not null,
     run_id integer not null,
+    task_queue_id text not null,
+    worker_group text not null,
+    worker_id text not null,
     claimed timestamptz not null,
     taken_until timestamptz not null,
     visible timestamptz not null,
@@ -88,10 +91,13 @@ begin
 
   -- migrate data to resolved queue
   INSERT INTO
-    queue_claimed_tasks (task_id, run_id, claimed, taken_until, visible, pop_receipt)
+    queue_claimed_tasks (task_id, run_id, task_queue_id, worker_group, worker_id, claimed, taken_until, visible, pop_receipt)
   SELECT
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',
     CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'runId' AS INTEGER),
+    'unknown/tq',
+    'unknonwn-wg',
+    'unknonwn-wi',
     inserted,
     CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'takenUntil' AS timestamp with time zone),
     visible,
@@ -100,8 +106,9 @@ begin
   WHERE queue_name = 'claim-queue'
   AND expires > now();
 
-  CREATE INDEX queue_claimed_task_idx ON queue_claimed_tasks (task_id);
+  CREATE INDEX queue_claimed_task_idx ON queue_claimed_tasks (task_id, run_id);
   CREATE INDEX queue_claimed_task_vis_idx ON queue_claimed_tasks (visible);
+  CREATE INDEX queue_claimed_task_queue_idx ON queue_claimed_tasks (task_queue_id, worker_group, worker_id);
 
 
   -- Pending (scheduled)
