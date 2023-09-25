@@ -3,6 +3,21 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v55.3.1
+
+### GENERAL
+
+▶ [patch] [#6564](https://github.com/taskcluster/taskcluster/issues/6564)
+Fixes CSP related issue with running single UI container locally `docker compose ui`. If run with shipped nginx.conf, it would not be able to load some resources correctly because of the stricter 'Content-Security-Policy' headers.
+
+▶ [patch]
+Upgrades Node.js to v18.18.0
+
+### USERS
+
+▶ [patch] [#6569](https://github.com/taskcluster/taskcluster/issues/6569)
+This patch updates the regex for the `hookGroupId` and `hookId` params for the hooks API to allow for up to 1000 characters.
+
 ## v55.3.0
 
 ### GENERAL
