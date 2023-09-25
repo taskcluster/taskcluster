@@ -1,0 +1,13 @@
+---
+title: Using Taskcluster for Continuous Integration
+---
+
+import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
+
+# Using Taskcluster for Continuous Integration
+
+Taskcluster can be a bit intimidating to set-up as a full fledged CI system. Doing so requires an integration with your VCS system, constructing a `.taskcluster.yml` file, and often creation of supporting configuration and/or scripts. Luckily for you, this is a problem this is mostly solved by [taskgraph](https://github.com/taskcluster/taskgraph).
+
+Taskgraph makes it trivial to go from a GitHub repository to having tasks running in Taskcluster. You can follow its [Getting Started documentation](https://taskcluster-taskgraph.readthedocs.io/en/latest/tutorials/getting-started.html) to set-up the integration and bootstrap your repository with a function task.
+
+It is also recommend that you familiarize yourself with [its important concepts](https://taskcluster-taskgraph.readthedocs.io/en/latest/concepts/index.html) before setting up your own tasks.
