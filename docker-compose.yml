@@ -115,6 +115,7 @@ services:
     networks:
       - local
     depends_on:
+      - s3
       - ui
       - web-server-web
     volumes:
