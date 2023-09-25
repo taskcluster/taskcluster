@@ -340,6 +340,9 @@ exports.tasks.push({
         ui: serviceDefinition('ui', {
           command: 'ui/web',
           _useEnvFile: true,
+          volumes: [
+            './docker/nginx-ui-local-dev-only.conf:/app/ui/web-ui-nginx-site.conf',
+          ],
         }),
         references: serviceDefinition('references', {
           command: 'references/web',
@@ -622,7 +625,8 @@ http {
       proxy_set_header Connection "";
       chunked_transfer_encoding off;
 
-      proxy_pass http://s3:9000;
+      set $pass http://s3:9000;
+      proxy_pass $pass;
     }
 ${SERVICES.filter(name => !!ports[name]).map(name => `
     location /api/${name} {

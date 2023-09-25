@@ -99,6 +99,8 @@ services:
       - local
     env_file: ./docker/env/.ui
     command: ui/web
+    volumes:
+      - ./docker/nginx-ui-local-dev-only.conf:/app/ui/web-ui-nginx-site.conf
     ports:
       - '3022:80'
   references:
