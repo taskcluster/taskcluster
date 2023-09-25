@@ -4229,6 +4229,16 @@
         "children": [
         ],
         "data": {
+          "order": 1000,
+          "title": "Using Taskcluster for Continuous Integration"
+        },
+        "name": "ci",
+        "path": "tutorial/ci"
+      },
+      {
+        "children": [
+        ],
+        "data": {
           "layout": "default",
           "order": 1000,
           "title": "Creating a task via API"

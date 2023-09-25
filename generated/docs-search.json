@@ -3837,6 +3837,13 @@
   },
   {
     "element": "h1",
+    "id": "using-taskcluster-for-continuous-integration",
+    "path": "/tutorial/ci",
+    "subtitle": null,
+    "title": "Using Taskcluster for Continuous Integration"
+  },
+  {
+    "element": "h1",
     "id": "creating-a-task-via-api",
     "path": "/tutorial/create-task-via-api",
     "subtitle": null,
