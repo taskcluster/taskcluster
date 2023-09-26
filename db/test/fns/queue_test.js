@@ -10,78 +10,217 @@ const taskcluster = require('taskcluster-client');
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'queue' });
 
-  suite('tests for pending tasks', function() {});
-  suite('tests for claimed tasks', function() {});
-  suite('tests for resolved tasks', function() {});
-  suite('tests for task deadlines', function() {});
-
-  suite('[toberemoved] message queue', function() {
-    setup('reset table', async function() {
+  suite('tests for pending tasks', function() {
+    setup('reset table', async function () {
       await helper.withDbClient(async client => {
-        await client.query('delete from azure_queue_messages');
+        await client.query('delete from queue_pending_tasks');
       });
     });
-
-    helper.dbTest('count empty queue', async function(db) {
-      const result = await db.deprecatedFns.azure_queue_count("deps");
-      assert.deepEqual(result, [{ azure_queue_count: 0 }]);
+    helper.dbTest('count empty queue', async function (db) {
+      assert.deepEqual(
+        await db.fns.queue_pending_tasks_count("tq1"),
+        [{ queue_pending_tasks_count: 0 }],
+      );
+    });
+    helper.dbTest('count queue containing messages', async function (db) {
+      await db.fns.queue_pending_tasks_put('tq1', 9, 'task1', 0, 'hint1', fromNow('10 seconds'));
+      await db.fns.queue_pending_tasks_put('tq1', 3, 'task2', 0, 'hint1', fromNow('10 seconds'));
+      await db.fns.queue_pending_tasks_put('tq1', 1, 'expiredTask', 0, 'hint1', fromNow('0 seconds'));
+      assert.deepEqual(
+        await db.fns.queue_pending_tasks_count("tq1"),
+        [{ queue_pending_tasks_count: 2 }],
+      );
     });
 
-    helper.dbTest('count queue containing messages', async function(db) {
-      await db.deprecatedFns.azure_queue_put("deps", "expired", fromNow('0 seconds'), fromNow('-10 seconds'));
-      await db.deprecatedFns.azure_queue_put("deps", "visible", fromNow('0 seconds'), fromNow('10 seconds'));
-      await db.deprecatedFns.azure_queue_put_extra("deps", "invisible", fromNow('10 seconds'), fromNow('10 seconds'), 'tq1', 0);
-      const result = await db.deprecatedFns.azure_queue_count("deps");
-      // expired message is not counted, leaving only invisible and visible
-      assert.deepEqual(result, [{ azure_queue_count: 2 }]);
-    });
+    // TODO: This requires support from the taskcluster-lib-postgres library
+    // helper.dbTest('adding pending task notifies channel', async function (db) {
+    //   const notifications = [];
 
-    helper.dbTest('getting messages on an empty queue', async function(db) {
-      const result = await db.deprecatedFns.azure_queue_get("deps", fromNow('10 seconds'), 1);
+    //   await helper.withDbClient(async (client, ab, cd) => {
+    //     await client.query('LISTEN task_pending');
+    //     db.pools.read.Client.on('notification', msg => notifications.push(msg));
+    //   });
+
+    //   await db.fns.queue_pending_tasks_put('tq1', 0, 'task1', 0, 'hint1', fromNow('10 seconds'));
+    //   assert.equals(notifications.length, 1);
+    //   assert.deepEquals(notifications, ['tq1']);
+    // });
+
+    helper.dbTest('getting tasks on an empty queue', async function (db) {
+      const result = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 1);
       assert.deepEqual(result, []);
     });
 
-    helper.dbTest('getting messages on a queue with invisible messages', async function(db) {
-      await db.deprecatedFns.azure_queue_put("deps", "invisible", fromNow('10 seconds'), fromNow('10 seconds'));
-      const result = await db.deprecatedFns.azure_queue_get("deps", fromNow('10 seconds'), 1);
-      assert.deepEqual(result, []);
-    });
-
-    helper.dbTest('getting messages on a queue with visible messages', async function(db) {
-      await db.deprecatedFns.azure_queue_put("deps", "visible", fromNow('0 seconds'), fromNow('10 seconds'));
-      const result = await db.deprecatedFns.azure_queue_get("deps", fromNow('10 seconds'), 1);
-      assert.deepEqual(result.map(({ message_text }) => message_text), ['visible']);
+    helper.dbTest('getting tasks on a queue by priority', async function (db) {
+      await db.fns.queue_pending_tasks_put('tq1', 2, 'taskLowerPriority', 0, 'hint2', fromNow('20 seconds'));
+      await db.fns.queue_pending_tasks_put('tq1', 0, 'taskDefaultPriority', 0, 'hint2', fromNow('20 seconds'));
+      await db.fns.queue_pending_tasks_put('tq1', 9, 'taskHigherPriority', 0, 'hint1', fromNow('20 seconds'));
+      const result = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 3);
+      assert.deepEqual(
+        result.map(({ task_id }) => task_id),
+        ['taskHigherPriority', 'taskLowerPriority', 'taskDefaultPriority'],
+      );
       // check that message was marked invisible
-      const result2 = await db.deprecatedFns.azure_queue_get("deps", fromNow('10 seconds'), 1);
+      const result2 = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 3);
       assert.deepEqual(result2, []);
     });
 
-    helper.dbTest('getting and deleting messages', async function(db) {
-      await db.deprecatedFns.azure_queue_put("deps", "visible", fromNow('0 seconds'), fromNow('10 seconds'));
-      const result = await db.deprecatedFns.azure_queue_get("deps", fromNow('0 seconds'), 1);
-      assert.deepEqual(result.map(({ message_text }) => message_text), ['visible']);
-      await db.deprecatedFns.azure_queue_delete("deps", result[0].message_id, result[0].pop_receipt);
-      const result2 = await db.deprecatedFns.azure_queue_get("deps", fromNow('10 seconds'), 1);
+    helper.dbTest('getting and deleting pending tasks', async function (db) {
+      await db.fns.queue_pending_tasks_put('tq1', 2, 't1', 0, 'hint1', fromNow('20 seconds'));
+      const result = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 1);
+      assert.deepEqual(result.map(({ task_id }) => task_id), ['t1']);
+      await db.fns.queue_pending_tasks_delete(result[0].task_id, result[0].pop_receipt);
+      const result2 = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 1);
       assert.deepEqual(result2, []);
     });
 
-    helper.dbTest('making messages visible again', async function(db) {
-      await db.deprecatedFns.azure_queue_put("deps", "visible", fromNow('0 seconds'), fromNow('10 seconds'));
-      const result = await db.deprecatedFns.azure_queue_get("deps", fromNow('10 seconds'), 1);
-      assert.deepEqual(result.map(({ message_text }) => message_text), ['visible']);
-      await db.deprecatedFns.azure_queue_update("deps", "visible2", result[0].message_id, result[0].pop_receipt, fromNow('0 seconds'));
-      const result2 = await db.deprecatedFns.azure_queue_get("deps", fromNow('10 seconds'), 1);
-      assert.deepEqual(result2.map(({ message_text }) => message_text), ['visible2']);
+    helper.dbTest('releasing pending tasks back to queue', async function (db) {
+      await db.fns.queue_pending_tasks_put('tq1', 2, 't1', 0, 'hint1', fromNow('20 seconds'));
+      const result = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 1);
+      assert.deepEqual(result.map(({ task_id }) => task_id), ['t1']);
+      const result2 = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 1);
+      assert.deepEqual(result2, []);
+      await db.fns.queue_pending_tasks_release(result[0].task_id, result[0].pop_receipt);
+      const result3 = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 1);
+      assert.deepEqual(result3.map(({ task_id }) => task_id), ['t1']);
     });
 
-    helper.dbTest('deleting expired messages', async function(db) {
-      await db.deprecatedFns.azure_queue_put("deps", "exp1", fromNow('0 seconds'), fromNow('0 seconds'));
-      await db.deprecatedFns.azure_queue_put("deps", "exp2", fromNow('10 seconds'), fromNow('0 seconds'));
-      await db.deprecatedFns.azure_queue_delete_expired();
+    helper.dbTest('deleting expired messages', async function (db) {
+      await db.fns.queue_pending_tasks_put('tq1', 0, 't1', 0, 'hint1', fromNow('-1 second'));
+      await db.fns.queue_pending_tasks_put('tq1', 0, 't2', 0, 'hint2', fromNow('-1 second'));
+      await db.fns.queue_pending_tasks_delete_expired();
       await helper.withDbClient(async client => {
-        const res = await client.query('select count(*) from azure_queue_messages');
+        const res = await client.query('select count(*) from queue_pending_tasks');
         assert.deepEqual(res.rows[0], { count: '0' });
       });
+    });
+  });
+
+  suite('tests for claimed tasks', function() {
+    setup('reset table', async function () {
+      await helper.withDbClient(async client => {
+        await client.query('delete from queue_claimed_tasks');
+      });
+    });
+
+    helper.dbTest('getting tasks on an empty claim queue', async function (db) {
+      const result = await db.fns.queue_claimed_task_get(fromNow('10 seconds'), 1);
+      assert.deepEqual(result, []);
+    });
+
+    helper.dbTest('getting tasks from the claim queue', async function (db) {
+      await db.fns.queue_claimed_task_put('t1', 0, fromNow('-20 seconds'), 'tq1', 'wg1', 'w1');
+      await db.fns.queue_claimed_task_put('t2', 0, fromNow('-10 seconds'), 'tq1', 'wg1', 'w1');
+      const result = await db.fns.queue_claimed_task_get(fromNow('10 seconds'), 2);
+      assert.deepEqual(result.map(({ task_id }) => task_id), ['t1', 't2']);
+
+      const result2 = await db.fns.queue_claimed_task_get(fromNow('10 seconds'), 1);
+      assert.deepEqual(result2, []);
+    });
+
+    helper.dbTest('getting tasks and removing them from the claim queue', async function (db) {
+      await db.fns.queue_claimed_task_put('t1', 0, fromNow('-20 seconds'), 'tq1', 'wg1', 'w1');
+      await db.fns.queue_claimed_task_put('t2', 0, fromNow('-10 seconds'), 'tq1', 'wg1', 'w1');
+
+      const [t1] = await db.fns.queue_claimed_task_get(fromNow('10 seconds'), 1);
+      assert.equal(t1.task_id, 't1');
+      await db.fns.queue_claimed_task_delete(t1.task_id, t1.pop_receipt);
+
+      const [t2] = await db.fns.queue_claimed_task_get(fromNow('10 seconds'), 1);
+      assert.equal(t2.task_id, 't2');
+      await db.fns.queue_claimed_task_delete(t1.task_id, t1.pop_receipt);
+
+      const result2 = await db.fns.queue_claimed_task_get(fromNow('10 seconds'), 1);
+      assert.deepEqual(result2, []);
+    });
+
+    helper.dbTest('resolved before claim expires tasks should be removed from the queue', async function (db) {
+      await db.fns.queue_claimed_task_put('t1', 0, fromNow('-20 seconds'), 'tq1', 'wg1', 'w1');
+      await db.fns.queue_claimed_task_put('t2', 0, fromNow('-20 seconds'), 'tq1', 'wg1', 'w1');
+
+      await db.fns.queue_claimed_task_resolved('t1', 0);
+
+      const result = await db.fns.queue_claimed_task_get(fromNow('10 seconds'), 1);
+      assert.equal(result.length, 1);
+      assert.equal(result[0].task_id, 't2');
+    });
+  });
+
+  suite('tests for resolved tasks', function() {
+    setup('reset table', async function () {
+      await helper.withDbClient(async client => {
+        await client.query('delete from queue_resolved_tasks');
+      });
+    });
+
+    helper.dbTest('getting tasks on an empty resolved queue', async function (db) {
+      const result = await db.fns.queue_resolved_task_get(fromNow('10 seconds'), 1);
+      assert.deepEqual(result, []);
+    });
+
+    helper.dbTest('getting tasks from the resolved queue', async function (db) {
+      await db.fns.queue_resolved_task_put('tg1', 't1', 's1', fromNow('-20 seconds'));
+      await db.fns.queue_resolved_task_put('tg2', 't2', 's2', fromNow('-20 seconds'));
+      const result = await db.fns.queue_resolved_task_get(fromNow('10 seconds'), 2);
+      assert.deepEqual(result.map(({ task_id }) => task_id), ['t1', 't2']);
+
+      const result2 = await db.fns.queue_resolved_task_get(fromNow('10 seconds'), 1);
+      assert.deepEqual(result2, []);
+    });
+
+    helper.dbTest('getting tasks and removing them from the claim queue', async function (db) {
+      await db.fns.queue_resolved_task_put('tg1', 't1', 's1', fromNow('-20 seconds'));
+      await db.fns.queue_resolved_task_put('tg2', 't2', 's2', fromNow('-20 seconds'));
+
+      const [t1] = await db.fns.queue_resolved_task_get(fromNow('10 seconds'), 1);
+      assert.equal(t1.task_id, 't1');
+      await db.fns.queue_resolved_task_delete(t1.task_id, t1.pop_receipt);
+
+      const [t2] = await db.fns.queue_resolved_task_get(fromNow('10 seconds'), 1);
+      assert.equal(t2.task_id, 't2');
+      await db.fns.queue_resolved_task_delete(t1.task_id, t1.pop_receipt);
+
+      const result2 = await db.fns.queue_resolved_task_get(fromNow('10 seconds'), 1);
+      assert.deepEqual(result2, []);
+    });
+  });
+
+  suite('tests for task deadlines', function() {
+    setup('reset table', async function () {
+      await helper.withDbClient(async client => {
+        await client.query('delete from queue_task_deadlines');
+      });
+    });
+
+    helper.dbTest('getting tasks on an empty deadline queue', async function (db) {
+      const result = await db.fns.queue_task_deadline_get(fromNow('10 seconds'), 1);
+      assert.deepEqual(result, []);
+    });
+
+    helper.dbTest('getting tasks from the deadline queue', async function (db) {
+      await db.fns.queue_task_deadline_put('tg1', 't1', 's1', fromNow('-20 seconds'), fromNow('-20 seconds'));
+      await db.fns.queue_task_deadline_put('tg2', 't2', 's2', fromNow('-20 seconds'), fromNow('-20 seconds'));
+      const result = await db.fns.queue_task_deadline_get(fromNow('10 seconds'), 2);
+      assert.deepEqual(result.map(({ task_id }) => task_id), ['t1', 't2']);
+
+      const result2 = await db.fns.queue_task_deadline_get(fromNow('10 seconds'), 1);
+      assert.deepEqual(result2, []);
+    });
+
+    helper.dbTest('getting tasks and removing them from the claim queue', async function (db) {
+      await db.fns.queue_task_deadline_put('tg1', 't1', 's1', fromNow('-20 seconds'), fromNow('-20 seconds'));
+      await db.fns.queue_task_deadline_put('tg2', 't2', 's2', fromNow('-20 seconds'), fromNow('-20 seconds'));
+
+      const [t1] = await db.fns.queue_task_deadline_get(fromNow('10 seconds'), 1);
+      assert.equal(t1.task_id, 't1');
+      await db.fns.queue_task_deadline_delete(t1.task_id, t1.pop_receipt);
+
+      const [t2] = await db.fns.queue_task_deadline_get(fromNow('10 seconds'), 1);
+      assert.equal(t2.task_id, 't2');
+      await db.fns.queue_task_deadline_delete(t1.task_id, t1.pop_receipt);
+
+      const result2 = await db.fns.queue_task_deadline_get(fromNow('10 seconds'), 1);
+      assert.deepEqual(result2, []);
     });
   });
 

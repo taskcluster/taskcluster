@@ -1952,7 +1952,7 @@ nothing if no such artifact exists.
 * *Returns*: `void`
 * *Last defined on version*: 91
 
-Delete claimed task
+Delete single claimed task from the queue.
 
 
 ### queue_claimed_task_get
@@ -1968,7 +1968,7 @@ Delete claimed task
   * `pop_receipt uuid`
 * *Last defined on version*: 91
 
-Get up to `count` messages from the claimed queue
+Get up to `count` tasks from the claimed queue
 
 
 ### queue_claimed_task_put
@@ -1984,7 +1984,7 @@ Get up to `count` messages from the claimed queue
 * *Returns*: `void`
 * *Last defined on version*: 91
 
-Track when task was claimed and when it should be reclaimed
+Track when task was claimed and when it should be reclaimed.
 
 
 ### queue_claimed_task_resolved
@@ -2008,7 +2008,7 @@ We can safely delete given run from the claim queue.
 * *Returns*: `integer`
 * *Last defined on version*: 91
 
-Count the number of pending messages for given task queue.
+Count the number of pending tasks for given task queue.
 
 
 ### queue_pending_tasks_delete
@@ -2020,7 +2020,7 @@ Count the number of pending messages for given task queue.
 * *Returns*: `void`
 * *Last defined on version*: 91
 
-Delete pending task from the queue.
+Delete single pending task from the queue.
 
 
 ### queue_pending_tasks_delete_expired
@@ -2030,7 +2030,7 @@ Delete pending task from the queue.
 * *Returns*: `void`
 * *Last defined on version*: 91
 
-Delete all expired tasks.
+Delete all expired tasks from pending queue.
 
 
 ### queue_pending_tasks_get
@@ -2047,8 +2047,8 @@ Delete all expired tasks.
   * `pop_receipt uuid`
 * *Last defined on version*: 91
 
-Get up to `count` messages for the pending tasks from the given taskQueueId.
-Messages are locked and will temporarily become invisible for the `visible_in` period.
+Get up to `count` tasks for the pending tasks from the given taskQueueId.
+Tasks are locked and will temporarily become invisible for the `visible` period.
 
 
 ### queue_pending_tasks_put
@@ -2066,6 +2066,7 @@ Messages are locked and will temporarily become invisible for the `visible_in` p
 
 Put the task into the pending queue.
 When record already exists, we update the priority, run_id, hint_id and expiration.
+This also sends a notification to the `task_pending` channel with the `task_queue_id` as its payload.
 
 
 ### queue_pending_tasks_release
@@ -2089,7 +2090,7 @@ Release task back to the queue to be picked up by another worker.
 * *Returns*: `void`
 * *Last defined on version*: 91
 
-Delete claimed task
+Delete single task from claimed queue
 
 
 ### queue_resolved_task_get
@@ -2106,7 +2107,7 @@ Delete claimed task
   * `pop_receipt uuid`
 * *Last defined on version*: 91
 
-Get up to `count` messages from the resolved queue
+Get up to `count` tasks from the resolved queue
 
 
 ### queue_resolved_task_put
@@ -2120,7 +2121,9 @@ Get up to `count` messages from the resolved queue
 * *Returns*: `void`
 * *Last defined on version*: 91
 
-Track when task was resolved
+Track when task was resolved.
+This is a short-lived record that is used by dependency resolver to update dependencies.
+Notification is sent to `task_resolved` channel with the `task_id` as its payload.
 
 
 ### queue_task_deadline_delete
@@ -2132,7 +2135,7 @@ Track when task was resolved
 * *Returns*: `void`
 * *Last defined on version*: 91
 
-Delete deadline task
+Delete single deadline task.
 
 
 ### queue_task_deadline_get
@@ -2149,7 +2152,7 @@ Delete deadline task
   * `pop_receipt uuid`
 * *Last defined on version*: 91
 
-Get up to `count` messages from the deadline queue
+Get up to `count` tasks from the deadline queue
 
 
 ### queue_task_deadline_put
@@ -2164,7 +2167,8 @@ Get up to `count` messages from the deadline queue
 * *Returns*: `void`
 * *Last defined on version*: 91
 
-Track task deadline
+Track task deadline upon task creation. This would stay until task
+deadline to see if it was ever scheduled or resolved.
 
 
 ### queue_worker_seen_with_last_date_active

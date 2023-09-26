@@ -21,8 +21,8 @@ methods:
 
   queue_pending_tasks_get:
     description: |
-      Get up to `count` messages for the pending tasks from the given taskQueueId.
-      Messages are locked and will temporarily become invisible for the `visible_in` period.
+      Get up to `count` tasks for the pending tasks from the given taskQueueId.
+      Tasks are locked and will temporarily become invisible for the `visible` period.
     mode: write
     serviceName: queue
     args: task_queue_id_in text, visible_in timestamptz, count integer
@@ -56,6 +56,7 @@ methods:
     description: |
       Put the task into the pending queue.
       When record already exists, we update the priority, run_id, hint_id and expiration.
+      This also sends a notification to the `task_pending` channel with the `task_queue_id` as its payload.
     mode: write
     serviceName: queue
     args: task_queue_id_in text, priority_in integer, task_id_in text, run_id_in integer, hint_id_in text, expires_in timestamp
@@ -104,7 +105,7 @@ methods:
 
   queue_pending_tasks_delete:
     description: |
-      Delete pending task from the queue.
+      Delete single pending task from the queue.
     mode: write
     serviceName: queue
     args: task_id_in text, pop_receipt_in uuid
@@ -117,7 +118,7 @@ methods:
 
   queue_pending_tasks_delete_expired:
     description: |
-      Delete all expired tasks.
+      Delete all expired tasks from pending queue.
     mode: write
     serviceName: queue
     args: ''
@@ -129,10 +130,9 @@ methods:
       end
 
 
-  # count pending messages per task queue
   queue_pending_tasks_count:
     description: |
-      Count the number of pending messages for given task queue.
+      Count the number of pending tasks for given task queue.
     mode: read
     serviceName: queue
     args: task_queue_id_in text
@@ -143,13 +143,15 @@ methods:
           select count(*)
           from queue_pending_tasks
           where task_queue_id = task_queue_id_in
+            and expires > now()
         );
       end
 
   # deadline queue
   queue_task_deadline_put:
     description: |
-      Track task deadline
+      Track task deadline upon task creation. This would stay until task
+      deadline to see if it was ever scheduled or resolved.
     mode: write
     serviceName: queue
     args: task_group_id_in text, task_id_in text, scheduler_id_in text, deadline_in timestamptz, visible timestamptz
@@ -176,7 +178,7 @@ methods:
 
   queue_task_deadline_get:
     description: |
-      Get up to `count` messages from the deadline queue
+      Get up to `count` tasks from the deadline queue
     mode: write
     serviceName: queue
     args: visible_in timestamptz, count integer
@@ -206,7 +208,7 @@ methods:
 
   queue_task_deadline_delete:
     description: |
-      Delete deadline task
+      Delete single deadline task.
     mode: write
     serviceName: queue
     args: task_id_in text, pop_receipt_in uuid
@@ -222,7 +224,7 @@ methods:
   # claim queue
   queue_claimed_task_put:
     description: |
-      Track when task was claimed and when it should be reclaimed
+      Track when task was claimed and when it should be reclaimed.
     mode: write
     serviceName: queue
     args: task_id_in text, run_id_in integer, taken_until_in timestamptz, task_queue_id_in text, worker_group_in text, worker_id_in text
@@ -253,7 +255,7 @@ methods:
 
   queue_claimed_task_get:
     description: |
-      Get up to `count` messages from the claimed queue
+      Get up to `count` tasks from the claimed queue
     mode: write
     serviceName: queue
     args: visible_in timestamptz, count integer
@@ -283,7 +285,7 @@ methods:
 
   queue_claimed_task_delete:
     description: |
-      Delete claimed task
+      Delete single claimed task from the queue.
     mode: write
     serviceName: queue
     args: task_id_in text, pop_receipt_in uuid
@@ -314,7 +316,9 @@ methods:
   # resolved queue
   queue_resolved_task_put:
     description: |
-      Track when task was resolved
+      Track when task was resolved.
+      This is a short-lived record that is used by dependency resolver to update dependencies.
+      Notification is sent to `task_resolved` channel with the `task_id` as its payload.
     mode: write
     serviceName: queue
     args: task_group_id_in text, task_id_in text, scheduler_id_in text, resolution_in text
@@ -344,7 +348,7 @@ methods:
 
   queue_resolved_task_get:
     description: |
-      Get up to `count` messages from the resolved queue
+      Get up to `count` tasks from the resolved queue
     mode: write
     serviceName: queue
     args: visible_in timestamptz, count integer
@@ -374,7 +378,7 @@ methods:
 
   queue_resolved_task_delete:
     description: |
-      Delete claimed task
+      Delete single task from claimed queue
     mode: write
     serviceName: queue
     args: task_id_in text, pop_receipt_in uuid
