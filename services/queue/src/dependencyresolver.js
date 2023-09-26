@@ -66,12 +66,6 @@ class DependencyResolver {
 
   /** Poll for messages and handle them in a loop */
   async _pollResolvedTasks() {
-
-    // IF task is resolved as completed, then it's safe to remove it from the claimed queue
-    // (no need to do claim-expire after timeout)
-    // safe to remove deadline as well??
-    // TODO
-
     let messages = await this.queueService.pollResolvedQueue(this.count);
     let failed = 0;
     await Promise.all(messages.map(async (m) => {
@@ -86,11 +80,9 @@ class DependencyResolver {
       }
     }));
 
-    // If there were no messages, back off for a bit.  This avoids pounding
-    // Azure repeatedly for empty queues, at the cost of some slight delay
-    // to finding new messages in those queues.
+    // If there were no messages, back off for a bit.
     if (messages.length === 0) {
-      await sleep(2000);
+      await sleep(1000);
     }
 
     this.monitor.log.queuePoll({
