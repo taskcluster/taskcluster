@@ -52,7 +52,7 @@ checksum:
 brews:
   - name: taskcluster
 
-    tap:
+    repository:
       owner: taskcluster
       name: homebrew-tap
 
