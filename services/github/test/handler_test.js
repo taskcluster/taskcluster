@@ -840,6 +840,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert.equal(cancelCallArgs.newBuild.sha, COMMIT_SHA);
         assert.equal(cancelCallArgs.newBuild.pull_number, null);
       });
+      test('should cancel by default', async function () {
+        const tcYaml = require('./data/yml/valid-yaml-v1.json');
+        github.inst(5828).setRepoCollaborator({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          username: 'goodBuddy',
+        });
+        github.inst(5828).setTaskclusterYml({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          ref: COMMIT_SHA,
+          content: tcYaml,
+        });
+        await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
+        assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
+        assert(handlers.cancelPreviousTaskGroups.calledOnce);
+      });
       test('should cancel task groups for same pull request number', async function () {
         const tcYaml = require('./data/yml/valid-yaml-v1.json');
         tcYaml['autoCancelPreviousChecks'] = true;
