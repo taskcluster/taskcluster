@@ -286,7 +286,7 @@ class QueueService {
       PRIORITY_TO_CONSTANT[task.priority] || 0,
       task.taskId,
       runId,
-      slugid.v4(),
+      slugid.v4(), // hintId
       taskcluster.fromNow(`${timeToDeadline} seconds`), // expires in
     );
   }
