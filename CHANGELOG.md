@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v55.3.2
+
+### GENERAL
+
+▶ [patch] [#6498](https://github.com/taskcluster/taskcluster/issues/6498)
+Github service auto cancels previous builds by default now.
+This behavior can be disabled by setting `autoCancelPreviousChecks` to `false` in the `.taskcluster.yml` file.
+
+### OTHER
+
+▶ Additional change not described here: [#6571](https://github.com/taskcluster/taskcluster/issues/6571).
+
 ## v55.3.1
 
 ### GENERAL
