@@ -114,8 +114,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const taskGroupId = slugid.v4();
     const schedulerId = slugid.v4();
     debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
+
+    // when task is resolved, existing claim and deadline messages should be removed
+    const futureDate = new Date(new Date().getTime() + 1 * 1000);
+    await queueService.putClaimMessage(taskId, 0, futureDate, 'tq/id', 'wg', 'wi');
+    await queueService.putDeadlineMessage(taskId, taskGroupId, schedulerId, futureDate);
+
     // Put message
     await queueService.putResolvedMessage(taskId, taskGroupId, schedulerId, 'completed');
+
+    // claim and deadline messages should be gone
+    const deadlineMessages = await queueService.pollDeadlineQueue();
+    const claimMessages = await queueService.pollClaimQueue();
+    assert(deadlineMessages.length === 0, 'Expected no deadline messages');
+    assert(claimMessages.length === 0, 'Expected no claim messages');
 
     // Poll for message
     return testing.poll(async () => {

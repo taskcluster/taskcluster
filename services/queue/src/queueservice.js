@@ -145,7 +145,11 @@ class QueueService {
         schedulerId,
         resolution,
       ),
+      // we no longer need existing claimed queue message
+      // because resolved message will trigger dependency resolver
       this.db.fns.queue_claimed_task_resolved(taskId, runId),
+      // same with deadline
+      this.db.fns.queue_task_deadline_resolved(taskId),
     ]);
   }
 

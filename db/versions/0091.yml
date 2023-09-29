@@ -220,6 +220,22 @@ methods:
           and pop_receipt = pop_receipt_in;
       end
 
+  queue_task_deadline_resolved:
+    description: |
+      Once the task gets resolved it is no longer relevant for the deadline queue.
+      Since resolved task triggered dependency resolver, its dependencies were already
+      updated by DependencyTracker.
+      We can safely delete given run from the deadline queue.
+    mode: write
+    serviceName: queue
+    args: task_id_in text
+    returns: void
+    body: |-
+      begin
+        delete from queue_task_deadlines
+        where task_id = task_id_in;
+      end
+
 
   # claim queue
   queue_claimed_task_put:

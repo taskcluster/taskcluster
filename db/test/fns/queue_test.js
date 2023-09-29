@@ -236,6 +236,16 @@ suite(testing.suiteName(), function() {
       const result2 = await db.fns.queue_task_deadline_get(fromNow('10 seconds'), 1);
       assert.deepEqual(result2, []);
     });
+    helper.dbTest('resolved before deadline should be removed from the queue', async function (db) {
+      await db.fns.queue_task_deadline_put('tg1', 't1', 's1', fromNow('-20 seconds'), fromNow('-20 seconds'));
+      await db.fns.queue_task_deadline_put('tg2', 't2', 's2', fromNow('-20 seconds'), fromNow('-20 seconds'));
+
+      await db.fns.queue_task_deadline_resolved('t1');
+
+      const result = await db.fns.queue_task_deadline_get(fromNow('10 seconds'), 1);
+      assert.equal(result.length, 1);
+      assert.equal(result[0].task_id, 't2');
+    });
   });
 
   suite('task/task-group functions', function() {
