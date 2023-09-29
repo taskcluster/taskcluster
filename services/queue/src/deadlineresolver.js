@@ -8,7 +8,7 @@ const { sleep } = require('./utils');
 
 /**
  * Facade that handles resolution tasks by deadline, using the advisory messages
- * from the azure queue. The azure queue messages takes the form:
+ * from the deadline queue. The deadline queue messages takes the form:
  * `{taskId, deadline}`, and they become visible after `deadline` has been
  * exceeded. The messages advice that if a task with the given `deadline` and
  * `taskId` exists, then it be resolved by deadline, if not already resolved.

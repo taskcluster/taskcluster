@@ -6,7 +6,7 @@ const { sleep } = require('./utils');
 
 /**
  * Facade that handles resolution of claims by takenUntil, using the advisory
- * messages from the azure queue. The azure queue messages takes the form:
+ * messages from the claim queue. The queue messages takes the form:
  * `{taskId, runId, takenUntil}`, and they become visible after `takenUntil`
  * has been exceeded. The messages advice that if a task with the given
  * `takenUntil` and `taskId` exists, then `runId` maybe need to be resolved by
@@ -103,9 +103,7 @@ class ClaimResolver {
       }
     }));
 
-    // If there were no messages, back of for a bit.  This avoids pounding
-    // Azure repeatedly for empty queues, at the cost of some slight delay
-    // to finding new messages in those queues.
+    // If there were no messages, back of for a bit.
     if (messages.length === 0) {
       await sleep(2000);
     }

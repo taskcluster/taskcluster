@@ -585,7 +585,6 @@ CREATE INDEX queue_claimed_task_vis_idx ON queue_claimed_tasks USING btree (visi
 CREATE INDEX queue_pending_task_queue_idx ON queue_pending_tasks USING btree (task_queue_id, priority, inserted);
 CREATE INDEX queue_pending_task_vis_idx ON queue_pending_tasks USING btree (visible, expires);
 CREATE INDEX queue_resolved_task_idx ON queue_resolved_tasks USING btree (task_id);
-CREATE INDEX queue_resolved_task_vis_idx ON queue_resolved_tasks USING btree (visible);
 CREATE INDEX queue_task_deadline_idx ON queue_task_deadlines USING btree (task_id);
 CREATE INDEX queue_task_deadline_vis_idx ON queue_task_deadlines USING btree (visible);
 CREATE INDEX sha512_index_namespaces_idx ON index_namespaces USING btree (public.sha512(parent), name);

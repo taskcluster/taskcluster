@@ -5,7 +5,7 @@ let taskCreds = require('./task-creds');
 const { Task } = require('./data');
 const HintPoller = require('./hintpoller');
 
-/** WorkClaimer manages to claim work from azure queues. */
+/** WorkClaimer manages to claim work from internal queues. */
 class WorkClaimer extends events.EventEmitter {
   /**
    * Create a new WorkClaimer.
@@ -61,7 +61,7 @@ class WorkClaimer extends events.EventEmitter {
     // We don't try to claim up to the count, that could take time and we risk
     // dropping the claims in case of server crash.
     while (claims.length === 0 && !done) {
-      // Poll for hints (azure messages saying a task may be pending)
+      // Poll for hints (messages saying a task may be pending)
       let hints = await hintPoller.requestClaim(count, aborted);
 
       // Try to claim all the hints
@@ -115,7 +115,7 @@ class WorkClaimer extends events.EventEmitter {
     }
 
     // Set takenUntil to now + claimTimeout, rounding up to the nearest second
-    // since we compare these times for equality after sending them to Azure
+    // since we compare these times for equality after sending them to queue
     // and toJSON()
     let takenUntil = new Date();
     takenUntil.setSeconds(Math.ceil(takenUntil.getSeconds() + this._claimTimeout));

@@ -1786,7 +1786,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "pendingTasks",
 				Title:       "Get Number of Pending Tasks",
-				Description: "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nThe underlying Azure Storage Queues only promises to give us an estimate.\nFurthermore, we cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.\nIt is, however, a solid estimate of the number of pending tasks.",
+				Description: "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.",
 				Stability:   "stable",
 				Method:      "get",
 				Route:       "/pending/<taskQueueId>",

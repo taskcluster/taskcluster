@@ -265,7 +265,7 @@ class DependencyTracker {
     // Construct status structure
     let status = task.status();
 
-    // Put message in appropriate azure queue, and publish message to pulse,
+    // Put message into pending queue, and publish message to pulse,
     // if the initial run is pending
     if (task.runs && task.runs[0].state === 'pending') {
       await Promise.all([

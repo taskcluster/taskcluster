@@ -4,10 +4,10 @@ let _ = require('lodash');
 /**
  * HintPoller polls for hints for pending tasks.
  *
- * The azure queues don't know if a task is pending they just store hints of
+ * The pending queues don't know if a task is pending they just store hints of
  * pending tasks. To be understood this way:
- *  A) If a task is pending, there is a hint of the task in an azure queue,
- *  B) If there is an hint in an azure queue, it may or may not be pending.
+ *  A) If a task is pending, there is a hint of the task in an pending queue,
+ *  B) If there is an hint in an pending queue, it may or may not be pending.
  *
  * It's an if, but not an only-if (think over-approximation).
  *

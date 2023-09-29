@@ -83,7 +83,7 @@ defaults:
     forceSSL:         !env:bool FORCE_SSL
     trustProxy:       true
 
-  # Azure credentials (for blob and queue storage)
+  # DB credentials
   postgres:
     readDbUrl: !env READ_DB_URL
     writeDbUrl: !env WRITE_DB_URL

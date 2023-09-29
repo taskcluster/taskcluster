@@ -19,7 +19,7 @@ oneOf:
           Date-time after which the artifact should be deleted. Note, that
           these will be collected over time, and artifacts may remain
           available after expiration. S3 based artifacts are identified in
-          azure table storage and explicitly deleted on S3 after expiration.
+          the database and explicitly deleted on S3 after expiration.
         type:       string
         format:     date-time
       contentType:

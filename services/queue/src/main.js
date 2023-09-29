@@ -133,7 +133,7 @@ let load = loader({
     }),
   },
 
-  // Create QueueService to manage azure queues
+  // Create QueueService to manage internal queues
   queueService: {
     requires: ['cfg', 'monitor', 'db'],
     setup: ({ cfg, monitor, db }) => new QueueService({

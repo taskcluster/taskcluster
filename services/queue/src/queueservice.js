@@ -127,7 +127,8 @@ class QueueService {
    * Enqueue message ensure the dependency resolver handles the resolution.
    * This is being called whenever task is resolved as completed or failed.
    *
-   * At this moment we can also drop record from the claim queue, since the task was resolved.
+   * At this moment we can also drop record from the claim and deadline queues,
+   * since the task was resolved.
    */
   async putResolvedMessage(taskId, taskGroupId, schedulerId, resolution, runId = 0) {
     assert(taskId, 'taskId must be given');
