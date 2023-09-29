@@ -20,9 +20,13 @@ suite(testing.suiteName(), function () {
 
     await helper.upgradeTo(THIS_VERSION);
     await helper.assertTable('queue_pending_tasks');
+    await helper.assertIndexOnColumn('queue_pending_tasks', 'queue_pending_task_idx', 'task_id');
     await helper.assertTable('queue_claimed_tasks');
+    await helper.assertIndexOnColumn('queue_claimed_tasks', 'queue_claimed_task_run_idx', 'task_id');
     await helper.assertTable('queue_resolved_tasks');
+    await helper.assertIndexOnColumn('queue_resolved_tasks', 'queue_resolved_task_idx', 'task_id');
     await helper.assertTable('queue_task_deadlines');
+    await helper.assertIndexOnColumn('queue_task_deadlines', 'queue_task_deadline_idx', 'task_id');
   });
   test('data is being migrated into new tables', async function () {
     await testing.resetDb({ testDbUrl: helper.dbUrl });

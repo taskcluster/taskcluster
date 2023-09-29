@@ -1,21 +1,29 @@
 begin
-  -- migration is only possible when all tasks were migrated to new column structure
-  -- following query is commented out for documentation purposes, to prevent failed migration on prod deployment
-  -- IF EXISTS (
-  --   SELECT message_id FROM azure_queue_messages
-  --   WHERE queue_name NOT IN ('claim-queue', 'deadline-queue', 'resolved-queue')
-  --   AND task_queue_id IS NULL
-  --   LIMIT 1
-  -- ) THEN
-  --   RAISE EXCEPTION 'Not possible to migrate, some records are still in old format';
-  -- END IF;
+  -- migration is only possible when all tasks were migrated to new column structure (see version 0090)
+  -- if someone upgrades db from 89 to 91 directly it would fail if there are pending tasks
+  -- this is to prevent data loss
+  IF EXISTS (
+    SELECT message_id FROM azure_queue_messages
+    WHERE queue_name NOT IN ('claim-queue', 'deadline-queue', 'resolved-queue')
+    AND task_queue_id IS NULL
+    LIMIT 1
+  ) THEN
+    RAISE EXCEPTION 'Not possible to migrate, some records are still in old format - task_queue_id is NULL for pending tasks';
+  END IF;
 
   -- migration of data
   -- prevent reads and writes from table, get exclusive access
   LOCK TABLE azure_queue_messages;
 
+  -- all new tables use similar approach to process messages in unique manner
+  -- by using `pop_receipt` and `visible` columns
+  -- when fetched, messages are marked with random uuid in `pop_receipt` column
+  -- and `visible` column is set to current time + visibility timeout
+  -- When message is processed it is being removed by `(PK, pop_receipt)` columns
+  -- to guarantee that concurrent workers are not processing same message
+
   -- Task Deadlines
-  -- purpose: know when particular task expires, so dependencies/task groups can be resolved
+  -- A task in this table has not been resolved and the `visible` column corresponds to the deadline of the task.
   CREATE TABLE queue_task_deadlines (
     task_id text not null,
     task_group_id text not null,
@@ -45,8 +53,7 @@ begin
   CREATE INDEX queue_task_deadline_vis_idx ON queue_task_deadlines (visible);
 
   -- Resolved Tasks
-  -- queries: what tasks are not scheduled for given task_group_id/scheduler_id
-  -- purpose: not much since this will have short-lived data
+  -- A task has just been resolved and is waiting to be processed by Dependency Resolver
   CREATE TABLE queue_resolved_tasks (
     task_group_id text not null,
     task_id text not null,
@@ -73,10 +80,11 @@ begin
   AND expires > now();
 
   CREATE INDEX queue_resolved_task_idx ON queue_resolved_tasks (task_id);
-  CREATE INDEX queue_resolved_task_vis_idx ON queue_resolved_tasks (visible);
 
   -- Claimed Tasks
-  -- queries: what tasks are running and waiting to be reclaimed or resolved
+  -- A task was claimed by worker and is not yet resolved.
+  -- Record stays until task is resolved by worker
+  -- or failed with `claim-expired` after `taken_until` passes
   CREATE TABLE queue_claimed_tasks (
     task_id text not null,
     run_id integer not null,
@@ -89,15 +97,15 @@ begin
     pop_receipt uuid null
   );
 
-  -- migrate data to resolved queue
+  -- migrate data to claimed queue
   INSERT INTO
     queue_claimed_tasks (task_id, run_id, task_queue_id, worker_group, worker_id, claimed, taken_until, visible, pop_receipt)
   SELECT
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',
     CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'runId' AS INTEGER),
-    'unknown/tq',
-    'unknonwn-wg',
-    'unknonwn-wi',
+    '', -- task_queue_id was not present in old format
+    '', -- worker_group was not present in old format
+    '', -- worker_id was not present in old format
     inserted,
     CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'takenUntil' AS timestamp with time zone),
     visible,
@@ -106,17 +114,26 @@ begin
   WHERE queue_name = 'claim-queue'
   AND expires > now();
 
-  CREATE INDEX queue_claimed_task_idx ON queue_claimed_tasks (task_id, run_id);
+  -- before we could add unique (task_id, run_id) we need to ensure we only keep the latest record in the table
+  -- delete all but the latest taken_until
+  DELETE FROM queue_claimed_tasks
+  WHERE (task_id, run_id, taken_until) NOT IN (
+    SELECT task_id, run_id, MAX(taken_until)
+    FROM queue_claimed_tasks
+    GROUP BY task_id, run_id
+  );
+
+  -- we could only have single claim-expire for given run_id
+  -- some workers might reclaim tasks more frequently,
+  -- so there could be multiple records fro the same run
+  CREATE UNIQUE INDEX queue_claimed_task_run_idx ON queue_claimed_tasks (task_id, run_id);
   CREATE INDEX queue_claimed_task_vis_idx ON queue_claimed_tasks (visible);
   CREATE INDEX queue_claimed_task_queue_idx ON queue_claimed_tasks (task_queue_id, worker_group, worker_id);
 
 
   -- Pending (scheduled)
-  -- purpose: keep the record of all tasks that were scheduled and claimed
-  -- queries:
-  --  * what tasks are pending for a given queue
-  --  * what tasks are claimed and still running (for claim expire purpose)
-  --  * find tasks that were claimed but not resolved (for claim expire purpose)
+  -- A task appears in this table if it is pending,
+  -- but a non-pending task may also appear in this table.
   CREATE TABLE queue_pending_tasks (
     task_queue_id text not null,
     priority int not null,

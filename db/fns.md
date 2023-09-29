@@ -1985,6 +1985,8 @@ Get up to `count` tasks from the claimed queue
 * *Last defined on version*: 91
 
 Track when task was claimed and when it should be reclaimed.
+There can be only one record for a given taskId+runId combination,
+so if there is conflict, only the latest `taken_until` and `visible` values are updated.
 
 
 ### queue_claimed_task_resolved

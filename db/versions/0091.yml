@@ -225,13 +225,15 @@ methods:
   queue_claimed_task_put:
     description: |
       Track when task was claimed and when it should be reclaimed.
+      There can be only one record for a given taskId+runId combination,
+      so if there is conflict, only the latest `taken_until` and `visible` values are updated.
     mode: write
     serviceName: queue
     args: task_id_in text, run_id_in integer, taken_until_in timestamptz, task_queue_id_in text, worker_group_in text, worker_id_in text
     returns: void
     body: |-
       begin
-        insert into queue_claimed_tasks (
+        INSERT INTO queue_claimed_tasks (
           task_id,
           run_id,
           task_queue_id,
@@ -241,7 +243,7 @@ methods:
           taken_until,
           visible
         )
-        values (
+        VALUES (
           task_id_in,
           run_id_in,
           task_queue_id_in,
@@ -250,7 +252,15 @@ methods:
           now(),
           taken_until_in,
           taken_until_in -- visible initially same as taken_until
-        );
+        )
+        ON CONFLICT (task_id, run_id) DO UPDATE
+          SET
+            taken_until = greatest(taken_until_in, queue_claimed_tasks.taken_until),
+            visible = greatest(taken_until_in, queue_claimed_tasks.visible)
+          WHERE
+            queue_claimed_tasks.task_id = task_id_in
+            AND queue_claimed_tasks.run_id = run_id_in
+        ;
       end
 
   queue_claimed_task_get:
@@ -343,7 +353,7 @@ methods:
         );
 
         -- notify listeners that task was resolved
-        EXECUTE 'NOTIFY task_resolved, ' || quote_literal(task_id_in) || ';';
+        EXECUTE 'NOTIFY task_resolved';
       end
 
   queue_resolved_task_get:

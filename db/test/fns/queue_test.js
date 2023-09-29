@@ -134,6 +134,20 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(result2, []);
     });
 
+    helper.dbTest('multiple rows for the same taskId,runId should not exist', async function (db) {
+      const t1 = fromNow('-20 seconds');
+      const t2 = fromNow('-10 seconds');
+      const t3 = fromNow('-5 seconds');
+
+      await db.fns.queue_claimed_task_put('t1', 0, t1, 'tq1', 'wg1', 'w1');
+      await db.fns.queue_claimed_task_put('t1', 0, t2, 'tq1', 'wg1', 'w1');
+      await db.fns.queue_claimed_task_put('t1', 0, t3, 'tq1', 'wg1', 'w1');
+
+      const rows = await db.fns.queue_claimed_task_get(fromNow('10 seconds'), 3);
+      assert.equal(rows.length, 1);
+      assert.equal(new Date(rows[0].taken_until).toJSON(), t3.toJSON());
+    });
+
     helper.dbTest('resolved before claim expires tasks should be removed from the queue', async function (db) {
       await db.fns.queue_claimed_task_put('t1', 0, fromNow('-20 seconds'), 'tq1', 'wg1', 'w1');
       await db.fns.queue_claimed_task_put('t2', 0, fromNow('-20 seconds'), 'tq1', 'wg1', 'w1');

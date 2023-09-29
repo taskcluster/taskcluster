@@ -41,15 +41,14 @@ When task is created it can either be scheduled right away (no unmet dependencie
 sequenceDiagram
   participant client
   participant queue as Queue API
-  participant deadlineQueue as Deadline Queue
   participant pendingQueue as Pending Queue
+  participant deadlineQueue as Deadline Queue
 
   client->>+queue: createTask()
-  queue-->>deadlineQueue: QueueService.putDeadlineMessage()
-
-  alt is scheduled:
-    queue-->>pendingQueue: if task can be scheduled<br> QueueService.putPendingMessage()
-  end
+  note over queue,deadlineQueue: track deadline resolution for task
+  queue->>deadlineQueue: QueueService.putDeadlineMessage()
+  note over queue,pendingQueue: if task can be scheduled already,<br> put it into pending queue
+  queue->>pendingQueue: QueueService.putPendingMessage()
 
   queue->>-client: task status response
 ```
@@ -65,25 +64,31 @@ sequenceDiagram
   participant workClaimer
   participant pendingQueue as Pending Queue
   participant claimQueue as Claim Queue
+  participant claimResolver as Claim Resolver
+  participant dependencyTracker as Dependency Tracker
 
   worker->>queue: claimWork()
-  queue-->>+workClaimer: WorkClaimer.claimTask(taskQueueId)
-  workClaimer-->>pendingQueue: QueueService.pollPendingQueue(taskQueueId)
-  pendingQueue-->>workClaimer: return 1 or more tasks
-  workClaimer-->>claimQueue: QueueService.putClaimMessage() <br> mark task as claimed<br> to check for expiration
-  workClaimer-->>-queue: tasks
+  queue->>+workClaimer: WorkClaimer.claimTask(taskQueueId)
+  workClaimer->>pendingQueue: QueueService.pollPendingQueue(taskQueueId)
+  pendingQueue->>workClaimer: return 1 or more tasks
+  workClaimer->>claimQueue: QueueService.putClaimMessage() <br> mark task as claimed<br> to check for expiration
+  workClaimer->>-queue: tasks
   queue->>worker: tasks
 
   claimResolver-->>claimQueue: QueueService.pollClaimQueue()
   claimQueue-->>claimResolver: return expired claim messages
   claimResolver-->>claimResolver: ClaimResolver checks if task can be rescheduled
 
-  alt task can be rerun:
+  alt task can be rerun
     claimResolver->>pendingQueue: QueueService.putPendingMessage()
-  else task cannot be rerun:
+  else task cannot be rerun
     claimResolver->>dependencyTracker: DependencyTracker.resolveTask()
   end
 
+  note over worker, queue: for long running tasks,<br> worker should re-claim task
+  worker->>queue: reclaimTask()
+  queue->>claimQueue: QueueService.putClaimMessage()
+  claimQueue->>claimQueue: `taken_until` is updated
 
 ```
 
@@ -91,7 +96,7 @@ sequenceDiagram
 
 Before task deadline, tasks can be resolved by calling `queue.reportCompleted()`, `queue.reportFailed()` or `queue.reportException()`.
 
-`DepnedencyResolver` will be notified about resolved tasks and will try to resolve task graph dependencies.
+`DependencyResolver` will be notified about resolved tasks and will try to resolve task graph dependencies.
 
 ```mermaid
 sequenceDiagram
