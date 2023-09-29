@@ -33,6 +33,10 @@ const DEFAULT_UPDATE_FREQUENCY = '30 minutes';
 // for supported bulk deletion S3 operations
 const MAX_BULK_DELETE_SIZE = 1000;
 
+// maximum number of records to process at once in claim, deadline, and dependency resolvers
+// this is to limit total amount of concurrent updates to DB
+const NUMBER_OF_RECORDS_TO_PROCESS = 32;
+
 require('./monitor');
 
 // Create component loader
@@ -253,7 +257,7 @@ let load = loader({
         db, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.claimResolver.pollingDelay,
         parallelism: cfg.app.claimResolver.parallelism,
-        count: cfg.app.claimResolver.count,
+        count: NUMBER_OF_RECORDS_TO_PROCESS,
         monitor: monitor.childMonitor('claim-resolver'),
       });
       await resolver.start();
@@ -275,7 +279,7 @@ let load = loader({
         db, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.deadlineResolver.pollingDelay,
         parallelism: cfg.app.deadlineResolver.parallelism,
-        count: cfg.app.deadlineResolver.count,
+        count: NUMBER_OF_RECORDS_TO_PROCESS,
         monitor: monitor.childMonitor('deadline-resolver'),
       });
       await resolver.start();
@@ -291,7 +295,7 @@ let load = loader({
         ownName,
         queueService, dependencyTracker,
         pollingDelay: cfg.app.dependencyResolver.pollingDelay,
-        count: cfg.app.dependencyResolver.count,
+        count: NUMBER_OF_RECORDS_TO_PROCESS,
         monitor: monitor.childMonitor('dependency-resolver'),
       });
       await resolver.start();
