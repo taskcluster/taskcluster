@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 func helloGoodbye() [][]string {
@@ -154,8 +155,17 @@ func listGroups() [][]string {
 	return [][]string{
 		{
 			"bash",
-			"-c",
-			`USER="$(whoami)"; for group in $(id -nG "${USER}"); do echo "*${group}"; done`,
+			"-ce",
+			strings.Join(
+				[]string{
+					`# make sure listing groups fails if process does not have same permissions as user`,
+					`[ "$(id -nG)" == "$(id -nG $(whoami))" ]`,
+					`for group in $(id -nG); do`,
+					`  echo "*${group}"`,
+					`done`,
+				},
+				"\n",
+			),
 		},
 	}
 }
