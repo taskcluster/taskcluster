@@ -18,9 +18,11 @@ testSuite:
           - - bash
             - "-cx"
             - >-
-              podman run -t --rm --cap-add=SYS_PTRACE -e
-              RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              podman run -t --rm --cap-add=SYS_PTRACE
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
         onExitStatus:
