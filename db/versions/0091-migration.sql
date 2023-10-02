@@ -31,12 +31,13 @@ begin
     created timestamptz not null,
     deadline timestamptz not null,
     visible timestamptz not null,
-    pop_receipt uuid null
+    pop_receipt uuid null,
+    message_id_compat uuid not null -- to allow downgrade migration until removed in next version
   );
 
   -- migrate data to deadline queue
   INSERT INTO queue_task_deadlines
-    (task_group_id, task_id, scheduler_id, created, deadline, visible, pop_receipt)
+    (task_group_id, task_id, scheduler_id, created, deadline, visible, pop_receipt, message_id_compat)
   SELECT
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskGroupId',
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',
@@ -44,7 +45,8 @@ begin
     inserted,
     CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'deadline' AS timestamp with time zone),
     visible, -- when this message becomes visible, it means it hits deadline
-    pop_receipt
+    pop_receipt,
+    message_id
   FROM azure_queue_messages
   WHERE queue_name = 'deadline-queue'
   AND expires > now();
@@ -61,12 +63,13 @@ begin
     resolution text not null,
     resolved timestamptz not null,
     visible timestamptz not null,
-    pop_receipt uuid null
+    pop_receipt uuid null,
+    message_id_compat uuid not null -- to allow downgrade migration until removed in next version
   );
 
   -- migrate data to resolved queue
   INSERT INTO
-    queue_resolved_tasks (task_id, task_group_id, scheduler_id, resolution, resolved, visible, pop_receipt)
+    queue_resolved_tasks (task_id, task_group_id, scheduler_id, resolution, resolved, visible, pop_receipt, message_id_compat)
   SELECT
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskGroupId',
@@ -74,7 +77,8 @@ begin
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'resolution',
     inserted,
     visible,
-    pop_receipt
+    pop_receipt,
+    message_id
   FROM azure_queue_messages
   WHERE queue_name = 'resolved-queue'
   AND expires > now();
@@ -94,12 +98,13 @@ begin
     claimed timestamptz not null,
     taken_until timestamptz not null,
     visible timestamptz not null,
-    pop_receipt uuid null
+    pop_receipt uuid null,
+    message_id_compat uuid not null -- to allow downgrade migration until removed in next version
   );
 
   -- migrate data to claimed queue
   INSERT INTO
-    queue_claimed_tasks (task_id, run_id, task_queue_id, worker_group, worker_id, claimed, taken_until, visible, pop_receipt)
+    queue_claimed_tasks (task_id, run_id, task_queue_id, worker_group, worker_id, claimed, taken_until, visible, pop_receipt, message_id_compat)
   SELECT
     convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'taskId',
     CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'runId' AS INTEGER),
@@ -109,24 +114,15 @@ begin
     inserted,
     CAST(convert_from(decode(message_text, 'base64'), 'utf-8')::jsonb->>'takenUntil' AS timestamp with time zone),
     visible,
-    pop_receipt
+    pop_receipt,
+    message_id
   FROM azure_queue_messages
   WHERE queue_name = 'claim-queue'
   AND expires > now();
 
-  -- before we could add unique (task_id, run_id) we need to ensure we only keep the latest record in the table
-  -- delete all but the latest taken_until
-  DELETE FROM queue_claimed_tasks
-  WHERE (task_id, run_id, taken_until) NOT IN (
-    SELECT task_id, run_id, MAX(taken_until)
-    FROM queue_claimed_tasks
-    GROUP BY task_id, run_id
-  );
-
-  -- we could only have single claim-expire for given run_id
   -- some workers might reclaim tasks more frequently,
   -- so there could be multiple records fro the same run
-  CREATE UNIQUE INDEX queue_claimed_task_run_idx ON queue_claimed_tasks (task_id, run_id);
+  CREATE INDEX queue_claimed_task_run_idx ON queue_claimed_tasks (task_id, run_id);
   CREATE INDEX queue_claimed_task_vis_idx ON queue_claimed_tasks (visible);
   CREATE INDEX queue_claimed_task_queue_idx ON queue_claimed_tasks (task_queue_id, worker_group, worker_id);
 
@@ -143,12 +139,14 @@ begin
     inserted timestamptz not null,
     expires timestamptz not null,
     visible timestamptz not null,
-    pop_receipt uuid null
+    pop_receipt uuid null,
+    queue_name_compat text not null, -- preserve old queue name during migration to allow downgrade
+    message_id_compat uuid not null -- to allow downgrade migration until removed in next version
   );
 
   -- rest goes into queue_pending_tasks
   INSERT INTO queue_pending_tasks
-    (task_queue_id, priority, task_id, run_id, hint_id, inserted, expires, visible, pop_receipt)
+    (task_queue_id, priority, task_id, run_id, hint_id, inserted, expires, visible, pop_receipt, queue_name_compat, message_id_compat)
   SELECT
     task_queue_id,
     priority,
@@ -158,7 +156,9 @@ begin
     inserted,
     expires,
     visible,
-    pop_receipt
+    pop_receipt,
+    queue_name,
+    message_id
   FROM azure_queue_messages
   WHERE queue_name NOT IN ('claim-queue', 'deadline-queue', 'resolved-queue')
   AND task_queue_id IS NOT NULL
@@ -173,6 +173,6 @@ begin
   GRANT select, insert, update, delete ON queue_resolved_tasks to $db_user_prefix$_queue;
   GRANT select, insert, update, delete ON queue_claimed_tasks to $db_user_prefix$_queue;
 
-  -- delete existing
-  -- DELETE FROM azure_queue_messages;
+  -- delete existing rows, modified azure_* methods should be writing and updating new tables now
+  DELETE FROM azure_queue_messages;
 end

@@ -40,11 +40,11 @@ const PRIORITY_LEVELS = [
  *
  *  i)    For any `pending` task there is at least one record in pending queue
  *
- *  ii)   For any `running` task there is only one one record in
+ *  ii)   For any `running` task there is at least one one record in
  *        claim expiration queue, such that the message becomes visible
  *        after the claim on the current run has expired.
  *
- *  iii)  For any unresolved task there is only one record in
+ *  iii)  For any unresolved task there is at least one record in
  *        deadline resolution queue, such that the message becomes visible
  *        after the tasks deadline has expired.
  *

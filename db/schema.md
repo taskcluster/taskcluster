@@ -43,7 +43,6 @@
 
 ```sql
 CREATE UNIQUE INDEX objects_upload_id_idx ON objects USING btree (upload_id) WHERE (upload_id IS NOT NULL);
-CREATE UNIQUE INDEX queue_claimed_task_run_idx ON queue_claimed_tasks USING btree (task_id, run_id);
 ```
 
 ## access_tokens
@@ -328,7 +327,8 @@ CREATE TABLE queue_claimed_tasks (
     claimed timestamp with time zone NOT NULL,
     taken_until timestamp with time zone NOT NULL,
     visible timestamp with time zone NOT NULL,
-    pop_receipt uuid
+    pop_receipt uuid,
+    message_id_compat uuid NOT NULL
 );
 ```
 
@@ -344,7 +344,9 @@ CREATE TABLE queue_pending_tasks (
     inserted timestamp with time zone NOT NULL,
     expires timestamp with time zone NOT NULL,
     visible timestamp with time zone NOT NULL,
-    pop_receipt uuid
+    pop_receipt uuid,
+    queue_name_compat text NOT NULL,
+    message_id_compat uuid NOT NULL
 );
 ```
 
@@ -358,7 +360,8 @@ CREATE TABLE queue_resolved_tasks (
     resolution text NOT NULL,
     resolved timestamp with time zone NOT NULL,
     visible timestamp with time zone NOT NULL,
-    pop_receipt uuid
+    pop_receipt uuid,
+    message_id_compat uuid NOT NULL
 );
 ```
 
@@ -372,7 +375,8 @@ CREATE TABLE queue_task_deadlines (
     created timestamp with time zone NOT NULL,
     deadline timestamp with time zone NOT NULL,
     visible timestamp with time zone NOT NULL,
-    pop_receipt uuid
+    pop_receipt uuid,
+    message_id_compat uuid NOT NULL
 );
 ```
 
@@ -580,6 +584,7 @@ CREATE INDEX github_builds_pr ON github_builds USING btree (organization, reposi
 CREATE INDEX github_checks_check_suite_id_check_run_id_idx ON github_checks USING btree (check_suite_id, check_run_id);
 CREATE INDEX hooks_last_fires_time ON hooks_last_fires USING btree (hook_group_id, hook_id, task_create_time);
 CREATE INDEX queue_claimed_task_queue_idx ON queue_claimed_tasks USING btree (task_queue_id, worker_group, worker_id);
+CREATE INDEX queue_claimed_task_run_idx ON queue_claimed_tasks USING btree (task_id, run_id);
 CREATE INDEX queue_claimed_task_vis_idx ON queue_claimed_tasks USING btree (visible);
 CREATE INDEX queue_pending_task_idx ON queue_pending_tasks USING btree (task_id);
 CREATE INDEX queue_pending_task_queue_idx ON queue_pending_tasks USING btree (task_queue_id, priority, inserted);
