@@ -1462,7 +1462,7 @@ As data is migrated to new table we return empty set here.
 This is a modified version of the original method that is used during migration.
 We want to prevent data loss and let running processes still use existing functions.
 
-Messages would be added to new table directly
+Messages would be routed to the correct table based on the queue_name.
 
 
 ### azure_queue_update

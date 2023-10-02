@@ -18,8 +18,6 @@ begin
     pop_receipt
   FROM queue_task_deadlines;
 
-
-
   REVOKE select, insert, update, delete ON queue_task_deadlines FROM $db_user_prefix$_queue;
   DROP TABLE queue_task_deadlines;
 

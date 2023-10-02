@@ -23,9 +23,9 @@ suite(testing.suiteName(), function() {
       );
     });
     helper.dbTest('count queue containing messages', async function (db) {
-      await db.fns.queue_pending_tasks_put('tq1', 9, 'task1', 0, 'hint1', fromNow('10 seconds'));
-      await db.fns.queue_pending_tasks_put('tq1', 3, 'task2', 0, 'hint1', fromNow('10 seconds'));
-      await db.fns.queue_pending_tasks_put('tq1', 1, 'expiredTask', 0, 'hint1', fromNow('0 seconds'));
+      await db.fns.queue_pending_tasks_put('tq1', 9, 'task1', 0, 'hint1', fromNow('10 seconds'), 'queue-name-compat');
+      await db.fns.queue_pending_tasks_put('tq1', 3, 'task2', 0, 'hint1', fromNow('10 seconds'), 'queue-name-compat');
+      await db.fns.queue_pending_tasks_put('tq1', 1, 'expiredTask', 0, 'hint1', fromNow('0 seconds'), 'queue-name-compat');
       assert.deepEqual(
         await db.fns.queue_pending_tasks_count("tq1"),
         [{ queue_pending_tasks_count: 2 }],
@@ -41,7 +41,7 @@ suite(testing.suiteName(), function() {
     //     db.pools.read.Client.on('notification', msg => notifications.push(msg));
     //   });
 
-    //   await db.fns.queue_pending_tasks_put('tq1', 0, 'task1', 0, 'hint1', fromNow('10 seconds'));
+    //   await db.fns.queue_pending_tasks_put('tq1', 0, 'task1', 0, 'hint1', fromNow('10 seconds'), 'queue-name-compat');
     //   assert.equals(notifications.length, 1);
     //   assert.deepEquals(notifications, ['tq1']);
     // });
@@ -52,9 +52,9 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('getting tasks on a queue by priority', async function (db) {
-      await db.fns.queue_pending_tasks_put('tq1', 2, 'taskLowerPriority', 0, 'hint2', fromNow('20 seconds'));
-      await db.fns.queue_pending_tasks_put('tq1', 0, 'taskDefaultPriority', 0, 'hint2', fromNow('20 seconds'));
-      await db.fns.queue_pending_tasks_put('tq1', 9, 'taskHigherPriority', 0, 'hint1', fromNow('20 seconds'));
+      await db.fns.queue_pending_tasks_put('tq1', 2, 'taskLowerPriority', 0, 'hint2', fromNow('20 seconds'), 'queue-name-compat');
+      await db.fns.queue_pending_tasks_put('tq1', 0, 'taskDefaultPriority', 0, 'hint2', fromNow('20 seconds'), 'queue-name-compat');
+      await db.fns.queue_pending_tasks_put('tq1', 9, 'taskHigherPriority', 0, 'hint1', fromNow('20 seconds'), 'queue-name-compat');
       const result = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 3);
       assert.deepEqual(
         result.map(({ task_id }) => task_id),
@@ -66,7 +66,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('getting and deleting pending tasks', async function (db) {
-      await db.fns.queue_pending_tasks_put('tq1', 2, 't1', 0, 'hint1', fromNow('20 seconds'));
+      await db.fns.queue_pending_tasks_put('tq1', 2, 't1', 0, 'hint1', fromNow('20 seconds'), 'queue-name-compat');
       const result = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 1);
       assert.deepEqual(result.map(({ task_id }) => task_id), ['t1']);
       await db.fns.queue_pending_tasks_delete(result[0].task_id, result[0].pop_receipt);
@@ -75,7 +75,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('releasing pending tasks back to queue', async function (db) {
-      await db.fns.queue_pending_tasks_put('tq1', 2, 't1', 0, 'hint1', fromNow('20 seconds'));
+      await db.fns.queue_pending_tasks_put('tq1', 2, 't1', 0, 'hint1', fromNow('20 seconds'), 'queue-name-compat');
       const result = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 1);
       assert.deepEqual(result.map(({ task_id }) => task_id), ['t1']);
       const result2 = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 1);
@@ -86,8 +86,8 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('deleting expired messages', async function (db) {
-      await db.fns.queue_pending_tasks_put('tq1', 0, 't1', 0, 'hint1', fromNow('-1 second'));
-      await db.fns.queue_pending_tasks_put('tq1', 0, 't2', 0, 'hint2', fromNow('-1 second'));
+      await db.fns.queue_pending_tasks_put('tq1', 0, 't1', 0, 'hint1', fromNow('-1 second'), 'queue-name-compat');
+      await db.fns.queue_pending_tasks_put('tq1', 0, 't2', 0, 'hint2', fromNow('-1 second'), 'queue-name-compat');
       await db.fns.queue_pending_tasks_delete_expired();
       await helper.withDbClient(async client => {
         const res = await client.query('select count(*) from queue_pending_tasks');
@@ -134,7 +134,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(result2, []);
     });
 
-    helper.dbTest('multiple rows for the same taskId,runId should not exist', async function (db) {
+    helper.dbTest('multiple rows for the same taskId,runId should exist', async function (db) {
       const t1 = fromNow('-20 seconds');
       const t2 = fromNow('-10 seconds');
       const t3 = fromNow('-5 seconds');
@@ -144,8 +144,10 @@ suite(testing.suiteName(), function() {
       await db.fns.queue_claimed_task_put('t1', 0, t3, 'tq1', 'wg1', 'w1');
 
       const rows = await db.fns.queue_claimed_task_get(fromNow('10 seconds'), 3);
-      assert.equal(rows.length, 1);
-      assert.equal(new Date(rows[0].taken_until).toJSON(), t3.toJSON());
+      assert.equal(rows.length, 3);
+      assert.equal(new Date(rows[0].taken_until).toJSON(), t1.toJSON());
+      assert.equal(new Date(rows[1].taken_until).toJSON(), t2.toJSON());
+      assert.equal(new Date(rows[2].taken_until).toJSON(), t3.toJSON());
     });
 
     helper.dbTest('resolved before claim expires tasks should be removed from the queue', async function (db) {
