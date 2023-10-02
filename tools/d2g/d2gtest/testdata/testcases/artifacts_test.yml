@@ -32,12 +32,22 @@ testSuite:
         command:
           - - bash
             - '-cx'
-            - |-
-              podman run -t --name taskcontainer -e RUN_ID -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_ID ubuntu 'echo "Hello world"'
+            - >-
+              podman run -t --name taskcontainer
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+
               exit_code=$?
+
               podman cp taskcontainer:'/etc/passwd'\'' artifact0; whoami; echo foo > /root/bar; cp '\''foo' artifact0
+
               podman cp taskcontainer:'/home/worker/artifacts/fred.txt' 'artifact1.txt'
+
               podman rm taskcontainer
+
               exit "${exit_code}"
         maxRunTime: 3600
         onExitStatus:

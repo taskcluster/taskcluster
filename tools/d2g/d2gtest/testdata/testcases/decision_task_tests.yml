@@ -82,14 +82,21 @@ testSuite:
             - >-
               podman run -t --name taskcontainer --privileged -v
               "$(pwd)/cache0:/builds/worker/checkouts"
-              --add-host=taskcluster:127.0.0.1 --net=host -e
-              GECKO_BASE_REPOSITORY -e GECKO_BASE_REV -e
-              GECKO_HEAD_REF -e GECKO_HEAD_REPOSITORY -e
-              GECKO_HEAD_REV -e HG_STORE_PATH -e
-              MOZ_AUTOMATION -e PYTHONDONTWRITEBYTECODE -e
-              RUN_ID -e TASKCLUSTER_CACHES -e
-              TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              --add-host=taskcluster:127.0.0.1 --net=host
+              -e GECKO_BASE_REPOSITORY
+              -e GECKO_BASE_REV
+              -e GECKO_HEAD_REF
+              -e GECKO_HEAD_REPOSITORY
+              -e GECKO_HEAD_REV
+              -e HG_STORE_PATH
+              -e MOZ_AUTOMATION
+              -e PYTHONDONTWRITEBYTECODE
+              -e RUN_ID
+              -e TASKCLUSTER_CACHES
+              -e TASKCLUSTER_PROXY_URL
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               'mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06'
               /builds/worker/bin/run-task
               --gecko-checkout=/builds/worker/checkouts/gecko

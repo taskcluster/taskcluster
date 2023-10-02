@@ -21,8 +21,10 @@ testSuite:
             - >-
               podman run -t --rm
               --device=/dev/shm
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
         onExitStatus:
@@ -47,8 +49,10 @@ testSuite:
             - >-
               podman run -t --rm
               --device=/dev/kvm
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
         onExitStatus:
@@ -73,8 +77,10 @@ testSuite:
             - >-
               podman run -t --rm
               --device="${TASKCLUSTER_VIDEO_DEVICE}"
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               ubuntu 'echo "Hello world"'
         features:
           loopbackVideo: true
@@ -101,8 +107,10 @@ testSuite:
             - >-
               podman run -t --rm
               --device=/dev/snd
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               ubuntu 'echo "Hello world"'
         features:
           loopbackAudio: true
