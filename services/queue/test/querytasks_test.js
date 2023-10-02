@@ -50,14 +50,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     );
     assume(r1.pendingTasks).is.greaterThan(1);
 
-    // Result is cached for 20 seconds, so adding one more and checking should
-    // give the same result, as we're not waiting for the timeout
+    // Creating same task twice should only result in single entry in pending task queue
     await helper.queue.createTask(taskId1, taskDef);
 
-    // Note: There is some timing here, but since the queue.pendingTasks result
-    // is cached it ought to be really fast and take less than 20 seconds to
-    // do: queue.createTask + queue.pendingTasks, if not that's also sort of a
-    // bug we should investigate
     const r2 = await helper.queue.pendingTasks(
       'no-provisioner-extended-extended/query-test-worker-extended-extended',
     );
