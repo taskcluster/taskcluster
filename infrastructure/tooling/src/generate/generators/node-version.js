@@ -53,19 +53,18 @@ exports.tasks = [{
         /^( *NODE_VERSION *= *")[0-9.]+(")$/m,
         `$1${nodeVersion}$2`));
 
-    utils.status({ message: 'ui/package.json' });
-    await modifyRepoJSON('ui/package.json',
-      contents => {
-        contents.engines.node = nodeVersion;
-        return contents;
-      });
-
-    utils.status({ message: 'workers/docker-worker/package.json' });
-    await modifyRepoJSON('workers/docker-worker/package.json',
-      contents => {
-        contents.engines.node = nodeVersion;
-        return contents;
-      });
+    [
+      'ui/package.json',
+      'workers/docker-worker/package.json',
+      'clients/client/package.json',
+    ].forEach(file => {
+      utils.status({ message: file });
+      modifyRepoJSON(file,
+        contents => {
+          contents.engines.node = nodeVersion;
+          return contents;
+        });
+    });
 
     utils.status({ message: 'cloudbuild.yaml' });
     await modifyRepoYAML('cloudbuild.yaml',
