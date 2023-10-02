@@ -16,8 +16,10 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
         onExitStatus:
@@ -39,8 +41,10 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
         onExitStatus:
@@ -63,8 +67,10 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               docker-archive:dockerimage 'echo "Hello world"'
         maxRunTime: 3600
         mounts:
@@ -94,8 +100,10 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               docker-archive:dockerimage 'echo "Hello world"'
         maxRunTime: 3600
         mounts:
@@ -126,8 +134,10 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               docker-archive:dockerimage 'echo "Hello world"'
         maxRunTime: 3600
         mounts:
@@ -158,8 +168,10 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               docker-archive:dockerimage 'echo "Hello world"'
         mounts:
           - content:
@@ -187,8 +199,10 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               docker-archive:dockerimage 'echo "Hello world"'
         mounts:
           - content:
@@ -217,8 +231,10 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm
-              -e RUN_ID -e TASKCLUSTER_ROOT_URL -e
-              TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
               docker-archive:dockerimage 'echo "Hello world"'
         mounts:
           - content:

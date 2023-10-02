@@ -948,7 +948,7 @@ func JSONSchema() string {
       "maxItems": 0,
       "title": "OS Groups",
       "type": "array",
-      "uniqueItems": false
+      "uniqueItems": true
     },
     "supersederUrl": {
       "description": "This property is allowed for backward compatibility, but is unused.",
