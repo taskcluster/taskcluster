@@ -155,7 +155,7 @@ func listGroups() [][]string {
 		{
 			"bash",
 			"-c",
-			`USER="$(whoami)"; for group in $(id -nG "${USER}"); do echo "*${group}"; done`,
+			`for group in $(id -nG); do echo "*${group}"; done`,
 		},
 	}
 }
