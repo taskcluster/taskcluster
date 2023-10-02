@@ -15,3 +15,7 @@ func removeUserFromGroup(user, group string) error {
 	// TODO copied from Linux version, need to find out what to do for FreeBSD
 	return host.Run("/usr/bin/gpasswd", "-d", taskContext.User.Name, group)
 }
+
+func (osGroups *OSGroups) refreshTaskCommands() (err *CommandExecutionError) {
+	return
+}

@@ -13,3 +13,7 @@ func addUserToGroup(user, group string) error {
 func removeUserFromGroup(user, group string) error {
 	return host.Run("/usr/bin/gpasswd", "-d", taskContext.User.Name, group)
 }
+
+func (osGroups *OSGroups) refreshTaskCommands() (err *CommandExecutionError) {
+	return
+}

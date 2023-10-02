@@ -13,3 +13,7 @@ func addUserToGroup(user, group string) error {
 func removeUserFromGroup(user, group string) error {
 	return host.Run("/usr/sbin/dseditgroup", "-o", "edit", "-d", taskContext.User.Name, "-t", "user", group)
 }
+
+func (osGroups *OSGroups) refreshTaskCommands() (err *CommandExecutionError) {
+	return
+}
