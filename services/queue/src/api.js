@@ -29,20 +29,18 @@ const PRIORITY_LEVELS = [
  *   C) resolution by deadline expiration.
  *
  * Initial implementation of the queue service was done with the help of
- * Azure queues. It had limitations such as inefficient querying
- * and lack of guarantees on task state consistency.
+ * Azure queues. It had limitations such as inefficient querying.
  *
  * We have since moved to using postgres for internal queues.
- * With this we are able to get more guarantees about the consistency
- * of the state of the task.
+ * With this we are able to get more visibility into the state of the queue.
  *
  * That said we do need a few invariants, this comment doesn't attempt to
  * formally establish correctness. Instead we just seek to explain the
  * intuition, so others have a chance and understanding what is going on.
  *
- *  i)    For any `pending` task there is only one record in pending queue
+ *  i)    For any `pending` task there is at least one record in pending queue
  *
- *  ii)   For any `running` task there is only one record in
+ *  ii)   For any `running` task there is only one one record in
  *        claim expiration queue, such that the message becomes visible
  *        after the claim on the current run has expired.
  *

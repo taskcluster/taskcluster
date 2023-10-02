@@ -1,11 +1,13 @@
 version: 91
-description: migrate existing azure queue messages into new tables
+description: Migrate existing azure queue messages into new tables in a reversible way
 
 migrationScript: 0091-migration.sql
 downgradeScript: 0091-downgrade.sql
 
 methods:
-  # those methods and the azure messages table would be dropped in next release
+  # existing azure_queue methods are being modified to use new tables
+  # this is to allow smooth transition during migration, as there will be
+  # background processes and api requests that will still use the old methods
   azure_queue_get:
     deprecated: true
   azure_queue_count:
@@ -73,18 +75,7 @@ methods:
           now(),
           expires_in,
           now()
-        )
-        ON CONFLICT (task_id) DO UPDATE
-          SET
-            expires = greatest(coalesce(expires_in, queue_pending_tasks.expires), queue_pending_tasks.expires),
-            priority = priority_in,
-            run_id = greatest(run_id_in, queue_pending_tasks.run_id),
-            hint_id = hint_id_in
-          WHERE
-            queue_pending_tasks.task_queue_id = task_queue_id_in
-            AND queue_pending_tasks.task_id = task_id_in
-            AND queue_pending_tasks.pop_receipt is null;
-
+        );
         -- notify listeners that there is a new task in the queue
         EXECUTE 'NOTIFY task_pending, ' || quote_literal(task_queue_id_in) || ';';
       end
