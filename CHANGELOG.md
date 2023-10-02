@@ -3,6 +3,32 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v55.3.3
+
+### USERS
+
+▶ [patch] [#6592](https://github.com/taskcluster/taskcluster/issues/6592)
+Generic Worker no longer allows you to specify the same group twice in the osGroups array property.
+
+▶ [patch] [#6590](https://github.com/taskcluster/taskcluster/issues/6590)
+Generic Worker osGroups feature on Linux has been fixed. It never worked on this platform.
+
+▶ [patch] [#6471](https://github.com/taskcluster/taskcluster/issues/6471)
+Worker Runner now sets the `TASKCLUSTER_WORKER_LOCATION` variable for Generic Worker.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump get-func-name from 2.0.0 to 2.0.2 in /ui (13cd8dd71)
+* build(deps): bump the deps group with 4 updates (89c59ee11)
+* build(deps-dev): bump webpack in /clients/client-web (d165b6200)
+* build(deps-dev): bump the deps group (10f5744ea)
+* build(deps): bump the deps group in /taskcluster with 3 updates (acd7144b7)
+
+</details>
+
 ## v55.3.2
 
 ### GENERAL

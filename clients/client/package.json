@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-client",
-  "version": "55.3.2",
+  "version": "55.3.3",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Client for interfacing taskcluster components",
   "license": "MPL-2.0",
