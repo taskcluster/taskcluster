@@ -311,7 +311,7 @@ oneOf:
 
         Since: generic-worker 6.0.0 (Windows)
         Since: generic-worker 54.4.0 (FreeBSD, Linux, macOS)
-      uniqueItems: false
+      uniqueItems: true
       items:
         type: string
     supersederUrl:

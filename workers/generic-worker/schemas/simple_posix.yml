@@ -288,7 +288,7 @@ properties:
       provided.
 
       Since: generic-worker 6.0.0
-    uniqueItems: false
+    uniqueItems: true
     items:
       type: string
     maxItems: 0
