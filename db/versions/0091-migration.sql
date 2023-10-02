@@ -49,7 +49,7 @@ begin
     message_id
   FROM azure_queue_messages
   WHERE queue_name = 'deadline-queue'
-  AND expires > now();
+  AND expires >= now();
 
   CREATE INDEX queue_task_deadline_idx ON queue_task_deadlines (task_id);
   CREATE INDEX queue_task_deadline_vis_idx ON queue_task_deadlines (visible);
@@ -81,7 +81,7 @@ begin
     message_id
   FROM azure_queue_messages
   WHERE queue_name = 'resolved-queue'
-  AND expires > now();
+  AND expires >= now();
 
   CREATE INDEX queue_resolved_task_idx ON queue_resolved_tasks (task_id);
 
@@ -118,7 +118,7 @@ begin
     message_id
   FROM azure_queue_messages
   WHERE queue_name = 'claim-queue'
-  AND expires > now();
+  AND expires >= now();
 
   -- some workers might reclaim tasks more frequently,
   -- so there could be multiple records fro the same run
@@ -162,7 +162,7 @@ begin
   FROM azure_queue_messages
   WHERE queue_name NOT IN ('claim-queue', 'deadline-queue', 'resolved-queue')
   AND task_queue_id IS NOT NULL
-  AND expires > now();
+  AND expires >= now();
 
   CREATE INDEX queue_pending_task_idx ON queue_pending_tasks (task_id);
   CREATE INDEX queue_pending_task_vis_idx ON queue_pending_tasks (visible, expires);

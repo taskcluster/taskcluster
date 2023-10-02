@@ -41,7 +41,8 @@ suite(testing.suiteName(), function() {
     //     db.pools.read.Client.on('notification', msg => notifications.push(msg));
     //   });
 
-    //   await db.fns.queue_pending_tasks_put('tq1', 0, 'task1', 0, 'hint1', fromNow('10 seconds'), 'queue-name-compat');
+    //   await db.fns.queue_pending_tasks_put('tq1', 0, 'task1', 0, 'hint1', fromNow('10 seconds'),
+    // 'queue-name-compat');
     //   assert.equals(notifications.length, 1);
     //   assert.deepEquals(notifications, ['tq1']);
     // });
@@ -52,9 +53,12 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('getting tasks on a queue by priority', async function (db) {
-      await db.fns.queue_pending_tasks_put('tq1', 2, 'taskLowerPriority', 0, 'hint2', fromNow('20 seconds'), 'queue-name-compat');
-      await db.fns.queue_pending_tasks_put('tq1', 0, 'taskDefaultPriority', 0, 'hint2', fromNow('20 seconds'), 'queue-name-compat');
-      await db.fns.queue_pending_tasks_put('tq1', 9, 'taskHigherPriority', 0, 'hint1', fromNow('20 seconds'), 'queue-name-compat');
+      await db.fns.queue_pending_tasks_put(
+        'tq1', 2, 'taskLowerPriority', 0, 'hint2', fromNow('20 seconds'), 'queue-name-compat');
+      await db.fns.queue_pending_tasks_put(
+        'tq1', 0, 'taskDefaultPriority', 0, 'hint2', fromNow('20 seconds'), 'queue-name-compat');
+      await db.fns.queue_pending_tasks_put(
+        'tq1', 9, 'taskHigherPriority', 0, 'hint1', fromNow('20 seconds'), 'queue-name-compat');
       const result = await db.fns.queue_pending_tasks_get("tq1", fromNow('10 seconds'), 3);
       assert.deepEqual(
         result.map(({ task_id }) => task_id),
