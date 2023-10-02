@@ -164,7 +164,8 @@ begin
   AND task_queue_id IS NOT NULL
   AND expires >= now();
 
-  CREATE INDEX queue_pending_task_idx ON queue_pending_tasks (task_id);
+  -- since task can be created multiple times we only want to keep one entry per task and run
+  CREATE UNIQUE INDEX queue_pending_task_idx ON queue_pending_tasks USING btree (task_id, run_id);
   CREATE INDEX queue_pending_task_vis_idx ON queue_pending_tasks (visible, expires);
   CREATE INDEX queue_pending_task_queue_idx ON queue_pending_tasks (task_queue_id, priority, inserted);
 

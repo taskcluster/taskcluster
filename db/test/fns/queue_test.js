@@ -23,6 +23,8 @@ suite(testing.suiteName(), function() {
       );
     });
     helper.dbTest('count queue containing messages', async function (db) {
+      await db.fns.queue_pending_tasks_put('tq1', 1, 'task1', 0, 'hint1', fromNow('10 seconds'), 'queue-name-compat');
+      // this one is the same task and run, so only one record would remain
       await db.fns.queue_pending_tasks_put('tq1', 9, 'task1', 0, 'hint1', fromNow('10 seconds'), 'queue-name-compat');
       await db.fns.queue_pending_tasks_put('tq1', 3, 'task2', 0, 'hint1', fromNow('10 seconds'), 'queue-name-compat');
       await db.fns.queue_pending_tasks_put('tq1', 1, 'expiredTask', 0, 'hint1', fromNow('0 seconds'), 'queue-name-compat');

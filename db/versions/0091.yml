@@ -269,7 +269,17 @@ methods:
           now(),
           queue_name_compat_in, -- these are temporary columns to provide backward compatibility with azure_queue_messages
           public.gen_random_uuid()
-        );
+        )
+        ON CONFLICT (task_id, run_id) DO UPDATE
+          SET
+            expires = greatest(coalesce(expires_in, queue_pending_tasks.expires), queue_pending_tasks.expires),
+            priority = priority_in,
+            hint_id = hint_id_in
+          WHERE
+            queue_pending_tasks.task_queue_id = task_queue_id_in
+            AND queue_pending_tasks.task_id = task_id_in
+            AND queue_pending_tasks.run_id = run_id_in
+            AND queue_pending_tasks.pop_receipt is null;
         -- notify listeners that there is a new task in the queue
         EXECUTE 'NOTIFY task_pending, ' || quote_literal(task_queue_id_in) || ';';
       end
