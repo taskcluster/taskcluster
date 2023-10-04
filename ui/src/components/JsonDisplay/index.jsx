@@ -10,15 +10,15 @@ const JsonDisplay = props => {
   const YamlJsonSwitch = ({ handleChange, value }) => (
     <Typography component="div">
       <Grid component="label" container alignItems="center" spacing={1}>
-        <Grid item>JSON</Grid>
+        <Grid item>YAML</Grid>
         <Grid item>
           <Switch
-            checked={value === 'yaml'}
+            checked={value === 'json'}
             onChange={handleChange}
             name="yaml_json_switch"
           />
         </Grid>
-        <Grid item>YAML</Grid>
+        <Grid item>JSON</Grid>
       </Grid>
     </Typography>
   );
