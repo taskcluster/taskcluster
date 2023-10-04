@@ -103,7 +103,7 @@ class ClaimResolver {
       }
     }));
 
-    // If there were no messages, back of for a bit.
+    // If there were no messages, back off for a bit.
     if (messages.length === 0) {
       await sleep(2000);
     }

@@ -1,6 +1,6 @@
 begin
-  -- migration is only possible when all tasks were migrated to new column structure (see version 0090)
-  -- if someone upgrades db from 89 to 91 directly it would fail if there are pending tasks
+  -- migration is only possible once all tasks are migrated to new column structure (see version 0090)
+  -- if someone upgrades db from a version other than 90 to 91 directly it will fail if there are pending tasks
   -- this is to prevent data loss
   IF EXISTS (
     SELECT message_id FROM azure_queue_messages

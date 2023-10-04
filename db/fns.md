@@ -1412,7 +1412,7 @@ although in practice this was only used for pending tasks.
 
 This is a modified version of the original method that is used during migration.
 We want to prevent data loss and let running processes still use existing functions.
-This will delete record if it exists in one of the new tables
+This will delete record if it exists in one of the new tables.
 
 
 ### azure_queue_delete_expired
@@ -1424,7 +1424,6 @@ This will delete record if it exists in one of the new tables
 
 This is a modified version of the original method that is used during migration.
 We want to prevent data loss and let running processes still use existing functions.
-
 We will not do anything here to avoid data loss.
 
 
@@ -1461,7 +1460,6 @@ As data is migrated to new table we return empty set here.
 
 This is a modified version of the original method that is used during migration.
 We want to prevent data loss and let running processes still use existing functions.
-
 Messages would be routed to the correct table based on the queue_name.
 
 
@@ -1479,7 +1477,6 @@ Messages would be routed to the correct table based on the queue_name.
 
 This is a modified version of the original method that is used during migration.
 We want to prevent data loss and let running processes still use existing functions.
-
 This will update record if it exists in one of the new tables with one caveat:
 only `visible` column would be updated as `message_text` was immutable in the old table.
 
@@ -2080,7 +2077,7 @@ Delete single claimed task from the queue.
   * `pop_receipt uuid`
 * *Last defined on version*: 91
 
-Get up to `count` tasks from the claimed queue
+Get up to `count` tasks from the claimed queue.
 
 
 ### queue_claimed_task_put
@@ -2097,7 +2094,7 @@ Get up to `count` tasks from the claimed queue
 * *Last defined on version*: 91
 
 Track when task was claimed and when it should be reclaimed.
-It is possible to have multiple records for a given taskId+runId combination
+It is possible to have multiple records for a given taskId+runId combination.
 
 
 ### queue_claimed_task_resolved
@@ -2204,7 +2201,7 @@ Release task back to the queue to be picked up by another worker.
 * *Returns*: `void`
 * *Last defined on version*: 91
 
-Delete single task from claimed queue
+Delete single task from claimed queue.
 
 
 ### queue_resolved_task_get
@@ -2221,7 +2218,7 @@ Delete single task from claimed queue
   * `pop_receipt uuid`
 * *Last defined on version*: 91
 
-Get up to `count` tasks from the resolved queue
+Get up to `count` tasks from the resolved queue.
 
 
 ### queue_resolved_task_put
@@ -2266,7 +2263,7 @@ Delete single deadline task.
   * `pop_receipt uuid`
 * *Last defined on version*: 91
 
-Get up to `count` tasks from the deadline queue
+Get up to `count` tasks from the deadline queue.
 
 
 ### queue_task_deadline_put
