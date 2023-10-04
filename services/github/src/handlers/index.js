@@ -268,7 +268,13 @@ class Handlers {
   async cancelPreviousTaskGroups({ instGithub, debug, newBuild }) {
     const { organization, repository, sha, pull_number: pullNumber,
       task_group_id: newTaskGroupId, event_type: eventType } = newBuild;
-    debug(`canceling previous task groups for ${organization}/${repository} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`);
+    debug(`canceling previous task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`);
+
+    // avoid performing cancellation for non-push and non-pull-request events
+    if (!eventType || !['push', 'pull_request'].includes(eventType.split('.')[0])) {
+      debug(`event type ${eventType} is not supported. skipping cancelPreviousTaskGroups`);
+      return;
+    }
 
     const scopes = [
       `assume:repo:github.com/${organization}/${repository}:*`,

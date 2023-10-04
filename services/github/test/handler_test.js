@@ -420,6 +420,49 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.deepEqual(sealedTaskGroups, ['ff']);
       assert.deepEqual(cancelledTaskGroups, ['ff']);
     });
+
+    test('cancels nothing on release event', async function () {
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: null, eventType: 'release' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1012, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
+      await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
+
+      await handlers.realCancelPreviousTaskGroups({
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA,
+          task_group_id: 'gg',
+          organization: 'TaskclusterRobot',
+          repository: 'hooks-testing',
+          event_type: 'release',
+        },
+      });
+
+      assert.deepEqual(sealedTaskGroups, []);
+      assert.deepEqual(cancelledTaskGroups, []);
+    });
+    test('cancels nothing on unknown event', async function () {
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: null, eventType: 'release' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1012, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
+      await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
+
+      await handlers.realCancelPreviousTaskGroups({
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA,
+          task_group_id: 'gg',
+          organization: 'TaskclusterRobot',
+          repository: 'hooks-testing',
+          event_type: 'bogus',
+        },
+      });
+
+      assert.deepEqual(sealedTaskGroups, []);
+      assert.deepEqual(cancelledTaskGroups, []);
+    });
   });
 
   suite('jobHandler', function () {
