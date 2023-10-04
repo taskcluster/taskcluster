@@ -3,6 +3,22 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v55.3.4
+
+### GENERAL
+
+▶ [patch]
+Patches an issue in github service cancelling task groups for non-push/pull-request events
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump urllib3 from 2.0.3 to 2.0.6 in /taskcluster (928877aeb)
+
+</details>
+
 ## v55.3.3
 
 ### USERS
