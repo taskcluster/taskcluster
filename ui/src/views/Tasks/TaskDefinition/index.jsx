@@ -50,7 +50,7 @@ export default class TaskDefinition extends Component {
         disablePadding>
         <JsonDisplay
           className={classes.rawDefinition}
-          syntax="json"
+          syntax="yaml"
           objectContent={rawDefinition}
         />
       </Dashboard>

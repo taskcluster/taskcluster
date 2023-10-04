@@ -190,7 +190,7 @@ export default class IndexedEntry extends Component {
               component: 'div',
             }}
             secondary={
-              <JsonDisplay syntax="json" objectContent={indexedTask.data} />
+              <JsonDisplay syntax="yaml" objectContent={indexedTask.data} />
             }
           />
         </ListItem>

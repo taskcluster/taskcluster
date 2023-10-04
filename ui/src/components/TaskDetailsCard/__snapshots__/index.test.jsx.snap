@@ -219,7 +219,7 @@ exports[`should render TaskDetailsCard 1`] = `
                             <div
                               class="MuiGrid-root MuiGrid-item"
                             >
-                              JSON
+                              YAML
                             </div>
                             <div
                               class="MuiGrid-root MuiGrid-item"
@@ -256,7 +256,7 @@ exports[`should render TaskDetailsCard 1`] = `
                             <div
                               class="MuiGrid-root MuiGrid-item"
                             >
-                              YAML
+                              JSON
                             </div>
                           </label>
                         </div>
@@ -298,109 +298,119 @@ exports[`should render TaskDetailsCard 1`] = `
                         </div>
                       </div>
                       <pre
-                        class="language-json TaskDetailsCard-payload-9"
+                        class="language-yaml TaskDetailsCard-payload-9"
                       >
                         <code>
                           <span
-                            class="hljs-punctuation"
-                          >
-                            {
-                          </span>
-                          
-  
-                          <span
                             class="hljs-attr"
                           >
-                            "command"
-                          </span>
-                          <span
-                            class="hljs-punctuation"
-                          >
-                            :
-                          </span>
-                           
-                          <span
-                            class="hljs-punctuation"
-                          >
-                            [
-                          </span>
-                          
-    
-                          <span
-                            class="hljs-string"
-                          >
-                            "/bin/bash"
-                          </span>
-                          <span
-                            class="hljs-punctuation"
-                          >
-                            ,
-                          </span>
-                          
-    
-                          <span
-                            class="hljs-string"
-                          >
-                            "-c"
-                          </span>
-                          <span
-                            class="hljs-punctuation"
-                          >
-                            ,
-                          </span>
-                          
-    
-                          <span
-                            class="hljs-string"
-                          >
-                            "for ((i=1;i&lt;=600;i++)); do echo $i; sleep 1; done"
+                            command:
                           </span>
                           
   
                           <span
-                            class="hljs-punctuation"
+                            class="hljs-bullet"
                           >
-                            ]
-                          </span>
-                          <span
-                            class="hljs-punctuation"
-                          >
-                            ,
-                          </span>
-                          
-  
-                          <span
-                            class="hljs-attr"
-                          >
-                            "image"
-                          </span>
-                          <span
-                            class="hljs-punctuation"
-                          >
-                            :
+                            -
                           </span>
                            
                           <span
                             class="hljs-string"
                           >
-                            "ubuntu:latest"
-                          </span>
-                          <span
-                            class="hljs-punctuation"
-                          >
-                            ,
+                            /bin/bash
                           </span>
                           
   
                           <span
-                            class="hljs-attr"
+                            class="hljs-bullet"
                           >
-                            "maxRunTime"
+                            -
+                          </span>
+                           
+                          <span
+                            class="hljs-string"
+                          >
+                            '-c'
+                          </span>
+                          
+  
+                          <span
+                            class="hljs-bullet"
+                          >
+                            -
+                          </span>
+                           
+                          <span
+                            class="hljs-string"
+                          >
+                            for
+                          </span>
+                           
+                          <span
+                            class="hljs-string"
+                          >
+                            ((i=1;i&lt;=600;i++));
+                          </span>
+                           
+                          <span
+                            class="hljs-string"
+                          >
+                            do
+                          </span>
+                           
+                          <span
+                            class="hljs-string"
+                          >
+                            echo
+                          </span>
+                           
+                          <span
+                            class="hljs-string"
+                          >
+                            $i;
+                          </span>
+                           
+                          <span
+                            class="hljs-string"
+                          >
+                            sleep
+                          </span>
+                           
+                          <span
+                            class="hljs-number"
+                          >
+                            1
                           </span>
                           <span
-                            class="hljs-punctuation"
+                            class="hljs-string"
                           >
-                            :
+                            ;
+                          </span>
+                           
+                          <span
+                            class="hljs-string"
+                          >
+                            done
+                          </span>
+                          
+
+                          <span
+                            class="hljs-attr"
+                          >
+                            image:
+                          </span>
+                           
+                          <span
+                            class="hljs-string"
+                          >
+                            ubuntu:latest
+                          </span>
+                          
+
+                          <span
+                            class="hljs-attr"
+                          >
+                            maxRunTime:
                           </span>
                            
                           <span
@@ -410,11 +420,6 @@ exports[`should render TaskDetailsCard 1`] = `
                           </span>
                           
 
-                          <span
-                            class="hljs-punctuation"
-                          >
-                            }
-                          </span>
                         </code>
                       </pre>
                     </div>

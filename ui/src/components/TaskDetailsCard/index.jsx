@@ -199,7 +199,7 @@ export default class TaskDetailsCard extends Component {
                       primary={
                         <JsonDisplay
                           wrapperClassName={classes.payload}
-                          syntax="json"
+                          syntax="yaml"
                           objectContent={payload}
                         />
                       }
@@ -453,7 +453,7 @@ export default class TaskDetailsCard extends Component {
                     disableTypography
                     primary={<Typography variant="subtitle1">Extra</Typography>}
                     secondary={
-                      <JsonDisplay syntax="json" objectContent={task.extra} />
+                      <JsonDisplay syntax="yaml" objectContent={task.extra} />
                     }
                   />
                 </ListItem>
