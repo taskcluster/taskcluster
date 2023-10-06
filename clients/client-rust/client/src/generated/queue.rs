@@ -1253,10 +1253,8 @@ impl Queue {
     ///
     /// Get an approximate number of pending tasks for the given `taskQueueId`.
     ///
-    /// The underlying Azure Storage Queues only promises to give us an estimate.
-    /// Furthermore, we cache the result in memory for 20 seconds. So consumers
-    /// should be no means expect this to be an accurate number.
-    /// It is, however, a solid estimate of the number of pending tasks.
+    /// As task states may change rapidly, this number may not represent the exact
+    /// number of pending tasks, but a very good approximation.
     pub async fn pendingTasks(&self, taskQueueId: &str) -> Result<Value, Error> {
         let method = "GET";
         let (path, query) = Self::pendingTasks_details(taskQueueId);

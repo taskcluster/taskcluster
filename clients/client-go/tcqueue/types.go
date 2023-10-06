@@ -184,10 +184,9 @@ type (
 	CountPendingTasksResponse struct {
 
 		// An approximate number of pending tasks for the given `provisionerId` and
-		// `workerType`. This is based on Azure Queue Storage metadata API, thus,
-		// number of reported here may be higher than actual number of pending tasks.
-		// But there cannot be more pending tasks reported here. Ie. this is an
-		// **upper-bound** on the number of pending tasks.
+		// `workerType`. Number of reported here may be higher than actual number of
+		// pending tasks. But there cannot be more pending tasks reported here.
+		// Ie. this is an **upper-bound** on the number of pending tasks.
 		//
 		// Mininum:    0
 		PendingTasks int64 `json:"pendingTasks"`
@@ -920,7 +919,7 @@ type (
 		// Date-time after which the artifact should be deleted. Note, that
 		// these will be collected over time, and artifacts may remain
 		// available after expiration. S3 based artifacts are identified in
-		// azure table storage and explicitly deleted on S3 after expiration.
+		// the database and explicitly deleted on S3 after expiration.
 		Expires tcclient.Time `json:"expires"`
 
 		// Artifact storage type, in this case `'s3'`

@@ -21,38 +21,32 @@ const PRIORITY_LEVELS = [
 ];
 
 /**
- * **Azure Queue Invariants**
+ * **Internal queues**
  *
- * We use azure queue storage queues for 3 purposes:
+ * Internal queues serve following 3 purposes:
  *   A) distribution of tasks to workers,
  *   B) expiration of task-claims, and
  *   C) resolution by deadline expiration.
  *
- * Messages for the purposes of (A) are stored on queues specific the
- * _provisionerId_ and _workerType_ of the tasks. All messages in azure queues
- * are advisory. Meaning that duplicating them, or forgetting to delete them and
- * handling them twice shall not cause issues.
+ * Initial implementation of the queue service was done with the help of
+ * Azure queues. It had limitations such as inefficient querying.
+ *
+ * We have since moved to using postgres for internal queues.
+ * With this we are able to get more visibility into the state of the queue.
  *
  * That said we do need a few invariants, this comment doesn't attempt to
  * formally establish correctness. Instead we just seek to explain the
  * intuition, so others have a chance and understanding what is going on.
  *
- *  i)    For any `pending` task there is at least one message with payload
- *        `{taskId, runId}` in a _workerType_ specific queue.
+ *  i)    For any `pending` task there is at least one record in pending queue
  *
- *  ii)   For any `running` task there is at least one message with payload
- *        `{taskId, runId, takenUntil}` in the queue for claim expiration,
- *        such that the message becomes visible after the claim on the
- *        current run has expired.
+ *  ii)   For any `running` task there is at least one one record in
+ *        claim expiration queue, such that the message becomes visible
+ *        after the claim on the current run has expired.
  *
- *  iii)  For any unresolved task there is at least one message with payload
- *        `{taskId, deadline}` in the queue for deadline resolution, such that
- *        the message becomes visible after the tasks deadline has expired.
- *
- * Using invariants above it's easy to ensure (A), (B) and (C), so long as we
- * always remember that a message is only advisory. Hence, if the task mentioned
- * doesn't exist, or is already resolved, then no error is reported and no
- * action is taken.
+ *  iii)  For any unresolved task there is at least one record in
+ *        deadline resolution queue, such that the message becomes visible
+ *        after the tasks deadline has expired.
  *
  * To avoid the case, where we ignore the only message during expiration of
  * claims (B) due to server clock drift, we shall put the `takenUntil` time
@@ -137,7 +131,7 @@ let builder = new APIBuilder({
     'privateBucket', // bucket instance for private s3 artifacts
     'publisher', // publisher from base.Exchanges
     'claimTimeout', // Number of seconds before a claim expires
-    'queueService', // Azure QueueService object from queueservice.js
+    'queueService', // QueueService object from queueservice.js
     'regionResolver', // Instance of EC2RegionResolver,
     'credentials', // TC credentials for issuing temp creds on claim
     'dependencyTracker', // Instance of DependencyTracker
@@ -325,16 +319,18 @@ const cancelSingleTask = async (task, ctx) => {
 
   // If the last run was canceled, resolve dependencies and publish message
   if (run && run.state === 'exception' && run.reasonResolved === 'canceled') {
+    const runId = task.runs.length - 1;
+
     // Update dependency tracker
     await ctx.queueService.putResolvedMessage(
       task.taskId,
       task.taskGroupId,
       task.schedulerId,
       'exception',
+      runId,
     );
 
     // Publish message about the exception
-    const runId = task.runs.length - 1;
     await ctx.publisher.taskException(_.defaults({
       status,
       runId,
@@ -868,17 +864,20 @@ builder.declare({
     this.monitor.log.taskDefined({ taskId });
   }
 
+  // for createTask it is always first runId we want to check and publish pending messages
+  const runId = 0;
+
   // Same as above but for tasks with no dependencies, scheduling the first run.
-  let runZeroState = (task.runs[0] || { state: 'unscheduled' }).state;
+  let runZeroState = (task.runs[runId] || { state: 'unscheduled' }).state;
   if (runZeroState === 'pending') {
     await Promise.all([
       // Put message into the task pending queue
-      this.queueService.putPendingMessage(task, 0),
+      this.queueService.putPendingMessage(task, runId),
 
-      // Put message in appropriate azure queue, and publish message to pulse
-      this.publisher.taskPending({ status, task: taskPulseContents, runId: 0 }, task.routes),
+      // Publish message to pulse
+      this.publisher.taskPending({ status, task: taskPulseContents, runId }, task.routes),
     ]);
-    this.monitor.log.taskPending({ taskId, runId: 0 });
+    this.monitor.log.taskPending({ taskId, runId });
   }
 
   // Reply
@@ -1039,7 +1038,7 @@ builder.declare({
     );
   }
 
-  // Put message in appropriate azure queue, and publish message to pulse,
+  // Put message in pending queue, and publish message to pulse,
   // if the initial run is pending
   let status = task.status();
   if (state === 'pending') {
@@ -1413,7 +1412,7 @@ builder.declare({
   // Put claim-expiration message in queue, if not already done, before
   // reclaiming.  If the reclaim DB operation fails, then this message
   // will be ignored.
-  await this.queueService.putClaimMessage(taskId, runId, takenUntil);
+  await this.queueService.putClaimMessage(taskId, runId, takenUntil, task.taskQueueId, run.workerGroup, run.workerId);
   task.updateStatusWith(
     await this.db.fns.reclaim_task(taskId, runId, takenUntil));
 
@@ -1533,6 +1532,7 @@ let resolveTask = async function(req, res, taskId, runId, target) {
     task.taskGroupId,
     task.schedulerId,
     target,
+    runId,
   );
 
   // Construct status object
@@ -1890,17 +1890,15 @@ builder.declare({
   description: [
     'Get an approximate number of pending tasks for the given `taskQueueId`.',
     '',
-    'The underlying Azure Storage Queues only promises to give us an estimate.',
-    'Furthermore, we cache the result in memory for 20 seconds. So consumers',
-    'should be no means expect this to be an accurate number.',
-    'It is, however, a solid estimate of the number of pending tasks.',
+    'As task states may change rapidly, this number may not represent the exact',
+    'number of pending tasks, but a very good approximation.',
   ].join('\n'),
 }, async function(req, res) {
   const taskQueueId = req.params.taskQueueId;
   const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
   // Get number of pending message
-  let count = await this.queueService.countPendingMessages(taskQueueId);
+  let count = await this.queueService.countPendingTasks(taskQueueId);
 
   // Reply to call with count `pendingTasks`
   return res.reply({

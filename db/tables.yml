@@ -211,6 +211,52 @@ task_queues:
   description: text not null
   stability: text not null
 
+# new queue structure
+queue_task_deadlines:
+  task_id: text not null
+  task_group_id: text not null
+  scheduler_id: text not null
+  created: timestamp with time zone not null
+  deadline: timestamp with time zone not null
+  visible: timestamp with time zone not null
+  pop_receipt: uuid
+  message_id_compat: uuid not null
+
+queue_resolved_tasks:
+  task_group_id: text not null
+  task_id: text not null
+  scheduler_id: text not null
+  resolution: text not null
+  resolved: timestamp with time zone not null
+  visible: timestamp with time zone not null
+  pop_receipt: uuid
+  message_id_compat: uuid not null
+
+queue_claimed_tasks:
+  task_id: text not null
+  run_id: integer not null
+  task_queue_id: text not null
+  worker_group: text not null
+  worker_id: text not null
+  claimed: timestamp with time zone not null
+  taken_until: timestamp with time zone not null
+  visible: timestamp with time zone not null
+  pop_receipt: uuid
+  message_id_compat: uuid not null
+
+queue_pending_tasks:
+  task_queue_id: text not null
+  priority: integer not null
+  task_id: text not null
+  run_id: integer not null
+  hint_id: text not null
+  inserted: timestamp with time zone not null
+  expires: timestamp with time zone not null
+  visible: timestamp with time zone not null
+  pop_receipt: uuid
+  queue_name_compat: text not null
+  message_id_compat: uuid not null
+
 # This table is used by tc-lib-azqueue to emulate the Azure Storage API's Queue functionality.
 azure_queue_messages:
   message_id: uuid not null

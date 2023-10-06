@@ -61,7 +61,6 @@ This repository is used to develop, build, and release the Taskcluster services.
 * [Libraries](libraries#readme)
     * [API Library](libraries/api#readme)
     * [App Library](libraries/app#readme)
-    * [AZQueue Library](libraries/azqueue#readme)
     * [Config Library](libraries/config#readme)
     * [Iterate Library](libraries/iterate#readme)
     * [Loader Library](libraries/loader#readme)

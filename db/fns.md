@@ -110,6 +110,23 @@
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
    * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
    * [`queue_artifact_present`](#queue_artifact_present)
+   * [`queue_claimed_task_delete`](#queue_claimed_task_delete)
+   * [`queue_claimed_task_get`](#queue_claimed_task_get)
+   * [`queue_claimed_task_put`](#queue_claimed_task_put)
+   * [`queue_claimed_task_resolved`](#queue_claimed_task_resolved)
+   * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
+   * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
+   * [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
+   * [`queue_pending_tasks_get`](#queue_pending_tasks_get)
+   * [`queue_pending_tasks_put`](#queue_pending_tasks_put)
+   * [`queue_pending_tasks_release`](#queue_pending_tasks_release)
+   * [`queue_resolved_task_delete`](#queue_resolved_task_delete)
+   * [`queue_resolved_task_get`](#queue_resolved_task_get)
+   * [`queue_resolved_task_put`](#queue_resolved_task_put)
+   * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
+   * [`queue_task_deadline_get`](#queue_task_deadline_get)
+   * [`queue_task_deadline_put`](#queue_task_deadline_put)
+   * [`queue_task_deadline_resolved`](#queue_task_deadline_resolved)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
    * [`reclaim_task`](#reclaim_task)
@@ -1323,6 +1340,23 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
 * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
 * [`queue_artifact_present`](#queue_artifact_present)
+* [`queue_claimed_task_delete`](#queue_claimed_task_delete)
+* [`queue_claimed_task_get`](#queue_claimed_task_get)
+* [`queue_claimed_task_put`](#queue_claimed_task_put)
+* [`queue_claimed_task_resolved`](#queue_claimed_task_resolved)
+* [`queue_pending_tasks_count`](#queue_pending_tasks_count)
+* [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
+* [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
+* [`queue_pending_tasks_get`](#queue_pending_tasks_get)
+* [`queue_pending_tasks_put`](#queue_pending_tasks_put)
+* [`queue_pending_tasks_release`](#queue_pending_tasks_release)
+* [`queue_resolved_task_delete`](#queue_resolved_task_delete)
+* [`queue_resolved_task_get`](#queue_resolved_task_get)
+* [`queue_resolved_task_put`](#queue_resolved_task_put)
+* [`queue_task_deadline_delete`](#queue_task_deadline_delete)
+* [`queue_task_deadline_get`](#queue_task_deadline_get)
+* [`queue_task_deadline_put`](#queue_task_deadline_put)
+* [`queue_task_deadline_resolved`](#queue_task_deadline_resolved)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
 * [`reclaim_task`](#reclaim_task)
@@ -1358,9 +1392,12 @@ happens.
 * *Arguments*:
   * `queue_name text`
 * *Returns*: `integer`
-* *Last defined on version*: 6
+* *Last defined on version*: 91
 
-Count non-expired messages in the named queue.
+This is a modified version of the original method that is used during migration.
+We want to prevent data loss and let running processes still use existing functions.
+This function switches between queue names to get the count from needed table,
+although in practice this was only used for pending tasks.
 
 
 ### azure_queue_delete
@@ -1371,10 +1408,11 @@ Count non-expired messages in the named queue.
   * `message_id uuid`
   * `pop_receipt uuid`
 * *Returns*: `void`
-* *Last defined on version*: 3
+* *Last defined on version*: 91
 
-Delete the message identified by the given `queue_name`, `message_id` and
-`pop_receipt`.
+This is a modified version of the original method that is used during migration.
+We want to prevent data loss and let running processes still use existing functions.
+This will delete record if it exists in one of the new tables.
 
 
 ### azure_queue_delete_expired
@@ -1382,10 +1420,11 @@ Delete the message identified by the given `queue_name`, `message_id` and
 * *Mode*: write
 * *Arguments*:
 * *Returns*: `void`
-* *Last defined on version*: 3
+* *Last defined on version*: 91
 
-Delete all expired messages.  This is a maintenance task that should occur
-about once an hour.
+This is a modified version of the original method that is used during migration.
+We want to prevent data loss and let running processes still use existing functions.
+We will not do anything here to avoid data loss.
 
 
 ### azure_queue_get
@@ -1399,12 +1438,11 @@ about once an hour.
   * `message_id uuid`
   * `message_text text`
   * `pop_receipt uuid`
-* *Last defined on version*: 5
+* *Last defined on version*: 91
 
-Get up to `count` messages from the given queue, setting the `visible`
-column of each to the given value.  Returns a `message_id` and
-`pop_receipt` for each one, for use with `azure_queue_delete` and
-`azure_queue_update`.
+This is a modified version of the original method that is used during migration.
+We want to prevent data loss and let running processes still use existing functions.
+As data is migrated to new table we return empty set here.
 
 
 ### azure_queue_put_extra
@@ -1418,11 +1456,11 @@ column of each to the given value.  Returns a `message_id` and
   * `task_queue_id text`
   * `priority int`
 * *Returns*: `void`
-* *Last defined on version*: 90
+* *Last defined on version*: 91
 
-Put the given message into the given queue.  The message will not be visible until
-after the visible timestamp, and will disappear after the expires timestamp.
-Additionally store the given task_queue_id and priority.
+This is a modified version of the original method that is used during migration.
+We want to prevent data loss and let running processes still use existing functions.
+Messages would be routed to the correct table based on the queue_name.
 
 
 ### azure_queue_update
@@ -1435,11 +1473,12 @@ Additionally store the given task_queue_id and priority.
   * `pop_receipt uuid`
   * `visible timestamp`
 * *Returns*: `void`
-* *Last defined on version*: 3
+* *Last defined on version*: 91
 
-Update the message identified by the given `queue_name`, `message_id` and
-`pop_receipt`, setting its `visible` and `message_text` properties as
-given.
+This is a modified version of the original method that is used during migration.
+We want to prevent data loss and let running processes still use existing functions.
+This will update record if it exists in one of the new tables with one caveat:
+only `visible` column would be updated as `message_text` was immutable in the old table.
 
 
 ### cancel_task
@@ -2012,6 +2051,250 @@ Worker will keep a history of all quarantine details.
 
 Mark the given queue artifact as present, returning the updated artifact.  Returns
 nothing if no such artifact exists.
+
+### queue_claimed_task_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete single claimed task from the queue.
+
+
+### queue_claimed_task_get
+
+* *Mode*: write
+* *Arguments*:
+  * `visible_in timestamptz`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `run_id integer`
+  * `taken_until timestamptz`
+  * `pop_receipt uuid`
+* *Last defined on version*: 91
+
+Get up to `count` tasks from the claimed queue.
+
+
+### queue_claimed_task_put
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `run_id_in integer`
+  * `taken_until_in timestamptz`
+  * `task_queue_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Track when task was claimed and when it should be reclaimed.
+It is possible to have multiple records for a given taskId+runId combination.
+
+
+### queue_claimed_task_resolved
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `run_id_in integer`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Once the task gets resolved it is no longer relevant for the claim queue, since it cannot expire anymore.
+We can safely delete given run from the claim queue.
+
+
+### queue_pending_tasks_count
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+* *Returns*: `integer`
+* *Last defined on version*: 91
+
+Count the number of pending tasks for given task queue.
+
+
+### queue_pending_tasks_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete single pending task from the queue.
+
+
+### queue_pending_tasks_delete_expired
+
+* *Mode*: write
+* *Arguments*:
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete all expired tasks from pending queue.
+
+
+### queue_pending_tasks_get
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `visible_in timestamptz`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `run_id integer`
+  * `hint_id text`
+  * `pop_receipt uuid`
+* *Last defined on version*: 91
+
+Get up to `count` tasks for the pending tasks from the given taskQueueId.
+Tasks are locked and will temporarily become invisible for the `visible` period.
+
+
+### queue_pending_tasks_put
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `priority_in integer`
+  * `task_id_in text`
+  * `run_id_in integer`
+  * `hint_id_in text`
+  * `expires_in timestamp`
+  * `queue_name_compat_in text`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Put the task into the pending queue.
+When record already exists, we update the priority, run_id, hint_id and expiration.
+This also sends a notification to the `task_pending` channel with the `task_queue_id` as its payload.
+
+
+### queue_pending_tasks_release
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Release task back to the queue to be picked up by another worker.
+
+
+### queue_resolved_task_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete single task from claimed queue.
+
+
+### queue_resolved_task_get
+
+* *Mode*: write
+* *Arguments*:
+  * `visible_in timestamptz`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `task_group_id text`
+  * `scheduler_id text`
+  * `resolution text`
+  * `pop_receipt uuid`
+* *Last defined on version*: 91
+
+Get up to `count` tasks from the resolved queue.
+
+
+### queue_resolved_task_put
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `task_id_in text`
+  * `scheduler_id_in text`
+  * `resolution_in text`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Track when task was resolved.
+This is a short-lived record that is used by dependency resolver to update dependencies.
+Notification is sent to `task_resolved` channel with the `task_id` as its payload.
+
+
+### queue_task_deadline_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete single deadline task.
+
+
+### queue_task_deadline_get
+
+* *Mode*: write
+* *Arguments*:
+  * `visible_in timestamptz`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `task_group_id text`
+  * `scheduler_id text`
+  * `deadline timestamptz`
+  * `pop_receipt uuid`
+* *Last defined on version*: 91
+
+Get up to `count` tasks from the deadline queue.
+
+
+### queue_task_deadline_put
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `task_id_in text`
+  * `scheduler_id_in text`
+  * `deadline_in timestamptz`
+  * `visible timestamptz`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Track task deadline upon task creation. This would stay until task
+deadline to see if it was ever scheduled or resolved.
+
+
+### queue_task_deadline_resolved
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Once the task gets resolved it is no longer relevant for the deadline queue.
+Since resolved task triggered dependency resolver, its dependencies were already
+updated by DependencyTracker.
+We can safely delete given run from the deadline queue.
+
 
 ### queue_worker_seen_with_last_date_active
 
