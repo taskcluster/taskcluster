@@ -33,7 +33,11 @@ func ExampleScopes_mixture() {
 		"docker-worker:capability:device:loopbackVideo:x/y/z",
 		"docker-worker:capability:device:kvm:x/y/z",
 	}
-	gwScopes := d2g.Scopes(dwScopes)
+	gwScopes, err := d2g.Scopes(dwScopes, nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	for _, s := range gwScopes {
 		fmt.Printf("\t%#v\n", s)
 	}

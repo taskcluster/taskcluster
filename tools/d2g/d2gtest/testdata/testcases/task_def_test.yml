@@ -24,7 +24,7 @@ testSuite:
         deadline: '2023-10-26T17:06:09.867Z'
         expires: '2024-10-26T17:06:09.867Z'
         scopes:
-          - docker-worker:*
+          - docker-worker:apples
         payload:
           image: ubuntu:latest
           command:
@@ -32,6 +32,9 @@ testSuite:
             - '-c'
             - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
           maxRunTime: 630
+          capabilities:
+            devices:
+              kvm: true
         metadata:
           name: example-task
           owner: name@example.com
@@ -54,7 +57,7 @@ testSuite:
           command:
           - - bash
             - -cx
-            - podman run -t --rm -e RUN_ID -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
+            - podman run -t --rm --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_ID ubuntu:latest /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep
               1; done'
           features:
@@ -67,6 +70,8 @@ testSuite:
           onExitStatus:
             retry:
             - 125
+          osGroups:
+            - kvm
         priority: lowest
         projectId: none
         provisionerId: proj-taskcluster
@@ -75,7 +80,8 @@ testSuite:
         routes: []
         schedulerId: taskcluster-ui
         scopes:
-          - generic-worker:*
+          - generic-worker:apples
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/kvm
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         taskQueueId: proj-taskcluster/gw-ubuntu-22-04

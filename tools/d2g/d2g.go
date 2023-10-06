@@ -31,19 +31,19 @@ type (
 
 func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 	var gwTaskDef json.RawMessage
-	var parsedTaskDef map[string]interface{}
-	err := json.Unmarshal(dwTaskDef, &parsedTaskDef)
+	var parsedDwTaskDef map[string]interface{}
+	err := json.Unmarshal(dwTaskDef, &parsedDwTaskDef)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse task definition: %v", err)
 	}
 
-	if _, exists := parsedTaskDef["payload"]; !exists {
+	if _, exists := parsedDwTaskDef["payload"]; !exists {
 		return nil, fmt.Errorf("task definition does not contain a payload")
 	}
 
 	dwPayload := new(dockerworker.DockerWorkerPayload)
 	defaults.SetDefaults(dwPayload)
-	dwPayloadJSON, err := json.Marshal(parsedTaskDef["payload"])
+	dwPayloadJSON, err := json.Marshal(parsedDwTaskDef["payload"])
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal Docker Worker payload: %v", err)
 	}
@@ -57,12 +57,15 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 		return nil, fmt.Errorf("cannot convert Docker Worker payload: %v", err)
 	}
 
-	if scopes, exists := parsedTaskDef["scopes"]; exists {
+	if scopes, exists := parsedDwTaskDef["scopes"]; exists {
 		var dwScopes []string
 		for _, scope := range scopes.([]interface{}) {
 			dwScopes = append(dwScopes, scope.(string))
 		}
-		parsedTaskDef["scopes"] = Scopes(dwScopes)
+		parsedDwTaskDef["scopes"], err = Scopes(dwScopes, dwTaskDef)
+		if err != nil {
+			return nil, fmt.Errorf("cannot convert Docker Worker scopes: %v", err)
+		}
 	}
 
 	d2gConvertedPayloadJSON, err := json.Marshal(*gwPayload)
@@ -70,9 +73,9 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 		return nil, fmt.Errorf("cannot marshal Generic Worker payload: %v", err)
 	}
 
-	parsedTaskDef["payload"] = json.RawMessage(d2gConvertedPayloadJSON)
+	parsedDwTaskDef["payload"] = json.RawMessage(d2gConvertedPayloadJSON)
 
-	gwTaskDef, err = json.MarshalIndent(parsedTaskDef, "", "  ")
+	gwTaskDef, err = json.MarshalIndent(parsedDwTaskDef, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal Generic Worker task definition: %v", err)
 	}
@@ -84,7 +87,7 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 // equivalent Generic Worker scopes. These scopes should be used together with
 // a converted Docker Worker task payload (see d2g.Convert function) to run
 // Docker Worker tasks under Generic Worker.
-func Scopes(dwScopes []string) (gwScopes []string) {
+func Scopes(dwScopes []string, dwTaskDef json.RawMessage) (gwScopes []string, err error) {
 	gwScopes = make([]string, len(dwScopes))
 	for i, s := range dwScopes {
 		switch true {
@@ -102,6 +105,32 @@ func Scopes(dwScopes []string) (gwScopes []string) {
 			gwScopes[i] = s
 		}
 	}
+
+	if dwTaskDef == nil {
+		return
+	}
+
+	var parsedDwTaskDef map[string]interface{}
+	err = json.Unmarshal(dwTaskDef, &parsedDwTaskDef)
+	if err != nil {
+		return []string{}, fmt.Errorf("cannot parse Docker Worker task definition: %v", err)
+	}
+
+	dwPayload := new(dockerworker.DockerWorkerPayload)
+	defaults.SetDefaults(dwPayload)
+	dwPayloadJSON, err := json.Marshal(parsedDwTaskDef["payload"])
+	if err != nil {
+		return nil, fmt.Errorf("cannot marshal Docker Worker payload: %v", err)
+	}
+	err = json.Unmarshal(dwPayloadJSON, &dwPayload)
+	if err != nil {
+		return nil, fmt.Errorf("cannot unmarshal Docker Worker payload: %v", err)
+	}
+
+	if dwPayload.Capabilities.Devices.KVM {
+		gwScopes = append(gwScopes, fmt.Sprintf("generic-worker:os-group:%s/kvm", parsedDwTaskDef["taskQueueId"]))
+	}
+
 	return
 }
 
@@ -150,6 +179,7 @@ func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericwor
 	setMaxRunTime(dwPayload, gwPayload)
 	setOnExitStatus(dwPayload, gwPayload)
 	setSupersederURL(dwPayload, gwPayload)
+	setOSGroups(dwPayload, gwPayload)
 
 	return
 }
@@ -373,6 +403,14 @@ func setOnExitStatus(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *gen
 
 func setSupersederURL(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.SupersederURL = dwPayload.SupersederURL
+}
+
+func setOSGroups(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
+	if dwPayload.Capabilities.Devices.KVM {
+		// task user needs to be in the kvm group for KVM to work
+		// https://help.ubuntu.com/community/KVM/Installation
+		gwPayload.OSGroups = append(gwPayload.OSGroups, "kvm")
+	}
 }
 
 func writableDirectoryCaches(caches map[string]string) []genericworker.WritableDirectoryCache {

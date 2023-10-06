@@ -58,6 +58,8 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+        osGroups:
+          - kvm
 
     - name: Video Loopback
       description: >-
