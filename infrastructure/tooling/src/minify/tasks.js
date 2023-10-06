@@ -1,5 +1,5 @@
 import minify from 'yarn-minify';
-import { gitLsFiles } from '../utils';
+import { gitLsFiles } from '../utils/index.js';
 
 // Ignore packages while we slowly whittle away the requirements
 const IGNORE = {

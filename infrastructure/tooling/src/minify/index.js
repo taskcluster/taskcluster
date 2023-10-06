@@ -1,7 +1,7 @@
-import { getTasks } from './tasks/index.js';
+import { getTasks } from './tasks.js';
 import { TaskGraph, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
 
-const main = async (options) => {
+export const main = async (options) => {
   const taskgraph = new TaskGraph(await getTasks(), {
     renderer: process.stdout.isTTY ?
       new ConsoleRenderer({ elideCompleted: true }) :
@@ -9,5 +9,3 @@ const main = async (options) => {
   });
   await taskgraph.run();
 };
-
-export default { main };
