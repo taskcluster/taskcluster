@@ -97,6 +97,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.withAmazonIPRanges(mock, skipping);
     helper.withPulse(mock, skipping);
     helper.withS3(mock, skipping);
+    helper.withQueueService(mock, skipping);
     helper.withServer(mock, skipping);
     helper.resetTables(mock, skipping);
 
@@ -1083,6 +1084,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.withDb(mock, skipping);
     helper.withPulse(mock, skipping);
     helper.withS3(mock, skipping);
+    helper.withQueueService(mock, skipping);
     helper.withServer(mock, skipping);
     helper.resetTables(mock, skipping);
 

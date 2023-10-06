@@ -130,7 +130,7 @@ let load = loader({
     }),
   },
 
-  // Create QueueService to manage internal queues
+  // Create QueueService to manage azure queues
   queueService: {
     requires: ['cfg', 'monitor', 'db'],
     setup: ({ cfg, monitor, db }) => new QueueService({
@@ -254,7 +254,6 @@ let load = loader({
         db, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.claimResolver.pollingDelay,
         parallelism: cfg.app.claimResolver.parallelism,
-        count: NUMBER_OF_RECORDS_TO_PROCESS,
         monitor: monitor.childMonitor('claim-resolver'),
       });
       await resolver.start();
@@ -276,7 +275,6 @@ let load = loader({
         db, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.deadlineResolver.pollingDelay,
         parallelism: cfg.app.deadlineResolver.parallelism,
-        count: NUMBER_OF_RECORDS_TO_PROCESS,
         monitor: monitor.childMonitor('deadline-resolver'),
       });
       await resolver.start();
@@ -292,7 +290,6 @@ let load = loader({
         ownName,
         queueService, dependencyTracker,
         pollingDelay: cfg.app.dependencyResolver.pollingDelay,
-        count: NUMBER_OF_RECORDS_TO_PROCESS,
         monitor: monitor.childMonitor('dependency-resolver'),
       });
       await resolver.start();
@@ -336,8 +333,8 @@ let load = loader({
     requires: ['cfg', 'queueService', 'monitor'],
     setup: ({ cfg, queueService, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
-        debug('Expiring pending messages at: %s', new Date());
-        await queueService.deleteExpired();
+        debug('Expiring azqueue messages at: %s', new Date());
+        await queueService.deleteExpiredMessages();
       });
     },
   },

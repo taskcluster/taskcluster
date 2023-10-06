@@ -89,7 +89,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const takenUntil = new Date(new Date().getTime() + 2 * 1000);
     debug('Putting message with taskId: %s', taskId);
     // Put message
-    await queueService.putClaimMessage(taskId, 0, takenUntil, 'tq/id', 'wg', 'wi');
+    await queueService.putClaimMessage(taskId, 0, takenUntil);
 
     // Poll for message
     return testing.poll(async () => {
@@ -174,13 +174,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await queueService.putPendingMessage(task, runId);
 
     // Get poll functions for queues
-    let poll = await queueService.pollPendingQueue(`${provisionerId}/${workerType}`);
+    let poll = await queueService.pendingQueues(`${provisionerId}/${workerType}`);
 
     // Poll for the message
     let message = await testing.poll(async () => {
-      let messages = await poll(1);
-      if (messages.length === 1) {
-        return messages[0];
+      for (let i = 0; i < poll.length; i++) {
+        let messages = await poll[i](1);
+        if (messages.length === 1) {
+          return messages[0];
+        }
       }
       throw new Error('Expected message');
     }, 100, 250);
@@ -194,9 +196,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // Poll message again
     message = await testing.poll(async () => {
-      let messages = await poll(1);
-      if (messages.length === 1) {
-        return messages[0];
+      for (let i = 0; i < poll.length; i++) {
+        let messages = await poll[i](1);
+        if (messages.length === 1) {
+          return messages[0];
+        }
       }
       throw new Error('Expected message to return');
     }, 100, 250);
@@ -210,8 +214,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await message.remove();
   });
 
-  test('countPendingTasks', async () => {
-    const count = await queueService.countPendingTasks(
+  test('countPendingMessages', async () => {
+    const count = await queueService.countPendingMessages(
       `${provisionerId}/${workerType}`,
     );
     debug('pending message count: %j', count);

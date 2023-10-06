@@ -1,6 +1,5 @@
-let assert = require('assert');
-let Iterate = require('taskcluster-lib-iterate');
-const { sleep } = require('./utils');
+import assert from 'assert';
+import Iterate from 'taskcluster-lib-iterate';
 
 /**
  * When a task is resolved, we put a message in the resolvedQueue, this class
@@ -15,7 +14,6 @@ class DependencyResolver {
    *   dependencyTracker:   // DependencyTracker instance
    *   queueService:        // QueueService instance
    *   pollingDelay:        // Number of ms to sleep between polling
-   *   count:               // Number of records to fetch at a time
    *   monitor:             // base.monitor instance
    * }
    */
@@ -25,8 +23,6 @@ class DependencyResolver {
     assert(options.queueService, 'Expected options.queueService');
     assert(typeof options.pollingDelay === 'number',
       'Expected pollingDelay to be a number');
-    assert(typeof options.count === 'number',
-      'Expected count to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
 
@@ -66,7 +62,7 @@ class DependencyResolver {
 
   /** Poll for messages and handle them in a loop */
   async _pollResolvedTasks() {
-    let messages = await this.queueService.pollResolvedQueue(this.count);
+    let messages = await this.queueService.pollResolvedQueue();
     let failed = 0;
     await Promise.all(messages.map(async (m) => {
       // Don't let a single task error break the loop, it'll be retried later
@@ -80,16 +76,23 @@ class DependencyResolver {
       }
     }));
 
-    // If there were no messages, back off for a bit.
+    // If there were no messages, back off for a bit.  This avoids pounding
+    // Azure repeatedly for empty queues, at the cost of some slight delay
+    // to finding new messages in those queues.
     if (messages.length === 0) {
-      await sleep(1000);
+      await this.sleep(2000);
     }
 
-    this.monitor.log.queuePoll({
-      count: messages.length,
+    this.monitor.log.azureQueuePoll({
+      messages: messages.length,
       failed,
       resolver: 'dependency',
     });
+  }
+
+  /** Sleep for `delay` ms, returns a promise */
+  sleep(delay) {
+    return new Promise((accept) => { setTimeout(accept, delay); });
   }
 }
 
