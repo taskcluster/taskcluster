@@ -49,6 +49,7 @@ exports.agents = DEFAULT_AGENTS;
 const SERVICE_DISCOVERY_SCHEMES = ['default', 'k8s-dns'];
 let DEFAULT_SERVICE_DISCOVERY_SCHEME = 'default';
 exports.setServiceDiscoveryScheme = scheme => {
+  assert(SERVICE_DISCOVERY_SCHEMES.includes(scheme), `Invalid Taskcluster client service discovery scheme: ${scheme}`);
   DEFAULT_SERVICE_DISCOVERY_SCHEME = scheme;
 };
 
