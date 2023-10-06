@@ -6,11 +6,12 @@ import Docker from 'dockerode';
 import Observable from 'zen-observable';
 import { PassThrough, Transform } from 'stream';
 import taskcluster from 'taskcluster-client';
-import { REPO_ROOT } from './repo';
+import { REPO_ROOT } from './repo.js';
 import got from 'got';
-import { execCommand } from './command';
+import { execCommand } from './command.js';
 import mkdirp from 'mkdirp';
-const rimraf = util.promisify(require('rimraf'));
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
 
 /**
  * Set up to call docker in the given baseDir (internal use only)

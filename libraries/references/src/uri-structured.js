@@ -3,7 +3,7 @@ import rimraf from 'rimraf';
 import path from 'path';
 import fs from 'fs';
 
-const writeUriStructured = ({ directory, serializable }) => {
+export const writeUriStructured = ({ directory, serializable }) => {
   rimraf.sync(directory);
 
   const dirs = new Set();
@@ -18,7 +18,7 @@ const writeUriStructured = ({ directory, serializable }) => {
   }
 };
 
-const readUriStructured = ({ directory }) => {
+export const readUriStructured = ({ directory }) => {
   const files = [];
 
   const queue = ['.'];
@@ -40,6 +40,3 @@ const readUriStructured = ({ directory }) => {
 
   return files;
 };
-
-exports.writeUriStructured = writeUriStructured;
-exports.readUriStructured = readUriStructured;

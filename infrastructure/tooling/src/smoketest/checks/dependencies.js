@@ -8,7 +8,7 @@ export const scopeExpression = {
 };
 
 export const tasks = [];
-exports.tasks.push({
+tasks.push({
   title: 'Check dependencies',
   requires: [
     'ping-queue',

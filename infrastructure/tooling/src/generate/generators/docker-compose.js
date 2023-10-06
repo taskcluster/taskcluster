@@ -1,5 +1,5 @@
 import path from 'path';
-import { listServices, readRepoYAML, writeRepoYAML, writeRepoFile } from '../../utils';
+import { listServices, readRepoYAML, writeRepoYAML, writeRepoFile } from '../../utils/index.js';
 
 const SERVICES = listServices();
 
@@ -157,7 +157,7 @@ const uiConfig = [
 
 const allowedBackgroundJobs = ['built-in-workers/server'];
 
-exports.tasks.push({
+tasks.push({
   title: `Generate docker-compose files`,
   requires: [
     ...SERVICES.map(name => `configs-${name}`),
@@ -546,7 +546,7 @@ exports.tasks.push({
   },
 });
 
-exports.tasks.push({
+tasks.push({
   title: `Generate nginx.conf`,
   requires: [],
   provides: ['target-nginx.conf'],

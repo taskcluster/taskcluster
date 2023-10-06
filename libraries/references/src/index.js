@@ -1,3 +1,3 @@
-import { References } from './references';
+import { References } from './references.js';
 
 export default References;

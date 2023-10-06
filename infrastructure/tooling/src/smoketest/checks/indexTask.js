@@ -8,7 +8,7 @@ export const scopeExpression = {
 };
 
 export const tasks = [];
-exports.tasks.push({
+tasks.push({
   title: 'Create an indexed task and find it in the index (--target index)',
   requires: [
     'ping-queue',

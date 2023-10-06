@@ -9,7 +9,7 @@ import {
   execCommand,
   writeRepoFile,
   REPO_ROOT,
-} from '../../utils';
+} from '../../utils/index.js';
 
 import path from 'path';
 import util from 'util';

@@ -1,11 +1,12 @@
 import util from 'util';
 import fs from 'fs';
 import path from 'path';
-const rimraf = util.promisify(require('rimraf'));
 import mkdirp from 'mkdirp';
 import taskcluster from 'taskcluster-client';
-import { execCommand } from './command';
-import { REPO_ROOT } from './repo';
+import { execCommand } from './command.js';
+import { REPO_ROOT } from './repo.js';
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
 
 /**
  * Perform an `npm publish`

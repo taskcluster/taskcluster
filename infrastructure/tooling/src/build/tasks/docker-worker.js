@@ -1,5 +1,5 @@
 import path from 'path';
-import { ensureTask, readRepoJSON, dockerRun, dockerPull, REPO_ROOT } from '../../utils';
+import { ensureTask, readRepoJSON, dockerRun, dockerPull, REPO_ROOT } from '../../utils/index.js';
 
 export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {

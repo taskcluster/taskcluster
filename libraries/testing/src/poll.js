@@ -1,6 +1,6 @@
 import Debug from 'debug';
 const debug = Debug('taskcluster-lib-testing:poll');
-import { sleep } from './time';
+import { sleep } from './time.js';
 
 /**
  * Poll a function that returns a promise until the promise is resolved without

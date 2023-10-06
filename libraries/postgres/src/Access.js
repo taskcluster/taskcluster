@@ -1,5 +1,7 @@
-import { isPlainObject } from 'lodash';
+import lodash from 'lodash';
 import { strict as assert } from 'assert';
+
+const { isPlainObject } = lodash;
 
 class Access {
   /**

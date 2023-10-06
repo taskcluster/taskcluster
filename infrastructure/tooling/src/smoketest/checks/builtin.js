@@ -14,7 +14,7 @@ export const tasks = [];
   { taskType: 'succeed', successCondition: 'completed' },
   { taskType: 'fail', successCondition: 'failed' },
 ].forEach(({ taskType, successCondition })=>{
-  exports.tasks.push({
+  tasks.push({
     title: `Create built-in/${taskType} task (--target built-in/${taskType})`,
     requires: [
       'ping-queue',

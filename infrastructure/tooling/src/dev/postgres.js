@@ -1,7 +1,7 @@
 import slugid from 'slugid';
 import crypto from 'crypto';
 import { Client } from 'pg';
-import { makePgUrl } from './util';
+import { makePgUrl } from './util.js';
 import URL from 'url';
 
 const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {

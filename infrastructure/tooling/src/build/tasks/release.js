@@ -12,7 +12,7 @@ import {
   readRepoFile,
   dockerPush,
   REPO_ROOT,
-} from '../../utils';
+} from '../../utils/index.js';
 
 const readFile = util.promisify(fs.readFile);
 

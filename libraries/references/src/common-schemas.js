@@ -12,7 +12,7 @@ let _commonSchemas;
  * to $ref anything they like -- all things taskcluster-lib-validate does not
  * allow for services.
  */
-const getCommonSchemas = () => {
+export const getCommonSchemas = () => {
   if (_commonSchemas) {
     return _commonSchemas;
   }
@@ -32,5 +32,3 @@ const getCommonSchemas = () => {
   }
   return _commonSchemas;
 };
-
-exports.getCommonSchemas = getCommonSchemas;

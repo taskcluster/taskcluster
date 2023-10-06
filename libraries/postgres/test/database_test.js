@@ -1,4 +1,4 @@
-import helper from './helper';
+import helper from './helper.js';
 
 import {
   Schema,
@@ -9,7 +9,7 @@ import {
   QUERY_CANCELED,
   READ_ONLY_SQL_TRANSACTION,
   UNDEFINED_FUNCTION,
-} from '..';
+} from '../index.js';
 
 import path from 'path';
 import { strict as assert } from 'assert';

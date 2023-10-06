@@ -1,6 +1,6 @@
 import os from 'os';
 import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
-import generateReleaseTasks from './tasks';
+import generateReleaseTasks from './tasks/index.js';
 
 class Release {
   constructor(cmdOptions) {

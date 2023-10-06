@@ -5,8 +5,8 @@ const rimraf = util.promisify(require('rimraf'));
 import mkdirp from 'mkdirp';
 import taskcluster from 'taskcluster-client';
 import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
-import generateTasks from './tasks';
-import { gitIsDirty, gitDescribe, REPO_ROOT } from '../utils';
+import generateTasks from './tasks/index.js';
+import { gitIsDirty, gitDescribe, REPO_ROOT } from '../utils/index.js';
 
 class Base {
   constructor(cmdOptions) {

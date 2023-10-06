@@ -1,7 +1,8 @@
-import tcpg from 'taskcluster-lib-postgres';
-import testing from 'taskcluster-lib-testing';
-import { parse as parseDbURL } from 'pg-connection-string';
-import { REPO_ROOT, writeRepoFile, execCommand } from '../../utils';
+import * as tcpg from 'taskcluster-lib-postgres';
+import * as testing from 'taskcluster-lib-testing';
+import pgConnectionString from 'pg-connection-string';
+const { parse: parseDbURL } = pgConnectionString;
+import { REPO_ROOT, writeRepoFile, execCommand } from '../../utils/index.js';
 
 // Generate a readable JSON version of the schema.
 export const tasks = [{

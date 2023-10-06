@@ -1,7 +1,7 @@
 import path from 'path';
 import libUrls from 'taskcluster-lib-urls';
 import got from 'got';
-import { listServices, readRepoYAML } from '../../utils';
+import { listServices, readRepoYAML } from '../../utils/index.js';
 
 const SERVICES = listServices();
 
@@ -9,7 +9,7 @@ export const scopeExpression = { AllOf: [] };
 export const tasks = [];
 
 SERVICES.forEach((name) => {
-  exports.tasks.push({
+  tasks.push({
     title: `__lbheartbeat__ endpoint for ${name}`,
     requires: [],
     provides: [`lbheartbeat-${name}`],
@@ -47,7 +47,7 @@ SERVICES.forEach((name) => {
     },
   });
 
-  exports.tasks.push({
+  tasks.push({
     title: `__heartbeat__ endpoint for ${name}`,
     requires: [],
     provides: [`heartbeat-${name}`],
@@ -85,7 +85,7 @@ SERVICES.forEach((name) => {
     },
   });
 
-  exports.tasks.push({
+  tasks.push({
     title: `__version__ endpoint for ${name}`,
     requires: [],
     provides: [`version-${name}`],
@@ -124,7 +124,7 @@ SERVICES.forEach((name) => {
   });
 });
 
-exports.tasks.push({
+tasks.push({
   title: `Dockerflow API endpoints succeed (--target dockerflow)`,
   requires: [
     ...SERVICES.flatMap((name) => [

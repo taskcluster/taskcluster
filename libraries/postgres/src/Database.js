@@ -1,13 +1,14 @@
 import _ from 'lodash';
-import { Pool } from 'pg';
 import pg from 'pg';
+const { Pool } = pg;
 import crypto from 'crypto';
-import { annotateError } from './util';
-import Keyring from './Keyring';
+import { annotateError } from './util.js';
+import Keyring from './Keyring.js';
 import { strict as assert } from 'assert';
-import { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } from './constants';
+import { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } from './constants.js';
 import { MonitorManager } from 'taskcluster-lib-monitor';
-import { parse as parseConnectionString } from 'pg-connection-string';
+import pgConnectionString from 'pg-connection-string';
+const { parse: parseConnectionString } = pgConnectionString;
 
 import {
   runMigration,
@@ -15,7 +16,7 @@ import {
   runDowngrade,
   runOnlineDowngrade,
   dropOnlineFns,
-} from './migration';
+} from './migration.js';
 
 // Postgres extensions to "create".
 const EXTENSIONS = [

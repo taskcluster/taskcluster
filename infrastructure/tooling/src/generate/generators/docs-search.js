@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import GithubSlugger from 'github-slugger';
-import { writeRepoJSON, REPO_ROOT } from '../../utils';
+import { writeRepoJSON, REPO_ROOT } from '../../utils/index.js';
 
 const DOCS_DIR = path.join(REPO_ROOT, 'ui', 'docs');
 const MD_PARSER = {

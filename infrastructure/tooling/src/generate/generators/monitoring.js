@@ -1,14 +1,14 @@
 import path from 'path';
 import cronstrue from 'cronstrue';
 import table from 'markdown-table';
-import { listServices, modifyRepoFile } from '../../utils';
+import { listServices, modifyRepoFile } from '../../utils/index.js';
 
 const SERVICES = listServices();
 
 export const tasks = [];
 
 SERVICES.forEach(name => {
-  exports.tasks.push({
+  tasks.push({
     title: `Generate Monitoring Hints for ${name}`,
     requires: [
       `procs-${name}`,
@@ -30,7 +30,7 @@ SERVICES.forEach(name => {
   });
 });
 
-exports.tasks.push({
+tasks.push({
   title: `Generate Monitoring Suggestions`,
   requires: SERVICES.map(name => `monitoring-hints-${name}`),
   provides: [],

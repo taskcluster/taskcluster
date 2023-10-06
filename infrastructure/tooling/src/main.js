@@ -1,5 +1,9 @@
-#! /usr/bin/env nodeimport program from 'commander';
-import { version } from '../../../package.json';
+#! /usr/bin/env node
+import { program } from 'commander';
+import fs from 'fs';
+
+// read version from package.json
+const { version } = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 
 const run = (main, arg) => {
   main(arg).then(
@@ -39,8 +43,8 @@ program.command('build')
   .option('--ignore-uncommitted-files', 'Do not fail if there are un-committed files in the working copy')
   .option('--logs-dir <logs-dir>', 'A directory to put debug logs. default <base-dir>/logs')
   .option('--target <target>', 'The thing to build, such as `monoimage` or `generic-worker` or `all`; default is monoimage')
-  .action(actFn(({ options }) => {
-    const { build } = require('./build');
+  .action(actFn(async ({ options }) => {
+    const { build } = await import('./build/index.js');
     run(build, options);
   }));
 
@@ -48,16 +52,16 @@ program.command('release')
   .description('tag a release and push it to GitHub')
   .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
   .option('--no-push', 'Do not push the git commit + tags (but your local repo is still modified)')
-  .action(actFn(({ options }) => {
-    const { release } = require('./release');
+  .action(actFn(async ({ options }) => {
+    const { release } = await import('./release/index.js');
     run(release, options);
   }));
 
 program.command('staging-release')
   // note that this is not `release --staging` to avoid danger of accidentally doing a real release
   .description('make a staging release')
-  .action(actFn(({ options }) => {
-    const { stagingRelease } = require('./release');
+  .action(actFn(async ({ options }) => {
+    const { stagingRelease } = await import('./release/index.js');
     run(stagingRelease, options);
   }));
 
@@ -73,22 +77,22 @@ program.command('release:publish')
       'This command expects to run in automation in response to a push to CI.',
     ].join('\n'));
   })
-  .action(actFn(({ options }) => {
-    const { publish } = require('./build');
+  .action(actFn(async ({ options }) => {
+    const { publish } = await import('./build/index.js');
     run(publish, options);
   }));
 
 program.command('generate')
   .option('--target <generator>', 'Run a specific generator, rather than all of them')
-  .action(actFn(({ options }) => {
-    const { main } = require('./generate');
+  .action(actFn(async ({ options }) => {
+    const { main } = await import('./generate/index.js');
     run(main, options);
   }));
 
 program.command('minify')
   .description('minify yarn.lock files')
-  .action(actFn(({ options }) => {
-    const { main } = require('./minify');
+  .action(actFn(async ({ options }) => {
+    const { main } = await import('./minify/index.js');
     run(main, options);
   }));
 
@@ -108,105 +112,105 @@ program.command('changelog')
   .option('--bug <bug>', 'Reference this Bugzilla bug in the added changelog')
   .option('--no-bug', 'This change does not reference a bug')
   .option('--no-issue', 'This change does not reference an issue')
-  .action(actFn(({ options }) => {
-    const { add } = require('./changelog');
+  .action(actFn(async ({ options }) => {
+    const { add } = await import('./changelog/index.js');
     run(add, options);
   }));
 
 program.command('changelog:show')
   .description('Show the changelog for the next release, checking syntax')
-  .action(actFn(({ options }) => {
-    const { show } = require('./changelog');
+  .action(actFn(async ({ options }) => {
+    const { show } = await import('./changelog/index.js');
     run(show, options);
   }));
 
 program.command('changelog:check')
   .description('Check the changelog')
   .option('--pr <pr>', 'Check that this pull request contains a changelog')
-  .action(actFn(({ options }) => {
-    const { check } = require('./changelog');
+  .action(actFn(async ({ options }) => {
+    const { check } = await import('./changelog/index.js');
     run(check, options);
   }));
 
 program.command('dev:init')
   .description('Initialize a development deployment (see dev-docs/development-process.md first)')
-  .action(actFn(({ options }) => {
-    const { init } = require('./dev');
+  .action(actFn(async ({ options }) => {
+    const { init } = await import('./dev/index.js');
     run(init, options);
   }));
 
 program.command('dev:db:upgrade')
   .description('Run `yarn db:upgrade` for a development environment')
   .option('--db-version <v>', 'Downgrade to this DB version (optional, defaults to latest)')
-  .action(actFn(({ options }) => {
-    const { dbUpgrade } = require('./dev');
+  .action(actFn(async ({ options }) => {
+    const { dbUpgrade } = await import('./dev/index.js');
     run(dbUpgrade, options);
   }));
 
 program.command('dev:db:downgrade')
   .description('Run `yarn db:downgrade` for a development environment')
   .option('--db-version <v>', 'Downgrade to this DB version (required)')
-  .action(actFn(({ options }) => {
-    const { dbDowngrade } = require('./dev');
+  .action(actFn(async ({ options }) => {
+    const { dbDowngrade } = await import('./dev/index.js');
     run(dbDowngrade, options);
   }));
 
 program.command('dev:apply')
   .description('Apply changes to a development deployment')
-  .action(actFn(({ options }) => {
-    const { apply } = require('./dev');
+  .action(actFn(async ({ options }) => {
+    const { apply } = await import('./dev/index.js');
     run(apply, options);
   }));
 
 program.command('dev:delete')
   .description('Delete a development deployment')
-  .action(actFn(({ options }) => {
-    const { delete_ } = require('./dev');
+  .action(actFn(async ({ options }) => {
+    const { delete_ } = await import('./dev/index.js');
     run(delete_, options);
   }));
 
 program.command('dev:verify')
   .description('Verify settings for a development deployment')
-  .action(actFn(({ options }) => {
-    const { verify } = require('./dev');
+  .action(actFn(async ({ options }) => {
+    const { verify } = await import('./dev/index.js');
     run(verify, options);
   }));
 
 program.command('dev:templates')
   .description('Dump kubernetes templates for debug purposes')
-  .action(actFn(({ options }) => {
-    const { templates } = require('./dev');
+  .action(actFn(async ({ options }) => {
+    const { templates } = await import('./dev/index.js');
     run(templates, options);
   }));
 
 program.command('dev:ensure:db')
   .description('Verify that database permissions are properly set')
-  .action(actFn(({ options }) => {
-    const { ensureDb } = require('./dev');
+  .action(actFn(async ({ options }) => {
+    const { ensureDb } = await import('./dev/index.js');
     run(ensureDb, options);
   }));
 
 program.command('dev:ensure:rabbit')
   .description('Verify that rabbitmq users and vhost are properly set')
-  .action(actFn(({ options }) => {
-    const { ensureRabbit } = require('./dev');
+  .action(actFn(async ({ options }) => {
+    const { ensureRabbit } = await import('./dev/index.js');
     run(ensureRabbit, options);
   }));
 
 program.command('test:meta')
-  .action(actFn(({ options }) => {
-    const { main } = require('./meta');
+  .action(actFn(async ({ options }) => {
+    const { main } = await import('./meta/index.js');
     run(main, options);
   }));
 
 program.command('smoketest')
   .option('--target <target>', 'Run a specific check, rather than all of them')
-  .on('--help', () => {
-    const { targets } = require('./smoketest/checks');
+  .on('--help', async () => {
+    const { targets } = await import('./smoketest/checks/index.js');
     console.log(`\nAvailable Targets:\n${targets.map(t => `  - ${t}`).join('\n')}`);
   })
-  .action(actFn(({ options }) => {
-    const { main } = require('./smoketest');
+  .action(actFn(async ({ options }) => {
+    const { main } = await import('./smoketest/index.js');
     run(main, options);
   }));
 

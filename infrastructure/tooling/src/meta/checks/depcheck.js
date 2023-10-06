@@ -1,6 +1,6 @@
 import { Worker, isMainThread, parentPort } from 'worker_threads';
 import _ from 'lodash';
-import { REPO_ROOT, gitLsFiles, readRepoFile } from '../../utils';
+import { REPO_ROOT, gitLsFiles, readRepoFile } from '../../utils/index.js';
 import acorn from 'acorn-loose';
 import walk from 'acorn-walk';
 import builtinModules from 'builtin-modules';
@@ -13,7 +13,7 @@ import stringify from 'fast-json-stable-stringify';
 
 if (isMainThread) {
   export const tasks = [];
-  exports.tasks.push({
+  tasks.push({
     title: 'Dependencies are used and installed',
     requires: [],
     provides: [],

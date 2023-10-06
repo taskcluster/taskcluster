@@ -4,7 +4,7 @@ import {
   writeRepoFile,
   modifyRepoJSON,
   modifyRepoYAML,
-} from '../../utils';
+} from '../../utils/index.js';
 
 /**
  * Update the node version to match everywhere, treating that in `package.json`

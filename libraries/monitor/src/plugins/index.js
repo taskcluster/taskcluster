@@ -1,5 +1,5 @@
-import SentryReporter from './sentry';
-import TestReporter from './testreporter';
+import SentryReporter from './sentry.js';
+import TestReporter from './testreporter.js';
 
 export default {
   errorPlugins: {

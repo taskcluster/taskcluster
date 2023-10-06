@@ -1,4 +1,4 @@
-import helper from './helper';
+import helper from './helper.js';
 import debug from 'debug';
 
 import {
@@ -10,7 +10,7 @@ import {
   UNDEFINED_COLUMN,
   UNDEFINED_TABLE,
   UNDEFINED_FUNCTION,
-} from '..';
+} from '../index.js';
 
 import path from 'path';
 import testing from 'taskcluster-lib-testing';

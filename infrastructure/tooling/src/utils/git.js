@@ -1,7 +1,8 @@
 import util from 'util';
-const exec = util.promisify(require('child_process').execFile);
+import { execFile } from 'child_process';
 import fs from 'fs';
 import assert from 'assert';
+const exec = util.promisify(execFile);
 
 /**
  * Perform a git clone

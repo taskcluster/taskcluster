@@ -5,7 +5,8 @@
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Configuration loader that injects env variables into YAML",
   "license": "MPL-2.0",
-  "main": "./src/index.js",
+  "type": "module",
+  "exports": "./src/index.js",
   "scripts": {
     "coverage": "c8 yarn test",
     "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",

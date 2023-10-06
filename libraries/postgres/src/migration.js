@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert';
-import { dollarQuote, ETA } from './util';
-import { UNDEFINED_FUNCTION } from './constants';
+import { dollarQuote, ETA } from './util.js';
+import { UNDEFINED_FUNCTION } from './constants.js';
 
 const inTransaction = async (client, callable) => {
   await client.query('begin');
@@ -48,7 +48,7 @@ const fnExists = async ({ client, name }) => {
   }
 };
 
-const dropOnlineFns = async ({ client, kind, versionNum, showProgress }) => {
+export const dropOnlineFns = async ({ client, kind, versionNum, showProgress }) => {
   showProgress('..ensuring online functions are removed');
   await client.query(`
   drop function if exists online_${kind}_v${versionNum}_batch(batch_size_in integer, state_in jsonb)`);
@@ -56,7 +56,7 @@ const dropOnlineFns = async ({ client, kind, versionNum, showProgress }) => {
   drop function if exists online_${kind}_v${versionNum}_is_complete()`);
 };
 
-const runMigration = async ({ client, version, showProgress, usernamePrefix }) => {
+export const runMigration = async ({ client, version, showProgress, usernamePrefix }) => {
   await inTransaction(client, async () => {
     if (version.version === 1) {
       await client.query('create table if not exists tcversion as select 0 as version');
@@ -83,7 +83,7 @@ const runMigration = async ({ client, version, showProgress, usernamePrefix }) =
   });
 };
 
-const runDowngrade = async ({ client, schema, fromVersion, toVersion, showProgress, usernamePrefix }) => {
+export const runDowngrade = async ({ client, schema, fromVersion, toVersion, showProgress, usernamePrefix }) => {
   await inTransaction(client, async () => {
     await lockVersionTable({ client, expectedVersion: fromVersion.version });
 
@@ -127,7 +127,7 @@ let hooks = {};
  * a batch affects zero items, it checks for completion, and repeats
  * if the completion function returns false.
  */
-const runOnlineBatches = async ({ client, showProgress, versionNum, kind }) => {
+export const runOnlineBatches = async ({ client, showProgress, versionNum, kind }) => {
   const batchFn = `online_${kind}_v${versionNum}_batch`;
   const isCompleteFn = `online_${kind}_v${versionNum}_is_complete`;
 
@@ -220,7 +220,7 @@ runOnlineBatches.resetHooks = () => {
   hooks = {};
 };
 
-const runOnlineMigration = async ({ client, showProgress, versionNum }) => {
+export const runOnlineMigration = async ({ client, showProgress, versionNum }) => {
   await runOnlineBatches({
     client,
     showProgress,
@@ -229,20 +229,11 @@ const runOnlineMigration = async ({ client, showProgress, versionNum }) => {
   });
 };
 
-const runOnlineDowngrade = async ({ client, showProgress, versionNum }) => {
+export const runOnlineDowngrade = async ({ client, showProgress, versionNum }) => {
   await runOnlineBatches({
     client,
     showProgress,
     versionNum,
     kind: 'downgrade',
   });
-};
-
-export default {
-  runMigration,
-  runDowngrade,
-  runOnlineMigration,
-  runOnlineDowngrade,
-  runOnlineBatches,
-  dropOnlineFns,
 };

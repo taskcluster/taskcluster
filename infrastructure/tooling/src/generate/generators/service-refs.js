@@ -1,10 +1,12 @@
 import util from 'util';
 import path from 'path';
-const rimraf = util.promisify(require('rimraf'));
 import mkdirp from 'mkdirp';
 import References from 'taskcluster-lib-references';
-const exec = util.promisify(require('child_process').execFile);
-import { REPO_ROOT, writeRepoJSON, listServices } from '../../utils';
+import { execFile } from 'child_process';
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
+import { REPO_ROOT, writeRepoJSON, listServices } from '../../utils/index.js';
+const exec = util.promisify(execFile);
 
 /**
  * This file defines a few tasks that call generateReferences for all services,
@@ -22,7 +24,7 @@ export const tasks = [];
  * Extract the docs/refs information from each service
  */
 SERVICES.forEach(name => {
-  exports.tasks.push({
+  tasks.push({
     title: `Generate References for ${name} `,
     requires: [],
     provides: [`refs-${name}`],
@@ -45,7 +47,7 @@ SERVICES.forEach(name => {
   });
 });
 
-exports.tasks.push({
+tasks.push({
   title: `Generate References`,
   requires: [
     ...SERVICES.map(name => `refs-${name}`),

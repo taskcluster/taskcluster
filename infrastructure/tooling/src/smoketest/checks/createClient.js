@@ -11,7 +11,7 @@ export const scopeExpression = {
 
 export const tasks = [];
 
-exports.tasks.push({
+tasks.push({
   title: 'Create client and use it (--target client)',
   requires: ['ping-auth'],
   provides: [

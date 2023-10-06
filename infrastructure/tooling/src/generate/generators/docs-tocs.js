@@ -1,7 +1,7 @@
 import { promisify } from 'util';
 import md from 'md-directory';
 import { join } from 'path';
-import { REPO_ROOT, writeRepoJSON } from '../../utils';
+import { REPO_ROOT, writeRepoJSON } from '../../utils/index.js';
 
 const mdParseDir = promisify(md.parseDir);
 

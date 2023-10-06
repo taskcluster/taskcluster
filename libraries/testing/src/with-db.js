@@ -1,13 +1,15 @@
 import path from 'path';
 import assert from 'assert';
-import { Client } from 'pg';
+import pg from 'pg';
+const { Client } = pg;
 import { Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE } from 'taskcluster-lib-postgres';
-import tcdb from 'taskcluster-db';
+import * as tcdb from 'taskcluster-db';
 import { URL } from 'url';
 
 const testDbUrl = process.env.TEST_DB_URL;
 
-const resetDb = async () => {
+// useful for tests
+export const resetDb = async () => {
   const client = new Client({ connectionString: testDbUrl });
   await client.connect();
   try {
@@ -40,7 +42,8 @@ const resetDb = async () => {
   }
 };
 
-const resetTables = async ({ tableNames }) => {
+// useful for tests
+export const resetTables = async ({ tableNames }) => {
   const client = new Client({ connectionString: testDbUrl });
   await client.connect();
   try {
@@ -57,7 +60,7 @@ const resetTables = async ({ tableNames }) => {
  *
  * It's up to the caller to set up and clear any data between test cases.
  */
-module.exports.withDb = (mock, skipping, helper, serviceName) => {
+export const withDb = (mock, skipping, helper, serviceName) => {
   assert(testDbUrl,
     "TEST_DB_URL must be set to run these tests - see dev-docs/development-process.md for more information");
 
@@ -122,7 +125,3 @@ module.exports.withDb = (mock, skipping, helper, serviceName) => {
     delete helper.db;
   });
 };
-
-// this is useful for taskcluster-db's tests, as well
-module.exports.resetDb = resetDb;
-module.exports.resetTables = resetTables;

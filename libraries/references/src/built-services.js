@@ -76,4 +76,4 @@ const load = ({ directory }) => {
   return { references, schemas };
 };
 
-exports.load = load;
+export default load;

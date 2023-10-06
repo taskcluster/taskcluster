@@ -1,8 +1,9 @@
 import util from 'util';
 import path from 'path';
-const rimraf = util.promisify(require('rimraf'));
 import mkdirp from 'mkdirp';
-import { ensureTask } from '../../utils';
+import { ensureTask } from '../../utils/index.js';
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
 
 export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   const artifactsDir = path.join(baseDir, 'release-artifacts');

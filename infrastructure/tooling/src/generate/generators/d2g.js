@@ -1,9 +1,7 @@
 import path from 'path';
-import { REPO_ROOT, execCommand } from '../../utils';
+import { REPO_ROOT, execCommand } from '../../utils/index.js';
 
-export const tasks = [];
-
-exports.tasks.push({
+export const tasks = [{
   title: 'Generate d2g',
   requires: ['references-json', 'target-go-version'],
   provides: ['target-d2g'],
@@ -14,4 +12,4 @@ exports.tasks.push({
       utils,
     });
   },
-});
+}];

@@ -1,12 +1,9 @@
-import util from './util';
-import migration from './migration';
+import { ignorePgErrors, paginatedIterator } from './util.js';
+import { runOnlineBatches } from './migration.js';
 
-export default {
-  Schema: require('./Schema'),
-  Database: require('./Database'),
-  ...require('./constants'),
-  Keyring: require('./Keyring'),
-  ignorePgErrors: util.ignorePgErrors,
-  paginatedIterator: util.paginatedIterator,
-  runOnlineBatches: migration.runOnlineBatches,
-};
+export { default as Schema } from './Schema.js';
+export { default as Database } from './Database.js';
+export { default as Keyring } from './Keyring.js';
+export * from './constants.js';
+
+export { ignorePgErrors, paginatedIterator, runOnlineBatches };

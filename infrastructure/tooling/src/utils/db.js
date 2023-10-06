@@ -1,6 +1,6 @@
 import path from 'path';
 import assert from 'assert';
-import { readRepoFile, writeRepoFile, modifyRepoFile } from './repo';
+import { readRepoFile, writeRepoFile, modifyRepoFile } from './repo.js';
 
 /**
  * Get an array giving the DB version for each Taskcluster version

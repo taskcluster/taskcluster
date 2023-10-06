@@ -1,12 +1,9 @@
 import path from 'path';
-import { listServices, readRepoYAML, writeRepoFile } from '../../utils';
-import packageJson from '../../../../../package.json';
+import { listServices, readRepoYAML, writeRepoFile, readRepoFile } from '../../utils/index.js';
 
 const SERVICES = listServices();
 
-export const tasks = [];
-
-exports.tasks.push({
+export const tasks = [{
   title: 'Build Entrypoint Script',
   requires: [
   ],
@@ -16,6 +13,8 @@ exports.tasks.push({
   locks: [],
   run: async (requirements, utils) => {
     const procs = {};
+
+    const packageJson = JSON.parse(readRepoFile('package.json'));
 
     for (const name of SERVICES) {
       const processes = await readRepoYAML(path.join('services', name, 'procs.yml'));
@@ -59,4 +58,4 @@ exports.tasks.push({
 
     return { 'entrypoint-script': entrypointScript };
   },
-});
+}];

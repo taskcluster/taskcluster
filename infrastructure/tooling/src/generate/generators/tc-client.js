@@ -1,5 +1,5 @@
 import stringify from 'json-stable-stringify';
-import { writeRepoFile } from '../../utils';
+import { writeRepoFile } from '../../utils/index.js';
 
 export const tasks = [{
   title: 'Generate Taskcluster-Client',

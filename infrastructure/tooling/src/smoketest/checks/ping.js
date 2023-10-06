@@ -1,14 +1,14 @@
 import path from 'path';
 import libUrls from 'taskcluster-lib-urls';
 import got from 'got';
-import { listServices, readRepoYAML } from '../../utils';
+import { listServices, readRepoYAML } from '../../utils/index.js';
 
 const SERVICES = listServices();
 
 export const scopeExpression = { AllOf: [] };
 export const tasks = [];
 
-exports.tasks.push({
+tasks.push({
   title: `Fetch version endpoint for deployment`,
   requires: [],
   provides: [
@@ -27,7 +27,7 @@ exports.tasks.push({
   },
 });
 
-exports.tasks.push({
+tasks.push({
   title: `Ping health endpoint for web-server`,
   requires: ['deployment-version'],
   provides: [
@@ -46,7 +46,7 @@ exports.tasks.push({
 });
 
 SERVICES.filter(name => name !== 'web-server').forEach(name => {
-  exports.tasks.push({
+  tasks.push({
     title: `Ping health endpoint for ${name}`,
     requires: ['deployment-version'],
     provides: [
@@ -80,7 +80,7 @@ SERVICES.filter(name => name !== 'web-server').forEach(name => {
   });
 });
 
-exports.tasks.push({
+tasks.push({
   title: `API ping endpoints succeed (--target ping)`,
   requires: [
     ...SERVICES.map(name => `ping-${name}`),

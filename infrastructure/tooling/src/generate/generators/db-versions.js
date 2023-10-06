@@ -1,5 +1,5 @@
 import { Schema } from 'taskcluster-lib-postgres';
-import { getDbReleases, updateVersionsReadme } from '../../utils';
+import { getDbReleases, updateVersionsReadme } from '../../utils/index.js';
 
 export const tasks = [{
   title: '`db/versions/README`',

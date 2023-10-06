@@ -4,8 +4,9 @@ import glob from 'glob';
 import util from 'util';
 import yaml from 'js-yaml';
 import jsone from 'json-e';
-const rimraf = util.promisify(require('rimraf'));
 import mkdirp from 'mkdirp';
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
 
 import {
   listServices,
@@ -16,7 +17,7 @@ import {
   REPO_ROOT,
   configToSchema,
   configToExample,
-} from '../../utils';
+} from '../../utils/index.js';
 
 const SERVICES = listServices();
 const CHART_DIR = path.join('infrastructure', 'k8s');
@@ -189,7 +190,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
 
 export const tasks = [];
 
-exports.tasks.push({
+tasks.push({
   title: `Load k8s templates`,
   requires: [],
   provides: ['k8s-templates'],
@@ -206,7 +207,7 @@ exports.tasks.push({
   },
 });
 
-exports.tasks.push({
+tasks.push({
   title: `Clear k8s/templates directory`,
   requires: [],
   provides: ['k8s-templates-dir'],
@@ -217,7 +218,7 @@ exports.tasks.push({
 });
 
 SERVICES.forEach(name => {
-  exports.tasks.push({
+  tasks.push({
     title: `Generate helm templates for ${name}`,
     requires: [`configs-${name}`, `procslist-${name}`, 'k8s-templates', 'k8s-templates-dir'],
     provides: [`ingresses-${name}`],
@@ -269,7 +270,7 @@ const extras = {
   },
 };
 Object.entries(extras).forEach(([name, { procs, vars }]) => {
-  exports.tasks.push({
+  tasks.push({
     title: `Generate helm templates for ${name}`,
     requires: ['k8s-templates'],
     provides: [`ingresses-${name}`],
@@ -282,7 +283,7 @@ Object.entries(extras).forEach(([name, { procs, vars }]) => {
   });
 });
 
-exports.tasks.push({
+tasks.push({
   title: `Generate ingress`,
   requires: ['k8s-templates', 'ingresses-ui', 'ingresses-references', ...SERVICES.map(name => `ingresses-${name}`)],
   provides: [],
@@ -309,7 +310,7 @@ exports.tasks.push({
   },
 });
 
-exports.tasks.push({
+tasks.push({
   title: `Generate values.yaml and values.schema.yaml`,
   requires: [
     ...SERVICES.map(name => `configs-${name}`),

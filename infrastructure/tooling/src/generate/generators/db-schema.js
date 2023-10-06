@@ -1,5 +1,5 @@
-import tcdb from 'taskcluster-db';
-import { writeRepoJSON } from '../../utils';
+import * as tcdb from 'taskcluster-db';
+import { writeRepoJSON } from '../../utils/index.js';
 
 // Generate a readable JSON version of the schema.
 export const tasks = [{

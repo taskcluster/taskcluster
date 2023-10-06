@@ -4,22 +4,22 @@ import path from 'path';
 import _ from 'lodash';
 import { readRepoYAML, writeRepoYAML } from '../utils';
 import inquirer from 'inquirer';
-import commonPrompts from './common';
+import commonPrompts from './common.js';
 
 import {
   rabbitPrompts,
   rabbitResources,
   rabbitAdminPasswordPrompt,
   rabbitEnsureResources,
-} from './rabbit';
+} from './rabbit.js';
 
 import { azureResources } from './azure';
-import { postgresPrompts, postgresResources, postgresEnsureDb } from './postgres';
-import { k8sResources } from './k8s';
-import awsResources from './aws';
-import taskclusterResources from './taskcluster';
-import helm from './helm';
-import { makePgUrl } from './util';
+import { postgresPrompts, postgresResources, postgresEnsureDb } from './postgres.js';
+import { k8sResources } from './k8s.js';
+import awsResources from './aws.js';
+import taskclusterResources from './taskcluster.js';
+import helm from './helm.js';
+import { makePgUrl } from './util.js';
 import { upgrade, downgrade } from 'taskcluster-db';
 
 const USER_CONF_FILE = 'dev-config.yml';

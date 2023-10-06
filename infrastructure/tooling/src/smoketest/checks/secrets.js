@@ -10,7 +10,7 @@ export const scopeExpression = {
 
 export const tasks = [];
 
-exports.tasks.push({
+tasks.push({
   title: 'Create and read secrets (--target secrets)',
   requires: [
     'ping-secrets',

@@ -1,4 +1,4 @@
-import { getTasks } from './tasks';
+import { getTasks } from './tasks/index.js';
 import { TaskGraph, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
 
 const main = async (options) => {

@@ -1,15 +1,18 @@
 import assert from 'assert';
 import fs from 'fs';
+import url from 'url';
 import path from 'path';
-import { omit } from 'lodash';
+import lodash from 'lodash';
+const { omit } = lodash;
 import stream from 'stream';
-import { LEVELS } from './logger';
-import Monitor from './monitor';
+import { LEVELS } from './logger.js';
+import Monitor from './monitor.js';
 import chalk from 'chalk';
 import Debug from 'debug';
-import plugins from './plugins';
-import { cleanupDescription } from './util';
+import plugins from './plugins/index.js';
+import { cleanupDescription } from './util.js';
 
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 const REPO_ROOT = path.join(__dirname, '../../../');
 
 const LEVELS_REVERSE_COLOR = [

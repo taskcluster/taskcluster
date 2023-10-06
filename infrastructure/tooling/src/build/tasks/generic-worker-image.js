@@ -7,7 +7,7 @@ import {
   ensureTask,
   dockerPush,
   execCommand,
-} from '../../utils';
+} from '../../utils/index.js';
 
 import path from 'path';
 

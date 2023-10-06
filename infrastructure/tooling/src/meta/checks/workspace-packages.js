@@ -1,10 +1,10 @@
 import fs from 'fs';
 import glob from 'glob';
 import _ from 'lodash';
-import { REPO_ROOT } from '../../utils';
+import { REPO_ROOT } from '../../utils/index.js';
 
 export const tasks = [];
-exports.tasks.push({
+tasks.push({
   title: 'Workspace package.json files do not have forbidden fields',
   requires: [],
   provides: [],

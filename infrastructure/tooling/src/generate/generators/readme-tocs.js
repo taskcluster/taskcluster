@@ -1,5 +1,5 @@
 import path from 'path';
-import { gitLsFiles, readRepoFile, writeRepoFile } from '../../utils';
+import { gitLsFiles, readRepoFile, writeRepoFile } from '../../utils/index.js';
 
 const IGNORE = [
   'infrastructure/docker-images/worker-ci/git/README.md',

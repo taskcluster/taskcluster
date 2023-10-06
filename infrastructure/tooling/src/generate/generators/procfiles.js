@@ -1,11 +1,11 @@
 import path from 'path';
-import { listServices, readRepoYAML } from '../../utils';
+import { listServices, readRepoYAML } from '../../utils/index.js';
 
 const SERVICES = listServices();
 
 export const tasks = [];
 
-exports.tasks.push({
+tasks.push({
   title: `Read procs.yml for all services`,
   requires: [],
   provides: SERVICES.map(name => `procs-${name}`),

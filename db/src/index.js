@@ -1,5 +1,3 @@
-export default {
-  ...require("./setup"),
-  ...require("./upgrade"),
-  ...require('./schema'),
-};
+export * from "./setup.js";
+export * from "./upgrade.js";
+export * from './schema.js';

@@ -1,8 +1,9 @@
 import util from 'util';
 import path from 'path';
-import { writeRepoFile, REPO_ROOT } from '../../utils';
-const rimraf = util.promisify(require('rimraf'));
+import { writeRepoFile, REPO_ROOT } from '../../utils/index.js';
 import mkdirp from 'mkdirp';
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
 
 const writeRsFile = async (filename, content) => {
   await writeRepoFile(path.join(filename), content.trim() + '\n');

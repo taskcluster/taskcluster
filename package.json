@@ -3,6 +3,7 @@
   "version": "56.0.3",
   "private": true,
   "engine-strict": true,
+  "type": "module",
   "engines": {
     "node": "18.18.1",
     "yarn": "^1.22.19"

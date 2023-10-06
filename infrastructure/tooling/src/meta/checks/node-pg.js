@@ -3,7 +3,7 @@ const exec = util.promisify(require('child_process').exec);
 import _ from 'lodash';
 
 export const tasks = [];
-exports.tasks.push({
+tasks.push({
   title: 'Services are not using node-pg',
   requires: [],
   provides: [],

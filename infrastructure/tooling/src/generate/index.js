@@ -1,7 +1,9 @@
-import generators from './generators';
 import { TaskGraph, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
+import { loadGenerators } from './generators/index.js';
 
-const main = async (options) => {
+export const main = async (options) => {
+  const generators = await loadGenerators();
+  console.log(generators);
   const target = options.target ? [`target-${options.target}`] : undefined;
   const taskgraph = new TaskGraph(generators, {
     target,
@@ -11,5 +13,3 @@ const main = async (options) => {
   });
   await taskgraph.run();
 };
-
-export default { main };

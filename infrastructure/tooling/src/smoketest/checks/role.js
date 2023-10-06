@@ -12,7 +12,7 @@ export const scopeExpression = {
 };
 
 export const tasks = [];
-exports.tasks.push({
+tasks.push({
   title: 'Create role and expand smoketest (--target roles)',
   requires: [
     'ping-auth',

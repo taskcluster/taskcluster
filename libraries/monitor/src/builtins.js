@@ -1,4 +1,4 @@
-import MonitorManager from './monitormanager';
+import MonitorManager from './monitormanager.js';
 
 MonitorManager.register({
   name: 'periodic',

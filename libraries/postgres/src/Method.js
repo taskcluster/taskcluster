@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert';
 import path from 'path';
-import { loadSql } from './util';
+import { loadSql } from './util.js';
 
 class Method {
   /**

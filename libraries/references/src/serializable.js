@@ -4,7 +4,7 @@ import regexEscape from 'regex-escape';
 /**
  * Make a "serializable" data structure from the given references
  */
-const makeSerializable = ({ references }) => {
+export const makeSerializable = ({ references }) => {
   const urls = libUrls.withRootUrl(references.rootUrl || '');
   const referenceFilename = content => {
     const serviceName = content.serviceName;
@@ -48,7 +48,7 @@ const makeSerializable = ({ references }) => {
   }].concat(namedSchemas).concat(namedReferences);
 };
 
-const fromSerializable = ({ serializable }) => {
+export const fromSerializable = ({ serializable }) => {
   const references = [];
   const schemas = [];
 
@@ -66,6 +66,3 @@ const fromSerializable = ({ serializable }) => {
 
   return { references, schemas };
 };
-
-exports.makeSerializable = makeSerializable;
-exports.fromSerializable = fromSerializable;

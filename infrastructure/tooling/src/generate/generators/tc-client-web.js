@@ -1,10 +1,12 @@
 import util from 'util';
 import stringify from 'json-stable-stringify';
 import path from 'path';
-import { omit } from 'lodash';
+import lodash from 'lodash';
+const { omit } = lodash;
 import { compile } from 'ejs';
-import { REPO_ROOT, readRepoFile, writeRepoFile, modifyRepoFile } from '../../utils';
-const rimraf = util.promisify(require('rimraf'));
+import { REPO_ROOT, readRepoFile, writeRepoFile, modifyRepoFile } from '../../utils/index.js';
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
 import mkdirp from 'mkdirp';
 
 export const tasks = [{

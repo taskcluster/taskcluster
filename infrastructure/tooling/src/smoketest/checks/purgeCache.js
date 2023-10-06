@@ -8,7 +8,7 @@ export const scopeExpression = {
 };
 
 export const tasks = [];
-exports.tasks.push({
+tasks.push({
   title: 'Purge a cache (--target purge-cache)',
   requires: [
     'ping-purge-cache',

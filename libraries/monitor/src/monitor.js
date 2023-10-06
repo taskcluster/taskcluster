@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import assert from 'assert';
-import { Logger } from './logger';
-import TimeKeeper from './timekeeper';
+import { Logger } from './logger.js';
+import TimeKeeper from './timekeeper.js';
 import { hrtime } from 'process';
 
 class Monitor {

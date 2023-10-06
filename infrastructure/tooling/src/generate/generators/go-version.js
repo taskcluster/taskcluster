@@ -1,6 +1,7 @@
 import util from 'util';
-const exec = util.promisify(require('child_process').execFile);
-import { readRepoFile, modifyRepoFile } from '../../utils';
+import { execFile } from 'child_process';
+import { readRepoFile, modifyRepoFile } from '../../utils/index.js';
+const exec = util.promisify(execFile);
 
 /**
  * Update the Go version to match everywhere, treating that in `.go-version`

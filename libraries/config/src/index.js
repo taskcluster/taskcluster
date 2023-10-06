@@ -1,11 +1,14 @@
 import _ from 'lodash';
 import path from 'path';
+import url from 'url';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import debugFactory from 'debug';
 const debug = debugFactory('taskcluster-lib-config');
 import assert from 'assert';
-import buildSchema from './schema';
+import buildSchema from './schema.js';
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const REPO_ROOT = path.join(__dirname, '../../../');
 

@@ -1,5 +1,7 @@
-import { isPlainObject } from 'lodash';
+import lodash from 'lodash';
 import { strict as assert } from 'assert';
+
+const { isPlainObject } = lodash;
 
 /**
  * Representation for a set of relations in the schema -- things with rows and
