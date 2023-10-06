@@ -52,6 +52,7 @@ export default class TaskDefinition extends Component {
           className={classes.rawDefinition}
           syntax="yaml"
           objectContent={rawDefinition}
+          style={{ margin: '32px' }}
         />
       </Dashboard>
     );
